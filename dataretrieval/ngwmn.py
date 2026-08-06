@@ -24,11 +24,13 @@ from typing import Any
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
+from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 from dataretrieval.utils import BaseMetadata
 
-# The Water Data API base URL, defined locally to avoid importing policy internals.
-BASE_URL = "https://api.waterdata.usgs.gov"
+# The Water Data API base URL, from the credentials leaf rather than OGC policy
+# internals: it names the same authority the API key is scoped to.
+BASE_URL = WATERDATA_BASE_URL
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
 # separate, unversioned base.

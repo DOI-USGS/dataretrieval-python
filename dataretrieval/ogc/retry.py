@@ -1,4 +1,4 @@
-"""OGC interruption classification over API-neutral transport retry policy.
+"""OGC interruption classification over service-neutral transport retry policy.
 
 Only the OGC-specific half of retry lives here: turning a transport failure into
 the resumable :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` the

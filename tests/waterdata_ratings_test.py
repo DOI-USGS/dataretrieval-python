@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlsplit
 import pandas as pd
 import pytest
 
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter
 
@@ -198,3 +199,54 @@ def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
     search_req = httpx_mock.get_requests()[0]
     qs = parse_qs(urlsplit(str(search_req.url)).query)
     assert "file_type" not in qs["filter"][0]
+
+
+def test_stac_next_link_refuses_another_host(httpx_mock):
+    """The STAC page walk must not follow a link off the ratings host.
+
+    The search request carries the Water Data API key; a ``next`` href naming
+    another host would take it somewhere the caller never asked for. Unlike the
+    OGC engine, this walk had no host check at all.
+    """
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*/stac/v0/search.*"),
+        json={
+            "features": [{"id": "a", "properties": {}, "assets": {}}],
+            "links": [{"rel": "next", "href": "https://evil.example/page2"}],
+        },
+    )
+    with pytest.raises(DataRetrievalError, match="rather than"):
+        get_ratings(monitoring_location_id="USGS-X")
+
+
+def test_stac_next_link_strips_embedded_credentials(httpx_mock):
+    """A same-host ``next`` href must not smuggle in ``user:pass@``.
+
+    The host check passes by construction here, so only the strip catches it.
+    """
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r"^https://api\.waterdata\.usgs\.gov/stac/v0/search\?.*"),
+        json={
+            "features": [],
+            "links": [
+                {
+                    "rel": "next",
+                    "href": "https://u:p@api.waterdata.usgs.gov/stac/v0/search?page=2",
+                }
+            ],
+        },
+    )
+    # Second page: no ``next``, so the walk terminates.
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.waterdata.usgs.gov/stac/v0/search?page=2",
+        json={"features": [], "links": []},
+    )
+
+    assert get_ratings(monitoring_location_id="USGS-X") == {}
+
+    followed = httpx_mock.get_requests()[1]
+    assert followed.url.userinfo == b""
+    assert followed.headers.get("Authorization") is None

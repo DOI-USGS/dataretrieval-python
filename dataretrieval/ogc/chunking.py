@@ -20,7 +20,7 @@ concurrency that drive a plan to completion (``ChunkedCall``) plus the
 public ``multi_value_chunked`` decorator. The neighboring concerns remain
 separate: :mod:`~dataretrieval.ogc.planning` builds the
 :class:`~dataretrieval.ogc.planning.ChunkPlan`;
-:mod:`~dataretrieval.transport.combining` assembles results;
+:mod:`~dataretrieval.combining` assembles results;
 :mod:`~dataretrieval.transport.retry` owns bounded retry policy; and
 :mod:`~dataretrieval.ogc.interruptions` defines the resumable
 :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` contract.
@@ -81,12 +81,12 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval.exceptions import ConfigurationError
-from dataretrieval.transport import progress as _progress
-from dataretrieval.transport.combining import (
+from dataretrieval import progress as _progress
+from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
+from dataretrieval.exceptions import ConfigurationError
 from dataretrieval.transport.http import open_async_client
 from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry

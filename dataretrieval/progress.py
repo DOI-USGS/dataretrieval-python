@@ -15,6 +15,11 @@ chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
 page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
+This is a top-level leaf rather than part of :mod:`dataretrieval.transport`: it
+is terminal presentation, not HTTP execution policy. Transport modules report
+*into* it, so keeping it outside means the execution layer owns no rendering, and
+every service adapter -- OGC or not -- reaches the same reporter.
+
 By default the line is shown for interactive use — an interactive terminal or a
 Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clean.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
@@ -29,7 +34,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TextIO
 
-from dataretrieval.transport.http import accepts_api_key
+from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
 
 if TYPE_CHECKING:
     import httpx
@@ -50,14 +55,8 @@ def _group_int(value: str) -> str:
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
 _active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
-    "transport_progress", default=None
+    "dataretrieval_progress", default=None
 )
-
-# Where to register for an API key. Surfaced once when a query against the host
-# that accepts one (see ``transport.http.accepts_api_key``) runs without an API
-# key configured (no API_USGS_PAT), since unauthenticated callers hit much lower
-# rate limits (see the API_USGS_PAT note in the README).
-SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
 
 # Process-level latch so the "no API key" pointer is shown at most once.
 _api_key_hint_shown = False
@@ -260,7 +259,7 @@ class ProgressReporter:
 
     def _maybe_hint_api_key(self) -> None:
         global _api_key_hint_shown
-        if not self._key_helps or _api_key_hint_shown or os.getenv("API_USGS_PAT"):
+        if not self._key_helps or _api_key_hint_shown or api_key():
             return
         # Set the once-per-process latch only after a successful write, so a
         # failed write (broken pipe) doesn't silently burn the hint for every

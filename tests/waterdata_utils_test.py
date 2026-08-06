@@ -946,6 +946,34 @@ def test_next_req_url_rejects_cross_host():
         _next_req_url(resp, body=body)
 
 
+def test_next_req_url_strips_embedded_credentials():
+    """A same-host next link carrying ``user:pass@`` must not survive.
+
+    The cross-host guard passes here by construction -- the host matches -- so
+    nothing else would catch it. httpx derives ``Authorization: Basic`` from
+    userinfo, so following the link verbatim would mint a credential the caller
+    never configured and send it alongside the real API key.
+    """
+    resp = mock.MagicMock()
+    resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
+    body = {
+        "numberReturned": 1,
+        "features": [{"id": "1"}],
+        "links": [
+            {"rel": "next", "href": "https://attacker:pw@api.waterdata.usgs.gov/page2"}
+        ],
+    }
+    following = _next_req_url(resp, body=body)
+    assert following == "https://api.waterdata.usgs.gov/page2"
+    # Asserted through a real client: ``httpx.Request`` alone never derives the
+    # header from userinfo, so checking it there would pass for any URL.
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200))
+    ) as client:
+        sent = client.build_request("GET", following)
+    assert sent.headers.get("Authorization") is None
+
+
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
     so a 5xx surfaces as the typed ``ServiceUnavailable`` — the same typed

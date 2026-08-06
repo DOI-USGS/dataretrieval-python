@@ -357,7 +357,70 @@ def test_default_header_calls_are_target_scoped() -> None:
     )
 
 
-# --- API-neutral transport boundaries ---
+# --- Shared execution-layer boundaries ---
+
+
+def test_transport_is_execution_policy_only() -> None:
+    """Transport owns HTTP execution, not presentation or result assembly.
+
+    Terminal rendering (``progress``) and pandas result assembly (``combining``)
+    are top-level leaves that transport reports *into* and returns *through*.
+    They lived here only because they had to leave ``ogc`` and this was the
+    nearest home; keeping them out is what makes "transport is HTTP execution
+    policy" a checkable claim rather than a description of a grab bag.
+    """
+    misplaced = {
+        "dataretrieval/transport/progress.py",
+        "dataretrieval/transport/combining.py",
+    }
+    present = {
+        path
+        for path in misplaced
+        if (PACKAGE_ROOT.parent / path).exists()  # repo-root-relative
+    }
+    assert not present, (
+        "Presentation or frame-assembly code reappeared inside transport: "
+        f"{sorted(present)}"
+    )
+
+
+def test_credential_policy_has_one_definition() -> None:
+    """Only ``dataretrieval.credentials`` may name the API-key host.
+
+    Attaching the key and stripping it back off have to agree about which host
+    is authorized; the way they stop agreeing is a second copy of the host
+    string. ``transport.http`` re-exports the predicate, it does not restate it.
+    """
+    host = "api.waterdata.usgs.gov"
+    # Walked as AST string *values*, not as source text. A line-substring match
+    # is wrong in both directions: it missed the ``"https://…"`` form three
+    # modules use to spell the same authority, and it flagged docstring prose
+    # that merely names the service. Docstrings are excluded here (they are
+    # documentation, not a second source of truth) while every other literal --
+    # bare host or full base URL -- counts.
+    offenders: list[str] = []
+    for path in sorted(PACKAGE_ROOT.rglob("*.py")):
+        if path.name == "credentials.py":
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        docstrings = {
+            text
+            for node in ast.walk(tree)
+            if isinstance(
+                node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+            )
+            for text in [ast.get_docstring(node, clean=False)]
+            if text is not None
+        }
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+                continue
+            if host in node.value and node.value not in docstrings:
+                offenders.append(f"{_module_name(path)}:{node.lineno}")
+    assert not offenders, (
+        "The API-key host must come from dataretrieval.credentials, "
+        f"not be restated at: {offenders}"
+    )
 
 
 def test_transport_does_not_depend_on_ogc_or_services() -> None:
@@ -393,7 +456,7 @@ def test_wateruse_has_no_ogc_dependency() -> None:
 
 
 def test_transport_runtime_graph_is_acyclic() -> None:
-    """The API-neutral transport package must remain a directed acyclic graph."""
+    """The service-neutral transport package must remain a directed acyclic graph."""
     graph = {
         module: {
             dependency

@@ -36,7 +36,8 @@ import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
-import dataretrieval.transport.progress as _progress
+import dataretrieval.progress as _progress
+from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
@@ -132,8 +133,10 @@ def _next_req_url(
         # by falling open when host extraction isn't reliable.
         next_host: str | None
         cur_host: str | None
+        next_url: httpx.URL | None
         try:
-            next_host = httpx.URL(href).host
+            next_url = httpx.URL(href)
+            next_host = next_url.host
             resp_url = (
                 resp.url
                 if isinstance(resp.url, httpx.URL)
@@ -141,12 +144,19 @@ def _next_req_url(
             )
             cur_host = resp_url.host
         except (httpx.InvalidURL, TypeError):
+            next_url = None
             next_host = cur_host = None
         if next_host and cur_host and next_host != cur_host:
             raise RuntimeError(
                 f"Refusing to follow cross-host next-page URL: "
                 f"{next_host} != {cur_host}"
             )
+        # Matching hosts is not enough: a link may also carry ``user:pass@``,
+        # which httpx turns into an ``Authorization: Basic`` header on the
+        # follow-up request. The host check above passes in exactly that case,
+        # so strip it here rather than trusting the link we were handed.
+        if next_url is not None:
+            return str(without_embedded_credentials(next_url))
         # ``href`` comes from the JSON ``links`` array (typed ``Any``); the
         # ``not href`` guard above already excluded empty/None, and it is a
         # URL string (passed to ``httpx.URL`` above).
@@ -165,7 +175,7 @@ async def _paginate(
     client: httpx.AsyncClient | None = None,
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around API-neutral cursor pagination."""
+    """Compatibility wrapper around service-neutral cursor pagination."""
     active_client = client if client is not None else get_active_client()
     return await paginate(
         initial_req,
@@ -379,7 +389,7 @@ def _run_sync(
     service: str,
     error_url: str | httpx.URL | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around the API-neutral sync bridge."""
+    """Compatibility wrapper around the service-neutral sync bridge."""
     return run_sync(
         make_coro,
         service=service,

@@ -80,7 +80,7 @@ Public service facades
 
 ``dataretrieval.wateruse``
     NWDC Water Use facade. Builds CSV requests, follows ``Link`` headers, and
-    uses API-neutral transport for bounded fan-out, retry, pagination, response
+    uses service-neutral transport for bounded fan-out, retry, pagination, response
     aggregation, and synchronous dispatch. It does not depend on OGC modules.
 
 ``dataretrieval.wqp``, ``dataretrieval.nldi``, and ``dataretrieval.streamstats``
@@ -110,7 +110,7 @@ Shared components
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
-    Internal API-neutral execution layer. Owns guarded client lifecycle and
+    Internal service-neutral execution layer. Owns guarded client lifecycle and
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
     response aggregation, progress, and sync-over-async dispatch. Internally,
     ``liveness`` is a stdlib-only leaf recording when data last arrived, so the
@@ -133,7 +133,7 @@ Shared components
 
 The intended direction is::
 
-    public facade -> service/protocol adapter -> API-neutral transport
+    public facade -> service/protocol adapter -> service-neutral transport
                                              -> stable policy/infrastructure
                                              -> third-party library / network
 

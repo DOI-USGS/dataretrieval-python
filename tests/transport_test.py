@@ -1,4 +1,4 @@
-"""Component tests for the internal API-neutral transport layer."""
+"""Component tests for the internal service-neutral transport layer."""
 
 from __future__ import annotations
 

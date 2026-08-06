@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from importlib.metadata import PackageNotFoundError
@@ -11,7 +10,29 @@ from typing import Any
 
 import httpx
 
+from dataretrieval.credentials import (
+    accepts_api_key,
+    api_key,
+    strip_api_key_from_untrusted_host,
+    strip_api_key_from_untrusted_host_async,
+)
 from dataretrieval.exceptions import NetworkError
+
+# Re-exported for the adapters that reach for credential policy through the
+# transport surface they already import. ``dataretrieval.credentials`` is the
+# single definition; these names are views on it, not copies of it.
+__all__ = [
+    "HTTPX_ASYNC_DEFAULTS",
+    "HTTPX_DEFAULTS",
+    "USER_AGENT",
+    "accepts_api_key",
+    "default_headers",
+    "get",
+    "network_error",
+    "open_async_client",
+    "strip_api_key_from_untrusted_host",
+    "strip_api_key_from_untrusted_host_async",
+]
 
 try:
     _PACKAGE_VERSION = _pkg_version("dataretrieval")
@@ -25,50 +46,19 @@ HTTPX_DEFAULTS: dict[str, Any] = {
     "timeout": httpx.Timeout(60.0, connect=10.0),
 }
 
-_AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
-
-
-def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
-    """Whether ``target_url`` names the host that honors ``API_USGS_PAT``.
-
-    The single answer to "does this destination get the key" -- used both when
-    attaching the credential and when stripping it back off at redirect time, so
-    the two can't drift apart. It is also what makes "get an API key" useful
-    advice rather than noise: every other service this package talks to is on a
-    different host and ignores the key entirely.
-    """
-    if target_url is None:
-        return False
-    try:
-        url = target_url if isinstance(target_url, httpx.URL) else httpx.URL(target_url)
-    except (httpx.InvalidURL, TypeError):
-        return False
-    return url.host == _AUTHORIZED_API_KEY_HOST
-
 
 def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
-    """Build standard headers, scoping ``API_USGS_PAT`` to its authorized host."""
+    """Build standard headers, scoping the API key to its authorized host."""
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
         "User-Agent": USER_AGENT,
         "lang": "en-US",
     }
-    token = os.getenv("API_USGS_PAT")
+    token = api_key()
     if token and accepts_api_key(target_url):
         headers["X-Api-Key"] = token
     return headers
-
-
-def strip_api_key_from_untrusted_host(request: httpx.Request) -> None:
-    """Remove Water Data credentials before sending to any other host."""
-    if not accepts_api_key(request.url):
-        request.headers.pop("X-Api-Key", None)
-
-
-async def strip_api_key_from_untrusted_host_async(request: httpx.Request) -> None:
-    """Async-client form of :func:`strip_api_key_from_untrusted_host`."""
-    strip_api_key_from_untrusted_host(request)
 
 
 HTTPX_ASYNC_DEFAULTS: dict[str, Any] = {

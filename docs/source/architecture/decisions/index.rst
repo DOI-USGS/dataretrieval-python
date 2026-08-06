@@ -22,5 +22,5 @@ records sequentially.
    0003-dependency-direction
    0004-error-retry-resume
    0005-legacy-nwis
-   0006-api-neutral-transport
+   0006-service-neutral-transport
    template

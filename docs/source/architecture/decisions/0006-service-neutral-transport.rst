@@ -1,5 +1,5 @@
-ADR 0006: Use an API-neutral transport layer
-============================================
+ADR 0006: Use a service-neutral transport layer
+===============================================
 
 Status
 ------
@@ -13,23 +13,41 @@ Several service adapters need the same low-level capabilities: guarded HTTP
 clients, cursor pagination, bounded retry, response aggregation, progress, and a
 sync-over-async bridge. Locating those capabilities inside a protocol package
 would make unrelated services depend on protocol-specific implementation
-details. Duplicating them would allow authentication, timeout, retry, and
-failure behavior to drift.
+details -- Water Use previously imported its page walker and sync bridge from
+``ogc.engine``, a dependency with no conceptual basis. Duplicating them would
+allow authentication, timeout, retry, and failure behavior to drift.
+
+"Neutral" here means neutral across the USGS services this package talks to, not
+across HTTP APIs in general. The layer knows the ``API_USGS_*`` environment
+variables and the quota header USGS returns. Claiming broader neutrality than
+that invites generality no caller needs.
 
 Decision
 --------
 
-``dataretrieval.transport`` is the internal API-neutral execution layer. It owns:
+``dataretrieval.transport`` is the internal service-neutral execution layer --
+neutral across the USGS services this package talks to, not across HTTP APIs in
+general. It owns:
 
 - synchronous and asynchronous HTTP client lifecycle and timeout defaults;
-- host-scoped API-key construction and redirect-time credential stripping;
+- attaching the API key and stripping it at redirect time, over the predicate
+  ``dataretrieval.credentials`` defines;
 - callback-driven cursor pagination;
 - bounded retry with exponential backoff, full jitter, capped ``Retry-After``
   handling, and a no-progress budget bounding how long a call may receive
-  nothing at all;
-- DataFrame and HTTP-response aggregation;
-- best-effort progress reporting; and
+  nothing at all; and
 - the sync-over-async blocking-portal bridge.
+
+Three concerns are deliberately *outside* it, as top-level leaves, because they
+are not HTTP execution policy and every adapter needs them whether or not it goes
+through transport:
+
+- ``dataretrieval.credentials`` -- which host honors the key, whether a
+  destination qualifies, and how the key is withheld. One definition, so the code
+  that attaches a credential and the code that removes it cannot disagree.
+- ``dataretrieval.progress`` -- terminal rendering. Transport reports *into* it.
+- ``dataretrieval.combining`` -- pandas frame and response assembly. Transport
+  returns results *through* it.
 
 Transport depends only on stable package leaves and third-party infrastructure.
 It must not import OGC modules or service adapters. Service adapters inject
@@ -71,16 +89,22 @@ Consequences
 - Retry can increase latency and quota consumption, so attempt counts, waits,
   and total silent time remain bounded and cancellation signals are never
   wrapped.
-- Guidance the transport layer prints is gated on the host it applies to, so a
+- Guidance the progress reporter prints is gated on the host it applies to, so a
   service that cannot use an API key is not told to obtain one.
 - The transport package is internal infrastructure, not a new public API
   promise.
+- Keeping presentation and frame assembly out means transport is roughly 570
+  lines across five modules, each recognizably HTTP execution policy. Retry is
+  the one intricate module, and it is intricate because two independent bounds
+  are what make retry safe against a slow service.
 
 Compliance
 ----------
 
 ``tests/architecture_test.py`` enforces transport dependency direction, an
-acyclic transport graph, and Water Use isolation from OGC. Component and adapter
+acyclic transport graph, Water Use isolation from OGC, that presentation and
+frame-assembly modules do not reappear inside transport, and that only
+``dataretrieval.credentials`` names the API-key host. Component and adapter
 tests cover cursor termination, row caps, response aggregation, retry
 exhaustion, ``Retry-After`` limits, the no-progress budget, which failures are
 re-sent, cancellation, no-partial fan-out behavior, and credential host scoping.

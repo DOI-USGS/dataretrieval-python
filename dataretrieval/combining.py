@@ -8,6 +8,10 @@ cursor-driven pagination.
 
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
+
+A top-level leaf rather than part of :mod:`dataretrieval.transport`: these are
+pandas transforms over already-fetched results, with no HTTP or event-loop
+concern, consumed by chunk planning and service fan-out as well as by pagination.
 """
 
 from __future__ import annotations
@@ -104,8 +108,8 @@ def _merge_response(
     ``httpx.Headers`` means downstream mutations don't back-propagate into any
     underlying response — so callers may re-fold idempotently.  This is the one
     low-level merge behind both pagination
-    (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked / fan-out
-    aggregation (:func:`_combine_chunk_responses`)."""
+    (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
+    fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
     merged.headers = httpx.Headers(headers_from.headers)
     merged.elapsed = elapsed

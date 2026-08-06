@@ -1,4 +1,4 @@
-"""Internal API-neutral HTTP transport and execution policy.
+"""Internal service-neutral HTTP transport and execution policy.
 
 The modules in this package own reusable client lifecycle, authentication,
 pagination, retry, response aggregation, progress, and sync-dispatch behavior.

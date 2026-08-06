@@ -19,13 +19,13 @@ Decision
 --------
 
 Dependencies point from public facades to service/protocol adapters, then to
-API-neutral transport and stable policy, and finally to third-party
+service-neutral transport and stable policy, and finally to third-party
 infrastructure. In particular:
 
 - ``dataretrieval.exceptions`` is a runtime-dependency-light leaf.
 - ``dataretrieval.ogc`` must not import Water Data, NGWMN, Water Use, or NWIS.
 - Modern modules must not import deprecated NWIS.
-- API-neutral transport must not import OGC modules or service adapters.
+- Service-neutral transport must not import OGC modules or service adapters.
 - Non-OGC services must obtain generic execution behavior from transport, not
   private OGC implementation symbols.
 

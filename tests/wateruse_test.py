@@ -306,7 +306,7 @@ def test_fan_out_surfaces_final_rate_limit_header(httpx_mock):
     assert md.header["x-ratelimit-remaining"] == "850"
 
 
-# (response aggregation uses transport.combining._combine_chunk_responses; the
+# (response aggregation uses combining._combine_chunk_responses; the
 # integration test above pins the rate-limit-header behavior end-to-end.)
 
 

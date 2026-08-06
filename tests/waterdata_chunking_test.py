@@ -31,6 +31,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dataretrieval.combining import (
+    _QUOTA_HEADER,
+    _combine_chunk_frames,
+    _combine_chunk_responses,
+)
 from dataretrieval.exceptions import (
     DataRetrievalError,
     RateLimited,
@@ -65,11 +70,6 @@ from dataretrieval.ogc.planning import (
 )
 from dataretrieval.ogc.requests import _construct_api_requests
 from dataretrieval.transport import retry as _retry_mod
-from dataretrieval.transport.combining import (
-    _QUOTA_HEADER,
-    _combine_chunk_frames,
-    _combine_chunk_responses,
-)
 from dataretrieval.transport.retry import (
     _RETRIES_DEFAULT,
     RetryPolicy,

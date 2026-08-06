@@ -14,6 +14,7 @@ from typing import Any, Generic, TypeVar
 import httpx
 import pandas as pd
 
+import dataretrieval.credentials as _credentials
 import dataretrieval.transport.http as _transport_http
 from dataretrieval.codes import tz
 from dataretrieval.exceptions import (
@@ -29,7 +30,7 @@ from dataretrieval.transport.retry import (
 )
 
 # Compatibility names retained at their historical utility paths.
-_AUTHORIZED_API_KEY_HOST = _transport_http._AUTHORIZED_API_KEY_HOST
+_AUTHORIZED_API_KEY_HOST = _credentials._AUTHORIZED_API_KEY_HOST
 HTTPX_ASYNC_DEFAULTS = _transport_http.HTTPX_ASYNC_DEFAULTS
 HTTPX_DEFAULTS = _transport_http.HTTPX_DEFAULTS
 USER_AGENT = _transport_http.USER_AGENT

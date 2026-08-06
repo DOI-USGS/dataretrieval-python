@@ -16,12 +16,12 @@ from typing import NamedTuple, TypeVar
 
 import httpx
 
+from dataretrieval import progress as _progress
 from dataretrieval.exceptions import (
     ConfigurationError,
     NetworkError,
     TransientError,
 )
-from dataretrieval.transport import progress as _progress
 from dataretrieval.transport.liveness import (
     credit_wait,
     elapsed_since_progress,

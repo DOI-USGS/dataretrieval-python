@@ -12,7 +12,7 @@ Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
 an OGC API Features collection. This module supplies the NWDC-specific bits —
 request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope — and uses the API-neutral transport layer for cursor pagination,
+error envelope — and uses the service-neutral transport layer for cursor pagination,
 response aggregation, client lifecycle, and sync-from-async dispatch. It follows
 the same conventions: host-scoped request headers, the typed
 :class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a
@@ -50,11 +50,11 @@ import httpx
 import pandas as pd
 
 from dataretrieval.codes.states import to_state
-from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.transport.combining import (
+from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.transport.http import default_headers, open_async_client
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy, retry_async

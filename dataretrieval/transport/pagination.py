@@ -10,13 +10,13 @@ from typing import Any, TypeVar
 import httpx
 import pandas as pd
 
-from dataretrieval.exceptions import DataRetrievalError, RateLimited
-from dataretrieval.transport import progress as _progress
-from dataretrieval.transport.combining import (
+from dataretrieval import progress as _progress
+from dataretrieval.combining import (
     _QUOTA_HEADER,
     _merge_response,
     _safe_elapsed,
 )
+from dataretrieval.exceptions import DataRetrievalError, RateLimited
 from dataretrieval.transport.http import open_async_client
 from dataretrieval.transport.liveness import note_progress
 

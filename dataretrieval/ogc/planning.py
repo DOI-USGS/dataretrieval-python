@@ -10,9 +10,9 @@ drive it.
 
 Result recombination — reassembling the per-chunk frames and responses
 back into one result
-(:func:`~dataretrieval.transport.combining._combine_chunk_frames`,
-:func:`~dataretrieval.transport.combining._combine_chunk_responses`, etc.) —
-lives in the API-neutral :mod:`dataretrieval.transport.combining` module.
+(:func:`~dataretrieval.combining._combine_chunk_frames`,
+:func:`~dataretrieval.combining._combine_chunk_responses`, etc.) —
+lives in the top-level :mod:`dataretrieval.combining` module.
 """
 
 from __future__ import annotations

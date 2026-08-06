@@ -8,7 +8,7 @@ from typing import TypeVar, cast
 import httpx
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval.transport import progress as _progress
+from dataretrieval import progress as _progress
 from dataretrieval.transport.http import network_error
 
 _T = TypeVar("_T")

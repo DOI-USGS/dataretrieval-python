@@ -17,11 +17,11 @@ import httpx
 import pandas as pd
 import pytest
 
+from dataretrieval import progress as _progress
 from dataretrieval.ogc.chunking import ChunkedCall
 from dataretrieval.ogc.engine import _paginate, _walk_pages
 from dataretrieval.ogc.planning import ChunkPlan
-from dataretrieval.transport import progress as _progress
-from dataretrieval.transport.progress import (
+from dataretrieval.progress import (
     ProgressReporter,
     current,
     progress_context,
