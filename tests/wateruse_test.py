@@ -4,6 +4,7 @@ All HTTP is mocked with ``pytest-httpx``; no live calls (per AGENTS.md).
 """
 
 import re
+import socket
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
@@ -11,7 +12,9 @@ import pandas as pd
 import pytest
 
 import dataretrieval
+from dataretrieval import progress as _progress
 from dataretrieval import wateruse
+from dataretrieval.transport import fanout as _fanout
 from dataretrieval.utils import BaseMetadata
 from dataretrieval.wateruse import _next_page_url, _resolve_locations, get_wateruse
 
@@ -270,8 +273,8 @@ def test_multiple_states_fan_out_preserves_input_order(httpx_mock):
 
 
 def test_fan_out_is_serial_when_concurrency_is_one(httpx_mock, monkeypatch):
-    """``MAX_CONCURRENT_REQUESTS = 1`` still fans out correctly (serial path)."""
-    monkeypatch.setattr(wateruse, "MAX_CONCURRENT_REQUESTS", 1)
+    """``API_USGS_CONCURRENT=1`` still fans out correctly (serial path)."""
+    monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     httpx_mock.add_response(
         method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
     )
@@ -311,7 +314,14 @@ def test_fan_out_surfaces_final_rate_limit_header(httpx_mock):
 
 
 def test_fan_out_failure_never_returns_partial_data(httpx_mock):
-    """A failed location aborts the call even when another location succeeded."""
+    """A failed location aborts the call even when another location succeeded.
+
+    The completed sibling is not returned as though the call had succeeded --
+    it is carried on the raised interruption for ``resume()`` instead. Water Use
+    reports ``ServiceInterrupted`` rather than the bare ``ServiceUnavailable``
+    it raised before sharing the fan-out executor: the same upstream 503, now
+    resumable.
+    """
     httpx_mock.add_response(
         method="GET",
         url=re.compile(r".*location=stateCd%3ARI.*"),
@@ -324,8 +334,17 @@ def test_fan_out_failure_never_returns_partial_data(httpx_mock):
         json={"detail": "temporarily unavailable"},
     )
 
-    with pytest.raises(dataretrieval.ServiceUnavailable):
+    with pytest.raises(dataretrieval.ServiceInterrupted) as excinfo:
         get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
+
+    # The 503 is still the reported cause, and the successful location survives
+    # on the exception rather than being passed off as the whole answer.
+    assert isinstance(excinfo.value.__cause__, dataretrieval.ServiceUnavailable)
+    assert excinfo.value.status_code == 503
+    assert excinfo.value.retryable
+    assert excinfo.value.completed_chunks == 1
+    assert excinfo.value.total_chunks == 2
+    assert len(excinfo.value.partial_frame) == 2
 
 
 # --- _resolve_locations unit tests (no HTTP) -------------------------------
@@ -562,23 +581,15 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
         ) as client:
             yield client
 
-    monkeypatch.setattr(wateruse, "open_async_client", open_mock_client)
+    monkeypatch.setattr(_fanout, "open_async_client", open_mock_client)
 
     requests = [
         httpx.Request("GET", wateruse.WATERUSE_URL, params={"location": location})
         for location in ("stateCd:AA", "stateCd:BB")
     ]
 
-    async def drive() -> int:
-        with pytest.raises(dataretrieval.DataRetrievalError, match="Invalid model"):
-            await wateruse._fan_out(requests, {}, True)
-        # Nothing left running: the sibling was joined before teardown, so no
-        # task can later fail against the closed client.
-        return len(
-            [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
-        )
-
-    assert asyncio.run(drive()) == 0
+    with pytest.raises(dataretrieval.DataRetrievalError, match="Invalid model"):
+        wateruse._fan_out(requests, {}, True)
     assert pages["n"] == 2, "the sibling finished its walk rather than being abandoned"
 
 
@@ -591,3 +602,230 @@ def test_next_page_url_rejects_cross_host_link():
     # other failure rather than seeing a bare RuntimeError.
     with pytest.raises(dataretrieval.DataRetrievalError, match="outside.example"):
         _next_page_url(response)
+
+
+# --- capabilities Water Use gained by sharing the fan-out executor ----------
+
+
+def test_interrupted_fan_out_resumes_only_the_unfinished_locations(httpx_mock):
+    """A rate-limited location is resumable; completed siblings are not re-fetched.
+
+    Before Water Use shared the executor, a 429 anywhere in the fan-out
+    discarded every location that had already succeeded. That is the whole
+    reason a multi-location pull needed re-running from scratch against an
+    hourly quota.
+    """
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
+    )
+    # WI is rate-limited on the first pass, then succeeds once resumed.
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3AWI.*"),
+        status_code=429,
+        json={"detail": "rate limited"},
+        is_reusable=False,
+    )
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3AWI.*"), text=_CSV_P2
+    )
+
+    with pytest.raises(dataretrieval.QuotaExhausted) as excinfo:
+        get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
+
+    interrupted = excinfo.value
+    assert interrupted.status_code == 429
+    assert interrupted.retryable
+    assert interrupted.completed_chunks == 1
+    assert interrupted.total_chunks == 2
+    requests_before = len(httpx_mock.get_requests())
+
+    df, md = interrupted.call.resume()
+
+    # Only WI was re-issued; RI's completed frame carried across the resume.
+    assert len(httpx_mock.get_requests()) == requests_before + 1
+    assert len(df) == 3
+    assert isinstance(md, BaseMetadata)
+
+
+def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
+    """``API_USGS_CONCURRENT`` outranks this service's default.
+
+    A user dialing concurrency down to be polite must not find Water Use
+    quietly ignoring them -- the defect that motivated consolidating the knob.
+    """
+    monkeypatch.setenv("API_USGS_CONCURRENT", "7")
+    assert _fanout._resolve_concurrency(wateruse.DEFAULT_CONCURRENT_REQUESTS) == 7
+
+    monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
+    assert (
+        _fanout._resolve_concurrency(wateruse.DEFAULT_CONCURRENT_REQUESTS)
+        == wateruse.DEFAULT_CONCURRENT_REQUESTS
+    )
+    # The service default is deliberately below the package-wide 32.
+    assert wateruse.DEFAULT_CONCURRENT_REQUESTS < _fanout._CONCURRENCY_DEFAULT
+
+
+def test_fan_out_reports_progress(httpx_mock, monkeypatch):
+    """The fan-out ticks the progress reporter, which it never did standalone."""
+    seen = []
+
+    class _Recorder:
+        def set_chunks(self, total):
+            seen.append(("chunks", total))
+
+        def start_chunk(self, completed):
+            seen.append(("chunk", completed))
+
+        def set_rate_remaining(self, remaining, limit=None):
+            pass
+
+        def add_page(self, rows):
+            seen.append(("page", rows))
+
+    monkeypatch.setattr(_fanout._progress, "current", lambda: _Recorder())
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
+    )
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3AWI.*"), text=_CSV_P2
+    )
+
+    get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
+
+    assert ("chunks", 2) in seen
+    assert ("chunk", 1) in seen and ("chunk", 2) in seen
+
+
+def test_resume_uses_the_current_progress_reporter(httpx_mock, monkeypatch):
+    """Resume must not resurrect the reporter closed by the interrupted call."""
+    created = []
+
+    class _Recorder:
+        def __init__(self, **_kwargs):
+            self.closed = False
+            self.events = []
+            created.append(self)
+
+        def _record(self, event):
+            assert not self.closed, "fan-out updated a closed progress reporter"
+            self.events.append(event)
+
+        def set_chunks(self, total):
+            self._record(("chunks", total))
+
+        def start_chunk(self, completed):
+            self._record(("chunk", completed))
+
+        def set_rate_remaining(self, remaining, limit=None):
+            self._record(("remaining", remaining, limit))
+
+        def add_page(self, rows):
+            self._record(("page", rows))
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(_progress, "ProgressReporter", _Recorder)
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
+    )
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3AWI.*"),
+        status_code=429,
+        is_reusable=False,
+    )
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3AWI.*"), text=_CSV_P2
+    )
+
+    with pytest.raises(dataretrieval.QuotaExhausted) as excinfo:
+        get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
+
+    assert created[0].closed
+    with _progress.progress_context(service="resume") as resumed_reporter:
+        _, md = excinfo.value.call.resume()
+
+    assert isinstance(md, BaseMetadata)
+    assert resumed_reporter is created[1]
+    assert ("chunks", 2) in resumed_reporter.events
+    assert ("chunk", 2) in resumed_reporter.events
+
+
+def test_permanent_transport_failure_remains_a_network_error(monkeypatch):
+    """A deterministic connection failure stays inside the public taxonomy."""
+
+    async def fail(*_args, **_kwargs):
+        resolution = socket.gaierror(socket.EAI_NONAME, "name not known")
+        failure = httpx.ConnectError("name not known")
+        failure.__context__ = resolution
+        raise failure
+
+    monkeypatch.setattr(wateruse, "paginate", fail)
+
+    with pytest.raises(dataretrieval.NetworkError) as excinfo:
+        get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+
+
+def test_permanent_later_page_failure_remains_a_network_error(httpx_mock):
+    """Normalization finds transport failures nested by pagination."""
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3ARI(?!.*cursor).*"),
+        text=_CSV_P1,
+        headers={
+            "Link": '<https://api.water.usgs.gov/nwaa-data/data?cursor=x>; rel="next"'
+        },
+    )
+    resolution = socket.gaierror(socket.EAI_NONAME, "name not known")
+    failure = httpx.ConnectError("name not known")
+    failure.__context__ = resolution
+    httpx_mock.add_exception(
+        failure,
+        method="GET",
+        url=re.compile(r".*cursor=x.*"),
+    )
+
+    with pytest.raises(dataretrieval.NetworkError) as excinfo:
+        get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+
+
+def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
+    """A 429 on page 2+ of a location must still be a resumable interruption.
+
+    ``paginate`` re-wraps a later-page failure as a plain ``DataRetrievalError``
+    (page 1's status check sits outside its ``try``), so the typed cause is only
+    reachable through ``__cause__``. ``_classify_chunk_error`` walks that chain
+    for exactly this reason; were it a single ``isinstance`` check, a mid-walk
+    rate limit would escape as a bare error and lose ``.call.resume()`` --
+    inconsistently, since page 1 would still be resumable.
+    """
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*location=stateCd%3ARI(?!.*cursor).*"),
+        text=_CSV_P1,
+        headers={
+            "Link": '<https://api.water.usgs.gov/nwaa-data/data?cursor=x>; rel="next"'
+        },
+    )
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(r".*cursor=x.*"),
+        status_code=429,
+        json={"detail": "rate limited"},
+    )
+    httpx_mock.add_response(
+        method="GET", url=re.compile(r".*location=stateCd%3AWI.*"), text=_CSV_P2
+    )
+
+    with pytest.raises(dataretrieval.QuotaExhausted) as excinfo:
+        get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
+
+    assert excinfo.value.call is not None
+    assert excinfo.value.completed_chunks == 1
+    assert excinfo.value.total_chunks == 2

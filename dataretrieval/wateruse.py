@@ -41,25 +41,21 @@ Examples
 
 from __future__ import annotations
 
-import asyncio
 import io
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from typing import Any
 
 import httpx
 import pandas as pd
 
+from dataretrieval import progress as _progress
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
-from dataretrieval.combining import (
-    _combine_chunk_frames,
-    _combine_chunk_responses,
-)
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.transport.http import default_headers, open_async_client
+from dataretrieval.transport.fanout import FanOut, active_client
+from dataretrieval.transport.http import default_headers, network_error
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.retry import RetryPolicy, retry_async
-from dataretrieval.transport.sync import run_sync
+from dataretrieval.transport.retry import RetryPolicy
 from dataretrieval.utils import _raise_for_status, to_str
 
 __all__ = [
@@ -67,9 +63,8 @@ __all__ = [
     "WATERUSE_URL",
     "MODELS",
     "TIME_RESOLUTIONS",
-    "MAX_CONCURRENT_REQUESTS",
+    "DEFAULT_CONCURRENT_REQUESTS",
 ]
-
 
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
 _WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
@@ -90,13 +85,15 @@ MODELS = (
 #: Temporal resolutions: monthly, annual calendar year, annual water year.
 TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 
-#: Maximum locations fetched concurrently when a list of state/county/huc
-#: selectors is fanned out (one request per location). Kept conservative
-#: because every location retries independently, so the burst a rate-limit
-#: episode produces is this number times the retry count; the NWDC tolerates
-#: this level of concurrency without rate-limit errors (verified by stress
-#: test). Set ``wateruse.MAX_CONCURRENT_REQUESTS = 1`` for serial.
-MAX_CONCURRENT_REQUESTS = 4
+#: This service's preferred in-flight cap when ``API_USGS_CONCURRENT`` is
+#: unset. Lower than the package default of 32 because every location retries
+#: independently, so a rate-limit episode bursts this number times the retry
+#: count; the NWDC tolerates this level without rate-limit errors (verified by
+#: stress test) and higher has not been tested. Setting ``API_USGS_CONCURRENT``
+#: overrides it -- see :func:`dataretrieval.transport.fanout._resolve_concurrency`
+#: for why the general setting outranks a module's default rather than the
+#: reverse.
+DEFAULT_CONCURRENT_REQUESTS = 4
 
 # Page responses carry the HUC12 identifier in this column; it must stay a
 # string so leading zeros (e.g. "010900020502") survive the round trip.
@@ -128,8 +125,12 @@ def get_wateruse(
 
     Each selector also accepts a list of values. The NWDC queries one area per
     request, so a list is fanned out into one request per value — up to
-    :data:`MAX_CONCURRENT_REQUESTS` in parallel — and the results are
-    concatenated in the order given.
+    ``API_USGS_CONCURRENT`` in parallel, defaulting to
+    :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are
+    concatenated in the order given. A fan-out interrupted by a rate limit or an
+    upstream fault raises a resumable
+    :class:`~dataretrieval.interruptions.FanOutInterrupted`, whose
+    ``.call.resume()`` re-issues only the locations that did not complete.
 
     Parameters
     ----------
@@ -199,9 +200,12 @@ def get_wateruse(
         is not five digits, or a HUC of invalid length).
     DataRetrievalError
         On an HTTP error response, the typed subclass for the status (see
-        :func:`dataretrieval.exceptions.error_for_status`); or
-        :class:`~dataretrieval.exceptions.NetworkError` on a connection-level
-        failure (timeout, DNS).
+        :func:`dataretrieval.exceptions.error_for_status`). A transient 429,
+        5xx, or recoverable connection failure that exhausts inline retries is
+        raised as a resumable
+        :class:`~dataretrieval.interruptions.FanOutInterrupted`; a deterministic
+        connection failure (for example, a permanently unresolvable host)
+        remains a :class:`~dataretrieval.exceptions.NetworkError`.
 
     Examples
     --------
@@ -247,16 +251,7 @@ def get_wateruse(
         )
         for location in _resolve_locations(state, county, huc)
     ]
-    # ``_run_sync`` drives the async fan-out via an anyio portal, so it is safe
-    # even inside an already-running event loop (e.g. a Jupyter notebook).
-    # ``error_url`` is the host reported in any connection-error message (this
-    # module builds its own requests, so it has no OGC request-builder base).
-    df, response = run_sync(
-        lambda: _fan_out(requests, headers, ssl_check),
-        service="wateruse",
-        error_url=WATERUSE_URL,
-    )
-    return df, BaseMetadata(response)
+    return _fan_out(requests, headers, ssl_check)
 
 
 # Valid HUC code lengths (digits) → the hydrologic-unit level they query.
@@ -341,18 +336,59 @@ def _validate_huc(value: object) -> str:
     return code
 
 
-async def _fan_out(
+class _LocationPlan:
+    """The Water Use fan-out's shape: one pre-built request per location.
+
+    Satisfies :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally,
+    without inheriting from :class:`~dataretrieval.ogc.planning.ChunkPlan` --
+    there is nothing to inherit. ``ChunkPlan`` divides one over-budget query
+    into byte-sized pieces; this divides nothing. The NWDC accepts one
+    ``location=`` per request, so the caller's locations arrive already
+    separate and the "plan" is just that list. Chunking is structural division;
+    this is only the operational distribution that follows.
+    """
+
+    def __init__(self, requests: list[httpx.Request]) -> None:
+        self._requests = requests
+
+    @property
+    def total(self) -> int:
+        return len(self._requests)
+
+    @property
+    def canonical_url(self) -> str | None:
+        """The first location's URL, standing for the query as a whole.
+
+        There is no single URL expressing "all of these locations" -- the
+        service has no such request -- so the aggregate response reports the
+        first, matching what the un-fanned single-location call would show.
+        """
+        return str(self._requests[0].url) if self._requests else None
+
+    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
+        for request in self._requests:
+            yield {"request": request}
+
+
+def _fan_out(
     requests: list[httpx.Request], headers: dict[str, str], ssl_check: bool
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Fetch every request (each paginated) concurrently over one shared client.
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Fetch every request (each paginated) over the shared fan-out executor.
 
     Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`
     with NWDC strategies: parse a CSV page and read its ``Link`` header cursor
     (``parse``), follow that cursor (``follow``), and raise the typed error
-    carrying the NWDC ``detail`` (``raise_for_status``). Concurrency is bounded
-    by a semaphore at :data:`MAX_CONCURRENT_REQUESTS`, and ``asyncio.gather``
-    preserves input order, so the concatenation is deterministic. The shared
-    :class:`httpx.AsyncClient` keeps connections alive across pages and requests.
+    carrying the NWDC ``detail`` (``raise_for_status``).
+
+    Everything else -- bounded concurrency, per-attempt retry, failure
+    precedence, progress, and resumable interruption -- belongs to
+    :class:`~dataretrieval.transport.fanout.FanOut`, which Water Data and NGWMN
+    drive too. This function is now only the NWDC-specific half: what a
+    sub-request is, and how to read one.
+
+    The broad retry status set is on purpose: NWDC reports a bad query as a 400
+    with a ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx
+    really is an upstream fault worth re-sending.
     """
 
     def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
@@ -364,67 +400,41 @@ async def _fan_out(
     def raise_for_status(response: httpx.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
-    # The broad status set on purpose: NWDC reports a bad query as a 400 with a
-    # ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx really
-    # is an upstream fault worth re-sending. Note the cost is multiplied by the
-    # fan-out -- see MAX_CONCURRENT_REQUESTS.
-    policy = RetryPolicy.from_env()
-    async with open_async_client(verify=ssl_check) as client:
-        semaphore = asyncio.Semaphore(max(1, MAX_CONCURRENT_REQUESTS))
+    async def fetch(args: dict[str, Any]) -> tuple[pd.DataFrame, httpx.Response]:
+        """One location's full page walk, over the executor's shared client.
 
-        async def _one(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-            async def attempt() -> tuple[pd.DataFrame, httpx.Response]:
-                return await paginate(
-                    request,
-                    parse_response=parse,
-                    follow_up=follow,
-                    client=client,
-                    raise_for_status=raise_for_status,
-                )
+        ``active_client()`` is the client :meth:`FanOut._run` published for this
+        run; borrowing it keeps every location's pages on one connection pool
+        instead of opening a client per location.
+        """
+        try:
+            return await paginate(
+                args["request"],
+                parse_response=parse,
+                follow_up=follow,
+                client=active_client(),
+                raise_for_status=raise_for_status,
+            )
+        except httpx.TransportError as exc:
+            raise network_error(args["request"].url, exc) from exc
 
-            # ``retry_async`` owns the gate: the slot is acquired per attempt,
-            # so a location backing off isn't holding one. A later-page failure
-            # is intentionally wrapped by ``paginate`` and propagates instead of
-            # restarting a partially completed walk.
-            return await retry_async(attempt, policy, gate=semaphore)
+    def finalize(
+        frame: pd.DataFrame, response: httpx.Response
+    ) -> tuple[pd.DataFrame, BaseMetadata]:
+        return frame, BaseMetadata(response)
 
-        # ``return_exceptions`` so every location is joined before the client
-        # block exits. Letting the first failure propagate out of the gather
-        # closed the shared client from under its still-running siblings: a
-        # location mid-page-walk (or asleep on a ``Retry-After`` backoff) then
-        # failed with "Cannot send a request, as the client has been closed" on
-        # a task nobody was awaiting any more -- a spurious error, and an
-        # unretrieved-exception warning, both attributable to our own teardown.
-        # The cost is that a fatal error waits for the slowest sibling; that is
-        # the price of not abandoning in-flight work mid-request.
-        results = await asyncio.gather(
-            *(_one(req) for req in requests), return_exceptions=True
-        )
-
-    # A cancellation or interrupt signal (``CancelledError``,
-    # ``KeyboardInterrupt`` -- non-``Exception``) wins over any request failure:
-    # gathering with ``return_exceptions`` captures it like any other result, and
-    # reporting a sibling's HTTP error instead would swallow the user's stop
-    # signal. Otherwise raise in input order, so which failure a caller sees
-    # stays deterministic rather than depending on which location lost the race.
-    # (Same precedence the chunked fan-out applies -- see ``ChunkedCall._run``.)
-    failures = [result for result in results if isinstance(result, BaseException)]
-    for failure in failures:
-        if not isinstance(failure, Exception):
-            raise failure
-    if failures:
-        raise failures[0]
-    pairs = [result for result in results if not isinstance(result, BaseException)]
-
-    # Reuse the transport combine helpers: drop empty frames and concat, and fold
-    # the per-location responses into one (headers from the response with the
-    # lowest reported remaining quota plus summed response durations), keeping
-    # the first request's URL as the query identity.
-    frames = [frame for frame, _ in pairs]
-    responses = [resp for _, resp in pairs]
-    return _combine_chunk_frames(frames), _combine_chunk_responses(
-        responses, str(requests[0].url)
-    )
+    # ``progress_context`` activates the reporter ``FanOut`` ticks into; without
+    # it Water Use would run the shared executor but print nothing, which is
+    # what it did when it drove its own gather.
+    with _progress.progress_context(service="wateruse", target_url=WATERUSE_URL):
+        return FanOut(
+            _LocationPlan(requests),
+            fetch,
+            RetryPolicy.from_env(),
+            finalize=finalize,
+            client_options={"verify": ssl_check},
+            default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
+        ).resume()
 
 
 def _read_csv_page(response: httpx.Response) -> pd.DataFrame:

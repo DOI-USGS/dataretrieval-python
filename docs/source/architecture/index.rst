@@ -105,23 +105,31 @@ Shared components
     state; ``requests`` owns argument normalization and HTTP request
     construction; ``schema`` executes queryables/schema requests; ``engine``
     supplies OGC cursor and response strategies to transport pagination;
-    ``planning`` determines chunk boundaries; ``chunking`` executes plans and
-    retains resumable state; ``interruptions`` defines the resumable failure
-    contract; ``retry`` classifies failures into OGC interruption types; and
-    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
-    protocol concerns. The full runtime OGC graph, including the facade, is
-    acyclic — enforced by the package-wide fitness function in
+    ``planning`` determines chunk boundaries; ``chunking`` connects those plans
+    to the shared fan-out executor and retains compatibility aliases;
+    ``interruptions`` and ``retry`` re-export their moved compatibility
+    surfaces; and ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
+    their named protocol concerns. The full runtime OGC graph, including the
+    facade, is acyclic — enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
-    response aggregation, progress, and sync-over-async dispatch. Internally,
-    ``liveness`` is a stdlib-only leaf recording when data last arrived, so the
-    page loop that observes progress and the retry loop that acts on it both
-    depend on ``liveness`` rather than on each other. Transport imports no
-    service adapter or OGC protocol module, and it is not exposed as a public
-    framework API.
+    response aggregation, fan-out execution, progress integration, and
+    sync-over-async dispatch. ``fanout`` owns bounded concurrency, deterministic
+    failure precedence, sparse completion state, and resume over an injected
+    plan and fetch callback. Internally, ``liveness`` is a stdlib-only leaf
+    recording when data last arrived, so the page loop that observes progress
+    and the retry loop that acts on it both depend on ``liveness`` rather than
+    on each other. Transport imports no service adapter or OGC protocol module,
+    and it is not exposed as a public framework API.
+
+``dataretrieval.interruptions``
+    Shared resumable fan-out failure contract. It owns
+    ``FanOutInterrupted`` and its subclasses; ``ChunkInterrupted`` remains a
+    permanent alias for compatibility. The module is outside transport because
+    adapters catch these errors independently of how they execute requests.
 
 ``dataretrieval.exceptions``
     Stable error-policy leaf. It has no runtime third-party dependency, and
@@ -178,8 +186,10 @@ contracts; consistency alone is not sufficient reason for a breaking change.
 
 Failed requests derive from ``dataretrieval.DataRetrievalError``. Callers can
 inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
-concrete subtype. OGC calls may raise ``ChunkInterrupted`` subclasses carrying a
-resumable call handle and completed partial state.
+concrete subtype. A fanned-out call -- an over-large OGC request, or a Water Use
+query naming several locations -- may raise ``FanOutInterrupted`` subclasses
+(formerly, and still aliased as, ``ChunkInterrupted``) carrying a resumable call
+handle and completed partial state.
 
 Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
@@ -230,15 +240,16 @@ A typical OGC-backed call follows this sequence::
         -> shape columns and types
         -> return DataFrame and BaseMetadata
 
-A transient failure after some chunks complete raises a resumable interruption.
-The retained ``ChunkedCall`` reissues only missing chunks and applies the same
-finalization path when resumed. Cancellation and non-transient programming
-errors take precedence over retry/resume wrapping.
+A transient failure after some subrequests complete raises a resumable
+interruption. The retained ``FanOut`` (available as ``ChunkedCall`` on the OGC
+compatibility path) reissues only missing work and applies the same finalization
+path when resumed. Cancellation and non-transient programming errors take
+precedence over retry/resume wrapping.
 
 Non-OGC services use the same transport policy only where their protocols have
-matching semantics. Retry and cursor pagination remain explicit adapter choices;
-chunk planning and resumable interruptions remain OGC capabilities rather than
-invented features of upstream APIs that do not provide them.
+matching semantics. Retry, cursor pagination, and fan-out remain explicit
+adapter choices. Chunk planning remains OGC-specific; resumable fan-out is also
+used by Water Use because the NWDC accepts only one location per request.
 
 Resource and configuration view
 -------------------------------
@@ -250,7 +261,8 @@ Resource and configuration view
     link to any other host, including external rating assets.
 
 ``API_USGS_CONCURRENT``
-    OGC subrequest concurrency cap; defaults to 32, ``1`` is sequential, and
+    Fan-out concurrency cap; defaults to 32 for OGC and 4 for Water Use when
+    unset. An explicit value applies to every service, ``1`` is sequential, and
     ``unbounded`` removes the explicit cap. A semaphore, not pool waiting, is
     the execution throttle.
 

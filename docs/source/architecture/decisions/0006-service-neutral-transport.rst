@@ -4,7 +4,9 @@ ADR 0006: Use a service-neutral transport layer
 Status
 ------
 
-Accepted
+Accepted. The clause assigning resumable ``ChunkedCall`` state to OGC is
+superseded by :doc:`0008-fan-out-execution`, which moves fan-out *execution*
+into transport and leaves chunk *planning* in OGC. The rest stands.
 
 Context
 -------

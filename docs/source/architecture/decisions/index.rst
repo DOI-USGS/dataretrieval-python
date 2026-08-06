@@ -24,4 +24,5 @@ records sequentially.
    0005-legacy-nwis
    0006-service-neutral-transport
    0007-adapter-facades
+   0008-fan-out-execution
    template

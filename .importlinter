@@ -10,10 +10,9 @@
 
 [importlinter]
 root_package = dataretrieval
-; Contracts describe what runs, matching the AST suite. ``ogc.interruptions``
-; and ``ogc.chunking`` reference each other's types under ``TYPE_CHECKING``;
-; that is a documentation edge, not a runtime one, and no cycle exists at
-; import time.
+; Contracts describe what runs, matching the AST suite. Type-checking imports
+; document structural protocols and callback types without creating runtime
+; dependency edges.
 exclude_type_checking_imports = True
 
 [importlinter:contract:layers]
@@ -27,7 +26,7 @@ layers =
     utils
     transport
     progress
-    _ambient | _response_metadata | codes | combining | rdb
+    _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
     exceptions
 ; Every top-level module must be placed in the stack deliberately. A new
@@ -55,10 +54,9 @@ allowed_importers =
     dataretrieval.ngwmn
     dataretrieval.waterdata
 ignore_imports =
-; The package __init__ re-exports the resumable-call and interruption types;
-; they are part of the documented public surface, not a service reaching in.
+; The package __init__ re-exports the parallel-chunks context manager; it is
+; part of the documented public surface, not a service reaching into OGC.
     dataretrieval -> dataretrieval.ogc.chunking
-    dataretrieval -> dataretrieval.ogc.interruptions
 
 [importlinter:contract:ogc-facade]
 name = NGWMN consumes the OGC facade only, never its internals (ADR 0007)
@@ -101,6 +99,7 @@ source_modules =
     dataretrieval.combining
     dataretrieval.credentials
     dataretrieval.exceptions
+    dataretrieval.interruptions
     dataretrieval.ngwmn
     dataretrieval.nldi
     dataretrieval.ogc
