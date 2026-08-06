@@ -23,6 +23,3 @@ def _check_ogc_requests(
     response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
     _raise_for_non_200(response)
     return cast("dict[str, Any]", response.json()), response
-
-
-__all__: list[str] = []

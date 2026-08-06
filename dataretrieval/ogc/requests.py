@@ -1,8 +1,10 @@
 """OGC argument normalization and HTTP request construction.
 
 Ambient request state lives in :mod:`dataretrieval.ogc.context`; queryables and
-schema execution live in :mod:`dataretrieval.ogc.schema`. The schema helper is
-imported here only to preserve its previous private path.
+schema execution live in :mod:`dataretrieval.ogc.schema`. Neither is re-exported
+from here -- importing the schema helper only to forward it would give this
+module an edge to the one part of OGC that executes HTTP, which is exactly what
+request *construction* is supposed to be free of.
 """
 
 from __future__ import annotations
@@ -16,14 +18,8 @@ import httpx
 
 from dataretrieval.ogc.context import _dialect as _dialect
 from dataretrieval.ogc.context import _ogc_base_url as _ogc_base_url
-from dataretrieval.ogc.context import _row_cap as _context_row_cap
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
-from dataretrieval.ogc.schema import _check_ogc_requests as _schema_check_ogc_requests
 from dataretrieval.transport.http import default_headers as _default_headers
-
-# Previous private paths remain available while ownership lives in context/schema.
-_row_cap = _context_row_cap
-_check_ogc_requests = _schema_check_ogc_requests
 
 # ---------------------------------------------------------------------------
 # Monitoring location ID validation

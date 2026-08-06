@@ -39,28 +39,6 @@ _EXPECTED_WATERDATA_ALL = [
     "get_time_series_metadata",
 ]
 
-_EXPECTED_API_NAMES = [
-    "get_channel",
-    "get_codes",
-    "get_combined_metadata",
-    "get_continuous",
-    "get_cql",
-    "get_daily",
-    "get_field_measurements",
-    "get_field_measurements_metadata",
-    "get_latest_continuous",
-    "get_latest_daily",
-    "get_monitoring_locations",
-    "get_peaks",
-    "get_queryables",
-    "get_reference_table",
-    "get_samples",
-    "get_samples_summary",
-    "get_stats_date_range",
-    "get_stats_por",
-    "get_time_series_metadata",
-]
-
 _EXPECTED_SIGNATURES = {
     "get_channel": "(monitoring_location_id: 'str | Iterable[str] | None' = None, field_visit_id: 'str | Iterable[str] | "
     "None' = None, measurement_number: 'str | Iterable[str] | None' = None, time: 'str | Iterable[str] | "
@@ -290,7 +268,9 @@ _EXPECTED_SIGNATURES = {
 
 def test_waterdata_exports_are_stable() -> None:
     assert waterdata.__all__ == _EXPECTED_WATERDATA_ALL
-    assert api.__all__ == _EXPECTED_API_NAMES
+    # Derived from the signature snapshot below: one list to keep current,
+    # not two that can disagree about what the facade exports.
+    assert api.__all__ == list(_EXPECTED_SIGNATURES)
     assert all(hasattr(waterdata, name) for name in waterdata.__all__)
 
 
@@ -300,10 +280,8 @@ def test_api_facade_preserves_function_contracts() -> None:
         facade_function = getattr(api, name)
         assert package_function is facade_function
         assert str(inspect.signature(facade_function)) == expected_signature
-        assert facade_function.__module__ == "dataretrieval.waterdata.api"
 
 
 def test_api_private_samples_compatibility_names_remain() -> None:
     assert isinstance(api._SAMPLES_PARAM_TO_API, dict)
     assert isinstance(api._SAMPLES_LEGACY_KWARGS, dict)
-    assert callable(api.get_ogc_data)

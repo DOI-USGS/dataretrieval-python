@@ -29,7 +29,6 @@ from dataretrieval.waterdata.time_series import (
     get_stats_date_range,
     get_stats_por,
 )
-from dataretrieval.waterdata.utils import get_ogc_data as _get_ogc_data
 
 __all__ = [
     "get_channel",
@@ -53,13 +52,6 @@ __all__ = [
     "get_time_series_metadata",
 ]
 
-# Preserve the documented legacy implementation path for introspection and
-# Sphinx while the function objects live in cohesive family modules.
-for _name in __all__:
-    globals()[_name].__module__ = __name__
-del _name
-
 # Private compatibility names used by existing callers and patch targets.
 _SAMPLES_PARAM_TO_API = _samples._SAMPLES_PARAM_TO_API
 _SAMPLES_LEGACY_KWARGS = _samples._SAMPLES_LEGACY_KWARGS
-get_ogc_data = _get_ogc_data

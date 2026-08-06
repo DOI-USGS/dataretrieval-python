@@ -11,5 +11,3 @@ _ogc_base_url: Ambient[str] = Ambient("ogc_base_url", OGC_API_URL)
 
 # Per-call request and response dialect.
 _dialect: Ambient[OgcDialect] = Ambient("ogc_dialect", DEFAULT_DIALECT)
-
-__all__: list[str] = []
