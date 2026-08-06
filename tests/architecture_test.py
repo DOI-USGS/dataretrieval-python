@@ -601,14 +601,26 @@ def test_api_facade_exports_exactly_the_family_union() -> None:
 
 
 def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
+    """The facade re-exports; it does not run anything.
+
+    Statement *kinds* are checked, not just ``def``/``class``. Scanning for
+    definitions alone let a module-level ``for`` loop live here that rewrote
+    every re-exported getter's ``__module__`` -- code owned by the family
+    modules, mutated from a file certified "logic-free". A docstring, imports,
+    and plain assignments are the whole legitimate vocabulary of a facade.
+    """
     path = PACKAGE_ROOT / "waterdata" / "api.py"
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    definitions = [
-        node.name
+    allowed = (ast.Import, ast.ImportFrom, ast.Assign, ast.AnnAssign)
+    offenders = [
+        f"line {node.lineno}: {type(node).__name__}"
         for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+        if not isinstance(node, allowed)
+        and not (
+            isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+        )  # the module docstring
     ]
-    assert not definitions, f"waterdata.api contains implementation: {definitions}"
+    assert not offenders, f"waterdata.api contains implementation: {offenders}"
 
 
 def test_waterdata_collection_families_do_not_import_each_other() -> None:
