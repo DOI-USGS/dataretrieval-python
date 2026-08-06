@@ -376,14 +376,40 @@ async def _fan_out(
             # restarting a partially completed walk.
             return await retry_async(attempt, policy, gate=semaphore)
 
-        results = await asyncio.gather(*(_one(req) for req in requests))
+        # ``return_exceptions`` so every location is joined before the client
+        # block exits. Letting the first failure propagate out of the gather
+        # closed the shared client from under its still-running siblings: a
+        # location mid-page-walk (or asleep on a ``Retry-After`` backoff) then
+        # failed with "Cannot send a request, as the client has been closed" on
+        # a task nobody was awaiting any more -- a spurious error, and an
+        # unretrieved-exception warning, both attributable to our own teardown.
+        # The cost is that a fatal error waits for the slowest sibling; that is
+        # the price of not abandoning in-flight work mid-request.
+        results = await asyncio.gather(
+            *(_one(req) for req in requests), return_exceptions=True
+        )
+
+    # A cancellation or interrupt signal (``CancelledError``,
+    # ``KeyboardInterrupt`` -- non-``Exception``) wins over any request failure:
+    # gathering with ``return_exceptions`` captures it like any other result, and
+    # reporting a sibling's HTTP error instead would swallow the user's stop
+    # signal. Otherwise raise in input order, so which failure a caller sees
+    # stays deterministic rather than depending on which location lost the race.
+    # (Same precedence the chunked fan-out applies -- see ``ChunkedCall._run``.)
+    failures = [result for result in results if isinstance(result, BaseException)]
+    for failure in failures:
+        if not isinstance(failure, Exception):
+            raise failure
+    if failures:
+        raise failures[0]
+    pairs = [result for result in results if not isinstance(result, BaseException)]
 
     # Reuse the transport combine helpers: drop empty frames and concat, and fold
     # the per-location responses into one (headers from the response with the
     # lowest reported remaining quota plus summed response durations), keeping
     # the first request's URL as the query identity.
-    frames = [frame for frame, _ in results]
-    responses = [resp for _, resp in results]
+    frames = [frame for frame, _ in pairs]
+    responses = [resp for _, resp in pairs]
     return _combine_chunk_frames(frames), _combine_chunk_responses(
         responses, str(requests[0].url)
     )
@@ -434,10 +460,16 @@ def _next_page_url(response: httpx.Response) -> str | None:
             f"send this request, and any credentials on it, to a host you did "
             f"not ask for. Retrying will not help; report this if it persists."
         )
-    # Drop any explicit port along with the scheme/host rewrite: a port that
-    # went with the link's original scheme (``http://…:8080``) would otherwise
-    # survive into an https request and be dialed under TLS.
-    return str(target.copy_with(scheme="https", host=_WATERUSE_HOST, port=None))
+    # Drop any explicit port and any embedded userinfo along with the
+    # scheme/host rewrite. A port that went with the link's original scheme
+    # (``http://…:8080``) would otherwise survive into an https request and be
+    # dialed under TLS; userinfo (``http://user:pass@…``) would survive into an
+    # ``Authorization: Basic`` header that httpx derives from it and send a
+    # credential the caller never configured to the rewritten host -- the very
+    # thing the host check above exists to prevent.
+    return str(
+        target.copy_with(scheme="https", host=_WATERUSE_HOST, port=None, userinfo=b"")
+    )
 
 
 def _nwdc_error_detail(response: httpx.Response) -> str | None:

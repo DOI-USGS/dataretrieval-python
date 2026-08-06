@@ -34,16 +34,25 @@ def elapsed_since_progress() -> float | None:
 
 
 def credit_wait(seconds: float) -> None:
-    """Excuse ``seconds`` of waiting-for-a-turn from the no-progress budget.
+    """Excuse ``seconds`` of sanctioned waiting from the no-progress budget.
 
-    Queueing behind a concurrency cap is not silence -- the deep tail of a wide
-    fan-out can wait past the whole budget and would otherwise start its first
-    attempt with nothing left to retry with. But neither is it progress, and the
-    difference matters: crediting only the measured wait keeps the budget
-    cumulative across attempts, where restamping to "now" would also discard
-    silence accumulated by earlier attempts and quietly turn a bound on total
-    silence into a per-attempt latency bound.
+    Two kinds of waiting are not silence: queueing behind a concurrency cap, and
+    sleeping off a delay the server itself named (see
+    :meth:`~dataretrieval.transport.retry.RetryPolicy.allows_wait` for why a
+    sanctioned delay costs the budget nothing). The deep tail of a wide fan-out
+    can wait past the whole budget and would otherwise start its first attempt
+    with nothing left to retry with. But neither is progress, and the difference
+    matters: crediting only the measured wait keeps the budget cumulative across
+    attempts, where restamping to "now" would also discard silence accumulated
+    by earlier attempts and quietly turn a bound on total silence into a
+    per-attempt latency bound.
+
+    The credit never reaches past the present. A wait longer than the whole
+    budget would otherwise stamp the stamp into the *future*, making
+    :func:`elapsed_since_progress` negative -- and since nothing ever pulls it
+    back, that one long queue wait would disable the bound for the rest of the
+    call, which is precisely the silent-minutes case the budget exists to catch.
     """
     last = _last_progress.get()
     if last is not None:
-        _last_progress.set(last + seconds)
+        _last_progress.set(min(time.monotonic(), last + seconds))

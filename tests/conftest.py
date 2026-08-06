@@ -3,11 +3,10 @@ Test scaffolding for the dataretrieval test suite.
 
 * Relaxes ``pytest-httpx``'s strict-mode flags so unconsumed mocks and
   unmatched requests don't fail the suite (keeps mocked-URL setup terse).
-* Pins ``API_USGS_CONCURRENT=1`` and ``API_USGS_RETRIES=0`` for every
-  test by default, so sub-request dispatch is deterministic and a single
-  transient surfaces immediately (no backoff). Concurrency and retry
-  tests opt in by re-setting the env vars inside their body via
-  ``monkeypatch.setenv``.
+* Pins the chunker env for every test (see ``_pin_chunker_env``), so
+  sub-request dispatch is deterministic and mocked retries measure attempt
+  counts rather than wall clock. Concurrency and retry tests opt in by
+  re-setting the env vars inside their body via ``monkeypatch.setenv``.
 """
 
 from __future__ import annotations
@@ -65,14 +64,24 @@ def non_mocked_hosts() -> list[str]:
 
 @pytest.fixture(autouse=True)
 def _pin_chunker_env(monkeypatch):
-    """Pin every test to one connection and no retries.
+    """Pin every test to one connection, no retries, and no stall budget.
 
-    Production defaults ``API_USGS_CONCURRENT`` to 32 and
-    ``API_USGS_RETRIES`` to 4. Pinning ``API_USGS_CONCURRENT=1`` keeps
-    sub-request dispatch deterministic for the mocked suite, and
-    ``API_USGS_RETRIES=0`` makes a single transient surface immediately
-    rather than be retried. Concurrency and retry tests opt in by
-    overriding the env inside their body.
+    Production defaults ``API_USGS_CONCURRENT`` to 32,
+    ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
+    Pinning ``API_USGS_CONCURRENT=1`` keeps sub-request dispatch
+    deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
+    a single transient surface immediately rather than be retried.
+    Concurrency and retry tests opt in by overriding the env inside
+    their body.
+
+    ``API_USGS_STALL_TIMEOUT=0`` is pinned too so that an opting-in retry
+    test measures the thing it names -- attempt counts -- and not the wall
+    clock of the machine running it. Left at the production 60 s, a test
+    that sets ``API_USGS_RETRIES`` would have its retries silently capped
+    by whatever real time its mocked attempts consumed, which is both flaky
+    on a loaded CI box and a way for a stall-budget bug to hide behind a
+    passing retry test. Tests of the budget itself set it explicitly.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     monkeypatch.setenv("API_USGS_RETRIES", "0")
+    monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "0")

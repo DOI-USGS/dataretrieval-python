@@ -12,7 +12,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import TypeVar
+from typing import NamedTuple, TypeVar
 
 import httpx
 
@@ -168,8 +168,10 @@ class RetryPolicy:
     #: pass :data:`_GATEWAY_STATUSES` instead.
     retryable_statuses: frozenset[int] = _RETRYABLE_STATUSES
     #: Longest a call may go *without receiving any data* before retrying stops
-    #: and the failure surfaces -- the total of every wait and every silent
-    #: attempt since the last page arrived. Bounds the wall-clock cost of a dead
+    #: and the failure surfaces -- the total of every silent attempt and every
+    #: unsanctioned wait since the last page arrived (a server-named
+    #: ``Retry-After`` and time queued behind the concurrency gate are excused;
+    #: see :meth:`allows_wait`). Bounds the wall-clock cost of a dead
     #: connection or a service that keeps refusing, which :attr:`max_retries`
     #: alone does not: it counts attempts, not seconds, so four retries of a
     #: request that times out after a minute is four silent minutes. Progress
@@ -221,7 +223,13 @@ class RetryPolicy:
             return False
         return retry_after is None or retry_after <= self.retry_after_cap
 
-    def allows_wait(self, attempt: int, delay: float, elapsed: float | None) -> bool:
+    def allows_wait(
+        self,
+        attempt: int,
+        delay: float,
+        elapsed: float | None,
+        retry_after: float | None = None,
+    ) -> bool:
         """Whether waiting ``delay`` more fits the no-progress budget.
 
         ``elapsed`` is the silence so far (see
@@ -235,12 +243,27 @@ class RetryPolicy:
         for exactly the large queries that most need retrying. So the budget
         bounds *repeated* silence: with the defaults a dead connection costs
         about two read timeouts rather than five attempts' worth.
+
+        A delay the *server* named -- ``retry_after`` is not ``None``, the same
+        hint :meth:`should_retry` and :meth:`backoff` take -- costs the budget
+        nothing. Charging for it would mean a service that answers 429 with
+        ``Retry-After: 30`` gets fewer retries than one that says nothing at all
+        -- with the shipped defaults (a 60 s budget, a 60 s
+        :attr:`retry_after_cap`) any honored hint of half the budget or more
+        would allow exactly one retry no matter what
+        :attr:`max_retries` says. Waiting because we were told to is not the
+        service going quiet on us; it is the service telling us when to come
+        back. The driver credits the same wait back afterwards (see
+        :func:`~dataretrieval.transport.liveness.credit_wait`) so it doesn't
+        accumulate into the *next* attempt's silence either.
         """
         if attempt <= _STALL_EXEMPT_ATTEMPTS:
             return True
         if self.stall_timeout <= 0 or elapsed is None:
             return True
-        return elapsed + delay <= self.stall_timeout
+        return (
+            elapsed + (0.0 if retry_after is not None else delay) <= self.stall_timeout
+        )
 
     def backoff(self, attempt: int, retry_after: float | None) -> float:
         """Seconds to wait before a 1-based retry attempt.
@@ -283,18 +306,29 @@ def _deterministic_failure(exc: BaseException) -> bool:
     The original failure is several layers down and not always an explicit
     ``raise ... from``: a DNS failure reaches us as ``NetworkError`` ->
     ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
-    linked by ``__context__`` (implicit chaining) rather than ``__cause__``. So
-    both links are followed, preferring an explicit cause where one exists.
+    linked by ``__context__`` (implicit chaining) rather than ``__cause__``.
+
+    Both links of every frame are visited, not just the first one present. A
+    frame can carry an explicit ``__cause__`` *and* an unrelated ``__context__``
+    (any ``raise X from Y`` inside an ``except`` block produces exactly that), so
+    following only the cause would walk off down the explicit branch and miss a
+    ``gaierror`` sitting on the implicit one -- spending the whole retry budget
+    on a hostname that will never resolve. The ``seen`` set keeps a chain that
+    rejoins itself, or points back at an ancestor, from looping.
     """
     seen: set[int] = set()
-    current: BaseException | None = exc
-    while current is not None and id(current) not in seen:
+    pending: list[BaseException | None] = [exc]
+    while pending:
+        current = pending.pop()
+        if current is None or id(current) in seen:
+            continue
         seen.add(id(current))
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
+            # Return, not continue: the first resolver code found settles the chain.
             return current.errno in _PERMANENT_DNS_ERRORS
-        current = current.__cause__ or current.__context__
+        pending += [current.__cause__, current.__context__]
     return False
 
 
@@ -311,18 +345,42 @@ def _retryable(
     return False, None
 
 
-def _retry_delay(exc: BaseException, attempt: int, policy: RetryPolicy) -> float | None:
-    """Return the bounded delay for a failed attempt, or ``None`` to stop."""
+class _Wait(NamedTuple):
+    """How long to hold off before a retry, and whether the server asked for it.
+
+    ``sanctioned`` travels with the delay because only the driver knows when the
+    sleep finished, and a server-named wait has to be credited back to the
+    no-progress budget once it has been served (see
+    :meth:`RetryPolicy.allows_wait`).
+    """
+
+    delay: float
+    sanctioned: bool
+
+    def settle(self) -> None:
+        """Credit a served server-named wait back to the no-progress budget.
+
+        Paired with the sleep rather than left to each driver: a wait that
+        :meth:`RetryPolicy.allows_wait` excused going in has to be excused coming
+        out too, or it accumulates into the *next* attempt's silence and caps the
+        retries anyway. Both drivers sleep differently but settle identically.
+        """
+        if self.sanctioned:
+            credit_wait(self.delay)
+
+
+def _retry_delay(exc: BaseException, attempt: int, policy: RetryPolicy) -> _Wait | None:
+    """Return the bounded wait for a failed attempt, or ``None`` to stop."""
     retryable, retry_after = _retryable(exc, policy.retryable_statuses)
     if not retryable or not policy.should_retry(attempt, retry_after):
         return None
     delay = policy.backoff(attempt, retry_after)
-    if not policy.allows_wait(attempt, delay, elapsed_since_progress()):
+    if not policy.allows_wait(attempt, delay, elapsed_since_progress(), retry_after):
         return None
     reporter = _progress.current()
     if reporter is not None:
         reporter.note_retry(attempt=attempt, wait=delay)
-    return delay
+    return _Wait(delay, retry_after is not None)
 
 
 async def retry_async(
@@ -358,10 +416,11 @@ async def retry_async(
             return await attempt_once()
         except Exception as exc:  # noqa: BLE001 - re-raised unless retryable
             attempt += 1
-            delay = _retry_delay(exc, attempt, policy)
-            if delay is None:
+            wait = _retry_delay(exc, attempt, policy)
+            if wait is None:
                 raise
-            await asyncio.sleep(delay)
+            await asyncio.sleep(wait.delay)
+            wait.settle()
 
 
 def retry_sync(fn: Callable[[], _T], policy: RetryPolicy | None = None) -> _T:
@@ -379,7 +438,8 @@ def retry_sync(fn: Callable[[], _T], policy: RetryPolicy | None = None) -> _T:
             return fn()
         except Exception as exc:  # noqa: BLE001 - re-raised unless retryable
             attempt += 1
-            delay = _retry_delay(exc, attempt, policy)
-            if delay is None:
+            wait = _retry_delay(exc, attempt, policy)
+            if wait is None:
                 raise
-            time.sleep(delay)
+            time.sleep(wait.delay)
+            wait.settle()

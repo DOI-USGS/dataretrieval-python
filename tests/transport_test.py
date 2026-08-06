@@ -263,6 +263,34 @@ def test_temporary_name_resolution_is_still_retried() -> None:
     assert retry._retryable(_dns_failure(0)) == (True, None)
 
 
+def test_resolver_failure_found_past_an_unrelated_explicit_cause() -> None:
+    """Both chain links are walked, not just the first one present.
+
+    ``raise X from Y`` inside an ``except`` block leaves an explicit
+    ``__cause__`` *and* an unrelated ``__context__`` on the same frame. Following
+    only the cause walks off down the explicit branch and never reaches the
+    ``gaierror``, so an unresolvable hostname spends the whole retry budget
+    instead of failing fast.
+    """
+    failure = _dns_failure(socket.EAI_NONAME)
+    failure.__cause__ = ValueError("an unrelated explicit cause")
+
+    assert retry._retryable(failure) == (False, None)
+
+    # The walk still distinguishes the temporary code on the same shape.
+    temporary = _dns_failure(socket.EAI_AGAIN)
+    temporary.__cause__ = ValueError("an unrelated explicit cause")
+    assert retry._retryable(temporary) == (True, None)
+
+
+def test_chain_walk_terminates_on_a_self_referential_cause() -> None:
+    """A chain pointing back at itself must not hang the classifier."""
+    looped = NetworkError("could not reach host")
+    looped.__context__ = looped
+
+    assert retry._retryable(looped) == (True, None)
+
+
 def test_retryable_statuses_are_per_adapter() -> None:
     """A 500 means different things to different services, so the set differs.
 
@@ -316,6 +344,64 @@ def test_stall_timeout_stops_a_silent_call(monkeypatch) -> None:
         )
 
     assert attempts == 2, "first retry is exempt; the budget stops the rest"
+
+
+def test_server_named_delay_does_not_consume_the_stall_budget(monkeypatch) -> None:
+    """Honoring ``Retry-After`` must not cost a call its retries.
+
+    The budget bounds *silence*; a delay the service named is the opposite of
+    going quiet. Charging for it meant the more politely a service asked for
+    room, the fewer retries it got: with the shipped defaults a
+    ``Retry-After: 30`` against a 60 s budget allowed exactly one retry no
+    matter what ``API_USGS_RETRIES`` said, silently capping the feature this
+    layer exists to provide.
+    """
+    attempts = 0
+
+    def operation() -> str:
+        nonlocal attempts
+        attempts += 1
+        raise RateLimited("slow down", status_code=429, retry_after=30.0)
+
+    # A clock that advances by exactly what we sleep, so the only thing that can
+    # exhaust the budget is the server-named wait itself.
+    now = 0.0
+
+    def sleep(seconds: float) -> None:
+        nonlocal now
+        now += seconds
+
+    monkeypatch.setattr(liveness.time, "monotonic", lambda: now)
+    monkeypatch.setattr(retry.time, "sleep", sleep)
+
+    with pytest.raises(RateLimited):
+        retry.retry_sync(
+            operation,
+            retry.RetryPolicy(max_retries=4, stall_timeout=60.0, retry_after_cap=60.0),
+        )
+
+    assert attempts == 5, "a sanctioned wait costs the no-progress budget nothing"
+
+
+def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
+    """A wait longer than the budget must not disable the budget.
+
+    ``credit_wait`` moves the progress stamp forward; without a ceiling at
+    "now", one long queue wait pushed it into the future, made
+    ``elapsed_since_progress`` negative, and -- since nothing ever pulls it back
+    -- left that call exempt from the stall bound for the rest of its life.
+    """
+    now = 0.0
+    monkeypatch.setattr(liveness.time, "monotonic", lambda: now)
+    policy = retry.RetryPolicy(stall_timeout=60.0)
+
+    liveness.note_progress()
+    liveness.credit_wait(300.0)  # a deep-tail task queued past the whole budget
+    assert liveness.elapsed_since_progress() == 0.0, "clamped to now, not negative"
+
+    # The budget is spent again by real silence, not permanently disabled.
+    now = 200.0
+    assert not policy.allows_wait(5, 30.0, liveness.elapsed_since_progress())
 
 
 def test_arriving_pages_restart_the_stall_budget(monkeypatch) -> None:
