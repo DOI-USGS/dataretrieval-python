@@ -129,8 +129,8 @@ def test_note_retry_is_noop_when_disabled():
 
 def test_note_retry_accepts_integer_wait():
     # An int ``wait`` (e.g. whole seconds) must render without raising:
-    # ``round(int, 1)`` returns an int and ``int.is_integer()`` only exists
-    # on Python 3.12+, while the package floor is 3.9. Renders like the float.
+    # ``round(int, 1)`` returns an int and ``int.is_integer()`` only exists on
+    # Python 3.12+, while the package floor is 3.10. Renders like the float.
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
     reporter.note_retry(attempt=1, wait=5)

@@ -145,3 +145,16 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["anyio", "anyio.*"]
 follow_imports = "skip"
+
+[tool.pytest.ini_options]
+# The suite is offline by default. Every HTTP call is mocked (see
+# ``tests/conftest.py``), so a push neither depends on USGS uptime nor spends
+# someone's rate limit. The exception is the handful of tests marked ``live``,
+# which exist precisely to notice when an upstream API changes shape -- a thing
+# a mock can never tell us, because the mock is what would need updating.
+# Deselecting them here rather than in the CI command keeps a local
+# ``pytest tests/`` doing what CI does; run them with ``-m live``.
+addopts = "-m 'not live'"
+markers = [
+  "live: hits real USGS services; deselected by default, run on a schedule",
+]

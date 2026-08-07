@@ -143,7 +143,11 @@ def test_get_iv(httpx_mock):
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
-    assert df.size == 563380
+    # Two sites x two parameter codes, each value column paired with its
+    # qualifier (``_cd``) column, indexed by (site_no, datetime).
+    assert list(df.columns) == ["00060", "00060_cd", "00065", "00065_cd"]
+    assert df.index.names == ["site_no", "datetime"]
+    assert set(df.index.get_level_values("site_no")) == {"01491000", "01645000"}
     assert md.url == request_url
     assert_metadata(httpx_mock, request_url, md, site, None, format)
 
@@ -166,7 +170,8 @@ def test_get_iv_site_value_types(httpx_mock, site_input_type_list):
     df, md = get_iv(sites=sites, start="2019-02-14", end="2020-02-15")
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
-    assert df.size == 563380
+    assert list(df.columns) == ["00060", "00060_cd", "00065", "00065_cd"]
+    assert not df.empty
     assert md.url == request_url
 
 

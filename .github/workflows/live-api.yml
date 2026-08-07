@@ -1,0 +1,46 @@
+# Runs the tests that talk to real USGS services.
+#
+# These are separated from the push suite on purpose. A mocked test tells us
+# whether *our* parsing still works; only a live one tells us whether the
+# upstream API still returns what we parse. That signal is worth having, but not
+# on every push: it makes an unrelated commit's CI depend on USGS uptime, and a
+# transient 503 then reads as "your branch is broken".
+#
+# So they run on a schedule, where a failure means what it should -- something
+# upstream moved -- and nobody is blocked while we look into it.
+
+name: Live API Tests
+
+on:
+  schedule:
+    # 07:00 UTC daily: outside US working hours, when the services are quiet.
+    - cron: "0 7 * * *"
+  # Available on demand, for confirming a suspected upstream change or checking
+  # a branch that touches request building.
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[test,nldi]
+      - name: Run live API tests
+        # ``-m live`` overrides the ``-m 'not live'`` in pyproject's addopts, so
+        # this runs exactly the complement of the push suite. ``--reruns`` here
+        # rather than on the marker: a transient 5xx should cost a retry, not a
+        # red build, and this is the only job where that trade-off applies.
+        run: pytest tests/ -m live -v --reruns 2 --reruns-delay 5

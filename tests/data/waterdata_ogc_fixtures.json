@@ -1,0 +1,1012 @@
+{
+ "agency-codes": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "AK001",
+    "properties": {
+     "agency_name": "Alaska Department of Transportation and Public Facilities",
+     "id": "AK001"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "AK008",
+    "properties": {
+     "agency_name": "Alaska Department of Fish and Game",
+     "id": "AK008"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "channel-measurements": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "0110103e-a49a-4a58-83cf-1b8f428d24f6",
+    "properties": {
+     "channel_area": "9.53",
+     "channel_area_unit": "ft^2",
+     "channel_evenness": "Unspecified",
+     "channel_flow": "10.6",
+     "channel_flow_unit": "ft^3/s",
+     "channel_location_direction": "Downstream",
+     "channel_location_distance": "20.00",
+     "channel_location_distance_unit": "ft",
+     "channel_material": "Unspecified",
+     "channel_measurement_type": "point_velocity",
+     "channel_name": "main.",
+     "channel_stability": "Unspecified",
+     "channel_velocity": "1.12",
+     "channel_velocity_unit": "ft/s",
+     "channel_width": "12.5",
+     "channel_width_unit": "ft",
+     "field_visit_id": "513fbf94-55e3-3c3b-e053-0100007fd2fd",
+     "horizontal_velocity_description": "Unspecified",
+     "id": "0110103e-a49a-4a58-83cf-1b8f428d24f6",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "longitudinal_velocity_description": "Unknown",
+     "measurement_number": "376",
+     "measurement_type": "Wading",
+     "monitoring_location_id": "USGS-05427718",
+     "time": "2015-08-06T18:20:30+00:00",
+     "vertical_velocity_description": "Unspecified"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "017d1651-bb44-472d-bb8e-8a90d934b90f",
+    "properties": {
+     "channel_area": "17.6",
+     "channel_area_unit": "ft^2",
+     "channel_evenness": "Unspecified",
+     "channel_flow": "21.3",
+     "channel_flow_unit": "ft^3/s",
+     "channel_location_direction": "Unspecified",
+     "channel_location_distance": "",
+     "channel_location_distance_unit": "",
+     "channel_material": "Unspecified",
+     "channel_measurement_type": "point_velocity",
+     "channel_name": "Imported Channel 1",
+     "channel_stability": "Unspecified",
+     "channel_velocity": "1.21",
+     "channel_velocity_unit": "ft/s",
+     "channel_width": "17.6",
+     "channel_width_unit": "ft",
+     "field_visit_id": "513fba36-bcb6-36e9-e053-0100007f8b69",
+     "horizontal_velocity_description": "Unspecified",
+     "id": "017d1651-bb44-472d-bb8e-8a90d934b90f",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "longitudinal_velocity_description": "Unknown",
+     "measurement_number": "148",
+     "measurement_type": "Wading",
+     "monitoring_location_id": "USGS-05427718",
+     "time": "1994-07-18T20:06:00+00:00",
+     "vertical_velocity_description": "Unspecified"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "combined-metadata": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "04585e9fb4ec467aafa86c7c0b3f1439",
+    "properties": {
+     "agency_code": "USGS",
+     "agency_name": "U.S. Geological Survey",
+     "altitude": 871.0,
+     "altitude_accuracy": 1.0,
+     "altitude_method_code": "N",
+     "altitude_method_name": "Interpolated from Digital Elevation Model",
+     "aquifer_code": null,
+     "aquifer_type_code": null,
+     "basin_code": null,
+     "begin": "2013-10-01T11:00:00+00:00",
+     "computation_identifier": "Decumulated",
+     "construction_date": null,
+     "contributing_drainage_area": 37.0,
+     "country_code": "US",
+     "country_name": "United States of America",
+     "county_code": "025",
+     "county_name": "Dane County",
+     "data_gap_interval": "PT1H12M",
+     "data_type": "Continuous values",
+     "depth_source_code": null,
+     "district_code": "55",
+     "drainage_area": 73.6,
+     "end": "2025-10-01T10:45:00+00:00",
+     "hole_constructed_depth": null,
+     "horizontal_position_method_code": "M",
+     "horizontal_position_method_name": "Interpolated from map",
+     "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+     "horizontal_positional_accuracy_code": "S",
+     "hydrologic_unit_code": "070900020504",
+     "id": "04585e9fb4ec467aafa86c7c0b3f1439",
+     "last_modified": "2026-06-05T17:16:13.005607+00:00",
+     "minor_civil_division_code": "87725",
+     "monitoring_location_id": "USGS-05427718",
+     "monitoring_location_name": "YAHARA RIVER AT WINDSOR, WI",
+     "monitoring_location_number": "05427718",
+     "national_aquifer_code": null,
+     "original_horizontal_datum": "NAD83",
+     "original_horizontal_datum_name": "North American Datum of 1983",
+     "parameter_code": "00045",
+     "parameter_description": "Precipitation, total, inches",
+     "parameter_name": "Precipitation",
+     "parent_time_series_id": null,
+     "primary": "Primary",
+     "reading_type": null,
+     "site_type": "Stream",
+     "site_type_code": "ST",
+     "state_code": "55",
+     "state_name": "Wisconsin",
+     "statistic_id": null,
+     "sublocation_identifier": null,
+     "thresholds": [],
+     "time_zone_abbreviation": "CST",
+     "unit_of_measure": "in",
+     "uses_daylight_savings": "Y",
+     "vertical_datum": "NAVD88",
+     "vertical_datum_name": "North American Vertical Datum of 1988",
+     "web_description": null,
+     "well_constructed_depth": null
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "086122bb-eab3-4b8d-8d6b-ae950508d969",
+    "properties": {
+     "agency_code": "USGS",
+     "agency_name": "U.S. Geological Survey",
+     "altitude": 871.0,
+     "altitude_accuracy": 1.0,
+     "altitude_method_code": "N",
+     "altitude_method_name": "Interpolated from Digital Elevation Model",
+     "aquifer_code": null,
+     "aquifer_type_code": null,
+     "basin_code": null,
+     "begin": "1989-10-19T18:45:00+00:00",
+     "computation_identifier": null,
+     "construction_date": null,
+     "contributing_drainage_area": 37.0,
+     "country_code": "US",
+     "country_name": "United States of America",
+     "county_code": "025",
+     "county_name": "Dane County",
+     "data_gap_interval": null,
+     "data_type": "Field measurements",
+     "depth_source_code": null,
+     "district_code": "55",
+     "drainage_area": 73.6,
+     "end": "2026-07-24T16:39:00+00:00",
+     "hole_constructed_depth": null,
+     "horizontal_position_method_code": "M",
+     "horizontal_position_method_name": "Interpolated from map",
+     "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+     "horizontal_positional_accuracy_code": "S",
+     "hydrologic_unit_code": "070900020504",
+     "id": "086122bb-eab3-4b8d-8d6b-ae950508d969",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "minor_civil_division_code": "87725",
+     "monitoring_location_id": "USGS-05427718",
+     "monitoring_location_name": "YAHARA RIVER AT WINDSOR, WI",
+     "monitoring_location_number": "05427718",
+     "national_aquifer_code": null,
+     "original_horizontal_datum": "NAD83",
+     "original_horizontal_datum_name": "North American Datum of 1983",
+     "parameter_code": "00065",
+     "parameter_description": "Gage height, feet",
+     "parameter_name": "Gage height",
+     "parent_time_series_id": null,
+     "primary": null,
+     "reading_type": "ReferencePrimary",
+     "site_type": "Stream",
+     "site_type_code": "ST",
+     "state_code": "55",
+     "state_name": "Wisconsin",
+     "statistic_id": null,
+     "sublocation_identifier": null,
+     "thresholds": null,
+     "time_zone_abbreviation": "CST",
+     "unit_of_measure": null,
+     "uses_daylight_savings": "Y",
+     "vertical_datum": "NAVD88",
+     "vertical_datum_name": "North American Vertical Datum of 1988",
+     "web_description": null,
+     "well_constructed_depth": null
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "continuous": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -92.6863888888889,
+      40.2343333333333
+     ],
+     "type": "Point"
+    },
+    "id": "1f6dacef-9405-4e72-a755-6d3ff6121051",
+    "properties": {
+     "approval_status": "Approved",
+     "last_modified": "2025-08-28T11:10:36.529563+00:00",
+     "monitoring_location_id": "USGS-06904500",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "statistic_id": "00011",
+     "time": "2025-01-01T00:00:00+00:00",
+     "time_series_id": "b36569a0067443ac9425e850a3ac7baa",
+     "unit_of_measure": "ft",
+     "value": "1.76"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -92.6863888888889,
+      40.2343333333333
+     ],
+     "type": "Point"
+    },
+    "id": "0be08516-f3a0-4a60-b3bf-41fba6b0a3ea",
+    "properties": {
+     "approval_status": "Approved",
+     "last_modified": "2025-08-28T11:10:36.529563+00:00",
+     "monitoring_location_id": "USGS-06904500",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "statistic_id": "00011",
+     "time": "2025-01-01T00:15:00+00:00",
+     "time_series_id": "b36569a0067443ac9425e850a3ac7baa",
+     "unit_of_measure": "ft",
+     "value": "1.76"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "daily": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "00053b44-9ef8-468d-b436-a55022d254e6",
+    "properties": {
+     "approval_status": "Provisional",
+     "last_modified": "2026-07-30T15:43:16.002990+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "00060",
+     "qualifier": null,
+     "statistic_id": "00003",
+     "time": "2025-12-26",
+     "time_series_id": "90a0ea0b6d99431e9f3d91da1aa49564",
+     "unit_of_measure": "ft^3/s",
+     "value": "20.2"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "00de6719-2079-4dfe-a489-85fa6d5c7adc",
+    "properties": {
+     "approval_status": "Provisional",
+     "last_modified": "2026-07-30T15:43:16.002990+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "00060",
+     "qualifier": null,
+     "statistic_id": "00003",
+     "time": "2026-03-19",
+     "time_series_id": "90a0ea0b6d99431e9f3d91da1aa49564",
+     "unit_of_measure": "ft^3/s",
+     "value": "27.1"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "field-measurements": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "0008112a-fc5c-422a-8c62-aaf56222da4d",
+    "properties": {
+     "approval_status": "Provisional",
+     "control_condition": null,
+     "day": 19,
+     "field_measurements_series_id": "086122bb-eab3-4b8d-8d6b-ae950508d969",
+     "field_visit_id": "513fca2f-4fc3-4311-e053-0100007fc781",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "measurement_rated": null,
+     "measuring_agency": "USGS",
+     "monitoring_location_id": "USGS-05427718",
+     "month": 6,
+     "observing_procedure": "Gage height, staff gage",
+     "observing_procedure_code": "Z",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "reading_type": "ReferencePrimary",
+     "time": "2014-06-19T16:00:27+00:00",
+     "time_of_day": "16:00:27+00:00",
+     "unit_of_measure": "ft",
+     "value": "3.14",
+     "vertical_datum": "None",
+     "year": 2014
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "002f0935-1faa-42a8-96ed-fe31ebc4e2d7",
+    "properties": {
+     "approval_status": "Approved",
+     "control_condition": "Clear",
+     "day": 1,
+     "field_measurements_series_id": "1d51bdc1-57cf-456b-b6b1-9ca27f1a7003",
+     "field_visit_id": "8115aa6f-ab7a-4a1c-b831-c98793bf0d34",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "measurement_rated": "Good",
+     "measuring_agency": "USGS",
+     "monitoring_location_id": "USGS-05427718",
+     "month": 11,
+     "observing_procedure": "Mid-section",
+     "observing_procedure_code": "Z",
+     "parameter_code": "00060",
+     "qualifier": null,
+     "reading_type": "Discharge",
+     "time": "2023-11-01T14:49:30+00:00",
+     "time_of_day": "14:49:30+00:00",
+     "unit_of_measure": "ft^3/s",
+     "value": "16.6",
+     "vertical_datum": "None",
+     "year": 2023
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "field-measurements-metadata": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "086122bb-eab3-4b8d-8d6b-ae950508d969",
+    "properties": {
+     "begin": "1989-10-19T18:45:00+00:00",
+     "end": "2026-07-24T16:39:00+00:00",
+     "id": "086122bb-eab3-4b8d-8d6b-ae950508d969",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "00065",
+     "parameter_description": "Gage height, feet",
+     "parameter_name": "Gage height",
+     "reading_type": "ReferencePrimary"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "1d51bdc1-57cf-456b-b6b1-9ca27f1a7003",
+    "properties": {
+     "begin": "1976-03-05T06:00:00+00:00",
+     "end": "2026-07-24T16:12:31+00:00",
+     "id": "1d51bdc1-57cf-456b-b6b1-9ca27f1a7003",
+     "last_modified": "2026-07-30T13:10:33.920488+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "00060",
+     "parameter_description": "Discharge, cubic feet per second",
+     "parameter_name": "Discharge",
+     "reading_type": "Discharge"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "latest-continuous": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -92.6863888888889,
+      40.2343333333333
+     ],
+     "type": "Point"
+    },
+    "id": "2ccf9208-befe-4486-9ce2-0c0e4cff7127",
+    "properties": {
+     "approval_status": "Provisional",
+     "last_modified": "2026-08-07T18:55:07.672769+00:00",
+     "monitoring_location_id": "USGS-06904500",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "statistic_id": "00011",
+     "time": "2026-08-07T18:45:00+00:00",
+     "time_series_id": "b36569a0067443ac9425e850a3ac7baa",
+     "unit_of_measure": "ft",
+     "value": "1.59"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -92.6863888888889,
+      40.2343333333333
+     ],
+     "type": "Point"
+    },
+    "id": "862137bb-d9e8-4e99-85a7-be2d82f5daa7",
+    "properties": {
+     "approval_status": "Provisional",
+     "last_modified": "2026-08-07T18:55:14.240081+00:00",
+     "monitoring_location_id": "USGS-06904500",
+     "parameter_code": "00060",
+     "qualifier": null,
+     "statistic_id": "00011",
+     "time": "2026-08-07T18:45:00+00:00",
+     "time_series_id": "627c17455f9e4a4286e1d75dde4d8470",
+     "unit_of_measure": "ft^3/s",
+     "value": "535"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "latest-daily": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "1b503a53-facf-481e-887e-45bd76ec767c",
+    "properties": {
+     "approval_status": "Approved",
+     "last_modified": "2026-03-26T19:36:34.788923+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "91061",
+     "qualifier": null,
+     "statistic_id": "00003",
+     "time": "2025-09-30",
+     "time_series_id": "700d785890bb413b97e812fbc1a7af3b",
+     "unit_of_measure": "lbs/day",
+     "value": "774"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "3e1c3600-69df-4c6f-a1a1-0eca2630906a",
+    "properties": {
+     "approval_status": "Approved",
+     "last_modified": "2026-03-26T16:00:14.421131+00:00",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "91060",
+     "qualifier": null,
+     "statistic_id": "00003",
+     "time": "2025-09-30",
+     "time_series_id": "0aa968f7d6494e2eb214d1829754532d",
+     "unit_of_measure": "lbs/day",
+     "value": "5.41"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "monitoring-locations": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -73.52955169969904,
+      41.04777271320483
+     ],
+     "type": "Point"
+    },
+    "id": "USGS-410252073314801",
+    "properties": {
+     "agency_code": "USGS",
+     "agency_name": "U.S. Geological Survey",
+     "altitude": 9.0,
+     "altitude_accuracy": 1.0,
+     "altitude_method_code": "N",
+     "altitude_method_name": "Interpolated from Digital Elevation Model",
+     "aquifer_code": "300NCBC",
+     "aquifer_type_code": null,
+     "basin_code": null,
+     "construction_date": "1955",
+     "contributing_drainage_area": null,
+     "country_code": "US",
+     "country_name": "United States of America",
+     "county_code": "190",
+     "county_name": "Western Connecticut Planning Region",
+     "depth_source_code": null,
+     "district_code": "09",
+     "drainage_area": null,
+     "hole_constructed_depth": null,
+     "horizontal_position_method_code": "M",
+     "horizontal_position_method_name": "Interpolated from map",
+     "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+     "horizontal_positional_accuracy_code": "S",
+     "hydrologic_unit_code": "011000060404",
+     "id": "USGS-410252073314801",
+     "minor_civil_division_code": "73070",
+     "monitoring_location_name": "CT-STM    2",
+     "monitoring_location_number": "410252073314801",
+     "national_aquifer_code": "N600NECRSN",
+     "original_horizontal_datum": "NAD27",
+     "original_horizontal_datum_name": "North American Datum of 1927",
+     "revision_created": null,
+     "revision_modified": null,
+     "revision_note": null,
+     "site_type": "Well",
+     "site_type_code": "GW",
+     "state_code": "09",
+     "state_name": "Connecticut",
+     "time_zone_abbreviation": "EST",
+     "uses_daylight_savings": "N",
+     "vertical_datum": "NAVD88",
+     "vertical_datum_name": "North American Vertical Datum of 1988",
+     "well_constructed_depth": 84.0
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -73.41899256198708,
+      41.04916115609651
+     ],
+     "type": "Point"
+    },
+    "id": "USGS-410257073251001",
+    "properties": {
+     "agency_code": "USGS",
+     "agency_name": "U.S. Geological Survey",
+     "altitude": 7.0,
+     "altitude_accuracy": 1.0,
+     "altitude_method_code": "N",
+     "altitude_method_name": "Interpolated from Digital Elevation Model",
+     "aquifer_code": "112TILL",
+     "aquifer_type_code": null,
+     "basin_code": null,
+     "construction_date": null,
+     "contributing_drainage_area": null,
+     "country_code": "US",
+     "country_name": "United States of America",
+     "county_code": "190",
+     "county_name": "Western Connecticut Planning Region",
+     "depth_source_code": "Z",
+     "district_code": "09",
+     "drainage_area": null,
+     "hole_constructed_depth": null,
+     "horizontal_position_method_code": "M",
+     "horizontal_position_method_name": "Interpolated from map",
+     "horizontal_positional_accuracy": "Accurate to + or - 1 sec.",
+     "horizontal_positional_accuracy_code": "S",
+     "hydrologic_unit_code": "020302030000",
+     "id": "USGS-410257073251001",
+     "minor_civil_division_code": "56060",
+     "monitoring_location_name": "CT-NW    35",
+     "monitoring_location_number": "410257073251001",
+     "national_aquifer_code": "N100GLCIAL",
+     "original_horizontal_datum": "NAD27",
+     "original_horizontal_datum_name": "North American Datum of 1927",
+     "revision_created": null,
+     "revision_modified": null,
+     "revision_note": null,
+     "site_type": "Well",
+     "site_type_code": "GW",
+     "state_code": "09",
+     "state_name": "Connecticut",
+     "time_zone_abbreviation": "EST",
+     "uses_daylight_savings": "N",
+     "vertical_datum": "NAVD88",
+     "vertical_datum_name": "North American Vertical Datum of 1988",
+     "well_constructed_depth": 12.0
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "observationIntervals": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -120.69176685,
+      48.32958017
+     ],
+     "type": "Point"
+    },
+    "properties": {
+     "country_code": "US",
+     "county_code": "007",
+     "data": [
+      {
+       "parameter_code": "00060",
+       "parent_statistic_id": "00003",
+       "parent_statistic_name": "Mean",
+       "parent_time_series_id": "9cca880dec4846ec8cbdd05f3e22603e",
+       "unit_of_measure": "ft^3/s",
+       "values": [
+        {
+         "approval_status": "approved",
+         "computation": "maximum",
+         "computation_id": "60a20c40-1fe5-49af-9ee8-182e4d578547",
+         "end_date": "2025-01-31",
+         "interval_type": "month",
+         "sample_count": 31,
+         "start_date": "2025-01-01",
+         "value": "333.0"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "maximum",
+         "computation_id": "d84e54b9-25a1-4e2d-9fba-7a6fb6945528",
+         "end_date": "2025-12-02",
+         "interval_type": "calendar_year",
+         "sample_count": 336,
+         "start_date": "2025-01-01",
+         "value": "5160.0"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "maximum",
+         "computation_id": "8af5b334-d05d-4463-9f36-166eb7a20f56",
+         "end_date": "2025-09-30",
+         "interval_type": "water_year",
+         "sample_count": 365,
+         "start_date": "2024-10-01",
+         "value": "5160.0"
+        }
+       ]
+      }
+     ],
+     "monitoring_location_id": "USGS-12451000",
+     "monitoring_location_name": "STEHEKIN RIVER AT STEHEKIN, WA",
+     "site_type": "Stream",
+     "site_type_code": "ST",
+     "state_code": "53"
+    },
+    "type": "Feature"
+   }
+  ],
+  "next": null,
+  "type": "FeatureCollection"
+ },
+ "observationNormals": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -120.69176685,
+      48.32958017
+     ],
+     "type": "Point"
+    },
+    "properties": {
+     "country_code": "US",
+     "county_code": "007",
+     "data": [
+      {
+       "parameter_code": "00060",
+       "parent_statistic_id": "00003",
+       "parent_statistic_name": "Mean",
+       "parent_time_series_id": "9cca880dec4846ec8cbdd05f3e22603e",
+       "unit_of_measure": "ft^3/s",
+       "values": [
+        {
+         "approval_status": "approved",
+         "computation": "arithmetic_mean",
+         "computation_id": "093b71cd-3770-4b1c-b713-681b85e87b00",
+         "sample_count": 104,
+         "time_of_year": "01-01",
+         "time_of_year_type": "day_of_year",
+         "value": "411.413"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "maximum",
+         "computation_id": "343e8aba-6e6c-46f2-93cf-ab4278e23d0c",
+         "sample_count": 104,
+         "time_of_year": "01-01",
+         "time_of_year_type": "day_of_year",
+         "value": "2500.0"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "median",
+         "computation_id": "8b5f9aa6-a9b6-43d7-a453-fa1c8355d867",
+         "sample_count": 104,
+         "time_of_year": "01-01",
+         "time_of_year_type": "day_of_year",
+         "value": "315.5"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "minimum",
+         "computation_id": "646ee498-04de-48f4-b2ff-bc7a7fe90514",
+         "sample_count": 104,
+         "time_of_year": "01-01",
+         "time_of_year_type": "day_of_year",
+         "value": "125.0"
+        },
+        {
+         "approval_status": "approved",
+         "computation": "percentile",
+         "computation_id": "b06b6eb7-6daa-4d99-a6ae-372d3900b323",
+         "percentiles": [
+          "5",
+          "10",
+          "25",
+          "50",
+          "75",
+          "90",
+          "95"
+         ],
+         "sample_count": 104,
+         "time_of_year": "01-01",
+         "time_of_year_type": "day_of_year",
+         "values": [
+          "150.75",
+          "176.5",
+          "231.25",
+          "315.5",
+          "519.25",
+          "662.0",
+          "1092.5"
+         ]
+        }
+       ]
+      }
+     ],
+     "monitoring_location_id": "USGS-12451000",
+     "monitoring_location_name": "STEHEKIN RIVER AT STEHEKIN, WA",
+     "site_type": "Stream",
+     "site_type_code": "ST",
+     "state_code": "53"
+    },
+    "type": "Feature"
+   }
+  ],
+  "next": null,
+  "type": "FeatureCollection"
+ },
+ "peaks": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -81.8808333333333,
+      29.0811111111111
+     ],
+     "type": "Point"
+    },
+    "id": "0086ea19-1bca-47a3-adc4-7c7b46802cdd",
+    "properties": {
+     "day": 6,
+     "last_modified": "2026-05-01T19:58:50.468810+00:00",
+     "monitoring_location_id": "USGS-02238500",
+     "month": 4,
+     "parameter_code": "00065",
+     "peak_since": null,
+     "qualifier": [
+      "GHNOTASSCPKQ"
+     ],
+     "time": "1970-04-06",
+     "time_of_day": "17:00:00+00:00",
+     "time_series_id": "e1a7644feb9741f790c736370e1d37d8",
+     "unit_of_measure": "ft",
+     "value": "49.98",
+     "water_year": 1970,
+     "year": 1970
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -81.8808333333333,
+      29.0811111111111
+     ],
+     "type": "Point"
+    },
+    "id": "00bddab2-237a-4a85-9140-536654040e8f",
+    "properties": {
+     "day": 11,
+     "last_modified": "2026-05-01T19:57:58.041777+00:00",
+     "monitoring_location_id": "USGS-02238500",
+     "month": 1,
+     "parameter_code": "00060",
+     "peak_since": null,
+     "qualifier": [
+      "REGULATED"
+     ],
+     "time": "1954-01-11",
+     "time_of_day": null,
+     "time_series_id": "a085297138aa44aa9fa70207f838cf3b",
+     "unit_of_measure": "ft^3/s",
+     "value": "1060",
+     "water_year": 1954,
+     "year": 1954
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "time-series-metadata": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "04585e9fb4ec467aafa86c7c0b3f1439",
+    "properties": {
+     "begin": "2013-10-01T06:00:00.000001",
+     "begin_utc": "2013-10-01T11:00:00+00:00",
+     "computation_identifier": "Decumulated",
+     "computation_period_identifier": "Points",
+     "data_gap_interval": "PT1H12M",
+     "end": "2025-10-01T05:45:00.000001",
+     "end_utc": "2025-10-01T10:45:00+00:00",
+     "hydrologic_unit_code": "070900020504",
+     "id": "04585e9fb4ec467aafa86c7c0b3f1439",
+     "last_modified": "2026-06-05T17:16:13.005607",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "00045",
+     "parameter_description": "Precipitation, total, inches",
+     "parameter_name": "Precipitation",
+     "parent_time_series_id": null,
+     "primary": "Primary",
+     "state_name": "Wisconsin",
+     "statistic_id": null,
+     "sublocation_identifier": null,
+     "thresholds": [],
+     "unit_of_measure": "in",
+     "web_description": null
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.35249999999999,
+      43.20888888888889
+     ],
+     "type": "Point"
+    },
+    "id": "0aa968f7d6494e2eb214d1829754532d",
+    "properties": {
+     "begin": "1990-10-01T00:00:00.000001",
+     "begin_utc": "1990-10-01T05:00:00+00:00",
+     "computation_identifier": "Mean",
+     "computation_period_identifier": "Daily",
+     "data_gap_interval": null,
+     "end": "2025-09-30T00:00:00.000001",
+     "end_utc": "2025-09-30T05:00:00+00:00",
+     "hydrologic_unit_code": "070900020504",
+     "id": "0aa968f7d6494e2eb214d1829754532d",
+     "last_modified": "2025-12-19T19:35:48.365292",
+     "monitoring_location_id": "USGS-05427718",
+     "parameter_code": "91060",
+     "parameter_description": "Orthophosphate, water, filtered, pounds per day",
+     "parameter_name": "Orthophosphate, diss",
+     "parent_time_series_id": null,
+     "primary": "Primary",
+     "state_name": "Wisconsin",
+     "statistic_id": "00003",
+     "sublocation_identifier": null,
+     "thresholds": [],
+     "unit_of_measure": "lbs/day",
+     "web_description": null
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ }
+}
