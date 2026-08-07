@@ -18,6 +18,14 @@ concurrency:
 jobs:
   docs:
     runs-on: ubuntu-latest
+    # A normal build is ~6 min, nearly all of it executing the example
+    # notebooks against live USGS services. The cap is well above that but far
+    # below the 6 h default, so a build that stops making progress -- a slow apt
+    # mirror, a service that never answers -- fails while the queue behind it is
+    # still short. Serialized runs (see ``concurrency`` above) queue rather than
+    # cancel, so an unbounded run blocks every later commit's docs, not just its
+    # own.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,7 +42,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[doc,nldi]
           ipython kernel install --name "python3" --user
-          sudo apt update -y && sudo apt install -y latexmk texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended dvipng pandoc
+          # pandoc only: nbsphinx shells out to it to convert notebook markdown
+          # cells, so the build fails without it. The TeX stack this used to
+          # install alongside it (latexmk, texlive-*, dvipng -- ~266 MB) is not
+          # reachable from an HTML build: no math extension is configured and
+          # nothing renders math to images, so it was downloaded and never run.
+          # It was also the whole tail risk -- 127 packages off one apt mirror,
+          # which on a bad day delivered 314 MB at 37 KB/s and turned a 6 min
+          # build into 150 min. Restore it only alongside a builder that needs
+          # it (``latexpdf``), not for HTML.
+          sudo apt update -y && sudo apt install -y pandoc
           (cd docs && make html)
       - name: Debug
         run: |
