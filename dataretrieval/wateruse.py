@@ -61,6 +61,15 @@ from dataretrieval.transport.retry import RetryPolicy, retry_async
 from dataretrieval.transport.sync import run_sync
 from dataretrieval.utils import BaseMetadata, _raise_for_status, to_str
 
+__all__ = [
+    "get_wateruse",
+    "WATERUSE_URL",
+    "MODELS",
+    "TIME_RESOLUTIONS",
+    "MAX_CONCURRENT_REQUESTS",
+]
+
+
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
 _WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
 # Hosts a ``rel="next"`` cursor may name for this same service; each is

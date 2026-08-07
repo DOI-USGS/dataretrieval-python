@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import functools
 import sys
 from pathlib import Path
 
@@ -29,7 +30,6 @@ _ENGINE_REQUEST_IMPORTS = {
     "_NO_NORMALIZE_PARAMS",
     "_as_str_list",
     "_check_monitoring_location_id",
-    "_check_ogc_requests",
     "_construct_api_requests",
     "_construct_cql_request",
     "_cql2_param",
@@ -38,7 +38,6 @@ _ENGINE_REQUEST_IMPORTS = {
     "_normalize_str_iterable",
     "_ogc_base_url",
     "_ogc_query_params",
-    "_row_cap",
     "_switch_arg_id",
     "_switch_properties_id",
     "prepare_request_args",
@@ -103,6 +102,7 @@ class _RuntimeImportVisitor(ast.NodeVisitor):
         self.modules.update(_resolve_from(self.current_module, self.path, node))
 
 
+@functools.cache
 def _runtime_imports(path: Path) -> set[str]:
     module = _module_name(path)
     visitor = _RuntimeImportVisitor(module, path)
@@ -110,11 +110,25 @@ def _runtime_imports(path: Path) -> set[str]:
     return visitor.modules
 
 
+# Both are pure over an unchanging tree and are called from a dozen places;
+# without caching the suite re-parses every package file on each call.
+@functools.cache
 def _package_import_graph() -> dict[str, set[str]]:
     return {
         _module_name(path): _runtime_imports(path)
         for path in sorted(PACKAGE_ROOT.rglob("*.py"))
     }
+
+
+def _literal_exports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            return set(ast.literal_eval(node.value))
+    raise AssertionError(f"{path.relative_to(PACKAGE_ROOT.parent)} has no __all__")
 
 
 def test_exceptions_has_no_runtime_third_party_dependency() -> None:
@@ -291,24 +305,12 @@ def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
         "dataretrieval.ogc.shaping",
     }, f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
 
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    exports: set[str] | None = None
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if any(
-            isinstance(target, ast.Name) and target.id == "__all__"
-            for target in node.targets
-        ):
-            exports = set(ast.literal_eval(node.value))
-            break
-    assert exports is not None, "waterdata.utils must declare its intentional exports"
+    exports = _literal_exports(path)
 
     old_reexports = {
         "GEOPANDAS",
         "_as_str_list",
         "_check_monitoring_location_id",
-        "_check_ogc_requests",
         "_construct_api_requests",
         "_construct_cql_request",
         "_default_headers",
@@ -489,3 +491,230 @@ def test_transport_runtime_graph_is_acyclic() -> None:
 
     for module in graph:
         visit(module, ())
+
+
+# --- Adapter structure and public export boundaries ---
+
+_EXPECTED_MODULE_EXPORTS = {
+    "ngwmn.py": {
+        "get_sites",
+        "get_water_level",
+        "get_lithology",
+        "get_well_construction",
+        "get_providers",
+    },
+    "nldi.py": {
+        "get_flowlines",
+        "get_basin",
+        "get_features",
+        "get_features_by_data_source",
+        "search",
+    },
+    "streamstats.py": {
+        "download_workspace",
+        "get_sample_watershed",
+        "get_watershed",
+        "Watershed",
+    },
+    "wateruse.py": {
+        "get_wateruse",
+        "WATERUSE_URL",
+        "MODELS",
+        "TIME_RESOLUTIONS",
+        "MAX_CONCURRENT_REQUESTS",
+    },
+    "wqp.py": {
+        "get_results",
+        "what_sites",
+        "what_organizations",
+        "what_projects",
+        "what_activities",
+        "what_detection_limits",
+        "what_habitat_metrics",
+        "what_project_weights",
+        "what_activity_metrics",
+        "wqp_url",
+        "wqx3_url",
+        "WQP_Metadata",
+    },
+    "waterdata/time_series.py": {
+        "get_daily",
+        "get_continuous",
+        "get_latest_continuous",
+        "get_latest_daily",
+        "get_stats_por",
+        "get_stats_date_range",
+    },
+    "waterdata/metadata.py": {
+        "get_monitoring_locations",
+        "get_time_series_metadata",
+        "get_combined_metadata",
+        "get_field_measurements_metadata",
+    },
+    "waterdata/measurements.py": {
+        "get_field_measurements",
+        "get_peaks",
+        "get_channel",
+    },
+    "waterdata/reference.py": {"get_reference_table", "get_queryables"},
+    "waterdata/samples.py": {"get_codes", "get_samples", "get_samples_summary"},
+    "waterdata/cql.py": {"get_cql"},
+    "waterdata/ratings.py": {"get_ratings"},
+    "waterdata/nearest.py": {"get_nearest_continuous"},
+    "waterdata/stats.py": {"get_data"},
+    "waterdata/types.py": {
+        "CODE_SERVICES",
+        "METADATA_COLLECTIONS",
+        "SERVICES",
+        "WATERDATA_SERVICES",
+        "PROFILES",
+        "PROFILE_LOOKUP",
+    },
+}
+
+
+# The six collection-family modules the ``waterdata.api`` facade re-exports.
+_WATERDATA_FAMILIES = (
+    "waterdata/time_series.py",
+    "waterdata/metadata.py",
+    "waterdata/measurements.py",
+    "waterdata/reference.py",
+    "waterdata/samples.py",
+    "waterdata/cql.py",
+)
+
+
+def test_active_service_exports_are_explicit_and_stable() -> None:
+    for relative, expected in _EXPECTED_MODULE_EXPORTS.items():
+        assert _literal_exports(PACKAGE_ROOT / relative) == expected, relative
+
+
+def test_api_facade_exports_exactly_the_family_union() -> None:
+    """The facade re-exports every family getter and invents none of its own.
+
+    Derived rather than frozen: a hardcoded copy of the union is 19 more strings
+    to edit per new getter, and it would still pass if a family gained an export
+    the facade forgot to re-export -- the one thing worth catching here.
+    """
+    families = set().union(*(_EXPECTED_MODULE_EXPORTS[f] for f in _WATERDATA_FAMILIES))
+    assert _literal_exports(PACKAGE_ROOT / "waterdata/api.py") == families
+
+
+def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
+    """The facade re-exports; it does not run anything.
+
+    Statement *kinds* are checked, not just ``def``/``class``. Scanning for
+    definitions alone let a module-level ``for`` loop live here that rewrote
+    every re-exported getter's ``__module__`` -- code owned by the family
+    modules, mutated from a file certified "logic-free". A docstring, imports,
+    and plain assignments are the whole legitimate vocabulary of a facade.
+    """
+    path = PACKAGE_ROOT / "waterdata" / "api.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    allowed = (ast.Import, ast.ImportFrom, ast.Assign, ast.AnnAssign)
+    offenders = [
+        f"line {node.lineno}: {type(node).__name__}"
+        for node in tree.body
+        if not isinstance(node, allowed)
+        and not (
+            isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+        )  # the module docstring
+    ]
+    assert not offenders, f"waterdata.api contains implementation: {offenders}"
+
+
+def test_waterdata_collection_families_do_not_import_each_other() -> None:
+    """Families share through Water Data policy, OGC, and transport -- not laterally.
+
+    A "family" is a module the ``waterdata.api`` facade re-exports from, so the
+    set comes from :data:`_WATERDATA_FAMILIES` rather than being restated. That
+    list is self-enforcing: a seventh family the facade re-exports must be added
+    to ``_EXPECTED_MODULE_EXPORTS`` or ``test_api_facade_exports_exactly_the_
+    family_union`` fails, and it lands here on the same edit.
+
+    Composed getters like ``nearest`` are deliberately outside it. They are not
+    peers of a family; ``get_nearest_continuous`` builds on ``get_continuous``,
+    which is ordinary layering rather than a lateral reach.
+    """
+    graph = _package_import_graph()
+    families = {
+        "dataretrieval." + relative.removesuffix(".py").replace("/", ".")
+        for relative in _WATERDATA_FAMILIES
+    }
+    violations = []
+    for module in sorted(families):
+        for dependency in graph[module]:
+            if dependency in families and dependency != module:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Lateral collection-family imports:\n" + "\n".join(
+        violations
+    )
+
+
+def test_service_adapters_do_not_reach_through_each_other() -> None:
+    # Every active service; NWIS is excluded because its deprecation is governed
+    # by its own fitness function.
+    adapters = set(_SERVICE_PREFIXES) - {"dataretrieval.nwis"}
+
+    def owner(name: str) -> str | None:
+        """The adapter ``name`` belongs to, or None if it is shared code."""
+        return next(
+            (a for a in adapters if name == a or name.startswith(a + ".")),
+            None,
+        )
+
+    violations: list[str] = []
+    for module, imports in _package_import_graph().items():
+        source = owner(module)
+        if source is None:
+            continue
+        for dependency in imports:
+            target = owner(dependency)
+            if target is not None and target != source:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Adapter-to-adapter imports:\n" + "\n".join(
+        sorted(set(violations))
+    )
+
+
+def test_ogc_request_construction_does_not_execute_http() -> None:
+    """Building a request may borrow header policy, never the executing calls.
+
+    Two assertions, because the first alone was once true while the rule was
+    broken: ``requests.py`` imported ``ogc.schema`` purely to forward a name,
+    and ``ogc.schema`` calls ``transport.http.get`` -- so constructing a request
+    dragged in the executing path with this test still green.
+
+    The edge is named explicitly rather than checked over the transitive graph.
+    A closure from ``ogc.requests`` reaches the whole package, because
+    ``transport.retry`` imports ``dataretrieval`` for the progress reporter and
+    the package ``__init__`` imports every service; a rule stated that way would
+    be either vacuous or a list of exceptions.
+    """
+    path = PACKAGE_ROOT / "ogc" / "requests.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    transport_names = {
+        alias.name
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "dataretrieval.transport.http"
+        for alias in node.names
+    }
+    assert transport_names == {"default_headers"}, (
+        f"ogc.requests imports executing transport helpers: {sorted(transport_names)}"
+    )
+    assert "dataretrieval.ogc.schema" not in _runtime_imports(path), (
+        "ogc.requests imports ogc.schema, which executes HTTP; import the schema "
+        "helper from ogc.schema at its point of use instead of forwarding it here"
+    )
+
+
+def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
+    """``_deal_with_empty`` names columns from the collection schema.
+
+    That is a real network call on an empty result, so the dependency is worth
+    pinning deliberately rather than leaving it to be removed as dead weight.
+    """
+    assert "dataretrieval.ogc.schema" in _runtime_imports(
+        PACKAGE_ROOT / "ogc" / "shaping.py"
+    )

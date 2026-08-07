@@ -11,7 +11,10 @@ from typing import Any, Literal, get_args
 import pandas as pd
 
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.waterdata.api import get_continuous
+from dataretrieval.waterdata.time_series import get_continuous
+
+__all__ = ["get_nearest_continuous"]
+
 
 OnTie = Literal["first", "last", "mean"]
 _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
