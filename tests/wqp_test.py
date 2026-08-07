@@ -121,35 +121,48 @@ def test_get_results_WQX3(httpx_mock):
 
 # Every WQP ``what_*`` wrapper issues the same query against its own service
 # endpoint and returns the parsed DataFrame + metadata; they differ only by the
-# service path segment, the response fixture, and the expected size.
+# service path segment and the response fixture. Each case names one column that
+# is unique to that service's profile, which is what distinguishes "parsed the
+# right response" from a row count -- a count only says the fixture has not been
+# re-captured, and pinning one made the fixtures grow to tens of megabytes.
 _WHAT_CASES = [
-    (what_sites, "Station", "wqp_sites.txt", 239868),
-    (what_organizations, "Organization", "wqp_organizations.txt", 576),
-    (what_projects, "Project", "wqp_projects.txt", 530),
-    (what_activities, "Activity", "wqp_activities.txt", 5087443),
+    (what_sites, "Station", "wqp_sites.txt", "MonitoringLocationIdentifier"),
+    (what_organizations, "Organization", "wqp_organizations.txt", "OrganizationType"),
+    (what_projects, "Project", "wqp_projects.txt", "ProjectName"),
+    (what_activities, "Activity", "wqp_activities.txt", "ActivityTypeCode"),
     (
         what_detection_limits,
         "ResultDetectionQuantitationLimit",
         "wqp_detection_limits.txt",
-        98770,
+        "DetectionQuantitationLimitTypeName",
     ),
-    (what_habitat_metrics, "BiologicalMetric", "wqp_habitat_metrics.txt", 48114),
+    (
+        what_habitat_metrics,
+        "BiologicalMetric",
+        "wqp_habitat_metrics.txt",
+        "IndexTypeName",
+    ),
     (
         what_project_weights,
         "ProjectMonitoringLocationWeighting",
         "wqp_project_weights.txt",
-        33098,
+        "StatisticalStratumText",
     ),
-    (what_activity_metrics, "ActivityMetric", "wqp_activity_metrics.txt", 378),
+    (
+        what_activity_metrics,
+        "ActivityMetric",
+        "wqp_activity_metrics.txt",
+        "ActivityMetricType/MetricTypeName",
+    ),
 ]
 
 
 @pytest.mark.parametrize(
-    "func, service, fixture, size",
+    "func, service, fixture, profile_column",
     _WHAT_CASES,
     ids=[case[0].__name__ for case in _WHAT_CASES],
 )
-def test_what_query(httpx_mock, func, service, fixture, size):
+def test_what_query(httpx_mock, func, service, fixture, profile_column):
     """Each WQP ``what_*`` wrapper hits its own service endpoint and returns the
     parsed DataFrame + metadata."""
     request_url = (
@@ -159,7 +172,8 @@ def test_what_query(httpx_mock, func, service, fixture, size):
     mock_request(httpx_mock, request_url, f"tests/data/{fixture}")
     df, md = func(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
-    assert df.size == size
+    assert not df.empty
+    assert profile_column in df.columns
     _assert_wqp_metadata(md, request_url)
 
 

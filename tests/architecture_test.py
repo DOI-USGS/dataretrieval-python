@@ -26,22 +26,11 @@ _ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
     "dataretrieval.ngwmn": {"dataretrieval.ogc"},
 }
 
-_ENGINE_REQUEST_IMPORTS = {
-    "_NO_NORMALIZE_PARAMS",
-    "_as_str_list",
-    "_check_monitoring_location_id",
-    "_construct_api_requests",
-    "_construct_cql_request",
-    "_cql2_param",
-    "_dialect",
-    "_get_args",
-    "_normalize_str_iterable",
-    "_ogc_base_url",
-    "_ogc_query_params",
-    "_switch_arg_id",
-    "_switch_properties_id",
-    "prepare_request_args",
-}
+#: How many names ``ogc.engine`` may import from ``ogc.requests``. A ceiling
+#: rather than an exact name list: the claim being enforced is "the legacy
+#: compatibility surface does not grow", and a name list also fails on every
+#: rename and every deletion -- neither of which grows anything.
+_MAX_ENGINE_REQUEST_IMPORTS = 14
 
 
 def _module_name(path: Path) -> str:
@@ -196,8 +185,14 @@ def test_top_level_ogc_consumers_match_documented_variances() -> None:
     )
 
 
-def test_engine_request_import_surface_is_frozen() -> None:
-    """Engine may preserve legacy request names but may not grow a new hub."""
+def test_engine_request_import_surface_does_not_grow() -> None:
+    """Engine may preserve legacy request names but may not grow a new hub.
+
+    Each name here is either used by engine's own code or re-exported purely so
+    an old import path keeps working. Both are capped: a re-export that nothing
+    imports is dead weight, and a used name past the cap means request
+    construction is migrating back into engine.
+    """
     path = PACKAGE_ROOT / "ogc" / "engine.py"
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     imported = {
@@ -207,10 +202,19 @@ def test_engine_request_import_surface_is_frozen() -> None:
         and node.module == "dataretrieval.ogc.requests"
         for alias in node.names
     }
-    assert imported == _ENGINE_REQUEST_IMPORTS, (
-        "ogc.engine request imports changed; use the canonical requests module "
-        "instead of expanding compatibility exports.\n"
-        f"expected={sorted(_ENGINE_REQUEST_IMPORTS)}\nobserved={sorted(imported)}"
+    assert len(imported) <= _MAX_ENGINE_REQUEST_IMPORTS, (
+        "ogc.engine imports more request names than before; use the canonical "
+        "requests module instead of expanding compatibility exports.\n"
+        f"limit={_MAX_ENGINE_REQUEST_IMPORTS}\nobserved={sorted(imported)}"
+    )
+    # Every imported name must resolve in ``requests``; a stale re-export of a
+    # name that moved or was deleted is an ImportError waiting for the first
+    # caller of the compatibility path.
+    from dataretrieval.ogc import requests as ogc_requests
+
+    missing = sorted(name for name in imported if not hasattr(ogc_requests, name))
+    assert not missing, (
+        f"ogc.engine re-exports names ogc.requests no longer has: {missing}"
     )
 
 
@@ -495,85 +499,28 @@ def test_transport_runtime_graph_is_acyclic() -> None:
 
 # --- Adapter structure and public export boundaries ---
 
-_EXPECTED_MODULE_EXPORTS = {
-    "ngwmn.py": {
-        "get_sites",
-        "get_water_level",
-        "get_lithology",
-        "get_well_construction",
-        "get_providers",
-    },
-    "nldi.py": {
-        "get_flowlines",
-        "get_basin",
-        "get_features",
-        "get_features_by_data_source",
-        "search",
-    },
-    "streamstats.py": {
-        "download_workspace",
-        "get_sample_watershed",
-        "get_watershed",
-        "Watershed",
-    },
-    "wateruse.py": {
-        "get_wateruse",
-        "WATERUSE_URL",
-        "MODELS",
-        "TIME_RESOLUTIONS",
-        "MAX_CONCURRENT_REQUESTS",
-    },
-    "wqp.py": {
-        "get_results",
-        "what_sites",
-        "what_organizations",
-        "what_projects",
-        "what_activities",
-        "what_detection_limits",
-        "what_habitat_metrics",
-        "what_project_weights",
-        "what_activity_metrics",
-        "wqp_url",
-        "wqx3_url",
-        "WQP_Metadata",
-    },
-    "waterdata/time_series.py": {
-        "get_daily",
-        "get_continuous",
-        "get_latest_continuous",
-        "get_latest_daily",
-        "get_stats_por",
-        "get_stats_date_range",
-    },
-    "waterdata/metadata.py": {
-        "get_monitoring_locations",
-        "get_time_series_metadata",
-        "get_combined_metadata",
-        "get_field_measurements_metadata",
-    },
-    "waterdata/measurements.py": {
-        "get_field_measurements",
-        "get_peaks",
-        "get_channel",
-    },
-    "waterdata/reference.py": {"get_reference_table", "get_queryables"},
-    "waterdata/samples.py": {"get_codes", "get_samples", "get_samples_summary"},
-    "waterdata/cql.py": {"get_cql"},
-    "waterdata/ratings.py": {"get_ratings"},
-    "waterdata/nearest.py": {"get_nearest_continuous"},
-    "waterdata/stats.py": {"get_data"},
-    "waterdata/types.py": {
-        "CODE_SERVICES",
-        "METADATA_COLLECTIONS",
-        "SERVICES",
-        "WATERDATA_SERVICES",
-        "PROFILES",
-        "PROFILE_LOOKUP",
-    },
-}
+#: The modules whose public surface must be declared, not inferred. This is a
+#: list of *files*, not of names: naming the expected exports too would restate
+#: every getter a third time and fail on renames, which break no boundary.
+_EXPLICIT_EXPORT_MODULES = (
+    "ngwmn.py",
+    "nldi.py",
+    "streamstats.py",
+    "wateruse.py",
+    "wqp.py",
+    "waterdata/cql.py",
+    "waterdata/measurements.py",
+    "waterdata/metadata.py",
+    "waterdata/nearest.py",
+    "waterdata/ratings.py",
+    "waterdata/reference.py",
+    "waterdata/samples.py",
+    "waterdata/stats.py",
+    "waterdata/time_series.py",
+    "waterdata/types.py",
+)
 
-
-# The six collection-family modules the ``waterdata.api`` facade re-exports.
+# The collection-family modules the ``waterdata.api`` facade re-exports.
 _WATERDATA_FAMILIES = (
     "waterdata/time_series.py",
     "waterdata/metadata.py",
@@ -584,19 +531,63 @@ _WATERDATA_FAMILIES = (
 )
 
 
-def test_active_service_exports_are_explicit_and_stable() -> None:
-    for relative, expected in _EXPECTED_MODULE_EXPORTS.items():
-        assert _literal_exports(PACKAGE_ROOT / relative) == expected, relative
+def _top_level_definitions(path: Path) -> set[str]:
+    """Names bound at module scope by a def, class, or assignment."""
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    defined: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            defined.add(node.name)
+        elif isinstance(node, ast.Assign):
+            defined.update(
+                target.id for target in node.targets if isinstance(target, ast.Name)
+            )
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            defined.add(node.target.id)
+    return defined
+
+
+def test_active_service_exports_are_explicit() -> None:
+    """Every service module declares ``__all__`` and exports only its own names.
+
+    ``_literal_exports`` raises when ``__all__`` is missing, so the call is the
+    first assertion. The second is what keeps these modules from becoming
+    re-export hubs: a name in ``__all__`` that the module does not define came
+    from somewhere else, and now has two public homes that can drift apart.
+    """
+    for relative in _EXPLICIT_EXPORT_MODULES:
+        path = PACKAGE_ROOT / relative
+        exports = _literal_exports(path)
+        assert exports, f"{relative} declares an empty __all__"
+        borrowed = sorted(exports - _top_level_definitions(path))
+        assert not borrowed, (
+            f"{relative} re-exports names it does not define: {borrowed}"
+        )
+
+
+def test_each_family_getter_has_exactly_one_home() -> None:
+    """A getter exported by two family modules would give callers two import
+    paths that can diverge, and makes the facade's union ambiguous."""
+    seen: dict[str, str] = {}
+    for relative in _WATERDATA_FAMILIES:
+        for name in _literal_exports(PACKAGE_ROOT / relative):
+            assert name not in seen, (
+                f"{name} is exported by both {seen[name]} and {relative}"
+            )
+            seen[name] = relative
 
 
 def test_api_facade_exports_exactly_the_family_union() -> None:
     """The facade re-exports every family getter and invents none of its own.
 
-    Derived rather than frozen: a hardcoded copy of the union is 19 more strings
-    to edit per new getter, and it would still pass if a family gained an export
-    the facade forgot to re-export -- the one thing worth catching here.
+    Derived from the families' own ``__all__`` rather than a frozen copy: a
+    hardcoded union is 19 more strings to edit per new getter, and it would still
+    pass if a family gained an export the facade forgot to re-export -- the one
+    thing worth catching here.
     """
-    families = set().union(*(_EXPECTED_MODULE_EXPORTS[f] for f in _WATERDATA_FAMILIES))
+    families = set().union(
+        *(_literal_exports(PACKAGE_ROOT / f) for f in _WATERDATA_FAMILIES)
+    )
     assert _literal_exports(PACKAGE_ROOT / "waterdata/api.py") == families
 
 

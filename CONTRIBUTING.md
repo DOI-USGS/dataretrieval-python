@@ -92,6 +92,25 @@ Before you submit a pull request, check that it meets these guidelines:
    [architecture documentation](docs/source/architecture/index.rst), add or
    supersede an ADR, and adjust the corresponding fitness function.
 
+### Running the Tests
+
+`pytest tests/` runs the whole suite offline: every HTTP call is mocked, so a
+test run neither depends on USGS uptime nor spends anyone's rate limit.
+
+The exception is a small set of tests marked `live`, which query the real
+services to notice when an upstream API changes shape -- something a mock cannot
+tell us, because the mock is what would need updating. They are deselected by
+default and run on a nightly schedule
+([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
+Run them locally with:
+
+```bash
+pytest tests/ -m live
+```
+
+New tests should be offline. Reach for `live` only when the assertion is a claim
+about the upstream service rather than about this package.
+
 ### Coding Standards and Style
 
 The continuous integration and pre-commit configurations enforce formatting,

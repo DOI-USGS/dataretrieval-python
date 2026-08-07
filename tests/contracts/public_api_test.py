@@ -1,9 +1,18 @@
-"""Public import, export, and signature contracts for Water Data."""
-# ruff: noqa: E501
+"""Public import, export, and signature contracts for Water Data.
+
+These assert *properties* of the signatures rather than their rendered text. A
+character-exact ``str(inspect.signature(f))`` snapshot fails on every parameter
+rename, reorder, and annotation reflow -- changes that break no caller -- while
+passing the one thing that does break callers: a new required argument, since
+adding one changes the text the snapshot would have to be updated to anyway. The
+properties below fail on the breaking changes and stay quiet for the rest.
+"""
 
 from __future__ import annotations
 
 import inspect
+
+import pytest
 
 from dataretrieval import waterdata
 from dataretrieval.waterdata import api
@@ -39,247 +48,135 @@ _EXPECTED_WATERDATA_ALL = [
     "get_time_series_metadata",
 ]
 
-_EXPECTED_SIGNATURES = {
-    "get_channel": "(monitoring_location_id: 'str | Iterable[str] | None' = None, field_visit_id: 'str | Iterable[str] | "
-    "None' = None, measurement_number: 'str | Iterable[str] | None' = None, time: 'str | Iterable[str] | "
-    "None' = None, channel_name: 'str | Iterable[str] | None' = None, channel_flow: 'str | Iterable[str] | "
-    "None' = None, channel_flow_unit: 'str | Iterable[str] | None' = None, channel_width: 'str | "
-    "Iterable[str] | None' = None, channel_width_unit: 'str | Iterable[str] | None' = None, channel_area: "
-    "'str | Iterable[str] | None' = None, channel_area_unit: 'str | Iterable[str] | None' = None, "
-    "channel_velocity: 'str | Iterable[str] | None' = None, channel_velocity_unit: 'str | Iterable[str] | "
-    "None' = None, channel_location_distance: 'str | Iterable[str] | None' = None, "
-    "channel_location_distance_unit: 'str | Iterable[str] | None' = None, channel_stability: 'str | "
-    "Iterable[str] | None' = None, channel_material: 'str | Iterable[str] | None' = None, "
-    "channel_evenness: 'str | Iterable[str] | None' = None, horizontal_velocity_description: 'str | "
-    "Iterable[str] | None' = None, vertical_velocity_description: 'str | Iterable[str] | None' = None, "
-    "longitudinal_velocity_description: 'str | Iterable[str] | None' = None, measurement_type: 'str | "
-    "Iterable[str] | None' = None, last_modified: 'str | Iterable[str] | None' = None, "
-    "channel_measurement_type: 'str | Iterable[str] | None' = None, properties: 'str | Iterable[str] | "
-    "None' = None, skip_geometry: 'bool | None' = None, bbox: 'list[float] | None' = None, limit: 'int | "
-    "None' = None, filter: 'str | None' = None, filter_lang: 'FILTER_LANG | None' = None, convert_type: "
-    "'bool' = True, max_rows: 'int | None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, "
-    "BaseMetadata]'",
-    "get_codes": "(code_service: 'CODE_SERVICES') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_combined_metadata": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | "
-    "Iterable[str] | None' = None, parameter_name: 'str | Iterable[str] | None' = None, "
-    "parameter_description: 'str | Iterable[str] | None' = None, unit_of_measure: 'str | "
-    "Iterable[str] | None' = None, statistic_id: 'str | Iterable[str] | None' = None, data_type: "
-    "'str | Iterable[str] | None' = None, computation_identifier: 'str | Iterable[str] | None' = "
-    "None, thresholds: 'float | list[float] | None' = None, sublocation_identifier: 'str | "
-    "Iterable[str] | None' = None, primary: 'str | Iterable[str] | None' = None, "
-    "parent_time_series_id: 'str | Iterable[str] | None' = None, web_description: 'str | "
-    "Iterable[str] | None' = None, last_modified: 'str | Iterable[str] | None' = None, begin: "
-    "'str | Iterable[str] | None' = None, end: 'str | Iterable[str] | None' = None, agency_code: "
-    "'str | Iterable[str] | None' = None, agency_name: 'str | Iterable[str] | None' = None, "
-    "monitoring_location_number: 'str | Iterable[str] | None' = None, monitoring_location_name: "
-    "'str | Iterable[str] | None' = None, district_code: 'str | Iterable[str] | None' = None, "
-    "country_code: 'str | Iterable[str] | None' = None, country_name: 'str | Iterable[str] | "
-    "None' = None, state: 'str | Iterable[str] | None' = None, state_code: 'str | Iterable[str] "
-    "| None' = None, state_name: 'str | Iterable[str] | None' = None, county_code: 'str | "
-    "Iterable[str] | None' = None, county_name: 'str | Iterable[str] | None' = None, "
-    "minor_civil_division_code: 'str | Iterable[str] | None' = None, site_type_code: 'str | "
-    "Iterable[str] | None' = None, site_type: 'str | Iterable[str] | None' = None, "
-    "hydrologic_unit_code: 'str | Iterable[str] | None' = None, basin_code: 'str | Iterable[str] "
-    "| None' = None, altitude: 'str | Iterable[str] | None' = None, altitude_accuracy: 'str | "
-    "Iterable[str] | None' = None, altitude_method_code: 'str | Iterable[str] | None' = None, "
-    "altitude_method_name: 'str | Iterable[str] | None' = None, vertical_datum: 'str | "
-    "Iterable[str] | None' = None, vertical_datum_name: 'str | Iterable[str] | None' = None, "
-    "horizontal_positional_accuracy_code: 'str | Iterable[str] | None' = None, "
-    "horizontal_positional_accuracy: 'str | Iterable[str] | None' = None, "
-    "horizontal_position_method_code: 'str | Iterable[str] | None' = None, "
-    "horizontal_position_method_name: 'str | Iterable[str] | None' = None, "
-    "original_horizontal_datum: 'str | Iterable[str] | None' = None, "
-    "original_horizontal_datum_name: 'str | Iterable[str] | None' = None, drainage_area: 'str | "
-    "Iterable[str] | None' = None, contributing_drainage_area: 'str | Iterable[str] | None' = "
-    "None, time_zone_abbreviation: 'str | Iterable[str] | None' = None, uses_daylight_savings: "
-    "'str | Iterable[str] | None' = None, construction_date: 'str | Iterable[str] | None' = "
-    "None, aquifer_code: 'str | Iterable[str] | None' = None, national_aquifer_code: 'str | "
-    "Iterable[str] | None' = None, aquifer_type_code: 'str | Iterable[str] | None' = None, "
-    "well_constructed_depth: 'str | Iterable[str] | None' = None, hole_constructed_depth: 'str | "
-    "Iterable[str] | None' = None, depth_source_code: 'str | Iterable[str] | None' = None, "
-    "properties: 'str | Iterable[str] | None' = None, skip_geometry: 'bool | None' = None, bbox: "
-    "'list[float] | None' = None, limit: 'int | None' = None, filter: 'str | None' = None, "
-    "filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, max_rows: 'int | "
-    "None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_continuous": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | Iterable[str] "
-    "| None' = None, statistic_id: 'str | Iterable[str] | None' = None, properties: 'str | "
-    "Iterable[str] | None' = None, time_series_id: 'str | Iterable[str] | None' = None, continuous_id: "
-    "'str | Iterable[str] | None' = None, approval_status: 'str | Iterable[str] | None' = None, "
-    "unit_of_measure: 'str | Iterable[str] | None' = None, qualifier: 'str | Iterable[str] | None' = "
-    "None, value: 'str | Iterable[str] | None' = None, last_modified: 'str | Iterable[str] | None' = "
-    "None, time: 'str | Iterable[str] | None' = None, limit: 'int | None' = None, filter: 'str | None' "
-    "= None, filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, max_rows: 'int | "
-    "None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_cql": "(service: 'WATERDATA_SERVICES', cql: 'str | dict[str, Any]', *, properties: 'str | Iterable[str] | None' "
-    "= None, bbox: 'list[float] | None' = None, limit: 'int | None' = None, skip_geometry: 'bool | None' = "
-    "None, convert_type: 'bool' = True) -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_daily": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | Iterable[str] | "
-    "None' = None, statistic_id: 'str | Iterable[str] | None' = None, properties: 'str | Iterable[str] | "
-    "None' = None, time_series_id: 'str | Iterable[str] | None' = None, daily_id: 'str | Iterable[str] | "
-    "None' = None, approval_status: 'str | Iterable[str] | None' = None, unit_of_measure: 'str | "
-    "Iterable[str] | None' = None, qualifier: 'str | Iterable[str] | None' = None, value: 'str | "
-    "Iterable[str] | None' = None, last_modified: 'str | Iterable[str] | None' = None, skip_geometry: 'bool "
-    "| None' = None, time: 'str | Iterable[str] | None' = None, bbox: 'list[float] | None' = None, limit: "
-    "'int | None' = None, filter: 'str | None' = None, filter_lang: 'FILTER_LANG | None' = None, "
-    "convert_type: 'bool' = True, max_rows: 'int | None' = None, **queryables: 'Any') -> "
-    "'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_field_measurements": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | "
-    "Iterable[str] | None' = None, observing_procedure_code: 'str | Iterable[str] | None' = "
-    "None, properties: 'str | Iterable[str] | None' = None, field_visit_id: 'str | "
-    "Iterable[str] | None' = None, approval_status: 'str | Iterable[str] | None' = None, "
-    "unit_of_measure: 'str | Iterable[str] | None' = None, qualifier: 'str | Iterable[str] | "
-    "None' = None, value: 'str | Iterable[str] | None' = None, last_modified: 'str | "
-    "Iterable[str] | None' = None, observing_procedure: 'str | Iterable[str] | None' = None, "
-    "vertical_datum: 'str | Iterable[str] | None' = None, measuring_agency: 'str | "
-    "Iterable[str] | None' = None, skip_geometry: 'bool | None' = None, time: 'str | "
-    "Iterable[str] | None' = None, bbox: 'list[float] | None' = None, limit: 'int | None' = "
-    "None, filter: 'str | None' = None, filter_lang: 'FILTER_LANG | None' = None, convert_type: "
-    "'bool' = True, max_rows: 'int | None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, "
-    "BaseMetadata]'",
-    "get_field_measurements_metadata": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: "
-    "'str | Iterable[str] | None' = None, parameter_name: 'str | Iterable[str] | None' "
-    "= None, parameter_description: 'str | Iterable[str] | None' = None, begin: 'str | "
-    "Iterable[str] | None' = None, end: 'str | Iterable[str] | None' = None, "
-    "last_modified: 'str | Iterable[str] | None' = None, properties: 'str | "
-    "Iterable[str] | None' = None, skip_geometry: 'bool | None' = None, bbox: "
-    "'list[float] | None' = None, limit: 'int | None' = None, filter: 'str | None' = "
-    "None, filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, "
-    "max_rows: 'int | None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, "
-    "BaseMetadata]'",
-    "get_latest_continuous": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | "
-    "Iterable[str] | None' = None, statistic_id: 'str | Iterable[str] | None' = None, "
-    "properties: 'str | Iterable[str] | None' = None, time_series_id: 'str | Iterable[str] | "
-    "None' = None, latest_continuous_id: 'str | Iterable[str] | None' = None, approval_status: "
-    "'str | Iterable[str] | None' = None, unit_of_measure: 'str | Iterable[str] | None' = None, "
-    "qualifier: 'str | Iterable[str] | None' = None, value: 'str | Iterable[str] | None' = None, "
-    "last_modified: 'str | Iterable[str] | None' = None, skip_geometry: 'bool | None' = None, "
-    "time: 'str | Iterable[str] | None' = None, bbox: 'list[float] | None' = None, limit: 'int | "
-    "None' = None, filter: 'str | None' = None, filter_lang: 'FILTER_LANG | None' = None, "
-    "convert_type: 'bool' = True, max_rows: 'int | None' = None, **queryables: 'Any') -> "
-    "'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_latest_daily": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | "
-    "Iterable[str] | None' = None, statistic_id: 'str | Iterable[str] | None' = None, properties: "
-    "'str | Iterable[str] | None' = None, time_series_id: 'str | Iterable[str] | None' = None, "
-    "latest_daily_id: 'str | Iterable[str] | None' = None, approval_status: 'str | Iterable[str] | "
-    "None' = None, unit_of_measure: 'str | Iterable[str] | None' = None, qualifier: 'str | "
-    "Iterable[str] | None' = None, value: 'str | Iterable[str] | None' = None, last_modified: 'str | "
-    "Iterable[str] | None' = None, skip_geometry: 'bool | None' = None, time: 'str | Iterable[str] | "
-    "None' = None, bbox: 'list[float] | None' = None, limit: 'int | None' = None, filter: 'str | "
-    "None' = None, filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, max_rows: "
-    "'int | None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_monitoring_locations": "(monitoring_location_id: 'str | Iterable[str] | None' = None, agency_code: 'str | "
-    "Iterable[str] | None' = None, agency_name: 'str | Iterable[str] | None' = None, "
-    "monitoring_location_number: 'str | Iterable[str] | None' = None, "
-    "monitoring_location_name: 'str | Iterable[str] | None' = None, district_code: 'str | "
-    "Iterable[str] | None' = None, country_code: 'str | Iterable[str] | None' = None, "
-    "country_name: 'str | Iterable[str] | None' = None, state: 'str | Iterable[str] | None' = "
-    "None, state_code: 'str | Iterable[str] | None' = None, state_name: 'str | Iterable[str] "
-    "| None' = None, county_code: 'str | Iterable[str] | None' = None, county_name: 'str | "
-    "Iterable[str] | None' = None, minor_civil_division_code: 'str | Iterable[str] | None' = "
-    "None, site_type_code: 'str | Iterable[str] | None' = None, site_type: 'str | "
-    "Iterable[str] | None' = None, hydrologic_unit_code: 'str | Iterable[str] | None' = None, "
-    "basin_code: 'str | Iterable[str] | None' = None, altitude: 'str | Iterable[str] | None' "
-    "= None, altitude_accuracy: 'str | Iterable[str] | None' = None, altitude_method_code: "
-    "'str | Iterable[str] | None' = None, altitude_method_name: 'str | Iterable[str] | None' "
-    "= None, vertical_datum: 'str | Iterable[str] | None' = None, vertical_datum_name: 'str | "
-    "Iterable[str] | None' = None, horizontal_positional_accuracy_code: 'str | Iterable[str] "
-    "| None' = None, horizontal_positional_accuracy: 'str | Iterable[str] | None' = None, "
-    "horizontal_position_method_code: 'str | Iterable[str] | None' = None, "
-    "horizontal_position_method_name: 'str | Iterable[str] | None' = None, "
-    "original_horizontal_datum: 'str | Iterable[str] | None' = None, "
-    "original_horizontal_datum_name: 'str | Iterable[str] | None' = None, drainage_area: 'str "
-    "| Iterable[str] | None' = None, contributing_drainage_area: 'str | Iterable[str] | None' "
-    "= None, time_zone_abbreviation: 'str | Iterable[str] | None' = None, "
-    "uses_daylight_savings: 'str | Iterable[str] | None' = None, construction_date: 'str | "
-    "Iterable[str] | None' = None, aquifer_code: 'str | Iterable[str] | None' = None, "
-    "national_aquifer_code: 'str | Iterable[str] | None' = None, aquifer_type_code: 'str | "
-    "Iterable[str] | None' = None, well_constructed_depth: 'str | Iterable[str] | None' = "
-    "None, hole_constructed_depth: 'str | Iterable[str] | None' = None, depth_source_code: "
-    "'str | Iterable[str] | None' = None, properties: 'str | Iterable[str] | None' = None, "
-    "skip_geometry: 'bool | None' = None, bbox: 'list[float] | None' = None, limit: 'int | "
-    "None' = None, filter: 'str | None' = None, filter_lang: 'FILTER_LANG | None' = None, "
-    "convert_type: 'bool' = True, max_rows: 'int | None' = None, **queryables: 'Any') -> "
-    "'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_peaks": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | Iterable[str] | "
-    "None' = None, time_series_id: 'str | Iterable[str] | None' = None, unit_of_measure: 'str | "
-    "Iterable[str] | None' = None, time: 'str | Iterable[str] | None' = None, last_modified: 'str | "
-    "Iterable[str] | None' = None, water_year: 'int | list[int] | None' = None, year: 'int | list[int] | "
-    "None' = None, month: 'int | list[int] | None' = None, day: 'int | list[int] | None' = None, peak_since: "
-    "'int | list[int] | None' = None, properties: 'str | Iterable[str] | None' = None, skip_geometry: 'bool "
-    "| None' = None, bbox: 'list[float] | None' = None, limit: 'int | None' = None, filter: 'str | None' = "
-    "None, filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, max_rows: 'int | None' = "
-    "None, **queryables: 'Any') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_queryables": "(collection: 'str') -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_reference_table": "(collection: 'str', limit: 'int | None' = None, query: 'dict[str, Any] | None' = None, "
-    "max_rows: 'int | None' = None) -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_samples": "(ssl_check: 'bool' = True, service: 'SERVICES' = 'results', profile: 'PROFILES' = 'fullphyschem', "
-    "activity_media_name: 'str | Iterable[str] | None' = None, activity_start_date_lower: 'str | None' = "
-    "None, activity_start_date_upper: 'str | None' = None, activity_type_code: 'str | Iterable[str] | "
-    "None' = None, characteristic_group: 'str | Iterable[str] | None' = None, characteristic: 'str | "
-    "Iterable[str] | None' = None, characteristic_user_supplied: 'str | Iterable[str] | None' = None, "
-    "bbox: 'list[float] | None' = None, country_code: 'str | Iterable[str] | None' = None, state_code: "
-    "'str | Iterable[str] | None' = None, county_code: 'str | Iterable[str] | None' = None, "
-    "site_type_code: 'str | Iterable[str] | None' = None, site_type_name: 'str | Iterable[str] | None' = "
-    "None, usgs_pcode: 'str | Iterable[str] | None' = None, hydrologic_unit: 'str | Iterable[str] | None' "
-    "= None, monitoring_location_id: 'str | Iterable[str] | None' = None, organization_id: 'str | "
-    "Iterable[str] | None' = None, point_location_latitude: 'float | None' = None, "
-    "point_location_longitude: 'float | None' = None, point_location_within_miles: 'float | None' = None, "
-    "project_id: 'str | Iterable[str] | None' = None, record_identifier_user_supplied: 'str | "
-    "Iterable[str] | None' = None) -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_samples_summary": "(monitoring_location_id: 'str', ssl_check: 'bool' = True) -> 'tuple[pd.DataFrame, "
-    "BaseMetadata]'",
-    "get_stats_date_range": "(approval_status: 'str | None' = None, computation_type: 'str | Iterable[str] | None' = "
-    "None, country_code: 'str | Iterable[str] | None' = None, state: 'str | Iterable[str] | None' "
-    "= None, state_code: 'str | Iterable[str] | None' = None, county_code: 'str | Iterable[str] | "
-    "None' = None, start_date: 'str | None' = None, end_date: 'str | None' = None, "
-    "monitoring_location_id: 'str | Iterable[str] | None' = None, page_size: 'int' = 1000, "
-    "parent_time_series_id: 'str | Iterable[str] | None' = None, site_type_code: 'str | "
-    "Iterable[str] | None' = None, site_type_name: 'str | Iterable[str] | None' = None, "
-    "parameter_code: 'str | Iterable[str] | None' = None, interval_type: 'str | Iterable[str] | "
-    "None' = None, expand_percentiles: 'bool' = True) -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_stats_por": "(approval_status: 'str | None' = None, computation_type: 'str | Iterable[str] | None' = None, "
-    "country_code: 'str | Iterable[str] | None' = None, state: 'str | Iterable[str] | None' = None, "
-    "state_code: 'str | Iterable[str] | None' = None, county_code: 'str | Iterable[str] | None' = None, "
-    "start_date: 'str | None' = None, end_date: 'str | None' = None, monitoring_location_id: 'str | "
-    "Iterable[str] | None' = None, page_size: 'int' = 1000, parent_time_series_id: 'str | Iterable[str] "
-    "| None' = None, site_type_code: 'str | Iterable[str] | None' = None, site_type_name: 'str | "
-    "Iterable[str] | None' = None, parameter_code: 'str | Iterable[str] | None' = None, normal_type: "
-    "'str | None' = None, expand_percentiles: 'bool' = True) -> 'tuple[pd.DataFrame, BaseMetadata]'",
-    "get_time_series_metadata": "(monitoring_location_id: 'str | Iterable[str] | None' = None, parameter_code: 'str | "
-    "Iterable[str] | None' = None, parameter_name: 'str | Iterable[str] | None' = None, "
-    "properties: 'str | Iterable[str] | None' = None, statistic_id: 'str | Iterable[str] | "
-    "None' = None, hydrologic_unit_code: 'str | Iterable[str] | None' = None, state: 'str | "
-    "Iterable[str] | None' = None, state_name: 'str | Iterable[str] | None' = None, "
-    "last_modified: 'str | Iterable[str] | None' = None, begin: 'str | Iterable[str] | None' "
-    "= None, end: 'str | Iterable[str] | None' = None, begin_utc: 'str | Iterable[str] | "
-    "None' = None, end_utc: 'str | Iterable[str] | None' = None, unit_of_measure: 'str | "
-    "Iterable[str] | None' = None, computation_period_identifier: 'str | Iterable[str] | "
-    "None' = None, computation_identifier: 'str | Iterable[str] | None' = None, thresholds: "
-    "'float | list[float] | None' = None, sublocation_identifier: 'str | Iterable[str] | "
-    "None' = None, primary: 'str | Iterable[str] | None' = None, parent_time_series_id: 'str "
-    "| Iterable[str] | None' = None, time_series_id: 'str | Iterable[str] | None' = None, "
-    "web_description: 'str | Iterable[str] | None' = None, skip_geometry: 'bool | None' = "
-    "None, bbox: 'list[float] | None' = None, limit: 'int | None' = None, filter: 'str | "
-    "None' = None, filter_lang: 'FILTER_LANG | None' = None, convert_type: 'bool' = True, "
-    "max_rows: 'int | None' = None, **queryables: 'Any') -> 'tuple[pd.DataFrame, "
-    "BaseMetadata]'",
+#: Arguments a caller must supply positionally or by keyword. Adding an entry
+#: here is a breaking change to every existing call; that is the whole reason
+#: this mapping is written out instead of derived.
+_REQUIRED_ARGUMENTS = {
+    "get_channel": (),
+    "get_codes": ("code_service",),
+    "get_combined_metadata": (),
+    "get_continuous": (),
+    "get_cql": ("service", "cql"),
+    "get_daily": (),
+    "get_field_measurements": (),
+    "get_field_measurements_metadata": (),
+    "get_latest_continuous": (),
+    "get_latest_daily": (),
+    "get_monitoring_locations": (),
+    "get_peaks": (),
+    "get_queryables": ("collection",),
+    "get_reference_table": ("collection",),
+    "get_samples": (),
+    "get_samples_summary": ("monitoring_location_id",),
+    "get_stats_date_range": (),
+    "get_stats_por": (),
+    "get_time_series_metadata": (),
 }
+
+#: Defaults that are deliberately not ``None``. Every other optional parameter
+#: defaults to ``None``, which is how the request builder tells "caller omitted
+#: this" from "caller asked for this value" -- a non-``None`` default silently
+#: adds a filter to every query.
+_INTENTIONAL_DEFAULTS = {
+    "convert_type": True,
+    "expand_percentiles": True,
+    "page_size": 1000,
+    "profile": "fullphyschem",
+    "service": "results",
+    "ssl_check": True,
+}
+
+#: The parameters shared by every collection getter, independent of which
+#: queryables its collection happens to publish.
+_CROSS_CUTTING_PARAMETERS = (
+    "bbox",
+    "convert_type",
+    "filter",
+    "filter_lang",
+    "limit",
+    "max_rows",
+    "properties",
+    "skip_geometry",
+)
+
+#: The continuous endpoint returns no geometries, so it exposes neither the
+#: spatial filter nor the switch for dropping a geometry it never sends.
+_NO_GEOMETRY_PARAMETERS = {"get_continuous": {"bbox", "skip_geometry"}}
+
+
+def _collection_getters() -> list[str]:
+    """The getters that query an OGC collection, identified by the ``**queryables``
+    passthrough that only they have."""
+    return [
+        name
+        for name in api.__all__
+        if any(
+            parameter.kind is inspect.Parameter.VAR_KEYWORD
+            for parameter in inspect.signature(getattr(api, name)).parameters.values()
+        )
+    ]
 
 
 def test_waterdata_exports_are_stable() -> None:
     assert waterdata.__all__ == _EXPECTED_WATERDATA_ALL
-    # Derived from the signature snapshot below: one list to keep current,
-    # not two that can disagree about what the facade exports.
-    assert api.__all__ == list(_EXPECTED_SIGNATURES)
     assert all(hasattr(waterdata, name) for name in waterdata.__all__)
 
 
-def test_api_facade_preserves_function_contracts() -> None:
-    for name, expected_signature in _EXPECTED_SIGNATURES.items():
-        package_function = getattr(waterdata, name)
-        facade_function = getattr(api, name)
-        assert package_function is facade_function
-        assert str(inspect.signature(facade_function)) == expected_signature
+def test_facade_names_are_the_package_names() -> None:
+    """Both import paths must reach the same objects, or a caller that switched
+    paths gets different behavior from the same call."""
+    assert set(api.__all__) <= set(waterdata.__all__)
+    for name in api.__all__:
+        assert getattr(waterdata, name) is getattr(api, name)
+
+
+@pytest.mark.parametrize("name", api.__all__)
+def test_getter_returns_frame_and_metadata(name: str) -> None:
+    annotation = inspect.signature(getattr(api, name)).return_annotation
+    assert annotation == "tuple[pd.DataFrame, BaseMetadata]"
+
+
+@pytest.mark.parametrize("name", api.__all__)
+def test_every_parameter_is_annotated_and_keyword_callable(name: str) -> None:
+    """Positional-only parameters would make the keyword-argument style the
+    documentation and notebooks use a TypeError."""
+    for parameter in inspect.signature(getattr(api, name)).parameters.values():
+        assert parameter.annotation is not inspect.Parameter.empty, parameter.name
+        assert parameter.kind is not inspect.Parameter.POSITIONAL_ONLY, parameter.name
+
+
+@pytest.mark.parametrize("name", api.__all__)
+def test_required_arguments_have_not_grown(name: str) -> None:
+    parameters = inspect.signature(getattr(api, name)).parameters
+    required = tuple(
+        parameter.name
+        for parameter in parameters.values()
+        if parameter.default is inspect.Parameter.empty
+        and parameter.kind is not inspect.Parameter.VAR_KEYWORD
+    )
+    assert required == _REQUIRED_ARGUMENTS[name]
+
+
+@pytest.mark.parametrize("name", api.__all__)
+def test_optional_parameters_default_to_none(name: str) -> None:
+    for parameter in inspect.signature(getattr(api, name)).parameters.values():
+        if parameter.default is inspect.Parameter.empty or parameter.default is None:
+            continue
+        assert parameter.name in _INTENTIONAL_DEFAULTS, parameter.name
+        assert parameter.default == _INTENTIONAL_DEFAULTS[parameter.name]
+
+
+def test_collection_getters_share_the_cross_cutting_parameters() -> None:
+    getters = _collection_getters()
+    assert getters, "no collection getters found; the **queryables probe is stale"
+    for name in getters:
+        parameters = inspect.signature(getattr(api, name)).parameters
+        expected = set(_CROSS_CUTTING_PARAMETERS) - _NO_GEOMETRY_PARAMETERS.get(
+            name, set()
+        )
+        assert expected <= set(parameters), (
+            f"{name} is missing {sorted(expected - set(parameters))}"
+        )
 
 
 def test_api_private_samples_compatibility_names_remain() -> None:
