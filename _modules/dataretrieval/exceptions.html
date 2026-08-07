@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,7 +88,8 @@
 <span class="sd">of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest</span>
 <span class="sd">aren&#39;t a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
-<span class="sd">and :class:`NoSitesError`. :func:`error_for_status` maps a status to its type.</span>
+<span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
+<span class="sd">:func:`error_for_status` maps a status to its type.</span>
 
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
 <span class="sd">for type checking -- so any module can import it without pulling in pandas / httpx</span>
@@ -113,6 +114,7 @@
     <span class="s2">&quot;Unchunkable&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NetworkError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NoSitesError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ConfigurationError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error_for_status&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
@@ -341,6 +343,23 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<span class="c1"># --- Bad configuration ---------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="ConfigurationError">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.ConfigurationError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting -- an environment variable, a policy field --</span>
+<span class="sd">    holds a value that can&#39;t be used, so no request was issued.</span>
+
+<span class="sd">    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches</span>
+<span class="sd">    it rather than letting a bare ``ValueError`` escape a request path, and a</span>
+<span class="sd">    :class:`ValueError` so code that already treats a bad setting as one keeps</span>
+<span class="sd">    working.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 

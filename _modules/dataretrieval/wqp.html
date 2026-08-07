@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,7 +94,23 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">_attach_datetime_columns</span><span class="p">,</span> <span class="n">query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span><span class="p">,</span> <span class="n">_attach_datetime_columns</span><span class="p">,</span> <span class="n">_query_with_retry</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;get_results&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_sites&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_organizations&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_projects&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_activities&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_detection_limits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_habitat_metrics&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_project_weights&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;what_activity_metrics&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;wqp_url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;wqx3_url&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WQP_Metadata&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
@@ -118,8 +134,6 @@
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="_is_code_column">
-<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._is_code_column">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_code_column</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;True if a WQP column name denotes a code/identifier whose leading zeros</span>
 <span class="sd">    are significant and must be preserved as ``str`` (HUCs, parameter codes,</span>
@@ -128,12 +142,9 @@
     <span class="n">lname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">lname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
         <span class="n">token</span> <span class="ow">in</span> <span class="n">lname</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;huc&quot;</span><span class="p">,</span> <span class="s2">&quot;fips&quot;</span><span class="p">)</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_read_wqp_csv">
-<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._read_wqp_csv">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_wqp_csv</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a WQP CSV, forcing code/identifier columns to ``str``.</span>
 
@@ -146,8 +157,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
     <span class="n">str_cols</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span> <span class="k">if</span> <span class="n">_is_code_column</span><span class="p">(</span><span class="n">col</span><span class="p">)}</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_cols</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_cols</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_results">
@@ -264,7 +274,7 @@
     <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dataProfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fullPhysChem&quot;</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -272,8 +282,6 @@
 
 
 
-<div class="viewcode-block" id="_what">
-<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._what">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_what</span><span class="p">(</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -296,10 +304,11 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span>
+    <span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="what_sites">
@@ -810,8 +819,6 @@
 
 
 
-<div class="viewcode-block" id="_check_kwargs">
-<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._check_kwargs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Private function to check kwargs for unsupported parameters.&quot;&quot;&quot;</span>
     <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mimeType&quot;</span><span class="p">)</span>
@@ -822,8 +829,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mimeType&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>
 
-    <span class="k">return</span> <span class="n">kwargs</span></div>
-
+    <span class="k">return</span> <span class="n">kwargs</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -855,8 +861,6 @@
     <span class="p">)</span>
 
 
-<div class="viewcode-block" id="_legacy_only_url">
-<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp._legacy_only_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;URL builder for WQP services that have no WQX3.0 equivalent.</span>
 
@@ -870,8 +874,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">legacy</span><span class="p">:</span>
             <span class="n">_warn_wqx3_unavailable</span><span class="p">()</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
 </pre></div>
 
            </div>

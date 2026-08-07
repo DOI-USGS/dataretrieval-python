@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
+  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
@@ -20,8 +20,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ADR 0005: Quarantine and retire legacy NWIS" href="0005-legacy-nwis.html" />
-    <link rel="prev" title="ADR 0003: Direct dependencies toward stable policy" href="0003-dependency-direction.html" /> 
+    <link rel="next" title="ADR template" href="template.html" />
+    <link rel="prev" title="ADR 0006: Use a service-neutral transport layer" href="0006-service-neutral-transport.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -62,10 +62,10 @@
 <li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
-<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0007: Organize service adapters behind stable facades</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -94,9 +94,9 @@
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
           <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
-      <li class="breadcrumb-item active">ADR 0004: Use typed failures and bounded recovery</li>
+      <li class="breadcrumb-item active">ADR 0007: Organize service adapters behind stable facades</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/architecture/decisions/0004-error-retry-resume.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/architecture/decisions/0007-adapter-facades.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -104,53 +104,65 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="adr-0004-use-typed-failures-and-bounded-recovery">
-<h1>ADR 0004: Use typed failures and bounded recovery<a class="headerlink" href="#adr-0004-use-typed-failures-and-bounded-recovery" title="Link to this heading"></a></h1>
+  <section id="adr-0007-organize-service-adapters-behind-stable-facades">
+<h1>ADR 0007: Organize service adapters behind stable facades<a class="headerlink" href="#adr-0007-organize-service-adapters-behind-stable-facades" title="Link to this heading"></a></h1>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
 <p>Accepted</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
-<p>Remote hydrologic services fail through HTTP statuses, rate limits, timeouts,
-invalid payloads, and mid-pagination interruptions. Returning partial data after
-an undetected page failure is worse than raising. At the same time, retrying
-without limits can stall callers, multiply quota usage, or hide persistent
-faults.</p>
+<p>A service facade can remain stable while its implementation grows for unrelated
+upstream collections. Keeping every Water Data getter in one module coupled
+changes to time series, monitoring metadata, field measurements, reference
+catalogs, Samples, statistics, and generalized CQL queries. Active service
+modules also relied on Python’s implicit wildcard-export behavior, making their
+intended public surfaces difficult to distinguish from imported helpers.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
-<p>All request failures exposed by public service modules derive from
-<code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> and provide uniform <code class="docutils literal notranslate"><span class="pre">status_code</span></code>, <code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">retryable</span></code> attributes. Status mapping lives in one policy function.</p>
-<p>Where automatic recovery is supported, retries are bounded, use exponential
-backoff with full jitter, honor only bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> delays, and preserve
-cancellation. OGC fan-out retains completed subrequests and raises a typed
-<code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> with a handle that resumes only missing work. Fatal or
-unknown failures are not disguised as resumable transients.</p>
-<p>The shared transport layer supplies bounded retry and callback-driven cursor
-pagination, but each adapter opts in only where its requests are idempotent and
-its protocol exposes a cursor. Chunk planning and resumable partial state remain
-OGC-specific capabilities rather than assumptions imposed on every service.</p>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata.api</span></code> is a compatibility facade with no collection
+logic. Implementation functions are grouped by collection family in
+<code class="docutils literal notranslate"><span class="pre">time_series</span></code>, <code class="docutils literal notranslate"><span class="pre">metadata</span></code>, <code class="docutils literal notranslate"><span class="pre">measurements</span></code>, <code class="docutils literal notranslate"><span class="pre">reference</span></code>, <code class="docutils literal notranslate"><span class="pre">samples</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">cql</span></code>. Existing focused modules continue to own ratings, nearest-value
+selection, Statistics API execution, shared Water Data policy, and type
+vocabularies.</p>
+<p>The facade re-exports the established functions and preserves their signatures,
+their identity at <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code>, and the private Samples constants
+compatibility tests rely on. It does not rewrite their <code class="docutils literal notranslate"><span class="pre">__module__</span></code>: each
+function reports the family module that defines it, so a traceback names a file
+that contains code. Collection-family modules do not
+import one another; shared behavior belongs in Water Data policy, OGC, or
+transport modules.</p>
+<p>Active service and focused implementation modules declare explicit <code class="docutils literal notranslate"><span class="pre">__all__</span></code>
+exports. Deprecated NWIS remains outside this modernization. Service adapters do
+not import another adapter’s implementation to obtain transport behavior.</p>
+<p>Return contracts remain service-specific. Tabular services generally return a
+<code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">metadata)</span></code> pair, while NLDI returns geospatial values directly,
+StreamStats exposes response/domain objects, and ratings return parsed tables or
+raw catalog features. Uniformity is not a reason to break these established
+contracts.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Callers can catch one stable base error and still branch on useful fields.</p></li>
-<li><p>Mid-pagination failure cannot silently look like a complete dataset.</p></li>
-<li><p>Retry can increase latency and request quota, so policy and defaults are part
-of observable behavior.</p></li>
-<li><p>Partial OGC state requires careful serialization and finalization tests.</p></li>
-<li><p>Expanding retry to another service requires service-specific idempotency and
-failure-contract tests.</p></li>
+<li><p>Collection changes have a smaller implementation and test blast radius.</p></li>
+<li><p>Existing package and <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> import paths remain stable.</p></li>
+<li><p>Explicit exports make accidental public-surface growth reviewable.</p></li>
+<li><p>More modules require a maintained facade and executable signature/export
+snapshots.</p></li>
+<li><p>Tests are described as public-contract, adapter-contract, component, or
+cross-component layers without forcing a disruptive move of established
+files.</p></li>
 </ul>
 </section>
 <section id="compliance">
 <h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
-<p>Tests cover status-to-type mapping, uniform fields, transport wrapping,
-pagination failure, retry exhaustion and jitter bounds, <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> limits,
-resume equivalence, partial-state stability, pickling, and cancellation
-precedence.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tests/contracts/public_api_test.py</span></code> freezes Water Data imports, signatures,
+facade identity, and compatibility names. <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>
+requires a logic-free facade, exact active-service exports, isolated collection
+families, no lateral adapter reach-through, and separate OGC request
+construction and schema execution.</p>
 </section>
 </section>
 
@@ -158,8 +170,8 @@ precedence.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="0003-dependency-direction.html" class="btn btn-neutral float-left" title="ADR 0003: Direct dependencies toward stable policy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="0005-legacy-nwis.html" class="btn btn-neutral float-right" title="ADR 0005: Quarantine and retire legacy NWIS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="0006-service-neutral-transport.html" class="btn btn-neutral float-left" title="ADR 0006: Use a service-neutral transport layer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="template.html" class="btn btn-neutral float-right" title="ADR template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

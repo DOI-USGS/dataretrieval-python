@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../../../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,15 +94,13 @@
 
 <span class="sd">This module owns the *execution* half — the event loop and bounded</span>
 <span class="sd">concurrency that drive a plan to completion (``ChunkedCall``) plus the</span>
-<span class="sd">public ``multi_value_chunked`` decorator. The neighboring concerns live in</span>
-<span class="sd">sibling modules it imports, each with its own reason to change:</span>
-<span class="sd">:mod:`~dataretrieval.ogc.planning` builds the</span>
-<span class="sd">:class:`~dataretrieval.ogc.planning.ChunkPlan` and recombines per-chunk</span>
-<span class="sd">frames and responses (pure, no I/O); :mod:`~dataretrieval.ogc.retry` holds</span>
-<span class="sd">the transient-classification and exponential-backoff policy; and</span>
+<span class="sd">public ``multi_value_chunked`` decorator. The neighboring concerns remain</span>
+<span class="sd">separate: :mod:`~dataretrieval.ogc.planning` builds the</span>
+<span class="sd">:class:`~dataretrieval.ogc.planning.ChunkPlan`;</span>
+<span class="sd">:mod:`~dataretrieval.combining` assembles results;</span>
+<span class="sd">:mod:`~dataretrieval.transport.retry` owns bounded retry policy; and</span>
 <span class="sd">:mod:`~dataretrieval.ogc.interruptions` defines the resumable</span>
-<span class="sd">:class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` exception</span>
-<span class="sd">contract.</span>
+<span class="sd">:class:`~dataretrieval.ogc.interruptions.ChunkInterrupted` contract.</span>
 
 <span class="sd">Concurrency: ``multi_value_chunked`` fans every pending sub-request out</span>
 <span class="sd">under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An</span>
@@ -160,23 +158,20 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">anyio.from_thread</span><span class="w"> </span><span class="kn">import</span> <span class="n">start_blocking_portal</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_ASYNC_DEFAULTS</span><span class="p">,</span> <span class="n">Ambient</span><span class="p">,</span> <span class="n">_require_positive_int</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.combining</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.combining</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_combine_chunk_frames</span><span class="p">,</span>
     <span class="n">_combine_chunk_responses</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ChunkInterrupted</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_async_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NO_RETRY</span><span class="p">,</span> <span class="n">RetryPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry_async</span> <span class="k">as</span> <span class="n">_retry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span><span class="p">,</span> <span class="n">_require_positive_int</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.retry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">_NO_RETRY</span><span class="p">,</span>
-    <span class="n">RetryPolicy</span><span class="p">,</span>
-    <span class="n">_classify_chunk_error</span><span class="p">,</span>
-    <span class="n">_retry</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">_classify_chunk_error</span>
 
 <span class="c1"># Empirically the API replies HTTP 414 above ~8200 bytes of full URL —</span>
 <span class="c1"># matches nginx&#39;s default ``large_client_header_buffers`` of 8 KB. 8000</span>
@@ -217,12 +212,12 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_CONCURRENCY_ENV</span><span class="si">}</span><span class="s2"> must be a positive integer or &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">_CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">&#39;; got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">.&quot;</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
     <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_CONCURRENCY_ENV</span><span class="si">}</span><span class="s2"> must be &gt;= 1 (got </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">); use &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">_CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">&#39; to disable the cap.&quot;</span>
         <span class="p">)</span>
@@ -730,31 +725,19 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">total</span> <span class="k">if</span> <span class="n">max_concurrent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">max_concurrent</span>
         <span class="p">)</span>
 
-        <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="n">limits</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_ASYNC_DEFAULTS</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="n">open_async_client</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="n">limits</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">_chunked_client</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
                 <span class="n">reporter</span> <span class="o">=</span> <span class="n">_progress</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">reporter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">reporter</span><span class="o">.</span><span class="n">set_chunks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
 
-                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_gated</span><span class="p">(</span>
-                    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-                <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-<span class="w">                    </span><span class="sd">&quot;&quot;&quot;One fetch attempt under the concurrency gate.</span>
-
-<span class="sd">                    The slot is held for the attempt&#39;s full duration —</span>
-<span class="sd">                    every page of a paginated sub-request — but acquired</span>
-<span class="sd">                    per *attempt* (this is what ``_retry`` re-invokes), so</span>
-<span class="sd">                    a sub-request sleeping off a retry backoff isn&#39;t</span>
-<span class="sd">                    holding a slot while it isn&#39;t touching the server.</span>
-<span class="sd">                    &quot;&quot;&quot;</span>
-                    <span class="k">async</span> <span class="k">with</span> <span class="n">semaphore</span><span class="p">:</span>
-                        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-
                 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">track</span><span class="p">(</span>
                     <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
 <span class="w">                    </span><span class="sd">&quot;&quot;&quot;One sub-request (with retry) + result-store + progress tick.&quot;&quot;&quot;</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">fetch_gated</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_policy</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_retry</span><span class="p">(</span>
+                        <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_policy</span><span class="p">,</span> <span class="n">gate</span><span class="o">=</span><span class="n">semaphore</span>
+                    <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                     <span class="k">if</span> <span class="n">reporter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="c1"># Chunks finish out of order under gather, so tick the</span>
@@ -763,7 +746,7 @@
                     <span class="k">return</span> <span class="n">result</span>
 
                 <span class="c1"># Dispatch every pending sub-request concurrently; the</span>
-                <span class="c1"># semaphore (via ``fetch_gated``) is the only throttle.</span>
+                <span class="c1"># semaphore (held by ``_retry`` per attempt) is the only throttle.</span>
                 <span class="c1"># ``return_exceptions`` keeps completed pairs after a sibling</span>
                 <span class="c1"># fails, so partial state stays recoverable via :meth:`resume`.</span>
                 <span class="c1"># Failure precedence, in order:</span>

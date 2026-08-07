@@ -1,0 +1,700 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=48dc434b"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.waterdata.measurements</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.waterdata.measurements</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Getters for values measured in person rather than by a sensor.</span>
+
+<span class="sd">Field measurements, annual peaks, and channel geometry. These are collected</span>
+<span class="sd">during site visits, at low frequency and with delivery lag, which is why they</span>
+<span class="sd">are grouped apart from the continuous record they help calibrate.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">FILTER_LANG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_get_args</span><span class="p">,</span>
+    <span class="n">get_ogc_data</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_field_measurements">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_field_measurements">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_field_measurements</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">observing_procedure_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">field_visit_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">approval_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">unit_of_measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">qualifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">observing_procedure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">vertical_datum</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">measuring_agency</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get discrete measurements collected in person during a site visit.</span>
+
+<span class="sd">    Field measurements are physically measured values collected during a</span>
+<span class="sd">    visit to the monitoring location. Field measurements consist of measurements</span>
+<span class="sd">    of gage height and discharge, and readings of groundwater levels, and are</span>
+<span class="sd">    primarily used as calibration readings for the automated sensors collecting</span>
+<span class="sd">    continuous data. They are collected at a low frequency, and delivery of the</span>
+<span class="sd">    data in WDFN may be delayed due to data processing time.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location. This</span>
+<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
+<span class="sd">        Monitoring location IDs are created by combining the agency code of the</span>
+<span class="sd">        agency responsible for the monitoring location (e.g. USGS) with the ID</span>
+<span class="sd">        number of the monitoring location (e.g. 02238500), separated by a hyphen</span>
+<span class="sd">        (e.g. USGS-02238500).</span>
+<span class="sd">    parameter_code : string or iterable of strings, optional</span>
+<span class="sd">        Parameter codes are 5-digit codes used to identify the constituent</span>
+<span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
+<span class="sd">        and associated groupings can be found at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    observing_procedure_code : string or iterable of strings, optional</span>
+<span class="sd">        A short code corresponding to the observing procedure for the field</span>
+<span class="sd">        measurement.</span>
+<span class="sd">    properties : string or iterable of strings, optional</span>
+<span class="sd">        A list of requested columns to be returned from the query. See the</span>
+<span class="sd">        field-measurements schema in the OpenAPI reference for the available</span>
+<span class="sd">        columns (e.g. geometry, id, monitoring_location_id, parameter_code,</span>
+<span class="sd">        value, unit_of_measure, approval_status, qualifier, last_modified):</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements</span>
+<span class="sd">    field_visit_id : string or iterable of strings, optional</span>
+<span class="sd">        A universally unique identifier (UUID) for the field visit.</span>
+<span class="sd">        Multiple measurements may be made during a single field visit.</span>
+<span class="sd">    approval_status : string or iterable of strings, optional</span>
+<span class="sd">        Some of the data that you have obtained from this U.S. Geological Survey</span>
+<span class="sd">        database may not have received Director&#39;s approval. Any such data values</span>
+<span class="sd">        are qualified as provisional and are subject to revision. Provisional</span>
+<span class="sd">        data are released on the condition that neither the USGS nor the United</span>
+<span class="sd">        States Government may be held liable for any damages resulting from its</span>
+<span class="sd">        use. This field reflects the approval status of each record, and is either</span>
+<span class="sd">        &quot;Approved&quot;, meaning processing review has been completed and the data is</span>
+<span class="sd">        approved for publication, or &quot;Provisional&quot; and subject to revision. For</span>
+<span class="sd">        more information about provisional data, go to:</span>
+<span class="sd">        https://waterdata.usgs.gov/provisional-data-statement/.</span>
+<span class="sd">    unit_of_measure : string or iterable of strings, optional</span>
+<span class="sd">        A human-readable description of the units of measurement associated</span>
+<span class="sd">        with an observation.</span>
+<span class="sd">    qualifier : string or iterable of strings, optional</span>
+<span class="sd">        This field indicates any qualifiers associated with an observation, for</span>
+<span class="sd">        instance if a sensor may have been impacted by ice or if values were</span>
+<span class="sd">        estimated.</span>
+<span class="sd">    value : string or iterable of strings, optional</span>
+<span class="sd">        The value of the observation. Values are transmitted as strings in</span>
+<span class="sd">        the JSON response format in order to preserve precision.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
+<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
+<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a last_modified that</span>
+<span class="sd">        intersects the value of datetime are selected.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
+<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
+<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+
+<span class="sd">    observing_procedure : string or iterable of strings, optional</span>
+<span class="sd">        Water measurement or water-quality observing procedure descriptions.</span>
+<span class="sd">    vertical_datum : string or iterable of strings, optional</span>
+<span class="sd">        The datum used to determine altitude and vertical position at the</span>
+<span class="sd">        monitoring location.</span>
+<span class="sd">    measuring_agency : string or iterable of strings, optional</span>
+<span class="sd">        The agency performing the measurement.</span>
+<span class="sd">    skip_geometry : boolean, optional</span>
+<span class="sd">        This option can be used to skip response geometries for each feature.</span>
+<span class="sd">        The returning object will be a data frame with no spatial information.</span>
+<span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
+<span class="sd">        CQL2 queries.</span>
+<span class="sd">    time : string, optional</span>
+<span class="sd">        The date an observation represents. You can query this field using date-times</span>
+<span class="sd">        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.</span>
+<span class="sd">        Intervals may be bounded or half-bounded (double-dots at start or end).</span>
+<span class="sd">        Only features that have a time that intersects the value of datetime are</span>
+<span class="sd">        selected. If a feature has multiple temporal properties, it is the</span>
+<span class="sd">        decision of the server whether only a single temporal property is used</span>
+<span class="sd">        to determine the extent or all relevant temporal properties.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
+<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
+<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features that have a geometry that intersects the bounding box are</span>
+<span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
+<span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
+<span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">    filter, filter_lang : optional</span>
+<span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
+<span class="sd">        ``filter-lang`` query parameters. See</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
+<span class="sd">        and the lexicographic-comparison pitfall.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get field measurements from a single groundwater site</span>
+<span class="sd">        &gt;&gt;&gt; # and parameter code, and do not return geometry</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-375907091432201&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;72019&quot;,</span>
+<span class="sd">        ...     skip_geometry=True,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Half-bounded time range: every measurement at this site since</span>
+<span class="sd">        &gt;&gt;&gt; # 1980 (open-ended end). Use ``&quot;../&lt;date&gt;&quot;`` for the inverse</span>
+<span class="sd">        &gt;&gt;&gt; # (everything up to a date).</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-425957088141001&quot;,</span>
+<span class="sd">        ...     time=&quot;1980-01-01/..&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get field measurements from multiple sites and</span>
+<span class="sd">        &gt;&gt;&gt; # parameter codes from the last 20 years</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_field_measurements(</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
+<span class="sd">        ...         &quot;USGS-451605097071701&quot;,</span>
+<span class="sd">        ...         &quot;USGS-263819081585801&quot;,</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ...     parameter_code=[&quot;62611&quot;, &quot;72019&quot;],</span>
+<span class="sd">        ...     time=&quot;P20Y&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;field-measurements&quot;</span>
+
+    <span class="c1"># Build argument dictionary, omitting None values</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_peaks">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_peaks">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_peaks</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_series_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">unit_of_measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">water_year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">year</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">month</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">day</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">peak_since</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the annual peak streamflow / stage record for a monitoring location.</span>
+
+<span class="sd">    Peaks are the largest values observed at a site each water year and are</span>
+<span class="sd">    the standard input to flood-frequency analysis (e.g. log-Pearson Type III</span>
+<span class="sd">    fits). The endpoint returns one row per (monitoring location, parameter,</span>
+<span class="sd">    water year), with the peak ``value`` and the ``time`` it occurred.</span>
+
+<span class="sd">    The collection covers both stage (parameter ``&quot;00065&quot;``, ``ft``) and</span>
+<span class="sd">    discharge (parameter ``&quot;00060&quot;``, ``ft^3/s``); a typical streamgage has a</span>
+<span class="sd">    series for each. Reference docs:</span>
+<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/peaks</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location, in</span>
+<span class="sd">        ``AGENCY-ID`` form (e.g. ``&quot;USGS-02238500&quot;``).</span>
+<span class="sd">    parameter_code : string or iterable of strings, optional</span>
+<span class="sd">        5-digit parameter code. Most peaks records are ``&quot;00060&quot;`` (discharge)</span>
+<span class="sd">        or ``&quot;00065&quot;`` (stage / gage height). Full list at</span>
+<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">    time_series_id : string or iterable of strings, optional</span>
+<span class="sd">        ID of the time series the peak belongs to.</span>
+<span class="sd">    unit_of_measure : string or iterable of strings, optional</span>
+<span class="sd">        Human-readable units (e.g. ``&quot;ft^3/s&quot;``, ``&quot;ft&quot;``).</span>
+<span class="sd">    time : string, optional</span>
+<span class="sd">        Datetime, interval, or duration filter on the peak&#39;s date.</span>
+<span class="sd">        See :func:`get_time_series_metadata` for the full grammar.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        Same datetime grammar as ``time``; filters on the database</span>
+<span class="sd">        last-modified timestamp (useful for incremental ETL polling).</span>
+<span class="sd">    water_year, year, month, day : int or list of ints, optional</span>
+<span class="sd">        Calendar / water-year filters on the peak event. The water year ends</span>
+<span class="sd">        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</span>
+<span class="sd">    peak_since : int or list of ints, optional</span>
+<span class="sd">        Filter on the year since which the peak value has stood as the</span>
+<span class="sd">        record (the API serves this field as an integer; many rows are</span>
+<span class="sd">        ``null``).</span>
+<span class="sd">    properties : string or iterable of strings, optional</span>
+<span class="sd">        Subset of columns to return. Defaults to every available property.</span>
+<span class="sd">    skip_geometry : boolean, optional</span>
+<span class="sd">        Skip per-feature geometries; the returned object will be a plain</span>
+<span class="sd">        ``DataFrame`` with no spatial information.</span>
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features whose geometry intersects the bounding box are</span>
+<span class="sd">        selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326</span>
+<span class="sd">        (longitude / latitude, west-south-east-north).</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        Page size; the maximum allowable value is 50000. Default</span>
+<span class="sd">        (``None``) requests the maximum allowable limit. This is a</span>
+<span class="sd">        per-page size, not a cap on the total result: a query matching more</span>
+<span class="sd">        rows than ``limit`` still returns every matching row across</span>
+<span class="sd">        multiple pages. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">    filter, filter_lang : optional</span>
+<span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
+<span class="sd">        ``filter-lang`` query parameters. See</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
+<span class="sd">        and the lexicographic-comparison pitfall.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object pertaining to the query.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Full annual peak record at one site (both stage and discharge)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Discharge peaks only</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Multi-site peaks for a parameter, narrowed to a water-year range</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
+<span class="sd">        ...     monitoring_location_id=[</span>
+<span class="sd">        ...         &quot;USGS-07069000&quot;,</span>
+<span class="sd">        ...         &quot;USGS-07064000&quot;,</span>
+<span class="sd">        ...         &quot;USGS-07068000&quot;,</span>
+<span class="sd">        ...     ],</span>
+<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     water_year=[2020, 2021, 2022, 2023],</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;peaks&quot;</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_channel">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_channel">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_channel</span><span class="p">(</span>
+    <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">field_visit_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">measurement_number</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_flow</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_flow_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_width</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_width_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_area</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_area_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_velocity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_velocity_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_location_distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_location_distance_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_stability</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_material</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_evenness</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">horizontal_velocity_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">vertical_velocity_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">longitudinal_velocity_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">measurement_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">channel_measurement_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get channel-geometry measurements recorded during streamflow field visits.</span>
+
+<span class="sd">    Channel measurements taken as part of streamflow field measurements.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
+<span class="sd">        A unique identifier representing a single monitoring location. This</span>
+<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
+<span class="sd">        Monitoring location IDs are created by combining the agency code of</span>
+<span class="sd">        the agency responsible for the monitoring location (e.g. USGS) with</span>
+<span class="sd">        the ID number of the monitoring location (e.g. 02238500), separated</span>
+<span class="sd">        by a hyphen (e.g. USGS-02238500).</span>
+<span class="sd">    field_visit_id : string or iterable of strings, optional</span>
+<span class="sd">        A universally unique identifier (UUID) for the field visit.</span>
+<span class="sd">        Multiple measurements</span>
+<span class="sd">        may be made during a single field visit.</span>
+<span class="sd">    measurement_number : string or iterable of strings, optional</span>
+<span class="sd">        Measurement number.</span>
+<span class="sd">    time : string or iterable of strings, optional</span>
+<span class="sd">        The date an observation represents. You can query this field using</span>
+<span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a time that intersects the</span>
+<span class="sd">        value of datetime are selected. If a feature has multiple temporal</span>
+<span class="sd">        properties, it is the decision of the server whether only a single</span>
+<span class="sd">        temporal property is used to determine the extent or all relevant</span>
+<span class="sd">        temporal properties.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
+<span class="sd">              &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or &quot;PT36H&quot;</span>
+<span class="sd">              for the last 36 hours</span>
+
+<span class="sd">    channel_name : string or iterable of strings, optional</span>
+<span class="sd">        The channel name.</span>
+<span class="sd">    channel_flow : string or iterable of strings, optional</span>
+<span class="sd">        The channel discharge (flow).</span>
+<span class="sd">    channel_flow_unit : string or iterable of strings, optional</span>
+<span class="sd">        The units for channel discharge.</span>
+<span class="sd">    channel_width : string or iterable of strings, optional</span>
+<span class="sd">        The channel width.</span>
+<span class="sd">    channel_width_unit : string or iterable of strings, optional</span>
+<span class="sd">        The units for channel width.</span>
+<span class="sd">    channel_area : string or iterable of strings, optional</span>
+<span class="sd">        The channel area.</span>
+<span class="sd">    channel_area_unit : string or iterable of strings, optional</span>
+<span class="sd">        The units for channel area.</span>
+<span class="sd">    channel_velocity :  string or iterable of strings, optional</span>
+<span class="sd">        The mean channel velocity.</span>
+<span class="sd">    channel_velocity_unit : string or iterable of strings, optional</span>
+<span class="sd">        The units for channel velocity.</span>
+<span class="sd">    channel_location_distance : string or iterable of strings, optional</span>
+<span class="sd">        The channel location distance.</span>
+<span class="sd">    channel_location_distance_unit : string or iterable of strings, optional</span>
+<span class="sd">        The units for channel location distance.</span>
+<span class="sd">    channel_stability : string or iterable of strings, optional</span>
+<span class="sd">        The stability of the channel material.</span>
+<span class="sd">    channel_material : string or iterable of strings, optional</span>
+<span class="sd">        The channel material.</span>
+<span class="sd">    channel_evenness : string or iterable of strings, optional</span>
+<span class="sd">        The channel evenness from bank to bank.</span>
+<span class="sd">    horizontal_velocity_description : string or iterable of strings, optional</span>
+<span class="sd">        The horizontal velocity description.</span>
+<span class="sd">    vertical_velocity_description : string or iterable of strings, optional</span>
+<span class="sd">        The vertical velocity description.</span>
+<span class="sd">    longitudinal_velocity_description : string or iterable of strings, optional</span>
+<span class="sd">        The longitudinal velocity description.</span>
+<span class="sd">    measurement_type : string or iterable of strings, optional</span>
+<span class="sd">        The type of channel measurement.</span>
+<span class="sd">    last_modified : string, optional</span>
+<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
+<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
+<span class="sd">        that anything about the measurement has changed. You can query this field</span>
+<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a last_modified that</span>
+<span class="sd">        intersects the value of datetime are selected.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
+<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
+<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
+<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
+<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+
+<span class="sd">    skip_geometry : boolean, optional</span>
+<span class="sd">        This option can be used to skip response geometries for each feature.</span>
+<span class="sd">        The returning object will be a data frame with no spatial information.</span>
+<span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
+<span class="sd">        CQL2 queries.</span>
+<span class="sd">    channel_measurement_type : string or iterable of strings, optional</span>
+<span class="sd">        The channel measurement type.</span>
+<span class="sd">    properties : string or iterable of strings, optional</span>
+<span class="sd">        A list of requested columns to be returned from the query. Available</span>
+<span class="sd">        options are: geometry, channel_measurements_id, monitoring_location_id,</span>
+<span class="sd">        field_visit_id, measurement_number, time, channel_name, channel_flow,</span>
+<span class="sd">        channel_flow_unit, channel_width, channel_width_unit, channel_area,</span>
+<span class="sd">        channel_area_unit, channel_velocity, channel_velocity_unit,</span>
+<span class="sd">        channel_location_distance, channel_location_distance_unit, channel_stability,</span>
+<span class="sd">        channel_material, channel_evenness, horizontal_velocity_description,</span>
+<span class="sd">        vertical_velocity_description, longitudinal_velocity_description,</span>
+<span class="sd">        measurement_type, last_modified, channel_measurement_type. The default</span>
+<span class="sd">        (None) will return all columns of the data.</span>
+<span class="sd">    bbox : list of numbers, optional</span>
+<span class="sd">        Only features that have a geometry that intersects the bounding box are</span>
+<span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
+<span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
+<span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
+<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
+<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
+<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
+<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
+<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">    filter, filter_lang : optional</span>
+<span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
+<span class="sd">        ``filter-lang`` query parameters. See</span>
+<span class="sd">        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,</span>
+<span class="sd">        and the lexicographic-comparison pitfall.</span>
+<span class="sd">    convert_type : boolean, optional</span>
+<span class="sd">        If True, converts columns to appropriate types.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total result across every page.</span>
+<span class="sd">        The default (None) follows pagination to completion.</span>
+<span class="sd">    **queryables : string or iterable of strings, optional</span>
+<span class="sd">        Any other queryable property of this collection, passed through as a</span>
+<span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
+<span class="sd">        collection supports.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get channel data from a</span>
+<span class="sd">        &gt;&gt;&gt; # single site from a single year</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_channel(</span>
+<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">service</span> <span class="o">=</span> <span class="s2">&quot;channel-measurements&quot;</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_field_measurements&quot;</span><span class="p">,</span> <span class="s2">&quot;get_peaks&quot;</span><span class="p">,</span> <span class="s2">&quot;get_channel&quot;</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

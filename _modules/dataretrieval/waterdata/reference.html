@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=48dc434b"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.waterdata.reference</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.waterdata.reference</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Getters for the API&#39;s own vocabularies.</span>
+
+<span class="sd">Reference tables and per-collection queryables -- the parameter codes, statistic</span>
+<span class="sd">codes, and filterable properties the other getters accept. These describe the</span>
+<span class="sd">service rather than the water, so they are the one family whose results are</span>
+<span class="sd">mostly stable between calls.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">get_args</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">_check_ogc_requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">METADATA_COLLECTIONS</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_ogc_data</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_reference_table">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_reference_table">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_reference_table</span><span class="p">(</span>
+    <span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get metadata reference tables for the USGS Water Data API.</span>
+
+<span class="sd">    Reference tables provide the range of allowable values for parameter</span>
+<span class="sd">    arguments in the waterdata module.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    collection : string</span>
+<span class="sd">        One of the following options: &quot;agency-codes&quot;, &quot;altitude-datums&quot;,</span>
+<span class="sd">        &quot;aquifer-codes&quot;, &quot;aquifer-types&quot;, &quot;coordinate-accuracy-codes&quot;,</span>
+<span class="sd">        &quot;coordinate-datum-codes&quot;, &quot;coordinate-method-codes&quot;, &quot;counties&quot;,</span>
+<span class="sd">        &quot;hydrologic-unit-codes&quot;, &quot;medium-codes&quot;, &quot;national-aquifer-codes&quot;,</span>
+<span class="sd">        &quot;parameter-codes&quot;, &quot;reliability-codes&quot;, &quot;site-types&quot;, &quot;states&quot;,</span>
+<span class="sd">        &quot;statistic-codes&quot;, &quot;topographic-codes&quot;, &quot;time-zone-codes&quot;</span>
+<span class="sd">    limit : int, optional</span>
+<span class="sd">        The optional limit parameter is used to control the subset of the</span>
+<span class="sd">        selected features that should be returned in each page. The maximum</span>
+<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
+<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
+<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">    query: dictionary, optional</span>
+<span class="sd">        The optional query parameter can be used to pass a dictionary of</span>
+<span class="sd">        query parameters to the collection API call.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole table. Useful for cheaply</span>
+<span class="sd">        previewing large tables (e.g. ``hydrologic-unit-codes`` has ~125k</span>
+<span class="sd">        rows). Unlike ``limit`` (the per-page size), this bounds the total</span>
+<span class="sd">        result. The default (None) downloads every page.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
+<span class="sd">        Formatted data returned from the API query. The primary metadata</span>
+<span class="sd">        of each reference table will show up in the first column, where</span>
+<span class="sd">        the name of the column is the singular form of the collection name,</span>
+<span class="sd">        separated by underscores (e.g. the &quot;medium-codes&quot; reference table</span>
+<span class="sd">        has a column called &quot;medium_code&quot;, which contains all possible</span>
+<span class="sd">        medium code values).</span>
+<span class="sd">    md: :obj:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        A custom metadata object including the URL request and query time.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ChunkInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) interrupted the request</span>
+<span class="sd">        after the built-in retries. Completed work is preserved; resume</span>
+<span class="sd">        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get table of USGS parameter codes</span>
+<span class="sd">        &gt;&gt;&gt; ref, md = dataretrieval.waterdata.get_reference_table(</span>
+<span class="sd">        ...     collection=&quot;parameter-codes&quot;</span>
+<span class="sd">        ... )</span>
+
+<span class="sd">        &gt;&gt;&gt; # Get table of selected USGS parameter codes</span>
+<span class="sd">        &gt;&gt;&gt; ref, md = dataretrieval.waterdata.get_reference_table(</span>
+<span class="sd">        ...     collection=&quot;parameter-codes&quot;,</span>
+<span class="sd">        ...     query={&quot;id&quot;: &quot;00001,00002&quot;},</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid_code_services</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">METADATA_COLLECTIONS</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">collection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_code_services</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid code service: &#39;</span><span class="si">{</span><span class="n">collection</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Valid options are: </span><span class="si">{</span><span class="n">valid_code_services</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Give the ID column the collection name, singularized and underscored.</span>
+    <span class="k">if</span> <span class="n">collection</span> <span class="o">==</span> <span class="s2">&quot;counties&quot;</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="s2">&quot;county&quot;</span>
+    <span class="k">elif</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+
+    <span class="n">query_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">if</span> <span class="n">query</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">query_args</span><span class="p">[</span><span class="s2">&quot;limit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit</span>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">query_args</span><span class="p">,</span> <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_queryables">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_queryables">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_queryables</span><span class="p">(</span><span class="n">collection</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List the queryable properties of a Water Data API collection.</span>
+
+<span class="sd">    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,</span>
+<span class="sd">    ...) advertises the set of properties that can be filtered on -- exposed as</span>
+<span class="sd">    the typed keyword arguments of the matching ``get_*`` function, and usable</span>
+<span class="sd">    directly in a CQL2 ``filter``. This returns that set, so the available</span>
+<span class="sd">    filters can be discovered programmatically and monitored for upstream</span>
+<span class="sd">    additions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    collection : string</span>
+<span class="sd">        The collection id, e.g. ``&quot;daily&quot;``, ``&quot;continuous&quot;``,</span>
+<span class="sd">        ``&quot;monitoring-locations&quot;``, or ``&quot;time-series-metadata&quot;``. See</span>
+<span class="sd">        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES` for the data</span>
+<span class="sd">        collections; reference collections (e.g. ``&quot;parameter-codes&quot;``) work</span>
+<span class="sd">        too.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : ``pandas.DataFrame``</span>
+<span class="sd">        One row per queryable, sorted by name, with columns ``queryable`` (the</span>
+<span class="sd">        property name), ``type``, ``title``, and ``description``.</span>
+<span class="sd">    md : :class:`dataretrieval.utils.BaseMetadata`</span>
+<span class="sd">        Metadata describing the request (URL, query time, response headers).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    DataRetrievalError</span>
+<span class="sd">        On an HTTP error response (e.g. an unknown ``collection`` yields a 404),</span>
+<span class="sd">        the typed subclass for the status.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. doctest::</span>
+<span class="sd">        :skipif: True  # network</span>
+
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import waterdata</span>
+<span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_queryables(&quot;daily&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df.set_index(&quot;queryable&quot;).loc[&quot;state_name&quot;, &quot;type&quot;]</span>
+<span class="sd">        &#39;string&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># The OGC queryables document is a JSON Schema whose ``properties`` map each</span>
+    <span class="c1"># filterable property name to a ``{title, type, description}`` definition.</span>
+    <span class="n">body</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_check_ogc_requests</span><span class="p">(</span><span class="n">endpoint</span><span class="o">=</span><span class="n">collection</span><span class="p">,</span> <span class="n">req_type</span><span class="o">=</span><span class="s2">&quot;queryables&quot;</span><span class="p">)</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;queryable&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">prop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="p">],</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;queryable&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_reference_table&quot;</span><span class="p">,</span> <span class="s2">&quot;get_queryables&quot;</span><span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

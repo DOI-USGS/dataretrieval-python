@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -57,6 +57,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#service-return-contracts">Service return contracts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#interaction-view">Interaction view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#resource-and-configuration-view">Resource and configuration view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#known-architectural-debt">Known architectural debt</a></li>
@@ -158,23 +159,24 @@ contracts but does not hide meaningful service-specific behavior.</p>
 <section id="public-service-facades">
 <h3>Public service facades<a class="headerlink" href="#public-service-facades" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></dt><dd><p>Modern USGS Water Data API facade. Its generic adapter uses the four-symbol
-OGC facade; internal Water Data modules import protocol helpers from their
-canonical OGC modules. Water-Data-specific utilities own service policy and
-wrappers without re-exporting private OGC helpers. Statistics, ratings, and
-nearest-value operations live in separate modules.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></dt><dd><p>Modern USGS Water Data API facade. <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> is a logic-free
+compatibility facade over collection-family modules: <code class="docutils literal notranslate"><span class="pre">time_series</span></code>,
+<code class="docutils literal notranslate"><span class="pre">metadata</span></code>, <code class="docutils literal notranslate"><span class="pre">measurements</span></code>, <code class="docutils literal notranslate"><span class="pre">reference</span></code>, <code class="docutils literal notranslate"><span class="pre">samples</span></code>, and <code class="docutils literal notranslate"><span class="pre">cql</span></code>.
+Focused modules own ratings, nearest-value selection, statistics execution,
+shared service policy, and type vocabularies. Internal modules import
+protocol helpers from their canonical OGC modules rather than re-exporting
+them through Water Data utilities.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></dt><dd><p>NGWMN facade. Its only OGC dependency is the public OGC facade, which it
 configures with an NGWMN-specific base URL, output identifiers, state
 translation, and <code class="xref py py-class docutils literal notranslate"><span class="pre">OgcDialect</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wateruse</span></code></dt><dd><p>NWDC Water Use facade. Builds CSV requests and follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers.
-It currently reuses generic pagination and response-combining helpers from
-private OGC modules; this is an explicitly recorded variance.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wateruse</span></code></dt><dd><p>NWDC Water Use facade. Builds CSV requests, follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers, and
+uses service-neutral transport for bounded fan-out, retry, pagination, response
+aggregation, and synchronous dispatch. It does not depend on OGC modules.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">dataretrieval.nldi</span></code>, and <code class="docutils literal notranslate"><span class="pre">dataretrieval.streamstats</span></code></dt><dd><p>Service-specific adapters over the synchronous request infrastructure in
-<code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code>. Their return types intentionally reflect their
-upstream data models.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">dataretrieval.nldi</span></code>, and <code class="docutils literal notranslate"><span class="pre">dataretrieval.streamstats</span></code></dt><dd><p>Service-specific adapters over shared synchronous HTTP and bounded retry
+policy. Their return types intentionally reflect their upstream data models.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code></dt><dd><p>Deprecated legacy NWIS facade, scheduled for removal on or after
 2027-05-06. Modern code must not depend on it.</p>
@@ -188,28 +190,39 @@ upstream data models.</p>
 (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>) exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>,
 <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>, <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code>, and <code class="docutils literal notranslate"><span class="pre">fetch_ogc_request</span></code>.
 Internally, <code class="docutils literal notranslate"><span class="pre">policy</span></code> defines the dialect type and endpoint constants
-(depends only on stdlib); <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns request construction, argument
-normalization, and queryables/schema lookup; <code class="docutils literal notranslate"><span class="pre">engine</span></code> orchestrates
-pagination and sync-from-async; <code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries;
-<code class="docutils literal notranslate"><span class="pre">chunking</span></code> executes plans and retains resumable state; <code class="docutils literal notranslate"><span class="pre">interruptions</span></code>
-defines the resumable failure contract; <code class="docutils literal notranslate"><span class="pre">retry</span></code> owns the bounded retry
-policy; <code class="docutils literal notranslate"><span class="pre">combining</span></code> assembles results; and <code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>,
-<code class="docutils literal notranslate"><span class="pre">filters</span></code>, <code class="docutils literal notranslate"><span class="pre">errors</span></code>, and <code class="docutils literal notranslate"><span class="pre">progress</span></code> isolate their named concerns. The
-full runtime OGC graph, including the facade, is acyclic —
-enforced by <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
+(depends only on stdlib); <code class="docutils literal notranslate"><span class="pre">context</span></code> owns ambient base URL, dialect, and row
+cap state; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP request
+construction; <code class="docutils literal notranslate"><span class="pre">schema</span></code> executes queryables/schema requests; <code class="docutils literal notranslate"><span class="pre">engine</span></code>
+supplies OGC cursor and response strategies to transport pagination;
+<code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries; <code class="docutils literal notranslate"><span class="pre">chunking</span></code> executes plans and
+retains resumable state; <code class="docutils literal notranslate"><span class="pre">interruptions</span></code> defines the resumable failure
+contract; <code class="docutils literal notranslate"><span class="pre">retry</span></code> classifies failures into OGC interruption types; and
+<code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate their named
+protocol concerns. The full runtime OGC graph, including the facade, is
+acyclic — enforced by <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
+timeouts, host-scoped authentication, cursor pagination, bounded retry,
+response aggregation, progress, and sync-over-async dispatch. Internally,
+<code class="docutils literal notranslate"><span class="pre">liveness</span></code> is a stdlib-only leaf recording when data last arrived, so the
+page loop that observes progress and the retry loop that acts on it both
+depend on it rather than on each other. It imports no service adapter or OGC
+protocol module, and it is not exposed as a public framework API.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code></dt><dd><p>Stable error-policy leaf. It has no runtime third-party dependency and may
 be imported by every service without creating an infrastructure cycle.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Shared metadata, data-shaping helpers, ambient context support, and the
-legacy synchronous request path. Its broad responsibility is known debt;
-new service-specific behavior should not be added there by default.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Shared metadata, data-shaping helpers, ambient context support, legacy
+request composition, and compatibility imports for transport names that
+historically lived here. New service-specific behavior should not be added
+there by default.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.codes</span></code> and <code class="docutils literal notranslate"><span class="pre">dataretrieval.rdb</span></code></dt><dd><p>State/time-zone code conversion and RDB parsing leaves.</p>
 </dd>
 </dl>
 <p>The intended direction is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span> <span class="n">facade</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">/</span><span class="n">protocol</span> <span class="n">adapter</span> <span class="o">-&gt;</span> <span class="n">shared</span> <span class="n">policy</span><span class="o">/</span><span class="n">infrastructure</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span> <span class="n">facade</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">/</span><span class="n">protocol</span> <span class="n">adapter</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">-</span><span class="n">neutral</span> <span class="n">transport</span>
+                                         <span class="o">-&gt;</span> <span class="n">stable</span> <span class="n">policy</span><span class="o">/</span><span class="n">infrastructure</span>
                                          <span class="o">-&gt;</span> <span class="n">third</span><span class="o">-</span><span class="n">party</span> <span class="n">library</span> <span class="o">/</span> <span class="n">network</span>
 </pre></div>
 </div>
@@ -233,6 +246,33 @@ Underscore-prefixed symbols are implementation details even where existing
 internal adapters currently import them; those imports are known variances, not
 new extension points.</p>
 </section>
+<section id="service-return-contracts">
+<h2>Service return contracts<a class="headerlink" href="#service-return-contracts" title="Link to this heading"></a></h2>
+<p>The library preserves meaningful upstream differences rather than forcing every
+service into one return shape:</p>
+<ul class="simple">
+<li><p>Water Data, NGWMN, and Water Use tabular getters return <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
+<span class="pre">BaseMetadata)</span></code>. Geometry-bearing Water Data and NGWMN results may use a
+<code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> in the first position when geopandas is installed.
+<code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code> carries request URL, elapsed query time, response headers,
+and comments where the upstream format provides them.</p></li>
+<li><p>WQP getters return <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">WQP_Metadata)</span></code>; the service-specific
+metadata extends <code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code> with WQP query parameters and site lookup.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">waterdata.get_ratings</span></code> returns a mapping of feature IDs to parsed rating
+<code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> objects by default, or the raw STAC feature list when downloads
+are disabled.</p></li>
+<li><p>NLDI navigation functions return <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> objects directly, or raw
+GeoJSON-like dictionaries when <code class="docutils literal notranslate"><span class="pre">as_json=True</span></code>; they do not add a metadata
+tuple.</p></li>
+<li><p>StreamStats functions return raw <code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code> objects or the
+service-specific <code class="docutils literal notranslate"><span class="pre">Watershed</span></code> domain object, depending on the requested
+format.</p></li>
+<li><p>Deprecated NWIS functions retain their established DataFrame and legacy
+metadata contracts through the published deprecation window.</p></li>
+</ul>
+<p>Changing one of these shapes is a public compatibility change and requires the
+project’s deprecation process; consistency alone is not sufficient reason.</p>
+</section>
 <section id="interaction-view">
 <h2>Interaction view<a class="headerlink" href="#interaction-view" title="Link to this heading"></a></h2>
 <p>A typical OGC-backed call follows this sequence:</p>
@@ -252,9 +292,10 @@ new extension points.</p>
 The retained <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> reissues only missing chunks and applies the same
 finalization path when resumed. Cancellation and non-transient programming
 errors take precedence over retry/resume wrapping.</p>
-<p>Non-OGC services use simpler request paths where their protocols do not provide
-the same paging or resume semantics. Later transport consolidation must preserve
-those public contracts and must not invent unsupported upstream capabilities.</p>
+<p>Non-OGC services use the same transport policy only where their protocols have
+matching semantics. Retry and cursor pagination remain explicit adapter choices;
+chunk planning and resumable interruptions remain OGC capabilities rather than
+invented features of upstream APIs that do not provide them.</p>
 </section>
 <section id="resource-and-configuration-view">
 <h2>Resource and configuration view<a class="headerlink" href="#resource-and-configuration-view" title="Link to this heading"></a></h2>
@@ -268,16 +309,33 @@ link to any other host, including external rating assets.</p>
 <code class="docutils literal notranslate"><span class="pre">unbounded</span></code> removes the explicit cap. A semaphore, not pool waiting, is
 the execution throttle.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of OGC retries after the first attempt; defaults to four. Backoff is
-exponential with full jitter and honors bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of retries after the first attempt on supported active request paths;
+defaults to four. Backoff is exponential with full jitter and honors bounded
+<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values. Only failures a later attempt could survive are
+re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and not a
+transport failure that is settled before the request leaves (unresolvable
+host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></dt><dd><p>Seconds a call may go without receiving any data before retrying stops and
+the failure surfaces; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It
+complements <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>, which caps attempts rather than elapsed
+time: without it, four retries of a request that times out after a minute is
+four silent minutes. Progress restarts the budget — a page received, or a
+queued sub-request acquiring its concurrency slot — so neither a slow but
+productive download nor the tail of a wide fan-out is cut short, and an
+attempt already in flight is never interrupted. The first retry is never
+withheld by this bound, so one slow attempt cannot disable retry by itself;
+the budget decides whether to continue after that. A dead connection
+therefore costs about two read timeouts rather than five attempts’ worth.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code></dt><dd><p>Controls best-effort progress display. Reporting failures must never change
 retrieval results.</p>
 </dd>
 </dl>
-<p>HTTP timeouts and connection limits are centralized for existing paths.
-<code class="docutils literal notranslate"><span class="pre">wateruse</span></code> currently has its own smaller fan-out cap. These differences must
-remain visible until a shared transport policy replaces them deliberately.</p>
+<p>HTTP timeout, redirect, and authentication policy is centralized in
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code>. OGC subrequest fan-out and Water Use location
+fan-out retain separate explicit concurrency caps because their upstream costs
+and request shapes differ.</p>
 </section>
 <section id="known-architectural-debt">
 <h2>Known architectural debt<a class="headerlink" href="#known-architectural-debt" title="Link to this heading"></a></h2>
@@ -285,11 +343,9 @@ remain visible until a shared transport policy replaces them deliberately.</p>
 functions in <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> are authoritative for exact current
 dependency allowlists.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">wateruse</span></code> depends on private generic helpers located under <code class="docutils literal notranslate"><span class="pre">ogc</span></code> even
-though NWDC is not an OGC service.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">waterdata/api.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> contain multiple reasons to change.</p></li>
-<li><p>Active non-OGC services do not yet share OGC’s retry/resume capabilities.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines metadata, shaping, configuration, and transport duties.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> retains compatibility wrappers alongside OGC orchestration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines metadata, shaping, ambient configuration, legacy
+request composition, and transport compatibility imports.</p></li>
 </ul>
 <p>These are documented so guardrails distinguish accepted current dependencies
 from new erosion. They should be removed through small, test-protected changes,

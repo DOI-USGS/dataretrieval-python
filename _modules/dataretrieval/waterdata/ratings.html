@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../../../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,15 +94,27 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">without_embedded_credentials</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_format_api_dates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">_quote_cql_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">_check_monitoring_location_id</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_rdb_comment</span><span class="p">,</span> <span class="n">read_rdb</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span> <span class="n">_default_headers</span><span class="p">,</span> <span class="n">_get</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">default_headers</span> <span class="k">as</span> <span class="n">_default_headers</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get</span> <span class="k">as</span> <span class="n">_get</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BASE_URL</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_ratings&quot;</span><span class="p">]</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -314,6 +326,29 @@
 <span class="sd">    STAC ``next`` link is followed until exhausted so a result set larger than</span>
 <span class="sd">    one page isn&#39;t silently truncated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_checked_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a server-supplied ``next`` href into a URL safe to request.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The ratings service returned an unusable next-page link: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">href</span><span class="si">!r}</span><span class="s2">. The page walk cannot continue; report this if it &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;persists.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_absolute_url</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">current</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Refusing to follow a ratings next-page link pointing at &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2"> rather than </span><span class="si">{</span><span class="n">current</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2">. Following it would &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;send this request, and any credentials on it, to a host you &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;did not ask for. Retrying will not help; report this if it &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;persists.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">without_embedded_credentials</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
+
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)}</span>
     <span class="k">if</span> <span class="n">filter_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_str</span>
@@ -341,10 +376,16 @@
         <span class="c1"># The STAC ``next`` link is a fully-formed GET href carrying the</span>
         <span class="c1"># limit/filter/bbox and a continuation token, so follow it verbatim</span>
         <span class="c1"># (dropping our own params) until the server stops emitting one.</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="n">href</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
             <span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s2">&quot;href&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">lnk</span> <span class="ow">in</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;links&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">lnk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rel&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;next&quot;</span><span class="p">),</span>
             <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="c1"># Verbatim except for the credentials: the href is response data, so it</span>
+        <span class="c1"># is checked before it becomes a request. A link to another host would</span>
+        <span class="c1"># carry this request&#39;s API key off the authorized host, and one carrying</span>
+        <span class="c1"># ``user:pass@`` would mint an ``Authorization: Basic`` header the caller</span>
+        <span class="c1"># never configured.</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">href</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_checked_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">features</span>
 

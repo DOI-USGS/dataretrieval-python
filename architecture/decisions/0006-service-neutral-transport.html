@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=48dc434b"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADR 0007: Organize service adapters behind stable facades" href="0007-adapter-facades.html" />
+    <link rel="prev" title="ADR 0005: Quarantine and retire legacy NWIS" href="0005-legacy-nwis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#service-return-contracts">Service return contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0006: Use a service-neutral transport layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0006: Use a service-neutral transport layer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/0006-service-neutral-transport.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-0006-use-a-service-neutral-transport-layer">
+<h1>ADR 0006: Use a service-neutral transport layer<a class="headerlink" href="#adr-0006-use-a-service-neutral-transport-layer" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>Several service adapters need the same low-level capabilities: guarded HTTP
+clients, cursor pagination, bounded retry, response aggregation, progress, and a
+sync-over-async bridge. Locating those capabilities inside a protocol package
+would make unrelated services depend on protocol-specific implementation
+details – Water Use previously imported its page walker and sync bridge from
+<code class="docutils literal notranslate"><span class="pre">ogc.engine</span></code>, a dependency with no conceptual basis. Duplicating them would
+allow authentication, timeout, retry, and failure behavior to drift.</p>
+<p>“Neutral” here means neutral across the USGS services this package talks to, not
+across HTTP APIs in general. The layer knows the <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> environment
+variables and the quota header USGS returns. Claiming broader neutrality than
+that invites generality no caller needs.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code> is the internal service-neutral execution layer –
+neutral across the USGS services this package talks to, not across HTTP APIs in
+general. It owns:</p>
+<ul class="simple">
+<li><p>synchronous and asynchronous HTTP client lifecycle and timeout defaults;</p></li>
+<li><p>attaching the API key and stripping it at redirect time, over the predicate
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.credentials</span></code> defines;</p></li>
+<li><p>callback-driven cursor pagination;</p></li>
+<li><p>bounded retry with exponential backoff, full jitter, capped <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
+handling, and a no-progress budget bounding how long a call may receive
+nothing at all; and</p></li>
+<li><p>the sync-over-async blocking-portal bridge.</p></li>
+</ul>
+<p>Three concerns are deliberately <em>outside</em> it, as top-level leaves, because they
+are not HTTP execution policy and every adapter needs them whether or not it goes
+through transport:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.credentials</span></code> – which host honors the key, whether a
+destination qualifies, and how the key is withheld. One definition, so the code
+that attaches a credential and the code that removes it cannot disagree.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.progress</span></code> – terminal rendering. Transport reports <em>into</em> it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.combining</span></code> – pandas frame and response assembly. Transport
+returns results <em>through</em> it.</p></li>
+</ul>
+<p>Transport depends only on stable package leaves and third-party infrastructure.
+It must not import OGC modules or service adapters. Service adapters inject
+request construction, response parsing, cursor extraction, and API-specific
+error details.</p>
+<p>OGC retains its protocol concerns: dialects, CQL2, request construction, feature
+shaping, URL-byte chunk planning, resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state, and typed
+interruption handles. Thin imports at previous private OGC and utility paths
+preserve compatibility where a consumer still uses them; a path no consumer
+imports is deleted rather than kept as a module that exists to satisfy its own
+test. Tunables are never re-exported by value: a copy taken at import time is
+one a caller can patch without reaching the policy that reads it, so
+<code class="docutils literal notranslate"><span class="pre">transport.retry</span></code> is the single place they are read from.</p>
+<p>Automatic retry is enabled only on active, idempotent request paths, and only
+for failures a later attempt could survive – rate limiting, gateway 5xx, and
+transport failures that are not settled before the request leaves. A server
+error reporting that <em>this</em> request was rejected is surfaced on the first
+attempt rather than multiplied against an already-failing service. Deprecated
+NWIS calls retain their compatibility behavior. A failed pagination or fan-out
+operation raises rather than returning successful siblings as an apparently
+complete result.</p>
+<p>Two independent bounds limit retry: an attempt count and a no-progress budget
+measured in seconds since data last arrived. Attempts alone leave elapsed time
+unbounded, since each attempt may itself block until its timeout; the budget
+alone would cut short a slow but productive download. Receiving a page restarts
+the budget, and an attempt already in flight is never interrupted.</p>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Water Use has no dependency on OGC implementation modules.</p></li>
+<li><p>OGC and non-OGC adapters share authentication, timeout, retry, pagination,
+aggregation, progress, and sync-dispatch policy where their semantics match.</p></li>
+<li><p>Service-specific request and result contracts remain explicit instead of
+being forced into a universal adapter abstraction.</p></li>
+<li><p>Retry can increase latency and quota consumption, so attempt counts, waits,
+and total silent time remain bounded and cancellation signals are never
+wrapped.</p></li>
+<li><p>Guidance the progress reporter prints is gated on the host it applies to, so a
+service that cannot use an API key is not told to obtain one.</p></li>
+<li><p>The transport package is internal infrastructure, not a new public API
+promise.</p></li>
+<li><p>Keeping presentation and frame assembly out means transport is roughly 570
+lines across five modules, each recognizably HTTP execution policy. Retry is
+the one intricate module, and it is intricate because two independent bounds
+are what make retry safe against a slow service.</p></li>
+</ul>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> enforces transport dependency direction, an
+acyclic transport graph, Water Use isolation from OGC, that presentation and
+frame-assembly modules do not reappear inside transport, and that only
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.credentials</span></code> names the API-key host. Component and adapter
+tests cover cursor termination, row caps, response aggregation, retry
+exhaustion, <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> limits, the no-progress budget, which failures are
+re-sent, cancellation, no-partial fan-out behavior, and credential host scoping.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0005-legacy-nwis.html" class="btn btn-neutral float-left" title="ADR 0005: Quarantine and retire legacy NWIS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="0007-adapter-facades.html" class="btn btn-neutral float-right" title="ADR 0007: Organize service adapters behind stable facades" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

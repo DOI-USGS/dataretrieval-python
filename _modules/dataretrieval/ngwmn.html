@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gec88cec7a documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gf7c248b72 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f9586215"></script>
+      <script src="../../_static/documentation_options.js?v=48dc434b"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -101,11 +101,26 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">WATERDATA_BASE_URL</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc</span><span class="w"> </span><span class="kn">import</span> <span class="n">OgcDialect</span><span class="p">,</span> <span class="n">get_ogc_data</span><span class="p">,</span> <span class="n">prepare_request_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 
-<span class="c1"># The Water Data API base URL, defined locally to avoid importing policy internals.</span>
-<span class="n">BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.waterdata.usgs.gov&quot;</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;get_sites&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_water_level&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_lithology&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_well_construction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_providers&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1"># The Water Data API base URL, from the credentials leaf rather than OGC policy</span>
+<span class="c1"># internals: it names the same authority the API key is scoped to. Spelling the</span>
+<span class="c1"># host out here instead would put a second copy of it in the package, which</span>
+<span class="c1"># ``tests/architecture_test.py::test_credential_policy_has_one_definition``</span>
+<span class="c1"># rejects: the code that attaches the API key and the code that strips it at</span>
+<span class="c1"># redirect time must not be able to disagree about which host is authorized.</span>
+<span class="n">BASE_URL</span> <span class="o">=</span> <span class="n">WATERDATA_BASE_URL</span>
 
 <span class="c1"># The National Ground-Water Monitoring Network exposes its own OGC API at a</span>
 <span class="c1"># separate, unversioned base.</span>
@@ -151,8 +166,6 @@
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="_get">
-<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn._get">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">local_vars</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Marshal a getter&#39;s arguments and dispatch to the shared OGC facade.</span>
 
@@ -169,8 +182,7 @@
         <span class="n">output_id</span><span class="o">=</span><span class="n">_NGWMN_OUTPUT_ID</span><span class="p">,</span>
         <span class="n">base_url</span><span class="o">=</span><span class="n">NGWMN_OGC_API_URL</span><span class="p">,</span>
         <span class="n">dialect</span><span class="o">=</span><span class="n">NGWMN_DIALECT</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_sites">
