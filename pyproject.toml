@@ -48,6 +48,14 @@ dataretrieval = ["py.typed"]
 type-check = [
   "mypy",
 ]
+# Complexity gates and history. ``xenon`` fails a build when complexity
+# regresses; ``wily`` tracks the trend across commits so a review can say
+# whether a change moved the codebase, not just whether it passed. Kept out of
+# ``test`` so the test job stays lean -- the metrics job installs this instead.
+metrics = [
+  "xenon==0.9.3",
+  "wily==1.25.0",
+]
 test = [
   "pytest > 5.0.0",
   "pytest-cov[all]",

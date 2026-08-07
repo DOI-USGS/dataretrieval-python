@@ -103,7 +103,29 @@ ruff format --check .
 mypy
 coverage run -m pytest tests/
 coverage report -m
+xenon --max-absolute C --max-modules B --max-average A dataretrieval
 ```
+
+The last one is a complexity ratchet: those thresholds are the tightest the
+package passes today, so it fails only when a change makes complexity worse. It
+names the offending block, so the fix is local -- usually extracting a branch
+rather than restructuring. Install it with `pip install -e .[metrics]`; the
+`xenon` pre-commit hook runs the identical check, so a clean pre-commit run means
+CI agrees.
+
+To see the *trend* rather than a pass/fail, that extra also installs
+[`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
+history:
+
+```bash
+wily build dataretrieval --max-revisions 50   # index recent commits (slow, once)
+wily report dataretrieval                     # how the package moved over time
+wily diff dataretrieval --revision main       # what your branch changed
+wily rank dataretrieval maintainability.mi    # worst-maintained files today
+```
+
+`wily` is advisory and is never a merge gate -- rising complexity in a file that
+gained a genuinely complex feature is information, not a failure.
 
 For documentation changes, install `.[doc,nldi]` and run `make html` from
 `docs/`. The broader `make docs` target also runs doctests and network-dependent

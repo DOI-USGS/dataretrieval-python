@@ -112,3 +112,6 @@ ENV/
 
 # macOS
 *.DS_Store
+
+# wily metrics cache (rebuildable: `wily build dataretrieval`)
+.wily/
