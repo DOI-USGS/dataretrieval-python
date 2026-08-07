@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g97e22e2d2 documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b2d317da"></script>
+      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -608,19 +608,76 @@ The above exception was the direct cause of the following exception:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6968/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
+/tmp/ipykernel_6979/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6968/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
+/tmp/ipykernel_6979/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6968/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed in a future release; use &#39;usgs_pcode&#39; instead.
+/tmp/ipykernel_6979/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed in a future release; use &#39;usgs_pcode&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6968/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6979/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   dfLong, md = waterdata.get_samples(
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[7]</span><span class="ansi-green-fg">, line 12</span>
+<span class="ansi-green-fg">      8</span> &#34;&#34;&#34;
+<span class="ansi-green-fg">      9</span> siteNumber = <span class="ansi-yellow-fg">&#34;USGS-01491000&#34;</span>
+<span class="ansi-green-fg">     10</span> parameterCd = [<span class="ansi-yellow-fg">&#34;00618&#34;</span>, <span class="ansi-yellow-fg">&#34;71851&#34;</span>]
+<span class="ansi-green-fg">     11</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">12</span> dfLong, md = waterdata.get_samples(
+<span class="ansi-green-fg">     13</span>     monitoringLocationIdentifier=siteNumber,
+<span class="ansi-green-fg">     14</span>     usgsPCode=parameterCd,
+<span class="ansi-green-fg">     15</span>     activityStartDateLower=<span class="ansi-yellow-fg">&#34;1985-10-01&#34;</span>,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:339</span>, in <span class="ansi-cyan-fg">_accept_legacy_kwargs.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-fg">    332</span>     warnings.warn(
+<span class="ansi-green-fg">    333</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">The </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>old_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> argument is deprecated and will be </span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    334</span>         <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">removed in a future release; use </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>new_name<span class="ansi-bold" style="color: rgb(175,95,135)">!r}</span><span class="ansi-yellow-fg"> instead.</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">    335</span>         <span class="ansi-bold" style="color: rgb(215,95,95)">DeprecationWarning</span>,
+<span class="ansi-green-fg">    336</span>         stacklevel=<span class="ansi-green-fg">2</span>,
+<span class="ansi-green-fg">    337</span>     )
+<span class="ansi-green-fg">    338</span>     kwargs[new_name] = kwargs.pop(old_name)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">339</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">kwargs</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/samples.py:369</span>, in <span class="ansi-cyan-fg">get_samples</span><span class="ansi-blue-fg">(ssl_check, service, profile, activity_media_name, activity_start_date_lower, activity_start_date_upper, activity_type_code, characteristic_group, characteristic, characteristic_user_supplied, bbox, country_code, state_code, county_code, site_type_code, site_type_name, usgs_pcode, hydrologic_unit, monitoring_location_id, organization_id, point_location_latitude, point_location_longitude, point_location_within_miles, project_id, record_identifier_user_supplied)</span>
+<span class="ansi-green-fg">    365</span>     params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>] = to_str(params[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">boundingBox</span><span class="ansi-yellow-fg">&#34;</span>])
+<span class="ansi-green-fg">    367</span> url = <span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>SAMPLES_URL<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>service<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">/</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>profile<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">369</span> df, response = <span class="ansi-black-fg ansi-yellow-bg">_get_samples_csv</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    370</span> df = _attach_datetime_columns(df)
+<span class="ansi-green-fg">    372</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, BaseMetadata(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/samples.py:104</span>, in <span class="ansi-cyan-fg">_get_samples_csv</span><span class="ansi-blue-fg">(url, params, ssl_check)</span>
+<span class="ansi-green-fg">     96</span> logger.debug(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Request: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>, httpx.URL(url).copy_merge_params(params))
+<span class="ansi-green-fg">     97</span> response = _get(
+<span class="ansi-green-fg">     98</span>     url,
+<span class="ansi-green-fg">     99</span>     params=params,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    102</span>     **HTTPX_DEFAULTS,
+<span class="ansi-green-fg">    103</span> )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">104</span> <span class="ansi-black-fg ansi-yellow-bg">_raise_for_non_200</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    105</span> df = pd.read_csv(StringIO(response.text), delimiter=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">,</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">    106</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, response
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:100</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
+<span class="ansi-green-fg">     98</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> status &lt; <span class="ansi-green-fg">400</span>:
+<span class="ansi-green-fg">     99</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
+<span class="ansi-green-fg">    101</span>     status,
+<span class="ansi-green-fg">    102</span>     _error_body(resp),
+<span class="ansi-green-fg">    103</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
+<span class="ansi-green-fg">    104</span> )
+
+<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -827,51 +884,21 @@ The above exception was the direct cause of the following exception:
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Failed to download / parse USGS-01594440.base.rdb: 429: Too many requests made. Please obtain an API token or try again later.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[9]</span><span class="ansi-green-fg">, line 6</span>
-<span class="ansi-green-fg">      2</span> ratingData &lt;- readNWISrating(siteNumber, <span class="ansi-yellow-fg">&#34;base&#34;</span>)
-<span class="ansi-green-fg">      3</span> attr(ratingData, <span class="ansi-yellow-fg">&#34;RATING&#34;</span>)
-<span class="ansi-green-fg">      4</span> &#34;&#34;&#34;
-<span class="ansi-green-fg">      5</span> <span style="color: rgb(95,135,135)"># get_ratings returns a dict keyed by &#34;&lt;id&gt;.&lt;file_type&gt;.rdb&#34;</span>
-<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> ratings_data = waterdata.get_ratings(
-<span class="ansi-green-fg">      7</span>     monitoring_location_id=<span class="ansi-yellow-fg">&#34;USGS-01594440&#34;</span>, file_type=<span class="ansi-yellow-fg">&#34;base&#34;</span>
-<span class="ansi-green-fg">      8</span> )
-<span class="ansi-green-fg">      9</span> list(ratings_data.keys())
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:179</span>, in <span class="ansi-cyan-fg">get_ratings</span><span class="ansi-blue-fg">(monitoring_location_id, file_type, file_path, time, bbox, limit, download_and_parse, ssl_check)</span>
-<span class="ansi-green-fg">    176</span> server_file_type = file_types[<span class="ansi-green-fg">0</span>] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">len</span>(file_types) == <span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    177</span> filter_str = _build_filter(monitoring_location_id, server_file_type)
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">179</span> features = <span class="ansi-black-fg ansi-yellow-bg">_search</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">filter_str</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">time_str</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">bbox</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">limit</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    181</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> download_and_parse:
-<span class="ansi-green-fg">    182</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> features
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:293</span>, in <span class="ansi-cyan-fg">_search</span><span class="ansi-blue-fg">(filter_str, time_str, bbox, limit, ssl_check)</span>
-<span class="ansi-green-fg">    285</span> <span class="ansi-bold" style="color: rgb(0,135,0)">while</span> url <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
-<span class="ansi-green-fg">    286</span>     response = _get(
-<span class="ansi-green-fg">    287</span>         url,
-<span class="ansi-green-fg">    288</span>         params=params,
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    291</span>         **HTTPX_DEFAULTS,
-<span class="ansi-green-fg">    292</span>     )
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">293</span>     <span class="ansi-black-fg ansi-yellow-bg">_raise_for_non_200</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    294</span>     body = response.json()
-<span class="ansi-green-fg">    295</span>     features.extend(body.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">features</span><span class="ansi-yellow-fg">&#34;</span>, []))
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:100</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
-<span class="ansi-green-fg">     98</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> status &lt; <span class="ansi-green-fg">400</span>:
-<span class="ansi-green-fg">     99</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">100</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
-<span class="ansi-green-fg">    101</span>     status,
-<span class="ansi-green-fg">    102</span>     _error_body(resp),
-<span class="ansi-green-fg">    103</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
-<span class="ansi-green-fg">    104</span> )
-
-<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later.
+[]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
