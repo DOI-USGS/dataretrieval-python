@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -157,10 +157,10 @@ error details.</p>
 <p>OGC retains its protocol concerns: dialects, CQL2, request construction, feature
 shaping, URL-byte chunk planning, resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state, and typed
 interruption handles. Thin imports at previous private OGC and utility paths
-preserve compatibility where a consumer still uses them; a path no consumer
+preserve compatibility where a consumer still uses them. A path no consumer
 imports is deleted rather than kept as a module that exists to satisfy its own
-test. Tunables are never re-exported by value: a copy taken at import time is
-one a caller can patch without reaching the policy that reads it, so
+test. Tunables are never re-exported by value: a caller can patch a copy taken
+at import time without reaching the policy that reads it, so
 <code class="docutils literal notranslate"><span class="pre">transport.retry</span></code> is the single place they are read from.</p>
 <p>Automatic retry is enabled only on active, idempotent request paths, and only
 for failures a later attempt could survive – rate limiting, gateway 5xx, and
@@ -185,7 +185,7 @@ aggregation, progress, and sync-dispatch policy where their semantics match.</p>
 <li><p>Service-specific request and result contracts remain explicit instead of
 being forced into a universal adapter abstraction.</p></li>
 <li><p>Retry can increase latency and quota consumption, so attempt counts, waits,
-and total silent time remain bounded and cancellation signals are never
+and total silent time remain bounded, and cancellation signals are never
 wrapped.</p></li>
 <li><p>Guidance the progress reporter prints is gated on the host it applies to, so a
 service that cannot use an API key is not told to obtain one.</p></li>

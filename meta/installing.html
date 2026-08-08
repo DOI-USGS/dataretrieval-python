@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation Guide &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>Installation Guide &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,17 +87,17 @@
              
   <section id="installation-guide">
 <h1>Installation Guide<a class="headerlink" href="#installation-guide" title="Link to this heading"></a></h1>
-<p>Whether you are a user or developer we recommend installing <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
-in a virtual environment. This can be done using something like <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code>
-or <code class="docutils literal notranslate"><span class="pre">conda</span></code>. Package dependencies are declared in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>: the core
-runtime dependencies under <code class="docutils literal notranslate"><span class="pre">[project.dependencies]</span></code>, and optional extras
-(<code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">doc</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>) under <code class="docutils literal notranslate"><span class="pre">[project.optional-dependencies]</span></code>.</p>
+<p>Whether you are a user or a developer, we recommend installing <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
+in a virtual environment, using a tool such as <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code> or <code class="docutils literal notranslate"><span class="pre">conda</span></code>.
+Package dependencies are declared in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>: the core runtime
+dependencies under <code class="docutils literal notranslate"><span class="pre">[project.dependencies]</span></code>, and optional extras (<code class="docutils literal notranslate"><span class="pre">test</span></code>,
+<code class="docutils literal notranslate"><span class="pre">doc</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>) under <code class="docutils literal notranslate"><span class="pre">[project.optional-dependencies]</span></code>.</p>
 <section id="user-installation">
 <h2>User Installation<a class="headerlink" href="#user-installation" title="Link to this heading"></a></h2>
 <section id="via-pip">
 <h3>Via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:<a class="headerlink" href="#via-pip" title="Link to this heading"></a></h3>
 <p>To install the latest stable release of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> from <a class="reference external" href="https://pypi.org/project/dataretrieval">PyPI</a>, run the
-following commands:</p>
+following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
 </pre></div>
 </div>
@@ -105,7 +105,7 @@ following commands:</p>
 <section id="via-conda">
 <h3>Via <code class="docutils literal notranslate"><span class="pre">conda</span></code>:<a class="headerlink" href="#via-conda" title="Link to this heading"></a></h3>
 <p>To install the latest stable release of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> from the
-<a class="reference external" href="https://anaconda.org/conda-forge/dataretrieval">conda-forge channel</a>, run the following commands:</p>
+<a class="reference external" href="https://anaconda.org/conda-forge/dataretrieval">conda-forge channel</a>, run the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>dataretrieval
 </pre></div>
 </div>
@@ -114,28 +114,27 @@ following commands:</p>
 <section id="developer-installation">
 <h2>Developer Installation<a class="headerlink" href="#developer-installation" title="Link to this heading"></a></h2>
 <p>To install <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> for development, we recommend first forking
-the repository on GitHub. This will allow you to develop on your own
-feature branch, and propose changes as pull requests to the main branch of
+the repository on GitHub. Forking lets you develop on your own feature
+branch and propose changes as pull requests to the main branch of
 the repository.</p>
-<p>The first step is to clone your fork of the repository:</p>
+<p>First, clone your fork of the repository:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DOI-USGS/dataretrieval-python.git
 </pre></div>
 </div>
-<p>Then, set the cloned repository as your current working directory in your
-terminal and run the following commands to get an “editable” installation of
-the package for development:</p>
+<p>Then, make the cloned repository your working directory and run the following
+command to get an “editable” installation of the package for development:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test,doc,nldi]&quot;</span>
 </pre></div>
 </div>
 <p>This installs <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> in editable mode along with the development
 extras: <code class="docutils literal notranslate"><span class="pre">test</span></code> (test runner), <code class="docutils literal notranslate"><span class="pre">doc</span></code> (documentation build), and <code class="docutils literal notranslate"><span class="pre">nldi</span></code>
 (<code class="docutils literal notranslate"><span class="pre">geopandas</span></code>, required by the NLDI module).</p>
-<p>To check your installation you can run the tests with the following commands:</p>
+<p>To check your installation, run the tests with the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>tests
 $<span class="w"> </span>pytest
 </pre></div>
 </div>
-<p>In order to fetch the latest version of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>, we recommend
+<p>To fetch the latest version of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>, we recommend
 defining the main repository as a remote <cite>upstream</cite> repository:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>upstream<span class="w"> </span>https://github.com/DOI-USGS/dataretrieval-python.git
 </pre></div>
@@ -145,10 +144,10 @@ defining the main repository as a remote <cite>upstream</cite> repository:</p>
 $<span class="w"> </span>make<span class="w"> </span>docs
 </pre></div>
 </div>
-<p>This both tests the documentation (runs code blocks and checks links), and also
-locally <em>builds</em> the documentation, placing the HTML files within the
-<code class="docutils literal notranslate"><span class="pre">docs/build/html</span></code> directory. You can then open the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file in
-your browser to view the documentation.</p>
+<p>These commands both test the documentation (running code blocks and checking
+links) and <em>build</em> it locally, placing the HTML files within the
+<code class="docutils literal notranslate"><span class="pre">docs/build/html</span></code> directory. Open the <code class="docutils literal notranslate"><span class="pre">index.html</span></code> file in your browser to
+view the documentation.</p>
 </section>
 </section>
 

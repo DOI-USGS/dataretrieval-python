@@ -6,10 +6,10 @@ cross-cutting choice was made, the trade-offs it accepts, and how compliance is
 checked. They complement code and API documentation rather than repeating
 implementation details.
 
-Statuses are ``Proposed``, ``Accepted``, ``Superseded``, or ``Rejected``. An
-accepted decision is not edited to reverse its meaning; a later ADR supersedes
-it and links back to the old record. Keep records concise and commit them with
-the change that makes the decision effective.
+Statuses are ``Proposed``, ``Accepted``, ``Superseded``, or ``Rejected``. Do not
+edit an accepted decision to reverse its meaning; a later ADR supersedes it and
+links back to the old record. Keep records concise and commit them with the
+change that makes the decision effective.
 
 Use :doc:`template` when proposing a decision. Number accepted and proposed
 records sequentially.

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -217,27 +217,27 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">format_response</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup index for response from query.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the index for a query response.</span>
 
-<span class="sd">    This function formats the response from the NWIS web services, in</span>
-<span class="sd">    particular it sets the index of the data frame. This function tries to</span>
-<span class="sd">    convert the NWIS response into pandas datetime values localized to UTC,</span>
-<span class="sd">    and if possible, uses these timestamps to define the data frame index.</span>
+<span class="sd">    Formats the response from the NWIS web services; in particular, it sets</span>
+<span class="sd">    the index of the data frame. It converts the NWIS response into pandas</span>
+<span class="sd">    datetime values localized to UTC and, where possible, uses those</span>
+<span class="sd">    timestamps to define the data frame index.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        The data frame to format</span>
+<span class="sd">        The data frame to format.</span>
 <span class="sd">    service: string, optional, default is None</span>
-<span class="sd">        The NWIS service that was queried, important because the &#39;peaks&#39;</span>
-<span class="sd">        service returns a different format than the other services.</span>
+<span class="sd">        The NWIS service that was queried. This matters because the &#39;peaks&#39;</span>
+<span class="sd">        service returns a different format from the other services.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        Additional keyword arguments, e.g., &#39;multi_index&#39;</span>
+<span class="sd">        Additional keyword arguments, e.g. &#39;multi_index&#39;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        The formatted data frame</span>
+<span class="sd">        The formatted data frame.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;multi_index&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -272,19 +272,17 @@
 <div class="viewcode-block" id="preformat_peaks_response">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.preformat_peaks_response">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">preformat_peaks_response</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Datetime formatting for the &#39;peaks&#39; service response.</span>
-
-<span class="sd">    Function to format the datetime column of the &#39;peaks&#39; service response.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Format the datetime column of the &#39;peaks&#39; service response.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        The data frame to format</span>
+<span class="sd">        The data frame to format.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        The formatted data frame</span>
+<span class="sd">        The formatted data frame.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">df</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;peak_dt&quot;</span><span class="p">),</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
@@ -325,35 +323,33 @@
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get discharge peaks from the waterdata service.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get discharge peaks from the waterdata service.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        If the waterdata parameter site_no is supplied, it will overwrite the</span>
-<span class="sd">        sites parameter</span>
+<span class="sd">        USGS site number (or list of site numbers). If the waterdata parameter</span>
+<span class="sd">        site_no is supplied, it overwrites the sites parameter.</span>
 <span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter begin_date is supplied, it will overwrite</span>
-<span class="sd">        the start parameter (YYYY-MM-DD)</span>
+<span class="sd">        Starting date of record (YYYY-MM-DD). If the waterdata parameter</span>
+<span class="sd">        begin_date is supplied, it overwrites the start parameter.</span>
 <span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter end_date is supplied, it will overwrite</span>
-<span class="sd">        the end parameter (YYYY-MM-DD)</span>
+<span class="sd">        Ending date of record (YYYY-MM-DD). If the waterdata parameter</span>
+<span class="sd">        end_date is supplied, it overwrites the end parameter.</span>
 <span class="sd">    multi_index: bool, optional</span>
-<span class="sd">        If False, a dataframe with a single-level index (datetime) is returned,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        If False, return a dataframe with a single-level index (datetime).</span>
+<span class="sd">        Default is True.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">        Time series data from the NWIS JSON.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -410,8 +406,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span>
     <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Queries water services statistics information.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the water services statistics service.</span>
 
 <span class="sd">    For more information about the water services statistics service, visit</span>
 <span class="sd">    https://waterservices.usgs.gov/docs/statistics/statistics-details/</span>
@@ -419,26 +414,25 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        USGS site number (or list of site numbers)</span>
+<span class="sd">        USGS site number (or list of site numbers).</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Keyword Arguments</span>
-<span class="sd">    ---------------------</span>
+<span class="sd">    -----------------</span>
 <span class="sd">    statReportType: string</span>
-<span class="sd">        daily (default), monthly, or annual</span>
+<span class="sd">        daily (default), monthly, or annual.</span>
 <span class="sd">    statTypeCd: string</span>
-<span class="sd">        all, mean, max, min, median</span>
+<span class="sd">        all, mean, max, min, median.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Statistics data from the statistics service</span>
+<span class="sd">        Statistics data from the statistics service.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    .. todo::</span>
 
@@ -475,23 +469,21 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">query_waterdata</span><span class="p">(</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Queries waterdata.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the waterdata service.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    service: string</span>
 <span class="sd">        Name of the service to query: &#39;peaks&#39; or &#39;ratings&#39;.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    request: ``httpx.Response``</span>
-<span class="sd">        The response object from the API request to the web service</span>
+<span class="sd">        The response object from the API request to the web service.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">major_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">,</span> <span class="s2">&quot;stateCd&quot;</span><span class="p">]</span>
     <span class="n">bbox_params</span> <span class="o">=</span> <span class="p">[</span>
@@ -524,8 +516,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">query_waterservices</span><span class="p">(</span>
     <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Queries waterservices.usgs.gov</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Query waterservices.usgs.gov.</span>
 
 <span class="sd">    For more documentation see https://waterservices.usgs.gov/docs/</span>
 
@@ -538,31 +529,29 @@
 <span class="sd">    service: string</span>
 <span class="sd">        Name of the service to query: &#39;dv&#39;, &#39;iv&#39;, &#39;site&#39;, or &#39;stat&#39;.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Keyword Arguments</span>
-<span class="sd">    ----------------</span>
+<span class="sd">    -----------------</span>
 <span class="sd">    bBox: string</span>
 <span class="sd">        Bounding box of decimal latitude and longitude values, given as</span>
 <span class="sd">        west longitude, south latitude, east longitude, north latitude,</span>
-<span class="sd">        separated by commas</span>
+<span class="sd">        separated by commas.</span>
 <span class="sd">    startDT: string</span>
-<span class="sd">        Start date (e.g., &#39;2017-12-31&#39;)</span>
+<span class="sd">        Start date (e.g. &#39;2017-12-31&#39;).</span>
 <span class="sd">    endDT: string</span>
-<span class="sd">        End date (e.g., &#39;2018-01-01&#39;)</span>
+<span class="sd">        End date (e.g. &#39;2018-01-01&#39;).</span>
 <span class="sd">    modifiedSince: string</span>
-<span class="sd">        Used to return only sites where attributes or period of record data</span>
-<span class="sd">        have changed during the request period. String expected to be formatted</span>
-<span class="sd">        in ISO-8601 duration format (e.g., &#39;P1D&#39; for one day,</span>
-<span class="sd">        &#39;P1Y&#39; for one year)</span>
+<span class="sd">        Period during which site attributes or period-of-record data must have</span>
+<span class="sd">        changed for a site to be returned. Expected to be a string in ISO-8601</span>
+<span class="sd">        duration format (e.g. &#39;P1D&#39; for one day, &#39;P1Y&#39; for one year).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    request: ``httpx.Response``</span>
-<span class="sd">        The response object from the API request to the web service</span>
+<span class="sd">        The response object from the API request to the web service.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
@@ -595,8 +584,7 @@
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get daily values data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
 <span class="sd">    .. note::</span>
 
@@ -606,28 +594,27 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        USGS site number (or list of site numbers)</span>
+<span class="sd">        USGS site number (or list of site numbers).</span>
 <span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter startDT is supplied, it will overwrite the</span>
-<span class="sd">        start parameter (YYYY-MM-DD)</span>
+<span class="sd">        Starting date of record (YYYY-MM-DD). If the waterdata parameter</span>
+<span class="sd">        startDT is supplied, it overwrites the start parameter.</span>
 <span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the</span>
-<span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">        Ending date of record (YYYY-MM-DD). If the waterdata parameter endDT</span>
+<span class="sd">        is supplied, it overwrites the end parameter.</span>
 <span class="sd">    multi_index: bool, optional</span>
-<span class="sd">        If True, return a multi-index dataframe, if False, return a</span>
-<span class="sd">        single-index dataframe, default is True</span>
+<span class="sd">        If True, return a multi-index dataframe; if False, return a</span>
+<span class="sd">        single-index dataframe. Default is True.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">        Time series data from the NWIS JSON.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -665,8 +652,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_info</span><span class="p">(</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get site description information from NWIS.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get site description information from NWIS.</span>
 
 <span class="sd">    **Note:** *Must specify one major parameter.*</span>
 
@@ -676,13 +662,12 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Keyword Arguments</span>
-<span class="sd">    ----------------</span>
+<span class="sd">    -----------------</span>
 <span class="sd">    sites: string or list of strings</span>
 <span class="sd">        A list of site numbers. Sites may be prefixed with an optional agency</span>
 <span class="sd">        code followed by a colon.</span>
@@ -696,7 +681,7 @@
 <span class="sd">    bBox: string or list of strings</span>
 <span class="sd">        A contiguous range of decimal latitude and longitude, starting with the</span>
 <span class="sd">        west longitude, then the south latitude, then the east longitude, and</span>
-<span class="sd">        then the north latitude with each value separated by a comma. The</span>
+<span class="sd">        then the north latitude, with each value separated by a comma. The</span>
 <span class="sd">        product of the range of latitude and longitude cannot exceed 25</span>
 <span class="sd">        degrees. Whole or decimal degrees must be specified, up to six digits</span>
 <span class="sd">        of precision. Minutes and seconds are not allowed.</span>
@@ -729,9 +714,9 @@
 <span class="sd">    siteOutput: string (&#39;basic&#39; or &#39;expanded&#39;)</span>
 <span class="sd">        Indicates the richness of metadata you want for site attributes. Note</span>
 <span class="sd">        that for visually oriented formats like Google Map format, this</span>
-<span class="sd">        argument has no meaning. Note: for performance reasons,</span>
-<span class="sd">        siteOutput=expanded cannot be used if seriesCatalogOutput=true or with</span>
-<span class="sd">        any values for outputDataTypeCd.</span>
+<span class="sd">        argument has no meaning. For performance reasons, siteOutput=expanded</span>
+<span class="sd">        cannot be used if seriesCatalogOutput=true or with any values for</span>
+<span class="sd">        outputDataTypeCd.</span>
 <span class="sd">    seriesCatalogOutput: bool</span>
 <span class="sd">        A switch that provides detailed period of record information for</span>
 <span class="sd">        certain output formats. The period of record indicates date ranges for</span>
@@ -741,9 +726,9 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Site data from the NWIS web service</span>
+<span class="sd">        Site data from the NWIS web service.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -801,29 +786,28 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        If the waterdata parameter site_no is supplied, it will overwrite the</span>
-<span class="sd">        sites parameter</span>
+<span class="sd">        USGS site number (or list of site numbers). If the waterdata parameter</span>
+<span class="sd">        site_no is supplied, it overwrites the sites parameter.</span>
 <span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter startDT is supplied, it will overwrite the</span>
-<span class="sd">        start parameter (YYYY-MM-DD)</span>
+<span class="sd">        Starting date of record (YYYY-MM-DD). If the waterdata parameter</span>
+<span class="sd">        startDT is supplied, it overwrites the start parameter.</span>
 <span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        If the waterdata parameter endDT is supplied, it will overwrite the</span>
-<span class="sd">        end parameter (YYYY-MM-DD)</span>
+<span class="sd">        Ending date of record (YYYY-MM-DD). If the waterdata parameter endDT</span>
+<span class="sd">        is supplied, it overwrites the end parameter.</span>
 <span class="sd">    multi_index: bool, optional</span>
-<span class="sd">        If False, a dataframe with a single-level index (datetime) is returned,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        If False, return a dataframe with a single-level index (datetime).</span>
+<span class="sd">        Default is True.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">        Time series data from the NWIS JSON.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -891,32 +875,29 @@
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Rating table for an active USGS streamgage retrieval.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the rating table for an active USGS streamgage.</span>
 
-<span class="sd">    Reads current rating table for an active USGS streamgage from NWISweb.</span>
+<span class="sd">    Reads the current rating table for an active USGS streamgage from NWISweb.</span>
 <span class="sd">    Data is retrieved from https://waterdata.usgs.gov/nwis.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    site: string, optional, default is None</span>
-<span class="sd">        USGS site number. This is usually an 8 digit number as a string.</span>
-<span class="sd">        If the nwis parameter site_no is supplied, it will overwrite the site</span>
-<span class="sd">        parameter</span>
+<span class="sd">        USGS site number, usually an 8 digit number as a string. If the nwis</span>
+<span class="sd">        parameter site_no is supplied, it overwrites the site parameter.</span>
 <span class="sd">    file_type: string, default is &quot;base&quot;</span>
-<span class="sd">        can be &quot;base&quot;, &quot;corr&quot;, or &quot;exsa&quot;</span>
+<span class="sd">        One of &quot;base&quot;, &quot;corr&quot;, or &quot;exsa&quot;.</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Formatted requested data</span>
+<span class="sd">        Formatted requested data.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -949,23 +930,21 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">what_sites</span><span class="p">(</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Search NWIS for sites within a region with specific data.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search NWIS for sites within a region with specific data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`</span>
+<span class="sd">        Accepts the same parameters as :obj:`dataretrieval.nwis.get_info`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Formatted requested data</span>
+<span class="sd">        Formatted requested data.</span>
 <span class="sd">    md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">        A custom metadata object</span>
+<span class="sd">        A custom metadata object.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1003,8 +982,7 @@
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get data from NWIS and return it as a ``pandas.DataFrame``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get data from NWIS and return it as a ``pandas.DataFrame``.</span>
 
 <span class="sd">    .. note::</span>
 
@@ -1014,21 +992,21 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sites: string or list of strings, optional, default is None</span>
-<span class="sd">        List or comma delimited string of sites.</span>
+<span class="sd">        List of sites, or a comma-delimited string of sites.</span>
 <span class="sd">    start: string, optional, default is None</span>
-<span class="sd">        Starting date of record (YYYY-MM-DD)</span>
+<span class="sd">        Starting date of record (YYYY-MM-DD).</span>
 <span class="sd">    end: string, optional, default is None</span>
-<span class="sd">        Ending date of record. (YYYY-MM-DD)</span>
+<span class="sd">        Ending date of record (YYYY-MM-DD).</span>
 <span class="sd">    multi_index: bool, optional</span>
-<span class="sd">        If False, a dataframe with a single-level index (datetime) is returned,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        If False, return a dataframe with a single-level index (datetime).</span>
+<span class="sd">        Default is True.</span>
 <span class="sd">    wide_format : bool, optional</span>
-<span class="sd">        If True, return data in wide format with multiple samples per row and</span>
-<span class="sd">        one row per time, default is True</span>
+<span class="sd">        If True, return data in wide format, with multiple samples per row and</span>
+<span class="sd">        one row per time. Default is True.</span>
 <span class="sd">    datetime_index : bool, optional</span>
-<span class="sd">        If True, create a datetime index. Default is True</span>
+<span class="sd">        If True, create a datetime index. Default is True.</span>
 <span class="sd">    state: string, optional, default is None</span>
-<span class="sd">        full name, abbreviation or id</span>
+<span class="sd">        State full name, abbreviation, or id.</span>
 <span class="sd">    service: string, default is &#39;iv&#39;</span>
 <span class="sd">        - &#39;iv&#39; : instantaneous data</span>
 <span class="sd">        - &#39;dv&#39; : daily mean data</span>
@@ -1042,14 +1020,13 @@
 <span class="sd">        - &#39;ratings&#39;: get rating table</span>
 <span class="sd">        - &#39;stat&#39;: get statistics</span>
 <span class="sd">    ssl_check: bool, optional</span>
-<span class="sd">        If True, check SSL certificates, if False, do not check SSL,</span>
-<span class="sd">        default is True</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
-<span class="sd">        If supplied, will be used as query parameters</span>
+<span class="sd">        Additional query parameters, if supplied.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">        ``pandas.DataFrame`` containing requested data</span>
+<span class="sd">        ``pandas.DataFrame`` containing the requested data.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1157,18 +1134,17 @@
 <div class="viewcode-block" id="_read_json">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._read_json">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_json</span><span class="p">(</span><span class="n">json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reads a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    json: dict</span>
-<span class="sd">        A JSON dictionary response to be parsed into a ``pandas.DataFrame``</span>
+<span class="sd">        A JSON dictionary response to be parsed into a ``pandas.DataFrame``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df: ``pandas.DataFrame``</span>
-<span class="sd">        Time series data from the NWIS JSON</span>
+<span class="sd">        Time series data from the NWIS JSON.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">all_site_dfs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1281,13 +1257,13 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    url : str</span>
-<span class="sd">        Response url</span>
+<span class="sd">        Response url.</span>
 <span class="sd">    query_time: datetime.timedelta</span>
-<span class="sd">        Response elapsed time</span>
+<span class="sd">        Response elapsed time.</span>
 <span class="sd">    header: httpx.Headers</span>
-<span class="sd">        Response headers</span>
+<span class="sd">        Response headers.</span>
 <span class="sd">    comments: str | None</span>
-<span class="sd">        Metadata comments, if any</span>
+<span class="sd">        Metadata comments, if any.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1299,15 +1275,14 @@
 <div class="viewcode-block" id="NWIS_Metadata.__init__">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.NWIS_Metadata.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
-<span class="sd">        metadata for NWIS data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the standard metadata set, plus NWIS-specific metadata.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        response: Response</span>
-<span class="sd">            Response object from httpx module</span>
+<span class="sd">            Response object from the ``httpx`` module.</span>
 <span class="sd">        parameters: unpacked dictionary</span>
-<span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
+<span class="sd">            Unpacked dictionary of the parameters supplied in the request.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
@@ -1333,9 +1308,9 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        df: ``pandas.DataFrame``</span>
-<span class="sd">            Formatted requested data from calling `nwis.what_sites`</span>
+<span class="sd">            Formatted requested data from calling `nwis.what_sites`.</span>
 <span class="sd">        md: :obj:`dataretrieval.nwis.NWIS_Metadata`</span>
-<span class="sd">            A NWIS_Metadata object</span>
+<span class="sd">            A NWIS_Metadata object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;site_no&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="p">[</span><span class="s2">&quot;site_no&quot;</span><span class="p">])</span>

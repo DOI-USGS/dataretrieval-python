@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,16 +75,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.ngwmn</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;National Ground-Water Monitoring Network (NGWMN) getters.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Retrieve data from the National Ground-Water Monitoring Network (NGWMN).</span>
 
 <span class="sd">The NGWMN exposes its data through a dedicated OGC API</span>
 <span class="sd">(``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:</span>
 <span class="sd">``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and</span>
 <span class="sd">``providers``. Each getter below delegates to the shared OGC facade</span>
-<span class="sd">(:func:`~dataretrieval.ogc.get_ogc_data`) with</span>
-<span class="sd">``base_url=NGWMN_OGC_API_URL``, so multi-value chunking, pagination,</span>
-<span class="sd">retry/resume, and result shaping all behave exactly as they do for the main</span>
-<span class="sd">Water Data getters.</span>
+<span class="sd">(:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.</span>
+<span class="sd">Multi-value chunking, pagination, retry/resume, and result shaping therefore</span>
+<span class="sd">behave exactly as they do for the main Water Data getters.</span>
 
 <span class="sd">Unlike the main Water Data collections, NGWMN aggregates monitoring locations</span>
 <span class="sd">from many agencies, so ``monitoring_location_id`` values use other agency</span>

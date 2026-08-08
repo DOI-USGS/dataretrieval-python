@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Datetime Information &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>Datetime Information &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -91,10 +91,10 @@
            <div itemprop="articleBody">
              
   <section id="datetime-information">
-<h1>Datetime Information<a class="headerlink" href="#datetime-information" title="Link to this heading"></a></h1>
+<span id="timeconventions"></span><h1>Datetime Information<a class="headerlink" href="#datetime-information" title="Link to this heading"></a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> normalizes time data to UTC when converting Water Data API
-responses into data frames. Timestamps are returned in the <code class="docutils literal notranslate"><span class="pre">time</span></code> column (the
-dataframe itself uses a default integer index). For sub-daily data — such as
+responses into data frames. The <code class="docutils literal notranslate"><span class="pre">time</span></code> column holds the timestamps; the
+dataframe itself uses a default integer index. For sub-daily data — such as
 continuous (instantaneous) values — <code class="docutils literal notranslate"><span class="pre">time</span></code> is a timezone-aware
 <code class="docutils literal notranslate"><span class="pre">datetime64[us,</span> <span class="pre">UTC]</span></code> column. Daily values represent a whole calendar day,
 so their <code class="docutils literal notranslate"><span class="pre">time</span></code> column is timezone-naive (dates only).</p>
@@ -118,7 +118,7 @@ so their <code class="docutils literal notranslate"><span class="pre">time</span
 </div>
 <p>Each timestamp has the format <code class="docutils literal notranslate"><span class="pre">YYYY-MM-DD</span> <span class="pre">HH:MM:SS+HH:MM</span></code>. Because the values
 are localized to UTC, the offset (<code class="docutils literal notranslate"><span class="pre">+HH:MM</span></code>) is <code class="docutils literal notranslate"><span class="pre">+00:00</span></code>. You can convert
-them to a local timezone of your choosing with the pandas <code class="docutils literal notranslate"><span class="pre">.dt</span></code> accessor.</p>
+them to any local timezone with the pandas <code class="docutils literal notranslate"><span class="pre">.dt</span></code> accessor.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="s2">&quot;America/New_York&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 <span class="go">0   2024-02-29 19:00:00-05:00</span>
@@ -131,9 +131,9 @@ them to a local timezone of your choosing with the pandas <code class="docutils 
 </div>
 <p>After conversion the timestamps carry New York’s offset — <code class="docutils literal notranslate"><span class="pre">-05:00</span></code> during
 standard time, or <code class="docutils literal notranslate"><span class="pre">-04:00</span></code> during daylight saving time, since New York is 4
-or 5 hours behind UTC depending on the time of year. Note that the first
-midnight-UTC reading rolls back to the previous calendar day (<code class="docutils literal notranslate"><span class="pre">2024-02-29</span></code>)
-once shifted into New York time.</p>
+or 5 hours behind UTC depending on the time of year. The first midnight-UTC
+reading rolls back to the previous calendar day (<code class="docutils literal notranslate"><span class="pre">2024-02-29</span></code>) once shifted
+into New York time.</p>
 </section>
 <section id="daily-values">
 <h2>Daily values<a class="headerlink" href="#daily-values" title="Link to this heading"></a></h2>

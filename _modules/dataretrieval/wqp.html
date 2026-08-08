@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,10 +75,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.wqp</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Tool for downloading data from the Water Quality Portal (https://waterqualitydata.us)</span>
+<span></span><span class="sd">&quot;&quot;&quot;Download data from the Water Quality Portal (https://waterqualitydata.us).</span>
 
-<span class="sd">See https://waterqualitydata.us/webservices_documentation for API reference</span>
+<span class="sd">See https://waterqualitydata.us/webservices_documentation for the API reference.</span>
 
 <span class="sd">.. todo::</span>
 
@@ -135,9 +134,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_code_column</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;True if a WQP column name denotes a code/identifier whose leading zeros</span>
-<span class="sd">    are significant and must be preserved as ``str`` (HUCs, parameter codes,</span>
-<span class="sd">    FIPS codes): the name ends with &quot;code&quot; or contains &quot;identifier&quot;/&quot;huc&quot;/&quot;fips&quot;.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Report whether a WQP column name denotes a code or identifier.</span>
+
+<span class="sd">    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that</span>
+<span class="sd">    are significant and must be preserved as ``str``. A name qualifies if it</span>
+<span class="sd">    ends with &quot;code&quot; or contains &quot;identifier&quot;, &quot;huc&quot;, or &quot;fips&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">lname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
@@ -180,17 +181,17 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool, optional</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    dataProfile : string, optional</span>
-<span class="sd">        Specifies the data fields returned by the query.</span>
+<span class="sd">        Data fields returned by the query.</span>
 <span class="sd">        WQX3.0 profiles include &#39;fullPhysChem&#39;, &#39;narrow&#39;, and &#39;basicPhysChem&#39;.</span>
 <span class="sd">        Legacy profiles include &#39;resultPhysChem&#39;, &#39;biological&#39;, and</span>
 <span class="sd">        &#39;narrowResult&#39;. For WQX3.0 queries (``legacy=False``), defaults to</span>
 <span class="sd">        &#39;fullPhysChem&#39;; legacy queries have no default profile.</span>
 <span class="sd">    siteid : string</span>
-<span class="sd">        Monitoring location identified by agency code, a hyphen, and</span>
+<span class="sd">        Monitoring location identifier: an agency code, a hyphen, and an</span>
 <span class="sd">        identification number (Example: &quot;USGS-05586100&quot;).</span>
 <span class="sd">    statecode : string</span>
 <span class="sd">        US state FIPS code (Example: Illinois is &quot;US:17&quot;).</span>
@@ -199,7 +200,7 @@
 <span class="sd">    huc : string</span>
 <span class="sd">        Eight-digit hydrologic unit (HUC), delimited by semicolons.</span>
 <span class="sd">    bBox : string</span>
-<span class="sd">        Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0)</span>
+<span class="sd">        Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).</span>
 <span class="sd">    lat : string</span>
 <span class="sd">        Radial-search central latitude in WGS84 decimal degrees.</span>
 <span class="sd">    long : string</span>
@@ -210,11 +211,11 @@
 <span class="sd">        Five-digit USGS parameter code, delimited by semicolons.</span>
 <span class="sd">        NWIS only.</span>
 <span class="sd">    startDateLo : string</span>
-<span class="sd">        Date of earliest desired data-collection activity,</span>
-<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;</span>
+<span class="sd">        Date of the earliest desired data-collection activity,</span>
+<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;.</span>
 <span class="sd">    startDateHi : string</span>
-<span class="sd">        Date of last desired data-collection activity,</span>
-<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;</span>
+<span class="sd">        Date of the last desired data-collection activity,</span>
+<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;.</span>
 <span class="sd">    characteristicName : string</span>
 <span class="sd">        One or more case-sensitive characteristic names, separated by</span>
 <span class="sd">        semicolons (https://www.waterqualitydata.us/public_srsnames/).</span>
@@ -293,7 +294,7 @@
 
 <span class="sd">    ``service`` is the WQP service name (e.g. ``&quot;Station&quot;``). Services with a</span>
 <span class="sd">    WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`</span>
-<span class="sd">    when ``legacy=False`` and :func:`wqp_url` otherwise; legacy-only services</span>
+<span class="sd">    when ``legacy=False`` and :func:`wqp_url` otherwise. Legacy-only services</span>
 <span class="sd">    route through :func:`_legacy_only_url`, which warns and falls back to the</span>
 <span class="sd">    legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -331,11 +332,11 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool, optional</span>
-<span class="sd">        If True, returns the legacy WQX data profile and warns the user of</span>
-<span class="sd">        the issues associated with it. If False, returns the new WQX3.0</span>
-<span class="sd">        profile, if available. Defaults to True.</span>
+<span class="sd">        If True, return the legacy WQX data profile and warn the user about</span>
+<span class="sd">        the issues associated with it. If False, return the new WQX3.0</span>
+<span class="sd">        profile when one is available. Defaults to True.</span>
 <span class="sd">    **kwargs : optional</span>
 <span class="sd">        Accepts the same parameters as :obj:`dataretrieval.wqp.get_results`</span>
 
@@ -381,7 +382,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool, optional</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -427,7 +428,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool, optional</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -473,7 +474,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool, optional</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -519,8 +520,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific</span>
-<span class="sd">    data.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -533,7 +533,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -590,7 +590,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -636,7 +636,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -692,7 +692,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Whether to check the SSL certificate. Default is True.</span>
 <span class="sd">    legacy : bool</span>
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    **kwargs : optional</span>
@@ -779,8 +779,7 @@
 <div class="viewcode-block" id="WQP_Metadata.__init__">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a standard set of metadata informed by the response with specific</span>
-<span class="sd">        metadata for WQP data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the standard metadata set, plus WQP-specific metadata.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -788,7 +787,7 @@
 <span class="sd">            Response object from the ``httpx`` module.</span>
 
 <span class="sd">        parameters : dict</span>
-<span class="sd">            Unpacked dictionary of the parameters supplied in the request</span>
+<span class="sd">            Unpacked dictionary of the parameters supplied in the request.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -820,7 +819,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Private function to check kwargs for unsupported parameters.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check kwargs for unsupported parameters.&quot;&quot;&quot;</span>
     <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mimeType&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;GeoJSON not yet supported. Set &#39;mimeType=csv&#39;.&quot;</span><span class="p">)</span>
@@ -864,10 +863,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;URL builder for WQP services that have no WQX3.0 equivalent.</span>
 
-<span class="sd">    When ``legacy=False`` is passed to one of these helpers we emit a</span>
-<span class="sd">    ``UserWarning`` explaining the fallback and *also* suppress the legacy</span>
-<span class="sd">    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise — its</span>
-<span class="sd">    message claims setting ``legacy=False`` removes the warning, which is</span>
+<span class="sd">    Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``</span>
+<span class="sd">    explaining the fallback and *also* suppresses the legacy</span>
+<span class="sd">    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise. That</span>
+<span class="sd">    warning&#39;s message claims setting ``legacy=False`` removes it, which is</span>
 <span class="sd">    a lie for endpoints that have no WQX3.0 alternative.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>

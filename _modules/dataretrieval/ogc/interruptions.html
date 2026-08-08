@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.interruptions &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.ogc.interruptions &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,7 +79,7 @@
 
 <span class="sd">When a transparently-chunked request fails mid-stream (a 429, a 5xx, or a</span>
 <span class="sd">bare transport error), the work already completed is preserved and the call</span>
-<span class="sd">is resumable: the raised exception carries a ``.call`` handle whose</span>
+<span class="sd">is resumable. The raised exception carries a ``.call`` handle whose</span>
 <span class="sd">``resume()`` re-issues only the still-pending sub-requests. These exception</span>
 <span class="sd">types are that contract, re-exported at the top level</span>
 <span class="sd">(``from dataretrieval import ChunkInterrupted``). The execution machinery</span>
@@ -103,8 +103,7 @@
 <a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.ChunkInterrupted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ChunkInterrupted</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Base class for mid-stream chunk failures whose completed work is</span>
-<span class="sd">    preserved and resumable.</span>
+<span class="sd">    Base class for mid-stream chunk failures whose completed work is resumable.</span>
 
 <span class="sd">    A ``ChunkInterrupted`` subclass means: a sub-request failed, but</span>
 <span class="sd">    ``ChunkedCall`` still owns whatever completed successfully before</span>
@@ -218,8 +217,8 @@
         <span class="c1"># interruption can&#39;t cross a process boundary with ``.call`` attached.</span>
         <span class="c1"># The degraded ``call=None`` form keeps the counts, retry hint, and the</span>
         <span class="c1"># snapshotted partial frame / response — plain instance attributes the</span>
-        <span class="c1"># base ``__getstate__`` already pickles; only ``.resume()`` is lost</span>
-        <span class="c1"># (cross-process resume was never possible anyway).</span>
+        <span class="c1"># base ``__getstate__`` already pickles. Only ``.resume()`` is lost, and</span>
+        <span class="c1"># cross-process resume was never possible anyway.</span>
         <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span> <span class="s2">&quot;call&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span></div>
 
 
@@ -228,13 +227,12 @@
 <a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.QuotaExhausted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">QuotaExhausted</span><span class="p">(</span><span class="n">ChunkInterrupted</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A sub-request returned HTTP 429 — the per-key rate-limit window</span>
-<span class="sd">    is exhausted. Subclass of :class:`ChunkInterrupted`.</span>
+<span class="sd">    A sub-request returned HTTP 429 — the per-key rate-limit window is exhausted.</span>
 
-<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
-<span class="sd">    rate-limit window resets, ``.call.resume()`` re-issues only the</span>
-<span class="sd">    still-pending work. ``partial_frame`` holds what completed</span>
-<span class="sd">    before the 429.</span>
+<span class="sd">    Subclass of :class:`ChunkInterrupted`. The completed sub-requests are</span>
+<span class="sd">    preserved on ``.call``; once the rate-limit window resets,</span>
+<span class="sd">    ``.call.resume()`` re-issues only the still-pending work.</span>
+<span class="sd">    ``partial_frame`` holds what completed before the 429.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
@@ -250,12 +248,11 @@
 <a class="viewcode-back" href="../../../reference/exceptions.html#dataretrieval.ServiceInterrupted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ServiceInterrupted</span><span class="p">(</span><span class="n">ChunkInterrupted</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A sub-request returned HTTP 5xx — the upstream service failed</span>
-<span class="sd">    transiently. Subclass of :class:`ChunkInterrupted`.</span>
+<span class="sd">    A sub-request returned HTTP 5xx — the upstream service failed transiently.</span>
 
-<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
-<span class="sd">    upstream recovers, ``.call.resume()`` resumes only the</span>
-<span class="sd">    still-pending work.</span>
+<span class="sd">    Subclass of :class:`ChunkInterrupted`. The completed sub-requests are</span>
+<span class="sd">    preserved on ``.call``; once the upstream recovers, ``.call.resume()``</span>
+<span class="sd">    resumes only the still-pending work.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>

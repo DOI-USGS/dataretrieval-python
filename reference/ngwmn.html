@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -98,15 +98,14 @@
              
   <section id="module-dataretrieval.ngwmn">
 <span id="dataretrieval-ngwmn"></span><span id="ngwmn"></span><h1>dataretrieval.ngwmn<a class="headerlink" href="#module-dataretrieval.ngwmn" title="Link to this heading"></a></h1>
-<p>National Ground-Water Monitoring Network (NGWMN) getters.</p>
+<p>Retrieve data from the National Ground-Water Monitoring Network (NGWMN).</p>
 <p>The NGWMN exposes its data through a dedicated OGC API
 (<code class="docutils literal notranslate"><span class="pre">https://api.waterdata.usgs.gov/ngwmn/ogcapi</span></code>) with five collections:
 <code class="docutils literal notranslate"><span class="pre">sites</span></code>, <code class="docutils literal notranslate"><span class="pre">waterLevelObs</span></code>, <code class="docutils literal notranslate"><span class="pre">lithologyObs</span></code>, <code class="docutils literal notranslate"><span class="pre">constructionObs</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">providers</span></code>. Each getter below delegates to the shared OGC facade
-(<code class="xref py py-func docutils literal notranslate"><span class="pre">get_ogc_data()</span></code>) with
-<code class="docutils literal notranslate"><span class="pre">base_url=NGWMN_OGC_API_URL</span></code>, so multi-value chunking, pagination,
-retry/resume, and result shaping all behave exactly as they do for the main
-Water Data getters.</p>
+(<code class="xref py py-func docutils literal notranslate"><span class="pre">get_ogc_data()</span></code>) with <code class="docutils literal notranslate"><span class="pre">base_url=NGWMN_OGC_API_URL</span></code>.
+Multi-value chunking, pagination, retry/resume, and result shaping therefore
+behave exactly as they do for the main Water Data getters.</p>
 <p>Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> values use other agency
 prefixes besides <code class="docutils literal notranslate"><span class="pre">USGS-</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">MBMG-702934</span></code>, <code class="docutils literal notranslate"><span class="pre">AKDNR-535134236016630</span></code>).</p>

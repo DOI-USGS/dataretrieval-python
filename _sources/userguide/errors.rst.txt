@@ -51,9 +51,9 @@ read-anywhere fields, so you rarely need to import the specific subclasses:
 Retry transient failures with backoff
 =====================================
 
-``.retryable`` and ``.retry_after`` make a backoff loop type-agnostic -- it
+``.retryable`` and ``.retry_after`` make a backoff loop type-agnostic: one loop
 covers rate limits (429), server errors (5xx), and connection failures alike,
-honoring the server's ``Retry-After`` hint when present:
+and honors the server's ``Retry-After`` hint when present:
 
 .. code-block:: python
 
@@ -75,9 +75,9 @@ Resume a large Water Data request
 =================================
 
 The Water Data getters transparently split an over-large request into chunks.
-When a transient failure interrupts one mid-stream, the work already completed
-is preserved: catch ``ChunkInterrupted`` and call ``exc.call.resume()`` once the
-condition clears -- only the unfinished sub-requests are re-issued.
+When a transient failure interrupts a chunk mid-stream, the work already
+completed is preserved: catch ``ChunkInterrupted`` and call ``exc.call.resume()``
+once the condition clears -- only the unfinished sub-requests are re-issued.
 
 .. code-block:: python
 
@@ -102,15 +102,15 @@ Chunk a large request more finely
 By default the getters split an over-large request only as much as the
 server's ~8 KB URL limit forces -- the fewest sub-requests. Because each
 sub-request paginates, splitting a large result further costs little or no
-extra quota *as long as each sub-request still spans many pages* (ten states
+extra quota *as long as each sub-request still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
 would; a split that leaves each sub-request only a page or two adds its partial
-final page). So if you *know* your pull is large you can ask for a finer split
-with ``parallel_chunks(n)`` -- trading roughly the same pages for more, smaller
+final page.) So if you *know* your pull is large, ask for a finer split with
+``parallel_chunks(n)``: you trade roughly the same pages for more, smaller
 sub-requests, which gives smoother progress, more even concurrency, and a
-smaller unit of retry/resume. It is a scoped ``with``
-block, so an aggressive setting can't leak into unrelated calls and
-accidentally spend quota:
+smaller unit of retry/resume. ``parallel_chunks`` is a scoped ``with`` block, so
+an aggressive setting can't leak into unrelated calls and accidentally spend
+quota:
 
 .. code-block:: python
 
@@ -123,15 +123,15 @@ accidentally spend quota:
 
 ``n`` is a positive integer (e.g. ``2``, ``8``, ``32``) -- the number of
 sub-requests to fan the call out into; a non-integer or non-positive value
-raises ``ValueError`` at the ``with``. It caps the *total* sub-request count
+raises ``ValueError`` at the ``with``. ``n`` caps the *total* sub-request count
 across every multi-value argument combined (not per argument), bounded below by
 what the byte limit already forces and above by how many values there are to
-split, so several multi-value arguments can't multiply past it and ``n=1`` asks
-for no extra fan-out. Each sub-request costs a request against your hourly rate
-limit, and because how many run *at once* is capped separately by
-``API_USGS_CONCURRENT`` (default 32) an ``n`` beyond that adds quota without
+split. Several multi-value arguments therefore can't multiply past it, and
+``n=1`` asks for no extra fan-out. Each sub-request costs a request against your
+hourly rate limit. How many run *at once* is capped separately by
+``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds quota without
 adding parallelism -- the useful range is roughly ``2`` up to
-``API_USGS_CONCURRENT``. There is no "off" level: simply don't enter the block
+``API_USGS_CONCURRENT``. There is no "off" level: don't enter the block
 unless you already expect a large, multi-page result -- on a query that would
 have fit in a single page, extra chunks only burn quota.
 

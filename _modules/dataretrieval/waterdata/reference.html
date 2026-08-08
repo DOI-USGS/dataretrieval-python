@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -122,14 +122,12 @@
 <span class="sd">        &quot;parameter-codes&quot;, &quot;reliability-codes&quot;, &quot;site-types&quot;, &quot;states&quot;,</span>
 <span class="sd">        &quot;statistic-codes&quot;, &quot;topographic-codes&quot;, &quot;time-zone-codes&quot;</span>
 <span class="sd">    limit : int, optional</span>
-<span class="sd">        The optional limit parameter is used to control the subset of the</span>
-<span class="sd">        selected features that should be returned in each page. The maximum</span>
-<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
-<span class="sd">        limit to the maximum allowable limit for the service.</span>
+<span class="sd">        The number of features returned in each page. The maximum allowable</span>
+<span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
+<span class="sd">        number if your internet connection is spotty.</span>
 <span class="sd">    query: dictionary, optional</span>
-<span class="sd">        The optional query parameter can be used to pass a dictionary of</span>
-<span class="sd">        query parameters to the collection API call.</span>
+<span class="sd">        A dictionary of extra query parameters to pass to the collection API</span>
+<span class="sd">        call.</span>
 <span class="sd">    max_rows : int, optional</span>
 <span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
 <span class="sd">        instead of downloading the whole table. Useful for cheaply</span>
@@ -203,9 +201,9 @@
 <span class="sd">    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,</span>
 <span class="sd">    ...) advertises the set of properties that can be filtered on -- exposed as</span>
 <span class="sd">    the typed keyword arguments of the matching ``get_*`` function, and usable</span>
-<span class="sd">    directly in a CQL2 ``filter``. This returns that set, so the available</span>
-<span class="sd">    filters can be discovered programmatically and monitored for upstream</span>
-<span class="sd">    additions.</span>
+<span class="sd">    directly in a CQL2 ``filter``. This function returns that set, so you can</span>
+<span class="sd">    discover the available filters programmatically and monitor them for</span>
+<span class="sd">    upstream additions.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

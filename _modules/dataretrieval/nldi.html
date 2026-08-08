@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.nldi</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="sd">&quot;&quot;&quot;Retrieve hydrologic network features from the Network Linked Data Index (NLDI).</span>
+
+<span class="sd">The getters below navigate the hydrologic network from an origin -- a feature</span>
+<span class="sd">source and id, a ``comid``, or a lat/long point -- and return flowlines, basins,</span>
+<span class="sd">or registered features as a ``geopandas.GeoDataFrame``, or as raw JSON when</span>
+<span class="sd">``as_json=True``. This module requires geopandas.</span>
+
+<span class="sd">See https://api.water.usgs.gov/nldi/linked-data for the API reference.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
@@ -125,7 +135,7 @@
 
 <span class="sd">    NLDI can legitimately return no features (e.g. a feature with nothing</span>
 <span class="sd">    upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response</span>
-<span class="sd">    carries no JSON body. ``GeoDataFrame.from_features`` raises on those</span>
+<span class="sd">    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases</span>
 <span class="sd">    (there&#39;s no geometry column to attach the CRS to), so return an empty</span>
 <span class="sd">    GeoDataFrame with the correct CRS instead of crashing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -147,8 +157,10 @@
     <span class="n">trim_start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the flowlines for the specified navigation either by comid or feature</span>
-<span class="sd">    source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the flowlines for a navigation, either by comid or by feature source.</span>
+
+<span class="sd">    Flowlines are returned in WGS84 lat/long coordinates as a GeoDataFrame</span>
+<span class="sd">    containing a polyline geometry.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -215,8 +227,10 @@
     <span class="n">split_catchment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the aggregated basin for the specified feature in WGS84 lat/lon</span>
-<span class="sd">    as GeoDataFrame or as JSON containing a polygon geometry.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the aggregated basin for the specified feature.</span>
+
+<span class="sd">    The basin is returned in WGS84 lat/lon as a GeoDataFrame or as JSON,</span>
+<span class="sd">    containing a polygon geometry.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -275,9 +289,10 @@
     <span class="n">stop_comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets all features found along the specified navigation either by</span>
-<span class="sd">    comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame</span>
-<span class="sd">    containing a point geometry.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all features along a navigation, either by comid or by feature source.</span>
+
+<span class="sd">    Features are returned as points in WGS84 lat/long coordinates - a</span>
+<span class="sd">    GeoDataFrame containing a point geometry.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -383,8 +398,10 @@
 <div class="viewcode-block" id="get_features_by_data_source">
 <a class="viewcode-back" href="../../reference/nldi.html#dataretrieval.nldi.get_features_by_data_source">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_features_by_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets all features found for the specified data source as</span>
-<span class="sd">    points in WGS84 lat/long coordinates as GeoDataFrame containing a point geometry.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all features for the specified data source.</span>
+
+<span class="sd">    Features are returned as points in WGS84 lat/long coordinates as a</span>
+<span class="sd">    GeoDataFrame containing a point geometry.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -427,8 +444,7 @@
     <span class="n">long</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Searches for the specified feature in NLDI and returns the results</span>
-<span class="sd">    as a dictionary.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search NLDI for the specified feature and return the results as a dict.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

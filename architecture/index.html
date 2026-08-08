@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -206,16 +206,17 @@ timeouts, host-scoped authentication, cursor pagination, bounded retry,
 response aggregation, progress, and sync-over-async dispatch. Internally,
 <code class="docutils literal notranslate"><span class="pre">liveness</span></code> is a stdlib-only leaf recording when data last arrived, so the
 page loop that observes progress and the retry loop that acts on it both
-depend on it rather than on each other. It imports no service adapter or OGC
-protocol module, and it is not exposed as a public framework API.</p>
+depend on <code class="docutils literal notranslate"><span class="pre">liveness</span></code> rather than on each other. Transport imports no
+service adapter or OGC protocol module, and it is not exposed as a public
+framework API.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code></dt><dd><p>Stable error-policy leaf. It has no runtime third-party dependency and may
-be imported by every service without creating an infrastructure cycle.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code></dt><dd><p>Stable error-policy leaf. It has no runtime third-party dependency, and
+every service can import it without creating an infrastructure cycle.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Shared metadata, data-shaping helpers, ambient context support, legacy
 request composition, and compatibility imports for transport names that
-historically lived here. New service-specific behavior should not be added
-there by default.</p>
+historically lived here. By default, do not add new service-specific
+behavior there.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.codes</span></code> and <code class="docutils literal notranslate"><span class="pre">dataretrieval.rdb</span></code></dt><dd><p>State/time-zone code conversion and RDB parsing leaves.</p>
 </dd>
@@ -241,7 +242,7 @@ contracts; consistency alone is not sufficient reason for a breaking change.</p>
 inspect <code class="docutils literal notranslate"><span class="pre">status_code</span></code>, <code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and <code class="docutils literal notranslate"><span class="pre">retryable</span></code> without knowing the
 concrete subtype. OGC calls may raise <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> subclasses carrying a
 resumable call handle and completed partial state.</p>
-<p>The public surface is defined by package/module exports and documentation.
+<p>Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
 internal adapters currently import them; those imports are known variances, not
 new extension points.</p>
@@ -319,21 +320,22 @@ host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.</p
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></dt><dd><p>Seconds a call may go without receiving any data before retrying stops and
 the failure surfaces; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It
 complements <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>, which caps attempts rather than elapsed
-time: without it, four retries of a request that times out after a minute is
-four silent minutes. Progress restarts the budget — a page received, or a
-queued sub-request acquiring its concurrency slot — so neither a slow but
-productive download nor the tail of a wide fan-out is cut short, and an
-attempt already in flight is never interrupted. The first retry is never
-withheld by this bound, so one slow attempt cannot disable retry by itself;
-the budget decides whether to continue after that. A dead connection
-therefore costs about two read timeouts rather than five attempts’ worth.</p>
+time: without this bound, four retries of a request that times out after a
+minute add up to four silent minutes. Progress restarts the budget — a page
+received, or a queued sub-request acquiring its concurrency slot. Neither a
+slow but productive download nor the tail of a wide fan-out is cut short,
+and an attempt already in flight is never interrupted. This bound never
+withholds the first retry, so one slow attempt cannot disable retry by
+itself; after that, the budget decides whether to continue. A dead
+connection therefore costs about two read timeouts rather than five
+attempts’ worth.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code></dt><dd><p>Controls best-effort progress display. Reporting failures must never change
 retrieval results.</p>
 </dd>
 </dl>
-<p>HTTP timeout, redirect, and authentication policy is centralized in
-<code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code>. OGC subrequest fan-out and Water Use location
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code> centralizes HTTP timeout, redirect, and
+authentication policy. OGC subrequest fan-out and Water Use location
 fan-out retain separate explicit concurrency caps because their upstream costs
 and request shapes differ.</p>
 </section>

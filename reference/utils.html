@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -168,7 +168,7 @@ leak into a later call the way a hand-written <code class="docutils literal notr
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.utils.BaseMetadata.url">
 <span class="sig-name descname"><span class="pre">url</span></span><a class="headerlink" href="#dataretrieval.utils.BaseMetadata.url" title="Link to this definition"></a></dt>
-<dd><p>Response url</p>
+<dd><p>Response url.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
@@ -179,7 +179,7 @@ leak into a later call the way a hand-written <code class="docutils literal notr
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.utils.BaseMetadata.query_time">
 <span class="sig-name descname"><span class="pre">query_time</span></span><a class="headerlink" href="#dataretrieval.utils.BaseMetadata.query_time" title="Link to this definition"></a></dt>
-<dd><p>Response elapsed time</p>
+<dd><p>Response elapsed time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>datetime.timedelta</p>
@@ -190,7 +190,7 @@ leak into a later call the way a hand-written <code class="docutils literal notr
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.utils.BaseMetadata.header">
 <span class="sig-name descname"><span class="pre">header</span></span><a class="headerlink" href="#dataretrieval.utils.BaseMetadata.header" title="Link to this definition"></a></dt>
-<dd><p>Response headers</p>
+<dd><p>Response headers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>httpx.Headers</p>
@@ -201,7 +201,7 @@ leak into a later call the way a hand-written <code class="docutils literal notr
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.utils.BaseMetadata.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#BaseMetadata.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.BaseMetadata.__init__" title="Link to this definition"></a></dt>
-<dd><p>Generates a standard set of metadata informed by the response.</p>
+<dd><p>Generate a standard set of metadata informed by the response.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>response</strong> (<code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code>) – Response object from the <code class="docutils literal notranslate"><span class="pre">httpx</span></code> module.</p>
@@ -226,8 +226,7 @@ leak into a later call the way a hand-written <code class="docutils literal notr
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils._attach_datetime_columns">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_attach_datetime_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_attach_datetime_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._attach_datetime_columns" title="Link to this definition"></a></dt>
-<dd><p>Add <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> UTC columns for any Date/Time/TimeZone triplets
-and sort the frame by the activity-start datetime.</p>
+<dd><p>Append a UTC <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> column per Date/Time/TimeZone triplet.</p>
 <p>Detects two naming patterns that appear in USGS Samples and Water Quality
 Portal CSV responses:</p>
 <ul class="simple">
@@ -278,16 +277,15 @@ was detected).</p>
 <dt class="sig sig-object py" id="dataretrieval.utils._query_impl">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_query_impl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RetryPolicy</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_query_impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._query_impl" title="Link to this definition"></a></dt>
 <dd><p>Send a query.</p>
-<p>Wrapper for httpx.get that handles errors, converts listed
-query parameters to comma separated strings, and returns response.</p>
+<p>Wrapper for <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> that handles errors, converts listed query
+parameters to comma-separated strings, and returns the response.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>url</strong> (<em>string</em>) – URL to query</p></li>
-<li><p><strong>payload</strong> (<em>dict</em>) – query parameters passed to <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code></p></li>
-<li><p><strong>delimiter</strong> (<em>string</em>) – delimiter to use with lists</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
+<li><p><strong>url</strong> (<em>string</em>) – URL to query.</p></li>
+<li><p><strong>payload</strong> (<em>dict</em>) – Query parameters passed to <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code>.</p></li>
+<li><p><strong>delimiter</strong> (<em>string</em>) – Delimiter to use with lists.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Whether to check SSL certificates. Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -316,10 +314,9 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils._raise_for_status">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">_raise_for_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">detail_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Response</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#_raise_for_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils._raise_for_status" title="Link to this definition"></a></dt>
-<dd><p>Raise the typed <code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> for an HTTP error response;
-return <code class="docutils literal notranslate"><span class="pre">None</span></code> on success.</p>
-<p>Shared by the legacy <a class="reference internal" href="#dataretrieval.utils.query" title="dataretrieval.utils.query"><code class="xref py py-func docutils literal notranslate"><span class="pre">query()</span></code></a> path (and <code class="docutils literal notranslate"><span class="pre">streamstats</span></code> /
-<code class="docutils literal notranslate"><span class="pre">wateruse</span></code>). Delegates the status-to-type mapping to
+<dd><p>Raise the typed <code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> for an HTTP error response.</p>
+<p>A success status returns <code class="docutils literal notranslate"><span class="pre">None</span></code>. Shared by the legacy <a class="reference internal" href="#dataretrieval.utils.query" title="dataretrieval.utils.query"><code class="xref py py-func docutils literal notranslate"><span class="pre">query()</span></code></a> path
+(and <code class="docutils literal notranslate"><span class="pre">streamstats</span></code> / <code class="docutils literal notranslate"><span class="pre">wateruse</span></code>). Delegates the status-to-type mapping to
 <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a>, except a too-long-URL
 status (413 / 414): that gets the same actionable “split your query”
 remediation as the client-side over-long-URL case below, rather than a bare
@@ -368,20 +365,19 @@ default, where a 5xx is an upstream hiccup worth riding out.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils.format_datetime">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">format_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tz_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#format_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.format_datetime" title="Link to this definition"></a></dt>
-<dd><p>Creates a datetime field from separate date, time, and
-time zone fields.</p>
+<dd><p>Create a datetime field from separate date, time, and time zone fields.</p>
 <p>Assumes ISO 8601.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – A data frame containing date, time, and timezone fields.</p></li>
-<li><p><strong>date_field</strong> (<em>string</em>) – Name of date column in df.</p></li>
-<li><p><strong>time_field</strong> (<em>string</em>) – Name of time column in df.</p></li>
-<li><p><strong>tz_field</strong> (<em>string</em>) – Name of time zone column in df.</p></li>
+<li><p><strong>date_field</strong> (<em>string</em>) – Name of the date column in <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
+<li><p><strong>time_field</strong> (<em>string</em>) – Name of the time column in <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
+<li><p><strong>tz_field</strong> (<em>string</em>) – Name of the time zone column in <code class="docutils literal notranslate"><span class="pre">df</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>df</strong> – The data frame with a formatted ‘datetime’ column</p>
+<dd class="field-even"><p><strong>df</strong> – The data frame with a formatted ‘datetime’ column.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
@@ -393,16 +389,15 @@ time zone fields.</p>
 <dt class="sig sig-object py" id="dataretrieval.utils.query">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.query" title="Link to this definition"></a></dt>
 <dd><p>Send a query.</p>
-<p>Wrapper for httpx.get that handles errors, converts listed
-query parameters to comma separated strings, and returns response.</p>
+<p>Wrapper for <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> that handles errors, converts listed query
+parameters to comma-separated strings, and returns the response.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>url</strong> (<em>string</em>) – URL to query</p></li>
-<li><p><strong>payload</strong> (<em>dict</em>) – query parameters passed to <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code></p></li>
-<li><p><strong>delimiter</strong> (<em>string</em>) – delimiter to use with lists</p></li>
-<li><p><strong>ssl_check</strong> (<em>bool</em>) – If True, check SSL certificates, if False, do not check SSL,
-default is True</p></li>
+<li><p><strong>url</strong> (<em>string</em>) – URL to query.</p></li>
+<li><p><strong>payload</strong> (<em>dict</em>) – Query parameters passed to <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code>.</p></li>
+<li><p><strong>delimiter</strong> (<em>string</em>) – Delimiter to use with lists.</p></li>
+<li><p><strong>ssl_check</strong> (<em>bool</em>) – Whether to check SSL certificates. Default is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -425,18 +420,18 @@ default is True</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.utils.to_str">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">listlike</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/utils.html#to_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.utils.to_str" title="Link to this definition"></a></dt>
-<dd><p>Translates list-like objects into strings.</p>
+<dd><p>Translate a list-like object into a delimited string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>listlike</strong> (<em>list-like object</em>) – An object that is a list, or list-like
-(e.g., <code class="docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code>)</p></li>
-<li><p><strong>delimiter</strong> (<em>string</em><em>, </em><em>optional</em>) – The delimiter that is placed between entries in listlike when it is
-turned into a string. Default value is a comma.</p></li>
+<li><p><strong>listlike</strong> (<em>list-like object</em>) – A list, or a list-like object
+(e.g. <code class="docutils literal notranslate"><span class="pre">pandas.core.series.Series</span></code>).</p></li>
+<li><p><strong>delimiter</strong> (<em>string</em><em>, </em><em>optional</em>) – String placed between entries of <code class="docutils literal notranslate"><span class="pre">listlike</span></code> when it is turned into a
+string. Default value is a comma.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>listlike</strong> – The listlike object as string separated by the delimiter</p>
+<dd class="field-even"><p><strong>listlike</strong> – The listlike object as a string separated by the delimiter.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>string</p>

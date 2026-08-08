@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -260,32 +260,32 @@
 <span class="sd">    down the database&#39;s ability to assemble a result before it times out, so</span>
 <span class="sd">    filtering narrowly is faster than filtering exhaustively.</span>
 
-<span class="sd">    The web GUI for the Samples database can be found here:</span>
+<span class="sd">    The web GUI for the Samples database is at</span>
 <span class="sd">    https://waterdata.usgs.gov/download-samples/#dataProfile=site</span>
 
-<span class="sd">    If you would like more details on feasible query parameters (complete with</span>
-<span class="sd">    examples), please visit the Samples database swagger docs, here:</span>
+<span class="sd">    For more details on feasible query parameters, complete with examples, see</span>
+<span class="sd">    the Samples database swagger docs at</span>
 <span class="sd">    https://api.waterdata.usgs.gov/samples-data/docs#/</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate.</span>
+<span class="sd">        Verify the server&#39;s SSL certificate.</span>
 <span class="sd">    service : string</span>
 <span class="sd">        One of the available Samples services: &quot;results&quot;, &quot;locations&quot;, &quot;activities&quot;,</span>
 <span class="sd">        &quot;projects&quot;, or &quot;organizations&quot;. Defaults to &quot;results&quot;.</span>
 <span class="sd">    profile : string</span>
-<span class="sd">        One of the available profiles associated with a service. Options for each</span>
-<span class="sd">        service are:</span>
-<span class="sd">        results - &quot;fullphyschem&quot;, &quot;basicphyschem&quot;,</span>
-<span class="sd">        &quot;fullbio&quot;, &quot;basicbio&quot;, &quot;narrow&quot;,</span>
-<span class="sd">        &quot;resultdetectionquantitationlimit&quot;,</span>
-<span class="sd">        &quot;labsampleprep&quot;, &quot;count&quot;</span>
-<span class="sd">        locations - &quot;site&quot;, &quot;count&quot;</span>
-<span class="sd">        activities - &quot;sampact&quot;, &quot;actmetric&quot;,</span>
-<span class="sd">        &quot;actgroup&quot;, &quot;count&quot;</span>
-<span class="sd">        projects - &quot;project&quot;, &quot;projectmonitoringlocationweight&quot;</span>
-<span class="sd">        organizations - &quot;organization&quot;, &quot;count&quot;</span>
+<span class="sd">        One of the available profiles associated with a service. Options for</span>
+<span class="sd">        each service are:</span>
+
+<span class="sd">            * results - &quot;fullphyschem&quot;, &quot;basicphyschem&quot;, &quot;fullbio&quot;, &quot;basicbio&quot;,</span>
+<span class="sd">              &quot;narrow&quot;, &quot;resultdetectionquantitationlimit&quot;, &quot;labsampleprep&quot;,</span>
+<span class="sd">              &quot;count&quot;</span>
+<span class="sd">            * locations - &quot;site&quot;, &quot;count&quot;</span>
+<span class="sd">            * activities - &quot;sampact&quot;, &quot;actmetric&quot;, &quot;actgroup&quot;, &quot;count&quot;</span>
+<span class="sd">            * projects - &quot;project&quot;, &quot;projectmonitoringlocationweight&quot;</span>
+<span class="sd">            * organizations - &quot;organization&quot;, &quot;count&quot;</span>
+
 <span class="sd">    activity_media_name : string or iterable of strings, optional</span>
 <span class="sd">        Name or code indicating environmental medium in which sample was taken.</span>
 <span class="sd">        Call ``get_codes(&quot;samplemedia&quot;)`` for the valid inputs.</span>
@@ -485,7 +485,7 @@
 <span class="sd">        are accepted by the service but return an empty result, so a prefix</span>
 <span class="sd">        is effectively required. (Samples API: ``monitoringLocationIdentifier``)</span>
 <span class="sd">    ssl_check : bool, optional</span>
-<span class="sd">        Check the SSL certificate. Default is True.</span>
+<span class="sd">        Verify the server&#39;s SSL certificate. Default is True.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

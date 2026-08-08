@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -97,20 +97,21 @@
              
   <section id="module-dataretrieval.wateruse">
 <span id="dataretrieval-wateruse"></span><span id="wateruse"></span><h1>dataretrieval.wateruse<a class="headerlink" href="#module-dataretrieval.wateruse" title="Link to this heading"></a></h1>
-<p>Retrieve USGS water-use data from the National Water Availability
-Assessment Data Companion (NWDC).</p>
-<p>The NWDC web services provide national-scale, USGS-modeled water-use data that
-underlie the <a class="reference external" href="https://water.usgs.gov/nwaa-data/">USGS National Water Availability Assessment</a>. Estimates are served on a HUC12
-(12-digit hydrologic unit) spatial grid and can be queried for any county,
-state, or hydrologic unit. This is the modern replacement for the defunct
-legacy NWIS water-use service (<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
+<p>Retrieve USGS water-use data from the NWDC web service.</p>
+<p>The National Water Availability Assessment Data Companion (NWDC) web services
+provide national-scale, USGS-modeled water-use data that underlie the <a class="reference external" href="https://water.usgs.gov/nwaa-data/">USGS
+National Water Availability Assessment</a>.
+Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
+be queried for any county, state, or hydrologic unit. This is the modern
+replacement for the defunct legacy NWIS water-use service
+(<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
 <p>Unlike the main Water Data getters (<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>) and NGWMN
 (<a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>), the NWDC is a plain CSV REST service rather than
 an OGC API Features collection. This module supplies the NWDC-specific bits —
 request building, CSV parsing, the <code class="docutils literal notranslate"><span class="pre">Link</span></code>-header cursor, and the <code class="docutils literal notranslate"><span class="pre">{detail}</span></code>
-error envelope — and uses the service-neutral transport layer for cursor pagination,
-response aggregation, client lifecycle, and sync-from-async dispatch. It follows
-the same conventions: host-scoped request headers, the typed
+error envelope. The service-neutral transport layer supplies cursor pagination,
+response aggregation, client lifecycle, and sync-from-async dispatch. The module
+follows the same conventions: host-scoped request headers, the typed
 <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> taxonomy, and a
 <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">BaseMetadata)</span></code> return.</p>
 <p>See <a class="reference external" href="https://api.water.usgs.gov/docs/nwaa-data/">https://api.water.usgs.gov/docs/nwaa-data/</a> for the API reference and
@@ -167,8 +168,8 @@ Availability Assessment Data Companion. The area is given as exactly one of
 <code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code>, or <code class="docutils literal notranslate"><span class="pre">huc</span></code>; results are always returned on a HUC12
 grid, in a long (tidy) frame with one row per HUC12 and time step. Large
 areas (e.g. a whole region or a populous state) are served across multiple
-pages, which this function follows transparently and concatenates into one
-frame.</p>
+pages; this function follows those pages transparently and concatenates
+them into one frame.</p>
 <p>Each selector also accepts a list of values. The NWDC queries one area per
 request, so a list is fanned out into one request per value — up to
 <a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a> in parallel — and the results are

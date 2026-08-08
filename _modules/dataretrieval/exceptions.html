@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,8 +79,8 @@
 
 <span class="sd">Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,</span>
 <span class="sd">``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request</span>
-<span class="sd">fails, so one ``except dataretrieval.DataRetrievalError`` catches them all --</span>
-<span class="sd">including connection-level failures (timeouts, DNS, refused connections), which</span>
+<span class="sd">fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That</span>
+<span class="sd">includes connection-level failures (timeouts, DNS, refused connections), which</span>
 <span class="sd">are wrapped as :class:`NetworkError` with the underlying ``httpx`` exception on</span>
 <span class="sd">``__cause__``.</span>
 
@@ -92,8 +92,8 @@
 <span class="sd">:func:`error_for_status` maps a status to its type.</span>
 
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
-<span class="sd">for type checking -- so any module can import it without pulling in pandas / httpx</span>
-<span class="sd">and without risking an import cycle.</span>
+<span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
+<span class="sd">or httpx, and without risking an import cycle.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -174,8 +174,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_new_error</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DataRetrievalError</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DataRetrievalError</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a blank :class:`DataRetrievalError` for unpickling, bypassing</span>
-<span class="sd">    ``__init__``; pickle then calls ``__setstate__`` to restore its state.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a blank :class:`DataRetrievalError` for unpickling.</span>
+
+<span class="sd">    Bypasses ``__init__``; pickle then calls ``__setstate__`` to restore state.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
 
@@ -192,8 +194,8 @@
 <span class="sd">    (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one</span>
 <span class="sd">    exception to &quot;a status is an ``HTTPError``&quot; is a request the service rejects</span>
 <span class="sd">    as too long: it surfaces as :class:`URLTooLong` (a :class:`RequestTooLarge`),</span>
-<span class="sd">    *not* an ``HTTPError`` -- so catch :class:`DataRetrievalError` to be certain</span>
-<span class="sd">    of spanning every failure. See :func:`error_for_status` for the full mapping.</span>
+<span class="sd">    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain of</span>
+<span class="sd">    spanning every failure. See :func:`error_for_status` for the full mapping.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -212,8 +214,9 @@
 <div class="viewcode-block" id="TransientError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.TransientError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TransientError</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A 429 or 5xx the server may serve on a later try -- :class:`RateLimited`</span>
-<span class="sd">    for 429, :class:`ServiceUnavailable` for 5xx.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A 429 or 5xx the server may serve on a later try.</span>
+
+<span class="sd">    :class:`RateLimited` covers 429 and :class:`ServiceUnavailable` covers 5xx.</span>
 
 <span class="sd">    This only classifies the condition; it does not itself retry. Whether to</span>
 <span class="sd">    retry is up to the calling path: a single-shot request raises it for the</span>
@@ -319,8 +322,8 @@
 
 <span class="sd">    Raised by the Water Data chunker when even the smallest reducible plan</span>
 <span class="sd">    (every list axis at one atom per sub-request, the filter at one clause per</span>
-<span class="sd">    sub-request) still exceeds the server&#39;s byte limit -- so unlike</span>
-<span class="sd">    :class:`URLTooLong`, automatic splitting has already been tried and</span>
+<span class="sd">    sub-request) still exceeds the server&#39;s byte limit. Unlike</span>
+<span class="sd">    :class:`URLTooLong`, then, automatic splitting has already been tried and</span>
 <span class="sd">    exhausted. Shrink the input lists, simplify the filter, or split the call</span>
 <span class="sd">    manually.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
@@ -333,9 +336,10 @@
 <div class="viewcode-block" id="NetworkError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.NetworkError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NetworkError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The request never completed a round-trip to the service -- a DNS</span>
-<span class="sd">    failure, refused connection, or timeout -- so no HTTP response arrived to</span>
-<span class="sd">    classify.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The request never completed a round-trip to the service.</span>
+
+<span class="sd">    A DNS failure, refused connection, or timeout stopped it, so no HTTP</span>
+<span class="sd">    response arrived to classify.</span>
 
 <span class="sd">    Wraps the underlying ``httpx`` transport exception, preserved on</span>
 <span class="sd">    ``__cause__``. Worth retrying (:attr:`~DataRetrievalError.retryable` is</span>
@@ -352,8 +356,10 @@
 <div class="viewcode-block" id="ConfigurationError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.ConfigurationError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting -- an environment variable, a policy field --</span>
-<span class="sd">    holds a value that can&#39;t be used, so no request was issued.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting holds a value that can&#39;t be used.</span>
+
+<span class="sd">    The setting may be an environment variable or a policy field; either way,</span>
+<span class="sd">    no request was issued.</span>
 
 <span class="sd">    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches</span>
 <span class="sd">    it rather than letting a bare ``ValueError`` escape a request path, and a</span>

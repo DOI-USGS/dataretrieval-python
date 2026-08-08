@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g316939b33 documentation</title>
+  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=8a6b4212"></script>
+      <script src="../../../_static/documentation_options.js?v=b219acd1"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,32 +125,29 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get discrete measurements collected in person during a site visit.</span>
 
-<span class="sd">    Field measurements are physically measured values collected during a</span>
-<span class="sd">    visit to the monitoring location. Field measurements consist of measurements</span>
-<span class="sd">    of gage height and discharge, and readings of groundwater levels, and are</span>
-<span class="sd">    primarily used as calibration readings for the automated sensors collecting</span>
-<span class="sd">    continuous data. They are collected at a low frequency, and delivery of the</span>
-<span class="sd">    data in WDFN may be delayed due to data processing time.</span>
+<span class="sd">    Field measurements consist of measurements of gage height and discharge, and</span>
+<span class="sd">    readings of groundwater levels. They are used primarily as calibration</span>
+<span class="sd">    readings for the automated sensors that collect continuous data. Field</span>
+<span class="sd">    measurements are collected at a low frequency, and their delivery in WDFN</span>
+<span class="sd">    may be delayed by data processing time.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
-<span class="sd">        A unique identifier representing a single monitoring location. This</span>
-<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
-<span class="sd">        Monitoring location IDs are created by combining the agency code of the</span>
-<span class="sd">        agency responsible for the monitoring location (e.g. USGS) with the ID</span>
-<span class="sd">        number of the monitoring location (e.g. 02238500), separated by a hyphen</span>
-<span class="sd">        (e.g. USGS-02238500).</span>
+<span class="sd">        A unique identifier representing a single monitoring location,</span>
+<span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
+<span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
+<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
-<span class="sd">        Parameter codes are 5-digit codes used to identify the constituent</span>
-<span class="sd">        measured and the units of measure. A complete list of parameter codes</span>
-<span class="sd">        and associated groupings can be found at</span>
-<span class="sd">        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
+<span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
+<span class="sd">        measure. A complete list of parameter codes and associated groupings is</span>
+<span class="sd">        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.</span>
 <span class="sd">    observing_procedure_code : string or iterable of strings, optional</span>
 <span class="sd">        A short code corresponding to the observing procedure for the field</span>
 <span class="sd">        measurement.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A list of requested columns to be returned from the query. See the</span>
+<span class="sd">        The columns to return from the query. See the</span>
 <span class="sd">        field-measurements schema in the OpenAPI reference for the available</span>
 <span class="sd">        columns (e.g. geometry, id, monitoring_location_id, parameter_code,</span>
 <span class="sd">        value, unit_of_measure, approval_status, qualifier, last_modified):</span>
@@ -159,34 +156,33 @@
 <span class="sd">        A universally unique identifier (UUID) for the field visit.</span>
 <span class="sd">        Multiple measurements may be made during a single field visit.</span>
 <span class="sd">    approval_status : string or iterable of strings, optional</span>
-<span class="sd">        Some of the data that you have obtained from this U.S. Geological Survey</span>
-<span class="sd">        database may not have received Director&#39;s approval. Any such data values</span>
-<span class="sd">        are qualified as provisional and are subject to revision. Provisional</span>
-<span class="sd">        data are released on the condition that neither the USGS nor the United</span>
-<span class="sd">        States Government may be held liable for any damages resulting from its</span>
-<span class="sd">        use. This field reflects the approval status of each record, and is either</span>
-<span class="sd">        &quot;Approved&quot;, meaning processing review has been completed and the data is</span>
-<span class="sd">        approved for publication, or &quot;Provisional&quot; and subject to revision. For</span>
-<span class="sd">        more information about provisional data, go to:</span>
+<span class="sd">        The approval status of each record: either &quot;Approved&quot;, meaning</span>
+<span class="sd">        processing review has been completed and the data are approved for</span>
+<span class="sd">        publication, or &quot;Provisional&quot;, meaning the data are subject to revision.</span>
+<span class="sd">        Some of the data you obtain from this U.S. Geological Survey database</span>
+<span class="sd">        may not have received Director&#39;s approval. Any such data values are</span>
+<span class="sd">        qualified as provisional and are subject to revision. Provisional data</span>
+<span class="sd">        are released on the condition that neither the USGS nor the United</span>
+<span class="sd">        States Government may be held liable for any damages resulting from</span>
+<span class="sd">        their use. For more information about provisional data, see</span>
 <span class="sd">        https://waterdata.usgs.gov/provisional-data-statement/.</span>
 <span class="sd">    unit_of_measure : string or iterable of strings, optional</span>
 <span class="sd">        A human-readable description of the units of measurement associated</span>
 <span class="sd">        with an observation.</span>
 <span class="sd">    qualifier : string or iterable of strings, optional</span>
-<span class="sd">        This field indicates any qualifiers associated with an observation, for</span>
-<span class="sd">        instance if a sensor may have been impacted by ice or if values were</span>
-<span class="sd">        estimated.</span>
+<span class="sd">        Any qualifiers associated with an observation, for instance whether a</span>
+<span class="sd">        sensor may have been impacted by ice or whether values were estimated.</span>
 <span class="sd">    value : string or iterable of strings, optional</span>
 <span class="sd">        The value of the observation. Values are transmitted as strings in</span>
-<span class="sd">        the JSON response format in order to preserve precision.</span>
+<span class="sd">        the JSON response format to preserve precision.</span>
 <span class="sd">    last_modified : string, optional</span>
-<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
-<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        that anything about the measurement has changed. You can query this field</span>
-<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
-<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
-<span class="sd">        at start or end). Only features that have a last_modified that</span>
-<span class="sd">        intersects the value of datetime are selected.</span>
+<span class="sd">        The last time a record was refreshed in our database. A refresh may</span>
+<span class="sd">        happen due to regular operational processes and does not necessarily</span>
+<span class="sd">        indicate that anything about the measurement has changed. You can query</span>
+<span class="sd">        this field using date-times or intervals, adhering to RFC 3339, or using</span>
+<span class="sd">        ISO 8601 duration objects. Intervals may be bounded or half-bounded</span>
+<span class="sd">        (double-dots at start or end). Only features whose last_modified</span>
+<span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
@@ -204,18 +200,17 @@
 <span class="sd">    measuring_agency : string or iterable of strings, optional</span>
 <span class="sd">        The agency performing the measurement.</span>
 <span class="sd">    skip_geometry : boolean, optional</span>
-<span class="sd">        This option can be used to skip response geometries for each feature.</span>
-<span class="sd">        The returning object will be a data frame with no spatial information.</span>
-<span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
-<span class="sd">        CQL2 queries.</span>
+<span class="sd">        If True, the response omits the geometry of each feature and the</span>
+<span class="sd">        returned object is a data frame with no spatial information. The USGS</span>
+<span class="sd">        Water Data APIs use camelCase &quot;skipGeometry&quot; in CQL2 queries.</span>
 <span class="sd">    time : string, optional</span>
-<span class="sd">        The date an observation represents. You can query this field using date-times</span>
-<span class="sd">        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.</span>
-<span class="sd">        Intervals may be bounded or half-bounded (double-dots at start or end).</span>
-<span class="sd">        Only features that have a time that intersects the value of datetime are</span>
-<span class="sd">        selected. If a feature has multiple temporal properties, it is the</span>
-<span class="sd">        decision of the server whether only a single temporal property is used</span>
-<span class="sd">        to determine the extent or all relevant temporal properties.</span>
+<span class="sd">        The date an observation represents. You can query this field using</span>
+<span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features whose time intersects the requested</span>
+<span class="sd">        value are selected. If a feature has multiple temporal properties, the</span>
+<span class="sd">        server decides whether to use a single property or all relevant ones to</span>
+<span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
@@ -226,22 +221,20 @@
 <span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
 
 <span class="sd">    bbox : list of numbers, optional</span>
-<span class="sd">        Only features that have a geometry that intersects the bounding box are</span>
-<span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
-<span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
-<span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
-<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
-<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">        Only features whose geometry intersects the bounding box are selected.</span>
+<span class="sd">        The bounding box is provided as four or six numbers, depending on</span>
+<span class="sd">        whether the coordinate reference system includes a vertical axis (height</span>
+<span class="sd">        or depth). Coordinates are assumed to be in crs 4326. The expected</span>
+<span class="sd">        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,</span>
+<span class="sd">        Southern-most latitude, Eastern-most longitude, Northern-most</span>
+<span class="sd">        latitude]``.</span>
 <span class="sd">    limit : int, optional</span>
-<span class="sd">        The optional limit parameter is used to control the subset of the</span>
-<span class="sd">        selected features that should be returned in each page. The maximum</span>
-<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
-<span class="sd">        limit to the maximum allowable limit for the service.</span>
-<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
-<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
-<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">        The number of features returned in each page. The maximum allowable</span>
+<span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
+<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
+<span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
+<span class="sd">        to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
@@ -495,32 +488,27 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get channel-geometry measurements recorded during streamflow field visits.</span>
 
-<span class="sd">    Channel measurements taken as part of streamflow field measurements.</span>
-
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
-<span class="sd">        A unique identifier representing a single monitoring location. This</span>
-<span class="sd">        corresponds to the id field in the monitoring-locations endpoint.</span>
-<span class="sd">        Monitoring location IDs are created by combining the agency code of</span>
-<span class="sd">        the agency responsible for the monitoring location (e.g. USGS) with</span>
-<span class="sd">        the ID number of the monitoring location (e.g. 02238500), separated</span>
-<span class="sd">        by a hyphen (e.g. USGS-02238500).</span>
+<span class="sd">        A unique identifier representing a single monitoring location,</span>
+<span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
+<span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
+<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    field_visit_id : string or iterable of strings, optional</span>
-<span class="sd">        A universally unique identifier (UUID) for the field visit.</span>
-<span class="sd">        Multiple measurements</span>
-<span class="sd">        may be made during a single field visit.</span>
+<span class="sd">        A universally unique identifier (UUID) for the field visit. Multiple</span>
+<span class="sd">        measurements may be made during a single field visit.</span>
 <span class="sd">    measurement_number : string or iterable of strings, optional</span>
 <span class="sd">        Measurement number.</span>
 <span class="sd">    time : string or iterable of strings, optional</span>
 <span class="sd">        The date an observation represents. You can query this field using</span>
 <span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
 <span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
-<span class="sd">        at start or end). Only features that have a time that intersects the</span>
-<span class="sd">        value of datetime are selected. If a feature has multiple temporal</span>
-<span class="sd">        properties, it is the decision of the server whether only a single</span>
-<span class="sd">        temporal property is used to determine the extent or all relevant</span>
-<span class="sd">        temporal properties.</span>
+<span class="sd">        at start or end). Only features whose time intersects the requested</span>
+<span class="sd">        value are selected. If a feature has multiple temporal properties, the</span>
+<span class="sd">        server decides whether to use a single property or all relevant ones to</span>
+<span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
@@ -567,13 +555,13 @@
 <span class="sd">    measurement_type : string or iterable of strings, optional</span>
 <span class="sd">        The type of channel measurement.</span>
 <span class="sd">    last_modified : string, optional</span>
-<span class="sd">        The last time a record was refreshed in our database. This may happen</span>
-<span class="sd">        due to regular operational processes and does not necessarily indicate</span>
-<span class="sd">        that anything about the measurement has changed. You can query this field</span>
-<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
-<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
-<span class="sd">        at start or end). Only features that have a last_modified that</span>
-<span class="sd">        intersects the value of datetime are selected.</span>
+<span class="sd">        The last time a record was refreshed in our database. A refresh may</span>
+<span class="sd">        happen due to regular operational processes and does not necessarily</span>
+<span class="sd">        indicate that anything about the measurement has changed. You can query</span>
+<span class="sd">        this field using date-times or intervals, adhering to RFC 3339, or using</span>
+<span class="sd">        ISO 8601 duration objects. Intervals may be bounded or half-bounded</span>
+<span class="sd">        (double-dots at start or end). Only features whose last_modified</span>
+<span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
 <span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
@@ -584,14 +572,13 @@
 <span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
 
 <span class="sd">    skip_geometry : boolean, optional</span>
-<span class="sd">        This option can be used to skip response geometries for each feature.</span>
-<span class="sd">        The returning object will be a data frame with no spatial information.</span>
-<span class="sd">        Note that the USGS Water Data APIs use camelCase &quot;skipGeometry&quot; in</span>
-<span class="sd">        CQL2 queries.</span>
+<span class="sd">        If True, the response omits the geometry of each feature and the</span>
+<span class="sd">        returned object is a data frame with no spatial information. The USGS</span>
+<span class="sd">        Water Data APIs use camelCase &quot;skipGeometry&quot; in CQL2 queries.</span>
 <span class="sd">    channel_measurement_type : string or iterable of strings, optional</span>
 <span class="sd">        The channel measurement type.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
-<span class="sd">        A list of requested columns to be returned from the query. Available</span>
+<span class="sd">        The columns to return from the query. Available</span>
 <span class="sd">        options are: geometry, channel_measurements_id, monitoring_location_id,</span>
 <span class="sd">        field_visit_id, measurement_number, time, channel_name, channel_flow,</span>
 <span class="sd">        channel_flow_unit, channel_width, channel_width_unit, channel_area,</span>
@@ -600,24 +587,22 @@
 <span class="sd">        channel_material, channel_evenness, horizontal_velocity_description,</span>
 <span class="sd">        vertical_velocity_description, longitudinal_velocity_description,</span>
 <span class="sd">        measurement_type, last_modified, channel_measurement_type. The default</span>
-<span class="sd">        (None) will return all columns of the data.</span>
+<span class="sd">        (None) returns all columns.</span>
 <span class="sd">    bbox : list of numbers, optional</span>
-<span class="sd">        Only features that have a geometry that intersects the bounding box are</span>
-<span class="sd">        selected.  The bounding box is provided as four or six numbers,</span>
-<span class="sd">        depending on whether the coordinate reference system includes a vertical</span>
-<span class="sd">        axis (height or depth). Coordinates are assumed to be in crs 4326. The</span>
-<span class="sd">        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.</span>
-<span class="sd">        ``[Western-most longitude, Southern-most latitude, Eastern-most</span>
-<span class="sd">        longitude, Northern-most latitude]``.</span>
+<span class="sd">        Only features whose geometry intersects the bounding box are selected.</span>
+<span class="sd">        The bounding box is provided as four or six numbers, depending on</span>
+<span class="sd">        whether the coordinate reference system includes a vertical axis (height</span>
+<span class="sd">        or depth). Coordinates are assumed to be in crs 4326. The expected</span>
+<span class="sd">        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,</span>
+<span class="sd">        Southern-most latitude, Eastern-most longitude, Northern-most</span>
+<span class="sd">        latitude]``.</span>
 <span class="sd">    limit : int, optional</span>
-<span class="sd">        The optional limit parameter is used to control the subset of the</span>
-<span class="sd">        selected features that should be returned in each page. The maximum</span>
-<span class="sd">        allowable limit is 50000. It may be beneficial to set this number lower</span>
-<span class="sd">        if your internet connection is spotty. The default (None) will set the</span>
-<span class="sd">        limit to the maximum allowable limit for the service.</span>
-<span class="sd">        This is a per-page size, not a cap on the total result: a query</span>
-<span class="sd">        matching more rows than ``limit`` still returns every matching row</span>
-<span class="sd">        across multiple pages. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">        The number of features returned in each page. The maximum allowable</span>
+<span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
+<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
+<span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
+<span class="sd">        to cap the total instead.</span>
 <span class="sd">    filter, filter_lang : optional</span>
 <span class="sd">        Server-side CQL filter passed through as the OGC ``filter`` /</span>
 <span class="sd">        ``filter-lang`` query parameters. See</span>
