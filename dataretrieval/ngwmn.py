@@ -1,13 +1,12 @@
-"""National Ground-Water Monitoring Network (NGWMN) getters.
+"""Retrieve data from the National Ground-Water Monitoring Network (NGWMN).
 
 The NGWMN exposes its data through a dedicated OGC API
 (``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:
 ``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and
 ``providers``. Each getter below delegates to the shared OGC facade
-(:func:`~dataretrieval.ogc.get_ogc_data`) with
-``base_url=NGWMN_OGC_API_URL``, so multi-value chunking, pagination,
-retry/resume, and result shaping all behave exactly as they do for the main
-Water Data getters.
+(:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.
+Multi-value chunking, pagination, retry/resume, and result shaping therefore
+behave exactly as they do for the main Water Data getters.
 
 Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so ``monitoring_location_id`` values use other agency

@@ -9,11 +9,11 @@ sub-request URL under the budget; ``ChunkedCall`` fetches the resulting
 cartesian product of chunks. Requests that already fit get a trivial
 single-step plan — ``ChunkedCall`` has one code path either way.
 
-Parallel chunks: the planner is conservative by default — it splits only as far as
-the byte limit forces. A caller who knows their result is large can opt into a
-finer split via the ``parallel_chunks(n)`` context manager, which fans the query
-out into ``n`` parallel sub-requests; ``n`` drives :meth:`ChunkPlan._refine`. See
-``parallel_chunks`` for the why and the when.
+Parallel chunks: the planner is conservative by default — it splits only as
+far as the byte limit forces. A caller who knows their result is large can opt
+into a finer split via the ``parallel_chunks(n)`` context manager, which fans
+the query out into ``n`` parallel sub-requests. ``n`` drives
+:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.
 
 This module owns the *execution* half — the event loop and bounded
 concurrency that drive a plan to completion (``ChunkedCall``) plus the
@@ -28,7 +28,7 @@ separate: :mod:`~dataretrieval.ogc.planning` builds the
 Concurrency: ``multi_value_chunked`` fans every pending sub-request out
 under one ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
 ``asyncio.Semaphore`` — not the client's connection pool, which is
-merely sized to match — caps the sub-requests in flight at ``N``; see
+merely sized to match — caps the sub-requests in flight at ``N``. See
 :meth:`ChunkedCall._run` for why the gate must be the semaphore rather
 than the pool. ``API_USGS_CONCURRENT`` resolves ``N``: an integer N > 1
 allows N sub-requests in flight; ``1`` forces sequential dispatch (one
@@ -159,7 +159,7 @@ def get_active_client() -> httpx.AsyncClient | None:
     Return the chunker's currently-published client, or ``None``.
 
     Used by the paginated-loop helpers (e.g.
-    :func:`dataretrieval.ogc.engine._client_for`) to reuse the
+    :func:`dataretrieval.transport.pagination._client_for`) to reuse the
     per-call connection pool.
 
     Returns
@@ -187,26 +187,26 @@ def parallel_chunks(n: int) -> Iterator[None]:
 
     By default the Water Data / NGWMN getters chunk a request only as much as
     the server's ~8 KB URL-byte limit forces — the fewest sub-requests that
-    fit. That is the safe default, but it can be *needlessly* conservative:
-    because every sub-request paginates, splitting a large result further costs
+    fit. That is the safe default, but it can be *needlessly* conservative.
+    Because every sub-request paginates, splitting a large result further costs
     little or no extra quota *as long as each sub-request still spans many
     pages* — rows-per-chunk far exceeding the page size (ten states pulled as
-    one request then page nearly as many times as ten per-state requests
-    would). When a split leaves each sub-request only a page or two, its partial
-    final page is extra, so finer chunks do add some requests. This context
-    manager lets a caller who *knows* their pull is large ask for that finer
-    split — trading roughly the same pages for more, smaller sub-requests, which
-    gives smoother progress, more even concurrency, and a smaller unit of
+    one request page nearly as many times as ten per-state requests would).
+    When a split leaves each sub-request only a page or two, its partial final
+    page is extra, so finer chunks do add some requests. This context manager
+    lets a caller who *knows* their pull is large ask for that finer split. The
+    trade is roughly the same pages for more, smaller sub-requests, which gives
+    smoother progress, more even concurrency, and a smaller unit of
     retry/resume.
 
-    Because the library can't tell in advance whether a query is large (ten
-    states over a short window might fit in a single page, where extra chunks
-    would only burn quota), this is a *deliberate* per-call knob rather than an
-    automatic behavior or a process-wide environment variable — scoping it to a
-    ``with`` block keeps an aggressive setting from leaking into unrelated calls
-    and accidentally spending quota. Outside any block the getters use the
-    conservative default. Only the OGC getters (Water Data, NGWMN) read this;
-    wrapping a legacy NWIS call in the block is a harmless no-op.
+    This is a *deliberate* per-call knob rather than an automatic behavior or a
+    process-wide environment variable, because the library can't tell in
+    advance whether a query is large (ten states over a short window might fit
+    in a single page, where extra chunks would only burn quota). Scoping it to
+    a ``with`` block keeps an aggressive setting from leaking into unrelated
+    calls and accidentally spending quota. Outside any block the getters use
+    the conservative default. Only the OGC getters (Water Data, NGWMN) read
+    this; wrapping a legacy NWIS call in the block is a harmless no-op.
 
     Parameters
     ----------
@@ -217,17 +217,17 @@ def parallel_chunks(n: int) -> Iterator[None]:
         argument combined, not per argument), so several multi-value arguments
         cannot multiply past it. The cap is a ceiling, never exceeded: the
         actual count is bounded below by what the ~8 KB URL limit already
-        forces and above by ``n``, so an ``n`` larger than the input allows
+        forces and above by ``n``. So an ``n`` larger than the input allows
         simply yields one sub-request per value, and with several multi-value
         arguments the total may land somewhat below ``n`` because splits are
-        whole (the plan can't always divide evenly onto ``n``); ``n=1`` asks
+        whole (the plan can't always divide evenly onto ``n``). ``n=1`` asks
         for no extra fan-out.
 
         Each sub-request fetches at least one page, so it costs at least one
         request against your hourly rate limit — a larger ``n`` spends more
-        quota. And because how many sub-requests run *at once* is capped
-        separately by ``API_USGS_CONCURRENT`` (default 32), an ``n`` beyond that
-        adds quota without adding parallelism; the useful range is roughly ``2``
+        quota. How many sub-requests run *at once* is capped separately by
+        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds
+        quota without adding parallelism; the useful range is roughly ``2``
         up to ``API_USGS_CONCURRENT``.
 
     Yields
@@ -251,15 +251,15 @@ def parallel_chunks(n: int) -> Iterator[None]:
       independently, then the combined result is sorted and truncated to
       ``max_rows``. So a call with ``max_rows`` set returns a *different*
       (though still valid and deterministically sorted) row set inside a
-      ``parallel_chunks`` block than without one — the cap is drawn from the
+      ``parallel_chunks`` block than without one. The cap is drawn from the
       union of the sub-requests, not a single stream. Don't pair a tight
       ``max_rows`` preview with ``parallel_chunks`` if you need exactly the
       rows the un-fanned call would return.
     - Resumability: a single request either fully succeeds or fully fails,
       but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
-      raise a resumable :class:`~dataretrieval.exceptions.ChunkInterrupted`
-      (or ``QuotaExhausted``) carrying the completed sub-requests, which you
-      finish with ``exc.call.resume()``.
+      raise a resumable :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted`
+      (or ``QuotaExhausted``) carrying the completed sub-requests. Finish the
+      call with ``exc.call.resume()``.
     - Cross-sub-request de-duplication keys on the feature ``id``; features
       with no ``id`` can't be deduped, so overlapping filter clauses split
       across chunks may yield duplicate rows.
@@ -314,15 +314,15 @@ class ChunkedCall:
     Holds the in-flight state (per-sub-request frames and responses)
     and the async fetcher. A single :meth:`resume` entry point drives
     the call from wherever it is to completion — used both for the
-    first invocation (from :meth:`ChunkPlan.execute`) and for subsequent
+    first invocation (from :func:`multi_value_chunked`) and for subsequent
     retries after a :class:`ChunkInterrupted`.
 
     :meth:`_run` gathers every pending sub-request over one shared
     :class:`httpx.AsyncClient`, applies the failure-precedence rules, and
-    combines; :meth:`resume` drives it through an ``anyio`` blocking
-    portal so it works whether or not the caller is already inside an
-    event loop. Concurrency is bounded by a per-run ``asyncio.Semaphore``
-    (see :meth:`_run`), so sequential dispatch
+    combines. :meth:`resume` drives :meth:`_run` through an ``anyio``
+    blocking portal, so it works whether or not the caller is already
+    inside an event loop. Concurrency is bounded by a per-run
+    ``asyncio.Semaphore`` (see :meth:`_run`), so sequential dispatch
     (``API_USGS_CONCURRENT=1``) is just a degenerate gather.
 
     A ``ChunkedCall`` is created internally when a :class:`ChunkPlan`
@@ -377,12 +377,12 @@ class ChunkedCall:
         self.finalize = finalize
         # Snapshot the ambient context at construction time — i.e. inside the
         # caller's ``with`` blocks (base URL, dialect, row cap, progress
-        # reporter). :meth:`resume` runs every drive inside this snapshot, so
-        # a *later* ``exc.call.resume()`` — which fires after those ``with``
-        # blocks have exited and reset their ContextVars — still rebuilds
-        # sub-requests against the original API's base URL/dialect rather than
-        # the process defaults. ``build_request`` reads those ContextVars when
-        # it reconstructs each sub-request, so the snapshot must outlive them.
+        # reporter). :meth:`resume` runs every drive inside this snapshot. So a
+        # *later* ``exc.call.resume()`` still rebuilds sub-requests against the
+        # original API's base URL/dialect rather than the process defaults, even
+        # though it fires after those ``with`` blocks have exited and reset
+        # their ContextVars. ``build_request`` reads those ContextVars when it
+        # reconstructs each sub-request, so the snapshot must outlive them.
         self._ctx = copy_context()
         # Completed (frame, response) pairs keyed by sub-args index; sparse
         # (gathered sub-requests complete out of order — see class docstring).
@@ -392,10 +392,10 @@ class ChunkedCall:
 
     def wrap_failure(self, exc: BaseException) -> ChunkInterrupted | None:
         """
-        Build the matching :class:`ChunkInterrupted` carrying this
-        call when ``exc`` is a recognized transient transport failure;
-        return ``None`` for unrecognized failures so the caller can
-        re-raise. Encapsulates the
+        Wrap ``exc`` as the matching :class:`ChunkInterrupted` carrying this call.
+
+        Returns ``None`` when ``exc`` is not a recognized transient transport
+        failure, so the caller can re-raise it. Encapsulates the
         ``classify → instantiate-with-call-state`` recipe so
         :class:`ChunkedCall`'s private fields stay private.
 
@@ -428,16 +428,15 @@ class ChunkedCall:
         return len(self._chunks)
 
     def _combine_raw(self) -> tuple[pd.DataFrame, httpx.Response]:
-        """Assemble the raw ``(frame, response)`` from completed sub-requests,
-        before :attr:`finalize` runs.
+        """Assemble the raw ``(frame, response)`` from completed sub-requests.
 
-        Frames concatenate in sub-args *index* order (``sorted`` keys —
-        deterministic, independent of parallel completion order). The
-        aggregated response takes its headers from the response with the
-        lowest reported ``x-ratelimit-remaining`` value. If no response
-        reports that header, it falls back to the last completed response;
-        ``self._chunks`` preserves completion order because the ``track``
-        closure in :meth:`_run` is its only writer.
+        Runs before :attr:`finalize`. Frames concatenate in sub-args *index*
+        order (``sorted`` keys — deterministic, independent of parallel
+        completion order). The aggregated response takes its headers from the
+        response with the lowest reported ``x-ratelimit-remaining`` value. If no
+        response reports that header, the aggregate falls back to the last
+        completed response; ``self._chunks`` preserves completion order because
+        the ``track`` closure in :meth:`_run` is its only writer.
 
         Returns
         -------
@@ -538,9 +537,8 @@ class ChunkedCall:
             The finalized aggregate — a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
-            or whatever
-            :attr:`finalize` produces (e.g. ``BaseMetadata`` for the OGC
-            getters).
+            or whatever :attr:`finalize` produces (e.g. ``BaseMetadata`` for
+            the OGC getters).
 
         Raises
         ------
@@ -554,10 +552,10 @@ class ChunkedCall:
         # Drive inside the snapshot taken at construction (see ``__init__``).
         # ``start_blocking_portal`` copies the *calling* context into its
         # worker thread, and running here means that calling context is the
-        # snapshot — so the base URL / dialect / row cap / progress reporter
-        # active when the call was created reach the rebuilt sub-requests,
-        # even when this is a resume fired long after the original ``with``
-        # blocks exited.
+        # snapshot. So the base URL / dialect / row cap / progress reporter
+        # active when the call was created reach the rebuilt sub-requests, even
+        # when this is a resume fired long after the original ``with`` blocks
+        # exited.
         return self._ctx.run(self._resume_in_context)
 
     def _resume_in_context(self) -> tuple[pd.DataFrame, Any]:
@@ -573,16 +571,16 @@ class ChunkedCall:
 
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """
-        Gather every pending sub-request over one shared
-        :class:`httpx.AsyncClient` and return the combined, finalized result.
+        Gather every pending sub-request; return the combined, finalized result.
 
-        Pending sub-requests (:meth:`_pending`) fan out under
-        ``asyncio.gather`` with ``return_exceptions=True`` so completed
-        sub-requests survive a sibling's transient failure. On a
-        recognized transient (:class:`RateLimited`, :class:`ServiceUnavailable`,
-        or a bare ``httpx.HTTPError`` / ``httpx.InvalidURL``) a
+        Pending sub-requests (:meth:`_pending`) fan out over one shared
+        :class:`httpx.AsyncClient` under ``asyncio.gather``, with
+        ``return_exceptions=True`` so completed sub-requests survive a
+        sibling's transient failure. On a recognized transient
+        (:class:`RateLimited`, :class:`ServiceUnavailable`, or a bare
+        ``httpx.HTTPError`` / ``httpx.InvalidURL``), a
         :class:`ChunkInterrupted` subclass is raised carrying ``self`` on
-        ``.call``; ``exc.call.resume()`` then re-issues only the unfinished
+        ``.call``. ``exc.call.resume()`` then re-issues only the unfinished
         indices through this same runner.
 
         The gather dispatches *every* pending sub-request at once, but an
@@ -621,8 +619,8 @@ class ChunkedCall:
             The finalized aggregate — a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
-            or whatever
-            :attr:`finalize` produces (e.g. ``BaseMetadata`` for OGC getters).
+            or whatever :attr:`finalize` produces (e.g. ``BaseMetadata`` for
+            OGC getters).
 
         Raises
         ------
@@ -715,7 +713,7 @@ def multi_value_chunked(
     ``async def fetch(args) -> (df, response)``, and drives it to
     completion via :meth:`ChunkedCall.resume`. The plan splits multi-value
     list params and the cql-text filter so each sub-request URL fits the
-    byte limit; an already-fitting request is a one-step plan, unless an
+    byte limit. An already-fitting request is a one-step plan, unless an
     active :func:`parallel_chunks` block asks the plan to fan out more
     finely. See the module docstring for the concurrency model.
 

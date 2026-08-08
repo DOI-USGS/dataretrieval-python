@@ -1,6 +1,4 @@
-"""
-Useful utilities for data munging.
-"""
+"""Useful utilities for data munging."""
 
 from __future__ import annotations
 
@@ -108,21 +106,21 @@ def _require_positive_int(
 
 
 def to_str(listlike: object, delimiter: str = ",") -> str | None:
-    """Translates list-like objects into strings.
+    """Translate a list-like object into a delimited string.
 
     Parameters
     ----------
     listlike: list-like object
-        An object that is a list, or list-like
-        (e.g., ``pandas.core.series.Series``)
+        A list, or a list-like object
+        (e.g. ``pandas.core.series.Series``).
     delimiter: string, optional
-        The delimiter that is placed between entries in listlike when it is
-        turned into a string. Default value is a comma.
+        String placed between entries of ``listlike`` when it is turned into a
+        string. Default value is a comma.
 
     Returns
     -------
     listlike: string
-        The listlike object as string separated by the delimiter
+        The listlike object as a string separated by the delimiter.
 
     Examples
     --------
@@ -147,8 +145,7 @@ def to_str(listlike: object, delimiter: str = ",") -> str | None:
 def format_datetime(
     df: pd.DataFrame, date_field: str, time_field: str, tz_field: str
 ) -> pd.DataFrame:
-    """Creates a datetime field from separate date, time, and
-    time zone fields.
+    """Create a datetime field from separate date, time, and time zone fields.
 
     Assumes ISO 8601.
 
@@ -157,16 +154,16 @@ def format_datetime(
     df: ``pandas.DataFrame``
         A data frame containing date, time, and timezone fields.
     date_field: string
-        Name of date column in df.
+        Name of the date column in ``df``.
     time_field: string
-        Name of time column in df.
+        Name of the time column in ``df``.
     tz_field: string
-        Name of time zone column in df.
+        Name of the time zone column in ``df``.
 
     Returns
     -------
     df: ``pandas.DataFrame``
-        The data frame with a formatted 'datetime' column
+        The data frame with a formatted 'datetime' column.
 
     """
     # create a datetime index from the columns in qwdata response
@@ -224,8 +221,7 @@ def _build_utc_datetime(
 
 
 def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Add ``<prefix>DateTime`` UTC columns for any Date/Time/TimeZone triplets
-    and sort the frame by the activity-start datetime.
+    """Append a UTC ``<prefix>DateTime`` column per Date/Time/TimeZone triplet.
 
     Detects two naming patterns that appear in USGS Samples and Water Quality
     Portal CSV responses:
@@ -300,16 +296,16 @@ class BaseMetadata:
     Attributes
     ----------
     url : str
-        Response url
+        Response url.
     query_time: datetime.timedelta
-        Response elapsed time
+        Response elapsed time.
     header: httpx.Headers
-        Response headers
+        Response headers.
 
     """
 
     def __init__(self, response: httpx.Response) -> None:
-        """Generates a standard set of metadata informed by the response.
+        """Generate a standard set of metadata informed by the response.
 
         Parameters
         ----------
@@ -367,11 +363,10 @@ def _raise_for_status(
     *,
     detail_from: Callable[[httpx.Response], str | None] | None = None,
 ) -> None:
-    """Raise the typed :class:`DataRetrievalError` for an HTTP error response;
-    return ``None`` on success.
+    """Raise the typed :class:`DataRetrievalError` for an HTTP error response.
 
-    Shared by the legacy :func:`query` path (and ``streamstats`` /
-    ``wateruse``). Delegates the status-to-type mapping to
+    A success status returns ``None``. Shared by the legacy :func:`query` path
+    (and ``streamstats`` / ``wateruse``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
     remediation as the client-side over-long-URL case below, rather than a bare
@@ -443,20 +438,19 @@ def _query_impl(
 ) -> httpx.Response:
     """Send a query.
 
-    Wrapper for httpx.get that handles errors, converts listed
-    query parameters to comma separated strings, and returns response.
+    Wrapper for ``httpx.get`` that handles errors, converts listed query
+    parameters to comma-separated strings, and returns the response.
 
     Parameters
     ----------
     url: string
-        URL to query
+        URL to query.
     payload: dict
-        query parameters passed to ``httpx.get``
+        Query parameters passed to ``httpx.get``.
     delimiter: string
-        delimiter to use with lists
+        Delimiter to use with lists.
     ssl_check: bool
-        If True, check SSL certificates, if False, do not check SSL,
-        default is True
+        Whether to check SSL certificates. Default is True.
 
     Returns
     -------

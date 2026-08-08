@@ -76,31 +76,28 @@ def get_monitoring_locations(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get the catalog of monitoring locations and their attributes.
 
-    Location information is basic information about the monitoring location
-    including the name, identifier, agency responsible for data collection, and
-    the date the location was established. It also includes information about
+    Location information includes the name, identifier, agency responsible for
+    data collection, and the date the location was established. It also includes
     the type of location, such as stream, lake, or groundwater, and geographic
-    information about the location, such as state, county, latitude and
-    longitude, and hydrologic unit code (HUC).
+    information such as state, county, latitude and longitude, and hydrologic
+    unit code (HUC).
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     agency_code : string or iterable of strings, optional
         The agency that is reporting the data. Agency codes are fixed values
         assigned by the National Water Information System (NWIS).
     agency_name : string or iterable of strings, optional
         The name of the agency that is reporting the data.
     monitoring_location_number : string or iterable of strings, optional
-        Each monitoring location in the USGS data base has a unique 8- to
-        15-digit identification number. Monitoring location numbers are
-        assigned based on this logic:
+        A unique 8- to 15-digit identification number. Every monitoring location
+        in the USGS database has one, assigned according to this logic:
         https://help.waterdata.usgs.gov/faq/sites/do-station-numbers-have-any-particular-meaning.
     monitoring_location_name : string or iterable of strings, optional
         This is the official name of the monitoring location in the database.
@@ -109,10 +106,10 @@ def get_monitoring_locations(
         The Water Science Centers (WSCs) across the United States use the FIPS
         state code as the district code. In some cases, monitoring locations and
         samples may be managed by a water science center that is adjacent to the
-        state in which the monitoring location actually resides. For example a
-        monitoring location may have a district code of 30 which translates to
-        Montana, but the state code could be 56 for Wyoming because that is where
-        the monitoring location actually is located.
+        state in which the monitoring location actually resides. For example, a
+        monitoring location may have a district code of 30, which translates to
+        Montana, but a state code of 56 for Wyoming, because that is where the
+        monitoring location is actually located.
     country_code : string or iterable of strings, optional
         The code for the country in which the monitoring location is located.
     country_name : string or iterable of strings, optional
@@ -150,14 +147,13 @@ def get_monitoring_locations(
     site_type : string or iterable of strings, optional
         A description of the hydrologic setting of the monitoring location.
     hydrologic_unit_code : string or iterable of strings, optional
-        The United States is divided and sub-divided into successively smaller
-        hydrologic units which are classified into four levels: regions,
-        sub-regions, accounting units, and cataloging units. The hydrologic
-        units are arranged within each other, from the smallest (cataloging
-        units) to the largest (regions). Each hydrologic unit is identified by a
-        unique hydrologic unit code (HUC) consisting of two to eight digits
-        based on the four levels of classification in the hydrologic unit
-        system.
+        A unique hydrologic unit code (HUC) of two to eight digits, based on the
+        four levels of classification in the hydrologic unit system. The United
+        States is divided and sub-divided into successively smaller hydrologic
+        units, classified into four levels: regions, sub-regions, accounting
+        units, and cataloging units. The hydrologic units are arranged within
+        each other, from the smallest (cataloging units) to the largest
+        (regions).
     basin_code : string or iterable of strings, optional
         The Basin Code or "drainage basin code" is a two-digit code that further
         subdivides the 8-digit hydrologic-unit code. The drainage basin code is
@@ -208,12 +204,12 @@ def get_monitoring_locations(
         situation can occur when part of the drainage area consists of very
         porous soil or depressions that either allow all runoff to enter the
         groundwater or trap the water in ponds so that rainfall does not
-        contribute to runoff.  A transbasin diversion can also affect the total
+        contribute to runoff. A transbasin diversion can also affect the total
         drainage area.
     time_zone_abbreviation : string or iterable of strings, optional
         A short code describing the time zone used by a monitoring location.
     uses_daylight_savings : string or iterable of strings, optional
-        A flag indicating whether or not a monitoring location uses daylight savings.
+        A flag indicating whether a monitoring location uses daylight savings.
     construction_date : string or iterable of strings, optional
         Date the well was completed.
     aquifer_code : string or iterable of strings, optional
@@ -252,7 +248,7 @@ def get_monitoring_locations(
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. Available
+        The columns to return from the query. Available
         options are: geometry, id, agency_code, agency_name,
         monitoring_location_number, monitoring_location_name, district_code,
         country_code, country_name, state_code, state_name, county_code,
@@ -268,27 +264,24 @@ def get_monitoring_locations(
         national_aquifer_code, aquifer_type_code, well_constructed_depth,
         hole_constructed_depth, depth_source_code.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -383,32 +376,29 @@ def get_time_series_metadata(
     """Get metadata describing the time series available at a location.
 
     Use this to discover what a location measures before requesting the
-    observations themselves. Daily data and continuous measurements are
-    grouped into time series,
-    which represent a collection of observations of a single parameter,
-    potentially aggregated using a standard statistic, at a single monitoring
-    location. This endpoint provides metadata about those time series,
-    including their operational thresholds, units of measurement, and when
-    the earliest and most recent observations in a time series occurred.
+    observations themselves. Daily data and continuous measurements are grouped
+    into time series, which represent a collection of observations of a single
+    parameter, potentially aggregated using a standard statistic, at a single
+    monitoring location. This endpoint provides metadata about those time
+    series, including their operational thresholds, units of measurement, and
+    when the earliest and most recent observations in a time series occurred.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter
-        codes and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query.
+        The columns to return from the query.
         Available options are: begin, begin_utc, computation_identifier,
         computation_period_identifier, end, end_utc, geometry,
         hydrologic_unit_code, id, last_modified, monitoring_location_id,
@@ -421,13 +411,13 @@ def get_time_series_metadata(
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     hydrologic_unit_code : string or iterable of strings, optional
-        The United States is divided and sub-divided into successively smaller
-        hydrologic units which are classified into four levels: regions,
-        sub-regions, accounting units, and cataloging units. The hydrologic
-        units are arranged within each other, from the smallest (cataloging units)
-        to the largest (regions). Each hydrologic unit is identified by a unique
-        hydrologic unit code (HUC) consisting of two to eight digits based on the
-        four levels of classification in the hydrologic unit system.
+        A unique hydrologic unit code (HUC) of two to eight digits, based on the
+        four levels of classification in the hydrologic unit system. The United
+        States is divided and sub-divided into successively smaller hydrologic
+        units, classified into four levels: regions, sub-regions, accounting
+        units, and cataloging units. The hydrologic units are arranged within
+        each other, from the smallest (cataloging units) to the largest
+        (regions).
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
@@ -436,13 +426,13 @@ def get_time_series_metadata(
         The name of the state or state equivalent in which the monitoring location
         is located.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -519,33 +509,30 @@ def get_time_series_metadata(
     primary : string or iterable of strings, optional
     parent_time_series_id : string or iterable of strings, optional
     time_series_id : string or iterable of strings, optional
-        A unique identifier representing a single time series. This
-        corresponds to the id field in the time-series-metadata endpoint.
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
     web_description : string or iterable of strings, optional
         A description of what this time series represents, as used by WDFN and
         other USGS data dissemination products.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See

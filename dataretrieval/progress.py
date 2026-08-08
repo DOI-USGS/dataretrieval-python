@@ -4,8 +4,7 @@ Retrieval adapters can fan out in ways the caller cannot see: large multi-value
 requests are split into URL-length-safe *chunks* (``chunking`` module), and each
 request follows ``next`` links across an unknown number of *pages*
 (``transport.pagination.paginate``). This module surfaces that work as one
-line on stderr,
-rewritten in place as data arrives::
+line on stderr, rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
@@ -63,8 +62,7 @@ _api_key_hint_shown = False
 
 
 def _in_jupyter_kernel() -> bool:
-    """True when running inside a Jupyter/IPython *kernel* (notebook, lab,
-    qtconsole).
+    """True when running inside a Jupyter/IPython *kernel* (notebook, lab, qtconsole).
 
     A kernel's ``stderr`` isn't a TTY, but it honors carriage-return rewrites in
     the cell output area — the same mechanism ``tqdm`` rides on — so the line is

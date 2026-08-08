@@ -57,10 +57,10 @@ error details.
 OGC retains its protocol concerns: dialects, CQL2, request construction, feature
 shaping, URL-byte chunk planning, resumable ``ChunkedCall`` state, and typed
 interruption handles. Thin imports at previous private OGC and utility paths
-preserve compatibility where a consumer still uses them; a path no consumer
+preserve compatibility where a consumer still uses them. A path no consumer
 imports is deleted rather than kept as a module that exists to satisfy its own
-test. Tunables are never re-exported by value: a copy taken at import time is
-one a caller can patch without reaching the policy that reads it, so
+test. Tunables are never re-exported by value: a caller can patch a copy taken
+at import time without reaching the policy that reads it, so
 ``transport.retry`` is the single place they are read from.
 
 Automatic retry is enabled only on active, idempotent request paths, and only
@@ -87,7 +87,7 @@ Consequences
 - Service-specific request and result contracts remain explicit instead of
   being forced into a universal adapter abstraction.
 - Retry can increase latency and quota consumption, so attempt counts, waits,
-  and total silent time remain bounded and cancellation signals are never
+  and total silent time remain bounded, and cancellation signals are never
   wrapped.
 - Guidance the progress reporter prints is gated on the host it applies to, so a
   service that cannot use an API key is not told to obtain one.

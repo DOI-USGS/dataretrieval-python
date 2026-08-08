@@ -178,32 +178,32 @@ def get_samples(
     down the database's ability to assemble a result before it times out, so
     filtering narrowly is faster than filtering exhaustively.
 
-    The web GUI for the Samples database can be found here:
+    The web GUI for the Samples database is at
     https://waterdata.usgs.gov/download-samples/#dataProfile=site
 
-    If you would like more details on feasible query parameters (complete with
-    examples), please visit the Samples database swagger docs, here:
+    For more details on feasible query parameters, complete with examples, see
+    the Samples database swagger docs at
     https://api.waterdata.usgs.gov/samples-data/docs#/
 
     Parameters
     ----------
     ssl_check : bool, optional
-        Check the SSL certificate.
+        Verify the server's SSL certificate.
     service : string
         One of the available Samples services: "results", "locations", "activities",
         "projects", or "organizations". Defaults to "results".
     profile : string
-        One of the available profiles associated with a service. Options for each
-        service are:
-        results - "fullphyschem", "basicphyschem",
-        "fullbio", "basicbio", "narrow",
-        "resultdetectionquantitationlimit",
-        "labsampleprep", "count"
-        locations - "site", "count"
-        activities - "sampact", "actmetric",
-        "actgroup", "count"
-        projects - "project", "projectmonitoringlocationweight"
-        organizations - "organization", "count"
+        One of the available profiles associated with a service. Options for
+        each service are:
+
+            * results - "fullphyschem", "basicphyschem", "fullbio", "basicbio",
+              "narrow", "resultdetectionquantitationlimit", "labsampleprep",
+              "count"
+            * locations - "site", "count"
+            * activities - "sampact", "actmetric", "actgroup", "count"
+            * projects - "project", "projectmonitoringlocationweight"
+            * organizations - "organization", "count"
+
     activity_media_name : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
         Call ``get_codes("samplemedia")`` for the valid inputs.
@@ -400,7 +400,7 @@ def get_samples_summary(
         are accepted by the service but return an empty result, so a prefix
         is effectively required. (Samples API: ``monitoringLocationIdentifier``)
     ssl_check : bool, optional
-        Check the SSL certificate. Default is True.
+        Verify the server's SSL certificate. Default is True.
 
     Returns
     -------

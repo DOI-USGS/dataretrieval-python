@@ -43,14 +43,12 @@ def get_reference_table(
         "parameter-codes", "reliability-codes", "site-types", "states",
         "statistic-codes", "topographic-codes", "time-zone-codes"
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty.
     query: dictionary, optional
-        The optional query parameter can be used to pass a dictionary of
-        query parameters to the collection API call.
+        A dictionary of extra query parameters to pass to the collection API
+        call.
     max_rows : int, optional
         Cap the total number of rows returned, stopping pagination early
         instead of downloading the whole table. Useful for cheaply
@@ -121,9 +119,9 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
     Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
     ...) advertises the set of properties that can be filtered on -- exposed as
     the typed keyword arguments of the matching ``get_*`` function, and usable
-    directly in a CQL2 ``filter``. This returns that set, so the available
-    filters can be discovered programmatically and monitored for upstream
-    additions.
+    directly in a CQL2 ``filter``. This function returns that set, so you can
+    discover the available filters programmatically and monitor them for
+    upstream additions.
 
     Parameters
     ----------

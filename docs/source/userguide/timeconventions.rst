@@ -1,11 +1,11 @@
-.. timeconventions:
+.. _timeconventions:
 
 Datetime Information
 --------------------
 
 ``dataretrieval`` normalizes time data to UTC when converting Water Data API
-responses into data frames. Timestamps are returned in the ``time`` column (the
-dataframe itself uses a default integer index). For sub-daily data — such as
+responses into data frames. The ``time`` column holds the timestamps; the
+dataframe itself uses a default integer index. For sub-daily data — such as
 continuous (instantaneous) values — ``time`` is a timezone-aware
 ``datetime64[us, UTC]`` column. Daily values represent a whole calendar day,
 so their ``time`` column is timezone-naive (dates only).
@@ -34,7 +34,7 @@ For continuous data, the ``time`` column holds UTC-localized pandas timestamps.
 
 Each timestamp has the format ``YYYY-MM-DD HH:MM:SS+HH:MM``. Because the values
 are localized to UTC, the offset (``+HH:MM``) is ``+00:00``. You can convert
-them to a local timezone of your choosing with the pandas ``.dt`` accessor.
+them to any local timezone with the pandas ``.dt`` accessor.
 
 .. code:: python
 
@@ -49,9 +49,9 @@ them to a local timezone of your choosing with the pandas ``.dt`` accessor.
 
 After conversion the timestamps carry New York's offset — ``-05:00`` during
 standard time, or ``-04:00`` during daylight saving time, since New York is 4
-or 5 hours behind UTC depending on the time of year. Note that the first
-midnight-UTC reading rolls back to the previous calendar day (``2024-02-29``)
-once shifted into New York time.
+or 5 hours behind UTC depending on the time of year. The first midnight-UTC
+reading rolls back to the previous calendar day (``2024-02-29``) once shifted
+into New York time.
 
 
 Daily values

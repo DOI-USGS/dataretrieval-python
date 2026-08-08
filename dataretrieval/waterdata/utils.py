@@ -128,8 +128,9 @@ _NO_NORMALIZE_PARAMS = _ogc_dates._DATE_RANGE_PARAMS | {
 
 
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
-    """Merge a getter's ``**queryables`` passthrough kwargs -- collected by
-    ``locals()`` under the ``queryables`` key -- up into ``local_vars`` as
+    """Merge a getter's ``**queryables`` passthrough kwargs into ``local_vars``.
+
+    ``locals()`` collects them under the ``queryables`` key; this lifts them to
     top-level entries, so an extra server-side filter such as
     ``state_name="Wisconsin"`` is normalized, mutual-exclusion-checked, and sent
     exactly like a named param. See
@@ -159,16 +160,15 @@ def _get_args(
 
 
 def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
-    """Resolve the unified ``state`` argument into an endpoint's native state
-    queryable, returning the (mutated) args mapping.
+    """Resolve the unified ``state`` argument into an endpoint's state queryable.
 
-    ``state`` is the canonical, format-flexible parameter (full name / postal /
-    FIPS); it is normalized via :func:`~dataretrieval.codes.states.to_state` to
-    the ``to`` representation and stored under ``into`` (the queryable this
-    endpoint actually filters on). It is additive sugar over the native
-    ``state_code`` / ``state_name`` parameters, which still accept the API's
-    raw values (e.g. non-US FIPS); passing ``state`` together with either
-    raises ``ValueError``.
+    Returns the (mutated) args mapping. ``state`` is the canonical,
+    format-flexible parameter (full name / postal / FIPS); it is normalized via
+    :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
+    and stored under ``into`` (the queryable this endpoint actually filters on).
+    It is additive sugar over the native ``state_code`` / ``state_name``
+    parameters, which still accept the API's raw values (e.g. non-US FIPS);
+    passing ``state`` together with either raises ``ValueError``.
     """
     # Flatten ``**queryables`` first so a native state param arriving that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
@@ -215,7 +215,8 @@ def get_ogc_data(
     pd.DataFrame or gpd.GeoDataFrame
         A DataFrame containing the retrieved and processed OGC data.
     BaseMetadata
-        A metadata object containing request information including URL and query time.
+        A metadata object with request information, including the URL and
+        query time.
     """
     if output_id is None:
         output_id = _OUTPUT_ID_BY_SERVICE[service]
@@ -296,8 +297,10 @@ _R = TypeVar("_R")
 def _accept_legacy_kwargs(
     mapping: Mapping[str, str],
 ) -> Callable[[Callable[..., _R]], Callable[..., _R]]:
-    """Decorator: accept deprecated keyword-argument names, translating them
-    to their modern equivalents and emitting a :class:`DeprecationWarning`.
+    """Accept deprecated keyword-argument names on the decorated function.
+
+    Translates them to their modern equivalents and emits a
+    :class:`DeprecationWarning`.
 
     ``mapping`` maps each deprecated keyword name to the new keyword name the
     wrapped function expects (e.g. ``{"stateFips": "state_code"}``). When a

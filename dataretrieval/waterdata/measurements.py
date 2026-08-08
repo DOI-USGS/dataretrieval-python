@@ -46,32 +46,29 @@ def get_field_measurements(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get discrete measurements collected in person during a site visit.
 
-    Field measurements are physically measured values collected during a
-    visit to the monitoring location. Field measurements consist of measurements
-    of gage height and discharge, and readings of groundwater levels, and are
-    primarily used as calibration readings for the automated sensors collecting
-    continuous data. They are collected at a low frequency, and delivery of the
-    data in WDFN may be delayed due to data processing time.
+    Field measurements consist of measurements of gage height and discharge, and
+    readings of groundwater levels. They are used primarily as calibration
+    readings for the automated sensors that collect continuous data. Field
+    measurements are collected at a low frequency, and their delivery in WDFN
+    may be delayed by data processing time.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of the
-        agency responsible for the monitoring location (e.g. USGS) with the ID
-        number of the monitoring location (e.g. 02238500), separated by a hyphen
-        (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        Parameter codes are 5-digit codes used to identify the constituent
-        measured and the units of measure. A complete list of parameter codes
-        and associated groupings can be found at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        A 5-digit code identifying the constituent measured and the units of
+        measure. A complete list of parameter codes and associated groupings is
+        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. See the
+        The columns to return from the query. See the
         field-measurements schema in the OpenAPI reference for the available
         columns (e.g. geometry, id, monitoring_location_id, parameter_code,
         value, unit_of_measure, approval_status, qualifier, last_modified):
@@ -80,34 +77,33 @@ def get_field_measurements(
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
     approval_status : string or iterable of strings, optional
-        Some of the data that you have obtained from this U.S. Geological Survey
-        database may not have received Director's approval. Any such data values
-        are qualified as provisional and are subject to revision. Provisional
-        data are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from its
-        use. This field reflects the approval status of each record, and is either
-        "Approved", meaning processing review has been completed and the data is
-        approved for publication, or "Provisional" and subject to revision. For
-        more information about provisional data, go to:
+        The approval status of each record: either "Approved", meaning
+        processing review has been completed and the data are approved for
+        publication, or "Provisional", meaning the data are subject to revision.
+        Some of the data you obtain from this U.S. Geological Survey database
+        may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data
+        are released on the condition that neither the USGS nor the United
+        States Government may be held liable for any damages resulting from
+        their use. For more information about provisional data, see
         https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        This field indicates any qualifiers associated with an observation, for
-        instance if a sensor may have been impacted by ice or if values were
-        estimated.
+        Any qualifiers associated with an observation, for instance whether a
+        sensor may have been impacted by ice or whether values were estimated.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
-        the JSON response format in order to preserve precision.
+        the JSON response format to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -125,18 +121,17 @@ def get_field_measurements(
     measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
-        The date an observation represents. You can query this field using date-times
-        or intervals, adhering to RFC 3339, or using ISO 8601 duration objects.
-        Intervals may be bounded or half-bounded (double-dots at start or end).
-        Only features that have a time that intersects the value of datetime are
-        selected. If a feature has multiple temporal properties, it is the
-        decision of the server whether only a single temporal property is used
-        to determine the extent or all relevant temporal properties.
+        The date an observation represents. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -147,22 +142,20 @@ def get_field_measurements(
                 "PT36H" for the last 36 hours
 
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -410,32 +403,27 @@ def get_channel(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get channel-geometry measurements recorded during streamflow field visits.
 
-    Channel measurements taken as part of streamflow field measurements.
-
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location. This
-        corresponds to the id field in the monitoring-locations endpoint.
-        Monitoring location IDs are created by combining the agency code of
-        the agency responsible for the monitoring location (e.g. USGS) with
-        the ID number of the monitoring location (e.g. 02238500), separated
-        by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location,
+        corresponding to the id field in the monitoring-locations endpoint. IDs
+        combine the agency code of the agency responsible for the monitoring
+        location (e.g. USGS) with the location's ID number (e.g. 02238500),
+        separated by a hyphen (e.g. USGS-02238500).
     field_visit_id : string or iterable of strings, optional
-        A universally unique identifier (UUID) for the field visit.
-        Multiple measurements
-        may be made during a single field visit.
+        A universally unique identifier (UUID) for the field visit. Multiple
+        measurements may be made during a single field visit.
     measurement_number : string or iterable of strings, optional
         Measurement number.
     time : string or iterable of strings, optional
         The date an observation represents. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a time that intersects the
-        value of datetime are selected. If a feature has multiple temporal
-        properties, it is the decision of the server whether only a single
-        temporal property is used to determine the extent or all relevant
-        temporal properties.
+        at start or end). Only features whose time intersects the requested
+        value are selected. If a feature has multiple temporal properties, the
+        server decides whether to use a single property or all relevant ones to
+        determine the extent.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -482,13 +470,13 @@ def get_channel(
     measurement_type : string or iterable of strings, optional
         The type of channel measurement.
     last_modified : string, optional
-        The last time a record was refreshed in our database. This may happen
-        due to regular operational processes and does not necessarily indicate
-        that anything about the measurement has changed. You can query this field
-        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features that have a last_modified that
-        intersects the value of datetime are selected.
+        The last time a record was refreshed in our database. A refresh may
+        happen due to regular operational processes and does not necessarily
+        indicate that anything about the measurement has changed. You can query
+        this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded
+        (double-dots at start or end). Only features whose last_modified
+        intersects the requested value are selected.
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
@@ -499,14 +487,13 @@ def get_channel(
                 "PT36H" for the last 36 hours
 
     skip_geometry : boolean, optional
-        This option can be used to skip response geometries for each feature.
-        The returning object will be a data frame with no spatial information.
-        Note that the USGS Water Data APIs use camelCase "skipGeometry" in
-        CQL2 queries.
+        If True, the response omits the geometry of each feature and the
+        returned object is a data frame with no spatial information. The USGS
+        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
     properties : string or iterable of strings, optional
-        A list of requested columns to be returned from the query. Available
+        The columns to return from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
         field_visit_id, measurement_number, time, channel_name, channel_flow,
         channel_flow_unit, channel_width, channel_width_unit, channel_area,
@@ -515,24 +502,22 @@ def get_channel(
         channel_material, channel_evenness, horizontal_velocity_description,
         vertical_velocity_description, longitudinal_velocity_description,
         measurement_type, last_modified, channel_measurement_type. The default
-        (None) will return all columns of the data.
+        (None) returns all columns.
     bbox : list of numbers, optional
-        Only features that have a geometry that intersects the bounding box are
-        selected.  The bounding box is provided as four or six numbers,
-        depending on whether the coordinate reference system includes a vertical
-        axis (height or depth). Coordinates are assumed to be in crs 4326. The
-        expected format is ``[xmin, ymin, xmax, ymax]``, i.e.
-        ``[Western-most longitude, Southern-most latitude, Eastern-most
-        longitude, Northern-most latitude]``.
+        Only features whose geometry intersects the bounding box are selected.
+        The bounding box is provided as four or six numbers, depending on
+        whether the coordinate reference system includes a vertical axis (height
+        or depth). Coordinates are assumed to be in crs 4326. The expected
+        format is ``[xmin, ymin, xmax, ymax]``, i.e. ``[Western-most longitude,
+        Southern-most latitude, Eastern-most longitude, Northern-most
+        latitude]``.
     limit : int, optional
-        The optional limit parameter is used to control the subset of the
-        selected features that should be returned in each page. The maximum
-        allowable limit is 50000. It may be beneficial to set this number lower
-        if your internet connection is spotty. The default (None) will set the
-        limit to the maximum allowable limit for the service.
-        This is a per-page size, not a cap on the total result: a query
-        matching more rows than ``limit`` still returns every matching row
-        across multiple pages. Use ``max_rows`` to cap the total instead.
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. Set a lower
+        number if your internet connection is spotty. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
+        still returns every matching row across multiple pages. Use ``max_rows``
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See

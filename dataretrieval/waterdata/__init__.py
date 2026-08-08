@@ -1,10 +1,9 @@
-"""
-Water Data API module for accessing USGS water data services.
+"""Water Data API module for accessing USGS water data services.
 
 This module provides functions for downloading data from the Water Data APIs,
 including the USGS Aquarius Samples database.
 
-See https://api.waterdata.usgs.gov/ for API reference.
+See https://api.waterdata.usgs.gov/ for the API reference.
 """
 
 from __future__ import annotations

@@ -1,20 +1,20 @@
-"""Retrieve USGS water-use data from the National Water Availability
-Assessment Data Companion (NWDC).
+"""Retrieve USGS water-use data from the NWDC web service.
 
-The NWDC web services provide national-scale, USGS-modeled water-use data that
-underlie the `USGS National Water Availability Assessment
-<https://water.usgs.gov/nwaa-data/>`_. Estimates are served on a HUC12
-(12-digit hydrologic unit) spatial grid and can be queried for any county,
-state, or hydrologic unit. This is the modern replacement for the defunct
-legacy NWIS water-use service (``nwis.get_water_use``).
+The National Water Availability Assessment Data Companion (NWDC) web services
+provide national-scale, USGS-modeled water-use data that underlie the `USGS
+National Water Availability Assessment <https://water.usgs.gov/nwaa-data/>`_.
+Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
+be queried for any county, state, or hydrologic unit. This is the modern
+replacement for the defunct legacy NWIS water-use service
+(``nwis.get_water_use``).
 
 Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
 an OGC API Features collection. This module supplies the NWDC-specific bits —
 request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope — and uses the service-neutral transport layer for cursor pagination,
-response aggregation, client lifecycle, and sync-from-async dispatch. It follows
-the same conventions: host-scoped request headers, the typed
+error envelope. The service-neutral transport layer supplies cursor pagination,
+response aggregation, client lifecycle, and sync-from-async dispatch. The module
+follows the same conventions: host-scoped request headers, the typed
 :class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a
 ``(DataFrame, BaseMetadata)`` return.
 
@@ -122,8 +122,8 @@ def get_wateruse(
     ``state``, ``county``, or ``huc``; results are always returned on a HUC12
     grid, in a long (tidy) frame with one row per HUC12 and time step. Large
     areas (e.g. a whole region or a populous state) are served across multiple
-    pages, which this function follows transparently and concatenates into one
-    frame.
+    pages; this function follows those pages transparently and concatenates
+    them into one frame.
 
     Each selector also accepts a list of values. The NWDC queries one area per
     request, so a list is fanned out into one request per value — up to
@@ -307,9 +307,12 @@ def _resolve_locations(
 
 
 def _as_list(value: object) -> list[Any]:
-    """A scalar becomes a one-element list; any non-string iterable (list,
-    tuple, Series, ndarray, generator) is materialized to a list. A string is
-    treated as a scalar so it isn't exploded into characters."""
+    """Normalize a value to a list.
+
+    A scalar becomes a one-element list; any non-string iterable (list, tuple,
+    Series, ndarray, generator) is materialized to a list. A string is treated
+    as a scalar so it isn't exploded into characters.
+    """
     if isinstance(value, Iterable) and not isinstance(value, str):
         return list(value)
     return [value]
@@ -343,12 +346,11 @@ async def _fan_out(
     """Fetch every request (each paginated) concurrently over one shared client.
 
     Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`
-    with NWDC strategies: parse a CSV
-    page and read its ``Link`` header cursor (``parse``), follow that cursor
-    (``follow``), and raise the typed error carrying the NWDC ``detail``
-    (``raise_for_status``). Concurrency is bounded by a semaphore at
-    :data:`MAX_CONCURRENT_REQUESTS`, and ``asyncio.gather`` preserves input
-    order, so the concatenation is deterministic. The shared
+    with NWDC strategies: parse a CSV page and read its ``Link`` header cursor
+    (``parse``), follow that cursor (``follow``), and raise the typed error
+    carrying the NWDC ``detail`` (``raise_for_status``). Concurrency is bounded
+    by a semaphore at :data:`MAX_CONCURRENT_REQUESTS`, and ``asyncio.gather``
+    preserves input order, so the concatenation is deterministic. The shared
     :class:`httpx.AsyncClient` keeps connections alive across pages and requests.
     """
 
@@ -442,7 +444,7 @@ def _next_page_url(response: httpx.Response) -> str | None:
 
     Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx into
     ``response.links``). The cursor is normalized before it is trusted, because
-    the service spells it inconsistently: a relative reference is resolved
+    the service spells it inconsistently. A relative reference is resolved
     against the page it came from, and the bare ``water.usgs.gov`` host is
     rewritten to the public ``api.water.usgs.gov`` gateway (over https, whatever
     scheme the link used) so the follow-up request reaches the API. Only a

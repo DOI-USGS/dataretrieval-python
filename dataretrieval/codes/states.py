@@ -1,12 +1,12 @@
 """State code lookups and normalization, keyed by full state name.
 
 ``state_codes`` maps each state name to its two-letter postal abbreviation
-(e.g. ``"Alabama": "al"``); ``fips_codes`` maps it to its two-digit FIPS
-code (e.g. ``"Alabama": "01"``). :func:`to_state` normalizes a state
-identifier -- a full name, postal code, or two-digit / ``US:``-prefixed FIPS
-code (or an iterable of them) -- to a chosen representation, raising
-``ValueError`` on an unrecognized value. Coverage is the 50 states plus the
-District of Columbia.
+(e.g. ``"Alabama": "al"``); ``fips_codes`` maps the same names to their
+two-digit FIPS codes (e.g. ``"Alabama": "01"``). :func:`to_state` normalizes
+a state identifier -- a full name, postal code, or two-digit /
+``US:``-prefixed FIPS code (or an iterable of them) -- to a chosen
+representation. An unrecognized value raises ``ValueError``. Coverage is the
+50 states plus the District of Columbia.
 """
 
 from __future__ import annotations

@@ -199,8 +199,7 @@ def _arrange_cols(
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
 ) -> pd.DataFrame:
     """
-    Rearranges and renames columns in a DataFrame based on provided
-    properties and the service output id.
+    Rearranges and renames DataFrame columns per ``properties`` and the output id.
 
     Parameters
     ----------
@@ -270,7 +269,6 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     -------
     pd.DataFrame
         The DataFrame with columns cast to appropriate types.
-
     """
     cols = set(df.columns)
     for col in cols.intersection(dialect.time_cols):
@@ -303,7 +301,6 @@ def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     -------
     pd.DataFrame
         The DataFrame with rows ordered per the dialect.
-
     """
     if not dialect.sort_cols or dialect.sort_cols[0] not in df.columns:
         return df
@@ -365,7 +362,7 @@ def _finalize_ogc(
 
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
     rather than only per-sub-request, so a chunked call's total is bounded
-    to exactly ``max_rows`` and a resumed call honors the cap too — the
+    to exactly ``max_rows`` and a resumed call honors the cap too. The
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
     """
     if dialect is None:
