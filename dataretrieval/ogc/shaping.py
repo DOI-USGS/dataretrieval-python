@@ -184,7 +184,7 @@ def _deal_with_empty(
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
             # Import from requests module (no engine dependency).
-            from dataretrieval.ogc.requests import _check_ogc_requests
+            from dataretrieval.ogc.schema import _check_ogc_requests
 
             schema, _ = _check_ogc_requests(endpoint=service, req_type="schema")
             properties = list(schema.get("properties", {}).keys())

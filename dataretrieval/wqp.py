@@ -18,6 +18,22 @@ import pandas as pd
 
 from .utils import BaseMetadata, _attach_datetime_columns, _query_with_retry
 
+__all__ = [
+    "get_results",
+    "what_sites",
+    "what_organizations",
+    "what_projects",
+    "what_activities",
+    "what_detection_limits",
+    "what_habitat_metrics",
+    "what_project_weights",
+    "what_activity_metrics",
+    "wqp_url",
+    "wqx3_url",
+    "WQP_Metadata",
+]
+
+
 if TYPE_CHECKING:
     import httpx
     from pandas import DataFrame

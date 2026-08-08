@@ -1,6 +1,10 @@
+import copy
 import datetime
 import json
+import re
+from pathlib import Path
 from unittest import mock
+from urllib.parse import parse_qs, urlsplit
 
 import numpy as np
 import pandas as pd
@@ -38,12 +42,18 @@ from dataretrieval.waterdata.utils import (
     _check_profiles,
     _get_args,
 )
-from tests.conftest import flaky_api
 
-# Most tests in this module call the live USGS Water Data API; transient
-# upstream errors propagate (since #273) instead of silently truncating, so
-# retry them rather than flaking CI (see ``conftest.flaky_api``).
-pytestmark = flaky_api
+_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
+_STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
+
+#: Two real features per collection, captured from the live service and trimmed.
+#: Property names, nesting, and value types (including the numeric-looking
+#: strings the API really sends) are verbatim; only the row count is reduced.
+#: Regenerate a collection by re-querying it with ``limit=2`` and replacing that
+#: key -- the getters' behavior depends on the shape, not the row count.
+_OGC_FIXTURES = json.loads(
+    (Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
+)
 
 
 @pytest.fixture(autouse=True)
@@ -475,8 +485,82 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     assert "time=2024-01-01%2F2024-01-31" in str(req.url)
 
 
-def test_samples_results():
-    """Test results call for proper columns"""
+# --- mocked getter smoke tests ------------------------------------------------
+# These replace what used to be ~34 live calls to the Water Data API. Each one
+# serves a committed fixture (``tests/data/waterdata_ogc_fixtures.json``, two
+# real features per collection captured from the service) and asserts what we
+# actually control: that the request we build carries the right params, and that
+# the frame we hand back has the right columns, dtypes, and ordering.
+#
+# The assertions they replaced could not do that. ``len(df) > 0`` passes or fails
+# on whether a particular gage reported yesterday; ``df.shape[1] == 97`` breaks
+# when USGS adds a column, which is not our bug. Genuine upstream-drift
+# detection lives in ``waterdata_queryables_test.py`` (marked ``live``), which
+# diffs each collection's queryables against a snapshot and tells us precisely
+# what moved.
+
+
+def _fixture(collection):
+    """One collection's committed FeatureCollection, deep-copied.
+
+    Copied because ``httpx_mock`` serializes whatever object it is handed and
+    some tests trim the features; a shared mutable body would leak between
+    tests.
+    """
+    return copy.deepcopy(_OGC_FIXTURES[collection])
+
+
+def _items_url(collection, *, base=_OGC_BASE):
+    return re.compile(rf"^{re.escape(base)}/collections/{re.escape(collection)}/items")
+
+
+def _schema_url(collection, *, base=_OGC_BASE):
+    return re.compile(
+        rf"^{re.escape(base)}/collections/{re.escape(collection)}/schema$"
+    )
+
+
+def _mock_items(httpx_mock, collection, body=None, **kwargs):
+    """Serve ``collection``'s fixture for any ``/items`` request against it."""
+    httpx_mock.add_response(
+        method=None,
+        url=_items_url(collection),
+        json=_fixture(collection) if body is None else body,
+        **kwargs,
+    )
+
+
+def _sent(httpx_mock, collection=None):
+    """Parsed query strings of the ``/items`` requests sent, in order."""
+    out = []
+    for req in httpx_mock.get_requests():
+        url = str(req.url)
+        if "/items" not in url:
+            continue
+        if collection and f"/collections/{collection}/items" not in url:
+            continue
+        out.append(parse_qs(urlsplit(url).query))
+    return out
+
+
+# --- samples (CSV) -----------------------------------------------------------
+# The samples service is CSV over a different host, so these use small CSV
+# bodies rather than the GeoJSON fixtures.
+
+_SAMPLES_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/samples-data/")
+
+_RESULTS_CSV = (
+    "Org_Identifier,Location_Identifier,Activity_ActivityIdentifier,"
+    "Result_Characteristic,Result_Measure,Result_MeasureUnit\n"
+    "USGS-WI,USGS-05288705,nwiswi.01.2024100112,Temperature water,12.4,deg C\n"
+    "USGS-WI,USGS-05288705,nwiswi.01.2024100113,Temperature water,12.9,deg C\n"
+)
+
+
+def test_samples_results(httpx_mock):
+    """A results query parses the CSV into the documented column names."""
+    httpx_mock.add_response(method="GET", url=_SAMPLES_RE, text=_RESULTS_CSV)
+
     df, _ = get_samples(
         service="results",
         profile="narrow",
@@ -484,78 +568,528 @@ def test_samples_results():
         activity_start_date_lower="2024-10-01",
         activity_start_date_upper="2025-04-24",
     )
+
     assert all(
         col in df.columns
         for col in ["Location_Identifier", "Activity_ActivityIdentifier"]
     )
-    assert len(df) > 0
+    assert len(df) == 2
 
 
-def test_samples_activity():
-    """Test activity call for proper columns"""
-    df, _ = get_samples(
-        service="activities",
-        profile="sampact",
-        monitoring_location_id="USGS-06719505",
+@pytest.mark.parametrize(
+    ("service", "profile", "kwargs", "expect_path"),
+    [
+        (
+            "activities",
+            "sampact",
+            {"monitoring_location_id": "USGS-06719505"},
+            "/activities/sampact",
+        ),
+        (
+            "locations",
+            "site",
+            {"state_code": "US:55", "usgs_pcode": "00010"},
+            "/locations/site",
+        ),
+        (
+            "projects",
+            "project",
+            {"state_code": "US:15"},
+            "/projects/project",
+        ),
+        (
+            "organizations",
+            "count",
+            {"state_code": "US:01"},
+            "/organizations/count",
+        ),
+    ],
+)
+def test_samples_service_profile_routes_to_its_endpoint(
+    httpx_mock, service, profile, kwargs, expect_path
+):
+    """Each ``service``/``profile`` pair addresses ``/<service>/<profile>``.
+
+    Previously one live test per service asserted a column count against real
+    data (``len(df.columns) == 97``), which broke whenever the service added a
+    field. What is ours to get right is the routing and the parse, so that is
+    what this checks.
+    """
+    httpx_mock.add_response(
+        method="GET",
+        url=_SAMPLES_RE,
+        text="Org_Identifier,Location_Identifier\nUSGS-WI,USGS-06719505\n",
     )
-    assert len(df) > 0
-    assert len(df.columns) == 97
-    assert "Location_HUCTwelveDigitCode" in df.columns
 
+    df, _ = get_samples(service=service, profile=profile, **kwargs)
 
-def test_samples_locations():
-    """Test locations call for proper columns"""
-    df, _ = get_samples(
-        service="locations",
-        profile="site",
-        state_code="US:55",
-        activity_start_date_lower="2024-10-01",
-        activity_start_date_upper="2025-04-24",
-        usgs_pcode="00010",
-    )
-    assert all(
-        col in df.columns for col in ["Location_Identifier", "Location_Latitude"]
-    )
-    assert len(df) > 0
-
-
-def test_samples_projects():
-    """Test projects call for proper columns"""
-    df, _ = get_samples(
-        service="projects",
-        profile="project",
-        state_code="US:15",
-        activity_start_date_lower="2024-10-01",
-        activity_start_date_upper="2025-04-24",
-    )
-    assert all(col in df.columns for col in ["Org_Identifier", "Project_Identifier"])
-    assert len(df) > 0
-
-
-def test_samples_organizations():
-    """Test organizations call for proper columns"""
-    df, _ = get_samples(service="organizations", profile="count", state_code="US:01")
+    url = str(httpx_mock.get_requests()[0].url)
+    assert expect_path in url
     assert len(df) == 1
-    assert df.size == 3
 
 
-def test_get_daily():
+# --- daily / continuous ------------------------------------------------------
+
+
+def test_get_daily(httpx_mock):
+    """A daily query returns tidy rows with the service id renamed to
+    ``daily_id`` and moved last, dates as ``date`` objects, values numeric."""
+    _mock_items(httpx_mock, "daily")
+
     df, md = get_daily(
         monitoring_location_id="USGS-05427718",
         parameter_code="00060",
         time="2025-01-01/..",
     )
-    assert "daily_id" in df.columns
-    assert "geometry" in df.columns
+
+    assert "daily_id" in df.columns and "id" not in df.columns
     assert df.columns[-1] == "daily_id"
-    assert df.shape[1] == 12
+    assert "geometry" in df.columns
     assert df.parameter_code.unique().tolist() == ["00060"]
-    assert df.monitoring_location_id.unique().tolist() == ["USGS-05427718"]
     assert df["time"].apply(lambda x: isinstance(x, datetime.date)).all()
-    assert df["time"].iloc[0] < df["time"].iloc[-1]
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
     assert df["value"].dtype == "float64"
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_daily_sends_date_only_time_interval(httpx_mock):
+    """The Water Data dialect marks ``daily`` date-only, so an open-ended
+    interval goes out as ``2025-01-01/..`` with no time component."""
+    _mock_items(httpx_mock, "daily")
+
+    get_daily(
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+        time="2025-01-01/..",
+    )
+
+    qs = _sent(httpx_mock, "daily")[0]
+    assert qs["time"] == ["2025-01-01/.."]
+    assert qs["parameter_code"] == ["00060"]
+
+
+def test_get_daily_properties(httpx_mock):
+    """``properties`` selects and orders the output columns, and is forwarded to
+    the service so it does the projection too."""
+    requested = [
+        "daily_id",
+        "monitoring_location_id",
+        "parameter_code",
+        "time",
+        "value",
+        "geometry",
+    ]
+    _mock_items(httpx_mock, "daily")
+
+    df, _ = get_daily(
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+        properties=requested,
+    )
+
+    assert df.columns[0] == "daily_id"
+    assert df.columns[-1] == "geometry"
+    assert df.shape[1] == len(requested)
+    # ``daily_id`` is our name for the wire's ``id`` and ``geometry`` is governed
+    # by ``skipGeometry``, not by ``properties`` -- neither is a real queryable,
+    # so neither may be forwarded or the service would reject the projection.
+    sent = _sent(httpx_mock, "daily")[0]["properties"][0].split(",")
+    assert "daily_id" not in sent and "geometry" not in sent
+    assert sent == ["monitoring_location_id", "parameter_code", "time", "value"]
+
+
+def test_get_daily_properties_id(httpx_mock):
+    """``'id'`` in ``properties`` resolves to the service-specific id column
+    while keeping the caller's requested position."""
+    _mock_items(httpx_mock, "daily")
+
+    df, _ = get_daily(
+        monitoring_location_id="USGS-05427718",
+        properties=[
+            "monitoring_location_id",
+            "id",
+            "parameter_code",
+            "time",
+            "value",
+            "geometry",
+        ],
+    )
+
+    assert df.columns[1] == "daily_id"
+
+
+def test_get_daily_no_geometry(httpx_mock):
+    """``skip_geometry=True`` is forwarded and drops the geometry column,
+    yielding a plain DataFrame."""
+    body = _fixture("daily")
+    for feature in body["features"]:
+        feature.pop("geometry", None)
+    _mock_items(httpx_mock, "daily", body=body)
+
+    df, _ = get_daily(monitoring_location_id="USGS-05427718", skip_geometry=True)
+
+    assert "geometry" not in df.columns
+    assert isinstance(df, DataFrame)
+    assert _sent(httpx_mock, "daily")[0]["skipGeometry"] == ["true"]
+
+
+def test_get_continuous(httpx_mock):
+    """Continuous observations are timestamped (not date-only), so ``time``
+    comes back as a UTC-aware datetime column."""
+    _mock_items(httpx_mock, "continuous")
+
+    df, _ = get_continuous(
+        monitoring_location_id="USGS-06904500",
+        parameter_code="00065",
+        time="2025-01-01/2025-12-31",
+    )
+
+    assert isinstance(df, DataFrame)
+    assert "geometry" in df.columns
+    assert "continuous_id" in df.columns
+    assert df["time"].dtype.name.startswith("datetime64[")
+    assert "UTC" in df["time"].dtype.name
+
+
+def test_get_latest_continuous(httpx_mock):
+    _mock_items(httpx_mock, "latest-continuous")
+
+    df, md = get_latest_continuous(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+    )
+
+    assert df.columns[-1] == "latest_continuous_id"
+    assert df["time"].dtype.name.startswith("datetime64[")
+    assert "UTC" in df["time"].dtype.name
+    assert hasattr(md, "url")
+    # Multi-value params are comma-joined into one request when the URL fits.
+    qs = _sent(httpx_mock, "latest-continuous")[0]
+    assert qs["monitoring_location_id"] == ["USGS-05427718,USGS-05427719"]
+    assert qs["parameter_code"] == ["00060,00065"]
+
+
+def test_get_latest_daily(httpx_mock):
+    _mock_items(httpx_mock, "latest-daily")
+
+    df, md = get_latest_daily(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        parameter_code=["00060", "00065"],
+    )
+
+    assert "latest_daily_id" in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_latest_daily_properties_geometry(httpx_mock):
+    """Geometry survives an explicit ``properties`` list that omits it -- the
+    service returns it regardless unless ``skip_geometry`` is set, so the
+    projection must not drop it."""
+    _mock_items(httpx_mock, "latest-daily")
+
+    df, _ = get_latest_daily(
+        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
+        properties=[
+            "monitoring_location_id",
+            "parameter_code",
+            "time",
+            "value",
+            "unit_of_measure",
+        ],
+    )
+
+    assert "geometry" in df.columns
+    assert df.shape[1] == 6
+
+
+# --- monitoring locations ----------------------------------------------------
+
+
+def test_get_monitoring_locations(httpx_mock):
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    df, md = get_monitoring_locations(state_name="Connecticut", site_type_code="GW")
+
+    assert "monitoring_location_id" in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_monitoring_locations_hucs_uses_post_cql(httpx_mock):
+    """``monitoring-locations`` is a POST/CQL2 collection in the Water Data
+    dialect, so a multi-value filter goes out as a CQL2 body rather than a
+    comma-joined query param."""
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    get_monitoring_locations(hydrologic_unit_code=["010802050102", "010802050103"])
+
+    req = next(
+        r
+        for r in httpx_mock.get_requests()
+        if "monitoring-locations/items" in str(r.url)
+    )
+    assert req.method == "POST"
+    body = json.loads(req.content)
+    assert "010802050102" in json.dumps(body)
+    assert "010802050103" in json.dumps(body)
+
+
+# --- generalized CQL ---------------------------------------------------------
+
+
+def test_get_cql_compound_and_in(httpx_mock):
+    """A compound AND-of-INs is sent as a CQL2 body and shaped like the typed
+    getters: wire ``id`` renamed and ordered last."""
+    cql = {
+        "op": "and",
+        "args": [
+            {"op": "in", "args": [{"property": "parameter_code"}, ["00060", "00065"]]},
+            {
+                "op": "in",
+                "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+            },
+        ],
+    }
+    _mock_items(httpx_mock, "latest-daily")
+
+    df, md = get_cql("latest-daily", cql)
+
+    assert "latest_daily_id" in df.columns and "id" not in df.columns
+    assert df.columns[-1] == "latest_daily_id"
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+    req = httpx_mock.get_requests()[0]
+    assert req.method == "POST"
+    # The CQL2 body is posted verbatim, not wrapped in an envelope.
+    assert json.loads(req.content) == cql
+
+
+def test_get_cql_str_body_sent_verbatim(httpx_mock):
+    """A ``str`` CQL2 body is forwarded verbatim and yields the same result as
+    the equivalent ``dict``."""
+    cql = {
+        "op": "in",
+        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+    }
+    _mock_items(httpx_mock, "latest-daily")
+
+    df_dict, _ = get_cql("latest-daily", cql)
+    df_str, _ = get_cql("latest-daily", json.dumps(cql))
+
+    assert list(df_str.columns) == list(df_dict.columns)
+    assert len(df_str) == len(df_dict)
+    bodies = [json.loads(r.content) for r in httpx_mock.get_requests()]
+    assert bodies[0] == bodies[1] == cql
+
+
+def test_get_cql_properties_id_translation(httpx_mock):
+    """``properties=['id', ...]`` resolves ``id`` to the service's output id
+    column, preserving the requested order."""
+    cql = {
+        "op": "in",
+        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+    }
+    _mock_items(httpx_mock, "latest-daily")
+
+    df, _ = get_cql(
+        "latest-daily",
+        cql,
+        properties=["monitoring_location_id", "id", "parameter_code", "value"],
+    )
+
+    assert df.columns[1] == "latest_daily_id"
+
+
+def test_get_cql_like_wildcard(httpx_mock):
+    """``get_cql`` passes through predicates the typed getters cannot express,
+    e.g. a LIKE with a ``%`` wildcard -- it must not be escaped or rewritten."""
+    cql = {
+        "op": "like",
+        "args": [{"property": "hydrologic_unit_code"}, "020700100101%"],
+    }
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    get_cql("monitoring-locations", cql)
+
+    assert json.loads(httpx_mock.get_requests()[0].content) == cql
+
+
+# --- field measurements ------------------------------------------------------
+
+
+def test_get_field_measurements(httpx_mock):
+    body = _fixture("field-measurements")
+    for feature in body["features"]:
+        feature.pop("geometry", None)
+    _mock_items(httpx_mock, "field-measurements", body=body)
+
+    df, md = get_field_measurements(
+        monitoring_location_id="USGS-05427718",
+        unit_of_measure="ft^3/s",
+        time="2025-01-01/2025-10-01",
+        skip_geometry=True,
+    )
+
+    assert "field_measurement_id" in df.columns
+    assert "geometry" not in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+    qs = _sent(httpx_mock, "field-measurements")[0]
+    assert qs["unit_of_measure"] == ["ft^3/s"]
+
+
+def test_get_field_measurements_metadata(httpx_mock):
+    _mock_items(httpx_mock, "field-measurements-metadata")
+
+    df, md = get_field_measurements_metadata(
+        monitoring_location_id="USGS-05427718", skip_geometry=True
+    )
+
+    assert "field_series_id" in df.columns
+    assert "begin" in df.columns and "end" in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_field_measurements_metadata_multi_site(httpx_mock):
+    """Multiple sites plus a parameter filter reach the service in one
+    request."""
+    sites = ["USGS-07069000", "USGS-07064000", "USGS-07068000"]
+    _mock_items(httpx_mock, "field-measurements-metadata")
+
+    get_field_measurements_metadata(
+        monitoring_location_id=sites, parameter_code="00060", skip_geometry=True
+    )
+
+    qs = _sent(httpx_mock, "field-measurements-metadata")[0]
+    assert qs["monitoring_location_id"] == [",".join(sites)]
+    assert qs["parameter_code"] == ["00060"]
+
+
+# --- metadata collections ----------------------------------------------------
+
+
+def test_get_time_series_metadata(httpx_mock):
+    _mock_items(httpx_mock, "time-series-metadata")
+
+    df, md = get_time_series_metadata(
+        bbox=[-89.840355, 42.853411, -88.818626, 43.422598],
+        parameter_code=["00060", "00065", "72019"],
+        skip_geometry=True,
+    )
+
+    assert "parameter_name" in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+    qs = _sent(httpx_mock, "time-series-metadata")[0]
+    # bbox is a fixed 4-coord scalar param, comma-joined and never chunked.
+    assert qs["bbox"] == ["-89.840355,42.853411,-88.818626,43.422598"]
+
+
+def test_get_combined_metadata(httpx_mock):
+    _mock_items(httpx_mock, "combined-metadata")
+
+    df, md = get_combined_metadata(
+        monitoring_location_id="USGS-05427718", skip_geometry=True
+    )
+
+    for col in (
+        "monitoring_location_id",
+        "parameter_code",
+        "data_type",
+        "drainage_area",
+    ):
+        assert col in df.columns, col
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_combined_metadata_multi_site(httpx_mock):
+    """Multiple sites are comma-joined into one GET.
+
+    Only ``monitoring-locations`` is a CQL2/POST collection in the Water Data
+    dialect; ``combined-metadata`` is not, so this stays a query param.
+    """
+    sites = ["USGS-07069000", "USGS-07064000", "USGS-07068000"]
+    _mock_items(httpx_mock, "combined-metadata")
+
+    get_combined_metadata(
+        monitoring_location_id=sites, parameter_code="00060", skip_geometry=True
+    )
+
+    req = next(
+        r for r in httpx_mock.get_requests() if "combined-metadata/items" in str(r.url)
+    )
+    assert req.method == "GET"
+    qs = _sent(httpx_mock, "combined-metadata")[0]
+    assert qs["monitoring_location_id"] == [",".join(sites)]
+    assert qs["parameter_code"] == ["00060"]
+
+
+# --- peaks -------------------------------------------------------------------
+
+
+def test_get_peaks(httpx_mock):
+    _mock_items(httpx_mock, "peaks")
+
+    df, md = get_peaks(monitoring_location_id="USGS-02238500", skip_geometry=True)
+
+    assert "peak_id" in df.columns
+    assert "value" in df.columns
+    assert "water_year" in df.columns
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_peaks_water_year_filter(httpx_mock):
+    """``water_year`` is forwarded as a comma-joined filter.
+
+    The live version of this test asserted only that the returned rows fell
+    inside the requested years -- which an empty frame satisfies, so it could
+    not fail. Asserting on the outgoing request is what actually pins the
+    behavior.
+    """
+    _mock_items(httpx_mock, "peaks")
+
+    get_peaks(
+        monitoring_location_id="USGS-02238500",
+        parameter_code="00060",
+        water_year=[2020, 2021, 2022],
+        skip_geometry=True,
+    )
+
+    qs = _sent(httpx_mock, "peaks")[0]
+    assert qs["water_year"] == ["2020,2021,2022"]
+    assert qs["parameter_code"] == ["00060"]
+
+
+# --- channel measurements ----------------------------------------------------
+
+
+def test_get_channel(httpx_mock):
+    _mock_items(httpx_mock, "channel-measurements")
+
+    df, _ = get_channel(monitoring_location_id="USGS-02238500")
+
+    assert "channel_measurements_id" in df.columns
+    assert len(df) == 2
+
+
+# --- reference tables --------------------------------------------------------
+
+
+def test_get_reference_table(httpx_mock):
+    _mock_items(httpx_mock, "agency-codes")
+
+    df, md = get_reference_table("agency-codes")
+
+    assert "agency_code" in df.columns
+    assert df.shape[0] == 2
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_reference_table_with_query(httpx_mock):
+    """A ``query`` dict is merged into the request's query params."""
+    _mock_items(httpx_mock, "agency-codes")
+
+    df, md = get_reference_table("agency-codes", query={"id": "AK001,AK008"})
+
+    assert "agency_code" in df.columns
+    assert df.shape[0] == 2
+    assert _sent(httpx_mock, "agency-codes")[0]["id"] == ["AK001,AK008"]
+    assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
 def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
@@ -567,7 +1101,7 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
     # met, then truncate the combined frame to exactly N) is covered without a
     # network round-trip by the ``_row_cap`` / ``_finalize_ogc`` tests in
     # tests/waterdata_utils_test.py.
-    with mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+    with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
         get_daily(
             monitoring_location_id="USGS-05427718",
@@ -577,324 +1111,6 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
     args_dict = fake.call_args[0][0]
     assert "max_rows" not in args_dict  # not leaked into the query params
     assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
-
-
-def test_get_daily_properties():
-    df, _ = get_daily(
-        monitoring_location_id="USGS-05427718",
-        parameter_code="00060",
-        time="2025-01-01/..",
-        properties=[
-            "daily_id",
-            "monitoring_location_id",
-            "parameter_code",
-            "time",
-            "value",
-            "geometry",
-        ],
-    )
-    assert df.columns[0] == "daily_id"
-    assert df.columns[-1] == "geometry"
-    assert df.shape[1] == 6
-    assert df.parameter_code.unique().tolist() == ["00060"]
-
-
-def test_get_daily_properties_id():
-    df, _ = get_daily(
-        monitoring_location_id="USGS-05427718",
-        parameter_code="00060",
-        time="2025-01-01/..",
-        properties=[
-            "monitoring_location_id",
-            "id",
-            "parameter_code",
-            "time",
-            "value",
-            "geometry",
-        ],
-    )
-    assert df.columns[1] == "daily_id"
-
-
-def test_get_daily_no_geometry():
-    df, _ = get_daily(
-        monitoring_location_id="USGS-05427718",
-        parameter_code="00060",
-        time="2025-01-01/..",
-        skip_geometry=True,
-    )
-    assert "geometry" not in df.columns
-    assert df.shape[1] == 11
-    assert isinstance(df, DataFrame)
-
-
-def test_get_continuous():
-    df, _ = get_continuous(
-        monitoring_location_id="USGS-06904500",
-        parameter_code="00065",
-        time="2025-01-01/2025-12-31",
-    )
-    assert isinstance(df, DataFrame)
-    # ``skip_geometry`` is unset, so the server includes geometry by default.
-    assert "geometry" in df.columns
-    assert (
-        df["time"].dtype.name.startswith("datetime64[")
-        and "UTC" in df["time"].dtype.name
-    )
-    assert "continuous_id" in df.columns
-
-
-def test_get_monitoring_locations():
-    df, md = get_monitoring_locations(state_name="Connecticut", site_type_code="GW")
-    assert df.site_type_code.unique().tolist() == ["GW"]
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_monitoring_locations_hucs():
-    df, _ = get_monitoring_locations(
-        hydrologic_unit_code=["010802050102", "010802050103"]
-    )
-    assert set(df.hydrologic_unit_code.unique().tolist()) == {
-        "010802050102",
-        "010802050103",
-    }
-
-
-def test_get_cql_compound_and_in():
-    """Generalized CQL2: a compound AND-of-INs routed through get_cql.
-    Confirms the (df, md) shape matches the typed getters — wire ``id`` renamed
-    and ordered last."""
-    cql = {
-        "op": "and",
-        "args": [
-            {"op": "in", "args": [{"property": "parameter_code"}, ["00060", "00065"]]},
-            {
-                "op": "in",
-                "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
-            },
-        ],
-    }
-    df, md = get_cql("latest-daily", cql)
-    assert len(df) >= 1
-    assert "latest_daily_id" in df.columns and "id" not in df.columns
-    assert df.columns[-1] == "latest_daily_id"
-    assert set(df["parameter_code"]).issubset({"00060", "00065"})
-    assert set(df["monitoring_location_id"]) == {"USGS-05427718"}
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_cql_str_body_matches_dict():
-    """A CQL2 ``str`` body is sent verbatim and yields the same result as the
-    equivalent ``dict``."""
-    cql = {
-        "op": "in",
-        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
-    }
-    df_dict, _ = get_cql("latest-daily", cql)
-    df_str, _ = get_cql("latest-daily", json.dumps(cql))
-    assert list(df_str.columns) == list(df_dict.columns)
-    assert len(df_str) == len(df_dict)
-
-
-def test_get_cql_properties_id_translation():
-    """``properties=['id', ...]`` resolves ``id`` to the service's output_id
-    column, just like the typed getters, preserving the requested order."""
-    cql = {
-        "op": "in",
-        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
-    }
-    df, _ = get_cql(
-        "latest-daily",
-        cql,
-        properties=["monitoring_location_id", "id", "parameter_code", "value"],
-    )
-    assert df.columns[1] == "latest_daily_id"
-
-
-def test_get_cql_like_wildcard():
-    """Generalized CQL2 unlocks predicates the typed getters can't express, e.g.
-    a LIKE with a ``%`` wildcard."""
-    cql = {
-        "op": "like",
-        "args": [{"property": "hydrologic_unit_code"}, "020700100101%"],
-    }
-    df, _ = get_cql("monitoring-locations", cql)
-    assert len(df) >= 1
-    assert df["hydrologic_unit_code"].astype(str).str.startswith("020700100101").all()
-
-
-def test_get_latest_continuous():
-    df, md = get_latest_continuous(
-        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
-        parameter_code=["00060", "00065"],
-    )
-    assert df.columns[-1] == "latest_continuous_id"
-    assert df.shape[0] <= 4
-    assert df.statistic_id.unique().tolist() == ["00011"]
-    assert hasattr(md, "url")
-    assert (
-        df["time"].dtype.name.startswith("datetime64[")
-        and "UTC" in df["time"].dtype.name
-    )
-
-
-def test_get_latest_daily():
-    df, md = get_latest_daily(
-        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
-        parameter_code=["00060", "00065"],
-    )
-    assert "latest_daily_id" in df.columns
-    assert df.shape[1] == 12
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_latest_daily_properties_geometry():
-    df, _md = get_latest_daily(
-        monitoring_location_id=["USGS-05427718", "USGS-05427719"],
-        parameter_code=["00060", "00065"],
-        properties=[
-            "monitoring_location_id",
-            "parameter_code",
-            "time",
-            "value",
-            "unit_of_measure",
-        ],
-    )
-    assert "geometry" in df.columns
-    assert df.shape[1] == 6
-
-
-def test_get_field_measurements():
-    df, md = get_field_measurements(
-        monitoring_location_id="USGS-05427718",
-        unit_of_measure="ft^3/s",
-        time="2025-01-01/2025-10-01",
-        skip_geometry=True,
-    )
-    assert "field_measurement_id" in df.columns
-    assert "geometry" not in df.columns
-    assert df.unit_of_measure.unique().tolist() == ["ft^3/s"]
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_time_series_metadata():
-    df, md = get_time_series_metadata(
-        bbox=[-89.840355, 42.853411, -88.818626, 43.422598],
-        parameter_code=["00060", "00065", "72019"],
-        skip_geometry=True,
-    )
-    assert set(df["parameter_name"].unique().tolist()) == {
-        "Gage height",
-        "Water level, depth LSD",
-        "Discharge",
-    }
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_combined_metadata():
-    df, md = get_combined_metadata(
-        monitoring_location_id="USGS-05407000",
-        skip_geometry=True,
-    )
-    assert "monitoring_location_id" in df.columns
-    assert "parameter_code" in df.columns
-    assert "data_type" in df.columns
-    assert "drainage_area" in df.columns
-    assert (df["monitoring_location_id"] == "USGS-05407000").all()
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_combined_metadata_multi_site_post():
-    df, _ = get_combined_metadata(
-        monitoring_location_id=[
-            "USGS-07069000",
-            "USGS-07064000",
-            "USGS-07068000",
-        ],
-        parameter_code="00060",
-        skip_geometry=True,
-    )
-    assert set(df["monitoring_location_id"].unique()) == {
-        "USGS-07069000",
-        "USGS-07064000",
-        "USGS-07068000",
-    }
-    assert (df["parameter_code"] == "00060").all()
-
-
-def test_get_field_measurements_metadata():
-    df, md = get_field_measurements_metadata(
-        monitoring_location_id="USGS-02238500", skip_geometry=True
-    )
-    assert "field_series_id" in df.columns
-    assert "begin" in df.columns
-    assert "end" in df.columns
-    assert (df["monitoring_location_id"] == "USGS-02238500").all()
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_field_measurements_metadata_multi_site():
-    df, _ = get_field_measurements_metadata(
-        monitoring_location_id=[
-            "USGS-07069000",
-            "USGS-07064000",
-            "USGS-07068000",
-        ],
-        parameter_code="00060",
-        skip_geometry=True,
-    )
-    assert (df["parameter_code"] == "00060").all()
-    assert set(df["monitoring_location_id"].unique()) == {
-        "USGS-07069000",
-        "USGS-07064000",
-        "USGS-07068000",
-    }
-
-
-def test_get_peaks():
-    df, md = get_peaks(monitoring_location_id="USGS-02238500", skip_geometry=True)
-    assert "peak_id" in df.columns
-    assert "value" in df.columns
-    assert "water_year" in df.columns
-    assert (df["monitoring_location_id"] == "USGS-02238500").all()
-    assert set(df["parameter_code"].unique()).issubset({"00060", "00065"})
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_peaks_water_year_filter():
-    df, _ = get_peaks(
-        monitoring_location_id="USGS-02238500",
-        parameter_code="00060",
-        water_year=[2020, 2021, 2022],
-        skip_geometry=True,
-    )
-    assert (df["parameter_code"] == "00060").all()
-    assert set(df["water_year"].unique()).issubset({2020, 2021, 2022})
-
-
-def test_get_reference_table():
-    df, md = get_reference_table("agency-codes")
-    assert "agency_code" in df.columns
-    assert df.shape[0] > 0
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
-
-
-def test_get_reference_table_with_query():
-    query = {"id": "AK001,AK008"}
-    df, md = get_reference_table("agency-codes", query=query)
-    assert "agency_code" in df.columns
-    assert df.shape[0] == 2
-    assert hasattr(md, "url")
-    assert hasattr(md, "query_time")
 
 
 def test_get_reference_table_wrong_name():
@@ -911,34 +1127,67 @@ def test_get_reference_table_rejects_bad_max_rows(bad):
         get_reference_table("agency-codes", max_rows=bad)
 
 
-def test_get_reference_table_accepts_numpy_int_max_rows():
+def test_get_reference_table_accepts_numpy_int_max_rows(httpx_mock):
     # numpy integers are valid caps: isinstance(np.int64, int) is False, so the
     # validation must accept numbers.Integral (not just int) — otherwise a cap
     # derived from a numpy/pandas computation is wrongly rejected.
+    _mock_items(httpx_mock, "agency-codes")
+
     df, _ = get_reference_table("agency-codes", max_rows=np.int64(2))
+
     assert len(df) == 2
 
 
-def test_get_stats_por():
+# --- statistics --------------------------------------------------------------
+# The statistics API nests its values two levels deep (feature -> data ->
+# values); these pin the flattening, which is the part we own.
+
+
+def _mock_stats(httpx_mock, service):
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(rf"^{re.escape(_STATS_BASE)}/{service}"),
+        json=_fixture(service),
+    )
+
+
+def test_get_stats_por(httpx_mock):
+    """Period-of-record normals flatten to one row per computation, with
+    ``percentile`` expanded into its own column by default."""
+    _mock_stats(httpx_mock, "observationNormals")
+
     df, _ = get_stats_por(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
         start_date="01-01",
         end_date="01-01",
     )
-    assert (
-        df["computation"]
-        .isin(["median", "maximum", "minimum", "arithmetic_mean", "percentile"])
-        .all()
-    )
+
+    assert "computation" in df.columns
+    assert "percentile" in df.columns
     assert df["time_of_year"].isin(["01-01", "01"]).all()
-    assert df.loc[df["computation"] == "minimum", "percentile"].unique().tolist() == [
-        0.0
-    ]
+    # The nesting is flattened, not left as objects.
+    assert "data" not in df.columns and "values" not in df.columns
+    # The single ``percentile`` entry expands into one row per percentile, so the
+    # frame is longer than the nested value list: 4 scalar computations + 7
+    # percentiles.
+    assert set(df["computation"]) == {
+        "arithmetic_mean",
+        "maximum",
+        "median",
+        "minimum",
+        "percentile",
+    }
+    assert len(df) == 11
+    assert df.loc[df["computation"] == "minimum", "percentile"].tolist() == [0.0]
     assert df.loc[df["computation"] == "arithmetic_mean", "percentile"].isnull().all()
 
 
-def test_get_stats_por_expanded_false():
+def test_get_stats_por_expanded_false(httpx_mock):
+    """``expand_percentiles=False`` keeps the raw ``percentiles`` list column
+    instead of exploding it into one row per percentile."""
+    _mock_stats(httpx_mock, "observationNormals")
+
     df, _ = get_stats_por(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
@@ -947,15 +1196,23 @@ def test_get_stats_por_expanded_false():
         expand_percentiles=False,
         computation_type=["minimum", "percentile"],
     )
-    assert df.shape[0] == 4
-    assert df.shape[1] == 20  # if geopandas installed, 21 columns if not
+
     assert "percentile" not in df.columns
     assert "percentiles" in df.columns
-    assert type(df["percentiles"][2]) is list
-    assert df.loc[~df["percentiles"].isna(), "value"].isnull().all()
+    # ``expand_percentiles`` is a client-side shaping flag, not a query param.
+    url = str(httpx_mock.get_requests()[0].url)
+    assert "expand_percentiles" not in url
+    # The statistics API takes repeated params, not the comma-joined form the
+    # OGC collections use.
+    qs = parse_qs(urlsplit(url).query)
+    assert qs["computation_type"] == ["minimum", "percentile"]
 
 
-def test_get_stats_date_range():
+def test_get_stats_date_range(httpx_mock):
+    """Interval statistics carry an ``interval_type`` distinguishing month from
+    calendar- and water-year rows."""
+    _mock_stats(httpx_mock, "observationIntervals")
+
     df, _ = get_stats_date_range(
         monitoring_location_id="USGS-12451000",
         parameter_code="00060",
@@ -964,19 +1221,9 @@ def test_get_stats_date_range():
         computation_type="maximum",
     )
 
-    assert df.shape[0] == 3
-    assert df.shape[1] == 20  # if geopandas installed, 21 columns if not
     assert "interval_type" in df.columns
-    assert "percentile" in df.columns
     assert df["interval_type"].isin(["month", "calendar_year", "water_year"]).all()
-
-
-def test_get_channel():
-    df, _ = get_channel(monitoring_location_id="USGS-02238500")
-
-    assert df.shape[0] > 470
-    assert df.shape[1] == 27  # if geopandas installed, 21 columns if not
-    assert "channel_measurements_id" in df.columns
+    assert "data" not in df.columns and "values" not in df.columns
 
 
 class TestCheckMonitoringLocationId:
@@ -1086,7 +1333,7 @@ class TestNormalizeStrIterable:
         URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
         it to ``list`` at the function boundary.
         """
-        with mock.patch("dataretrieval.waterdata.api.get_ogc_data") as fake:
+        with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
             fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
             get_daily(
                 monitoring_location_id="USGS-05427718",

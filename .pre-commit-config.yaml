@@ -38,6 +38,31 @@ repos:
         pass_filenames: false
         additional_dependencies: [httpx, anyio]
 
+  # Complexity ratchet. Thresholds are the tightest the package currently
+  # passes, so this holds the line rather than demanding a refactor: no block
+  # above rank C (cyclomatic complexity 20), no module below B, average at A.
+  # Tightening a letter is a deliberate commit, and the failure names the
+  # offending block, so the fix is local. Applied to the package only --
+  # tests legitimately contain long, branchy fixtures.
+  - repo: https://github.com/rubik/xenon
+    rev: v0.9.3
+    hooks:
+      - id: xenon
+        # The package path is in args, not passed by pre-commit: --max-average
+        # and --max-modules are whole-package judgements, and computing them
+        # over only the changed files would let the average drift upward one
+        # commit at a time. ``files`` decides whether to run, not what to scan.
+        args:
+          - "--max-absolute"
+          - "C"
+          - "--max-modules"
+          - "B"
+          - "--max-average"
+          - "A"
+          - "dataretrieval"
+        files: ^dataretrieval/.*\.py$
+        pass_filenames: false
+
   # Strip cell outputs + execution_count from notebooks on commit so the
   # diff is the source, not the rendered run. Demos still execute fine
   # locally; clean commits keep PRs reviewable and avoid quota/timestamp

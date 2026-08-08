@@ -30,6 +30,9 @@ from dataretrieval.transport.sync import run_sync
 from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.utils import BASE_URL
 
+__all__ = ["get_data"]
+
+
 # ``_handle_nesting``'s geopandas branch calls ``gpd.GeoDataFrame.from_features``
 # directly, so this module needs its own bound ``gpd`` name. Import it under the
 # same guard the engine uses; when geopandas is absent ``gpd`` is left unbound

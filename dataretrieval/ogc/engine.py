@@ -39,6 +39,7 @@ import dataretrieval.ogc.chunking as chunking
 import dataretrieval.progress as _progress
 from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.ogc.chunking import get_active_client
+from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     BASE_URL,  # noqa: F401  — compatibility alias
@@ -52,7 +53,6 @@ from dataretrieval.ogc.requests import (  # noqa: F401
     _NO_NORMALIZE_PARAMS,
     _as_str_list,
     _check_monitoring_location_id,
-    _check_ogc_requests,
     _construct_api_requests,
     _construct_cql_request,
     _cql2_param,
@@ -61,7 +61,6 @@ from dataretrieval.ogc.requests import (  # noqa: F401
     _normalize_str_iterable,
     _ogc_base_url,
     _ogc_query_params,
-    _row_cap,
     _switch_arg_id,
     _switch_properties_id,
     prepare_request_args,

@@ -14,6 +14,8 @@ import httpx
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 from dataretrieval.utils import _get_with_retry
 
+__all__ = ["download_workspace", "get_sample_watershed", "get_watershed", "Watershed"]
+
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
     """Download a StreamStats workspace.

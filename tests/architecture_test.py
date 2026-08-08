@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import functools
 import sys
 from pathlib import Path
 
@@ -25,24 +26,11 @@ _ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
     "dataretrieval.ngwmn": {"dataretrieval.ogc"},
 }
 
-_ENGINE_REQUEST_IMPORTS = {
-    "_NO_NORMALIZE_PARAMS",
-    "_as_str_list",
-    "_check_monitoring_location_id",
-    "_check_ogc_requests",
-    "_construct_api_requests",
-    "_construct_cql_request",
-    "_cql2_param",
-    "_dialect",
-    "_get_args",
-    "_normalize_str_iterable",
-    "_ogc_base_url",
-    "_ogc_query_params",
-    "_row_cap",
-    "_switch_arg_id",
-    "_switch_properties_id",
-    "prepare_request_args",
-}
+#: How many names ``ogc.engine`` may import from ``ogc.requests``. A ceiling
+#: rather than an exact name list: the claim being enforced is "the legacy
+#: compatibility surface does not grow", and a name list also fails on every
+#: rename and every deletion -- neither of which grows anything.
+_MAX_ENGINE_REQUEST_IMPORTS = 14
 
 
 def _module_name(path: Path) -> str:
@@ -103,6 +91,7 @@ class _RuntimeImportVisitor(ast.NodeVisitor):
         self.modules.update(_resolve_from(self.current_module, self.path, node))
 
 
+@functools.cache
 def _runtime_imports(path: Path) -> set[str]:
     module = _module_name(path)
     visitor = _RuntimeImportVisitor(module, path)
@@ -110,11 +99,25 @@ def _runtime_imports(path: Path) -> set[str]:
     return visitor.modules
 
 
+# Both are pure over an unchanging tree and are called from a dozen places;
+# without caching the suite re-parses every package file on each call.
+@functools.cache
 def _package_import_graph() -> dict[str, set[str]]:
     return {
         _module_name(path): _runtime_imports(path)
         for path in sorted(PACKAGE_ROOT.rglob("*.py"))
     }
+
+
+def _literal_exports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__all__"
+            for target in node.targets
+        ):
+            return set(ast.literal_eval(node.value))
+    raise AssertionError(f"{path.relative_to(PACKAGE_ROOT.parent)} has no __all__")
 
 
 def test_exceptions_has_no_runtime_third_party_dependency() -> None:
@@ -182,8 +185,14 @@ def test_top_level_ogc_consumers_match_documented_variances() -> None:
     )
 
 
-def test_engine_request_import_surface_is_frozen() -> None:
-    """Engine may preserve legacy request names but may not grow a new hub."""
+def test_engine_request_import_surface_does_not_grow() -> None:
+    """Engine may preserve legacy request names but may not grow a new hub.
+
+    Each name here is either used by engine's own code or re-exported purely so
+    an old import path keeps working. Both are capped: a re-export that nothing
+    imports is dead weight, and a used name past the cap means request
+    construction is migrating back into engine.
+    """
     path = PACKAGE_ROOT / "ogc" / "engine.py"
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     imported = {
@@ -193,10 +202,19 @@ def test_engine_request_import_surface_is_frozen() -> None:
         and node.module == "dataretrieval.ogc.requests"
         for alias in node.names
     }
-    assert imported == _ENGINE_REQUEST_IMPORTS, (
-        "ogc.engine request imports changed; use the canonical requests module "
-        "instead of expanding compatibility exports.\n"
-        f"expected={sorted(_ENGINE_REQUEST_IMPORTS)}\nobserved={sorted(imported)}"
+    assert len(imported) <= _MAX_ENGINE_REQUEST_IMPORTS, (
+        "ogc.engine imports more request names than before; use the canonical "
+        "requests module instead of expanding compatibility exports.\n"
+        f"limit={_MAX_ENGINE_REQUEST_IMPORTS}\nobserved={sorted(imported)}"
+    )
+    # Every imported name must resolve in ``requests``; a stale re-export of a
+    # name that moved or was deleted is an ImportError waiting for the first
+    # caller of the compatibility path.
+    from dataretrieval.ogc import requests as ogc_requests
+
+    missing = sorted(name for name in imported if not hasattr(ogc_requests, name))
+    assert not missing, (
+        f"ogc.engine re-exports names ogc.requests no longer has: {missing}"
     )
 
 
@@ -291,24 +309,12 @@ def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
         "dataretrieval.ogc.shaping",
     }, f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
 
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    exports: set[str] | None = None
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if any(
-            isinstance(target, ast.Name) and target.id == "__all__"
-            for target in node.targets
-        ):
-            exports = set(ast.literal_eval(node.value))
-            break
-    assert exports is not None, "waterdata.utils must declare its intentional exports"
+    exports = _literal_exports(path)
 
     old_reexports = {
         "GEOPANDAS",
         "_as_str_list",
         "_check_monitoring_location_id",
-        "_check_ogc_requests",
         "_construct_api_requests",
         "_construct_cql_request",
         "_default_headers",
@@ -489,3 +495,217 @@ def test_transport_runtime_graph_is_acyclic() -> None:
 
     for module in graph:
         visit(module, ())
+
+
+# --- Adapter structure and public export boundaries ---
+
+#: The modules whose public surface must be declared, not inferred. This is a
+#: list of *files*, not of names: naming the expected exports too would restate
+#: every getter a third time and fail on renames, which break no boundary.
+_EXPLICIT_EXPORT_MODULES = (
+    "ngwmn.py",
+    "nldi.py",
+    "streamstats.py",
+    "wateruse.py",
+    "wqp.py",
+    "waterdata/cql.py",
+    "waterdata/measurements.py",
+    "waterdata/metadata.py",
+    "waterdata/nearest.py",
+    "waterdata/ratings.py",
+    "waterdata/reference.py",
+    "waterdata/samples.py",
+    "waterdata/stats.py",
+    "waterdata/time_series.py",
+    "waterdata/types.py",
+)
+
+# The collection-family modules the ``waterdata.api`` facade re-exports.
+_WATERDATA_FAMILIES = (
+    "waterdata/time_series.py",
+    "waterdata/metadata.py",
+    "waterdata/measurements.py",
+    "waterdata/reference.py",
+    "waterdata/samples.py",
+    "waterdata/cql.py",
+)
+
+
+def _top_level_definitions(path: Path) -> set[str]:
+    """Names bound at module scope by a def, class, or assignment."""
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    defined: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            defined.add(node.name)
+        elif isinstance(node, ast.Assign):
+            defined.update(
+                target.id for target in node.targets if isinstance(target, ast.Name)
+            )
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            defined.add(node.target.id)
+    return defined
+
+
+def test_active_service_exports_are_explicit() -> None:
+    """Every service module declares ``__all__`` and exports only its own names.
+
+    ``_literal_exports`` raises when ``__all__`` is missing, so the call is the
+    first assertion. The second is what keeps these modules from becoming
+    re-export hubs: a name in ``__all__`` that the module does not define came
+    from somewhere else, and now has two public homes that can drift apart.
+    """
+    for relative in _EXPLICIT_EXPORT_MODULES:
+        path = PACKAGE_ROOT / relative
+        exports = _literal_exports(path)
+        assert exports, f"{relative} declares an empty __all__"
+        borrowed = sorted(exports - _top_level_definitions(path))
+        assert not borrowed, (
+            f"{relative} re-exports names it does not define: {borrowed}"
+        )
+
+
+def test_each_family_getter_has_exactly_one_home() -> None:
+    """A getter exported by two family modules would give callers two import
+    paths that can diverge, and makes the facade's union ambiguous."""
+    seen: dict[str, str] = {}
+    for relative in _WATERDATA_FAMILIES:
+        for name in _literal_exports(PACKAGE_ROOT / relative):
+            assert name not in seen, (
+                f"{name} is exported by both {seen[name]} and {relative}"
+            )
+            seen[name] = relative
+
+
+def test_api_facade_exports_exactly_the_family_union() -> None:
+    """The facade re-exports every family getter and invents none of its own.
+
+    Derived from the families' own ``__all__`` rather than a frozen copy: a
+    hardcoded union is 19 more strings to edit per new getter, and it would still
+    pass if a family gained an export the facade forgot to re-export -- the one
+    thing worth catching here.
+    """
+    families = set().union(
+        *(_literal_exports(PACKAGE_ROOT / f) for f in _WATERDATA_FAMILIES)
+    )
+    assert _literal_exports(PACKAGE_ROOT / "waterdata/api.py") == families
+
+
+def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
+    """The facade re-exports; it does not run anything.
+
+    Statement *kinds* are checked, not just ``def``/``class``. Scanning for
+    definitions alone let a module-level ``for`` loop live here that rewrote
+    every re-exported getter's ``__module__`` -- code owned by the family
+    modules, mutated from a file certified "logic-free". A docstring, imports,
+    and plain assignments are the whole legitimate vocabulary of a facade.
+    """
+    path = PACKAGE_ROOT / "waterdata" / "api.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    allowed = (ast.Import, ast.ImportFrom, ast.Assign, ast.AnnAssign)
+    offenders = [
+        f"line {node.lineno}: {type(node).__name__}"
+        for node in tree.body
+        if not isinstance(node, allowed)
+        and not (
+            isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+        )  # the module docstring
+    ]
+    assert not offenders, f"waterdata.api contains implementation: {offenders}"
+
+
+def test_waterdata_collection_families_do_not_import_each_other() -> None:
+    """Families share through Water Data policy, OGC, and transport -- not laterally.
+
+    A "family" is a module the ``waterdata.api`` facade re-exports from, so the
+    set comes from :data:`_WATERDATA_FAMILIES` rather than being restated. That
+    list is self-enforcing: a seventh family the facade re-exports must be added
+    to ``_EXPECTED_MODULE_EXPORTS`` or ``test_api_facade_exports_exactly_the_
+    family_union`` fails, and it lands here on the same edit.
+
+    Composed getters like ``nearest`` are deliberately outside it. They are not
+    peers of a family; ``get_nearest_continuous`` builds on ``get_continuous``,
+    which is ordinary layering rather than a lateral reach.
+    """
+    graph = _package_import_graph()
+    families = {
+        "dataretrieval." + relative.removesuffix(".py").replace("/", ".")
+        for relative in _WATERDATA_FAMILIES
+    }
+    violations = []
+    for module in sorted(families):
+        for dependency in graph[module]:
+            if dependency in families and dependency != module:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Lateral collection-family imports:\n" + "\n".join(
+        violations
+    )
+
+
+def test_service_adapters_do_not_reach_through_each_other() -> None:
+    # Every active service; NWIS is excluded because its deprecation is governed
+    # by its own fitness function.
+    adapters = set(_SERVICE_PREFIXES) - {"dataretrieval.nwis"}
+
+    def owner(name: str) -> str | None:
+        """The adapter ``name`` belongs to, or None if it is shared code."""
+        return next(
+            (a for a in adapters if name == a or name.startswith(a + ".")),
+            None,
+        )
+
+    violations: list[str] = []
+    for module, imports in _package_import_graph().items():
+        source = owner(module)
+        if source is None:
+            continue
+        for dependency in imports:
+            target = owner(dependency)
+            if target is not None and target != source:
+                violations.append(f"{module} -> {dependency}")
+    assert not violations, "Adapter-to-adapter imports:\n" + "\n".join(
+        sorted(set(violations))
+    )
+
+
+def test_ogc_request_construction_does_not_execute_http() -> None:
+    """Building a request may borrow header policy, never the executing calls.
+
+    Two assertions, because the first alone was once true while the rule was
+    broken: ``requests.py`` imported ``ogc.schema`` purely to forward a name,
+    and ``ogc.schema`` calls ``transport.http.get`` -- so constructing a request
+    dragged in the executing path with this test still green.
+
+    The edge is named explicitly rather than checked over the transitive graph.
+    A closure from ``ogc.requests`` reaches the whole package, because
+    ``transport.retry`` imports ``dataretrieval`` for the progress reporter and
+    the package ``__init__`` imports every service; a rule stated that way would
+    be either vacuous or a list of exceptions.
+    """
+    path = PACKAGE_ROOT / "ogc" / "requests.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    transport_names = {
+        alias.name
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "dataretrieval.transport.http"
+        for alias in node.names
+    }
+    assert transport_names == {"default_headers"}, (
+        f"ogc.requests imports executing transport helpers: {sorted(transport_names)}"
+    )
+    assert "dataretrieval.ogc.schema" not in _runtime_imports(path), (
+        "ogc.requests imports ogc.schema, which executes HTTP; import the schema "
+        "helper from ogc.schema at its point of use instead of forwarding it here"
+    )
+
+
+def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
+    """``_deal_with_empty`` names columns from the collection schema.
+
+    That is a real network call on an empty result, so the dependency is worth
+    pinning deliberately rather than leaving it to be removed as dead weight.
+    """
+    assert "dataretrieval.ogc.schema" in _runtime_imports(
+        PACKAGE_ROOT / "ogc" / "shaping.py"
+    )

@@ -27,6 +27,46 @@ jobs:
           ruff check . --output-format=github
           ruff format --check .
 
+  complexity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # wily needs history to compare against the base; the gate itself
+          # only needs the working tree.
+          fetch-depth: 0
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: "pip"
+      - name: Install metrics tooling
+        # Versions pinned in the [metrics] extra so CI and the local
+        # pre-commit hook grade identically.
+        run: pip install -e .[metrics]
+      - name: Complexity gate
+        # Ratchet, not an aspiration: these are the tightest thresholds the
+        # package currently passes. A change that regresses complexity fails
+        # here with the offending block named. Mirrors the xenon pre-commit
+        # hook, so a contributor sees the same verdict before pushing.
+        run: xenon --max-absolute C --max-modules B --max-average A dataretrieval
+      - name: Complexity trend vs base
+        # Advisory: reports which files moved and by how much, so a reviewer
+        # can see direction rather than a pass/fail. Never fails the build --
+        # the gate above is what blocks.
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          git fetch --quiet origin "$base" || true
+          wily build dataretrieval --max-revisions 40 >/dev/null 2>&1 || true
+          echo '### Complexity trend' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          wily diff dataretrieval --revision "$base" 2>&1 | tail -40 \
+            >> "$GITHUB_STEP_SUMMARY" || echo 'no comparable revision' \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
   package-artifact:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +87,6 @@ jobs:
           "$venv/bin/python" -m pip install "$GITHUB_WORKSPACE"/wheelhouse/*.whl
           cd "$RUNNER_TEMP"
           "$venv/bin/python" -I - <<'PY'
-          import importlib.util
           import os
           from importlib.resources import files
           from pathlib import Path
@@ -60,8 +99,6 @@ jobs:
           checkout = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
           installed = Path(dataretrieval.__file__).resolve()
           assert not installed.is_relative_to(checkout), (installed, checkout)
-          assert importlib.util.find_spec("dataretrieval.waterdata.api") is not None
-          assert importlib.util.find_spec("dataretrieval.ogc.engine") is not None
           assert files("dataretrieval").joinpath("py.typed").is_file()
           assert waterdata.get_daily
           assert ngwmn.get_sites

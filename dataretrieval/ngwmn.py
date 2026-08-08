@@ -27,8 +27,21 @@ from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 from dataretrieval.utils import BaseMetadata
 
+__all__ = [
+    "get_sites",
+    "get_water_level",
+    "get_lithology",
+    "get_well_construction",
+    "get_providers",
+]
+
+
 # The Water Data API base URL, from the credentials leaf rather than OGC policy
-# internals: it names the same authority the API key is scoped to.
+# internals: it names the same authority the API key is scoped to. Spelling the
+# host out here instead would put a second copy of it in the package, which
+# ``tests/architecture_test.py::test_credential_policy_has_one_definition``
+# rejects: the code that attaches the API key and the code that strips it at
+# redirect time must not be able to disagree about which host is authorized.
 BASE_URL = WATERDATA_BASE_URL
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a

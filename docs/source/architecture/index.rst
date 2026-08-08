@@ -67,11 +67,13 @@ Public service facades
 ^^^^^^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.waterdata``
-    Modern USGS Water Data API facade. Its generic adapter uses the four-symbol
-    OGC facade; internal Water Data modules import protocol helpers from their
-    canonical OGC modules. Water-Data-specific utilities own service policy and
-    wrappers without re-exporting private OGC helpers. Statistics, ratings, and
-    nearest-value operations live in separate modules.
+    Modern USGS Water Data API facade. ``waterdata.api`` is a logic-free
+    compatibility facade over collection-family modules: ``time_series``,
+    ``metadata``, ``measurements``, ``reference``, ``samples``, and ``cql``.
+    Focused modules own ratings, nearest-value selection, statistics execution,
+    shared service policy, and type vocabularies. Internal modules import
+    protocol helpers from their canonical OGC modules rather than re-exporting
+    them through Water Data utilities.
 
 ``dataretrieval.ngwmn``
     NGWMN facade. Its only OGC dependency is the public OGC facade, which it
@@ -99,15 +101,16 @@ Shared components
     (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
     ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
     Internally, ``policy`` defines the dialect type and endpoint constants
-    (it depends only on stdlib); ``requests`` owns request construction,
-    argument normalization, and queryables/schema lookup; ``engine`` supplies
-    OGC cursor and response strategies to transport pagination. ``planning``
-    determines chunk boundaries; ``chunking`` executes plans and retains
-    resumable state; ``interruptions`` defines the resumable failure contract;
-    ``retry`` classifies failures into OGC interruption types; and ``shaping``,
-    ``dates``, ``filters``, and ``errors`` isolate their named protocol
-    concerns. The full runtime OGC graph, including the facade, is acyclic —
-    enforced by ``tests/architecture_test.py``.
+    (depends only on stdlib); ``context`` owns ambient base URL, dialect, and row
+    cap state; ``requests`` owns argument normalization and HTTP request
+    construction; ``schema`` executes queryables/schema requests; ``engine``
+    supplies OGC cursor and response strategies to transport pagination;
+    ``planning`` determines chunk boundaries; ``chunking`` executes plans and
+    retains resumable state; ``interruptions`` defines the resumable failure
+    contract; ``retry`` classifies failures into OGC interruption types; and
+    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
+    protocol concerns. The full runtime OGC graph, including the facade, is
+    acyclic — enforced by ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -159,6 +162,34 @@ Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
 internal adapters currently import them; those imports are known variances, not
 new extension points.
+
+Service return contracts
+------------------------
+
+The library preserves meaningful upstream differences rather than forcing every
+service into one return shape:
+
+- Water Data, NGWMN, and Water Use tabular getters return ``(DataFrame,
+  BaseMetadata)``. Geometry-bearing Water Data and NGWMN results may use a
+  ``GeoDataFrame`` in the first position when geopandas is installed.
+  ``BaseMetadata`` carries request URL, elapsed query time, response headers,
+  and comments where the upstream format provides them.
+- WQP getters return ``(DataFrame, WQP_Metadata)``; the service-specific
+  metadata extends ``BaseMetadata`` with WQP query parameters and site lookup.
+- ``waterdata.get_ratings`` returns a mapping of feature IDs to parsed rating
+  ``DataFrame`` objects by default, or the raw STAC feature list when downloads
+  are disabled.
+- NLDI navigation functions return ``GeoDataFrame`` objects directly, or raw
+  GeoJSON-like dictionaries when ``as_json=True``; they do not add a metadata
+  tuple.
+- StreamStats functions return raw ``httpx.Response`` objects or the
+  service-specific ``Watershed`` domain object, depending on the requested
+  format.
+- Deprecated NWIS functions retain their established DataFrame and legacy
+  metadata contracts through the published deprecation window.
+
+Changing one of these shapes is a public compatibility change and requires the
+project's deprecation process; consistency alone is not sufficient reason.
 
 Interaction view
 ----------------
@@ -238,10 +269,13 @@ This view records categories and representative locations of debt. The fitness
 functions in ``tests/architecture_test.py`` are authoritative for exact current
 dependency allowlists.
 
-- ``waterdata/api.py`` and ``ogc/engine.py`` contain multiple reasons to change.
-  These are documented so guardrails distinguish accepted current dependencies
-  from new erosion. They should be removed through small, test-protected
-  changes, not a rewrite.
+- ``ogc/engine.py`` retains compatibility wrappers alongside OGC orchestration.
+- ``utils.py`` combines metadata, shaping, ambient configuration, legacy
+  request composition, and transport compatibility imports.
+
+These are documented so guardrails distinguish accepted current dependencies
+from new erosion. They should be removed through small, test-protected changes,
+not a rewrite.
 
 Change process
 --------------

@@ -15,6 +15,15 @@ from typing import Any, Literal, cast
 
 from dataretrieval.utils import _query_with_retry
 
+__all__ = [
+    "get_flowlines",
+    "get_basin",
+    "get_features",
+    "get_features_by_data_source",
+    "search",
+]
+
+
 try:
     import geopandas as gpd
 except ImportError as err:

@@ -61,7 +61,7 @@ def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
         url = target_url if isinstance(target_url, httpx.URL) else httpx.URL(target_url)
     except (httpx.InvalidURL, TypeError):
         return False
-    return url.scheme == "https" and url.host == _AUTHORIZED_API_KEY_HOST
+    return bool(url.scheme == "https" and url.host == _AUTHORIZED_API_KEY_HOST)
 
 
 def without_embedded_credentials(url: httpx.URL) -> httpx.URL:

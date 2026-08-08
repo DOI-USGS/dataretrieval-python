@@ -18,6 +18,7 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
     TransientError,
 )
+from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.dates import _format_api_dates
 from dataretrieval.ogc.engine import (
     _next_req_url,
@@ -28,7 +29,7 @@ from dataretrieval.ogc.errors import (
     _parse_retry_after,
     _raise_for_non_200,
 )
-from dataretrieval.ogc.requests import _check_ogc_requests, _row_cap
+from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
     _get_resp_data,
@@ -1087,7 +1088,7 @@ def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
     """The OGC getters resolve the unified ``state`` into ``state_name``
     themselves (any encoding), so the shared ``get_ogc_data`` wrapper stays
     state-agnostic."""
-    import dataretrieval.waterdata.api as _api
+    import dataretrieval.waterdata.metadata as _metadata
 
     captured: dict = {}
 
@@ -1095,8 +1096,8 @@ def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
         captured.update(args=args, service=service)
         return pd.DataFrame(), mock.Mock()
 
-    monkeypatch.setattr(_api, "get_ogc_data", fake_get_ogc_data)
-    _api.get_monitoring_locations(state="55")  # FIPS in -> full name out
+    monkeypatch.setattr(_metadata, "get_ogc_data", fake_get_ogc_data)
+    _metadata.get_monitoring_locations(state="55")  # FIPS in -> full name out
     assert captured["args"].get("state_name") == "Wisconsin"
     assert "state" not in captured["args"]
 
