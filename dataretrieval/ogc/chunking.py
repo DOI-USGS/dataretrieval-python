@@ -82,6 +82,7 @@ import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
 from dataretrieval import progress as _progress
+from dataretrieval._ambient import Ambient
 from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
@@ -90,10 +91,10 @@ from dataretrieval.exceptions import ConfigurationError
 from dataretrieval.transport.http import open_async_client
 from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry
-from dataretrieval.utils import Ambient, _require_positive_int
 
 from .interruptions import ChunkInterrupted
 from .planning import ChunkPlan
+from .policy import _require_positive_int
 from .retry import _classify_chunk_error
 
 # Empirically the API replies HTTP 414 above ~8200 bytes of full URL —

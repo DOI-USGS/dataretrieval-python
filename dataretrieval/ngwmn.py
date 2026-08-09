@@ -22,10 +22,10 @@ from typing import Any
 
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
-from dataretrieval.response_metadata import BaseMetadata
 
 __all__ = [
     "get_sites",

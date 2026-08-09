@@ -37,6 +37,7 @@ import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
 import dataretrieval.progress as _progress
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.context import _row_cap
@@ -46,33 +47,21 @@ from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
     OGC_API_URL,
     OgcDialect,
-)
-
-# Frozen legacy compatibility surface; tests prevent new request-side re-exports.
-from dataretrieval.ogc.requests import (  # noqa: F401
-    _NO_NORMALIZE_PARAMS,
-    _as_str_list,
-    _check_monitoring_location_id,
-    _construct_api_requests,
-    _construct_cql_request,
-    _cql2_param,
-    _dialect,
-    _get_args,
-    _normalize_str_iterable,
-    _ogc_base_url,
-    _ogc_query_params,
-    _switch_arg_id,
-    _switch_properties_id,
-    prepare_request_args,
-)
-from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
-from dataretrieval.response_metadata import BaseMetadata
-from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
-from dataretrieval.utils import (
-    _default_headers,  # noqa: F401  — compatibility re-export for tests
     _require_positive_int,
 )
+
+# Request construction stays in its canonical module; the engine imports only
+# the symbols its orchestration uses.
+from dataretrieval.ogc.requests import (
+    _construct_api_requests,
+    _dialect,
+    _ogc_base_url,
+    _switch_arg_id,
+    _switch_properties_id,
+)
+from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.sync import run_sync
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)

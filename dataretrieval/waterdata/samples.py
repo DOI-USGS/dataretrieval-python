@@ -18,8 +18,8 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.errors import _raise_for_non_200
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import (
     HTTPX_DEFAULTS,
 )

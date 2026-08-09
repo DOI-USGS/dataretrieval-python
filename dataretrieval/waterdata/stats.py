@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
@@ -25,7 +26,6 @@ from dataretrieval.ogc.shaping import (
     _attach_coordinates,
     _empty_feature_frame,
 )
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync

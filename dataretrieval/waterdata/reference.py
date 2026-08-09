@@ -12,8 +12,8 @@ from typing import Any, get_args
 
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.schema import _check_ogc_requests
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.waterdata.types import (
     METADATA_COLLECTIONS,
 )

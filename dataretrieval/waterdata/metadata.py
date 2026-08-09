@@ -13,8 +13,8 @@ from typing import Any
 
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.filters import FILTER_LANG
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,

@@ -2,26 +2,24 @@
 
 from __future__ import annotations
 
-import numbers
 import warnings
-from collections.abc import Callable, Iterable, Iterator
-from contextlib import contextmanager
-from contextvars import ContextVar
-from typing import Any, Generic, TypeVar
+from collections.abc import Callable, Iterable
+from typing import Any
 
 import httpx
 import pandas as pd
 
 import dataretrieval.credentials as _credentials
 import dataretrieval.transport.http as _transport_http
+from dataretrieval._ambient import Ambient  # noqa: F401 - compatibility re-export
+from dataretrieval._response_metadata import (
+    BaseMetadata,  # noqa: F401  — compatibility re-export; defined there now
+)
 from dataretrieval.codes import tz
 from dataretrieval.exceptions import (
     NoSitesError,
     URLTooLong,
     error_for_status,
-)
-from dataretrieval.response_metadata import (
-    BaseMetadata,  # noqa: F401  — compatibility re-export; defined there now
 )
 from dataretrieval.transport.retry import (
     _GATEWAY_STATUSES,
@@ -42,70 +40,6 @@ _strip_api_key_from_untrusted_host = _transport_http.strip_api_key_from_untruste
 _strip_api_key_from_untrusted_host_async = (
     _transport_http.strip_api_key_from_untrusted_host_async
 )
-
-_T = TypeVar("_T")
-
-
-class Ambient(Generic[_T]):
-    """A :class:`~contextvars.ContextVar` paired with a scoping contextmanager.
-
-    Bundles the var and its set/reset-token dance into one object, so an ambient
-    value needs a single declaration instead of a ``var`` + setter-function pair.
-    Read the current value with :meth:`get`; set it for a ``with`` block by
-    *calling* the instance — the previous value is restored on exit (and can't
-    leak into a later call the way a hand-written ``try/finally`` can when its
-    ``reset`` is dropped)::
-
-        _base_url = Ambient("ogc_base_url", DEFAULT)
-        with _base_url(other):  # scoped to the block
-            _base_url.get()  # -> other
-    """
-
-    def __init__(self, name: str, default: _T) -> None:
-        self._var: ContextVar[_T] = ContextVar(name, default=default)
-
-    def get(self) -> _T:
-        """The current value — the default outside any active scope."""
-        return self._var.get()
-
-    @contextmanager
-    def __call__(self, value: _T) -> Iterator[None]:
-        """Set the value for the duration of the ``with`` block."""
-        token = self._var.set(value)
-        try:
-            yield
-        finally:
-            self._var.reset(token)
-
-
-def _require_positive_int(
-    value: int, name: str, *, examples: str | None = None
-) -> None:
-    """Validate that ``value`` is a positive integer, else raise ``ValueError``.
-
-    Accepts any :class:`numbers.Integral` (so a numpy/pandas integer passes,
-    not only ``int``) but rejects ``bool`` — an ``Integral`` subtype that is
-    nonsensical as a count. A non-integer (float, str, ``None``) or a value
-    ``< 1`` raises before any I/O, rather than crashing later (e.g. deep in
-    ``pd.DataFrame.head``). Shared by the user-facing count knobs ``max_rows``
-    and ``parallel_chunks(n)`` so their boundary validation can't drift.
-    (``ChunkPlan.max_chunks`` is an internal, already-``int`` precondition with
-    its own domain-specific message, so it keeps a lighter ``< 1`` guard rather
-    than routing through here.)
-
-    Parameters
-    ----------
-    value : int
-        The value to check. Typed ``int`` for callers, but validated at
-        runtime because the real value may be anything the user passed.
-    name : str
-        Parameter name, used as the subject of the error message.
-    examples : str, optional
-        Illustrative values appended to the message (e.g. ``"2, 8, 32"``).
-    """
-    if not isinstance(value, numbers.Integral) or isinstance(value, bool) or value < 1:
-        eg = f", e.g. {examples}" if examples else ""
-        raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
 
 
 def to_str(listlike: object, delimiter: str = ",") -> str | None:

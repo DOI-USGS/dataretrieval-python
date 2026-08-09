@@ -1,18 +1,34 @@
-"""Low-level OGC policy: dialect types and default endpoint constants.
+"""Low-level OGC policy: dialect, controls, and default endpoint constants.
 
 This module is the single source of truth for the :class:`OgcDialect` type
-(per-API quirks the generic request builder needs) and the default endpoint
-constants used by the Water Data OGC API. It depends only on the stdlib so it
-can be imported safely by any OGC submodule without creating cycles.
+(per-API quirks the generic request builder needs), OGC control validation, and
+the default endpoint constants used by the Water Data OGC API. It depends only
+on the stdlib and the credential-policy leaf, so any OGC submodule can import it
+without creating cycles.
 
 It must NOT import engine, shaping, or any service adapter.
 """
 
 from __future__ import annotations
 
+import numbers
 from dataclasses import dataclass, field
 
 from dataretrieval.credentials import WATERDATA_BASE_URL
+
+
+def _require_positive_int(
+    value: int, name: str, *, examples: str | None = None
+) -> None:
+    """Validate a positive-integer OGC count control.
+
+    Any :class:`numbers.Integral` is accepted, including NumPy and pandas
+    integers, but ``bool`` is rejected despite being an ``Integral`` subtype.
+    """
+    if not isinstance(value, numbers.Integral) or isinstance(value, bool) or value < 1:
+        eg = f", e.g. {examples}" if examples else ""
+        raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
+
 
 # ---------------------------------------------------------------------------
 # Endpoint constants
