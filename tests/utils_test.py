@@ -8,6 +8,23 @@ import pytest
 from dataretrieval import exceptions, nwis, utils
 
 
+class Test_Ambient:
+    def test_implementation_keeps_documented_public_identity(self):
+        from dataretrieval._ambient import Ambient
+
+        assert utils.Ambient is Ambient
+        assert Ambient.__module__ == "dataretrieval.utils"
+
+    def test_scope_restores_previous_value(self):
+        value = utils.Ambient("test_ambient", "default")
+
+        with value("outer"):
+            with value("inner"):
+                assert value.get() == "inner"
+            assert value.get() == "outer"
+        assert value.get() == "default"
+
+
 class Test_query:
     """Tests of the query function (mocked — no live NWIS calls)."""
 
@@ -282,6 +299,23 @@ class Test_BaseMetadata:
         # site_info is abstract on BaseMetadata; only nwis/wqp implement it.
         with pytest.raises(NotImplementedError):
             _ = md.site_info
+
+    def test_pickle_keeps_historical_import_path(self):
+        """New pickles remain readable by releases predating the class move."""
+        import pickle
+
+        from dataretrieval._response_metadata import BaseMetadata
+
+        md = BaseMetadata.__new__(BaseMetadata)
+        md.url = "https://example.test"
+        md.query_time = None
+        md.header = {}
+        md.comment = None
+
+        payload = pickle.dumps(md)
+
+        assert b"dataretrieval.utils" in payload
+        assert pickle.loads(payload).__class__ is BaseMetadata
 
 
 class Test_to_str:

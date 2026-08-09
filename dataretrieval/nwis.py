@@ -16,8 +16,8 @@ from typing import Any, NoReturn, TypeVar, cast
 import httpx
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.rdb import read_rdb
-from dataretrieval.response_metadata import BaseMetadata
 
 from .utils import query
 

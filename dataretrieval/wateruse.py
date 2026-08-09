@@ -49,13 +49,13 @@ from typing import Any
 import httpx
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
 from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import default_headers, open_async_client
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy, retry_async

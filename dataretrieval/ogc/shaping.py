@@ -17,8 +17,8 @@ from typing import Any
 import httpx
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
-from dataretrieval.response_metadata import BaseMetadata
 
 try:
     import geopandas as gpd

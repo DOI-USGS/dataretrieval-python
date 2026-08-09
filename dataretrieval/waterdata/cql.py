@@ -14,13 +14,13 @@ from typing import Any
 
 import pandas as pd
 
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc import fetch_ogc_request
 from dataretrieval.ogc.requests import (
     _as_str_list,
     _construct_cql_request,
     _switch_properties_id,
 )
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.waterdata.types import (
     WATERDATA_SERVICES,
 )

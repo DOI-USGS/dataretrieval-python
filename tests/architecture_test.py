@@ -33,11 +33,10 @@ from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).parents[1] / "dataretrieval"
 
-#: How many names ``ogc.engine`` may import from ``ogc.requests``. A ceiling
-#: rather than an exact name list: the claim being enforced is "the legacy
-#: compatibility surface does not grow", and a name list also fails on every
-#: rename and every deletion -- neither of which grows anything.
-_MAX_ENGINE_REQUEST_IMPORTS = 14
+#: How many request-building names ``ogc.engine`` currently needs. A ceiling
+#: rather than an exact list allows renames and deletions without weakening the
+#: rule that orchestration must not absorb request construction again.
+_MAX_ENGINE_REQUEST_IMPORTS = 5
 
 
 def _module_name(path: Path) -> str:
@@ -131,12 +130,10 @@ def test_exceptions_has_no_runtime_third_party_dependency() -> None:
 
 
 def test_engine_request_import_surface_does_not_grow() -> None:
-    """Engine may preserve legacy request names but may not grow a new hub.
+    """Engine imports only request names it uses and may not grow a new hub.
 
-    Each name here is either used by engine's own code or re-exported purely so
-    an old import path keeps working. Both are capped: a re-export that nothing
-    imports is dead weight, and a used name past the cap means request
-    construction is migrating back into engine.
+    An import that nothing uses is dead weight, and a used name past the cap
+    means request construction is migrating back into engine.
     """
     path = PACKAGE_ROOT / "ogc" / "engine.py"
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -149,12 +146,19 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     }
     assert len(imported) <= _MAX_ENGINE_REQUEST_IMPORTS, (
         "ogc.engine imports more request names than before; use the canonical "
-        "requests module instead of expanding compatibility exports.\n"
+        "requests module instead of expanding engine's request surface.\n"
         f"limit={_MAX_ENGINE_REQUEST_IMPORTS}\nobserved={sorted(imported)}"
     )
-    # Every imported name must resolve in ``requests``; a stale re-export of a
-    # name that moved or was deleted is an ImportError waiting for the first
-    # caller of the compatibility path.
+    referenced = {
+        node.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+    }
+    unused = sorted(imported - referenced)
+    assert not unused, f"ogc.engine has unused request imports: {unused}"
+
+    # Every imported name must resolve in ``requests``; a stale import of a name
+    # that moved or was deleted fails as soon as engine loads.
     from dataretrieval.ogc import requests as ogc_requests
 
     missing = sorted(name for name in imported if not hasattr(ogc_requests, name))

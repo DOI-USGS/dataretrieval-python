@@ -7,8 +7,8 @@ travel as context variables -- which also makes them safe under the concurrent
 fan-out, where a thread-global would not be.
 """
 
+from dataretrieval._ambient import Ambient
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
-from dataretrieval.utils import Ambient
 
 # Optional cap on rows accumulated by one paginated request.
 _row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)

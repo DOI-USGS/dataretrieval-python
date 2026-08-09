@@ -26,11 +26,11 @@ import pandas as pd
 
 import dataretrieval.ogc.dates as _ogc_dates
 import dataretrieval.ogc.shaping as _ogc_shaping
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
-from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.waterdata.types import (
     PROFILE_LOOKUP,
     PROFILES,

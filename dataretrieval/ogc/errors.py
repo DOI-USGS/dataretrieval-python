@@ -11,9 +11,6 @@ from __future__ import annotations
 import httpx
 
 from dataretrieval.exceptions import error_for_status
-from dataretrieval.transport.pagination import (
-    paginated_failure_message as _paginated_failure_message,  # noqa: F401
-)
 from dataretrieval.transport.retry import parse_retry_after as _parse_retry_after
 
 

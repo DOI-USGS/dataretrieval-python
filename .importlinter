@@ -27,7 +27,7 @@ layers =
     utils
     transport
     progress
-    codes | combining | rdb | response_metadata
+    _ambient | _response_metadata | codes | combining | rdb
     credentials
     exceptions
 ; Every top-level module must be placed in the stack deliberately. A new
@@ -94,6 +94,14 @@ source_modules =
     dataretrieval.ogc.shaping
 forbidden_modules =
     dataretrieval.ogc.engine
+
+[importlinter:contract:ogc-utils]
+name = OGC core does not depend on legacy utilities (ADR 0003)
+type = forbidden
+source_modules =
+    dataretrieval.ogc
+forbidden_modules =
+    dataretrieval.utils
 
 [importlinter:contract:nwis-quarantine]
 name = Deprecated NWIS has no dependents (ADR 0005)

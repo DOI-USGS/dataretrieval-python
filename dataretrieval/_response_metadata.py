@@ -7,7 +7,7 @@ machinery, needing it meant inheriting that module's whole HTTP stack
 (transport, credentials, error policy) transitively. Here it costs its
 consumers nothing but ``httpx``.
 
-``dataretrieval.utils.BaseMetadata`` remains a working import.
+``dataretrieval.utils.BaseMetadata`` remains the public import.
 """
 
 from __future__ import annotations
@@ -15,8 +15,6 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
-
-__all__ = ["BaseMetadata"]
 
 
 class BaseMetadata:
@@ -66,3 +64,8 @@ class BaseMetadata:
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(url={self.url})"
+
+
+# Pickles created after this class moved must remain readable by releases where
+# its public import path was only ``dataretrieval.utils.BaseMetadata``.
+BaseMetadata.__module__ = "dataretrieval.utils"
