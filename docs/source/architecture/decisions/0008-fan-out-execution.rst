@@ -55,14 +55,14 @@ without inspecting it, so the item type is the adapter's business: the OGC
 getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
 
 The standard protocols, rather than bespoke members, are a deliberate choice.
-A plan declaring ``total`` and ``iter_sub_args()`` would be stating ``len``
+A plan declaring ``total`` and ``iter_chunk_args()`` would be stating ``len``
 twice under a private name: the two could then report different counts, and a
 test would have to assert they agree. Every adapter whose chunks are
 already a list would also need a wrapper class whose only job is renaming
 ``len``.
 
 With the standard names a plain ``list`` is a plan, which is exactly what Water
-Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_sub_args`` as its own
+Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_chunk_args`` as its own
 vocabulary and defines the dunders to delegate to them, so the two cannot
 disagree.
 
