@@ -251,7 +251,7 @@ def test_chunk_plan_fans_out_filter_when_list_alone_cannot_fit():
     assert any(len(plan.chunks[ax.arg_key]) > 1 for ax in plan.axes)
 
 
-def test_chunk_plan_minimizes_total_sub_requests():
+def test_chunk_plan_minimizes_total_chunks():
     """When both axes need shrinking, picking smaller filter chunks
     frees URL budget for larger list chunks, and vice versa. The
     planner should pick the allocation with the *fewest* total
@@ -287,13 +287,13 @@ def test_chunk_plan_raises_when_smallest_plan_doesnt_fit():
 
 def test_chunk_plan_passthrough_when_request_fits():
     """URL under limit → trivial passthrough plan (no axes, total=1),
-    and ``iter_sub_args`` yields exactly one sub-args dict equal to
+    and ``iter_chunk_args`` yields exactly one sub-args dict equal to
     the original args."""
     args = {"monitoring_location_id": ["A", "B", "C"], "limit": 100}
     plan = ChunkPlan(args, _fake_build, url_limit=8000)
     assert plan.axes == []
     assert plan.total == 1
-    subs = list(plan.iter_sub_args())
+    subs = list(plan.iter_chunk_args())
     assert len(subs) == 1
     assert subs[0] == args
 
@@ -384,7 +384,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
     assert len(calls) > 1, "patched constant should drive chunking"
 
 
-def test_chunked_session_shared_across_sub_requests():
+def test_chunked_session_shared_across_chunks():
     """Every chunk of one chunked call sees the same
     ``httpx.AsyncClient`` on the ``_chunked_client`` ContextVar, so
     downstream paginated helpers (``_walk_pages``) can reuse the
@@ -1261,7 +1261,7 @@ def test_multi_value_chunked_restores_canonical_url():
 
     @multi_value_chunked(build_request=_fake_build, url_limit=240)
     async def fetch(args):
-        # Each sub-response carries the chunked sub_args's URL, so
+        # Each sub-response carries the chunked chunk_args's URL, so
         # without canonical restoration the first chunk's URL would
         # leak through to md.url.
         sub_url = _fake_build(**args).url
@@ -1351,11 +1351,11 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
 
     # Walk every chunk the plan would issue and assert URL fits.
     over_limit = []
-    for sub_args in plan.iter_sub_args():
-        req = _construct_api_requests(**sub_args)
+    for chunk_args in plan.iter_chunk_args():
+        req = _construct_api_requests(**chunk_args)
         url_len = len(str(req.url)) + len(req.content)
         if url_len > url_limit:
-            over_limit.append((url_len, sub_args))
+            over_limit.append((url_len, chunk_args))
     assert not over_limit, (
         f"{len(over_limit)} chunk(s) exceeded the URL limit; first: {over_limit[0]}"
     )
@@ -1399,13 +1399,13 @@ def test_combine_chunk_frames_single_frame_is_safe_to_mutate():
     assert "new_col" not in chunk.columns
 
 
-def test_iter_sub_args_passthrough_yields_a_copy():
-    """``ChunkPlan.iter_sub_args`` yields a fresh dict on every path
+def test_iter_chunk_args_passthrough_yields_a_copy():
+    """``ChunkPlan.iter_chunk_args`` yields a fresh dict on every path
     (passthrough and chunked), so a ``fetch_once`` that mutates the
     dict it receives cannot corrupt ``ChunkPlan.args``."""
     args = {"monitoring_location_id": ["USGS-A"], "limit": 100}
     plan = ChunkPlan(args, _fake_build, url_limit=8000)
-    sub = next(plan.iter_sub_args())
+    sub = next(plan.iter_chunk_args())
     sub["monitoring_location_id"] = "mutated"
     sub["new_key"] = "leaked"
     assert plan.args["monitoring_location_id"] == ["USGS-A"]
@@ -1444,7 +1444,7 @@ def _ok_response(remaining=None):
     return mock.Mock(elapsed=datetime.timedelta(seconds=0.1), headers=headers)
 
 
-def test_async_fan_out_emits_one_call_per_sub_request(monkeypatch):
+def test_async_fan_out_emits_one_call_per_chunk(monkeypatch):
     """The fan-out hits every sub-args exactly once, dispatched
     concurrently."""
     seen_args = []
@@ -2192,19 +2192,19 @@ def test_default_preserves_passthrough():
     plan = ChunkPlan(args, _fake_build, url_limit=8000)  # default max_chunks=1
     assert plan.axes == []
     assert plan.total == 1
-    assert list(plan.iter_sub_args()) == [args]
+    assert list(plan.iter_chunk_args()) == [args]
 
 
 def test_unit_cap_preserves_passthrough():
     """``max_chunks=1`` means "no extra fan-out", so a fitting multi-value
     request stays the trivial passthrough (no axes, ``total == 1``,
-    ``iter_sub_args`` yields the original args verbatim) — identical to the
+    ``iter_chunk_args`` yields the original args verbatim) — identical to the
     default (off), not a materialized one-chunk-per-axis plan."""
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
     plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=1)
     assert plan.axes == []
     assert plan.total == 1
-    assert list(plan.iter_sub_args()) == [args]
+    assert list(plan.iter_chunk_args()) == [args]
 
 
 @pytest.mark.parametrize("bad", [0, -1])
@@ -2284,7 +2284,7 @@ def test_cap_never_exceeds_the_byte_budget():
     byte_only = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks=1)
     plan = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks=32)
     assert plan.total >= byte_only.total
-    for sub in plan.iter_sub_args():
+    for sub in plan.iter_chunk_args():
         assert _safe_request_bytes(_fake_build, sub, limit) <= limit
 
 

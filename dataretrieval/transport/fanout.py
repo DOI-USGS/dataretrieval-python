@@ -156,8 +156,8 @@ class FanOutPlan(Protocol[_ItemCo]):
     requests satisfies this with no adapter class, and a real planner
     satisfies it by delegating (see
     :class:`~dataretrieval.ogc.planning.ChunkPlan`, whose domain vocabulary is
-    ``total`` / ``iter_sub_args``). Naming them ``total`` and
-    ``iter_sub_args`` here would mean two names for ``len`` that could report
+    ``total`` / ``iter_chunk_args``). Naming them ``total`` and
+    ``iter_chunk_args`` here would mean two names for ``len`` that could report
     different counts, and a shim class for every adapter whose chunks
     are already a list.
 

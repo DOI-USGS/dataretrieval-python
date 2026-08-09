@@ -246,7 +246,7 @@ def _split_at(chunks: list[list[str]], idx: int) -> None:
     The single primitive both planning passes use to fan an axis out. It
     preserves the partition invariants every consumer relies on: *coverage*
     (each atom survives, exactly once) and *contiguous, deterministic order*
-    (resume and :meth:`ChunkPlan.iter_sub_args` depend on it). Kept in one
+    (resume and :meth:`ChunkPlan.iter_chunk_args` depend on it). Kept in one
     place so those invariants can't drift between :meth:`ChunkPlan._plan`
     (byte-driven) and :meth:`ChunkPlan._refine` (fan-out-driven).
     """
@@ -266,7 +266,7 @@ class ChunkPlan:
 
     Passthrough requests (no chunkable axes, or already fitting) are
     represented as a trivial plan with empty ``axes`` / ``chunks`` and
-    ``total == 1``; :meth:`iter_sub_args` yields the original args
+    ``total == 1``; :meth:`iter_chunk_args` yields the original args
     unchanged so the ``ChunkedCall`` loop is the same shape either
     way.
 
@@ -299,7 +299,7 @@ class ChunkPlan:
     ----------
     args : dict
         The original user-level args this plan was built for. Bound to
-        the plan so :meth:`iter_sub_args` is self-contained.
+        the plan so :meth:`iter_chunk_args` is self-contained.
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
@@ -390,7 +390,7 @@ class ChunkPlan:
 
         # A request that already fits and hasn't opted into finer chunking is
         # the common passthrough: leave ``axes``/``chunks`` empty so
-        # ``total == 1`` and ``iter_sub_args`` yields the original args
+        # ``total == 1`` and ``iter_chunk_args`` yields the original args
         # verbatim. ``max_chunks == 1`` (off / no extra fan-out) means
         # "don't split", so it takes this path; only ``max_chunks >= 2`` asks
         # for extra fan-out and sets the axes up to be refined below.
@@ -550,7 +550,7 @@ class ChunkPlan:
         """
         return math.prod((len(self.chunks[ax.arg_key]) for ax in self.axes), start=1)
 
-    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
+    def iter_chunk_args(self) -> Iterator[dict[str, Any]]:
         """
         Yield substituted args for each chunk, in deterministic order.
 
@@ -569,12 +569,12 @@ class ChunkPlan:
             return
         chunk_lists = [self.chunks[ax.arg_key] for ax in self.axes]
         for combo in itertools.product(*chunk_lists):
-            sub_args = dict(self.args)
+            chunk_args = dict(self.args)
             for axis, chunk in zip(self.axes, combo, strict=False):
-                sub_args[axis.arg_key] = axis.render(chunk)
-            yield sub_args
+                chunk_args[axis.arg_key] = axis.render(chunk)
+            yield chunk_args
 
-    # ``total`` and ``iter_sub_args`` are this class's domain vocabulary and
+    # ``total`` and ``iter_chunk_args`` are this class's domain vocabulary and
     # stay as they are. The dunders are how a plan satisfies
     # :class:`~dataretrieval.transport.fanout.FanOutPlan`, which asks for a
     # sized iterable and nothing chunking-specific. They delegate rather than
@@ -583,4 +583,4 @@ class ChunkPlan:
         return self.total
 
     def __iter__(self) -> Iterator[dict[str, Any]]:
-        return self.iter_sub_args()
+        return self.iter_chunk_args()
