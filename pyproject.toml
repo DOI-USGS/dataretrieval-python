@@ -42,6 +42,10 @@ include = ["dataretrieval*"]
 [tool.setuptools.package-data]
 dataretrieval = ["py.typed"]
 
+[tool.complexipy]
+max-complexity-allowed = 25
+failed = true
+
 [project.optional-dependencies]
 # Minimal set the CI ``type-check`` job installs — just mypy + the package,
 # not the whole test stack.
@@ -49,17 +53,17 @@ type-check = [
   "mypy",
 ]
 # Structural gates (complexity ratchets, dependency contracts) and the wily
-# trend history. Pure-Python, so it installs anywhere the package does. Kept out
-# of ``test`` so the test job stays lean; see CONTRIBUTING.md for what each does.
+# trend history. Kept out of ``test`` so the test job stays lean; see
+# CONTRIBUTING.md for what each does.
 metrics = [
   "xenon==0.9.3",
   "wily==1.25.0",
   "complexipy==6.2.0",
   "import-linter==2.13",
 ]
-# Advisory weekly deep sweep -- see .github/workflows/code-health.yml. Separate
-# from ``metrics`` because pyscn is a compiled binary with no linux/aarch64
-# wheel, and the extra the merge gates depend on should stay pure-Python.
+# Advisory weekly deep sweep -- see .github/workflows/code-health.yml. Pyscn has
+# wheels only for macOS ARM64, Linux x86-64, and Windows x86-64, with no sdist,
+# so keep it separate from the extra used by merge gates and contributors.
 health = [
   "pyscn==1.29.0",
 ]

@@ -123,11 +123,11 @@ mypy
 coverage run -m pytest tests/
 coverage report -m
 xenon --max-absolute C --max-modules B --max-average A dataretrieval
-complexipy --max-complexity-allowed 27 --failed dataretrieval
+complexipy dataretrieval
 lint-imports
 ```
 
-The last three come from `pip install -e .[metrics]`, and each has a pre-commit
+The last three come from `pip install -e '.[metrics]'`, and each has a pre-commit
 hook running the identical check, so a clean pre-commit run means CI agrees.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
@@ -139,20 +139,20 @@ punishes nesting. Both name the offending block, so the fix is local -- usually
 extracting a branch rather than restructuring.
 
 `lint-imports` checks the dependency contracts declared in
-[`.importlinter`](.importlinter) against the *transitive* import graph: the
-layer stack, which modules may consume OGC, NGWMN's facade-only seam, the NWIS
-quarantine, collection-family independence, and package-wide acyclicity.
+[`.importlinter`](.importlinter) against the *transitive* import graph: the layer
+stack, which modules may consume OGC, NGWMN's facade-only seam, the NWIS
+quarantine, and collection-family independence.
 
 **That file is the only place dependency direction is enforced.** These rules
 were once asserted a second time in `tests/architecture_test.py` by hand-parsing
 the AST; that duplication is gone, and re-adding it would mean one rule with two
 homes that drift apart. What the tests still own is everything an import graph
 cannot see -- which *symbols* cross a seam, declared `__all__` surfaces, the AST
-shape of a facade, and the one boundary that must be asserted positively
-(`lint-imports` can forbid an edge, never require one). If you are adding a rule
-and it is purely "module A must not import module B", it belongs in
-`.importlinter`. A boundary that legitimately moves is one edit there, plus the
-ADR it cites.
+shape of a facade, boundaries that must be asserted positively (`lint-imports`
+can forbid an edge, never require one), and package-wide cycle detection (see
+ADR 0003). If you are adding a rule and it is purely "module A must not import
+module B", it belongs in `.importlinter`. A boundary that legitimately moves is
+one edit there, plus the ADR it cites.
 
 To see the *trend* rather than a pass/fail, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
@@ -182,9 +182,8 @@ clean up next?" -- including for an agent working on this repo, which gets a
 whole-package structural picture from one command:
 
 ```bash
-pip install -e .[health]     # its own extra: pyscn is a compiled binary with no
-                             # linux/aarch64 wheel, so it is kept out of the
-                             # extra the merge gates depend on
+pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64, Windows x86-64
+                             # (no source distribution or other platform wheels)
 pyscn analyze dataretrieval  # HTML report, or --json for the numbers
 ```
 

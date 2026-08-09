@@ -48,7 +48,7 @@ jobs:
         # exit here means "findings", which are the point.
         continue-on-error: true
         run: |
-          pyscn analyze --json --no-open dataretrieval | tee pyscn-summary.txt
+          pyscn analyze --json --no-open dataretrieval 2>&1 | tee pyscn-summary.txt
           pyscn analyze --html --no-open dataretrieval >/dev/null
 
       - name: Check the analysis actually resolved the package
@@ -94,7 +94,11 @@ jobs:
           {
             echo '## Structural analysis'
             echo '```'
-            cat pyscn-summary.txt 2>/dev/null || echo 'pyscn produced no output'
+            if [[ -s pyscn-summary.txt ]]; then
+              cat pyscn-summary.txt
+            else
+              echo 'pyscn produced no output'
+            fi
             cat pyscn-sanity.txt 2>/dev/null || true
             echo '```'
             cat wily-summary.txt 2>/dev/null || true
@@ -113,6 +117,7 @@ jobs:
           path: |
             .pyscn/reports/
             pyscn-summary.txt
+            pyscn-sanity.txt
             wily-summary.txt
           retention-days: 90
           if-no-files-found: warn
