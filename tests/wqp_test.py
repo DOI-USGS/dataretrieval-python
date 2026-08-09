@@ -119,6 +119,50 @@ def test_get_results_WQX3(httpx_mock):
     assert df["Activity_StartDateTime"].notna().all()
 
 
+@pytest.mark.parametrize(
+    ("builder", "service", "expected", "warning"),
+    [
+        (
+            wqp.wqp_url,
+            "Result",
+            "https://www.waterqualitydata.us/data/Result/Search?",
+            DeprecationWarning,
+        ),
+        (
+            wqp.wqx3_url,
+            "Result",
+            "https://www.waterqualitydata.us/wqx3/Result/search?",
+            UserWarning,
+        ),
+    ],
+)
+def test_wqp_url_profiles(builder, service, expected, warning):
+    """Each profile keeps its warning policy and exact endpoint casing."""
+    with pytest.warns(warning):
+        assert builder(service) == expected
+
+
+@pytest.mark.parametrize(
+    ("builder", "profile", "valid_services", "warning"),
+    [
+        (wqp.wqp_url, "Legacy", wqp.services_legacy, DeprecationWarning),
+        (wqp.wqx3_url, "WQX3.0", wqp.services_wqx3, UserWarning),
+    ],
+)
+def test_wqp_url_profiles_reject_unknown_service(
+    builder, profile, valid_services, warning
+):
+    """Shared validation preserves profile-specific error text and ordering."""
+    with pytest.warns(warning):
+        with pytest.raises(
+            ValueError,
+            match=rf"^{profile} service not recognized\. Valid options are ",
+        ) as exc_info:
+            builder("unknown")
+
+    assert str(valid_services) in str(exc_info.value)
+
+
 # Every WQP ``what_*`` wrapper issues the same query against its own service
 # endpoint and returns the parsed DataFrame + metadata; they differ only by the
 # service path segment and the response fixture. Each case names one column that

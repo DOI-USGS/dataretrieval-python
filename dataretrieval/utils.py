@@ -382,45 +382,15 @@ def _get_with_retry(
         raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
 
 
-def _query_impl(
+def _query_with_retry(
     url: str,
     payload: dict[str, Any],
     delimiter: str = ",",
     ssl_check: bool = True,
     *,
-    retry_policy: RetryPolicy,
+    retry_policy: RetryPolicy | None = None,
 ) -> httpx.Response:
-    """Send a query.
-
-    Wrapper for ``httpx.get`` that handles errors, converts listed query
-    parameters to comma-separated strings, and returns the response.
-
-    Parameters
-    ----------
-    url: string
-        URL to query.
-    payload: dict
-        Query parameters passed to ``httpx.get``.
-    delimiter: string
-        Delimiter to use with lists.
-    ssl_check: bool
-        Whether to check SSL certificates. Default is True.
-
-    Returns
-    -------
-    response: ``httpx.Response``
-        The response from the API query ``httpx.get`` function call.
-
-    Raises
-    ------
-    DataRetrievalError
-        On an HTTP error response, the typed subclass for the status (see
-        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or
-        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response
-        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`
-        on a connection-level failure (timeout, DNS), with the underlying
-        ``httpx`` exception on ``__cause__``.
-    """
+    """Send an active-service query with bounded transient retry by default."""
 
     for key, value in payload.items():
         payload[key] = to_str(value, delimiter)
@@ -453,29 +423,41 @@ def query(
     delimiter: str = ",",
     ssl_check: bool = True,
 ) -> httpx.Response:
-    return _query_impl(
+    """Send a query.
+
+    Wrapper for ``httpx.get`` that handles errors, converts listed query
+    parameters to comma-separated strings, and returns the response.
+
+    Parameters
+    ----------
+    url: string
+        URL to query.
+    payload: dict
+        Query parameters passed to ``httpx.get``.
+    delimiter: string
+        Delimiter to use with lists.
+    ssl_check: bool
+        Whether to check SSL certificates. Default is True.
+
+    Returns
+    -------
+    response: ``httpx.Response``
+        The response from the API query ``httpx.get`` function call.
+
+    Raises
+    ------
+    DataRetrievalError
+        On an HTTP error response, the typed subclass for the status (see
+        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or
+        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response
+        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`
+        on a connection-level failure (timeout, DNS), with the underlying
+        ``httpx`` exception on ``__cause__``.
+    """
+    return _query_with_retry(
         url,
         payload,
         delimiter,
         ssl_check,
         retry_policy=RetryPolicy(max_retries=0),
-    )
-
-
-query.__doc__ = _query_impl.__doc__
-
-
-def _query_with_retry(
-    url: str,
-    payload: dict[str, Any],
-    delimiter: str = ",",
-    ssl_check: bool = True,
-) -> httpx.Response:
-    """Active-service form of :func:`query` with bounded transient retry."""
-    return _query_impl(
-        url,
-        payload,
-        delimiter,
-        ssl_check,
-        retry_policy=_single_request_policy(),
     )

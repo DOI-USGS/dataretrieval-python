@@ -444,12 +444,16 @@ class ChunkedCall:
             The concatenated frame and the aggregated response, before
             :attr:`finalize` is applied.
         """
-        frames = [self._chunks[i][0] for i in sorted(self._chunks)]
+        return self._combine_frames(), self._combine_responses()
+
+    def _combine_frames(self) -> pd.DataFrame:
+        """Combine completed frames in deterministic sub-request order."""
+        return _combine_chunk_frames([self._chunks[i][0] for i in sorted(self._chunks)])
+
+    def _combine_responses(self) -> httpx.Response:
+        """Aggregate completed responses under the canonical request URL."""
         responses = [response for _, response in self._chunks.values()]
-        return (
-            _combine_chunk_frames(frames),
-            _combine_chunk_responses(responses, self.plan.canonical_url),
-        )
+        return _combine_chunk_responses(responses, self.plan.canonical_url)
 
     @property
     def partial_frame(self) -> pd.DataFrame:
@@ -458,7 +462,7 @@ class ChunkedCall:
 
         Live — recomputed on each access so it reflects current state
         across resume attempts. Deliberately the *raw* combined frame
-        (``_combine_raw``), NOT the finalized result: this is a cheap,
+        (``_combine_frames``), NOT the finalized result: this is a cheap,
         side-effect-free snapshot for inspecting partial progress, so
         reading it (or building a :class:`ChunkInterrupted` around it)
         never triggers ``finalize`` work — which for OGC getters includes
@@ -471,9 +475,7 @@ class ChunkedCall:
             Combined frame of completed sub-requests, or an empty
             ``DataFrame`` when nothing has completed.
         """
-        if not self._chunks:
-            return pd.DataFrame()
-        return self._combine_raw()[0]
+        return self._combine_frames() if self._chunks else pd.DataFrame()
 
     @property
     def partial_response(self) -> httpx.Response | None:
@@ -491,9 +493,7 @@ class ChunkedCall:
             Aggregated response when at least one sub-request has
             completed, ``None`` otherwise.
         """
-        if not self._chunks:
-            return None
-        return self._combine_raw()[1]
+        return self._combine_responses() if self._chunks else None
 
     def _pending(self) -> Iterator[tuple[int, dict[str, Any]]]:
         """

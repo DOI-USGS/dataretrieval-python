@@ -33,6 +33,33 @@ class Test_query:
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
+    def test_no_sites_detection_respects_response_charset(self, httpx_mock):
+        """The legacy sentinel is checked after HTTP charset decoding."""
+        url = "https://example.invalid/x"
+        body = "No sites/data found".encode("utf-16")
+        httpx_mock.add_response(
+            method="GET",
+            url=url,
+            content=body,
+            headers={"Content-Type": "text/plain; charset=utf-16"},
+        )
+
+        with pytest.raises(exceptions.NoSitesError):
+            utils.query(url, {})
+
+    def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
+        """The public legacy adapter still surfaces the first transient failure."""
+        url = "https://example.invalid/x"
+        request_url = f"{url}?a=1"
+        httpx_mock.add_response(method="GET", url=request_url, status_code=503)
+        httpx_mock.add_response(method="GET", url=request_url, text="unexpected retry")
+        monkeypatch.setenv("API_USGS_RETRIES", "1")
+
+        with pytest.raises(exceptions.ServiceUnavailable):
+            utils.query(url, {"a": "1"})
+
+        assert len(httpx_mock.get_requests()) == 1
+
     def test_opt_in_retry_recovers_from_transient(self, httpx_mock, monkeypatch):
         """Active adapters can opt into bounded retry without changing NWIS."""
         import dataretrieval.transport.retry as retry
