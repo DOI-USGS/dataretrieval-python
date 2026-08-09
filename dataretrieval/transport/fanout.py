@@ -83,11 +83,11 @@ from dataretrieval.transport.retry import retry_async as _retry
 
 #: One chunk's description, as the adapter's ``fetch`` wants it. The
 #: executor never inspects it — see :class:`FanOutPlan`.
-_Item = TypeVar("_Item")
+_Chunk = TypeVar("_Chunk")
 #: The same thing in :class:`FanOutPlan`, where it only ever comes *out* of the
 #: plan. Covariant so a ``list[httpx.Request]`` satisfies a plan of any
 #: supertype, the way ``Iterable`` is covariant for the same reason.
-_ItemCo = TypeVar("_ItemCo", covariant=True)
+_ChunkCo = TypeVar("_ChunkCo", covariant=True)
 
 # Fan-out concurrency cap, read at call time (not import) so test
 # ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;
@@ -146,7 +146,7 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
 # ---------------------------------------------------------------------------
 
 
-class FanOutPlan(Protocol[_ItemCo]):
+class FanOutPlan(Protocol[_ChunkCo]):
     """
     A fan-out's shape: how many chunks, and what each one is.
 
@@ -178,7 +178,7 @@ class FanOutPlan(Protocol[_ItemCo]):
 
     def __len__(self) -> int: ...
 
-    def __iter__(self) -> Iterator[_ItemCo]: ...
+    def __iter__(self) -> Iterator[_ChunkCo]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -216,7 +216,7 @@ def active_client() -> httpx.AsyncClient | None:
 # The per-chunk fetcher an adapter injects and ``FanOut`` drives: an
 # ``async def fetch(item) -> (df, response)``, where ``item`` is whatever the
 # adapter's plan yields.
-_Fetch = Callable[[_Item], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
+_Fetch = Callable[[_Chunk], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
 
 # Caller-supplied transform applied to the combined result, so a resumed call
 # returns the same shape as an un-interrupted one rather than the executor's raw
@@ -233,7 +233,7 @@ def _passthrough_result(
     return frame, response
 
 
-class FanOut(Generic[_Item]):
+class FanOut(Generic[_Chunk]):
     """
     Stateful handle for a fanned-out call.
 
@@ -309,8 +309,8 @@ class FanOut(Generic[_Item]):
 
     def __init__(
         self,
-        plan: FanOutPlan[_Item],
-        fetch: _Fetch[_Item],
+        plan: FanOutPlan[_Chunk],
+        fetch: _Fetch[_Chunk],
         retry_policy: RetryPolicy = _NO_RETRY,
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
@@ -474,7 +474,7 @@ class FanOut(Generic[_Item]):
         """
         return self._combine_responses() if self._chunks else None
 
-    def _pending(self) -> Iterator[tuple[int, _Item]]:
+    def _pending(self) -> Iterator[tuple[int, _Chunk]]:
         """
         Yield ``(index, item)`` for chunks not yet completed.
 
@@ -644,7 +644,7 @@ class FanOut(Generic[_Item]):
                     reporter.set_chunks(len(self.plan))
 
                 async def track(
-                    index: int, item: _Item
+                    index: int, item: _Chunk
                 ) -> tuple[pd.DataFrame, httpx.Response]:
                     """One chunk (with retry) + result-store + progress tick."""
                     result = await _retry(
