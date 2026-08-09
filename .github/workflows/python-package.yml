@@ -41,15 +41,18 @@ jobs:
           python-version: "3.14"
           cache: "pip"
       - name: Install metrics tooling
-        # Versions pinned in the [metrics] extra so CI and the local
-        # pre-commit hook grade identically.
+        # Versions pinned in the extra so CI and pre-commit grade identically.
         run: pip install -e .[metrics]
+      # Ratchets, not aspirations: thresholds sit where the package already is,
+      # so they fail on regression rather than demanding a refactor. Each
+      # mirrors a pre-commit hook, so a clean local run means CI agrees.
       - name: Complexity gate
-        # Ratchet, not an aspiration: these are the tightest thresholds the
-        # package currently passes. A change that regresses complexity fails
-        # here with the offending block named. Mirrors the xenon pre-commit
-        # hook, so a contributor sees the same verdict before pushing.
         run: xenon --max-absolute C --max-modules B --max-average A dataretrieval
+      - name: Cognitive complexity gate
+        run: complexipy --max-complexity-allowed 27 --failed dataretrieval
+      - name: Dependency-direction contracts
+        # Rules and rationale live in .importlinter and the ADRs it cites.
+        run: lint-imports
       - name: Complexity trend vs base
         # Advisory: reports which files moved and by how much, so a reviewer
         # can see direction rather than a pass/fail. Never fails the build --

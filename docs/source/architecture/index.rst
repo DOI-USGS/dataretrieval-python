@@ -110,7 +110,8 @@ Shared components
     contract; ``retry`` classifies failures into OGC interruption types; and
     ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
     protocol concerns. The full runtime OGC graph, including the facade, is
-    acyclic — enforced by ``tests/architecture_test.py``.
+    acyclic — enforced package-wide by the ``acyclic`` contract in
+    ``.importlinter``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -126,11 +127,18 @@ Shared components
     Stable error-policy leaf. It has no runtime third-party dependency, and
     every service can import it without creating an infrastructure cycle.
 
+``dataretrieval.response_metadata``
+    ``BaseMetadata``, the second half of every getter's ``(DataFrame,
+    metadata)`` return contract. A dependency-free leaf: nearly every service
+    module needs this class, and while it lived in ``utils`` beside the legacy
+    query machinery, importing it pulled that module's whole HTTP stack in
+    transitively.
+
 ``dataretrieval.utils``
-    Shared metadata, data-shaping helpers, ambient context support, legacy
-    request composition, and compatibility imports for transport names that
-    historically lived here. By default, do not add new service-specific
-    behavior there.
+    Data-shaping helpers, ambient context support, legacy request composition,
+    and compatibility imports for transport names that historically lived here
+    (including ``BaseMetadata``, so its original import path keeps working). By
+    default, do not add new service-specific behavior there.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
     State/time-zone code conversion and RDB parsing leaves.
@@ -142,8 +150,16 @@ The intended direction is::
                                              -> third-party library / network
 
 Dependencies must not point from shared infrastructure back to a public service
-adapter. The executable checks in ``tests/architecture_test.py`` enforce the
-rules that hold today and explicitly list temporary variances.
+adapter. ``.importlinter`` declares this as a layer stack and ``lint-imports``
+checks it over the transitive import graph, so a violation routed through an
+intermediary fails as surely as a direct one. The stack is exhaustive: a new
+top-level module fails the contract until it is placed, so where a module
+belongs is decided when it is added rather than inferred later.
+
+``tests/architecture_test.py`` complements those contracts without repeating
+them. It covers the rules an import graph cannot express — which symbols cross
+a seam, declared ``__all__`` surfaces, the AST shape of a facade, and imports
+that must exist rather than be forbidden.
 
 Interface view
 --------------
@@ -265,9 +281,8 @@ and request shapes differ.
 Known architectural debt
 ------------------------
 
-This view records categories and representative locations of debt. The fitness
-functions in ``tests/architecture_test.py`` are authoritative for exact current
-dependency allowlists.
+This view records categories and representative locations of debt.
+``.importlinter`` is authoritative for exact current dependency allowlists.
 
 - ``ogc/engine.py`` retains compatibility wrappers alongside OGC orchestration.
 - ``utils.py`` combines metadata, shaping, ambient configuration, legacy
@@ -284,7 +299,8 @@ Architecturally significant changes should:
 
 #. add or supersede an ADR;
 #. identify affected characteristics and trade-offs;
-#. add or update an executable fitness function;
+#. add or update an executable fitness function, and the matching contract in
+   ``.importlinter`` when the change moves a dependency boundary;
 #. preserve public contracts or provide a deprecation path; and
 #. update this view when component responsibilities or dependency rules change.
 

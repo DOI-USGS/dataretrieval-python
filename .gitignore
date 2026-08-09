@@ -115,3 +115,6 @@ ENV/
 
 # wily metrics cache (rebuildable: `wily build dataretrieval`)
 .wily/
+
+# pyscn analysis reports (rebuildable: `pyscn analyze dataretrieval`)
+.pyscn/

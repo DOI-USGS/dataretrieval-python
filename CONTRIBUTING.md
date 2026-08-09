@@ -123,14 +123,36 @@ mypy
 coverage run -m pytest tests/
 coverage report -m
 xenon --max-absolute C --max-modules B --max-average A dataretrieval
+complexipy --max-complexity-allowed 27 --failed dataretrieval
+lint-imports
 ```
 
-The last one is a complexity ratchet: those thresholds are the tightest the
-package passes today, so it fails only when a change makes complexity worse. It
-names the offending block, so the fix is local -- usually extracting a branch
-rather than restructuring. Install it with `pip install -e .[metrics]`; the
-`xenon` pre-commit hook runs the identical check, so a clean pre-commit run means
-CI agrees.
+The last three come from `pip install -e .[metrics]`, and each has a pre-commit
+hook running the identical check, so a clean pre-commit run means CI agrees.
+
+`xenon` and `complexipy` are complexity ratchets: the thresholds are the
+tightest the package passes today, so they fail only when a change makes things
+worse. They disagree usefully. `xenon` counts branches (cyclomatic complexity),
+so a wide flat dispatch scores badly; `complexipy` counts how hard the control
+flow is to follow (cognitive complexity), so it forgives the dispatch and
+punishes nesting. Both name the offending block, so the fix is local -- usually
+extracting a branch rather than restructuring.
+
+`lint-imports` checks the dependency contracts declared in
+[`.importlinter`](.importlinter) against the *transitive* import graph: the
+layer stack, which modules may consume OGC, NGWMN's facade-only seam, the NWIS
+quarantine, collection-family independence, and package-wide acyclicity.
+
+**That file is the only place dependency direction is enforced.** These rules
+were once asserted a second time in `tests/architecture_test.py` by hand-parsing
+the AST; that duplication is gone, and re-adding it would mean one rule with two
+homes that drift apart. What the tests still own is everything an import graph
+cannot see -- which *symbols* cross a seam, declared `__all__` surfaces, the AST
+shape of a facade, and the one boundary that must be asserted positively
+(`lint-imports` can forbid an edge, never require one). If you are adding a rule
+and it is purely "module A must not import module B", it belongs in
+`.importlinter`. A boundary that legitimately moves is one edit there, plus the
+ADR it cites.
 
 To see the *trend* rather than a pass/fail, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
@@ -145,6 +167,38 @@ wily rank dataretrieval maintainability.mi    # worst-maintained files today
 
 `wily` is advisory and is never a merge gate -- rising complexity in a file that
 gained a genuinely complex feature is information, not a failure.
+
+#### The periodic deep sweep
+
+Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
+[`pyscn`](https://github.com/ludo-technologies/pyscn) on a weekly schedule
+([code-health.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/code-health.yml)),
+which attaches an HTML and a JSON report to each run. Nothing gates on it. These
+measures move over months rather than commits, and a threshold nobody agreed to
+is either noise or theatre.
+
+You do not need it to contribute, but it is the right tool for "what should we
+clean up next?" -- including for an agent working on this repo, which gets a
+whole-package structural picture from one command:
+
+```bash
+pip install -e .[health]     # its own extra: pyscn is a compiled binary with no
+                             # linux/aarch64 wheel, so it is kept out of the
+                             # extra the merge gates depend on
+pyscn analyze dataretrieval  # HTML report, or --json for the numbers
+```
+
+Read its findings as leads, not verdicts. Its clone detector flags this
+package's per-collection getters -- thin, heavily documented wrappers whose
+bodies necessarily rhyme -- and collapsing them into one parameterized function
+would trade the documented public surface for a metric. Its
+dependency-injection heuristics expect a class-oriented design this package
+deliberately does not have.
+
+The same extra installs `pyscn-mcp`, a stdio MCP server exposing those analyses
+as tools (`analyze_code`, `detect_clones`, `find_dead_code`,
+`get_health_score`, and others). Registering it with an MCP-capable assistant is
+a personal workflow choice, so this repository does not configure one.
 
 For documentation changes, install `.[doc,nldi]` and run `make html` from
 `docs/`. The broader `make docs` target also runs doctests and network-dependent
