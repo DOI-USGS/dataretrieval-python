@@ -384,7 +384,7 @@ def _finalize_ogc(
     the chunker's raw frame and bare ``httpx.Response``.
 
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
-    rather than only per-sub-request, so a chunked call's total is bounded
+    rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
     ``base_url`` is captured with the finalizer so resumed calls query the same

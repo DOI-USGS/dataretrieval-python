@@ -302,7 +302,7 @@ def get_ogc_data(
     # this function). ``_finalize_ogc`` is the single source of result shape;
     # it also applies ``max_rows`` to the *combined* frame so the cap is the
     # exact total even when the plan chunks or the call is resumed, while
-    # ``_row_cap`` below only early-stops each sub-request's pagination.
+    # ``_row_cap`` below only early-stops each chunk's pagination.
     finalize = functools.partial(
         _finalize_ogc,
         properties=properties,
@@ -328,10 +328,10 @@ async def _fetch_once(
 
     ``@chunking.multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
-    the biggest chunk across all axes until each sub-request URL fits,
+    the biggest chunk across all axes until each chunk URL fits,
     and iterates the cartesian product. With no chunkable inputs the
     decorator passes args through unchanged. The decorator gathers every
-    sub-request over one shared :class:`httpx.AsyncClient` (concurrency
+    chunk over one shared :class:`httpx.AsyncClient` (concurrency
     bounded by a semaphore, sized from ``API_USGS_CONCURRENT``). It also
     returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
     ``_fetch_once(args, finalize=...)`` synchronously. The return shape is

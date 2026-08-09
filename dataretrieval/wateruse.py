@@ -350,7 +350,7 @@ def _fan_out(
     precedence, progress, and resumable interruption -- belongs to
     :class:`~dataretrieval.transport.fanout.FanOut`, which Water Data and NGWMN
     drive too. This function is now only the NWDC-specific half: what a
-    sub-request is, and how to read one.
+    chunk is, and how to read one.
 
     The plan is the request list itself. ``FanOut`` asks a plan only to be
     sized and iterable, and the NWDC accepts one ``location=`` per request, so

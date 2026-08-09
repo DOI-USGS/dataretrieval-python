@@ -547,7 +547,7 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     load-bearing and *not* guaranteed by the type is repeatability: resume
     keys completed work by position, so a plan whose second pass differed --
     a generator mistaken for a collection, say -- would re-issue the wrong
-    sub-requests.
+    chunks.
     """
     import httpx
 

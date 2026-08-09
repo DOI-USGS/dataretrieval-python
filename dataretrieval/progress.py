@@ -123,7 +123,7 @@ class ProgressReporter:
         # The hourly request quota (``x-ratelimit-limit``), shown as the
         # denominator when the server reports it.
         self.rate_limit: str | None = None
-        # Transient note shown while a sub-request backs off before a
+        # Transient note shown while a chunk backs off before a
         # retry; cleared by the next page/chunk so it doesn't linger.
         self.retry_note: str | None = None
         self._last_len = 0
@@ -157,7 +157,7 @@ class ProgressReporter:
         self._render()
 
     def note_retry(self, *, attempt: int, wait: float) -> None:
-        """Show that a sub-request is backing off before retry ``attempt``.
+        """Show that a chunk is backing off before retry ``attempt``.
 
         Cleared by the next :meth:`add_page` / :meth:`start_chunk` (or by
         :meth:`close`) so the line returns to normal once the retry resolves.

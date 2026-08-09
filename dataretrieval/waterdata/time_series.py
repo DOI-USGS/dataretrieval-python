@@ -236,7 +236,7 @@ def get_daily(
         >>> # Chain queries: pull all stream sites in a state, then their
         >>> # daily discharge for the last week. The site list can be hundreds
         >>> # of values long — the request is transparently chunked across
-        >>> # multiple sub-requests so the URL stays under the server's byte
+        >>> # multiple chunks so the URL stays under the server's byte
         >>> # limit. Combined output looks like a single query.
         >>> sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(
         ...     state="Ohio",

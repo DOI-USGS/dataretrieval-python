@@ -228,7 +228,7 @@ def test_elapsed_retry_after_still_backs_off() -> None:
     # zero -- exactly when a hint of 0 would become a zero-delay re-send.
     assert retry.RetryPolicy(base_backoff=0.0).backoff(attempt=1, retry_after=0.0) > 0.0
     # A server-named delay is honored, plus a small decorrelating nudge so
-    # concurrent sub-requests handed the same hint do not all wake together --
+    # concurrent chunks handed the same hint do not all wake together --
     # and never enough to push the wait past the policy's own bounds.
     assert 5.0 < policy.backoff(attempt=1, retry_after=5.0) <= 6.0
     # A hint already at the cap is never nudged past it -- the jitter would

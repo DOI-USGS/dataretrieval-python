@@ -3,17 +3,18 @@
 When a fanned-out request fails mid-stream (a 429, a 5xx, or a bare transport
 error), the work already completed is preserved and the call is resumable: the
 raised exception carries a ``.call`` handle whose ``resume()`` re-issues only
-the still-pending sub-requests. These exception types are that contract,
+the still-pending chunks. These exception types are that contract,
 re-exported at the top level (``from dataretrieval import ChunkInterrupted``).
 The execution machinery that raises and resumes them is
 :class:`dataretrieval.transport.fanout.FanOut`.
 
-Vocabulary, consistently: a **fan-out** is one logical query the service forces
-into several requests; a **sub-request** is one unit of a fan-out; a **chunk**
-is specifically a *byte-driven* slice, which is OGC planning vocabulary and
-belongs to :class:`~dataretrieval.ogc.planning.ChunkPlan`. Water Use fans out
-without chunking anything — the NWDC simply accepts one location per request —
-so the base class is :class:`FanOutInterrupted`.
+Vocabulary, consistently (see ``CONTEXT.md``): a **chunk** is one of the
+requests a query was split into, named for being a piece rather than for why it
+became one; **chunking** is how a query is split; and a **fan-out** is the
+concurrent execution of a query's chunks. Water Use chunks one request per
+location, Water Data chunks to fit a URL byte budget -- different reasons, the
+same word. The base class is named :class:`FanOutInterrupted` because the
+failure interrupts the *execution*, not the split.
 
 ``ChunkInterrupted`` is retained as an alias of that same class, not a
 deprecated shim to delete later: it is the name published in the user guide and
@@ -45,13 +46,13 @@ if TYPE_CHECKING:
 
 class FanOutInterrupted(DataRetrievalError):
     """
-    Base class for mid-stream sub-request failures whose completed work
+    Base class for mid-stream chunk failures whose completed work
     is preserved and resumable.
 
-    A ``FanOutInterrupted`` subclass means: a sub-request failed, but
+    A ``FanOutInterrupted`` subclass means: a chunk failed, but
     ``FanOut`` still owns whatever completed successfully before
     the failure. Call ``self.call.resume()`` to pick up where the
-    failure stopped you — only still-pending sub-requests are
+    failure stopped you — only still-pending chunks are
     re-issued.
 
     Subclasses describe *why* ``FanOut`` stopped so callers can
@@ -72,16 +73,16 @@ class FanOutInterrupted(DataRetrievalError):
         Seconds the server suggested waiting (``Retry-After`` header).
         ``None`` when the server gave no hint.
     completed_chunks : int
-        Number of sub-requests successfully completed before the failure.
+        Number of chunks successfully completed before the failure.
     total_chunks : int
-        Total sub-requests in the plan.
+        Total chunks in the plan.
     partial_frame : pandas.DataFrame
         Combined frame of work completed by the moment this exception
         was raised. Snapshot at raise time — does NOT advance on a
         later ``call.resume()`` (use ``exc.call.partial_frame`` for
         the live view).
     partial_response : httpx.Response or None
-        Raw aggregate response covering the completed sub-requests at
+        Raw aggregate response covering the completed chunks at
         raise time; ``None`` if nothing had completed yet. Same snapshot
         semantics as ``partial_frame``. (Raw, not finalized — use
         ``exc.call.resume()`` for the finalized ``(df, metadata)`` result.)
@@ -91,7 +92,7 @@ class FanOutInterrupted(DataRetrievalError):
     Retry on any transient interruption, honoring the server's
     ``Retry-After`` hint when present and falling back to a fixed wait
     otherwise. Each new interruption keeps the already-completed work
-    intact — only the still-pending sub-requests are re-issued.
+    intact — only the still-pending chunks are re-issued.
 
     .. code-block:: python
 
@@ -116,7 +117,7 @@ class FanOutInterrupted(DataRetrievalError):
     # call sees ``completed_chunks`` and ``total_chunks`` as kwargs.
     _MESSAGE_TEMPLATE: ClassVar[str] = (
         "Fan-out interrupted after {completed_chunks}/"
-        "{total_chunks} sub-requests; call .call.resume() to continue."
+        "{total_chunks} chunks; call .call.resume() to continue."
     )
     retryable: ClassVar[bool] = True
 
@@ -177,17 +178,17 @@ class FanOutInterrupted(DataRetrievalError):
 
 class QuotaExhausted(FanOutInterrupted):
     """
-    A sub-request returned HTTP 429 — the per-key rate-limit window
+    A chunk returned HTTP 429 — the per-key rate-limit window
     is exhausted. Subclass of :class:`FanOutInterrupted`.
 
-    The completed sub-requests are preserved on ``.call``; once the
+    The completed chunks are preserved on ``.call``; once the
     rate-limit window resets, ``.call.resume()`` re-issues only the
     still-pending work. ``partial_frame`` holds what completed
     before the 429.
     """
 
     _MESSAGE_TEMPLATE = (
-        "HTTP 429 after {completed_chunks}/{total_chunks} sub-requests; "
+        "HTTP 429 after {completed_chunks}/{total_chunks} chunks; "
         "catch QuotaExhausted (or FanOutInterrupted) to access "
         ".partial_frame or .call.resume() once the rate-limit "
         "window has rolled over."
@@ -197,17 +198,17 @@ class QuotaExhausted(FanOutInterrupted):
 
 class ServiceInterrupted(FanOutInterrupted):
     """
-    A sub-request returned HTTP 5xx — the upstream service failed
+    A chunk returned HTTP 5xx — the upstream service failed
     transiently. Subclass of :class:`FanOutInterrupted`.
 
-    The completed sub-requests are preserved on ``.call``; once the
+    The completed chunks are preserved on ``.call``; once the
     upstream recovers, ``.call.resume()`` resumes only the
     still-pending work.
     """
 
     _MESSAGE_TEMPLATE = (
         "Service error after {completed_chunks}/{total_chunks} "
-        "sub-requests; catch ServiceInterrupted (or FanOutInterrupted) "
+        "chunks; catch ServiceInterrupted (or FanOutInterrupted) "
         "and call .call.resume() once the upstream service recovers."
     )
 

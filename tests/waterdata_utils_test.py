@@ -210,7 +210,7 @@ def test_row_cap_stops_across_pages():
 def test_finalize_ogc_truncates_combined_to_max_rows():
     # max_rows is enforced on the *combined* frame in _finalize_ogc (after
     # dedup/sort), so it bounds the total exactly even when a chunked call's
-    # per-sub-request pages overshoot the per-_paginate early-stop.
+    # per-chunk pages overshoot the per-_paginate early-stop.
     frame = pd.DataFrame({"id": [str(i) for i in range(10)]})
     resp = mock.MagicMock()
     resp.url = "https://example.com/q"

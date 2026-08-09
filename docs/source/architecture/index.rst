@@ -293,7 +293,7 @@ Resource and configuration view
     complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
     time: without this bound, four retries of a request that times out after a
     minute add up to four silent minutes. Progress restarts the budget — a page
-    received, or a queued sub-request acquiring its concurrency slot. Neither a
+    received, or a queued chunk acquiring its concurrency slot. Neither a
     slow but productive download nor the tail of a wide fan-out is cut short,
     and an attempt already in flight is never interrupted. This bound never
     withholds the first retry, so one slow attempt cannot disable retry by

@@ -521,8 +521,8 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
 def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     """The async fan-out core (``ChunkedCall._run``) records
     ``plan.total`` on the active reporter so the progress line knows how
-    many sub-requests are in flight, and ticks ``current_chunk`` via
-    ``start_chunk(len(completed))`` as each gathered sub-request finishes
+    many chunks are in flight, and ticks ``current_chunk`` via
+    ``start_chunk(len(completed))`` as each gathered chunk finishes
     — reaching ``plan.total`` in the all-success case."""
 
     # Fake build_request whose URL length scales with the sites list,
@@ -559,7 +559,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
 
     total_recorded, current_recorded = asyncio.run(run())
     assert total_recorded == plan.total
-    # Each sub-request that completes bumps current_chunk via
+    # Each chunk that completes bumps current_chunk via
     # start_chunk(len(completed)), so by the time the gather finishes
     # current_chunk reflects the total number of successful chunks —
     # plan.total in the all-success case.
