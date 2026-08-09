@@ -17,7 +17,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
 from dataretrieval.response_metadata import BaseMetadata
 
 try:
@@ -156,7 +156,11 @@ def _get_resp_data(
 
 
 def _deal_with_empty(
-    return_list: pd.DataFrame, properties: list[str] | None, service: str
+    return_list: pd.DataFrame,
+    properties: list[str] | None,
+    service: str,
+    *,
+    base_url: str = OGC_API_URL,
 ) -> pd.DataFrame:
     """
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
@@ -174,6 +178,8 @@ def _deal_with_empty(
         List of property names to use as columns, or None.
     service : str
         The service endpoint to query for schema properties if needed.
+    base_url : str, optional
+        OGC API base URL to use for that schema query.
 
     Returns
     -------
@@ -183,10 +189,12 @@ def _deal_with_empty(
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
-            # Import from requests module (no engine dependency).
+            # Schema lookup performs HTTP only for an empty result.
             from dataretrieval.ogc.schema import _check_ogc_requests
 
-            schema, _ = _check_ogc_requests(endpoint=service, req_type="schema")
+            schema, _ = _check_ogc_requests(
+                endpoint=service, req_type="schema", base_url=base_url
+            )
             properties = list(schema.get("properties", {}).keys())
         return pd.DataFrame(columns=properties)
     return return_list
@@ -345,6 +353,7 @@ def _finalize_ogc(
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
+    base_url: str = OGC_API_URL,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
 
@@ -364,10 +373,12 @@ def _finalize_ogc(
     rather than only per-sub-request, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
+    ``base_url`` is captured with the finalizer so resumed calls query the same
+    API's schema when their combined result is empty.
     """
     if dialect is None:
         dialect = DEFAULT_DIALECT
-    frame = _deal_with_empty(frame, properties, service)
+    frame = _deal_with_empty(frame, properties, service, base_url=base_url)
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match
     # regardless of whether the API returns snake_case (Water Data, where
