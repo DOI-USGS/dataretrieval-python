@@ -1,0 +1,118 @@
+# Periodic structural sweep: duplication, coupling, cohesion, dead code, and the
+# maintainability trend.
+#
+# Advisory by design, and nothing here fails the build. These measures move over
+# months rather than commits, and they report findings a reviewer has to judge
+# rather than obey -- a metric can call good design a violation. The merge gates
+# live in python-package.yml. See CONTRIBUTING.md for how to read the output.
+
+name: Code Health
+
+on:
+  schedule:
+    # 08:00 UTC Mondays: a week's worth of merges, read before the week starts.
+    - cron: "0 8 * * 1"
+  # On demand, for checking whether a refactor actually moved the numbers.
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # wily indexes git history; a shallow clone gives it one revision to
+          # trend against, which is no trend at all.
+          fetch-depth: 0
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip"
+      - name: Install analysis tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[metrics,health]
+
+      - name: Structural analysis (pyscn)
+        # One output format per invocation, so run it twice: JSON to read the
+        # numbers, HTML to read the report. Never fails the job -- a non-zero
+        # exit here means "findings", which are the point.
+        continue-on-error: true
+        run: |
+          pyscn analyze --json --no-open dataretrieval | tee pyscn-summary.txt
+          pyscn analyze --html --no-open dataretrieval >/dev/null
+
+      - name: Check the analysis actually resolved the package
+        # pyscn infers a project root, and when it guesses wrong it silently
+        # resolves only a fraction of the imports -- which *raises* the score,
+        # because most of what it grades is dependency-derived. A degraded run
+        # therefore looks like an improved one. Record the resolved edge count
+        # next to the score so that is visible rather than flattering.
+        if: always()
+        continue-on-error: true
+        run: |
+          python - <<'PY' > pyscn-sanity.txt
+          import glob, json, os
+          reports = sorted(glob.glob(".pyscn/reports/*.json"))
+          if not reports:
+              print("no pyscn JSON report found"); raise SystemExit
+          s = json.load(open(reports[-1]))["system"]["Summary"]
+          root, deps = s["ProjectRoot"], s["TotalDependencies"]
+          print(f"modules={s['TotalModules']} resolved_dependencies={deps} root={root}")
+          if os.path.realpath(root) != os.path.realpath(os.getcwd()):
+              print(f"WARNING: project root {root!r} is not the checkout; "
+                    "import resolution is probably degraded and the scores "
+                    "above are not comparable to previous runs.")
+          PY
+          cat pyscn-sanity.txt
+
+      - name: Maintainability ranking (wily)
+        # Worst-maintained files today, and how the package has moved recently.
+        run: |
+          wily build dataretrieval --max-revisions 50 >/dev/null 2>&1 || true
+          {
+            echo '## Maintainability ranking'
+            echo '```'
+            wily rank dataretrieval maintainability.mi 2>&1 | head -25 \
+              || echo 'wily index unavailable'
+            echo '```'
+          } > wily-summary.txt
+
+      - name: Publish report
+        # ``always()`` so a partial report still lands rather than a bare red X.
+        if: always()
+        run: |
+          {
+            echo '## Structural analysis'
+            echo '```'
+            cat pyscn-summary.txt 2>/dev/null || echo 'pyscn produced no output'
+            cat pyscn-sanity.txt 2>/dev/null || true
+            echo '```'
+            cat wily-summary.txt 2>/dev/null || true
+            echo
+            echo 'Full reports are attached to this run as the'
+            echo '`code-health-report` artifact. Findings are advisory --'
+            echo 'read them as leads, not verdicts (see CONTRIBUTING.md).'
+            echo 'The merge gates live in the Python package workflow.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-health-report
+          path: |
+            .pyscn/reports/
+            pyscn-summary.txt
+            wily-summary.txt
+          retention-days: 90
+          if-no-files-found: warn

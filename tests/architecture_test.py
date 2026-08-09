@@ -1,4 +1,28 @@
-"""Executable fitness functions for package dependency direction."""
+"""Executable fitness functions for architecture rules the import graph cannot
+express.
+
+Plain dependency direction -- who may import whom, in which direction, without
+cycles -- is declared in ``.importlinter`` and checked by ``lint-imports`` in
+pre-commit and CI. Those rules used to be asserted here too, and are not any
+more: one rule enforced in two places is one rule that gets updated in one
+place.
+
+What remains is everything a boundary checker cannot see, because an import
+graph has no opinion about it:
+
+* which *symbols* cross a boundary, not just which modules (``ogc.engine``'s
+  compatibility surface, ``ogc.requests`` borrowing header policy but not the
+  executing calls);
+* the declared public surface -- ``__all__`` presence, ownership, and the
+  facade union;
+* the AST shape of a module, such as a facade proving it contains no logic, or
+  a call proving it passes a destination URL;
+* an import that must *exist*: ``lint-imports`` can forbid an edge, never
+  require one.
+
+Adding a rule here that is purely about module-to-module direction is a
+regression -- put it in ``.importlinter`` instead.
+"""
 
 from __future__ import annotations
 
@@ -8,23 +32,6 @@ import sys
 from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).parents[1] / "dataretrieval"
-
-_SERVICE_PREFIXES = (
-    "dataretrieval.ngwmn",
-    "dataretrieval.nldi",
-    "dataretrieval.nwis",
-    "dataretrieval.streamstats",
-    "dataretrieval.waterdata",
-    "dataretrieval.wateruse",
-    "dataretrieval.wqp",
-)
-
-# NGWMN is the only top-level OGC consumer and uses the small facade
-# (``dataretrieval.ogc``) exclusively. Exact equality makes growth or removal
-# an intentional architecture change.
-_ALLOWED_TOP_LEVEL_OGC_IMPORTS = {
-    "dataretrieval.ngwmn": {"dataretrieval.ogc"},
-}
 
 #: How many names ``ogc.engine`` may import from ``ogc.requests``. A ceiling
 #: rather than an exact name list: the claim being enforced is "the legacy
@@ -91,22 +98,14 @@ class _RuntimeImportVisitor(ast.NodeVisitor):
         self.modules.update(_resolve_from(self.current_module, self.path, node))
 
 
+# Pure over an unchanging tree and called from several tests; without caching
+# the suite re-parses the same package files on each call.
 @functools.cache
 def _runtime_imports(path: Path) -> set[str]:
     module = _module_name(path)
     visitor = _RuntimeImportVisitor(module, path)
     visitor.visit(ast.parse(path.read_text(encoding="utf-8"), filename=str(path)))
     return visitor.modules
-
-
-# Both are pure over an unchanging tree and are called from a dozen places;
-# without caching the suite re-parses every package file on each call.
-@functools.cache
-def _package_import_graph() -> dict[str, set[str]]:
-    return {
-        _module_name(path): _runtime_imports(path)
-        for path in sorted(PACKAGE_ROOT.rglob("*.py"))
-    }
 
 
 def _literal_exports(path: Path) -> set[str]:
@@ -128,60 +127,6 @@ def test_exceptions_has_no_runtime_third_party_dependency() -> None:
     assert not third_party, (
         "dataretrieval.exceptions gained runtime third-party dependencies: "
         f"{sorted(third_party)}"
-    )
-
-
-def test_ogc_does_not_depend_on_service_adapters() -> None:
-    """The reusable protocol subsystem must not point back to its callers."""
-    violations: list[str] = []
-    for module, imports in _package_import_graph().items():
-        if not (
-            module == "dataretrieval.ogc" or module.startswith("dataretrieval.ogc.")
-        ):
-            continue
-        for dependency in imports:
-            if dependency.startswith(_SERVICE_PREFIXES):
-                violations.append(f"{module} -> {dependency}")
-    assert not violations, "Forbidden OGC-to-service imports:\n" + "\n".join(violations)
-
-
-def test_modern_modules_do_not_depend_on_legacy_nwis() -> None:
-    """NWIS stays quarantined during its deprecation window."""
-    violations: list[str] = []
-    for module, imports in _package_import_graph().items():
-        if module in {"dataretrieval", "dataretrieval.nwis"}:
-            continue
-        for dependency in imports:
-            if dependency == "dataretrieval.nwis" or dependency.startswith(
-                "dataretrieval.nwis."
-            ):
-                violations.append(f"{module} -> {dependency}")
-    assert not violations, "Modern modules import legacy NWIS:\n" + "\n".join(
-        violations
-    )
-
-
-def test_top_level_ogc_consumers_match_documented_variances() -> None:
-    """No new top-level service may acquire an accidental OGC dependency."""
-    observed: dict[str, set[str]] = {}
-    for path in sorted(PACKAGE_ROOT.glob("*.py")):
-        module = _module_name(path)
-        if module in {"dataretrieval", "dataretrieval.nwis"}:
-            continue
-        dependencies = {
-            dependency
-            for dependency in _runtime_imports(path)
-            if dependency == "dataretrieval.ogc"
-            or dependency.startswith("dataretrieval.ogc.")
-        }
-        if dependencies:
-            observed[module] = dependencies
-
-    assert observed == _ALLOWED_TOP_LEVEL_OGC_IMPORTS, (
-        "Top-level OGC dependencies differ from the architecture allowlist. "
-        "Update the code and allowlist; supersede ADR 0003 if the dependency "
-        "policy changes.\n"
-        f"expected={_ALLOWED_TOP_LEVEL_OGC_IMPORTS!r}\nobserved={observed!r}"
     )
 
 
@@ -218,80 +163,7 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     )
 
 
-# --- Strengthened OGC boundary tests ---
-
-
-def test_ogc_runtime_graph_is_acyclic() -> None:
-    """The OGC runtime import graph (including the facade) has no cycles.
-
-    Now that no implementation module imports ``dataretrieval.ogc`` (the facade
-    ``__init__.py``), the full OGC graph — facade included — forms a DAG.
-    This is enforced without any documented exclusion.
-    """
-    ogc_modules: dict[str, set[str]] = {}
-    for module, imports in _package_import_graph().items():
-        if module == "dataretrieval.ogc" or module.startswith("dataretrieval.ogc."):
-            # Filter to intra-OGC dependencies
-            ogc_deps = {
-                dep
-                for dep in imports
-                if dep == "dataretrieval.ogc" or dep.startswith("dataretrieval.ogc.")
-            }
-            ogc_modules[module] = ogc_deps
-
-    # DFS cycle detection
-    WHITE, GRAY, BLACK = 0, 1, 2
-    color: dict[str, int] = {m: WHITE for m in ogc_modules}
-    path: list[str] = []
-
-    def dfs(node: str) -> list[str] | None:
-        color[node] = GRAY
-        path.append(node)
-        for dep in ogc_modules.get(node, set()):
-            if dep not in color:
-                continue
-            if color[dep] == GRAY:
-                cycle_start = path.index(dep)
-                return path[cycle_start:] + [dep]
-            if color[dep] == WHITE:
-                result = dfs(dep)
-                if result:
-                    return result
-        path.pop()
-        color[node] = BLACK
-        return None
-
-    for module in ogc_modules:
-        if color[module] == WHITE:
-            cycle = dfs(module)
-            if cycle:
-                raise AssertionError(
-                    f"Cycle in OGC runtime graph: {' -> '.join(cycle)}"
-                )
-
-
-def test_shaping_has_no_engine_dependency() -> None:
-    """ogc.shaping must not import ogc.engine, even lazily."""
-    shaping_imports = _runtime_imports(PACKAGE_ROOT / "ogc" / "shaping.py")
-    engine_deps = {dep for dep in shaping_imports if dep == "dataretrieval.ogc.engine"}
-    assert not engine_deps, (
-        f"ogc.shaping must not depend on ogc.engine. Found: {engine_deps}"
-    )
-
-
-def test_ngwmn_uses_ogc_facade() -> None:
-    """NGWMN must use ONLY the ogc facade, not engine or other internals."""
-    ngwmn_imports = _runtime_imports(PACKAGE_ROOT / "ngwmn.py")
-    ogc_deps = {
-        dep
-        for dep in ngwmn_imports
-        if dep == "dataretrieval.ogc" or dep.startswith("dataretrieval.ogc.")
-    }
-    # Exact equality: the ONLY OGC dependency is the facade package itself.
-    assert ogc_deps == {"dataretrieval.ogc"}, (
-        "NGWMN must use ONLY the OGC facade (dataretrieval.ogc), not internals. "
-        f"Found: {ogc_deps}"
-    )
+# --- Seams that are about symbols and call sites, not module direction ---
 
 
 def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
@@ -363,7 +235,7 @@ def test_default_header_calls_are_target_scoped() -> None:
     )
 
 
-# --- Shared execution-layer boundaries ---
+# --- Where code and constants are allowed to live ---
 
 
 def test_transport_is_execution_policy_only() -> None:
@@ -427,74 +299,6 @@ def test_credential_policy_has_one_definition() -> None:
         "The API-key host must come from dataretrieval.credentials, "
         f"not be restated at: {offenders}"
     )
-
-
-def test_transport_does_not_depend_on_ogc_or_services() -> None:
-    """Transport policy must point inward, never back to protocol adapters."""
-    violations: list[str] = []
-    transport_root = PACKAGE_ROOT / "transport"
-    for path in sorted(transport_root.rglob("*.py")):
-        module = _module_name(path)
-        for dependency in _runtime_imports(path):
-            if (
-                dependency == "dataretrieval.ogc"
-                or dependency.startswith("dataretrieval.ogc.")
-                or dependency.startswith(_SERVICE_PREFIXES)
-            ):
-                violations.append(f"{module} -> {dependency}")
-    assert not violations, "Transport crossed an adapter boundary:\n" + "\n".join(
-        violations
-    )
-
-
-def test_wateruse_has_no_ogc_dependency() -> None:
-    """The non-OGC Water Use adapter must consume transport directly."""
-    imports = _runtime_imports(PACKAGE_ROOT / "wateruse.py")
-    ogc_dependencies = {
-        dependency
-        for dependency in imports
-        if dependency == "dataretrieval.ogc"
-        or dependency.startswith("dataretrieval.ogc.")
-    }
-    assert not ogc_dependencies, (
-        f"Water Use imported OGC implementation modules: {sorted(ogc_dependencies)}"
-    )
-
-
-def test_transport_runtime_graph_is_acyclic() -> None:
-    """The service-neutral transport package must remain a directed acyclic graph."""
-    graph = {
-        module: {
-            dependency
-            for dependency in imports
-            if dependency == "dataretrieval.transport"
-            or dependency.startswith("dataretrieval.transport.")
-        }
-        for module, imports in _package_import_graph().items()
-        if module == "dataretrieval.transport"
-        or module.startswith("dataretrieval.transport.")
-    }
-    visiting: set[str] = set()
-    visited: set[str] = set()
-
-    def visit(module: str, path: tuple[str, ...]) -> None:
-        if module in visiting:
-            start = path.index(module)
-            cycle = (*path[start:], module)
-            raise AssertionError(
-                f"Cycle in transport runtime graph: {' -> '.join(cycle)}"
-            )
-        if module in visited:
-            return
-        visiting.add(module)
-        for dependency in graph.get(module, set()):
-            if dependency in graph:
-                visit(dependency, (*path, module))
-        visiting.remove(module)
-        visited.add(module)
-
-    for module in graph:
-        visit(module, ())
 
 
 # --- Adapter structure and public export boundaries ---
@@ -612,60 +416,6 @@ def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
         )  # the module docstring
     ]
     assert not offenders, f"waterdata.api contains implementation: {offenders}"
-
-
-def test_waterdata_collection_families_do_not_import_each_other() -> None:
-    """Families share through Water Data policy, OGC, and transport -- not laterally.
-
-    A "family" is a module the ``waterdata.api`` facade re-exports from, so the
-    set comes from :data:`_WATERDATA_FAMILIES` rather than being restated. That
-    list is self-enforcing: a seventh family the facade re-exports must be added
-    to ``_EXPECTED_MODULE_EXPORTS`` or ``test_api_facade_exports_exactly_the_
-    family_union`` fails, and it lands here on the same edit.
-
-    Composed getters like ``nearest`` are deliberately outside it. They are not
-    peers of a family; ``get_nearest_continuous`` builds on ``get_continuous``,
-    which is ordinary layering rather than a lateral reach.
-    """
-    graph = _package_import_graph()
-    families = {
-        "dataretrieval." + relative.removesuffix(".py").replace("/", ".")
-        for relative in _WATERDATA_FAMILIES
-    }
-    violations = []
-    for module in sorted(families):
-        for dependency in graph[module]:
-            if dependency in families and dependency != module:
-                violations.append(f"{module} -> {dependency}")
-    assert not violations, "Lateral collection-family imports:\n" + "\n".join(
-        violations
-    )
-
-
-def test_service_adapters_do_not_reach_through_each_other() -> None:
-    # Every active service; NWIS is excluded because its deprecation is governed
-    # by its own fitness function.
-    adapters = set(_SERVICE_PREFIXES) - {"dataretrieval.nwis"}
-
-    def owner(name: str) -> str | None:
-        """The adapter ``name`` belongs to, or None if it is shared code."""
-        return next(
-            (a for a in adapters if name == a or name.startswith(a + ".")),
-            None,
-        )
-
-    violations: list[str] = []
-    for module, imports in _package_import_graph().items():
-        source = owner(module)
-        if source is None:
-            continue
-        for dependency in imports:
-            target = owner(dependency)
-            if target is not None and target != source:
-                violations.append(f"{module} -> {dependency}")
-    assert not violations, "Adapter-to-adapter imports:\n" + "\n".join(
-        sorted(set(violations))
-    )
 
 
 def test_ogc_request_construction_does_not_execute_http() -> None:

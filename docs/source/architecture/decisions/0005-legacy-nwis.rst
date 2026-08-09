@@ -44,5 +44,6 @@ Compliance
 ----------
 
 Deprecation tests verify one warning per public call and validate named Water
-Data replacements. ``tests/architecture_test.py`` prevents modern package
-modules from importing ``dataretrieval.nwis``.
+Data replacements. The ``nwis-quarantine`` contract in ``.importlinter``
+prevents modern package modules from importing ``dataretrieval.nwis``, directly
+or through an intermediary.

@@ -1,0 +1,132 @@
+; Declarative dependency-direction contracts for ``dataretrieval``.
+;
+; This file owns every rule that is purely a statement about the import graph.
+; ``tests/architecture_test.py`` owns the rules that are not: symbol-level
+; claims, ``__all__`` surfaces, AST shape, and the one boundary that must be
+; asserted positively. The split is deliberate and the two do not overlap --
+; a rule enforced twice is a rule that gets updated once.
+;
+; Run with ``lint-imports`` (installed by the ``[metrics]`` extra).
+
+[importlinter]
+root_package = dataretrieval
+; Contracts describe what runs, matching the AST suite. ``ogc.interruptions``
+; and ``ogc.chunking`` reference each other's types under ``TYPE_CHECKING``;
+; that is a documentation edge, not a runtime one, and no cycle exists at
+; import time.
+exclude_type_checking_imports = True
+
+[importlinter:contract:layers]
+name = Dependencies point toward stable policy (ADR 0003, ADR 0006)
+type = layers
+containers =
+    dataretrieval
+layers =
+    ngwmn | nldi | nwis | streamstats | waterdata | wateruse | wqp
+    ogc
+    utils
+    transport
+    progress
+    codes | combining | rdb | response_metadata
+    credentials
+    exceptions
+; Every top-level module must be placed in the stack deliberately. A new
+; top-level module fails this contract until someone decides where it sits.
+exhaustive = True
+exhaustive_ignores =
+    _version
+
+[importlinter:contract:acyclic]
+name = The runtime import graph is acyclic (ADR 0001)
+type = acyclic_siblings
+; Applied to the whole package, not just the two subsystems whose acyclicity
+; was previously asserted by hand. The claim held package-wide already; stating
+; it once at the root covers ``ogc`` and ``transport`` and every future
+; subpackage without a new rule per package.
+ancestors =
+    dataretrieval
+
+[importlinter:contract:ogc-consumers]
+name = Only NGWMN and Water Data consume the OGC subsystem (ADR 0003)
+type = protected
+; Read as: nothing outside this list may reach into OGC, directly or through a
+; submodule. An allowlist rather than a denylist, so a new service module is
+; refused by default instead of being silently permitted until someone
+; remembers to add it.
+;
+; The root ``dataretrieval`` package is deliberately NOT an allowed importer.
+; ``allowed_importers`` is matched with ``as_packages``, so naming the root here
+; would make every module in the distribution an allowed importer and the
+; contract could never fail. Its two real imports are listed as explicit
+; exceptions below instead -- narrow, visible, and they fail if they go stale.
+protected_modules =
+    dataretrieval.ogc
+allowed_importers =
+    dataretrieval.ngwmn
+    dataretrieval.waterdata
+ignore_imports =
+; The package __init__ re-exports the resumable-call and interruption types;
+; they are part of the documented public surface, not a service reaching in.
+    dataretrieval -> dataretrieval.ogc.chunking
+    dataretrieval -> dataretrieval.ogc.interruptions
+
+[importlinter:contract:ogc-facade]
+name = NGWMN consumes the OGC facade only, never its internals (ADR 0007)
+type = forbidden
+source_modules =
+    dataretrieval.ngwmn
+; The wildcard is what makes this durable: a new ``ogc`` submodule is covered
+; the day it is added, without editing this contract.
+forbidden_modules =
+    dataretrieval.ogc.**
+; Direct imports only. Reaching an internal *through* the facade is the design,
+; not a violation -- ``ngwmn -> ogc -> ogc.engine`` is how the seam is supposed
+; to work, and the default (indirect included) forbids exactly that.
+allow_indirect_imports = True
+
+[importlinter:contract:ogc-internal-seams]
+name = OGC internal seams (ADR 0003)
+type = forbidden
+source_modules =
+; Feature shaping is downstream of execution. If shaping imports engine the
+; subsystem gains a cycle and the schema fetch on an empty frame becomes
+; reachable from request construction.
+    dataretrieval.ogc.shaping
+forbidden_modules =
+    dataretrieval.ogc.engine
+
+[importlinter:contract:nwis-quarantine]
+name = Deprecated NWIS has no dependents (ADR 0005)
+type = forbidden
+source_modules =
+    dataretrieval.codes
+    dataretrieval.combining
+    dataretrieval.credentials
+    dataretrieval.exceptions
+    dataretrieval.ngwmn
+    dataretrieval.nldi
+    dataretrieval.ogc
+    dataretrieval.progress
+    dataretrieval.rdb
+    dataretrieval.streamstats
+    dataretrieval.transport
+    dataretrieval.utils
+    dataretrieval.waterdata
+    dataretrieval.wateruse
+    dataretrieval.wqp
+forbidden_modules =
+    dataretrieval.nwis
+
+[importlinter:contract:waterdata-families]
+name = Water Data collection families do not reach through each other (ADR 0007)
+type = independence
+; Kept in step with ``_WATERDATA_FAMILIES`` in tests/architecture_test.py, which
+; derives the facade's expected export union from the same six modules. A
+; seventh family fails that test until it is listed there; add it here too.
+modules =
+    dataretrieval.waterdata.cql
+    dataretrieval.waterdata.measurements
+    dataretrieval.waterdata.metadata
+    dataretrieval.waterdata.reference
+    dataretrieval.waterdata.samples
+    dataretrieval.waterdata.time_series
