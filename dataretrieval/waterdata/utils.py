@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 # ``get_cql`` validates its ``service`` argument against these keys and
 # uses the value as the ``output_id`` for result shaping. Keep in sync with the
 # ``types.WATERDATA_SERVICES`` Literal (same keys).
-_OUTPUT_ID_BY_SERVICE: dict[str, str] = {
+_OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "channel-measurements": "channel_measurements_id",
     "combined-metadata": "combined_meta_id",
     "continuous": "continuous_id",
@@ -56,10 +56,11 @@ _OUTPUT_ID_BY_SERVICE: dict[str, str] = {
 # Every service's output id EXCEPT the two that are genuinely user-facing
 # (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
 # per-record ids that ``_arrange_cols`` moves to the end of a result frame.
-# Derived from ``_OUTPUT_ID_BY_SERVICE`` so adding a service can't silently
+# Derived from ``_OUTPUT_ID_BY_COLLECTION`` so adding a service can't silently
 # leave a stray id column at the front again.
 _EXTRA_ID_COLS = frozenset(
-    set(_OUTPUT_ID_BY_SERVICE.values()) - {"monitoring_location_id", "time_series_id"}
+    set(_OUTPUT_ID_BY_COLLECTION.values())
+    - {"monitoring_location_id", "time_series_id"}
 )
 
 # The Water Data API dialect: ``monitoring-locations`` doesn't accept
@@ -193,7 +194,7 @@ def get_ogc_data(
         The OGC API collection name (e.g., ``"daily"``).
     output_id : str, optional
         The user-facing id column the wire ``id`` is renamed to. Defaults
-        to ``_OUTPUT_ID_BY_SERVICE[service]``; pass it explicitly only for
+        to ``_OUTPUT_ID_BY_COLLECTION[service]``; pass it explicitly only for
         collections outside that map (e.g. reference-table collections).
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
@@ -209,7 +210,7 @@ def get_ogc_data(
         query time.
     """
     if output_id is None:
-        output_id = _OUTPUT_ID_BY_SERVICE[service]
+        output_id = _OUTPUT_ID_BY_COLLECTION[service]
     return _facade_get_ogc_data(
         args,
         service,
@@ -283,7 +284,7 @@ __all__ = [
     "WATERDATA_DIALECT",
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",
-    "_OUTPUT_ID_BY_SERVICE",
+    "_OUTPUT_ID_BY_COLLECTION",
     "_accept_legacy_kwargs",
     "_get_args",
     "_with_state",

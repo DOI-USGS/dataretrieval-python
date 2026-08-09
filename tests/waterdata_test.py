@@ -2,6 +2,7 @@ import copy
 import datetime
 import json
 import re
+import warnings
 from pathlib import Path
 from unittest import mock
 from urllib.parse import parse_qs, urlsplit
@@ -408,23 +409,41 @@ def test_construct_cql_request_skip_geometry_none_omits_param():
     assert "skipGeometry" not in str(req.url)
 
 
+def test_get_cql_service_keyword_is_deprecated_but_works():
+    """``service=`` still resolves to ``collection`` for one deprecation window.
+
+    ``service`` was the published spelling, and OGC API - Features calls the
+    value a collection -- it is the ``collectionId`` in ``/collections/{id}``.
+    The rename must not silently change behavior for callers using the old name.
+    """
+    with pytest.warns(DeprecationWarning, match="use `collection`"):
+        with pytest.raises(ValueError, match="Unknown collection"):
+            get_cql(service="not-a-collection", cql="a=1")
+
+    # The new spelling emits nothing.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        with pytest.raises(ValueError, match="Unknown collection"):
+            get_cql(collection="not-a-collection", cql="a=1")
+
+
 def test_get_cql_unknown_service_raises():
     """An unknown service is rejected before any network call."""
-    with pytest.raises(ValueError, match="Unknown service"):
+    with pytest.raises(ValueError, match="Unknown collection"):
         get_cql("not-a-service", {"op": "isNull", "args": [{"property": "x"}]})
 
 
 def test_waterdata_services_literal_matches_output_id_map():
-    """The WATERDATA_SERVICES Literal and _OUTPUT_ID_BY_SERVICE must enumerate
+    """The WATERDATA_SERVICES Literal and _OUTPUT_ID_BY_COLLECTION must enumerate
     the same services: get_cql validates against the dict while the Literal
     types the public signature, so drift would let one accept a service the other
     rejects."""
     from typing import get_args
 
     from dataretrieval.waterdata.types import WATERDATA_SERVICES
-    from dataretrieval.waterdata.utils import _OUTPUT_ID_BY_SERVICE
+    from dataretrieval.waterdata.utils import _OUTPUT_ID_BY_COLLECTION
 
-    assert set(get_args(WATERDATA_SERVICES)) == set(_OUTPUT_ID_BY_SERVICE)
+    assert set(get_args(WATERDATA_SERVICES)) == set(_OUTPUT_ID_BY_COLLECTION)
 
 
 def test_construct_api_requests_single_value_stays_get():

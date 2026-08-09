@@ -4,6 +4,7 @@ __all__ = [
     "CODE_SERVICES",
     "METADATA_COLLECTIONS",
     "SERVICES",
+    "WATERDATA_COLLECTIONS",
     "WATERDATA_SERVICES",
     "PROFILES",
     "PROFILE_LOOKUP",
@@ -51,10 +52,10 @@ SERVICES = Literal[
 ]
 
 # OGC API time-series/monitoring collections queryable via ``get_cql``.
-# Keep in sync with ``utils._OUTPUT_ID_BY_SERVICE`` (same keys): that dict maps
+# Keep in sync with ``utils._OUTPUT_ID_BY_COLLECTION`` (same keys): that dict maps
 # each service to its user-facing ``id`` column and is the runtime source of
 # truth ``get_cql`` validates against.
-WATERDATA_SERVICES = Literal[
+WATERDATA_COLLECTIONS = Literal[
     "channel-measurements",
     "combined-metadata",
     "continuous",
@@ -67,6 +68,11 @@ WATERDATA_SERVICES = Literal[
     "peaks",
     "time-series-metadata",
 ]
+
+#: Permanent alias. OGC API - Features calls these collections -- the value is
+#: the ``collectionId`` in ``/collections/{id}/items`` -- but this name is the one
+#: the package published first, so it keeps resolving.
+WATERDATA_SERVICES = WATERDATA_COLLECTIONS
 
 PROFILES = Literal[
     "actgroup",

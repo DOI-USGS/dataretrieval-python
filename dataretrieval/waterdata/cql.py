@@ -9,6 +9,7 @@ getter when one fits -- it validates more and reads better.
 from __future__ import annotations
 
 import json
+import warnings
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -24,7 +25,7 @@ from dataretrieval.ogc.requests import (
 from dataretrieval.ogc.shaping import _finalize_ogc
 from dataretrieval.waterdata.utils import (
     _EXTRA_ID_COLS,
-    _OUTPUT_ID_BY_SERVICE,
+    _OUTPUT_ID_BY_COLLECTION,
     OGC_API_URL,
     WATERDATA_DIALECT,
 )
@@ -32,14 +33,15 @@ from dataretrieval.waterdata.utils import (
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
     from dataretrieval.waterdata.types import (
-        WATERDATA_SERVICES,
+        WATERDATA_COLLECTIONS,
     )
 
 
 def get_cql(
-    service: WATERDATA_SERVICES,
-    cql: str | dict[str, Any],
+    collection: WATERDATA_COLLECTIONS | None = None,
+    cql: str | dict[str, Any] | None = None,
     *,
+    service: WATERDATA_COLLECTIONS | None = None,
     properties: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -48,9 +50,9 @@ def get_cql(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Query a Water Data OGC API collection with an arbitrary CQL2 filter.
 
-    Sends ``cql`` as a CQL2 filter against ``service`` and returns the matching
+    Sends ``cql`` as a CQL2 filter against ``collection`` and returns the matching
     features, shaped like the typed getters (``get_daily``, ``get_continuous``,
-    …): the wire ``id`` renamed to the service's id column, columns ordered and
+    …): the wire ``id`` renamed to the collection's id column, columns ordered and
     sorted, and dtypes coerced. Use it when you need a predicate the typed
     getters can't express — a top-level ``or``, ``like`` with ``%`` wildcards,
     comparison operators, nested boolean trees, or a geometry predicate beyond a
@@ -66,9 +68,9 @@ def get_cql(
 
     Parameters
     ----------
-    service : str
+    collection : str
         OGC collection name. Must be one of
-        :data:`dataretrieval.waterdata.types.WATERDATA_SERVICES`
+        :data:`dataretrieval.waterdata.types.WATERDATA_COLLECTIONS`
         (e.g. ``"daily"``, ``"monitoring-locations"``).
     cql : str or dict
         CQL2 query. A ``dict`` is JSON-serialized for transport; a ``str`` is
@@ -76,7 +78,7 @@ def get_cql(
         ``Content-Type: application/query-cql-json``.
     properties : str or iterable of str, optional
         Server-side property whitelist (passed as ``properties=`` on the URL).
-        Reduces payload size. ``"id"`` resolves to the service's ``output_id``
+        Reduces payload size. ``"id"`` resolves to the collection's ``output_id``
         (e.g. ``daily_id``) the same way it does in the typed wrappers.
     bbox : list of float, optional
         Bounding box ``[xmin, ymin, xmax, ymax]`` in CRS 4326. Combines with the
@@ -124,23 +126,41 @@ def get_cql(
         ...         },
         ...     ],
         ... }
-        >>> df, md = waterdata.get_cql(service="daily", cql=cql)
+        >>> df, md = waterdata.get_cql(collection="daily", cql=cql)
 
         >>> # Monitoring locations whose HUC starts with "02070010"
         >>> # (LIKE with the CQL2 ``%`` wildcard).
         >>> df, md = waterdata.get_cql(
-        ...     service="monitoring-locations",
+        ...     collection="monitoring-locations",
         ...     cql='{"op": "like", "args": ['
         ...     '{"property": "hydrologic_unit_code"},'
         ...     ' "02070010%"]}',
         ... )
     """
-    if service not in _OUTPUT_ID_BY_SERVICE:
-        raise ValueError(
-            f"Unknown service {service!r}. Valid services: "
-            f"{sorted(_OUTPUT_ID_BY_SERVICE)}."
+    if service is not None:
+        warnings.warn(
+            "The `service` argument of get_cql() is deprecated; use `collection`. "
+            "OGC API - Features calls these collections -- the value is the "
+            "collectionId in /collections/{id}/items -- while `service` names the "
+            "API itself (Water Data, NGWMN). `service` will be removed on or "
+            "after 2027-08-09.",
+            DeprecationWarning,
+            stacklevel=2,
         )
-    output_id = _OUTPUT_ID_BY_SERVICE[service]
+        if collection is None:
+            collection = service
+    # Both are required; they carry defaults only so the deprecated ``service``
+    # spelling can still reach the resolution above.
+    if collection is None:
+        raise TypeError("get_cql() missing required argument: 'collection'")
+    if cql is None:
+        raise TypeError("get_cql() missing required argument: 'cql'")
+    if collection not in _OUTPUT_ID_BY_COLLECTION:
+        raise ValueError(
+            f"Unknown collection {collection!r}. Valid collections: "
+            f"{sorted(_OUTPUT_ID_BY_COLLECTION)}."
+        )
+    output_id = _OUTPUT_ID_BY_COLLECTION[collection]
 
     # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a
@@ -152,14 +172,14 @@ def get_cql(
     # Drop id aliases (``daily_id``/``id``) and ``geometry`` from the wire
     # ``properties`` (the feature ``id`` is always returned and renamed
     # downstream), matching the typed getters.
-    wire_properties = _switch_properties_id(properties_list, output_id, service)
+    wire_properties = _switch_properties_id(properties_list, output_id, collection)
 
-    # The OGC package names no service of its own, so this hand-built request
+    # The OGC package names no collection of its own, so this hand-built request
     # path states the target itself -- request construction and the empty-result
     # schema lookup in ``_finalize_ogc`` both read the base URL from here.
     with _ogc_base_url(OGC_API_URL):
         req = _construct_cql_request(
-            service,
+            collection,
             body,
             properties=wire_properties,
             bbox=bbox,
@@ -167,7 +187,7 @@ def get_cql(
             skip_geometry=skip_geometry,
         )
 
-        df, response = fetch_ogc_request(req, service=service)
+        df, response = fetch_ogc_request(req, service=collection)
 
         return _finalize_ogc(
             df,
@@ -175,7 +195,7 @@ def get_cql(
             properties=properties_list,
             output_id=output_id,
             convert_type=convert_type,
-            service=service,
+            service=collection,
             extra_id_cols=_EXTRA_ID_COLS,
             dialect=WATERDATA_DIALECT,
         )
