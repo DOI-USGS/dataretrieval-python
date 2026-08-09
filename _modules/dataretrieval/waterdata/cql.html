@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,24 +87,30 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_ogc_request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">_ogc_base_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.requests</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_as_str_list</span><span class="p">,</span>
     <span class="n">_construct_cql_request</span><span class="p">,</span>
     <span class="n">_switch_properties_id</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">WATERDATA_SERVICES</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.shaping</span><span class="w"> </span><span class="kn">import</span> <span class="n">_finalize_ogc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_EXTRA_ID_COLS</span><span class="p">,</span>
     <span class="n">_OUTPUT_ID_BY_SERVICE</span><span class="p">,</span>
-    <span class="n">_finalize_ogc</span><span class="p">,</span>
+    <span class="n">OGC_API_URL</span><span class="p">,</span>
+    <span class="n">WATERDATA_DIALECT</span><span class="p">,</span>
 <span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">WATERDATA_SERVICES</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_cql">
@@ -227,25 +233,31 @@
     <span class="c1"># downstream), matching the typed getters.</span>
     <span class="n">wire_properties</span> <span class="o">=</span> <span class="n">_switch_properties_id</span><span class="p">(</span><span class="n">properties_list</span><span class="p">,</span> <span class="n">output_id</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span>
 
-    <span class="n">req</span> <span class="o">=</span> <span class="n">_construct_cql_request</span><span class="p">(</span>
-        <span class="n">service</span><span class="p">,</span>
-        <span class="n">body</span><span class="p">,</span>
-        <span class="n">properties</span><span class="o">=</span><span class="n">wire_properties</span><span class="p">,</span>
-        <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
-        <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
-        <span class="n">skip_geometry</span><span class="o">=</span><span class="n">skip_geometry</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="c1"># The OGC package names no service of its own, so this hand-built request</span>
+    <span class="c1"># path states the target itself -- request construction and the empty-result</span>
+    <span class="c1"># schema lookup in ``_finalize_ogc`` both read the base URL from here.</span>
+    <span class="k">with</span> <span class="n">_ogc_base_url</span><span class="p">(</span><span class="n">OGC_API_URL</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">_construct_cql_request</span><span class="p">(</span>
+            <span class="n">service</span><span class="p">,</span>
+            <span class="n">body</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">wire_properties</span><span class="p">,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">skip_geometry</span><span class="o">=</span><span class="n">skip_geometry</span><span class="p">,</span>
+        <span class="p">)</span>
 
-    <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">fetch_ogc_request</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">fetch_ogc_request</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">_finalize_ogc</span><span class="p">(</span>
-        <span class="n">df</span><span class="p">,</span>
-        <span class="n">response</span><span class="p">,</span>
-        <span class="n">properties</span><span class="o">=</span><span class="n">properties_list</span><span class="p">,</span>
-        <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span>
-        <span class="n">convert_type</span><span class="o">=</span><span class="n">convert_type</span><span class="p">,</span>
-        <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span>
-    <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">_finalize_ogc</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">,</span>
+            <span class="n">response</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">properties_list</span><span class="p">,</span>
+            <span class="n">output_id</span><span class="o">=</span><span class="n">output_id</span><span class="p">,</span>
+            <span class="n">convert_type</span><span class="o">=</span><span class="n">convert_type</span><span class="p">,</span>
+            <span class="n">service</span><span class="o">=</span><span class="n">service</span><span class="p">,</span>
+            <span class="n">extra_id_cols</span><span class="o">=</span><span class="n">_EXTRA_ID_COLS</span><span class="p">,</span>
+            <span class="n">dialect</span><span class="o">=</span><span class="n">WATERDATA_DIALECT</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 

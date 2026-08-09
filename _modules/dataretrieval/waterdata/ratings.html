@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,7 +94,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">WATERDATA_BASE_URL</span><span class="p">,</span> <span class="n">without_embedded_credentials</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_format_api_dates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
@@ -110,13 +109,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">get</span> <span class="k">as</span> <span class="n">_get</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">STAC_URL</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_ratings&quot;</span><span class="p">]</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-<span class="n">STAC_URL</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">WATERDATA_BASE_URL</span><span class="si">}</span><span class="s2">/stac/v0&quot;</span>
 
 <span class="n">RATING_FILE_TYPE</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;exsa&quot;</span><span class="p">,</span> <span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">]</span>
 <span class="n">_VALID_FILE_TYPES</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">RATING_FILE_TYPE</span><span class="p">)</span>
@@ -325,28 +324,6 @@
 <span class="sd">    one page isn&#39;t silently truncated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_checked_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a server-supplied ``next`` href into a URL safe to request.&quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The ratings service returned an unusable next-page link: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">href</span><span class="si">!r}</span><span class="s2">. The page walk cannot continue; report this if it &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;persists.&quot;</span>
-            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_absolute_url</span><span class="p">:</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">current</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Refusing to follow a ratings next-page link pointing at &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2"> rather than </span><span class="si">{</span><span class="n">current</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2">. Following it would &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;send this request, and any credentials on it, to a host you &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;did not ask for. Retrying will not help; report this if it &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;persists.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">without_embedded_credentials</span><span class="p">(</span><span class="n">target</span><span class="p">))</span>
-
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)}</span>
     <span class="k">if</span> <span class="n">filter_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_str</span>
@@ -383,7 +360,11 @@
         <span class="c1"># carry this request&#39;s API key off the authorized host, and one carrying</span>
         <span class="c1"># ``user:pass@`` would mint an ``Authorization: Basic`` header the caller</span>
         <span class="c1"># never configured.</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">href</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_checked_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">href</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">resolve_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">features</span>
 

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,7 +90,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;get_flowlines&quot;</span><span class="p">,</span>
@@ -143,6 +143,14 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[],</span> <span class="n">crs</span><span class="o">=</span><span class="n">_CRS</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="o">.</span><span class="n">from_features</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">_CRS</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_query_features</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame.&quot;&quot;&quot;</span>
+    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">feature_collection</span> <span class="k">if</span> <span class="n">as_json</span> <span class="k">else</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_flowlines">
@@ -201,20 +209,19 @@
     <span class="n">_validate_feature_source_comid</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">,</span> <span class="n">comid</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">feature_source</span><span class="p">:</span>
         <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/navigation&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">/navigation&quot;</span>
-    <span class="n">query_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">),</span> <span class="s2">&quot;trimStart&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">trim_start</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()}</span>
-
-    <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/flowlines&quot;</span>
+    <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
+        <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
+        <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
+        <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
+        <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
+        <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
+        <span class="n">tail</span><span class="o">=</span><span class="s2">&quot;flowlines&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;trimStart&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">trim_start</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">stop_comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;stopComid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
 
-    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">as_json</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">feature_collection</span>
-    <span class="n">gdf</span> <span class="o">=</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">gdf</span></div>
+    <span class="k">return</span> <span class="n">_query_features</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">as_json</span><span class="p">)</span></div>
 
 
 
@@ -267,11 +274,7 @@
         <span class="s2">&quot;simplified&quot;</span><span class="p">:</span> <span class="n">simplified_str</span><span class="p">,</span>
         <span class="s2">&quot;splitCatchment&quot;</span><span class="p">:</span> <span class="n">split_catchment_str</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">as_json</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">feature_collection</span>
-    <span class="n">gdf</span> <span class="o">=</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">gdf</span></div>
+    <span class="k">return</span> <span class="n">_query_features</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">as_json</span><span class="p">)</span></div>
 
 
 
@@ -357,12 +360,29 @@
         <span class="n">stop_comid</span><span class="o">=</span><span class="n">stop_comid</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">as_json</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">feature_collection</span>
-    <span class="n">gdf</span> <span class="o">=</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">gdf</span></div>
+    <span class="k">return</span> <span class="n">_query_features</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">as_json</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_navigation_request</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;URL and query params for an NLDI navigation from a validated origin.</span>
+
+<span class="sd">    The single home for the navigation path grammar — ``{origin}/navigation/</span>
+<span class="sd">    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific</span>
+<span class="sd">    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query</span>
+<span class="sd">    string keeps its documented parameter order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_features_request</span><span class="p">(</span>
@@ -409,9 +429,14 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
-    <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">query_params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
+    <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
+        <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
+        <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
+        <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
+        <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
+        <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
+        <span class="n">tail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">stop_comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;stopComid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span>
@@ -538,7 +563,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both lat and long are required&quot;</span><span class="p">)</span>
 
-    <span class="n">find</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;basin&quot;</span><span class="p">,</span> <span class="s2">&quot;flowlines&quot;</span><span class="p">,</span> <span class="s2">&quot;features&quot;</span><span class="p">],</span> <span class="n">find</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="n">find</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Literal[&#39;basin&#39;, &#39;flowlines&#39;, &#39;features&#39;]&quot;</span><span class="p">,</span> <span class="n">find</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">find</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;basin&quot;</span><span class="p">,</span> <span class="s2">&quot;flowlines&quot;</span><span class="p">,</span> <span class="s2">&quot;features&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Invalid value for find: </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2"> - allowed values are:&quot;</span>

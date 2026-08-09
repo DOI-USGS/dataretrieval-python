@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -119,21 +119,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_status</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOut</span><span class="p">,</span> <span class="n">active_client</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span><span class="p">,</span> <span class="n">network_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">paginate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_status</span><span class="p">,</span> <span class="n">to_str</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;get_wateruse&quot;</span><span class="p">,</span>
@@ -416,40 +416,6 @@
     <span class="k">return</span> <span class="n">code</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">_LocationPlan</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Water Use fan-out&#39;s shape: one pre-built request per location.</span>
-
-<span class="sd">    Satisfies :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally,</span>
-<span class="sd">    without inheriting from :class:`~dataretrieval.ogc.planning.ChunkPlan` --</span>
-<span class="sd">    there is nothing to inherit. ``ChunkPlan`` divides one over-budget query</span>
-<span class="sd">    into byte-sized pieces; this divides nothing. The NWDC accepts one</span>
-<span class="sd">    ``location=`` per request, so the caller&#39;s locations arrive already</span>
-<span class="sd">    separate and the &quot;plan&quot; is just that list. Chunking is structural division;</span>
-<span class="sd">    this is only the operational distribution that follows.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span> <span class="o">=</span> <span class="n">requests</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">total</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">canonical_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The first location&#39;s URL, standing for the query as a whole.</span>
-
-<span class="sd">        There is no single URL expressing &quot;all of these locations&quot; -- the</span>
-<span class="sd">        service has no such request -- so the aggregate response reports the</span>
-<span class="sd">        first, matching what the un-fanned single-location call would show.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span> <span class="k">else</span> <span class="kc">None</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">iter_sub_args</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-        <span class="k">for</span> <span class="n">request</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">}</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_fan_out</span><span class="p">(</span>
     <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
@@ -466,6 +432,11 @@
 <span class="sd">    drive too. This function is now only the NWDC-specific half: what a</span>
 <span class="sd">    sub-request is, and how to read one.</span>
 
+<span class="sd">    The plan is the request list itself. ``FanOut`` asks a plan only to be</span>
+<span class="sd">    sized and iterable, and the NWDC accepts one ``location=`` per request, so</span>
+<span class="sd">    the caller&#39;s locations arrive already separate -- there is nothing to</span>
+<span class="sd">    divide and so nothing for a plan class to hold.</span>
+
 <span class="sd">    The broad retry status set is on purpose: NWDC reports a bad query as a 400</span>
 <span class="sd">    with a ``{&quot;detail&quot;: ...}`` envelope, so unlike WQP and StreamStats its 5xx</span>
 <span class="sd">    really is an upstream fault worth re-sending.</span>
@@ -480,7 +451,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">detail_from</span><span class="o">=</span><span class="n">_nwdc_error_detail</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;One location&#39;s full page walk, over the executor&#39;s shared client.</span>
 
 <span class="sd">        ``active_client()`` is the client :meth:`FanOut._run` published for this</span>
@@ -489,32 +460,34 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
-                <span class="n">args</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">],</span>
+                <span class="n">request</span><span class="p">,</span>
                 <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
                 <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
                 <span class="n">client</span><span class="o">=</span><span class="n">active_client</span><span class="p">(),</span>
                 <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">network_error</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+            <span class="k">raise</span> <span class="n">network_error</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span>
         <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-    <span class="c1"># ``progress_context`` activates the reporter ``FanOut`` ticks into; without</span>
-    <span class="c1"># it Water Use would run the shared executor but print nothing, which is</span>
-    <span class="c1"># what it did when it drove its own gather.</span>
-    <span class="k">with</span> <span class="n">_progress</span><span class="o">.</span><span class="n">progress_context</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span> <span class="n">target_url</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">FanOut</span><span class="p">(</span>
-            <span class="n">_LocationPlan</span><span class="p">(</span><span class="n">requests</span><span class="p">),</span>
-            <span class="n">fetch</span><span class="p">,</span>
-            <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
-            <span class="n">finalize</span><span class="o">=</span><span class="n">finalize</span><span class="p">,</span>
-            <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
-            <span class="n">default_concurrent</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENT_REQUESTS</span><span class="p">,</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">FanOut</span><span class="p">(</span>
+        <span class="n">requests</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">,</span>
+        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">finalize</span><span class="o">=</span><span class="n">finalize</span><span class="p">,</span>
+        <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
+        <span class="n">default_concurrent</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENT_REQUESTS</span><span class="p">,</span>
+        <span class="c1"># No single URL expresses &quot;all of these locations&quot; -- the service</span>
+        <span class="c1"># has no such request -- so the aggregate reports the first,</span>
+        <span class="c1"># matching what an un-fanned single-location call would show.</span>
+        <span class="n">canonical_url</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="k">if</span> <span class="n">requests</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Labels the progress line the executor opens for this drive.</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -546,31 +519,12 @@
     <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Water Use returned an unusable next-page link: </span><span class="si">{</span><span class="n">url</span><span class="si">!r}</span><span class="s2">. The page &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;walk cannot continue; report this if it persists.&quot;</span>
-        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_absolute_url</span><span class="p">:</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_WATERUSE_HOST_ALIASES</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Refusing to follow a Water Use next-page link pointing at &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2"> rather than </span><span class="si">{</span><span class="n">_WATERUSE_HOST</span><span class="si">}</span><span class="s2">. Following it would &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;send this request, and any credentials on it, to a host you did &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;not ask for. Retrying will not help; report this if it persists.&quot;</span>
-        <span class="p">)</span>
-    <span class="c1"># Drop any explicit port and any embedded userinfo along with the</span>
-    <span class="c1"># scheme/host rewrite. A port that went with the link&#39;s original scheme</span>
-    <span class="c1"># (``http://…:8080``) would otherwise survive into an https request and be</span>
-    <span class="c1"># dialed under TLS; userinfo (``http://user:pass@…``) would survive into an</span>
-    <span class="c1"># ``Authorization: Basic`` header that httpx derives from it and send a</span>
-    <span class="c1"># credential the caller never configured to the rewritten host -- the very</span>
-    <span class="c1"># thing the host check above exists to prevent.</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span>
-        <span class="n">target</span><span class="o">.</span><span class="n">copy_with</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="s2">&quot;https&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">_WATERUSE_HOST</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">userinfo</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resolve_next_url</span><span class="p">(</span>
+        <span class="n">url</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;Water Use&quot;</span><span class="p">,</span>
+        <span class="n">allowed_hosts</span><span class="o">=</span><span class="n">_WATERUSE_HOST_ALIASES</span><span class="p">,</span>
+        <span class="n">rewrite_host</span><span class="o">=</span><span class="n">_WATERUSE_HOST</span><span class="p">,</span>
     <span class="p">)</span>
 
 

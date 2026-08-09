@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -96,7 +96,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_rdb</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
@@ -185,7 +185,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">_deprecation_state</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span></div>
 
 
 
@@ -573,6 +573,40 @@
 
 
 
+<div class="viewcode-block" id="_get_json_values">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._get_json_values">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_json_values</span><span class="p">(</span>
+    <span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">multi_index</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">NWIS_Metadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared body of the JSON waterservices time-series getters (dv / iv).</span>
+
+<span class="sd">    The caller-facing ``sites`` / ``start`` / ``end`` arguments are aliases: an</span>
+<span class="sd">    explicit waterservices keyword of the same meaning wins over them. Note that</span>
+<span class="sd">    ``multi_index`` travels through ``kwargs`` so that :func:`format_response`</span>
+<span class="sd">    sees it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;startDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;startDT&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;endDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;endDT&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sites&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sites&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multi_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_index</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span>
+        <span class="n">service</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="get_dv">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_dv">[docs]</a>
 <span class="nd">@_deprecated</span>
@@ -632,17 +666,7 @@
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.nwis.get_dv(sites=&quot;01646500&quot;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
-
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;startDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;startDT&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;endDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;endDT&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sites&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sites&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multi_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_index</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span><span class="s2">&quot;dv&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_get_json_values</span><span class="p">(</span><span class="s2">&quot;dv&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -822,19 +846,7 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
-
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;startDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;startDT&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;endDT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;endDT&quot;</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sites&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sites&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;multi_index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">multi_index</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">query_waterservices</span><span class="p">(</span>
-        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;iv&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
-
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_parse_json_or_raise</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">format_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_get_json_values</span><span class="p">(</span><span class="s2">&quot;iv&quot;</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">multi_index</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
 
 
 

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.interruptions &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.interruptions &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -108,6 +108,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
@@ -203,7 +204,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">completed_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">total_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">call</span><span class="p">:</span> <span class="n">FanOut</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">call</span><span class="p">:</span> <span class="n">FanOut</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cause</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -219,10 +220,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">retry_after</span> <span class="o">=</span> <span class="n">retry_after</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;_DEFAULT_STATUS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="n">cause</span>
-        <span class="k">while</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s2">&quot;status_code&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">__cause__</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># The status is usually a few frames down: a typed error raised</span>
+            <span class="c1"># ``from`` the httpx failure that carried it.</span>
+            <span class="k">for</span> <span class="n">current</span> <span class="ow">in</span> <span class="n">_walk_causes</span><span class="p">(</span><span class="n">cause</span><span class="p">):</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s2">&quot;status_code&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status</span>
+                    <span class="k">break</span>
         <span class="c1"># Snapshot partial state at raise time so the exception stays a stable</span>
         <span class="c1"># record of the failure moment: ``exc.partial_frame`` /</span>
         <span class="c1"># ``.partial_response`` do NOT advance on a later ``call.resume()``</span>
@@ -308,6 +313,39 @@
 <span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_walk_causes</span><span class="p">(</span>
+    <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">follow_context</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield ``exc`` and the exceptions it chains to, each at most once.</span>
+
+<span class="sd">    Every question this module asks about a failure -- is it transient, is it</span>
+<span class="sd">    deterministic, what status did it carry -- is &quot;find the first exception in</span>
+<span class="sd">    this chain that satisfies P&quot;. One traversal answers all of them, so the</span>
+<span class="sd">    cycle guard and the choice of links cannot drift between callers.</span>
+
+<span class="sd">    ``__cause__`` (explicit ``raise ... from``) is always followed.</span>
+<span class="sd">    ``__context__`` (implicit chaining, from raising inside an ``except``</span>
+<span class="sd">    block) is followed only when ``follow_context`` is set, because it can</span>
+<span class="sd">    lead away from the failure being classified into whatever unrelated error</span>
+<span class="sd">    happened to be in flight.</span>
+
+<span class="sd">    The ``seen`` set keeps a chain that rejoins itself, or points back at an</span>
+<span class="sd">    ancestor, from looping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exc</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">pending</span><span class="p">:</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">pending</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">))</span>
+        <span class="k">yield</span> <span class="n">current</span>
+        <span class="k">if</span> <span class="n">follow_context</span><span class="p">:</span>
+            <span class="n">pending</span> <span class="o">+=</span> <span class="p">[</span><span class="n">current</span><span class="o">.</span><span class="n">__cause__</span><span class="p">,</span> <span class="n">current</span><span class="o">.</span><span class="n">__context__</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pending</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">__cause__</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_deterministic_failure</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether a transport failure would fail identically on every retry.</span>
 
@@ -317,32 +355,20 @@
 <span class="sd">    needs. A *temporary* resolver failure is not in that class and stays</span>
 <span class="sd">    retryable (see :data:`_PERMANENT_DNS_ERRORS`).</span>
 
-<span class="sd">    The original failure is several layers down and not always an explicit</span>
-<span class="sd">    ``raise ... from``: a DNS failure reaches us as ``NetworkError`` -&gt;</span>
+<span class="sd">    Walks ``__context__`` as well as ``__cause__``, because the original</span>
+<span class="sd">    failure is several layers down and not always an explicit ``raise ...</span>
+<span class="sd">    from``: a DNS failure reaches us as ``NetworkError`` -&gt;</span>
 <span class="sd">    ``httpx.ConnectError`` -&gt; ``httpcore.ConnectError`` -&gt; ``socket.gaierror``,</span>
-<span class="sd">    linked by ``__context__`` (implicit chaining) rather than ``__cause__``.</span>
-
-<span class="sd">    Both links of every frame are visited, not just the first one present. A</span>
-<span class="sd">    frame can carry an explicit ``__cause__`` *and* an unrelated ``__context__``</span>
-<span class="sd">    (any ``raise X from Y`` inside an ``except`` block produces exactly that), so</span>
-<span class="sd">    following only the cause would walk off down the explicit branch and miss a</span>
-<span class="sd">    ``gaierror`` sitting on the implicit one -- spending the whole retry budget</span>
-<span class="sd">    on a hostname that will never resolve. The ``seen`` set keeps a chain that</span>
-<span class="sd">    rejoins itself, or points back at an ancestor, from looping.</span>
+<span class="sd">    linked by implicit chaining. Following only the cause would walk off down</span>
+<span class="sd">    the explicit branch and miss a ``gaierror`` sitting on the implicit one --</span>
+<span class="sd">    spending the whole retry budget on a hostname that will never resolve.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-    <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exc</span><span class="p">]</span>
-    <span class="k">while</span> <span class="n">pending</span><span class="p">:</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="n">pending</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">current</span> <span class="ow">in</span> <span class="n">_walk_causes</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">follow_context</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">UnsupportedProtocol</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">LocalProtocolError</span><span class="p">)):</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">gaierror</span><span class="p">):</span>
             <span class="c1"># Return, not continue: the first resolver code found settles the chain.</span>
             <span class="k">return</span> <span class="n">current</span><span class="o">.</span><span class="n">errno</span> <span class="ow">in</span> <span class="n">_PERMANENT_DNS_ERRORS</span>
-        <span class="n">pending</span> <span class="o">+=</span> <span class="p">[</span><span class="n">current</span><span class="o">.</span><span class="n">__cause__</span><span class="p">,</span> <span class="n">current</span><span class="o">.</span><span class="n">__context__</span><span class="p">]</span>
     <span class="k">return</span> <span class="kc">False</span>
 
 
@@ -368,13 +394,14 @@
     <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">FanOutInterrupted</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a wrapped pagination failure for a resumable transport cause.&quot;&quot;&quot;</span>
-    <span class="n">current</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">exc</span>
-    <span class="k">while</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">_classify_transient</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">result</span>
-        <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">__cause__</span>
-    <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">result</span>
+            <span class="k">for</span> <span class="n">current</span> <span class="ow">in</span> <span class="n">_walk_causes</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">result</span> <span class="o">:=</span> <span class="n">_classify_transient</span><span class="p">(</span><span class="n">current</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="c1">#: The name this taxonomy was published under, kept as a permanent alias so</span>

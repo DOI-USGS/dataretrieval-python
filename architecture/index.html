@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -199,19 +199,22 @@ to the shared fan-out executor and retains compatibility aliases;
 <code class="docutils literal notranslate"><span class="pre">interruptions</span></code> and <code class="docutils literal notranslate"><span class="pre">retry</span></code> re-export their moved compatibility
 surfaces; and <code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate
 their named protocol concerns. The full runtime OGC graph, including the
-facade, is acyclic — enforced by the package-wide fitness function in
+facade, is acyclic – enforced by the package-wide fitness function in
 <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
 timeouts, host-scoped authentication, cursor pagination, bounded retry,
 response aggregation, fan-out execution, progress integration, and
-sync-over-async dispatch. <code class="docutils literal notranslate"><span class="pre">fanout</span></code> owns bounded concurrency, deterministic
-failure precedence, sparse completion state, and resume over an injected
-plan and fetch callback. Internally, <code class="docutils literal notranslate"><span class="pre">liveness</span></code> is a stdlib-only leaf
-recording when data last arrived, so the page loop that observes progress
-and the retry loop that acts on it both depend on <code class="docutils literal notranslate"><span class="pre">liveness</span></code> rather than
-on each other. Transport imports no service adapter or OGC protocol module,
-and it is not exposed as a public framework API.</p>
+sync-over-async dispatch. <code class="docutils literal notranslate"><span class="pre">fanout</span></code> drives an injected plan and fetch
+callback, owning bounded concurrency, deterministic failure precedence,
+sparse completion state, resume, and the progress line. It is also the one
+entry point from synchronous getter code into the async internals: a query
+with nothing to divide runs as a one-item fan-out rather than crossing a
+separate bridge. Internally, <code class="docutils literal notranslate"><span class="pre">liveness</span></code> is a stdlib-only leaf recording
+when data last arrived, so the page loop that observes progress and the
+retry loop that acts on it depend on <code class="docutils literal notranslate"><span class="pre">liveness</span></code> rather than on each other.
+Transport imports no service adapter or OGC protocol module, and is not
+exposed as a public framework API.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.interruptions</span></code></dt><dd><p>Shared resumable fan-out failure contract. It owns
 <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> and its subclasses; <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> remains a
@@ -232,11 +235,20 @@ class path remains <code class="docutils literal notranslate"><span class="pre">
 OGC internals. <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.Ambient</span></code> remains the stable public
 import and resolves to this same class.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Data-shaping helpers, legacy request composition, and compatibility imports
-for names that historically lived here (including <code class="docutils literal notranslate"><span class="pre">Ambient</span></code> and
-<code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, so their original import paths keep working). OGC does not
-depend on this mixed legacy module; by default, do not add new
-service-specific behavior there.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Data-shaping helpers, plus compatibility imports for names that
+historically lived here (including <code class="docutils literal notranslate"><span class="pre">Ambient</span></code>, <code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, <code class="docutils literal notranslate"><span class="pre">query</span></code>
+and <code class="docutils literal notranslate"><span class="pre">to_str</span></code>, so their original import paths keep working). OGC does not
+depend on this legacy module; by default, do not add new service-specific
+behavior there.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code></dt><dd><p>The one-shot HTTP query path the single-request adapters (<code class="docutils literal notranslate"><span class="pre">nwis</span></code>,
+<code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>, <code class="docutils literal notranslate"><span class="pre">wateruse</span></code>) use: compose the URL, send
+it, map the status, retry a transient. It left <code class="docutils literal notranslate"><span class="pre">utils</span></code> because the two
+halves shared only a filename – this one depends on <code class="docutils literal notranslate"><span class="pre">exceptions</span></code> and
+<code class="docutils literal notranslate"><span class="pre">transport</span></code>, the shaping half on <code class="docutils literal notranslate"><span class="pre">codes</span></code> and pandas, and no caller
+wanted both. The implementation module is private; the established public
+function paths remain <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.query</span></code> and
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.to_str</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.codes</span></code> and <code class="docutils literal notranslate"><span class="pre">dataretrieval.rdb</span></code></dt><dd><p>State/time-zone code conversion and RDB parsing leaves.</p>
 </dd>
@@ -375,9 +387,13 @@ and request shapes differ.</p>
 <p>This view records categories and representative locations of debt.
 <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> is authoritative for exact current dependency allowlists.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> retains compatibility wrappers alongside OGC orchestration.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines metadata, shaping, ambient configuration, legacy
-request composition, and transport compatibility imports.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> retains a compatibility pagination wrapper alongside OGC
+orchestration. The sync-dispatch wrapper is gone: every retrieval path now
+enters through <code class="docutils literal notranslate"><span class="pre">transport.fanout.FanOut</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines shaping with compatibility imports for metadata,
+ambient configuration, transport, and the query path.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">waterdata/utils.py</span></code> combines endpoint constants, argument normalization,
+and the OGC engine wrappers.</p></li>
 </ul>
 <p>These are documented so guardrails distinguish accepted current dependencies
 from new erosion. They should be removed through small, test-protected changes,

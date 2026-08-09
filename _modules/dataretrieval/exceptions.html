@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -99,6 +99,9 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">email.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parsedate_to_datetime</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -117,6 +120,7 @@
     <span class="s2">&quot;NoSitesError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ConfigurationError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error_for_status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parse_retry_after&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -429,6 +433,56 @@
     <span class="k">if</span> <span class="mi">500</span> <span class="o">&lt;=</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">600</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">ServiceUnavailable</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">retry_after</span><span class="o">=</span><span class="n">retry_after</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">HTTPError</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_retry_after">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.parse_retry_after">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_retry_after</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.</span>
+
+<span class="sd">    Both header forms mean the same thing and are treated the same way: the</span>
+<span class="sd">    seconds are returned as given, however large. A value past what a caller will</span>
+<span class="sd">    wait out inline stops the retry and surfaces a transient carrying the hint on</span>
+<span class="sd">    ``.retry_after``, so a long wait becomes the caller&#39;s decision (and, for a</span>
+<span class="sd">    chunked call, a resumable interruption) instead of being ignored.</span>
+
+<span class="sd">    An over-long hint is honored rather than discarded. Dropping it would make</span>
+<span class="sd">    the client retry *harder* against a service that just asked for a long</span>
+<span class="sd">    pause, and would deny the caller the number it needs on ``.retry_after``.</span>
+<span class="sd">    Clock skew can inflate a date-form hint, but trusting one costs a</span>
+<span class="sd">    recoverable escalation while ignoring it costs hammering a service that is</span>
+<span class="sd">    already asking for room.</span>
+
+<span class="sd">    A date that has *already* passed yields no hint at all rather than ``0.0``.</span>
+<span class="sd">    Read literally it says &quot;retry now&quot;, but the likelier reading is that our</span>
+<span class="sd">    clock runs ahead of the server&#39;s -- and acting on it would re-send almost</span>
+<span class="sd">    immediately against a service that just asked for a pause. Falling back to</span>
+<span class="sd">    our own bounded backoff is right under either reading. (Delta-seconds is</span>
+<span class="sd">    clock-independent, so a literal ``Retry-After: 0`` is still honored as the</span>
+<span class="sd">    instruction it is, floored by</span>
+<span class="sd">    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`&#39;s jitter.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># ``inf``/``nan`` parse cleanly but poison every later comparison: an</span>
+        <span class="c1"># infinite hint would refuse retry forever and travel to the caller on</span>
+        <span class="c1"># ``.retry_after``. Treat them as no hint at all.</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">retry_at</span> <span class="o">=</span> <span class="n">parsedate_to_datetime</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OverflowError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">retry_at</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">retry_at</span> <span class="o">=</span> <span class="n">retry_at</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="p">(</span><span class="n">retry_at</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">))</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">delay</span> <span class="k">if</span> <span class="n">delay</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 </pre></div>
 

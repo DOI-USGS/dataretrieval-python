@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -137,11 +137,12 @@
 
 <span class="c1"># Compatibility aliases. ``ChunkedCall`` was this module&#39;s executor before it</span>
 <span class="c1"># moved down to transport as the API-neutral ``FanOut``; ``get_active_client``</span>
-<span class="c1"># and ``_chunked_client`` named its shared per-call client. Existing imports --</span>
-<span class="c1"># ``ogc.engine`` and the chunking/progress test modules -- still use these</span>
-<span class="c1"># names, and the rename is not worth churning them over. They are aliases, not</span>
-<span class="c1"># copies: the ambient in particular must be the *same* object transport</span>
-<span class="c1"># publishes, or a test reading it here would never see the running client.</span>
+<span class="c1"># and ``_chunked_client`` named its shared per-call client. Only the</span>
+<span class="c1"># chunking/progress test modules still use these names, and the rename is not</span>
+<span class="c1"># worth churning them over -- package code imports the canonical spellings from</span>
+<span class="c1"># :mod:`dataretrieval.transport.fanout`. They are aliases, not copies: the</span>
+<span class="c1"># ambient in particular must be the *same* object transport publishes, or a</span>
+<span class="c1"># test reading it here would never see the running client.</span>
 <span class="n">ChunkedCall</span> <span class="o">=</span> <span class="n">FanOut</span>
 <span class="n">get_active_client</span> <span class="o">=</span> <span class="n">active_client</span>
 <span class="n">_chunked_client</span> <span class="o">=</span> <span class="n">_active_client</span>
@@ -273,7 +274,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">build_request</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span>
     <span class="n">url_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorate an async fetcher to transparently chunk over-budget requests.</span>
 
@@ -320,7 +321,9 @@
 <span class="sd">    ChunkedCall : Per-sub-request execution and resume semantics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">fetch</span><span class="p">:</span> <span class="n">_Fetch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span>
+        <span class="n">fetch</span><span class="p">:</span> <span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">fetch</span><span class="p">)</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span>
             <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
@@ -340,7 +343,16 @@
             <span class="c1"># The concurrency cap is resolved inside ``resume()`` from</span>
             <span class="c1"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
             <span class="c1"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
-            <span class="k">return</span> <span class="n">ChunkedCall</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">fetch</span><span class="p">,</span> <span class="n">retry_policy</span><span class="p">,</span> <span class="n">finalize</span><span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ChunkedCall</span><span class="p">(</span>
+                <span class="n">plan</span><span class="p">,</span>
+                <span class="n">fetch</span><span class="p">,</span>
+                <span class="n">retry_policy</span><span class="p">,</span>
+                <span class="n">finalize</span><span class="p">,</span>
+                <span class="n">canonical_url</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">,</span>
+                <span class="c1"># The collection name, for the progress line the executor</span>
+                <span class="c1"># opens. ``get_ogc_data`` puts it in ``args``.</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;service&quot;</span><span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">wrapper</span>
 

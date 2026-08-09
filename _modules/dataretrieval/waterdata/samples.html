@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,7 +95,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._wqx</span><span class="w"> </span><span class="kn">import</span> <span class="n">_attach_datetime_columns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
@@ -106,16 +108,15 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">get</span> <span class="k">as</span> <span class="n">_get</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_attach_datetime_columns</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
     <span class="n">SERVICES</span><span class="p">,</span>
+    <span class="n">_check_profiles</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">_accept_legacy_kwargs</span><span class="p">,</span>
-    <span class="n">_check_profiles</span><span class="p">,</span>
     <span class="n">_get_args</span><span class="p">,</span>
 <span class="p">)</span>
 

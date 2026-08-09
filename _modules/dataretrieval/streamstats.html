@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,10 +88,12 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_get_with_retry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_DEFAULTS</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_get_with_retry</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;download_workspace&quot;</span><span class="p">,</span> <span class="s2">&quot;get_sample_watershed&quot;</span><span class="p">,</span> <span class="s2">&quot;get_watershed&quot;</span><span class="p">,</span> <span class="s2">&quot;Watershed&quot;</span><span class="p">]</span>
+
+<span class="n">STREAMSTATS_URL</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices&quot;</span>
 
 
 <div class="viewcode-block" id="download_workspace">
@@ -116,7 +118,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workspaceID&quot;</span><span class="p">:</span> <span class="n">workspaceID</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="nb">format</span><span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices/download&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STREAMSTATS_URL</span><span class="si">}</span><span class="s2">/download&quot;</span>
 
     <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">r</span></div>
@@ -225,7 +227,7 @@
         <span class="s2">&quot;includefeatures&quot;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span>
         <span class="s2">&quot;simplify&quot;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices/watershed.geojson&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STREAMSTATS_URL</span><span class="si">}</span><span class="s2">/watershed.geojson&quot;</span>
 
     <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
 
@@ -279,7 +281,7 @@
 <span class="sd">        Parses the response onto this instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
-            <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span>
+            <span class="s2">&quot;httpx.Response&quot;</span><span class="p">,</span>
             <span class="n">get_watershed</span><span class="p">(</span><span class="n">rcode</span><span class="p">,</span> <span class="n">xlocation</span><span class="p">,</span> <span class="n">ylocation</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;geojson&quot;</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_populate</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">))</span></div>

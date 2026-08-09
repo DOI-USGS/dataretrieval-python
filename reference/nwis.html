@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../_static/documentation_options.js?v=c5287ecf"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -65,6 +65,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._deprecated"><code class="docutils literal notranslate"><span class="pre">_deprecated()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._get_json_values"><code class="docutils literal notranslate"><span class="pre">_get_json_values()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_json_or_raise"><code class="docutils literal notranslate"><span class="pre">_parse_json_or_raise()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_json"><code class="docutils literal notranslate"><span class="pre">_read_json()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_rdb"><code class="docutils literal notranslate"><span class="pre">_read_rdb()</span></code></a></li>
@@ -217,6 +218,16 @@ plain attribute.</p>
 <p>Wrappers like <code class="docutils literal notranslate"><span class="pre">get_record</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">get_iv</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">query_waterservices</span></code> would
 otherwise emit one warning per layer; the thread-local sentinel ensures the
 user sees only the outermost call’s warning.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._get_json_values">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_get_json_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><span class="pre">NWIS_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_get_json_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._get_json_values" title="Link to this definition"></a></dt>
+<dd><p>Shared body of the JSON waterservices time-series getters (dv / iv).</p>
+<p>The caller-facing <code class="docutils literal notranslate"><span class="pre">sites</span></code> / <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code> arguments are aliases: an
+explicit waterservices keyword of the same meaning wins over them. Note that
+<code class="docutils literal notranslate"><span class="pre">multi_index</span></code> travels through <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> so that <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a>
+sees it.</p>
 </dd></dl>
 
 <dl class="py function">

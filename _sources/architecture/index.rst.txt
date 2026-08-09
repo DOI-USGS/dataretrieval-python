@@ -110,20 +110,23 @@ Shared components
     ``interruptions`` and ``retry`` re-export their moved compatibility
     surfaces; and ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
     their named protocol concerns. The full runtime OGC graph, including the
-    facade, is acyclic — enforced by the package-wide fitness function in
+    facade, is acyclic -- enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
     response aggregation, fan-out execution, progress integration, and
-    sync-over-async dispatch. ``fanout`` owns bounded concurrency, deterministic
-    failure precedence, sparse completion state, and resume over an injected
-    plan and fetch callback. Internally, ``liveness`` is a stdlib-only leaf
-    recording when data last arrived, so the page loop that observes progress
-    and the retry loop that acts on it both depend on ``liveness`` rather than
-    on each other. Transport imports no service adapter or OGC protocol module,
-    and it is not exposed as a public framework API.
+    sync-over-async dispatch. ``fanout`` drives an injected plan and fetch
+    callback, owning bounded concurrency, deterministic failure precedence,
+    sparse completion state, resume, and the progress line. It is also the one
+    entry point from synchronous getter code into the async internals: a query
+    with nothing to divide runs as a one-item fan-out rather than crossing a
+    separate bridge. Internally, ``liveness`` is a stdlib-only leaf recording
+    when data last arrived, so the page loop that observes progress and the
+    retry loop that acts on it depend on ``liveness`` rather than on each other.
+    Transport imports no service adapter or OGC protocol module, and is not
+    exposed as a public framework API.
 
 ``dataretrieval.interruptions``
     Shared resumable fan-out failure contract. It owns
@@ -149,11 +152,21 @@ Shared components
     import and resolves to this same class.
 
 ``dataretrieval.utils``
-    Data-shaping helpers, legacy request composition, and compatibility imports
-    for names that historically lived here (including ``Ambient`` and
-    ``BaseMetadata``, so their original import paths keep working). OGC does not
-    depend on this mixed legacy module; by default, do not add new
-    service-specific behavior there.
+    Data-shaping helpers, plus compatibility imports for names that
+    historically lived here (including ``Ambient``, ``BaseMetadata``, ``query``
+    and ``to_str``, so their original import paths keep working). OGC does not
+    depend on this legacy module; by default, do not add new service-specific
+    behavior there.
+
+``dataretrieval._querying``
+    The one-shot HTTP query path the single-request adapters (``nwis``,
+    ``wqp``, ``nldi``, ``streamstats``, ``wateruse``) use: compose the URL, send
+    it, map the status, retry a transient. It left ``utils`` because the two
+    halves shared only a filename -- this one depends on ``exceptions`` and
+    ``transport``, the shaping half on ``codes`` and pandas, and no caller
+    wanted both. The implementation module is private; the established public
+    function paths remain ``dataretrieval.utils.query`` and
+    ``dataretrieval.utils.to_str``.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
     State/time-zone code conversion and RDB parsing leaves.
@@ -303,9 +316,13 @@ Known architectural debt
 This view records categories and representative locations of debt.
 ``.importlinter`` is authoritative for exact current dependency allowlists.
 
-- ``ogc/engine.py`` retains compatibility wrappers alongside OGC orchestration.
-- ``utils.py`` combines metadata, shaping, ambient configuration, legacy
-  request composition, and transport compatibility imports.
+- ``ogc/engine.py`` retains a compatibility pagination wrapper alongside OGC
+  orchestration. The sync-dispatch wrapper is gone: every retrieval path now
+  enters through ``transport.fanout.FanOut``.
+- ``utils.py`` combines shaping with compatibility imports for metadata,
+  ambient configuration, transport, and the query path.
+- ``waterdata/utils.py`` combines endpoint constants, argument normalization,
+  and the OGC engine wrappers.
 
 These are documented so guardrails distinguish accepted current dependencies
 from new erosion. They should be removed through small, test-protected changes,
