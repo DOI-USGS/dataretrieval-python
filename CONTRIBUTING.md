@@ -121,7 +121,6 @@ local feedback loop before opening a PR is:
 pre-commit run --all-files
 coverage run -m pytest tests/
 coverage report -m
-pip-audit --strict --progress-spinner off .
 ```
 
 Coverage measures branches in the package itself, excludes the generated
@@ -173,14 +172,6 @@ only at the narrowest justified scope and explain why it is safe; tests ignore
 ``assert`` warnings, pickle compatibility tests ignore pickle warnings, and
 retry jitter explicitly marks its non-cryptographic randomness.
 
-CI also audits the latest compatible resolution of the core runtime
-dependencies on Python 3.10. Install that tool locally with
-`pip install -e '.[security]'`; the feedback loop above invokes the same command.
-
-This catches known vulnerabilities in the resolution users receive today. It
-does not prove every version allowed by broad constraints is safe, and project
-path mode does not audit optional extras.
-
 To see the *trend* rather than a pass/fail, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
 history:
@@ -203,6 +194,14 @@ Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 which attaches an HTML and a JSON report to each run. Nothing gates on it. These
 measures move over months rather than commits, and a threshold nobody agreed to
 is either noise or theatre.
+
+The same workflow runs `pip-audit` against the latest compatible resolution of
+the core runtime dependencies and includes its output in the weekly report. Run
+it on demand with `pip install -e '.[security]'` followed by
+`pip-audit --strict --progress-spinner off .`. This catches known
+vulnerabilities in the resolution users receive today; it does not prove every
+version allowed by broad constraints is safe, and project-path mode does not
+audit optional extras.
 
 You do not need it to contribute, but it is the right tool for "what should we
 clean up next?" -- including for an agent working on this repo, which gets a

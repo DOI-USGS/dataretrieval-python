@@ -13,13 +13,13 @@
 
 ## Environment
 - Use `pip install .[test,nldi]` (CI uses pip, not uv despite `uv.lock`). Docs: `pip install .[doc,nldi]`.
-- Full local gates additionally need `pip install .[metrics,security]` and `pre-commit`.
+- Full local gates additionally need `pip install .[metrics]` and `pre-commit`; periodic health analysis uses `pip install .[health,security]`.
 
 ## Commands
-- Full feedback loop: `pre-commit run --all-files`, then `coverage run -m pytest tests/ && coverage report -m`, then `pip-audit --strict --progress-spinner off .`.
+- Full feedback loop: `pre-commit run --all-files`, then `coverage run -m pytest tests/ && coverage report -m`.
 - Lint: `ruff check .` and `ruff format --check .`.
 - Tests: the coverage command enforces a reported 90.00% package branch-coverage floor; use focused tests like `pytest tests/waterdata_test.py::test_mock_get_samples` while iterating.
-- Dependencies: `pip-audit --strict --progress-spinner off .` audits the latest compatible core resolution, not optional extras or every allowed version.
+- Dependencies: `pip-audit --strict --progress-spinner off .` is a periodic advisory check of the latest compatible core resolution, not optional extras or every allowed version.
 - Docs: install docs deps, `ipython kernel install --name "python3" --user`, then `make html` from `docs/`. `make docs` adds doctest+linkcheck (network-dependent).
 
 ## Testing Gotchas
