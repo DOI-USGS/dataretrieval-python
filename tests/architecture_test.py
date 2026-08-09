@@ -223,11 +223,9 @@ def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
         if dependency == "dataretrieval.ogc"
         or dependency.startswith("dataretrieval.ogc.")
     }
-    assert ogc_deps == {
-        "dataretrieval.ogc",
-        "dataretrieval.ogc.dates",
-        "dataretrieval.ogc.shaping",
-    }, f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
+    assert ogc_deps == {"dataretrieval.ogc"}, (
+        f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
+    )
 
     exports = _literal_exports(path)
 

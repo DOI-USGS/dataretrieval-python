@@ -8,16 +8,18 @@ are grouped apart from the continuous record they help calibrate.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.waterdata.utils import (
     _get_args,
     get_ogc_data,
 )
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
+    from dataretrieval.ogc.filters import FILTER_LANG
 
 
 def get_field_measurements(

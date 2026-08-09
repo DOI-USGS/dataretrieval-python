@@ -76,8 +76,9 @@ from dataretrieval.interruptions import (
     _classify_chunk_error,
     _walk_causes,
 )
+from dataretrieval.transport.env import _read_env_number
 from dataretrieval.transport.http import network_error, open_async_client
-from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy, _read_env_number
+from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry
 
 #: One sub-request's description, as the adapter's ``fetch`` wants it. The

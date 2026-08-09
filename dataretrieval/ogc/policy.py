@@ -1,10 +1,14 @@
-"""Low-level OGC policy: dialect, controls, and default endpoint constants.
+"""Low-level OGC policy: the dialect type and control validation.
 
 This module is the single source of truth for the :class:`OgcDialect` type
-(per-API quirks the generic request builder needs), OGC control validation, and
-the default endpoint constants used by the Water Data OGC API. It depends only
-on the stdlib and the credential-policy leaf, so any OGC submodule can import it
-without creating cycles.
+(per-API quirks the generic request builder needs) and OGC control validation.
+It depends only on the stdlib, so any OGC submodule can import it without
+creating cycles.
+
+It names no endpoint: which service an OGC call targets is the *adapter's*
+policy, supplied per call as ``base_url`` (see
+:data:`dataretrieval.ogc.context._ogc_base_url`). A default here would quietly
+point every generic OGC caller at one API.
 
 It must NOT import engine, shaping, or any service adapter.
 """
@@ -13,8 +17,6 @@ from __future__ import annotations
 
 import numbers
 from dataclasses import dataclass, field
-
-from dataretrieval.credentials import WATERDATA_BASE_URL
 
 
 def _require_positive_int(
@@ -29,14 +31,6 @@ def _require_positive_int(
         eg = f", e.g. {examples}" if examples else ""
         raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
 
-
-# ---------------------------------------------------------------------------
-# Endpoint constants
-# ---------------------------------------------------------------------------
-
-BASE_URL = WATERDATA_BASE_URL
-OGC_API_VERSION = "v0"
-OGC_API_URL = f"{BASE_URL}/ogcapi/{OGC_API_VERSION}"
 
 # ---------------------------------------------------------------------------
 # Dialect type

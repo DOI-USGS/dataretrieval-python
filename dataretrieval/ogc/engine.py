@@ -30,21 +30,18 @@ from collections.abc import (
     Awaitable,
     Callable,
 )
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
 import dataretrieval.progress as _progress
-from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
-    BASE_URL,  # noqa: F401  — compatibility alias
     DEFAULT_DIALECT,
-    OGC_API_URL,
     OgcDialect,
     _require_positive_int,
 )
@@ -62,6 +59,9 @@ from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -223,7 +223,7 @@ def get_ogc_data(
     output_id: str,
     *,
     max_rows: int | None = None,
-    base_url: str = OGC_API_URL,
+    base_url: str | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -250,7 +250,11 @@ def get_ogc_data(
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
     base_url : str, optional
-        OGC API base URL to target. Defaults to the main Water Data API.
+        OGC API base URL to target. Required in practice -- this package is
+        API-neutral and names no service of its own; each adapter passes its
+        own base (e.g. ``waterdata.utils.OGC_API_URL``,
+        ``ngwmn.NGWMN_OGC_API_URL``). Falls back to the base URL already in
+        scope for the current call.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
@@ -280,6 +284,8 @@ def get_ogc_data(
 
     if dialect is None:
         dialect = _DEFAULT_DIALECT
+    if base_url is None:
+        base_url = _ogc_base_url.get()
 
     args = args.copy()
     args["service"] = service

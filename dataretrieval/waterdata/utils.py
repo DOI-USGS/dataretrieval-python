@@ -19,18 +19,17 @@ from __future__ import annotations
 import functools
 import warnings
 from collections.abc import Callable, Mapping
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
-import httpx
 import pandas as pd
 
-import dataretrieval.ogc.dates as _ogc_dates
-import dataretrieval.ogc.shaping as _ogc_shaping
-from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
 
 # ---------------------------------------------------------------------------
 # Water Data endpoint constants. The authority comes from the credentials leaf
@@ -103,23 +102,24 @@ WATERDATA_DIALECT = OgcDialect(
     sort_cols=("time", "monitoring_location_id"),
 )
 
-# Iterable-shaped params that ``_get_args`` must NOT push through
-# ``_normalize_str_iterable`` (scalar non-string knobs are caught by runtime
-# type, so only iterables with special handling need to be named here):
-#   - date-range params may contain ``pd.NaT``/None or interval strings
-#   - ``bbox``/``boundingBox`` are ``list[float]``, sometimes ``numpy.ndarray``
+# The Water-Data-specific *extras* on top of the engine's own no-normalize set
+# (which already covers the date-range params and ``bbox``). Scalar non-string
+# knobs are caught by runtime type, so only iterables with special handling
+# need to be named here:
+#   - ``boundingBox`` is ``list[float]``, sometimes ``numpy.ndarray``
 #   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
 #   - ``get_combined_metadata``'s ``thresholds`` is ``list[float]``
-_NO_NORMALIZE_PARAMS = _ogc_dates._DATE_RANGE_PARAMS | {
-    "bbox",
-    "boundingBox",
-    "water_year",
-    "year",
-    "month",
-    "day",
-    "peak_since",
-    "thresholds",
-}
+_NO_NORMALIZE_PARAMS = frozenset(
+    {
+        "boundingBox",
+        "water_year",
+        "year",
+        "month",
+        "day",
+        "peak_since",
+        "thresholds",
+    }
+)
 
 
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
@@ -145,13 +145,15 @@ def _get_args(
 ) -> dict[str, Any]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.prepare_request_args`.
 
-    Supplies the Water Data API's extended ``no_normalize`` set (numeric
-    params such as ``water_year``, ``thresholds``, ``boundingBox``) so they
-    keep their element types. Also flattens any ``**queryables`` passthrough
-    (see :func:`_flatten_queryables`).
+    Adds the Water Data API's extra no-normalize params (numeric params such
+    as ``water_year``, ``thresholds``, ``boundingBox``) so they keep their
+    element types. Also flattens any ``**queryables`` passthrough (see
+    :func:`_flatten_queryables`).
     """
     _flatten_queryables(local_vars)
-    return prepare_request_args(local_vars, exclude, no_normalize=_NO_NORMALIZE_PARAMS)
+    return prepare_request_args(
+        local_vars, exclude, extra_no_normalize=_NO_NORMALIZE_PARAMS
+    )
 
 
 def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
@@ -226,37 +228,6 @@ def get_ogc_data(
     )
 
 
-def _finalize_ogc(
-    frame: pd.DataFrame,
-    response: httpx.Response,
-    *,
-    properties: list[str] | None,
-    output_id: str,
-    convert_type: bool,
-    service: str,
-    max_rows: int | None = None,
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Water-Data wrapper over :func:`~dataretrieval.ogc.shaping._finalize_ogc`.
-
-    Injects the Water Data ``extra_id_cols`` and ``dialect`` so a direct
-    call (e.g. from ``get_cql``) orders synthetic id columns and coerces/
-    sorts result columns identically to the typed getters. See
-    :func:`~dataretrieval.ogc.shaping._finalize_ogc` for the full
-    result-shaping contract.
-    """
-    return _ogc_shaping._finalize_ogc(
-        frame,
-        response,
-        properties=properties,
-        output_id=output_id,
-        convert_type=convert_type,
-        service=service,
-        max_rows=max_rows,
-        extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
-    )
-
-
 _R = TypeVar("_R")
 
 
@@ -321,7 +292,6 @@ __all__ = [
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_SERVICE",
     "_accept_legacy_kwargs",
-    "_finalize_ogc",
     "_get_args",
     "_with_state",
     "get_ogc_data",

@@ -18,6 +18,7 @@ from dataretrieval.waterdata.types import (
     METADATA_COLLECTIONS,
 )
 from dataretrieval.waterdata.utils import (
+    OGC_API_URL,
     get_ogc_data,
 )
 
@@ -158,7 +159,9 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     # The OGC queryables document is a JSON Schema whose ``properties`` map each
     # filterable property name to a ``{title, type, description}`` definition.
-    body, response = _check_ogc_requests(endpoint=collection, req_type="queryables")
+    body, response = _check_ogc_requests(
+        endpoint=collection, req_type="queryables", base_url=OGC_API_URL
+    )
     properties: dict[str, Any] = body.get("properties", {})
     df = pd.DataFrame(
         [

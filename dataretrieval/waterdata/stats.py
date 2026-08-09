@@ -21,29 +21,16 @@ from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
-    _CRS,
     GEOPANDAS,
     _attach_coordinates,
     _empty_feature_frame,
+    _geo_feature_frame,
 )
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
 
 __all__ = ["get_data"]
-
-
-# ``_handle_nesting``'s geopandas branch calls ``gpd.GeoDataFrame.from_features``
-# directly, so this module needs its own bound ``gpd`` name. Import it under the
-# same guard the engine uses; when geopandas is absent ``gpd`` is left unbound
-# (``GEOPANDAS`` is ``False``, so the stats path never touches it). The
-# empty-page short-circuit instead delegates to ``shaping._empty_feature_frame``,
-# which resolves ``shaping``'s ``gpd`` — so an empty-page test patches
-# ``shaping.gpd`` while the populated geopandas branch uses ``stats.gpd``.
-try:
-    import geopandas as gpd
-except ImportError:  # pragma: no cover - exercised only without geopandas
-    pass
 
 STATISTICS_API_VERSION = "v0"
 STATISTICS_API_URL = f"{WATERDATA_BASE_URL}/statistics/{STATISTICS_API_VERSION}"
@@ -111,14 +98,9 @@ def _handle_nesting(
         # consistent by NOT adding an id column.
         _attach_coordinates(df, features)
     else:
-        # Default a missing ``geometry`` key to ``None`` per feature so
-        # ``from_features`` (which indexes ``feature["geometry"]`` directly)
-        # can't ``KeyError`` on a stats feature that omits geometry — mirrors
-        # the guard in :func:`engine._get_resp_data`.
-        df = gpd.GeoDataFrame.from_features(
-            [f if "geometry" in f else {**f, "geometry": None} for f in features],
-            crs=_CRS,
-        ).drop(columns=["data"], errors="ignore")
+        # Stats features may omit ``geometry`` entirely; ``_geo_feature_frame``
+        # is the shared home for that upstream-schema workaround.
+        df = _geo_feature_frame(features).drop(columns=["data"], errors="ignore")
 
     # Unnest json features, properties, data, and values while retaining necessary
     # metadata to merge with main dataframe.

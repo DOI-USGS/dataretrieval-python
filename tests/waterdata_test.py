@@ -11,6 +11,7 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
+from dataretrieval.ogc.context import _ogc_base_url
 from dataretrieval.ogc.engine import _dialect
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
@@ -39,6 +40,7 @@ from dataretrieval.waterdata import (
 )
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
+    OGC_API_URL,
     WATERDATA_DIALECT,
     _get_args,
 )
@@ -58,14 +60,16 @@ _OGC_FIXTURES = json.loads(
 
 @pytest.fixture(autouse=True)
 def _activate_waterdata_dialect():
-    """Make the Water Data OGC dialect ambient for this module.
+    """Make the Water Data OGC base URL and dialect ambient for this module.
 
-    The dialect (monitoring-locations -> POST/CQL2; daily -> date-only time
-    args) is normally set by ``get_ogc_data`` per call. The direct
-    ``_construct_api_requests`` unit tests here bypass it, so activate the
-    dialect module-wide so they exercise the real Water Data behavior.
+    Both are normally set together by ``get_ogc_data`` per call: the base URL
+    (the OGC package names no service of its own) and the dialect
+    (monitoring-locations -> POST/CQL2; daily -> date-only time args). The
+    direct ``_construct_api_requests``/``_construct_cql_request`` unit tests
+    here bypass that entry point, so activate both module-wide so they
+    exercise the real Water Data behavior.
     """
-    with _dialect(WATERDATA_DIALECT):
+    with _ogc_base_url(OGC_API_URL), _dialect(WATERDATA_DIALECT):
         yield
 
 

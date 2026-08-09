@@ -103,7 +103,7 @@ def _deprecated(func: F) -> F:
         finally:
             _deprecation_state.active = False
 
-    return cast(F, wrapper)
+    return cast("F", wrapper)
 
 
 def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:

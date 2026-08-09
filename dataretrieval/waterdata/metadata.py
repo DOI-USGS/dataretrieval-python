@@ -9,17 +9,19 @@ are worth requesting before pulling observations from
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.filters import FILTER_LANG
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,
     get_ogc_data,
 )
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
+    from dataretrieval.ogc.filters import FILTER_LANG
 
 
 def get_monitoring_locations(
