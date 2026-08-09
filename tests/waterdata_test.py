@@ -37,9 +37,9 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
+from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
     WATERDATA_DIALECT,
-    _check_profiles,
     _get_args,
 )
 

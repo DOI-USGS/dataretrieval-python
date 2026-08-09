@@ -11,8 +11,8 @@ from typing import Any, cast
 
 import httpx
 
+from dataretrieval._querying import _get_with_retry
 from dataretrieval.transport.http import HTTPX_DEFAULTS
-from dataretrieval.utils import _get_with_retry
 
 __all__ = ["download_workspace", "get_sample_watershed", "get_watershed", "Watershed"]
 

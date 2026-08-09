@@ -19,7 +19,7 @@ import pandas as pd
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.rdb import read_rdb
 
-from .utils import query
+from ._querying import query
 
 try:
     import geopandas as gpd
@@ -460,6 +460,37 @@ def query_waterservices(
     return query(url, payload=kwargs, ssl_check=ssl_check)
 
 
+def _get_json_values(
+    service: str,
+    sites: list[str] | str | None,
+    start: str | None,
+    end: str | None,
+    multi_index: bool,
+    ssl_check: bool,
+    kwargs: dict[str, Any],
+) -> tuple[pd.DataFrame, NWIS_Metadata]:
+    """Shared body of the JSON waterservices time-series getters (dv / iv).
+
+    The caller-facing ``sites`` / ``start`` / ``end`` arguments are aliases: an
+    explicit waterservices keyword of the same meaning wins over them. Note that
+    ``multi_index`` travels through ``kwargs`` so that :func:`format_response`
+    sees it.
+    """
+    _check_sites_value_types(sites)
+
+    kwargs["startDT"] = kwargs.pop("startDT", start)
+    kwargs["endDT"] = kwargs.pop("endDT", end)
+    kwargs["sites"] = kwargs.pop("sites", sites)
+    kwargs["multi_index"] = multi_index
+
+    response = query_waterservices(
+        service, format="json", ssl_check=ssl_check, **kwargs
+    )
+    df = _parse_json_or_raise(response)
+
+    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+
+
 @_deprecated
 def get_dv(
     sites: list[str] | str | None = None,
@@ -517,17 +548,7 @@ def get_dv(
         >>> df, md = dataretrieval.nwis.get_dv(sites="01646500")
 
     """
-    _check_sites_value_types(sites)
-
-    kwargs["startDT"] = kwargs.pop("startDT", start)
-    kwargs["endDT"] = kwargs.pop("endDT", end)
-    kwargs["sites"] = kwargs.pop("sites", sites)
-    kwargs["multi_index"] = multi_index
-
-    response = query_waterservices("dv", format="json", ssl_check=ssl_check, **kwargs)
-    df = _parse_json_or_raise(response)
-
-    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+    return _get_json_values("dv", sites, start, end, multi_index, ssl_check, kwargs)
 
 
 @_deprecated
@@ -701,19 +722,7 @@ def get_iv(
         ... )
 
     """
-    _check_sites_value_types(sites)
-
-    kwargs["startDT"] = kwargs.pop("startDT", start)
-    kwargs["endDT"] = kwargs.pop("endDT", end)
-    kwargs["sites"] = kwargs.pop("sites", sites)
-    kwargs["multi_index"] = multi_index
-
-    response = query_waterservices(
-        service="iv", format="json", ssl_check=ssl_check, **kwargs
-    )
-
-    df = _parse_json_or_raise(response)
-    return format_response(df, **kwargs), NWIS_Metadata(response, **kwargs)
+    return _get_json_values("iv", sites, start, end, multi_index, ssl_check, kwargs)
 
 
 def get_pmcodes(**kwargs: Any) -> NoReturn:

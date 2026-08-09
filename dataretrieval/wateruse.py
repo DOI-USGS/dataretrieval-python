@@ -49,14 +49,15 @@ import httpx
 import pandas as pd
 
 from dataretrieval import progress as _progress
+from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers, network_error
+from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.utils import _raise_for_status, to_str
 
 __all__ = [
     "get_wateruse",
@@ -441,31 +442,12 @@ def _next_page_url(response: httpx.Response) -> str | None:
     url = response.links.get("next", {}).get("url")
     if not url:
         return None
-    try:
-        target = httpx.URL(url)
-    except (httpx.InvalidURL, TypeError) as exc:
-        raise DataRetrievalError(
-            f"Water Use returned an unusable next-page link: {url!r}. The page "
-            f"walk cannot continue; report this if it persists."
-        ) from exc
-    if not target.is_absolute_url:
-        target = response.url.join(target)
-    if target.host not in _WATERUSE_HOST_ALIASES:
-        raise DataRetrievalError(
-            f"Refusing to follow a Water Use next-page link pointing at "
-            f"{target.host} rather than {_WATERUSE_HOST}. Following it would "
-            f"send this request, and any credentials on it, to a host you did "
-            f"not ask for. Retrying will not help; report this if it persists."
-        )
-    # Drop any explicit port and any embedded userinfo along with the
-    # scheme/host rewrite. A port that went with the link's original scheme
-    # (``http://…:8080``) would otherwise survive into an https request and be
-    # dialed under TLS; userinfo (``http://user:pass@…``) would survive into an
-    # ``Authorization: Basic`` header that httpx derives from it and send a
-    # credential the caller never configured to the rewritten host -- the very
-    # thing the host check above exists to prevent.
-    return str(
-        target.copy_with(scheme="https", host=_WATERUSE_HOST, port=None, userinfo=b"")
+    return resolve_next_url(
+        url,
+        response,
+        service="Water Use",
+        allowed_hosts=_WATERUSE_HOST_ALIASES,
+        rewrite_host=_WATERUSE_HOST,
     )
 
 

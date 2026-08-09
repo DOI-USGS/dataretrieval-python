@@ -30,7 +30,7 @@ from collections.abc import (
     Awaitable,
     Callable,
 )
-from typing import Any, TypeVar, cast
+from typing import Any, TypeVar
 
 import httpx
 import pandas as pd
@@ -38,7 +38,6 @@ import pandas as pd
 import dataretrieval.ogc.chunking as chunking
 import dataretrieval.progress as _progress
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.ogc.chunking import get_active_client
 from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
@@ -60,6 +59,7 @@ from dataretrieval.ogc.requests import (
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
 
@@ -112,42 +112,14 @@ def _next_req_url(
         href = link.get("href")
         if not href:
             return None
-        # Refuse to follow a next-page link to a different host —
-        # the request's headers/auth were minted for the original
-        # host and shouldn't leak to whatever a poisoned response
-        # body might supply. Guarded against mock-shaped ``resp.url``
-        # attributes (tests sometimes set strings or ``MagicMock``)
-        # by falling open when host extraction isn't reliable.
-        next_host: str | None
-        cur_host: str | None
-        next_url: httpx.URL | None
-        try:
-            next_url = httpx.URL(href)
-            next_host = next_url.host
-            resp_url = (
-                resp.url
-                if isinstance(resp.url, httpx.URL)
-                else httpx.URL(str(resp.url))
-            )
-            cur_host = resp_url.host
-        except (httpx.InvalidURL, TypeError):
-            next_url = None
-            next_host = cur_host = None
-        if next_host and cur_host and next_host != cur_host:
-            raise RuntimeError(
-                f"Refusing to follow cross-host next-page URL: "
-                f"{next_host} != {cur_host}"
-            )
-        # Matching hosts is not enough: a link may also carry ``user:pass@``,
-        # which httpx turns into an ``Authorization: Basic`` header on the
-        # follow-up request. The host check above passes in exactly that case,
-        # so strip it here rather than trusting the link we were handed.
-        if next_url is not None:
-            return str(without_embedded_credentials(next_url))
-        # ``href`` comes from the JSON ``links`` array (typed ``Any``); the
-        # ``not href`` guard above already excluded empty/None, and it is a
-        # URL string (passed to ``httpx.URL`` above).
-        return cast("str", href)
+        # The link is response data: parsing it, resolving a relative
+        # reference, refusing a foreign host and stripping embedded
+        # credentials is one shared policy, so this walk cannot drift from
+        # the other two. ``RuntimeError`` rather than the taxonomy's
+        # ``DataRetrievalError`` because that is what this walk has always
+        # raised; retyping it is a released behavior change to make
+        # deliberately, not a side effect of sharing the check.
+        return resolve_next_url(href, resp, service="OGC", error=RuntimeError)
     return None
 
 

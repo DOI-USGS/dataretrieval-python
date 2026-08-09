@@ -5,7 +5,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from dataretrieval import exceptions, nwis, utils
+from dataretrieval import _querying, exceptions, nwis, utils
 
 
 class Test_Ambient:
@@ -89,7 +89,7 @@ class Test_query:
         monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
         monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
 
-        response = utils._query_with_retry(url, {"a": "1"})
+        response = _querying._query_with_retry(url, {"a": "1"})
 
         assert response.text == "ok"
         assert len(httpx_mock.get_requests()) == 2
@@ -471,10 +471,10 @@ def test_retrying_get_maps_invalid_url(monkeypatch):
     import httpx
 
     monkeypatch.setattr(
-        utils,
+        _querying,
         "_get",
         mock.Mock(side_effect=httpx.InvalidURL("invalid URL")),
     )
 
     with pytest.raises(exceptions.URLTooLong):
-        utils._get_with_retry("https://example.invalid")
+        _querying._get_with_retry("https://example.invalid")

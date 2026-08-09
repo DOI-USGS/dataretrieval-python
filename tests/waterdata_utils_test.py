@@ -85,6 +85,9 @@ def test_get_args_empty():
 def test_walk_pages_multiple_mocked():
     # Setup mock responses
     resp1 = mock.MagicMock()
+    # A real response always carries an ``httpx.URL``; the next-page check
+    # resolves and host-checks the ``next`` link against it.
+    resp1.url = httpx.URL("https://example.com/page1")
     resp1.json.return_value = {
         "numberReturned": 1,
         "features": [{"id": "1", "properties": {"val": "a"}}],

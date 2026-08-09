@@ -12,8 +12,10 @@ import httpx
 import pandas as pd
 import pytest
 
+import dataretrieval.exceptions as exceptions
 import dataretrieval.transport.liveness as liveness
 import dataretrieval.transport.retry as retry
+from dataretrieval._querying import _raise_for_status
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataRetrievalError,
@@ -24,7 +26,6 @@ from dataretrieval.exceptions import (
 )
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
-from dataretrieval.utils import _raise_for_status
 
 
 def _response(
@@ -174,13 +175,13 @@ def test_parse_retry_after_accepts_http_date() -> None:
     almost immediately against a service that just asked for a pause.
     """
     soon = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=30)
-    parsed = retry.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    parsed = exceptions.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
     assert parsed is not None and 0 < parsed <= 30
 
-    assert retry.parse_retry_after("Wed, 21 Oct 2015 07:28:00 GMT") is None
-    assert retry.parse_retry_after("not-a-date") is None
+    assert exceptions.parse_retry_after("Wed, 21 Oct 2015 07:28:00 GMT") is None
+    assert exceptions.parse_retry_after("not-a-date") is None
     # Delta-seconds is clock-independent, so a literal 0 stays an instruction.
-    assert retry.parse_retry_after("0") == 0.0
+    assert exceptions.parse_retry_after("0") == 0.0
 
 
 def test_both_retry_after_forms_are_honored_alike() -> None:
@@ -195,9 +196,9 @@ def test_both_retry_after_forms_are_honored_alike() -> None:
     )
     header = far_future.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
-    parsed = retry.parse_retry_after(header)
+    parsed = exceptions.parse_retry_after(header)
     assert parsed is not None and 1750 < parsed <= 1800
-    assert retry.parse_retry_after("1800") == 1800.0
+    assert exceptions.parse_retry_after("1800") == 1800.0
     # Either spelling, over the cap, stops the retry rather than being ignored.
     policy = retry.RetryPolicy(max_retries=4)
     assert not policy.should_retry(attempt=1, retry_after=parsed)

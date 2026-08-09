@@ -1,7 +1,7 @@
 """Water Data API layer over the generic OGC facade.
 
 This module is the Water-Data-specific adapter: it supplies the
-service-to-id map, the CQL2/date-only dialect, profile validation, and a
+service-to-id map, the CQL2/date-only dialect, and a
 thin ``get_ogc_data`` wrapper that injects the Water Data defaults. The
 statistics path lives in its own :mod:`dataretrieval.waterdata.stats`
 module.
@@ -19,7 +19,7 @@ from __future__ import annotations
 import functools
 import warnings
 from collections.abc import Callable, Mapping
-from typing import Any, TypeVar, get_args
+from typing import Any, TypeVar
 
 import httpx
 import pandas as pd
@@ -31,11 +31,6 @@ from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
-from dataretrieval.waterdata.types import (
-    PROFILE_LOOKUP,
-    PROFILES,
-    SERVICES,
-)
 
 # ---------------------------------------------------------------------------
 # Water Data endpoint constants. The authority comes from the credentials leaf
@@ -262,35 +257,6 @@ def _finalize_ogc(
     )
 
 
-def _check_profiles(
-    service: SERVICES,
-    profile: PROFILES,
-) -> None:
-    """Check whether a service profile is valid.
-
-    Parameters
-    ----------
-    service : string
-        One of the service names from the "services" list.
-    profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
-    """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )
-
-
 _R = TypeVar("_R")
 
 
@@ -355,7 +321,6 @@ __all__ = [
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_SERVICE",
     "_accept_legacy_kwargs",
-    "_check_profiles",
     "_finalize_ogc",
     "_get_args",
     "_with_state",

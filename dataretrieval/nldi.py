@@ -13,7 +13,7 @@ from __future__ import annotations
 from json import JSONDecodeError
 from typing import Any, Literal, cast
 
-from dataretrieval.utils import _query_with_retry
+from dataretrieval._querying import _query_with_retry
 
 __all__ = [
     "get_flowlines",
@@ -66,6 +66,14 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     if not features:
         return gpd.GeoDataFrame(geometry=[], crs=_CRS)
     return gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+
+
+def _query_features(
+    url: str, query_params: dict[str, str], as_json: bool
+) -> gpd.GeoDataFrame | dict[str, Any]:
+    """Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame."""
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
+    return feature_collection if as_json else _features_to_gdf(feature_collection)
 
 
 def get_flowlines(
@@ -131,11 +139,7 @@ def get_flowlines(
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_basin(
@@ -185,11 +189,7 @@ def get_basin(
         "simplified": simplified_str,
         "splitCatchment": split_catchment_str,
     }
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_features(
@@ -272,11 +272,7 @@ def get_features(
         stop_comid=stop_comid,
     )
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def _get_features_request(
