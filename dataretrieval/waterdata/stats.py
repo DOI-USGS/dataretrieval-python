@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
+from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
     _CRS,
@@ -28,7 +29,6 @@ from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
-from dataretrieval.waterdata.utils import BASE_URL
 
 __all__ = ["get_data"]
 
@@ -46,7 +46,7 @@ except ImportError:  # pragma: no cover - exercised only without geopandas
     pass
 
 STATISTICS_API_VERSION = "v0"
-STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
+STATISTICS_API_URL = f"{WATERDATA_BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
 
 def _handle_nesting(

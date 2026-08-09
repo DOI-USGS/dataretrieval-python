@@ -348,6 +348,7 @@ def get_ogc_data(
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
         dialect=dialect,
+        base_url=base_url,
     )
     with (
         _progress.progress_context(service=service, target_url=base_url),
