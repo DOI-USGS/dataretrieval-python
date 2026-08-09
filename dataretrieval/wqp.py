@@ -621,17 +621,20 @@ def what_activity_metrics(
     return _what("ActivityMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
+def _validate_service(service: str, valid_services: list[str], profile: str) -> None:
+    """Validate a service against one WQP profile's supported endpoints."""
+    if service not in valid_services:
+        raise ValueError(
+            f"{profile} service not recognized. Valid options are {valid_services}."
+        )
+
+
 def wqp_url(service: str) -> str:
     """Construct the WQP URL for a given service."""
 
     base_url = "https://www.waterqualitydata.us/data/"
     _warn_legacy_use()
-
-    if service not in services_legacy:
-        raise ValueError(
-            f"Legacy service not recognized. Valid options are {services_legacy}."
-        )
-
+    _validate_service(service, services_legacy, "Legacy")
     return f"{base_url}{service}/Search?"
 
 
@@ -640,12 +643,7 @@ def wqx3_url(service: str) -> str:
 
     base_url = "https://www.waterqualitydata.us/wqx3/"
     _warn_wqx3_use()
-
-    if service not in services_wqx3:
-        raise ValueError(
-            f"WQX3.0 service not recognized. Valid options are {services_wqx3}."
-        )
-
+    _validate_service(service, services_wqx3, "WQX3.0")
     return f"{base_url}{service}/search?"
 
 
