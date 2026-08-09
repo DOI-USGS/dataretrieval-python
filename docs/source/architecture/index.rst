@@ -110,23 +110,23 @@ Shared components
     ``interruptions`` and ``retry`` re-export their moved compatibility
     surfaces; and ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
     their named protocol concerns. The full runtime OGC graph, including the
-    facade, is acyclic — enforced by the package-wide fitness function in
+    facade, is acyclic -- enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
     response aggregation, fan-out execution, progress integration, and
-    sync-over-async dispatch. ``fanout`` owns bounded concurrency, deterministic
-    failure precedence, sparse completion state, resume, and the progress line,
-    over an injected plan and fetch callback; it is the single entry point from
-    synchronous getter code into the async internals, so a query with nothing to
-    divide runs as a one-item fan-out rather than through a separate bridge.
-    Internally, ``liveness`` is a stdlib-only leaf
-    recording when data last arrived, so the page loop that observes progress
-    and the retry loop that acts on it both depend on ``liveness`` rather than
-    on each other. Transport imports no service adapter or OGC protocol module,
-    and it is not exposed as a public framework API.
+    sync-over-async dispatch. ``fanout`` drives an injected plan and fetch
+    callback, owning bounded concurrency, deterministic failure precedence,
+    sparse completion state, resume, and the progress line. It is also the one
+    entry point from synchronous getter code into the async internals: a query
+    with nothing to divide runs as a one-item fan-out rather than crossing a
+    separate bridge. Internally, ``liveness`` is a stdlib-only leaf recording
+    when data last arrived, so the page loop that observes progress and the
+    retry loop that acts on it depend on ``liveness`` rather than on each other.
+    Transport imports no service adapter or OGC protocol module, and is not
+    exposed as a public framework API.
 
 ``dataretrieval.interruptions``
     Shared resumable fan-out failure contract. It owns
