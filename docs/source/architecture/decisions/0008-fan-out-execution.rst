@@ -54,16 +54,21 @@ nothing more. The executor passes each item to the adapter's own ``fetch``
 without inspecting it, so the item type is the adapter's business: the OGC
 getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
 
-Standard protocols rather than bespoke members, deliberately. A plan that
-declared ``total`` and ``iter_sub_args()`` would be stating ``len`` twice under
-a private name, so the two could report different counts and a test would have
-to assert they agree; and every adapter whose sub-requests are already a list
-would need a wrapper class to rename ``len``. With the standard names, a plain
-``list`` is a plan -- which is exactly what Water Use passes -- and ``ChunkPlan``
-conforms by delegating its ``total`` / ``iter_sub_args`` to the dunders, so the
-two cannot disagree. Structural rather than nominal for the original reason:
-``ChunkPlan`` derives sub-requests from a byte budget over multi-value axes and
-a list of requests derives nothing, so there is no shared implementation an
+The standard protocols, rather than bespoke members, are a deliberate choice.
+A plan declaring ``total`` and ``iter_sub_args()`` would be stating ``len``
+twice under a private name: the two could then report different counts, and a
+test would have to assert they agree. Every adapter whose sub-requests are
+already a list would also need a wrapper class whose only job is renaming
+``len``.
+
+With the standard names a plain ``list`` is a plan, which is exactly what Water
+Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_sub_args`` as its own
+vocabulary and defines the dunders to delegate to them, so the two cannot
+disagree.
+
+The protocol is structural rather than nominal for the original reason:
+``ChunkPlan`` derives sub-requests from a byte budget over multi-value axes,
+a list of requests derives nothing, and so there is no shared implementation an
 abstract base could hold.
 
 The identity of the query as a whole is *not* part of the plan. ``canonical_url``
@@ -124,13 +129,15 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` asserts that ``wateruse`` contains no
-``asyncio.gather``/``Semaphore``/``TaskGroup``, so the duplication cannot
-return; that both plan types are sized and *repeatably* iterable, since resume
-keys completed work by position and a generator mistaken for a collection would
-re-issue the wrong sub-requests; and that an interruption taxonomy does not
-reappear inside ``transport``. Adapter tests cover Water Use resume re-issuing
-only unfinished locations, progress ticks, and the concurrency precedence rule.
+``tests/architecture_test.py`` asserts three things. That ``wateruse``
+contains no ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
+duplication cannot return. That both plan types are sized and *repeatably*
+iterable -- resume keys completed work by position, so a generator mistaken for
+a collection would re-issue the wrong sub-requests. And that an interruption
+taxonomy does not reappear inside ``transport``.
+
+Adapter tests cover Water Use resume re-issuing only unfinished locations,
+progress ticks, and the concurrency precedence rule.
 
 Conformance itself is left to the type checker rather than asserted at runtime:
 with the protocol reduced to ``__len__`` and ``__iter__``, a missing member is a
