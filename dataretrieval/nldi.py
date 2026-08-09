@@ -260,6 +260,38 @@ def get_features(
         >>> gdf = dataretrieval.nldi.get_features(lat=43.073051, long=-89.401230)
     """
 
+    url, query_params = _get_features_request(
+        data_source=data_source,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        lat=lat,
+        long=long,
+        stop_comid=stop_comid,
+    )
+
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
+    if as_json:
+        return feature_collection
+    gdf = _features_to_gdf(feature_collection)
+    return gdf
+
+
+def _get_features_request(
+    *,
+    data_source: str | None,
+    navigation_mode: str | None,
+    distance: int,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+    lat: float | None,
+    long: float | None,
+    stop_comid: int | None,
+) -> tuple[str, dict[str, str]]:
+    """Validate a feature origin and build its NLDI request parameters."""
     if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
@@ -274,37 +306,29 @@ def get_features(
                 "Provide only one origin type - feature_source and feature_id cannot"
                 " be provided with lat or long"
             )
-        url = f"{NLDI_API_BASE_URL}/comid/position"
-        query_params = {"coords": f"POINT({long} {lat})"}
-    else:
-        if (comid is not None or data_source is not None) and navigation_mode is None:
-            raise ValueError(
-                "navigation_mode is required if comid or data_source is provided"
-            )
-        _validate_feature_source_comid(feature_source, feature_id, comid)
-        if data_source is not None:
-            _validate_data_source(data_source)
-        if feature_source is not None:
-            _validate_data_source(feature_source)
-        if navigation_mode:
-            navigation_mode = _validate_navigation_mode(navigation_mode)
-            if feature_source:
-                url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-            else:
-                url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-            url += f"/{navigation_mode}/{data_source}"
-            query_params = {"distance": str(distance)}
-            if stop_comid is not None:
-                query_params["stopComid"] = str(stop_comid)
-        else:
-            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
-            query_params = {}
+        return f"{NLDI_API_BASE_URL}/comid/position", {"coords": f"POINT({long} {lat})"}
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    if (comid is not None or data_source is not None) and navigation_mode is None:
+        raise ValueError(
+            "navigation_mode is required if comid or data_source is provided"
+        )
+
+    _validate_feature_source_comid(feature_source, feature_id, comid)
+    if data_source is not None:
+        _validate_data_source(data_source)
+    if feature_source is not None:
+        _validate_data_source(feature_source)
+
+    if not navigation_mode:
+        return f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}", {}
+
+    navigation_mode = _validate_navigation_mode(navigation_mode)
+    origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
+    url = f"{NLDI_API_BASE_URL}/{origin}/navigation/{navigation_mode}/{data_source}"
+    query_params = {"distance": str(distance)}
+    if stop_comid is not None:
+        query_params["stopComid"] = str(stop_comid)
+    return url, query_params
 
 
 # TODO: This function can cause a timeout error for some data sources

@@ -184,6 +184,48 @@ def test_get_features_by_lat_long(httpx_mock):
     assert gdf.size == 6
 
 
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"lat": 43.087}, "Both lat and long are required"),
+        (
+            {"lat": 43.087, "long": -89.509, "comid": 13294314},
+            "comid cannot be provided with lat or long",
+        ),
+        (
+            {"lat": 43.087, "long": -89.509, "feature_source": "WQP"},
+            "feature_source and feature_id cannot be provided with lat or long",
+        ),
+        ({"comid": 13294314}, "navigation_mode is required"),
+    ],
+)
+def test_get_features_rejects_ambiguous_origins(kwargs, message):
+    """Origin validation remains ahead of request execution after extraction."""
+    with pytest.raises(ValueError, match=message):
+        get_features(**kwargs)
+
+
+def test_get_features_includes_stop_comid(httpx_mock):
+    """The extracted request builder preserves optional navigation bounds."""
+    request_url = (
+        f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/WQP"
+        "?distance=5&stopComid=13294315"
+    )
+    mock_request_data_sources(httpx_mock)
+    mock_request(httpx_mock, request_url, "tests/data/nldi_get_features_by_comid.json")
+
+    result = get_features(
+        comid=13294314,
+        data_source="WQP",
+        navigation_mode="UM",
+        distance=5,
+        stop_comid=13294315,
+        as_json=True,
+    )
+
+    assert isinstance(result, dict)
+
+
 def test_search_for_basin(httpx_mock):
     """Tests NLDI search query for basin"""
     request_url = (
