@@ -60,11 +60,12 @@ from .policy import _require_positive_int
 
 # Compatibility aliases. ``ChunkedCall`` was this module's executor before it
 # moved down to transport as the API-neutral ``FanOut``; ``get_active_client``
-# and ``_chunked_client`` named its shared per-call client. Existing imports --
-# ``ogc.engine`` and the chunking/progress test modules -- still use these
-# names, and the rename is not worth churning them over. They are aliases, not
-# copies: the ambient in particular must be the *same* object transport
-# publishes, or a test reading it here would never see the running client.
+# and ``_chunked_client`` named its shared per-call client. Only the
+# chunking/progress test modules still use these names, and the rename is not
+# worth churning them over -- package code imports the canonical spellings from
+# :mod:`dataretrieval.transport.fanout`. They are aliases, not copies: the
+# ambient in particular must be the *same* object transport publishes, or a
+# test reading it here would never see the running client.
 ChunkedCall = FanOut
 get_active_client = active_client
 _chunked_client = _active_client
@@ -193,7 +194,7 @@ def multi_value_chunked(
     *,
     build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
-) -> Callable[[_Fetch], Callable[..., tuple[pd.DataFrame, Any]]]:
+) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
     """
     Decorate an async fetcher to transparently chunk over-budget requests.
 
@@ -240,7 +241,9 @@ def multi_value_chunked(
     ChunkedCall : Per-sub-request execution and resume semantics.
     """
 
-    def decorator(fetch: _Fetch) -> Callable[..., tuple[pd.DataFrame, Any]]:
+    def decorator(
+        fetch: _Fetch[dict[str, Any]],
+    ) -> Callable[..., tuple[pd.DataFrame, Any]]:
         @functools.wraps(fetch)
         def wrapper(
             args: dict[str, Any],
@@ -260,7 +263,16 @@ def multi_value_chunked(
             # The concurrency cap is resolved inside ``resume()`` from
             # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
             # ``total <= 1`` a one-element gather — no special branch.
-            return ChunkedCall(plan, fetch, retry_policy, finalize).resume()
+            return ChunkedCall(
+                plan,
+                fetch,
+                retry_policy,
+                finalize,
+                canonical_url=plan.canonical_url,
+                # The collection name, for the progress line the executor
+                # opens. ``get_ogc_data`` puts it in ``args``.
+                service=args.get("service"),
+            ).resume()
 
         return wrapper
 

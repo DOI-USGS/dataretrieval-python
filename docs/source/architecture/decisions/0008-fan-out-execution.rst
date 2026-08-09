@@ -46,15 +46,36 @@ Decision
 ``dataretrieval.transport.fanout`` owns fan-out execution for every service:
 bounded concurrency, per-attempt retry, deterministic failure precedence, sparse
 completion tracking, and resume. It names no protocol concept. An adapter
-supplies a ``FanOutPlan`` and an ``async def fetch(args) -> (df, response)``.
+supplies a ``FanOutPlan`` and an ``async def fetch(item) -> (df, response)``.
 
-``FanOutPlan`` is a ``Protocol`` of exactly three members -- ``total``,
-``canonical_url``, and ``iter_sub_args()`` -- which is the whole surface the
-executor ever touched. It is structural rather than nominal because its two
-implementations share an interface and no implementation whatsoever:
-``ChunkPlan`` derives sub-requests from a byte budget over multi-value axes, and
-a Water Use plan lists locations the caller already named separately. Neither
-has anything the other could inherit, so an abstract base would be ceremony.
+``FanOutPlan`` is a ``Protocol`` of ``__len__`` and ``__iter__``, generic in the
+item type -- a sized, iterable collection of sub-request descriptions, and
+nothing more. The executor passes each item to the adapter's own ``fetch``
+without inspecting it, so the item type is the adapter's business: the OGC
+getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
+
+The standard protocols, rather than bespoke members, are a deliberate choice.
+A plan declaring ``total`` and ``iter_sub_args()`` would be stating ``len``
+twice under a private name: the two could then report different counts, and a
+test would have to assert they agree. Every adapter whose sub-requests are
+already a list would also need a wrapper class whose only job is renaming
+``len``.
+
+With the standard names a plain ``list`` is a plan, which is exactly what Water
+Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_sub_args`` as its own
+vocabulary and defines the dunders to delegate to them, so the two cannot
+disagree.
+
+The protocol is structural rather than nominal for the original reason:
+``ChunkPlan`` derives sub-requests from a byte budget over multi-value axes,
+a list of requests derives nothing, and so there is no shared implementation an
+abstract base could hold.
+
+The identity of the query as a whole is *not* part of the plan. ``canonical_url``
+is a value stamped on the combined response, not a property of how the work
+divides, so it is an argument to ``FanOut``. ``ChunkPlan`` computes one while
+planning and the OGC call site passes it through; Water Use passes its first
+location's URL, since the service has no request expressing "all of these".
 
 ``dataretrieval.ogc`` keeps chunk planning: the byte budget, the axis
 partitioning, the CQL2 filter split, the ``parallel_chunks`` dial. Those are
@@ -108,11 +129,16 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` asserts that ``wateruse`` contains no
-``asyncio.gather``/``Semaphore``/``TaskGroup``, so the duplication cannot
-return; that both ``ChunkPlan`` and the Water Use plan satisfy ``FanOutPlan``,
-including that ``iter_sub_args()`` is stable across passes and agrees with
-``total``, since resume keys completed work by position; that the Water Use plan
-does not inherit ``ChunkPlan``; and that an interruption taxonomy does not
-reappear inside ``transport``. Adapter tests cover Water Use resume re-issuing
-only unfinished locations, progress ticks, and the concurrency precedence rule.
+``tests/architecture_test.py`` asserts three things. That ``wateruse``
+contains no ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
+duplication cannot return. That both plan types are sized and *repeatably*
+iterable -- resume keys completed work by position, so a generator mistaken for
+a collection would re-issue the wrong sub-requests. And that an interruption
+taxonomy does not reappear inside ``transport``.
+
+Adapter tests cover Water Use resume re-issuing only unfinished locations,
+progress ticks, and the concurrency precedence rule.
+
+Conformance itself is left to the type checker rather than asserted at runtime:
+with the protocol reduced to ``__len__`` and ``__iter__``, a missing member is a
+``mypy`` error at the call site, not an ``AttributeError`` discovered mid-fan-out.

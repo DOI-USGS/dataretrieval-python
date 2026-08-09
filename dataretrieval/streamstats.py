@@ -11,10 +11,12 @@ from typing import Any, cast
 
 import httpx
 
+from dataretrieval._querying import _get_with_retry
 from dataretrieval.transport.http import HTTPX_DEFAULTS
-from dataretrieval.utils import _get_with_retry
 
 __all__ = ["download_workspace", "get_sample_watershed", "get_watershed", "Watershed"]
+
+STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -37,7 +39,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
     """
     payload = {"workspaceID": workspaceID, "format": format}
-    url = "https://streamstats.usgs.gov/streamstatsservices/download"
+    url = f"{STREAMSTATS_URL}/download"
 
     r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
     return r
@@ -140,7 +142,7 @@ def get_watershed(
         "includefeatures": includefeatures,
         "simplify": simplify,
     }
-    url = "https://streamstats.usgs.gov/streamstatsservices/watershed.geojson"
+    url = f"{STREAMSTATS_URL}/watershed.geojson"
 
     r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
 
@@ -189,7 +191,7 @@ class Watershed:
         Parses the response onto this instance.
         """
         response = cast(
-            httpx.Response,
+            "httpx.Response",
             get_watershed(rcode, xlocation, ylocation, format="geojson"),
         )
         self._populate(json.loads(response.text))

@@ -22,6 +22,9 @@ or httpx, and without risking an import cycle.
 
 from __future__ import annotations
 
+import math
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
@@ -40,6 +43,7 @@ __all__ = [
     "NoSitesError",
     "ConfigurationError",
     "error_for_status",
+    "parse_retry_after",
 ]
 
 
@@ -317,3 +321,50 @@ def error_for_status(
     if 500 <= status < 600:
         return ServiceUnavailable(message, status_code=status, retry_after=retry_after)
     return HTTPError(message, status_code=status)
+
+
+def parse_retry_after(value: str | None) -> float | None:
+    """Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.
+
+    Both header forms mean the same thing and are treated the same way: the
+    seconds are returned as given, however large. A value past what a caller will
+    wait out inline stops the retry and surfaces a transient carrying the hint on
+    ``.retry_after``, so a long wait becomes the caller's decision (and, for a
+    chunked call, a resumable interruption) instead of being ignored.
+
+    An over-long hint is honored rather than discarded. Dropping it would make
+    the client retry *harder* against a service that just asked for a long
+    pause, and would deny the caller the number it needs on ``.retry_after``.
+    Clock skew can inflate a date-form hint, but trusting one costs a
+    recoverable escalation while ignoring it costs hammering a service that is
+    already asking for room.
+
+    A date that has *already* passed yields no hint at all rather than ``0.0``.
+    Read literally it says "retry now", but the likelier reading is that our
+    clock runs ahead of the server's -- and acting on it would re-send almost
+    immediately against a service that just asked for a pause. Falling back to
+    our own bounded backoff is right under either reading. (Delta-seconds is
+    clock-independent, so a literal ``Retry-After: 0`` is still honored as the
+    instruction it is, floored by
+    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s jitter.)
+    """
+    if not value:
+        return None
+    raw = value.strip()
+    try:
+        seconds = float(raw)
+    except ValueError:
+        pass
+    else:
+        # ``inf``/``nan`` parse cleanly but poison every later comparison: an
+        # infinite hint would refuse retry forever and travel to the caller on
+        # ``.retry_after``. Treat them as no hint at all.
+        return max(0.0, seconds) if math.isfinite(seconds) else None
+    try:
+        retry_at = parsedate_to_datetime(raw)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if retry_at.tzinfo is None:
+        retry_at = retry_at.replace(tzinfo=timezone.utc)
+    delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+    return delay if delay > 0 else None

@@ -6,12 +6,14 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any, Literal, get_args
+from typing import TYPE_CHECKING, Any, Literal, get_args
 
 import pandas as pd
 
-from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.waterdata.time_series import get_continuous
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
 
 __all__ = ["get_nearest_continuous"]
 

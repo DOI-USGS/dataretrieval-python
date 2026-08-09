@@ -1,0 +1,108 @@
+{
+  "_comment": [
+    "Accepted pyscn clone groups. Purpose: make a NEW clone group a visible event.",
+    "The duplication sub-score is dominated by these five accepted families, so it",
+    "barely moves when real duplication is added -- this file is what the weekly",
+    "Code Health workflow diffs against instead.",
+    "",
+    "Groups are keyed by the SET OF FUNCTION NAMES they contain, not by line numbers,",
+    "so ordinary edits above a getter do not churn this file. Regenerate only when",
+    "adding or removing a getter from an accepted family, and say why in the commit.",
+    "",
+    "These are NOT a backlog. Collapsing them means **kwargs and the loss of the typed",
+    "public surface tests/contracts/public_api_test.py freezes.",
+    "Verified 2026-08-09: at similarity_threshold 0.55 (default 0.65) the package still",
+    "reports exactly these five groups, so no latent clone sits below the bar.",
+    "Verified 2026-08-09: stripping docstrings makes duplication far WORSE (60 -> 0),",
+    "so suppressing them is not an option -- they are what keeps similarity below 0.86."
+  ],
+  "pyscn_version": "1.29.0",
+  "default_thresholds": {
+    "similarity_threshold": 0.65,
+    "min_lines": 10,
+    "min_nodes": 20
+  },
+  "observed": {
+    "total_fragments": 283,
+    "cloned_fragments": 25,
+    "groups": 5
+  },
+  "groups": [
+    {
+      "members": [
+        "dataretrieval/ngwmn.py::get_lithology",
+        "dataretrieval/ngwmn.py::get_providers",
+        "dataretrieval/ngwmn.py::get_well_construction"
+      ],
+      "similarity": 0.831,
+      "clone_type": 2,
+      "rationale": "NGWMN collection getters over the OGC facade, one per collection."
+    },
+    {
+      "members": [
+        "dataretrieval/nwis.py::get_dv",
+        "dataretrieval/nwis.py::get_iv"
+      ],
+      "similarity": 0.85,
+      "clone_type": 2,
+      "rationale": "Deprecated NWIS getters sharing the waterservices call shape; bodies already delegate to _get_json_values."
+    },
+    {
+      "members": [
+        "dataretrieval/waterdata/measurements.py::get_channel",
+        "dataretrieval/waterdata/measurements.py::get_field_measurements",
+        "dataretrieval/waterdata/measurements.py::get_peaks",
+        "dataretrieval/waterdata/metadata.py::get_field_measurements_metadata",
+        "dataretrieval/waterdata/metadata.py::get_monitoring_locations",
+        "dataretrieval/waterdata/metadata.py::get_time_series_metadata",
+        "dataretrieval/waterdata/time_series.py::get_continuous",
+        "dataretrieval/waterdata/time_series.py::get_daily",
+        "dataretrieval/waterdata/time_series.py::get_latest_continuous",
+        "dataretrieval/waterdata/time_series.py::get_latest_daily"
+      ],
+      "similarity": 0.805,
+      "clone_type": 2,
+      "rationale": "Water Data collection-family getters: ~30 explicitly typed parameters and a worked-example docstring around a thin body."
+    },
+    {
+      "members": [
+        "dataretrieval/waterdata/time_series.py::get_stats_date_range",
+        "dataretrieval/waterdata/time_series.py::get_stats_por"
+      ],
+      "similarity": 0.85,
+      "clone_type": 2,
+      "rationale": "Water Data collection-family getters: ~30 explicitly typed parameters and a worked-example docstring around a thin body."
+    },
+    {
+      "members": [
+        "dataretrieval/wqp.py::what_activities",
+        "dataretrieval/wqp.py::what_activity_metrics",
+        "dataretrieval/wqp.py::what_detection_limits",
+        "dataretrieval/wqp.py::what_habitat_metrics",
+        "dataretrieval/wqp.py::what_organizations",
+        "dataretrieval/wqp.py::what_project_weights",
+        "dataretrieval/wqp.py::what_projects",
+        "dataretrieval/wqp.py::what_sites"
+      ],
+      "similarity": 0.85,
+      "clone_type": 2,
+      "rationale": "WQP what_* wrappers: one shared query per service endpoint, differing only by the service path segment and the column each documents."
+    }
+  ],
+  "sub_threshold_accepted": {
+    "_comment": "Families that are NOT reported at default thresholds (they sit under min_lines=10 / min_nodes=20) but were found by a deliberate scan at min_nodes=8 on 2026-08-09. Recorded so they are not rediscovered and re-litigated. They are NOT counted in `observed` above.",
+    "groups": [
+      {
+        "members": [
+          "dataretrieval/nwis.py::get_discharge_measurements",
+          "dataretrieval/nwis.py::get_gwlevels",
+          "dataretrieval/nwis.py::get_pmcodes",
+          "dataretrieval/nwis.py::get_qwdata",
+          "dataretrieval/nwis.py::get_water_use"
+        ],
+        "similarity": 0.83,
+        "rationale": "Deprecated NWIS getters (ADR 0005). The surface is frozen pending removal, so collapsing it buys nothing and churns a public API users are being migrated off."
+      }
+    ]
+  }
+}

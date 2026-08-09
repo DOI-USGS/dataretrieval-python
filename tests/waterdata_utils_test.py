@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import functools
 import json
 import logging
 from unittest import mock
@@ -18,6 +19,7 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
     TransientError,
 )
+from dataretrieval.interruptions import ServiceInterrupted
 from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.dates import _format_api_dates
 from dataretrieval.ogc.engine import (
@@ -35,9 +37,21 @@ from dataretrieval.ogc.shaping import (
     _get_resp_data,
     _to_snake_case,
 )
+from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
-from dataretrieval.waterdata.utils import OGC_API_URL, _finalize_ogc, _get_args
+from dataretrieval.waterdata.utils import (
+    _EXTRA_ID_COLS,
+    OGC_API_URL,
+    WATERDATA_DIALECT,
+    _get_args,
+)
+
+# The Water Data injection ``get_cql`` performs at its call site, so these tests
+# exercise the same result shape the typed getters produce.
+_finalize_ogc = functools.partial(
+    _ogc_finalize, extra_id_cols=_EXTRA_ID_COLS, dialect=WATERDATA_DIALECT
+)
 
 _LOGGER_NAME = _utils_module.__name__
 
@@ -85,6 +99,9 @@ def test_get_args_empty():
 def test_walk_pages_multiple_mocked():
     # Setup mock responses
     resp1 = mock.MagicMock()
+    # A real response always carries an ``httpx.URL``; the next-page check
+    # resolves and host-checks the ``next`` link against it.
+    resp1.url = httpx.URL("https://example.com/page1")
     resp1.json.return_value = {
         "numberReturned": 1,
         "features": [{"id": "1", "properties": {"val": "a"}}],
@@ -481,15 +498,26 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     same ``_paginate`` strategy helper, so error-routing behaviour is
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_data`` mid-pagination case proves the stats-specific
-    follow-up callback is wired into ``_paginate`` correctly."""
-    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
+    follow-up callback is wired into ``_paginate`` correctly.
+
+    Statistics drives that page walk as a one-item ``FanOut``, the same
+    executor every other getter uses, so a transient mid-walk failure is
+    resumable here too rather than ending the call outright.
+    """
+    with pytest.raises(ServiceInterrupted) as excinfo:
         _run_get_data_with_failure(
             httpx.ConnectError("stats-boom"),
             monkeypatch,
         )
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
-    assert "stats-boom" in str(excinfo.value)
+    # The pagination wrapper is the direct cause and still names the failure.
+    paginated = excinfo.value.__cause__
+    assert isinstance(paginated, DataRetrievalError)
+    assert "Paginated request failed" in str(paginated)
+    assert isinstance(paginated.__cause__, httpx.ConnectError)
+    assert "stats-boom" in str(paginated)
+    # Nothing completed, so there is nothing to hand back but the handle.
+    assert excinfo.value.call.completed_chunks == 0
 
 
 def test_get_data_warning_includes_next_token(caplog, monkeypatch):
@@ -986,7 +1014,7 @@ def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
         json={"code": "ServiceUnavailable", "description": "maintenance window"},
     )
     with pytest.raises(ServiceUnavailable):
-        _check_ogc_requests(endpoint="daily", req_type="schema")
+        _check_ogc_requests(endpoint="daily", req_type="schema", base_url=OGC_API_URL)
 
 
 @pytest.mark.parametrize(

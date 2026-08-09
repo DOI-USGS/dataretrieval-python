@@ -8,8 +8,8 @@ from unittest import mock
 import httpx
 import pytest
 
+from dataretrieval.transport.http import HTTPX_ASYNC_DEFAULTS
 from dataretrieval.utils import (
-    HTTPX_ASYNC_DEFAULTS,
     _default_headers,
     _get,
 )

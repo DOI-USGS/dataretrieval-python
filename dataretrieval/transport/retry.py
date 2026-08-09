@@ -3,14 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-import math
-import os
 import random
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from email.utils import parsedate_to_datetime
 from typing import NamedTuple, TypeVar
 
 import httpx
@@ -22,6 +18,7 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import _deterministic_failure
+from dataretrieval.transport.env import _read_env_number
 from dataretrieval.transport.liveness import (
     credit_wait,
     elapsed_since_progress,
@@ -56,79 +53,6 @@ _STALL_TIMEOUT_ENV = "API_USGS_STALL_TIMEOUT"
 _STALL_TIMEOUT_DEFAULT = 60.0
 
 _T = TypeVar("_T")
-_Number = TypeVar("_Number", int, float)
-
-
-def parse_retry_after(value: str | None) -> float | None:
-    """Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.
-
-    Both header forms mean the same thing and are treated the same way: the
-    seconds are returned as given, however large. A value past what a caller will
-    wait out inline stops the retry and surfaces a transient carrying the hint on
-    ``.retry_after``, so a long wait becomes the caller's decision (and, for a
-    chunked call, a resumable interruption) instead of being ignored.
-
-    An over-long hint is honored rather than discarded. Dropping it would make
-    the client retry *harder* against a service that just asked for a long
-    pause, and would deny the caller the number it needs on ``.retry_after``.
-    Clock skew can inflate a date-form hint, but trusting one costs a
-    recoverable escalation while ignoring it costs hammering a service that is
-    already asking for room.
-
-    A date that has *already* passed yields no hint at all rather than ``0.0``.
-    Read literally it says "retry now", but the likelier reading is that our
-    clock runs ahead of the server's -- and acting on it would re-send almost
-    immediately against a service that just asked for a pause. Falling back to
-    our own bounded backoff is right under either reading. (Delta-seconds is
-    clock-independent, so a literal ``Retry-After: 0`` is still honored as the
-    instruction it is, floored by :meth:`RetryPolicy.backoff`'s jitter.)
-    """
-    if not value:
-        return None
-    raw = value.strip()
-    try:
-        seconds = float(raw)
-    except ValueError:
-        pass
-    else:
-        # ``inf``/``nan`` parse cleanly but poison every later comparison: an
-        # infinite hint would refuse retry forever and travel to the caller on
-        # ``.retry_after``. Treat them as no hint at all.
-        return max(0.0, seconds) if math.isfinite(seconds) else None
-    try:
-        retry_at = parsedate_to_datetime(raw)
-    except (TypeError, ValueError, OverflowError):
-        return None
-    if retry_at.tzinfo is None:
-        retry_at = retry_at.replace(tzinfo=timezone.utc)
-    delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
-    return delay if delay > 0 else None
-
-
-def _read_env_number(
-    name: str, default: _Number, cast: Callable[[str], _Number], expected: str
-) -> _Number:
-    """Read a non-negative number from the environment, or ``default`` if unset.
-
-    Raises :class:`~dataretrieval.exceptions.ConfigurationError` -- a
-    ``DataRetrievalError`` *and* a ``ValueError`` -- for an unusable value, so a
-    typo in the environment doesn't escape a request path as a bare
-    ``ValueError`` that ``except DataRetrievalError`` misses.
-    """
-    raw = os.environ.get(name, "").strip()
-    if not raw:
-        return default
-    try:
-        value = cast(raw)
-    except ValueError as exc:
-        raise ConfigurationError(f"{name} must be {expected} (got {raw!r}).") from exc
-    # ``nan`` passes every ordering test, so a bare ``< 0`` guard lets it through
-    # and then silently makes each budget comparison false.
-    if not math.isfinite(value):
-        raise ConfigurationError(f"{name} must be {expected} (got {raw!r}).")
-    if value < 0:
-        raise ConfigurationError(f"{name} must be >= 0 (got {value}).")
-    return value
 
 
 @dataclass(frozen=True)

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, get_args
 
 __all__ = [
     "CODE_SERVICES",
@@ -102,3 +102,32 @@ PROFILE_LOOKUP = {
         "count",
     ],
 }
+
+
+def _check_profiles(
+    service: SERVICES,
+    profile: PROFILES,
+) -> None:
+    """Check whether a service profile is valid.
+
+    Parameters
+    ----------
+    service : string
+        One of the service names from the "services" list.
+    profile : string
+        One of the profile names from "results_profiles",
+        "locations_profiles", "activities_profiles",
+        "projects_profiles" or "organizations_profiles".
+    """
+    valid_services = get_args(SERVICES)
+    if service not in valid_services:
+        raise ValueError(
+            f"Invalid service: '{service}'. Valid options are: {valid_services}."
+        )
+
+    valid_profiles = PROFILE_LOOKUP[service]
+    if profile not in valid_profiles:
+        raise ValueError(
+            f"Invalid profile: '{profile}' for service '{service}'. "
+            f"Valid options are: {valid_profiles}."
+        )

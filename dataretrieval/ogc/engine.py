@@ -30,22 +30,16 @@ from collections.abc import (
     Awaitable,
     Callable,
 )
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
-import dataretrieval.progress as _progress
-from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.credentials import without_embedded_credentials
-from dataretrieval.ogc.chunking import get_active_client
-from dataretrieval.ogc.context import _row_cap
+from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
-    BASE_URL,  # noqa: F401  — compatibility alias
     DEFAULT_DIALECT,
-    OGC_API_URL,
     OgcDialect,
     _require_positive_int,
 )
@@ -54,14 +48,17 @@ from dataretrieval.ogc.policy import (
 # the symbols its orchestration uses.
 from dataretrieval.ogc.requests import (
     _construct_api_requests,
-    _dialect,
-    _ogc_base_url,
     _switch_arg_id,
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.transport.fanout import FanOut, active_client
+from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
+from dataretrieval.transport.retry import RetryPolicy
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -112,42 +109,14 @@ def _next_req_url(
         href = link.get("href")
         if not href:
             return None
-        # Refuse to follow a next-page link to a different host —
-        # the request's headers/auth were minted for the original
-        # host and shouldn't leak to whatever a poisoned response
-        # body might supply. Guarded against mock-shaped ``resp.url``
-        # attributes (tests sometimes set strings or ``MagicMock``)
-        # by falling open when host extraction isn't reliable.
-        next_host: str | None
-        cur_host: str | None
-        next_url: httpx.URL | None
-        try:
-            next_url = httpx.URL(href)
-            next_host = next_url.host
-            resp_url = (
-                resp.url
-                if isinstance(resp.url, httpx.URL)
-                else httpx.URL(str(resp.url))
-            )
-            cur_host = resp_url.host
-        except (httpx.InvalidURL, TypeError):
-            next_url = None
-            next_host = cur_host = None
-        if next_host and cur_host and next_host != cur_host:
-            raise RuntimeError(
-                f"Refusing to follow cross-host next-page URL: "
-                f"{next_host} != {cur_host}"
-            )
-        # Matching hosts is not enough: a link may also carry ``user:pass@``,
-        # which httpx turns into an ``Authorization: Basic`` header on the
-        # follow-up request. The host check above passes in exactly that case,
-        # so strip it here rather than trusting the link we were handed.
-        if next_url is not None:
-            return str(without_embedded_credentials(next_url))
-        # ``href`` comes from the JSON ``links`` array (typed ``Any``); the
-        # ``not href`` guard above already excluded empty/None, and it is a
-        # URL string (passed to ``httpx.URL`` above).
-        return cast("str", href)
+        # The link is response data: parsing it, resolving a relative
+        # reference, refusing a foreign host and stripping embedded
+        # credentials is one shared policy, so this walk cannot drift from
+        # the other two. ``RuntimeError`` rather than the taxonomy's
+        # ``DataRetrievalError`` because that is what this walk has always
+        # raised; retyping it is a released behavior change to make
+        # deliberately, not a side effect of sharing the check.
+        return resolve_next_url(href, resp, service="OGC", error=RuntimeError)
     return None
 
 
@@ -163,12 +132,12 @@ async def _paginate(
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Compatibility wrapper around service-neutral cursor pagination."""
-    active_client = client if client is not None else get_active_client()
+    session = client if client is not None else active_client()
     return await paginate(
         initial_req,
         parse_response=parse_response,
         follow_up=follow_up,
-        client=active_client,
+        client=session,
         raise_for_status=raise_for_status,
         row_cap=_row_cap.get(),
     )
@@ -251,7 +220,7 @@ def get_ogc_data(
     output_id: str,
     *,
     max_rows: int | None = None,
-    base_url: str = OGC_API_URL,
+    base_url: str | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -278,7 +247,11 @@ def get_ogc_data(
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
     base_url : str, optional
-        OGC API base URL to target. Defaults to the main Water Data API.
+        OGC API base URL to target. Required in practice -- this package is
+        API-neutral and names no service of its own; each adapter passes its
+        own base (e.g. ``waterdata.utils.OGC_API_URL``,
+        ``ngwmn.NGWMN_OGC_API_URL``). Falls back to the base URL already in
+        scope for the current call.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
@@ -308,6 +281,8 @@ def get_ogc_data(
 
     if dialect is None:
         dialect = _DEFAULT_DIALECT
+    if base_url is None:
+        base_url = _ogc_base_url.get()
 
     args = args.copy()
     args["service"] = service
@@ -339,12 +314,10 @@ def get_ogc_data(
         dialect=dialect,
         base_url=base_url,
     )
-    with (
-        _progress.progress_context(service=service, target_url=base_url),
-        _row_cap(max_rows),
-    ):
-        with _ogc_base_url(base_url), _dialect(dialect):
-            return _fetch_once(args, finalize=finalize)
+    # No progress block here: the executor that emits the events owns the line
+    # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
+    with _row_cap(max_rows), _ogc_base_url(base_url), _dialect(dialect):
+        return _fetch_once(args, finalize=finalize)
 
 
 @chunking.multi_value_chunked(build_request=_construct_api_requests)
@@ -368,20 +341,6 @@ async def _fetch_once(
     return await _walk_pages(geopd=GEOPANDAS, req=req)
 
 
-def _run_sync(
-    make_coro: Callable[[], Awaitable[tuple[pd.DataFrame, httpx.Response]]],
-    *,
-    service: str,
-    error_url: str | httpx.URL | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around the service-neutral sync bridge."""
-    return run_sync(
-        make_coro,
-        service=service,
-        error_url=error_url if error_url is not None else _ogc_base_url.get(),
-    )
-
-
 def fetch_ogc_request(
     request: httpx.Request,
     *,
@@ -392,8 +351,10 @@ def fetch_ogc_request(
     This is the facade-level entry point for generalized CQL requests: the
     caller builds its own :class:`httpx.Request` (e.g. via
     :func:`~dataretrieval.ogc.requests._construct_cql_request`) and hands it
-    here. Pagination, progress reporting, and error handling are identical to
-    the typed getters' path through :func:`_walk_pages`.
+    here. The request is driven as a one-item
+    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor the
+    typed getters use -- so pagination, retry, progress reporting, and error
+    handling are identical to their path through :func:`_walk_pages`.
 
     Parameters
     ----------
@@ -410,7 +371,13 @@ def fetch_ogc_request(
         Aggregated response metadata.
     """
 
-    async def _coro() -> tuple[pd.DataFrame, httpx.Response]:
-        return await _walk_pages(geopd=GEOPANDAS, req=request)
+    async def _fetch(req: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
+        return await _walk_pages(geopd=GEOPANDAS, req=req)
 
-    return _run_sync(_coro, service=service)
+    return FanOut(
+        [request],
+        _fetch,
+        RetryPolicy.from_env(),
+        canonical_url=str(request.url),
+        service=service,
+    ).resume()

@@ -223,11 +223,9 @@ def test_waterdata_utils_is_not_an_ogc_reexport_hub() -> None:
         if dependency == "dataretrieval.ogc"
         or dependency.startswith("dataretrieval.ogc.")
     }
-    assert ogc_deps == {
-        "dataretrieval.ogc",
-        "dataretrieval.ogc.dates",
-        "dataretrieval.ogc.shaping",
-    }, f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
+    assert ogc_deps == {"dataretrieval.ogc"}, (
+        f"Water Data utils crossed its intended OGC seam: {ogc_deps}"
+    )
 
     exports = _literal_exports(path)
 
@@ -540,45 +538,33 @@ def test_wateruse_does_not_reimplement_fan_out_orchestration() -> None:
     )
 
 
-def test_fan_out_plans_satisfy_the_plan_protocol() -> None:
-    """Every plan implementation must carry the three members ``FanOut`` drives.
+def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
+    """What ``FanOut`` needs of a plan, checked on both real plan types.
 
-    ``FanOutPlan`` is structural, so nothing forces an implementation to be
-    complete at definition time -- a missing ``canonical_url`` would surface as
-    an ``AttributeError`` mid-fan-out, after requests had already been issued.
-    Check both implementations up front instead. They are deliberately unrelated
-    by inheritance: chunking divides structurally, and a Water Use plan divides
-    nothing, so there is no shared base to inherit.
+    ``FanOutPlan`` is the two standard protocols, so a ``list`` conforms with
+    no adapter class and ``isinstance`` against a ``runtime_checkable``
+    protocol would prove only that the methods exist. What is actually
+    load-bearing and *not* guaranteed by the type is repeatability: resume
+    keys completed work by position, so a plan whose second pass differed --
+    a generator mistaken for a collection, say -- would re-issue the wrong
+    sub-requests.
     """
     import httpx
 
     from dataretrieval.ogc.planning import ChunkPlan
-    from dataretrieval.wateruse import _LocationPlan
 
     def _build(**args: object) -> httpx.Request:
         return httpx.Request("GET", "https://example.invalid/items", params=args)
 
     plans = [
         ChunkPlan({"sites": ["a", "b"]}, _build, url_limit=8000),
-        _LocationPlan([httpx.Request("GET", "https://example.invalid/data")]),
+        # Water Use hands its request list straight to ``FanOut``.
+        [httpx.Request("GET", "https://example.invalid/data")],
     ]
     for plan in plans:
         name = type(plan).__name__
-        assert isinstance(plan.total, int), f"{name}.total is not an int"
-        assert plan.canonical_url is None or isinstance(plan.canonical_url, str), (
-            f"{name}.canonical_url is neither str nor None"
+        first = list(plan)
+        assert len(first) == len(plan), (
+            f"{name} yielded {len(first)} items but reports len {len(plan)}"
         )
-        sub_args = list(plan.iter_sub_args())
-        assert len(sub_args) == plan.total, (
-            f"{name}.iter_sub_args() yielded {len(sub_args)}, total says {plan.total}"
-        )
-        assert all(isinstance(item, dict) for item in sub_args), (
-            f"{name}.iter_sub_args() must yield kwargs dicts"
-        )
-        # Order is load-bearing for resume: a second pass must match the first.
-        assert list(plan.iter_sub_args()) == sub_args
-
-    assert not issubclass(_LocationPlan, ChunkPlan), (
-        "A Water Use plan must satisfy FanOutPlan structurally, not by "
-        "inheriting ChunkPlan -- it has no byte budget or axes to inherit."
-    )
+        assert list(plan) == first, f"{name} is not repeatably iterable"

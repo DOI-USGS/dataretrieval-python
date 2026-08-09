@@ -120,6 +120,26 @@ def _partition_request_params(
     return get_params, {}
 
 
+def _items_url(service: str) -> str:
+    """The OGC items endpoint for ``service`` under the active base URL."""
+    return f"{_ogc_base_url.get()}/collections/{service}/items"
+
+
+def _cql2_post_request(
+    service_url: str, *, content: str, params: dict[str, Any]
+) -> httpx.Request:
+    """A POST/CQL2 request: the media type the API requires, in one place."""
+    headers = _default_headers(service_url)
+    headers["Content-Type"] = "application/query-cql-json"
+    return httpx.Request(
+        method="POST",
+        url=service_url,
+        headers=headers,
+        content=content,
+        params=params,
+    )
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -129,7 +149,7 @@ def _construct_api_requests(
     **kwargs: Any,
 ) -> httpx.Request:
     """Construct an HTTP request object for the specified OGC API service."""
-    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
+    service_url = _items_url(service)
     dialect = _dialect.get()
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
@@ -152,21 +172,14 @@ def _construct_api_requests(
     if "filter_lang" in params:
         params["filter-lang"] = params.pop("filter_lang")
 
-    headers = _default_headers(service_url)
-
     if post_params:
-        headers["Content-Type"] = "application/query-cql-json"
-        return httpx.Request(
-            method="POST",
-            url=service_url,
-            headers=headers,
-            content=_cql2_param(post_params),
-            params=params,
+        return _cql2_post_request(
+            service_url, content=_cql2_param(post_params), params=params
         )
     return httpx.Request(
         method="GET",
         url=service_url,
-        headers=headers,
+        headers=_default_headers(service_url),
         params=params,
     )
 
@@ -181,7 +194,7 @@ def _construct_cql_request(
     skip_geometry: bool | None = None,
 ) -> httpx.Request:
     """Build a POST/CQL2 request from a verbatim CQL2 body."""
-    service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
+    service_url = _items_url(service)
     params = _ogc_query_params(
         {},
         properties=properties,
@@ -189,25 +202,18 @@ def _construct_cql_request(
         limit=limit,
         skip_geometry=skip_geometry,
     )
-    headers = _default_headers(service_url)
-    headers["Content-Type"] = "application/query-cql-json"
-    return httpx.Request(
-        method="POST",
-        url=service_url,
-        headers=headers,
-        content=cql_body,
-        params=params,
-    )
+    return _cql2_post_request(service_url, content=cql_body, params=params)
 
 
 # ---------------------------------------------------------------------------
 # Argument normalization helpers
 # ---------------------------------------------------------------------------
 
-# Default set of iterable-shaped params that ``_get_args`` must NOT push
-# through ``_normalize_str_iterable`` (date-range params may carry
-# ``pd.NaT``/None or interval strings; ``bbox`` is ``list[float]``). Callers
-# with extra numeric params pass their own superset.
+# Iterable-shaped params that ``_get_args`` must NOT push through
+# ``_normalize_str_iterable`` (date-range params may carry ``pd.NaT``/None or
+# interval strings; ``bbox`` is ``list[float]``). Every OGC caller gets these;
+# an adapter with extra numeric params names only its extras via
+# ``prepare_request_args(..., extra_no_normalize=...)``.
 _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"bbox"}
 
 
@@ -274,14 +280,20 @@ def prepare_request_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
     *,
-    no_normalize: frozenset[str] | set[str] = _NO_NORMALIZE_PARAMS,
+    extra_no_normalize: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, Any]:
     """Build OGC request kwargs from a getter's ``locals()``.
 
     Internal bookkeeping keys, caller-supplied exclusions, and ``None`` values
     are omitted. Identifiers and properties are validated; other iterables are
-    normalized unless listed in ``no_normalize``.
+    normalized unless exempted.
+
+    ``extra_no_normalize`` *adds* to the engine's own
+    :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
+    only the params it owns and cannot silently drop the date-range exemptions
+    by forgetting to union them back in.
     """
+    no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
     to_exclude = {"service", "output_id"}
     if exclude:
         to_exclude.update(exclude)

@@ -8,18 +8,21 @@ mostly stable between calls.
 
 from __future__ import annotations
 
-from typing import Any, get_args
+from typing import TYPE_CHECKING, Any, get_args
 
 import pandas as pd
 
-from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.schema import _check_ogc_requests
+from dataretrieval.ogc.schema import queryables_frame
 from dataretrieval.waterdata.types import (
     METADATA_COLLECTIONS,
 )
 from dataretrieval.waterdata.utils import (
+    OGC_API_URL,
     get_ogc_data,
 )
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
 
 
 def get_reference_table(
@@ -156,23 +159,9 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
         >>> df.set_index("queryable").loc["state_name", "type"]
         'string'
     """
-    # The OGC queryables document is a JSON Schema whose ``properties`` map each
-    # filterable property name to a ``{title, type, description}`` definition.
-    body, response = _check_ogc_requests(endpoint=collection, req_type="queryables")
-    properties: dict[str, Any] = body.get("properties", {})
-    df = pd.DataFrame(
-        [
-            {
-                "queryable": name,
-                "type": prop.get("type"),
-                "title": prop.get("title"),
-                "description": (prop.get("description") or "").strip(),
-            }
-            for name, prop in sorted(properties.items())
-        ],
-        columns=["queryable", "type", "title", "description"],
-    )
-    return df, BaseMetadata(response)
+    # Reading the queryables document is OGC protocol work; this getter only
+    # names the API to ask.
+    return queryables_frame(collection, base_url=OGC_API_URL)
 
 
 __all__ = ["get_reference_table", "get_queryables"]

@@ -11,7 +11,7 @@ from __future__ import annotations
 import httpx
 
 from dataretrieval.exceptions import error_for_status
-from dataretrieval.transport.retry import parse_retry_after as _parse_retry_after
+from dataretrieval.exceptions import parse_retry_after as _parse_retry_after
 
 
 def _error_body(resp: httpx.Response) -> str:

@@ -12,8 +12,10 @@ import httpx
 import pandas as pd
 import pytest
 
+import dataretrieval.exceptions as exceptions
 import dataretrieval.transport.liveness as liveness
 import dataretrieval.transport.retry as retry
+from dataretrieval._querying import _raise_for_status
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataRetrievalError,
@@ -22,9 +24,8 @@ from dataretrieval.exceptions import (
     RateLimited,
     ServiceUnavailable,
 )
+from dataretrieval.transport.fanout import FanOut
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
-from dataretrieval.utils import _raise_for_status
 
 
 def _response(
@@ -147,10 +148,23 @@ def test_shared_status_mapping_preserves_retry_after() -> None:
 
 
 def test_sync_bridge_runs_async_operation() -> None:
-    async def operation() -> str:
-        return "ok"
+    """A one-item fan-out is the package's only sync-to-async bridge.
 
-    assert run_sync(operation, service="test", error_url="https://example.test") == "ok"
+    Every retrieval path now enters through ``FanOut``, so a single request
+    with nothing to chunk still reaches the network from synchronous caller
+    code through the executor's blocking portal.
+    """
+    frame = pd.DataFrame({"value": ["ok"]})
+    response = _response()
+
+    async def operation(item: str) -> tuple[pd.DataFrame, httpx.Response]:
+        assert item == "only"
+        return frame, response
+
+    returned, aggregated = FanOut(["only"], operation).resume()
+
+    assert returned["value"].tolist() == ["ok"]
+    assert aggregated is response
 
 
 def test_retry_tunables_have_a_single_home() -> None:
@@ -174,13 +188,13 @@ def test_parse_retry_after_accepts_http_date() -> None:
     almost immediately against a service that just asked for a pause.
     """
     soon = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=30)
-    parsed = retry.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    parsed = exceptions.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
     assert parsed is not None and 0 < parsed <= 30
 
-    assert retry.parse_retry_after("Wed, 21 Oct 2015 07:28:00 GMT") is None
-    assert retry.parse_retry_after("not-a-date") is None
+    assert exceptions.parse_retry_after("Wed, 21 Oct 2015 07:28:00 GMT") is None
+    assert exceptions.parse_retry_after("not-a-date") is None
     # Delta-seconds is clock-independent, so a literal 0 stays an instruction.
-    assert retry.parse_retry_after("0") == 0.0
+    assert exceptions.parse_retry_after("0") == 0.0
 
 
 def test_both_retry_after_forms_are_honored_alike() -> None:
@@ -195,9 +209,9 @@ def test_both_retry_after_forms_are_honored_alike() -> None:
     )
     header = far_future.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
-    parsed = retry.parse_retry_after(header)
+    parsed = exceptions.parse_retry_after(header)
     assert parsed is not None and 1750 < parsed <= 1800
-    assert retry.parse_retry_after("1800") == 1800.0
+    assert exceptions.parse_retry_after("1800") == 1800.0
     # Either spelling, over the cap, stops the retry rather than being ignored.
     policy = retry.RetryPolicy(max_retries=4)
     assert not policy.should_retry(attempt=1, retry_after=parsed)
@@ -560,3 +574,34 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
     assert retry._retryable(temporary) == (True, None)
     assert _classify_chunk_error(temporary) is not None
+
+
+def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
+    """Every question asked of a failure chain shares one guarded traversal.
+
+    ``raise ... from`` accepts an exception already in the chain, so a retry
+    loop that re-raises an earlier failure can close the cycle. Each of these
+    walks reaches an answer by inspecting links, so an unguarded one would spin
+    forever inside a request path rather than surface the failure. This fails by
+    hanging, not by asserting -- pytest's timeout is the real assertion.
+    """
+    from dataretrieval.interruptions import (
+        ServiceInterrupted,
+        _classify_chunk_error,
+        _deterministic_failure,
+        _walk_causes,
+    )
+
+    first = RuntimeError("first")
+    second = RuntimeError("second")
+    first.__cause__ = second
+    second.__cause__ = first
+
+    assert {id(exc) for exc in _walk_causes(first)} == {id(first), id(second)}
+    assert _classify_chunk_error(first) is None
+    assert _deterministic_failure(first) is False
+    # The status hunt in the interruption constructor walks the same chain.
+    assert (
+        ServiceInterrupted(completed_chunks=0, total_chunks=1, cause=first).status_code
+        is None
+    )

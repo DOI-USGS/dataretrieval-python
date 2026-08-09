@@ -18,7 +18,9 @@ from urllib.parse import quote
 import httpx
 import pandas as pd
 
+from dataretrieval._querying import to_str
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._wqx import _attach_datetime_columns
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.transport.http import (
     HTTPX_DEFAULTS,
@@ -29,16 +31,15 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.http import (
     get as _get,
 )
-from dataretrieval.utils import _attach_datetime_columns, to_str
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     PROFILES,
     SERVICES,
+    _check_profiles,
 )
 from dataretrieval.waterdata.utils import (
     SAMPLES_URL,
     _accept_legacy_kwargs,
-    _check_profiles,
     _get_args,
 )
 

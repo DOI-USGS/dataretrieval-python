@@ -371,6 +371,9 @@ def test_nested_context_reuses_outer_reporter():
 
 def _resp(features, *, next_url=None, rate_remaining=None):
     resp = mock.MagicMock()
+    # A real response always carries an ``httpx.URL``; the next-page check
+    # resolves and host-checks the ``next`` link against it.
+    resp.url = httpx.URL("https://example.com/p1")
     links = [{"rel": "next", "href": next_url}] if next_url else []
     resp.json.return_value = {
         "numberReturned": len(features),

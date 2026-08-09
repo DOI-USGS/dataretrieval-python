@@ -18,7 +18,8 @@ import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
 
-from .utils import _attach_datetime_columns, _query_with_retry
+from ._querying import _query_with_retry
+from ._wqx import _attach_datetime_columns
 
 __all__ = [
     "get_results",

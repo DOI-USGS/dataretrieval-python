@@ -118,6 +118,16 @@ select = [
     "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID",
     "C90", # mccabe
     "E501", # line-length
+    # A first-party import used only in annotations is not a runtime
+    # dependency, and the project already says so twice: ``.importlinter`` sets
+    # ``exclude_type_checking_imports = True`` ("Contracts describe what runs")
+    # and ``tests/architecture_test.py`` skips ``TYPE_CHECKING`` blocks when it
+    # asserts the module seams. TC001 makes the code agree with the policy
+    # instead of leaving it to reviewer memory. TC002/TC003 (third-party and
+    # stdlib) are a separate import-cost concern with no policy behind them
+    # here, so they stay unselected.
+    "TC001",
+    "TC006", # quoted first argument to ``typing.cast``
 ]
 ignore = [
     "SIM105", # Use `contextlib.suppress(...)` instead of `try-except-pass`

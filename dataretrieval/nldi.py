@@ -13,7 +13,7 @@ from __future__ import annotations
 from json import JSONDecodeError
 from typing import Any, Literal, cast
 
-from dataretrieval.utils import _query_with_retry
+from dataretrieval._querying import _query_with_retry
 
 __all__ = [
     "get_flowlines",
@@ -66,6 +66,14 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     if not features:
         return gpd.GeoDataFrame(geometry=[], crs=_CRS)
     return gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+
+
+def _query_features(
+    url: str, query_params: dict[str, str], as_json: bool
+) -> gpd.GeoDataFrame | dict[str, Any]:
+    """Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame."""
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
+    return feature_collection if as_json else _features_to_gdf(feature_collection)
 
 
 def get_flowlines(
@@ -122,20 +130,19 @@ def get_flowlines(
     _validate_feature_source_comid(feature_source, feature_id, comid)
     if feature_source:
         _validate_data_source(feature_source)
-        url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-    else:
-        url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-    query_params = {"distance": str(distance), "trimStart": str(trim_start).lower()}
-
-    url += f"/{navigation_mode}/flowlines"
+    url, query_params = _navigation_request(
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        tail="flowlines",
+    )
+    query_params["trimStart"] = str(trim_start).lower()
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_basin(
@@ -185,11 +192,7 @@ def get_basin(
         "simplified": simplified_str,
         "splitCatchment": split_catchment_str,
     }
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_features(
@@ -272,11 +275,28 @@ def get_features(
         stop_comid=stop_comid,
     )
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
+
+
+def _navigation_request(
+    *,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+    navigation_mode: str,
+    distance: int,
+    tail: str,
+) -> tuple[str, dict[str, str]]:
+    """URL and query params for an NLDI navigation from a validated origin.
+
+    The single home for the navigation path grammar — ``{origin}/navigation/
+    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific
+    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query
+    string keeps its documented parameter order.
+    """
+    origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
+    url = f"{NLDI_API_BASE_URL}/{origin}/navigation/{navigation_mode}/{tail}"
+    return url, {"distance": str(distance)}
 
 
 def _get_features_request(
@@ -323,9 +343,14 @@ def _get_features_request(
         return f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}", {}
 
     navigation_mode = _validate_navigation_mode(navigation_mode)
-    origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
-    url = f"{NLDI_API_BASE_URL}/{origin}/navigation/{navigation_mode}/{data_source}"
-    query_params = {"distance": str(distance)}
+    url, query_params = _navigation_request(
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        tail=f"{data_source}",
+    )
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
     return url, query_params
@@ -447,7 +472,7 @@ def search(
     if (lat is None) != (long is None):
         raise ValueError("Both lat and long are required")
 
-    find = cast(Literal["basin", "flowlines", "features"], find.lower())
+    find = cast("Literal['basin', 'flowlines', 'features']", find.lower())
     if find not in ("basin", "flowlines", "features"):
         raise ValueError(
             f"Invalid value for find: {find} - allowed values are:"

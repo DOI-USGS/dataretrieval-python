@@ -18,7 +18,8 @@ import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OGC_API_URL, OgcDialect
+from dataretrieval.ogc.context import _ogc_base_url
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 
 try:
     import geopandas as gpd
@@ -63,6 +64,23 @@ def _attach_coordinates(df: pd.DataFrame, features: list[dict[str, Any]]) -> Non
     geoms = [(f.get("geometry") or {}).get("coordinates") for f in features]
     if any(g is not None for g in geoms):
         df["geometry"] = geoms
+
+
+def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
+    """Build a ``GeoDataFrame`` from GeoJSON features, tolerating a missing
+    ``geometry`` key.
+
+    ``GeoDataFrame.from_features`` indexes ``feature["geometry"]`` directly, so
+    collections that omit it (NGWMN observation collections, Water Data
+    statistics features) would raise ``KeyError``. Default the key to ``None``
+    for only those features, so features that already carry geometry (the
+    common sites case) are passed through without a per-feature dict copy.
+    The single home for this upstream-schema workaround.
+    """
+    return gpd.GeoDataFrame.from_features(
+        [f if "geometry" in f else {**f, "geometry": None} for f in features],
+        crs=_CRS,
+    )
 
 
 def _get_resp_data(
@@ -132,16 +150,9 @@ def _get_resp_data(
 
     # Organize json into geodataframe and make sure id column comes along.
     # NGWMN observation collections (water levels, lithology, …) return
-    # features with no ``geometry`` key at all, which
-    # ``GeoDataFrame.from_features`` can't handle (it indexes
-    # ``feature["geometry"]`` directly). Default the key to ``None`` for only
-    # those features so the call is safe; the all-null check below then yields
-    # a plain DataFrame. Features that already carry geometry (the common
-    # sites case) are passed through without a per-feature dict copy.
-    df = gpd.GeoDataFrame.from_features(
-        [f if "geometry" in f else {**f, "geometry": None} for f in features],
-        crs=_CRS,
-    )
+    # features with no ``geometry`` key at all; ``_geo_feature_frame`` absorbs
+    # that, and the all-null check below then yields a plain DataFrame.
+    df = _geo_feature_frame(features)
     # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
     # missing a top-level ``id`` yields None rather than a KeyError.
     df["id"] = [f.get("id") for f in features]
@@ -160,7 +171,7 @@ def _deal_with_empty(
     properties: list[str] | None,
     service: str,
     *,
-    base_url: str = OGC_API_URL,
+    base_url: str | None = None,
 ) -> pd.DataFrame:
     """
     Handles empty DataFrame results by returning a DataFrame with appropriate columns.
@@ -179,7 +190,8 @@ def _deal_with_empty(
     service : str
         The service endpoint to query for schema properties if needed.
     base_url : str, optional
-        OGC API base URL to use for that schema query.
+        OGC API base URL to use for that schema query. Defaults to the base
+        URL in scope for the current call, not to any particular service.
 
     Returns
     -------
@@ -189,6 +201,8 @@ def _deal_with_empty(
     """
     if return_list.empty:
         if not properties or all(pd.isna(properties)):
+            if base_url is None:
+                base_url = _ogc_base_url.get()
             # Schema lookup performs HTTP only for an empty result.
             from dataretrieval.ogc.schema import _check_ogc_requests
 
@@ -353,7 +367,7 @@ def _finalize_ogc(
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
-    base_url: str = OGC_API_URL,
+    base_url: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
 
@@ -378,6 +392,8 @@ def _finalize_ogc(
     """
     if dialect is None:
         dialect = DEFAULT_DIALECT
+    if base_url is None:
+        base_url = _ogc_base_url.get()
     frame = _deal_with_empty(frame, properties, service, base_url=base_url)
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match

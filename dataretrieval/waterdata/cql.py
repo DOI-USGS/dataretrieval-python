@@ -10,24 +10,30 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc import fetch_ogc_request
+from dataretrieval.ogc.context import _ogc_base_url
 from dataretrieval.ogc.requests import (
     _as_str_list,
     _construct_cql_request,
     _switch_properties_id,
 )
-from dataretrieval.waterdata.types import (
-    WATERDATA_SERVICES,
-)
+from dataretrieval.ogc.shaping import _finalize_ogc
 from dataretrieval.waterdata.utils import (
+    _EXTRA_ID_COLS,
     _OUTPUT_ID_BY_SERVICE,
-    _finalize_ogc,
+    OGC_API_URL,
+    WATERDATA_DIALECT,
 )
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
+    from dataretrieval.waterdata.types import (
+        WATERDATA_SERVICES,
+    )
 
 
 def get_cql(
@@ -148,25 +154,31 @@ def get_cql(
     # downstream), matching the typed getters.
     wire_properties = _switch_properties_id(properties_list, output_id, service)
 
-    req = _construct_cql_request(
-        service,
-        body,
-        properties=wire_properties,
-        bbox=bbox,
-        limit=limit,
-        skip_geometry=skip_geometry,
-    )
+    # The OGC package names no service of its own, so this hand-built request
+    # path states the target itself -- request construction and the empty-result
+    # schema lookup in ``_finalize_ogc`` both read the base URL from here.
+    with _ogc_base_url(OGC_API_URL):
+        req = _construct_cql_request(
+            service,
+            body,
+            properties=wire_properties,
+            bbox=bbox,
+            limit=limit,
+            skip_geometry=skip_geometry,
+        )
 
-    df, response = fetch_ogc_request(req, service=service)
+        df, response = fetch_ogc_request(req, service=service)
 
-    return _finalize_ogc(
-        df,
-        response,
-        properties=properties_list,
-        output_id=output_id,
-        convert_type=convert_type,
-        service=service,
-    )
+        return _finalize_ogc(
+            df,
+            response,
+            properties=properties_list,
+            output_id=output_id,
+            convert_type=convert_type,
+            service=service,
+            extra_id_cols=_EXTRA_ID_COLS,
+            dialect=WATERDATA_DIALECT,
+        )
 
 
 __all__ = ["get_cql"]

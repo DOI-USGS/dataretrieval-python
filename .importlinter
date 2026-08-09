@@ -24,8 +24,12 @@ layers =
     ngwmn | nldi | nwis | streamstats | waterdata | wateruse | wqp
     ogc
     utils
+    _querying
     transport
     progress
+; Response-format conventions sit above the pure leaves because they read the
+; code tables, and below every adapter that shapes a response with them.
+    _wqx
     _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
     exceptions
@@ -89,12 +93,14 @@ type = forbidden
 source_modules =
     dataretrieval.ogc
 forbidden_modules =
+    dataretrieval._querying
     dataretrieval.utils
 
 [importlinter:contract:nwis-quarantine]
 name = Deprecated NWIS has no dependents (ADR 0005)
 type = forbidden
 source_modules =
+    dataretrieval._querying
     dataretrieval.codes
     dataretrieval.combining
     dataretrieval.credentials
