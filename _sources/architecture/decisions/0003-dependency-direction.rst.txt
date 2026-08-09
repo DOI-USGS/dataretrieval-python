@@ -44,16 +44,29 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` parses runtime imports and enforces the rules
-that hold today. Its allowlist is the authoritative inventory of exact temporary
-cross-boundary imports; this ADR owns the direction and rationale rather than a
-second copy of that mutable inventory.
+``.importlinter`` is the single authority for dependency direction. It declares
+the layer stack, the allowlist of OGC consumers, NGWMN's facade-only seam, the
+NWIS quarantine, collection-family independence, and package-wide acyclicity;
+``lint-imports`` checks all of it against the transitive import graph in
+pre-commit and CI. A boundary that legitimately moves is one edit, in that file,
+alongside the ADR it cites.
 
-Focused fitness functions verify the current boundaries: NGWMN's only OGC
-dependency is the facade, ``waterdata.utils`` does not bulk re-export private
-OGC helpers, ``ogc.shaping`` does not depend on ``ogc.engine``, Water Use has
-no OGC dependency, and both the OGC and transport runtime graphs are acyclic.
+These rules were previously asserted a second time in
+``tests/architecture_test.py``, by hand-parsing the AST. That duplication is
+gone. The tests now cover only what an import graph cannot express — which
+symbols cross a seam, what a module's declared exports are, the AST shape of a
+facade, and the one boundary that has to be asserted positively rather than
+forbidden. A new rule that is purely about module-to-module direction belongs in
+``.importlinter``.
 
-The exact allowlist should shrink as private seams move. Any growth requires
-explicit architecture review, and a change to the dependency policy requires
-this ADR to be superseded.
+Named contracts verify the current boundaries: NGWMN's only OGC dependency is
+the facade, ``ogc.shaping`` does not depend on ``ogc.engine``, Water Use and the
+other non-OGC adapters cannot reach the OGC subsystem at all, and the runtime
+graph is acyclic package-wide rather than only within ``ogc`` and ``transport``.
+``waterdata.utils`` not bulk re-exporting private OGC helpers stays in the
+fitness functions, because that claim is about the module's ``__all__``.
+
+The OGC consumer list is an allowlist, so a new service module is refused until
+someone places it deliberately. It should shrink as private seams move. Any
+growth requires explicit architecture review, and a change to the dependency
+policy requires this ADR to be superseded.

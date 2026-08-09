@@ -43,7 +43,8 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` prevents shared OGC infrastructure from
-importing service adapters and prevents modern modules from depending on legacy
-NWIS. The installed-wheel CI job verifies that the whole monolith ships as one
-usable artifact.
+``.importlinter`` prevents shared OGC infrastructure from importing service
+adapters, prevents modern modules from depending on legacy NWIS, and requires
+the runtime import graph to stay acyclic; ``lint-imports`` checks it in
+pre-commit and CI. The installed-wheel CI job verifies that the whole monolith
+ships as one usable artifact.

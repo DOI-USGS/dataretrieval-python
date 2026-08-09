@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g2134eeaa6 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+gd1345eb1f documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=b219acd1"></script>
+      <script src="../_static/documentation_options.js?v=d19d073d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -199,7 +199,8 @@ retains resumable state; <code class="docutils literal notranslate"><span class=
 contract; <code class="docutils literal notranslate"><span class="pre">retry</span></code> classifies failures into OGC interruption types; and
 <code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate their named
 protocol concerns. The full runtime OGC graph, including the facade, is
-acyclic — enforced by <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
+acyclic — enforced package-wide by the <code class="docutils literal notranslate"><span class="pre">acyclic</span></code> contract in
+<code class="docutils literal notranslate"><span class="pre">.importlinter</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
 timeouts, host-scoped authentication, cursor pagination, bounded retry,
@@ -213,10 +214,16 @@ framework API.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code></dt><dd><p>Stable error-policy leaf. It has no runtime third-party dependency, and
 every service can import it without creating an infrastructure cycle.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Shared metadata, data-shaping helpers, ambient context support, legacy
-request composition, and compatibility imports for transport names that
-historically lived here. By default, do not add new service-specific
-behavior there.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.response_metadata</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, the second half of every getter’s <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
+<span class="pre">metadata)</span></code> return contract. A dependency-free leaf: nearly every service
+module needs this class, and while it lived in <code class="docutils literal notranslate"><span class="pre">utils</span></code> beside the legacy
+query machinery, importing it pulled that module’s whole HTTP stack in
+transitively.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Data-shaping helpers, ambient context support, legacy request composition,
+and compatibility imports for transport names that historically lived here
+(including <code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, so its original import path keeps working). By
+default, do not add new service-specific behavior there.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.codes</span></code> and <code class="docutils literal notranslate"><span class="pre">dataretrieval.rdb</span></code></dt><dd><p>State/time-zone code conversion and RDB parsing leaves.</p>
 </dd>
@@ -228,8 +235,15 @@ behavior there.</p>
 </pre></div>
 </div>
 <p>Dependencies must not point from shared infrastructure back to a public service
-adapter. The executable checks in <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> enforce the
-rules that hold today and explicitly list temporary variances.</p>
+adapter. <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> declares this as a layer stack and <code class="docutils literal notranslate"><span class="pre">lint-imports</span></code>
+checks it over the transitive import graph, so a violation routed through an
+intermediary fails as surely as a direct one. The stack is exhaustive: a new
+top-level module fails the contract until it is placed, so where a module
+belongs is decided when it is added rather than inferred later.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> complements those contracts without repeating
+them. It covers the rules an import graph cannot express — which symbols cross
+a seam, declared <code class="docutils literal notranslate"><span class="pre">__all__</span></code> surfaces, the AST shape of a facade, and imports
+that must exist rather than be forbidden.</p>
 </section>
 </section>
 <section id="interface-view">
@@ -341,9 +355,8 @@ and request shapes differ.</p>
 </section>
 <section id="known-architectural-debt">
 <h2>Known architectural debt<a class="headerlink" href="#known-architectural-debt" title="Link to this heading"></a></h2>
-<p>This view records categories and representative locations of debt. The fitness
-functions in <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> are authoritative for exact current
-dependency allowlists.</p>
+<p>This view records categories and representative locations of debt.
+<code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> is authoritative for exact current dependency allowlists.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> retains compatibility wrappers alongside OGC orchestration.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines metadata, shaping, ambient configuration, legacy
@@ -359,7 +372,8 @@ not a rewrite.</p>
 <ol class="arabic simple">
 <li><p>add or supersede an ADR;</p></li>
 <li><p>identify affected characteristics and trade-offs;</p></li>
-<li><p>add or update an executable fitness function;</p></li>
+<li><p>add or update an executable fitness function, and the matching contract in
+<code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> when the change moves a dependency boundary;</p></li>
 <li><p>preserve public contracts or provide a deprecation path; and</p></li>
 <li><p>update this view when component responsibilities or dependency rules change.</p></li>
 </ol>

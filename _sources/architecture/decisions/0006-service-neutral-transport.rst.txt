@@ -101,10 +101,11 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` enforces transport dependency direction, an
-acyclic transport graph, Water Use isolation from OGC, that presentation and
-frame-assembly modules do not reappear inside transport, and that only
-``dataretrieval.credentials`` names the API-key host. Component and adapter
+``.importlinter`` enforces transport dependency direction, an acyclic runtime
+graph, and Water Use isolation from OGC. ``tests/architecture_test.py`` covers
+what the import graph cannot see: that presentation and frame-assembly modules
+do not reappear inside transport, and that only ``dataretrieval.credentials``
+names the API-key host. Component and adapter
 tests cover cursor termination, row caps, response aggregation, retry
 exhaustion, ``Retry-After`` limits, the no-progress budget, which failures are
 re-sent, cancellation, no-partial fan-out behavior, and credential host scoping.

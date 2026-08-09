@@ -61,6 +61,7 @@ Compliance
 
 ``tests/contracts/public_api_test.py`` freezes Water Data imports, signatures,
 facade identity, and compatibility names. ``tests/architecture_test.py``
-requires a logic-free facade, exact active-service exports, isolated collection
-families, no lateral adapter reach-through, and separate OGC request
-construction and schema execution.
+requires a logic-free facade, exact active-service exports, and separate OGC
+request construction and schema execution. ``.importlinter`` keeps the
+collection families independent of each other, holds NGWMN to the OGC facade,
+and prevents lateral adapter reach-through.
