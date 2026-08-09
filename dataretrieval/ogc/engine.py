@@ -36,9 +36,7 @@ import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
-import dataretrieval.progress as _progress
-from dataretrieval.ogc.chunking import get_active_client
-from dataretrieval.ogc.context import _row_cap
+from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
@@ -50,15 +48,14 @@ from dataretrieval.ogc.policy import (
 # the symbols its orchestration uses.
 from dataretrieval.ogc.requests import (
     _construct_api_requests,
-    _dialect,
-    _ogc_base_url,
     _switch_arg_id,
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
+from dataretrieval.transport.retry import RetryPolicy
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -135,12 +132,12 @@ async def _paginate(
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Compatibility wrapper around service-neutral cursor pagination."""
-    active_client = client if client is not None else get_active_client()
+    session = client if client is not None else active_client()
     return await paginate(
         initial_req,
         parse_response=parse_response,
         follow_up=follow_up,
-        client=active_client,
+        client=session,
         raise_for_status=raise_for_status,
         row_cap=_row_cap.get(),
     )
@@ -317,12 +314,10 @@ def get_ogc_data(
         dialect=dialect,
         base_url=base_url,
     )
-    with (
-        _progress.progress_context(service=service, target_url=base_url),
-        _row_cap(max_rows),
-    ):
-        with _ogc_base_url(base_url), _dialect(dialect):
-            return _fetch_once(args, finalize=finalize)
+    # No progress block here: the executor that emits the events owns the line
+    # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
+    with _row_cap(max_rows), _ogc_base_url(base_url), _dialect(dialect):
+        return _fetch_once(args, finalize=finalize)
 
 
 @chunking.multi_value_chunked(build_request=_construct_api_requests)
@@ -346,20 +341,6 @@ async def _fetch_once(
     return await _walk_pages(geopd=GEOPANDAS, req=req)
 
 
-def _run_sync(
-    make_coro: Callable[[], Awaitable[tuple[pd.DataFrame, httpx.Response]]],
-    *,
-    service: str,
-    error_url: str | httpx.URL | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around the service-neutral sync bridge."""
-    return run_sync(
-        make_coro,
-        service=service,
-        error_url=error_url if error_url is not None else _ogc_base_url.get(),
-    )
-
-
 def fetch_ogc_request(
     request: httpx.Request,
     *,
@@ -370,8 +351,10 @@ def fetch_ogc_request(
     This is the facade-level entry point for generalized CQL requests: the
     caller builds its own :class:`httpx.Request` (e.g. via
     :func:`~dataretrieval.ogc.requests._construct_cql_request`) and hands it
-    here. Pagination, progress reporting, and error handling are identical to
-    the typed getters' path through :func:`_walk_pages`.
+    here. The request is driven as a one-item
+    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor the
+    typed getters use -- so pagination, retry, progress reporting, and error
+    handling are identical to their path through :func:`_walk_pages`.
 
     Parameters
     ----------
@@ -388,7 +371,13 @@ def fetch_ogc_request(
         Aggregated response metadata.
     """
 
-    async def _coro() -> tuple[pd.DataFrame, httpx.Response]:
-        return await _walk_pages(geopd=GEOPANDAS, req=request)
+    async def _fetch(req: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
+        return await _walk_pages(geopd=GEOPANDAS, req=req)
 
-    return _run_sync(_coro, service=service)
+    return FanOut(
+        [request],
+        _fetch,
+        RetryPolicy.from_env(),
+        canonical_url=str(request.url),
+        service=service,
+    ).resume()

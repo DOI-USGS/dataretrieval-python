@@ -19,6 +19,7 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
     TransientError,
 )
+from dataretrieval.interruptions import ServiceInterrupted
 from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.dates import _format_api_dates
 from dataretrieval.ogc.engine import (
@@ -497,15 +498,26 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     same ``_paginate`` strategy helper, so error-routing behaviour is
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_data`` mid-pagination case proves the stats-specific
-    follow-up callback is wired into ``_paginate`` correctly."""
-    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
+    follow-up callback is wired into ``_paginate`` correctly.
+
+    Statistics drives that page walk as a one-item ``FanOut``, the same
+    executor every other getter uses, so a transient mid-walk failure is
+    resumable here too rather than ending the call outright.
+    """
+    with pytest.raises(ServiceInterrupted) as excinfo:
         _run_get_data_with_failure(
             httpx.ConnectError("stats-boom"),
             monkeypatch,
         )
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
-    assert "stats-boom" in str(excinfo.value)
+    # The pagination wrapper is the direct cause and still names the failure.
+    paginated = excinfo.value.__cause__
+    assert isinstance(paginated, DataRetrievalError)
+    assert "Paginated request failed" in str(paginated)
+    assert isinstance(paginated.__cause__, httpx.ConnectError)
+    assert "stats-boom" in str(paginated)
+    # Nothing completed, so there is nothing to hand back but the handle.
+    assert excinfo.value.call.completed_chunks == 0
 
 
 def test_get_data_warning_includes_next_token(caplog, monkeypatch):

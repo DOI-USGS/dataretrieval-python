@@ -118,8 +118,11 @@ Shared components
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
     response aggregation, fan-out execution, progress integration, and
     sync-over-async dispatch. ``fanout`` owns bounded concurrency, deterministic
-    failure precedence, sparse completion state, and resume over an injected
-    plan and fetch callback. Internally, ``liveness`` is a stdlib-only leaf
+    failure precedence, sparse completion state, resume, and the progress line,
+    over an injected plan and fetch callback; it is the single entry point from
+    synchronous getter code into the async internals, so a query with nothing to
+    divide runs as a one-item fan-out rather than through a separate bridge.
+    Internally, ``liveness`` is a stdlib-only leaf
     recording when data last arrived, so the page loop that observes progress
     and the retry loop that acts on it both depend on ``liveness`` rather than
     on each other. Transport imports no service adapter or OGC protocol module,
@@ -313,7 +316,9 @@ Known architectural debt
 This view records categories and representative locations of debt.
 ``.importlinter`` is authoritative for exact current dependency allowlists.
 
-- ``ogc/engine.py`` retains compatibility wrappers alongside OGC orchestration.
+- ``ogc/engine.py`` retains a compatibility pagination wrapper alongside OGC
+  orchestration. The sync-dispatch wrapper is gone: every retrieval path now
+  enters through ``transport.fanout.FanOut``.
 - ``utils.py`` combines shaping with compatibility imports for metadata,
   ambient configuration, transport, and the query path.
 - ``waterdata/utils.py`` combines endpoint constants, argument normalization,

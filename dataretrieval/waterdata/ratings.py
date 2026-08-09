@@ -17,7 +17,6 @@ from typing import Any, Literal, get_args
 import httpx
 import pandas as pd
 
-from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
@@ -34,13 +33,12 @@ from dataretrieval.transport.http import (
     get as _get,
 )
 from dataretrieval.transport.links import resolve_next_url
+from dataretrieval.waterdata.endpoints import STAC_URL
 
 __all__ = ["get_ratings"]
 
 
 logger = logging.getLogger(__name__)
-
-STAC_URL = f"{WATERDATA_BASE_URL}/stac/v0"
 
 RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
 _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)

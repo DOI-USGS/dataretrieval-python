@@ -5,7 +5,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from dataretrieval import _querying, exceptions, nwis, utils
+from dataretrieval import _querying, _wqx, exceptions, nwis, utils
 
 
 class Test_Ambient:
@@ -370,7 +370,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["PST", "EST"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -387,7 +387,7 @@ class Test_attach_datetime_columns:
                 "ActivityStartTime/TimeZoneCode": ["PST"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["ActivityStartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -400,7 +400,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["BOGUS"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].isna().all()
 
     def test_existing_datetime_column_not_overwritten(self):
@@ -412,7 +412,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartDateTime": ["preexisting"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
 
 

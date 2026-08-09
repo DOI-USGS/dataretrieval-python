@@ -27,6 +27,9 @@ layers =
     _querying
     transport
     progress
+; Response-format conventions sit above the pure leaves because they read the
+; code tables, and below every adapter that shapes a response with them.
+    _wqx
     _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
     exceptions

@@ -24,22 +24,15 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
-from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
+# Endpoint constants live in one place for the whole service; they are re-bound
+# here because ``waterdata.utils.OGC_API_URL`` is a documented path.
+from dataretrieval.waterdata.endpoints import BASE_URL, OGC_API_URL, SAMPLES_URL
+
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
-
-# ---------------------------------------------------------------------------
-# Water Data endpoint constants. The authority comes from the credentials leaf
-# -- the host that serves these endpoints is the host that honors the API key --
-# while the paths below stay local rather than importing OGC policy internals.
-# ---------------------------------------------------------------------------
-
-BASE_URL = WATERDATA_BASE_URL
-OGC_API_URL = f"{BASE_URL}/ogcapi/v0"
-SAMPLES_URL = f"{BASE_URL}/samples-data"
 
 # Maps each OGC waterdata service to its user-facing ``id`` column (the name the
 # typed getters rename the wire ``id`` to, e.g. ``daily`` -> ``daily_id``).

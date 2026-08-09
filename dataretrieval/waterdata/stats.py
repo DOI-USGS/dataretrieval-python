@@ -3,8 +3,9 @@
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
 *separate*, non-OGC API: it has no chunkable multi-value axes, so it drives
-:func:`dataretrieval.transport.pagination.paginate` through the shared sync
-bridge rather than going through ``multi_value_chunked``. The typed getters
+:func:`dataretrieval.transport.pagination.paginate` as a one-item
+:class:`~dataretrieval.transport.fanout.FanOut` rather than going through
+``multi_value_chunked``. The typed getters
 ``get_stats_por`` and
 ``get_stats_date_range`` in :mod:`dataretrieval.waterdata.api` call
 :func:`get_data` here.
@@ -18,7 +19,6 @@ import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
     GEOPANDAS,
@@ -26,14 +26,13 @@ from dataretrieval.ogc.shaping import (
     _empty_feature_frame,
     _geo_feature_frame,
 )
+from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
+from dataretrieval.transport.retry import RetryPolicy
+from dataretrieval.waterdata.endpoints import STATISTICS_API_URL
 
 __all__ = ["get_data"]
-
-STATISTICS_API_VERSION = "v0"
-STATISTICS_API_URL = f"{WATERDATA_BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 
 
 def _handle_nesting(
@@ -204,10 +203,11 @@ def get_data(
     parameters.
 
     The stats path doesn't go through ``multi_value_chunked`` (its query
-    shape has no chunkable list axes), so it drives transport pagination
-    directly through an ``anyio`` blocking portal. The portal runs the
-    pagination loop in a short-lived worker thread, so this works whether
-    or not the caller is already inside an event loop.
+    shape has no chunkable list axes), so it drives transport pagination as a
+    one-item :class:`~dataretrieval.transport.fanout.FanOut`. The executor
+    runs the pagination loop in a short-lived worker thread, so this works
+    whether or not the caller is already inside an event loop, and the single
+    request gets the same retry and resume semantics as every other getter.
 
     Parameters
     ----------
@@ -222,12 +222,9 @@ def get_data(
         computation_type other than percentiles, a percentile column is still
         returned.
     client : httpx.AsyncClient, optional
-        Caller-borrowed async client. ``None`` (default) opens a temporary one
-        inside the portal. Primarily a test seam. Deliberately does *not* fall
-        back to the chunker's shared client: that client belongs to the
-        chunker's event loop, and this runs in its own portal loop, so driving
-        it from here would corrupt the connection pool. Statistics is a
-        standalone API and never runs nested inside a chunked call anyway.
+        Caller-borrowed async client. ``None`` (default) borrows the one this
+        call's :class:`~dataretrieval.transport.fanout.FanOut` opened, which
+        lives in the same event loop as the page walk. Primarily a test seam.
 
     Returns
     -------
@@ -242,9 +239,14 @@ def get_data(
     DataRetrievalError
         The typed subclass for an HTTP error response (see
         :func:`transport.pagination.paginate`);
-        or :class:`~dataretrieval.exceptions.NetworkError` if the initial request
-        can't reach the service (timeout / DNS), the ``httpx`` exception chained
+        or :class:`~dataretrieval.exceptions.NetworkError` if the request
+        can't reach the service in a way retrying cannot fix (bad scheme,
+        a hostname that does not resolve), the ``httpx`` exception chained
         on ``__cause__``.
+    FanOutInterrupted
+        A transient failure (429 / 5xx / timeout) survived the built-in
+        retries. Resume with ``exc.call.resume()`` (see
+        :doc:`/userguide/errors`).
     """
 
     url = f"{STATISTICS_API_URL}/{service}"
@@ -271,16 +273,27 @@ def get_data(
             method, url=url, params={**args, "next_token": cursor}, headers=headers
         )
 
-    async def _run() -> tuple[pd.DataFrame, httpx.Response]:
+    async def _fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
         return await paginate(
-            req,
+            request,
             parse_response=parse_response,
             follow_up=follow_up,
-            client=client,
+            # Borrow the executor's shared client unless a caller injected one.
+            client=client if client is not None else active_client(),
             raise_for_status=_raise_for_non_200,
         )
 
-    df, response = run_sync(_run, service=service, error_url=url)
+    # A one-item fan-out. Statistics has no chunkable axis, so the plan is a
+    # single request -- but running it through the same executor as every other
+    # getter is what gives it retry, the resumable interruption taxonomy, and
+    # the progress line, instead of a private sync bridge that had none of them.
+    df, response = FanOut(
+        [req],
+        _fetch,
+        RetryPolicy.from_env(),
+        canonical_url=str(req.url),
+        service=service,
+    ).resume()
 
     if expand_percentiles:
         df = _expand_percentiles(df)

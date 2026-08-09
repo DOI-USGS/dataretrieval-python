@@ -48,7 +48,6 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval import progress as _progress
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
@@ -395,22 +394,20 @@ def _fan_out(
     ) -> tuple[pd.DataFrame, BaseMetadata]:
         return frame, BaseMetadata(response)
 
-    # ``progress_context`` activates the reporter ``FanOut`` ticks into; without
-    # it Water Use would run the shared executor but print nothing, which is
-    # what it did when it drove its own gather.
-    with _progress.progress_context(service="wateruse", target_url=WATERUSE_URL):
-        return FanOut(
-            requests,
-            fetch,
-            RetryPolicy.from_env(),
-            finalize=finalize,
-            client_options={"verify": ssl_check},
-            default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
-            # No single URL expresses "all of these locations" -- the service
-            # has no such request -- so the aggregate reports the first,
-            # matching what an un-fanned single-location call would show.
-            canonical_url=str(requests[0].url) if requests else None,
-        ).resume()
+    return FanOut(
+        requests,
+        fetch,
+        RetryPolicy.from_env(),
+        finalize=finalize,
+        client_options={"verify": ssl_check},
+        default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
+        # No single URL expresses "all of these locations" -- the service
+        # has no such request -- so the aggregate reports the first,
+        # matching what an un-fanned single-location call would show.
+        canonical_url=str(requests[0].url) if requests else None,
+        # Labels the progress line the executor opens for this drive.
+        service="wateruse",
+    ).resume()
 
 
 def _read_csv_page(response: httpx.Response) -> pd.DataFrame:

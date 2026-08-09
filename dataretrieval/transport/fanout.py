@@ -281,7 +281,12 @@ class FanOut(Generic[_Item]):
     canonical_url : str or None, optional
         URL identifying the query as a whole, restored onto the combined
         response so the caller sees the request they made rather than
-        whichever sub-request happened to land last.
+        whichever sub-request happened to land last. Also the destination
+        :meth:`resume` labels its progress line with.
+    service : str or None, optional
+        Human-facing name of what is being retrieved (e.g. ``"daily"``,
+        ``"wateruse"``), used to label the progress line :meth:`resume`
+        opens. ``None`` leaves the line unlabelled.
 
     Attributes
     ----------
@@ -312,12 +317,17 @@ class FanOut(Generic[_Item]):
         default_concurrent: int = _CONCURRENCY_DEFAULT,
         *,
         canonical_url: str | None = None,
+        service: str | None = None,
     ) -> None:
         self.plan = plan
         self.fetch = fetch
         self.retry_policy = retry_policy
         self.finalize = finalize
         self.canonical_url = canonical_url
+        # Label for the progress line :meth:`resume` opens. It lives here, next
+        # to ``canonical_url``, because this class is what emits the progress
+        # events — see :meth:`resume`.
+        self.service = service
         # This service's preferred cap when the user has not set
         # ``API_USGS_CONCURRENT``. Resolved at resume time, not here, so a
         # test's ``monkeypatch.setenv`` still applies. See
@@ -481,11 +491,18 @@ class FanOut(Generic[_Item]):
         """
         Drive the call to completion and return the combined result.
 
-        Runs :meth:`_run` through an ``anyio`` blocking portal (a
-        short-lived worker thread), so it works whether or not the caller
-        is already inside an event loop (Jupyter / IPython / async apps).
-        The portal copies the calling context, so the active progress
-        reporter still reaches the sub-requests.
+        Opens the progress line for the drive and runs :meth:`_run` through
+        an ``anyio`` blocking portal (a short-lived worker thread), so it
+        works whether or not the caller is already inside an event loop
+        (Jupyter / IPython / async apps). The portal copies the calling
+        context, so the active progress reporter still reaches the
+        sub-requests.
+
+        This executor is what emits progress events, so it is also what owns
+        the reporter's lifetime: an adapter that drives a ``FanOut`` gets the
+        line for free instead of having to remember a separate
+        ``with progress_context(...)`` block. A reporter already active
+        (a nested getter, or a caller's own context) is reused unchanged.
 
         Idempotent: only sub-requests whose index isn't already in
         ``self._chunks`` are re-issued. Item order is the plan's own and
@@ -513,18 +530,25 @@ class FanOut(Generic[_Item]):
             the underlying condition to clear and call ``exc.call.resume()``
             again.
         """
-        # Drive inside the snapshot taken at construction (see ``__init__``).
-        # ``start_blocking_portal`` copies the *calling* context into its
-        # worker thread, and running here means that calling context is the
-        # snapshot — so the base URL / dialect / row cap / progress reporter
-        # active when the call was created reach the rebuilt sub-requests,
-        # even when this is a resume fired long after the original ``with``
-        # blocks exited.
-        # Do not resurrect the reporter captured with the adapter context: the
-        # originating progress context closes it when an interruption escapes.
-        # A later resume uses whichever reporter is active now (or none), while
-        # retaining every other captured ambient needed to rebuild requests.
-        return self._ctx.run(self._resume_in_context, _progress.current())
+        # Open the line out here, in the *calling* context, so an outer
+        # reporter (a nested getter, or the caller's own ``progress_context``)
+        # is the one found and reused; a drive that finds none gets a fresh
+        # line, which is what makes a resume long after the interruption
+        # report progress at all.
+        #
+        # Then drive inside the snapshot taken at construction (see
+        # ``__init__``). ``start_blocking_portal`` copies the *calling* context
+        # into its worker thread, and running here means that calling context
+        # is the snapshot — so the base URL / dialect / row cap active when the
+        # call was created reach the rebuilt sub-requests, even when this is a
+        # resume fired long after the original ``with`` blocks exited. The
+        # reporter is the one ambient that must NOT come from the snapshot: a
+        # reporter captured there belongs to a context that has since closed
+        # it, so this drive's reporter is republished over it.
+        with _progress.progress_context(
+            service=self.service, target_url=self.canonical_url
+        ):
+            return self._ctx.run(self._resume_in_context, _progress.current())
 
     def _resume_in_context(
         self, reporter: _progress.ProgressReporter | None

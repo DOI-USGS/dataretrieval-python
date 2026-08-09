@@ -24,8 +24,8 @@ from dataretrieval.exceptions import (
     RateLimited,
     ServiceUnavailable,
 )
+from dataretrieval.transport.fanout import FanOut
 from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.sync import run_sync
 
 
 def _response(
@@ -148,10 +148,23 @@ def test_shared_status_mapping_preserves_retry_after() -> None:
 
 
 def test_sync_bridge_runs_async_operation() -> None:
-    async def operation() -> str:
-        return "ok"
+    """A one-item fan-out is the package's only sync-to-async bridge.
 
-    assert run_sync(operation, service="test", error_url="https://example.test") == "ok"
+    Every retrieval path now enters through ``FanOut``, so a single request
+    with nothing to chunk still reaches the network from synchronous caller
+    code through the executor's blocking portal.
+    """
+    frame = pd.DataFrame({"value": ["ok"]})
+    response = _response()
+
+    async def operation(item: str) -> tuple[pd.DataFrame, httpx.Response]:
+        assert item == "only"
+        return frame, response
+
+    returned, aggregated = FanOut(["only"], operation).resume()
+
+    assert returned["value"].tolist() == ["ok"]
+    assert aggregated is response
 
 
 def test_retry_tunables_have_a_single_home() -> None:
