@@ -26,13 +26,13 @@ Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clea
 
 from __future__ import annotations
 
-import contextvars
 import os
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TextIO
 
+from dataretrieval._ambient import Ambient
 from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
 
 if TYPE_CHECKING:
@@ -53,9 +53,7 @@ def _group_int(value: str) -> str:
 # within one query, and an unrelated query in another context can't clobber its
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
-_active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
-    "dataretrieval_progress", default=None
-)
+_active: Ambient[ProgressReporter | None] = Ambient("dataretrieval_progress", None)
 
 # Process-level latch so the "no API key" pointer is shown at most once.
 _api_key_hint_shown = False
@@ -269,16 +267,6 @@ class ProgressReporter:
 
 
 @contextmanager
-def _use_reporter(reporter: ProgressReporter | None) -> Iterator[None]:
-    """Temporarily publish ``reporter``, including ``None`` to clear one."""
-    token = _active.set(reporter)
-    try:
-        yield
-    finally:
-        _active.reset(token)
-
-
-@contextmanager
 def progress_context(
     *,
     service: str | None = None,
@@ -302,11 +290,10 @@ def progress_context(
     reporter = ProgressReporter(
         service=service, stream=stream, enabled=enabled, target_url=target_url
     )
-    token = _active.set(reporter)
     try:
-        yield reporter
+        with _active(reporter):
+            yield reporter
     finally:
-        _active.reset(token)
         reporter.close()
 
 

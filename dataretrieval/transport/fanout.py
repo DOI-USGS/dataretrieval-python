@@ -555,7 +555,7 @@ class FanOut(Generic[_Item]):
     ) -> tuple[pd.DataFrame, Any]:
         """Body of :meth:`resume`, run inside the captured context."""
         concurrency = _resolve_concurrency(self.default_concurrent)
-        with _progress._use_reporter(reporter), start_blocking_portal() as portal:
+        with _progress._active(reporter), start_blocking_portal() as portal:
             # ``portal.call`` returns ``Any`` because ``functools.partial``
             # erases ``_run``'s return type; restore the declared tuple.
             return cast(
