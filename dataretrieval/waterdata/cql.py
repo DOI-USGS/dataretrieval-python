@@ -20,7 +20,7 @@ from dataretrieval.ogc.requests import (
     _construct_cql_request,
     _switch_properties_id,
 )
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.waterdata.types import (
     WATERDATA_SERVICES,
 )

@@ -17,7 +17,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval.rdb import read_rdb
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.response_metadata import BaseMetadata
 
 from .utils import query
 

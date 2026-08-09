@@ -66,10 +66,10 @@ from dataretrieval.ogc.requests import (  # noqa: F401
     prepare_request_args,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
 from dataretrieval.utils import (
-    BaseMetadata,
     _default_headers,  # noqa: F401  — compatibility re-export for tests
     _require_positive_int,
 )
