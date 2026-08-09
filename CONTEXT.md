@@ -89,6 +89,11 @@ for compatibility and is not where new work goes.
 **Collection** — One named set of records a service offers — `daily`,
 `monitoring-locations`, `time-series-metadata`. The unit a getter targets.
 
+A collection is not a service. Water Data is a service; `daily` is one of its
+collections. The distinction matters because the OGC machinery is shared: the
+same code path retrieves a Water Data collection and an NGWMN one, and only the
+service differs.
+
 **Collection family** — A group of collections sharing a shape and therefore a
 getter signature. Their getters deliberately resemble one another; the
 resemblance is the public contract, not duplication to be removed.
@@ -132,3 +137,21 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   correct; neither is scheduled for removal.
 - `site` appears in deprecated NWIS and WQP parameter names where *monitoring
   location* is meant. These are frozen public surfaces and will not be renamed.
+  Where the Water Data API itself names a thing `site-types` or
+  `site_type_code`, that is the service's vocabulary and is reproduced
+  faithfully rather than translated.
+- **`service` names a collection throughout the OGC machinery** — the public
+  `waterdata.get_cql(service="daily")`, and the `service` parameter threaded
+  through `dataretrieval.ogc`. By this glossary those values are collections,
+  and the parameter should be `collection`.
+
+  The rename was attempted and reverted. `service` legitimately means the
+  external system in `transport` and `progress`, where it labels a progress
+  line, so the same word carries both senses at different layers and no
+  mechanical rename separates them. Renaming only the OGC half leaves
+  `get_cql(service="daily")` — a documented public keyword — still disagreeing,
+  so the inconsistency survives either way and the churn buys nothing.
+
+  Read `service` as "collection" inside `dataretrieval.ogc`, and as "external
+  system" in `transport` and `progress`. New code should prefer `collection`
+  where it means one.
