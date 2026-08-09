@@ -100,9 +100,9 @@ Shared components
     Protocol subsystem for Water Data and NGWMN. A small facade
     (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
     ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
-    Internally, ``policy`` defines the dialect type and endpoint constants
-    (depends only on stdlib); ``context`` owns ambient base URL, dialect, and row
-    cap state; ``requests`` owns argument normalization and HTTP request
+    Internally, ``policy`` defines the dialect type, control validation, and
+    endpoint constants; ``context`` owns ambient base URL, dialect, and row cap
+    state; ``requests`` owns argument normalization and HTTP request
     construction; ``schema`` executes queryables/schema requests; ``engine``
     supplies OGC cursor and response strategies to transport pagination;
     ``planning`` determines chunk boundaries; ``chunking`` executes plans and
@@ -110,8 +110,8 @@ Shared components
     contract; ``retry`` classifies failures into OGC interruption types; and
     ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
     protocol concerns. The full runtime OGC graph, including the facade, is
-    acyclic — enforced package-wide by the ``acyclic`` contract in
-    ``.importlinter``.
+    acyclic — enforced by the package-wide fitness function in
+    ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -127,18 +127,25 @@ Shared components
     Stable error-policy leaf. It has no runtime third-party dependency, and
     every service can import it without creating an infrastructure cycle.
 
-``dataretrieval.response_metadata``
+``dataretrieval._response_metadata``
     ``BaseMetadata``, the second half of every getter's ``(DataFrame,
     metadata)`` return contract. A dependency-free leaf: nearly every service
     module needs this class, and while it lived in ``utils`` beside the legacy
     query machinery, importing it pulled that module's whole HTTP stack in
-    transitively.
+    transitively. The implementation module is private; the established public
+    class path remains ``dataretrieval.utils.BaseMetadata``.
+
+``dataretrieval._ambient``
+    Dependency-free implementation of scoped context values used by concurrent
+    OGC internals. ``dataretrieval.utils.Ambient`` remains the stable public
+    import and resolves to this same class.
 
 ``dataretrieval.utils``
-    Data-shaping helpers, ambient context support, legacy request composition,
-    and compatibility imports for transport names that historically lived here
-    (including ``BaseMetadata``, so its original import path keeps working). By
-    default, do not add new service-specific behavior there.
+    Data-shaping helpers, legacy request composition, and compatibility imports
+    for names that historically lived here (including ``Ambient`` and
+    ``BaseMetadata``, so their original import paths keep working). OGC does not
+    depend on this mixed legacy module; by default, do not add new
+    service-specific behavior there.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
     State/time-zone code conversion and RDB parsing leaves.
@@ -157,9 +164,9 @@ top-level module fails the contract until it is placed, so where a module
 belongs is decided when it is added rather than inferred later.
 
 ``tests/architecture_test.py`` complements those contracts without repeating
-them. It covers the rules an import graph cannot express — which symbols cross
-a seam, declared ``__all__`` surfaces, the AST shape of a facade, and imports
-that must exist rather than be forbidden.
+their direction rules. It covers which symbols cross a seam, declared
+``__all__`` surfaces, the AST shape of a facade, imports that must exist rather
+than be forbidden, and full-graph cycle detection (see ADR 0003).
 
 Interface view
 --------------

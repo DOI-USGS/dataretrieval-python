@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+gd1345eb1f documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d19d073d"></script>
+      <script src="../../_static/documentation_options.js?v=1482a1b9"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,26 +79,24 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_credentials</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_transport_http</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._ambient</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span>  <span class="c1"># noqa: F401 - compatibility re-export</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseMetadata</span><span class="p">,</span>  <span class="c1"># noqa: F401  — compatibility re-export; defined there now</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes</span><span class="w"> </span><span class="kn">import</span> <span class="n">tz</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">NoSitesError</span><span class="p">,</span>
     <span class="n">URLTooLong</span><span class="p">,</span>
     <span class="n">error_for_status</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BaseMetadata</span><span class="p">,</span>  <span class="c1"># noqa: F401  — compatibility re-export; defined there now</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_GATEWAY_STATUSES</span><span class="p">,</span>
@@ -119,85 +117,6 @@
 <span class="n">_strip_api_key_from_untrusted_host_async</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">_transport_http</span><span class="o">.</span><span class="n">strip_api_key_from_untrusted_host_async</span>
 <span class="p">)</span>
-
-<span class="n">_T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_T&quot;</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="Ambient">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Ambient</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">_T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A :class:`~contextvars.ContextVar` paired with a scoping contextmanager.</span>
-
-<span class="sd">    Bundles the var and its set/reset-token dance into one object, so an ambient</span>
-<span class="sd">    value needs a single declaration instead of a ``var`` + setter-function pair.</span>
-<span class="sd">    Read the current value with :meth:`get`; set it for a ``with`` block by</span>
-<span class="sd">    *calling* the instance — the previous value is restored on exit (and can&#39;t</span>
-<span class="sd">    leak into a later call the way a hand-written ``try/finally`` can when its</span>
-<span class="sd">    ``reset`` is dropped)::</span>
-
-<span class="sd">        _base_url = Ambient(&quot;ogc_base_url&quot;, DEFAULT)</span>
-<span class="sd">        with _base_url(other):  # scoped to the block</span>
-<span class="sd">            _base_url.get()  # -&gt; other</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="Ambient.__init__">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.__init__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="p">:</span> <span class="n">ContextVar</span><span class="p">[</span><span class="n">_T</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContextVar</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Ambient.get">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value — the default outside any active scope.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="Ambient.__call__">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.Ambient.__call__">[docs]</a>
-    <span class="nd">@contextmanager</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">_T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value for the duration of the ``with`` block.&quot;&quot;&quot;</span>
-        <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">yield</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="_require_positive_int">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._require_positive_int">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_require_positive_int</span><span class="p">(</span>
-    <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that ``value`` is a positive integer, else raise ``ValueError``.</span>
-
-<span class="sd">    Accepts any :class:`numbers.Integral` (so a numpy/pandas integer passes,</span>
-<span class="sd">    not only ``int``) but rejects ``bool`` — an ``Integral`` subtype that is</span>
-<span class="sd">    nonsensical as a count. A non-integer (float, str, ``None``) or a value</span>
-<span class="sd">    ``&lt; 1`` raises before any I/O, rather than crashing later (e.g. deep in</span>
-<span class="sd">    ``pd.DataFrame.head``). Shared by the user-facing count knobs ``max_rows``</span>
-<span class="sd">    and ``parallel_chunks(n)`` so their boundary validation can&#39;t drift.</span>
-<span class="sd">    (``ChunkPlan.max_chunks`` is an internal, already-``int`` precondition with</span>
-<span class="sd">    its own domain-specific message, so it keeps a lighter ``&lt; 1`` guard rather</span>
-<span class="sd">    than routing through here.)</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    value : int</span>
-<span class="sd">        The value to check. Typed ``int`` for callers, but validated at</span>
-<span class="sd">        runtime because the real value may be anything the user passed.</span>
-<span class="sd">    name : str</span>
-<span class="sd">        Parameter name, used as the subject of the error message.</span>
-<span class="sd">    examples : str, optional</span>
-<span class="sd">        Illustrative values appended to the message (e.g. ``&quot;2, 8, 32&quot;``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">eg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;, e.g. </span><span class="si">{</span><span class="n">examples</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">examples</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a positive integer</span><span class="si">{</span><span class="n">eg</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">).&quot;</span><span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="to_str">
@@ -495,47 +414,17 @@
 
 
 
-<div class="viewcode-block" id="_query_impl">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._query_impl">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_query_impl</span><span class="p">(</span>
+<div class="viewcode-block" id="_query_with_retry">
+<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._query_with_retry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_query_with_retry</span><span class="p">(</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">retry_policy</span><span class="p">:</span> <span class="n">RetryPolicy</span><span class="p">,</span>
+    <span class="n">retry_policy</span><span class="p">:</span> <span class="n">RetryPolicy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
-
-<span class="sd">    Wrapper for ``httpx.get`` that handles errors, converts listed query</span>
-<span class="sd">    parameters to comma-separated strings, and returns the response.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    url: string</span>
-<span class="sd">        URL to query.</span>
-<span class="sd">    payload: dict</span>
-<span class="sd">        Query parameters passed to ``httpx.get``.</span>
-<span class="sd">    delimiter: string</span>
-<span class="sd">        Delimiter to use with lists.</span>
-<span class="sd">    ssl_check: bool</span>
-<span class="sd">        Whether to check SSL certificates. Default is True.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    response: ``httpx.Response``</span>
-<span class="sd">        The response from the API query ``httpx.get`` function call.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    DataRetrievalError</span>
-<span class="sd">        On an HTTP error response, the typed subclass for the status (see</span>
-<span class="sd">        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or</span>
-<span class="sd">        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response</span>
-<span class="sd">        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`</span>
-<span class="sd">        on a connection-level failure (timeout, DNS), with the underlying</span>
-<span class="sd">        ``httpx`` exception on ``__cause__``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send an active-service query with bounded transient retry by default.&quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">payload</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">delimiter</span><span class="p">)</span>
@@ -571,34 +460,43 @@
     <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
     <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">_query_impl</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a query.</span>
+
+<span class="sd">    Wrapper for ``httpx.get`` that handles errors, converts listed query</span>
+<span class="sd">    parameters to comma-separated strings, and returns the response.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    url: string</span>
+<span class="sd">        URL to query.</span>
+<span class="sd">    payload: dict</span>
+<span class="sd">        Query parameters passed to ``httpx.get``.</span>
+<span class="sd">    delimiter: string</span>
+<span class="sd">        Delimiter to use with lists.</span>
+<span class="sd">    ssl_check: bool</span>
+<span class="sd">        Whether to check SSL certificates. Default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    response: ``httpx.Response``</span>
+<span class="sd">        The response from the API query ``httpx.get`` function call.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    DataRetrievalError</span>
+<span class="sd">        On an HTTP error response, the typed subclass for the status (see</span>
+<span class="sd">        :func:`dataretrieval.exceptions.error_for_status` for the mapping); or</span>
+<span class="sd">        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response</span>
+<span class="sd">        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`</span>
+<span class="sd">        on a connection-level failure (timeout, DNS), with the underlying</span>
+<span class="sd">        ``httpx`` exception on ``__cause__``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_query_with_retry</span><span class="p">(</span>
         <span class="n">url</span><span class="p">,</span>
         <span class="n">payload</span><span class="p">,</span>
         <span class="n">delimiter</span><span class="p">,</span>
         <span class="n">ssl_check</span><span class="p">,</span>
         <span class="n">retry_policy</span><span class="o">=</span><span class="n">RetryPolicy</span><span class="p">(</span><span class="n">max_retries</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
-    <span class="p">)</span></div>
-
-
-
-<span class="n">query</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_query_impl</span><span class="o">.</span><span class="vm">__doc__</span>
-
-
-<div class="viewcode-block" id="_query_with_retry">
-<a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils._query_with_retry">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_query_with_retry</span><span class="p">(</span>
-    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Active-service form of :func:`query` with bounded transient retry.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_query_impl</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span>
-        <span class="n">payload</span><span class="p">,</span>
-        <span class="n">delimiter</span><span class="p">,</span>
-        <span class="n">ssl_check</span><span class="p">,</span>
-        <span class="n">retry_policy</span><span class="o">=</span><span class="n">_single_request_policy</span><span class="p">(),</span>
     <span class="p">)</span></div>
 
 </pre></div>

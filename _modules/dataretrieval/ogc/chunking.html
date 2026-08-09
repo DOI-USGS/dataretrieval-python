@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gd1345eb1f documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=d19d073d"></script>
+      <script src="../../../_static/documentation_options.js?v=1482a1b9"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -159,6 +159,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">anyio.from_thread</span><span class="w"> </span><span class="kn">import</span> <span class="n">start_blocking_portal</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._ambient</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.combining</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_combine_chunk_frames</span><span class="p">,</span>
     <span class="n">_combine_chunk_responses</span><span class="p">,</span>
@@ -167,10 +168,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_async_client</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NO_RETRY</span><span class="p">,</span> <span class="n">RetryPolicy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry_async</span> <span class="k">as</span> <span class="n">_retry</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span><span class="p">,</span> <span class="n">_require_positive_int</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">_require_positive_int</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">_classify_chunk_error</span>
 
 <span class="c1"># Empirically the API replies HTTP 414 above ~8200 bytes of full URL —</span>
@@ -524,12 +525,16 @@
 <span class="sd">            The concatenated frame and the aggregated response, before</span>
 <span class="sd">            :attr:`finalize` is applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_frames</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_responses</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_combine_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine completed frames in deterministic sub-request order.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_combine_chunk_frames</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">)])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_combine_responses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Aggregate completed responses under the canonical request URL.&quot;&quot;&quot;</span>
         <span class="n">responses</span> <span class="o">=</span> <span class="p">[</span><span class="n">response</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">response</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">_combine_chunk_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">),</span>
-            <span class="n">_combine_chunk_responses</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">),</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_combine_chunk_responses</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">partial_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -538,7 +543,7 @@
 
 <span class="sd">        Live — recomputed on each access so it reflects current state</span>
 <span class="sd">        across resume attempts. Deliberately the *raw* combined frame</span>
-<span class="sd">        (``_combine_raw``), NOT the finalized result: this is a cheap,</span>
+<span class="sd">        (``_combine_frames``), NOT the finalized result: this is a cheap,</span>
 <span class="sd">        side-effect-free snapshot for inspecting partial progress, so</span>
 <span class="sd">        reading it (or building a :class:`ChunkInterrupted` around it)</span>
 <span class="sd">        never triggers ``finalize`` work — which for OGC getters includes</span>
@@ -551,9 +556,7 @@
 <span class="sd">            Combined frame of completed sub-requests, or an empty</span>
 <span class="sd">            ``DataFrame`` when nothing has completed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_raw</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_frames</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">partial_response</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -571,9 +574,7 @@
 <span class="sd">            Aggregated response when at least one sub-request has</span>
 <span class="sd">            completed, ``None`` otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_raw</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combine_responses</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunks</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_pending</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

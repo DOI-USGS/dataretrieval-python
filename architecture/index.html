@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+gd1345eb1f documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d19d073d"></script>
+      <script src="../_static/documentation_options.js?v=1482a1b9"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -189,9 +189,9 @@ policy. Their return types intentionally reflect their upstream data models.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code></dt><dd><p>Protocol subsystem for Water Data and NGWMN. A small facade
 (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>) exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>,
 <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>, <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code>, and <code class="docutils literal notranslate"><span class="pre">fetch_ogc_request</span></code>.
-Internally, <code class="docutils literal notranslate"><span class="pre">policy</span></code> defines the dialect type and endpoint constants
-(depends only on stdlib); <code class="docutils literal notranslate"><span class="pre">context</span></code> owns ambient base URL, dialect, and row
-cap state; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP request
+Internally, <code class="docutils literal notranslate"><span class="pre">policy</span></code> defines the dialect type, control validation, and
+endpoint constants; <code class="docutils literal notranslate"><span class="pre">context</span></code> owns ambient base URL, dialect, and row cap
+state; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP request
 construction; <code class="docutils literal notranslate"><span class="pre">schema</span></code> executes queryables/schema requests; <code class="docutils literal notranslate"><span class="pre">engine</span></code>
 supplies OGC cursor and response strategies to transport pagination;
 <code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries; <code class="docutils literal notranslate"><span class="pre">chunking</span></code> executes plans and
@@ -199,8 +199,8 @@ retains resumable state; <code class="docutils literal notranslate"><span class=
 contract; <code class="docutils literal notranslate"><span class="pre">retry</span></code> classifies failures into OGC interruption types; and
 <code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate their named
 protocol concerns. The full runtime OGC graph, including the facade, is
-acyclic — enforced package-wide by the <code class="docutils literal notranslate"><span class="pre">acyclic</span></code> contract in
-<code class="docutils literal notranslate"><span class="pre">.importlinter</span></code>.</p>
+acyclic — enforced by the package-wide fitness function in
+<code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
 timeouts, host-scoped authentication, cursor pagination, bounded retry,
@@ -214,16 +214,22 @@ framework API.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code></dt><dd><p>Stable error-policy leaf. It has no runtime third-party dependency, and
 every service can import it without creating an infrastructure cycle.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.response_metadata</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, the second half of every getter’s <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._response_metadata</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, the second half of every getter’s <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
 <span class="pre">metadata)</span></code> return contract. A dependency-free leaf: nearly every service
 module needs this class, and while it lived in <code class="docutils literal notranslate"><span class="pre">utils</span></code> beside the legacy
 query machinery, importing it pulled that module’s whole HTTP stack in
-transitively.</p>
+transitively. The implementation module is private; the established public
+class path remains <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Data-shaping helpers, ambient context support, legacy request composition,
-and compatibility imports for transport names that historically lived here
-(including <code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, so its original import path keeps working). By
-default, do not add new service-specific behavior there.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._ambient</span></code></dt><dd><p>Dependency-free implementation of scoped context values used by concurrent
+OGC internals. <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.Ambient</span></code> remains the stable public
+import and resolves to this same class.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code></dt><dd><p>Data-shaping helpers, legacy request composition, and compatibility imports
+for names that historically lived here (including <code class="docutils literal notranslate"><span class="pre">Ambient</span></code> and
+<code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, so their original import paths keep working). OGC does not
+depend on this mixed legacy module; by default, do not add new
+service-specific behavior there.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.codes</span></code> and <code class="docutils literal notranslate"><span class="pre">dataretrieval.rdb</span></code></dt><dd><p>State/time-zone code conversion and RDB parsing leaves.</p>
 </dd>
@@ -241,9 +247,9 @@ intermediary fails as surely as a direct one. The stack is exhaustive: a new
 top-level module fails the contract until it is placed, so where a module
 belongs is decided when it is added rather than inferred later.</p>
 <p><code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> complements those contracts without repeating
-them. It covers the rules an import graph cannot express — which symbols cross
-a seam, declared <code class="docutils literal notranslate"><span class="pre">__all__</span></code> surfaces, the AST shape of a facade, and imports
-that must exist rather than be forbidden.</p>
+their direction rules. It covers which symbols cross a seam, declared
+<code class="docutils literal notranslate"><span class="pre">__all__</span></code> surfaces, the AST shape of a facade, imports that must exist rather
+than be forbidden, and full-graph cycle detection (see ADR 0003).</p>
 </section>
 </section>
 <section id="interface-view">
