@@ -19,9 +19,10 @@ imported on demand: ``from dataretrieval import nldi``.
 
 A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
 (the taxonomy lives in ``dataretrieval.exceptions``); connection-level failures
-(timeouts, DNS) are wrapped as :class:`dataretrieval.NetworkError`. A large
-request interrupted mid-stream raises :class:`dataretrieval.ChunkInterrupted`,
-whose ``.call.resume()`` continues from the work already completed.
+(timeouts, DNS) are wrapped as :class:`dataretrieval.NetworkError`. A fanned-out
+request interrupted mid-stream raises :class:`dataretrieval.FanOutInterrupted`
+(also available under its original ``ChunkInterrupted`` name), whose
+``.call.resume()`` continues from the work already completed.
 """
 
 from importlib.metadata import PackageNotFoundError, version
@@ -45,22 +46,23 @@ from dataretrieval.exceptions import (
     URLTooLong,
 )
 
+# Resumable fan-out interruption exceptions. They are defined in
+# ``dataretrieval.interruptions`` rather than ``dataretrieval.exceptions``
+# because they carry pandas/httpx state and a resumable ``FanOut`` handle,
+# which would pull heavy dependencies into the lightweight exceptions module.
+# They are not under ``ogc`` because Water Use raises them too. Surfaced here so
+# callers get a stable public path: ``from dataretrieval import ChunkInterrupted``.
+from dataretrieval.interruptions import (
+    ChunkInterrupted,
+    FanOutInterrupted,
+    QuotaExhausted,
+    ServiceInterrupted,
+)
+
 # Parallel-chunks control (a context manager). Defined with the chunker in
 # ``dataretrieval.ogc.chunking``; surfaced here for a stable public path
 # ``from dataretrieval import parallel_chunks``.
 from dataretrieval.ogc.chunking import parallel_chunks
-
-# Resumable chunk-interruption exceptions. They are defined in
-# ``dataretrieval.ogc.interruptions`` rather than ``dataretrieval.exceptions``
-# because they carry pandas/httpx state and a resumable ``ChunkedCall`` handle,
-# which would pull heavy dependencies into the lightweight exceptions module.
-# Surfaced here so callers get a stable public path:
-# ``from dataretrieval import ChunkInterrupted``.
-from dataretrieval.ogc.interruptions import (
-    ChunkInterrupted,
-    QuotaExhausted,
-    ServiceInterrupted,
-)
 
 from . import (
     exceptions,
@@ -96,8 +98,9 @@ __all__ = [
     "TransientError",
     "URLTooLong",
     "Unchunkable",
-    # resumable chunk-interruption exceptions (defined in ogc.interruptions)
+    # resumable fan-out interruption exceptions (defined in interruptions)
     "ChunkInterrupted",
+    "FanOutInterrupted",
     "QuotaExhausted",
     "ServiceInterrupted",
     # parallel-chunks control (defined in ogc.chunking)

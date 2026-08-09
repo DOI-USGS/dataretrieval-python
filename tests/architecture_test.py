@@ -298,6 +298,11 @@ def test_transport_is_execution_policy_only() -> None:
     misplaced = {
         "dataretrieval/transport/progress.py",
         "dataretrieval/transport/combining.py",
+        # An exception taxonomy is not HTTP execution policy either. ``fanout``
+        # raises ``FanOutInterrupted`` and belongs here; defining it here would
+        # not, since adapters catch it whether or not they went through
+        # transport.
+        "dataretrieval/transport/interruptions.py",
     }
     present = {
         path
@@ -507,4 +512,73 @@ def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
     """
     assert "dataretrieval.ogc.schema" in _runtime_imports(
         PACKAGE_ROOT / "ogc" / "shaping.py"
+    )
+
+
+def test_wateruse_does_not_reimplement_fan_out_orchestration() -> None:
+    """Water Use must drive its locations through the shared fan-out executor.
+
+    It previously ran its own ``asyncio.gather`` with a private semaphore and a
+    hand-copied failure-precedence rule, kept in sync with ``FanOut`` by a
+    comment. Two copies of that rule is how they drift, and the duplicate lost
+    resume, progress, and the shared concurrency setting. Assert the duplication
+    cannot quietly return.
+    """
+    source = (PACKAGE_ROOT / "wateruse.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    offenders = {
+        f"{node.value.id}.{node.attr}"
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "asyncio"
+        and node.attr in {"gather", "Semaphore", "wait", "TaskGroup"}
+    }
+    assert not offenders, (
+        "Water Use re-implemented fan-out orchestration instead of using "
+        f"transport.fanout.FanOut: {sorted(offenders)}"
+    )
+
+
+def test_fan_out_plans_satisfy_the_plan_protocol() -> None:
+    """Every plan implementation must carry the three members ``FanOut`` drives.
+
+    ``FanOutPlan`` is structural, so nothing forces an implementation to be
+    complete at definition time -- a missing ``canonical_url`` would surface as
+    an ``AttributeError`` mid-fan-out, after requests had already been issued.
+    Check both implementations up front instead. They are deliberately unrelated
+    by inheritance: chunking divides structurally, and a Water Use plan divides
+    nothing, so there is no shared base to inherit.
+    """
+    import httpx
+
+    from dataretrieval.ogc.planning import ChunkPlan
+    from dataretrieval.wateruse import _LocationPlan
+
+    def _build(**args: object) -> httpx.Request:
+        return httpx.Request("GET", "https://example.invalid/items", params=args)
+
+    plans = [
+        ChunkPlan({"sites": ["a", "b"]}, _build, url_limit=8000),
+        _LocationPlan([httpx.Request("GET", "https://example.invalid/data")]),
+    ]
+    for plan in plans:
+        name = type(plan).__name__
+        assert isinstance(plan.total, int), f"{name}.total is not an int"
+        assert plan.canonical_url is None or isinstance(plan.canonical_url, str), (
+            f"{name}.canonical_url is neither str nor None"
+        )
+        sub_args = list(plan.iter_sub_args())
+        assert len(sub_args) == plan.total, (
+            f"{name}.iter_sub_args() yielded {len(sub_args)}, total says {plan.total}"
+        )
+        assert all(isinstance(item, dict) for item in sub_args), (
+            f"{name}.iter_sub_args() must yield kwargs dicts"
+        )
+        # Order is load-bearing for resume: a second pass must match the first.
+        assert list(plan.iter_sub_args()) == sub_args
+
+    assert not issubclass(_LocationPlan, ChunkPlan), (
+        "A Water Use plan must satisfy FanOutPlan structurally, not by "
+        "inheriting ChunkPlan -- it has no byte budget or axes to inherit."
     )

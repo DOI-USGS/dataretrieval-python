@@ -4,8 +4,9 @@ Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
-are wrapped as :class:`NetworkError` with the underlying ``httpx`` exception on
-``__cause__``.
+remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
+deterministic failure is :class:`NetworkError`; a recoverable failure that
+exhausts retries during fan-out is a resumable ``ServiceInterrupted``.
 
 Most failures are an :class:`HTTPError` carrying the response ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
@@ -59,8 +60,9 @@ class DataRetrievalError(Exception):
             else:
                 raise
 
-    Connection-level failures (timeouts, DNS) are wrapped as
-    :class:`NetworkError`, so this single clause covers them too.
+    Connection-level failures (timeouts, DNS) remain subclasses of this base:
+    :class:`NetworkError` when deterministic, or a resumable
+    ``ServiceInterrupted`` when recoverable fan-out retries are exhausted.
     """
 
     #: HTTP status that triggered the error, or ``None`` for errors without one

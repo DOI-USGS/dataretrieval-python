@@ -269,6 +269,16 @@ class ProgressReporter:
 
 
 @contextmanager
+def _use_reporter(reporter: ProgressReporter | None) -> Iterator[None]:
+    """Temporarily publish ``reporter``, including ``None`` to clear one."""
+    token = _active.set(reporter)
+    try:
+        yield
+    finally:
+        _active.reset(token)
+
+
+@contextmanager
 def progress_context(
     *,
     service: str | None = None,

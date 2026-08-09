@@ -6,7 +6,6 @@ import asyncio
 import math
 import os
 import random
-import socket
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -22,6 +21,7 @@ from dataretrieval.exceptions import (
     NetworkError,
     TransientError,
 )
+from dataretrieval.interruptions import _deterministic_failure
 from dataretrieval.transport.liveness import (
     credit_wait,
     elapsed_since_progress,
@@ -50,19 +50,6 @@ _RETRY_AFTER_CAP = 60.0
 # hint from waking together. Small on purpose: the server named the wait, so
 # jitter here decorrelates rather than extends it.
 _RETRY_AFTER_JITTER = 1.0
-# Resolver failures that will not resolve differently on a later attempt. The
-# temporary ones (notably EAI_AGAIN -- "try again", raised while a resolver is
-# still coming up, on VPN reconnect, or after a laptop wakes) are deliberately
-# absent: those are worth another try. Looked up defensively because the EAI_*
-# constants are platform-dependent; an unrecognized code stays retryable, since
-# spending a few seconds on a retry is cheaper than dropping a recoverable call.
-_PERMANENT_DNS_ERRORS = frozenset(
-    code
-    for code in (
-        getattr(socket, name, None) for name in ("EAI_NONAME", "EAI_FAIL", "EAI_NODATA")
-    )
-    if code is not None
-)
 # Attempts the no-progress budget never withholds; see RetryPolicy.allows_wait.
 _STALL_EXEMPT_ATTEMPTS = 1
 _STALL_TIMEOUT_ENV = "API_USGS_STALL_TIMEOUT"
@@ -292,44 +279,6 @@ class RetryPolicy:
 
 
 _NO_RETRY = RetryPolicy(max_retries=0)
-
-
-def _deterministic_failure(exc: BaseException) -> bool:
-    """Whether a transport failure would fail identically on every retry.
-
-    An unsupported scheme or a request we built wrong is settled before a byte
-    goes out, and a hostname the resolver rejects outright won't be accepted on
-    the next attempt either -- so retrying only delays the error the caller
-    needs. A *temporary* resolver failure is not in that class and stays
-    retryable (see :data:`_PERMANENT_DNS_ERRORS`).
-
-    The original failure is several layers down and not always an explicit
-    ``raise ... from``: a DNS failure reaches us as ``NetworkError`` ->
-    ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
-    linked by ``__context__`` (implicit chaining) rather than ``__cause__``.
-
-    Both links of every frame are visited, not just the first one present. A
-    frame can carry an explicit ``__cause__`` *and* an unrelated ``__context__``
-    (any ``raise X from Y`` inside an ``except`` block produces exactly that), so
-    following only the cause would walk off down the explicit branch and miss a
-    ``gaierror`` sitting on the implicit one -- spending the whole retry budget
-    on a hostname that will never resolve. The ``seen`` set keeps a chain that
-    rejoins itself, or points back at an ancestor, from looping.
-    """
-    seen: set[int] = set()
-    pending: list[BaseException | None] = [exc]
-    while pending:
-        current = pending.pop()
-        if current is None or id(current) in seen:
-            continue
-        seen.add(id(current))
-        if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
-            return True
-        if isinstance(current, socket.gaierror):
-            # Return, not continue: the first resolver code found settles the chain.
-            return current.errno in _PERMANENT_DNS_ERRORS
-        pending += [current.__cause__, current.__context__]
-    return False
 
 
 def _retryable(
