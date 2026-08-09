@@ -560,3 +560,34 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
     assert retry._retryable(temporary) == (True, None)
     assert _classify_chunk_error(temporary) is not None
+
+
+def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
+    """Every question asked of a failure chain shares one guarded traversal.
+
+    ``raise ... from`` accepts an exception already in the chain, so a retry
+    loop that re-raises an earlier failure can close the cycle. Each of these
+    walks reaches an answer by inspecting links, so an unguarded one would spin
+    forever inside a request path rather than surface the failure. This fails by
+    hanging, not by asserting -- pytest's timeout is the real assertion.
+    """
+    from dataretrieval.interruptions import (
+        ServiceInterrupted,
+        _classify_chunk_error,
+        _deterministic_failure,
+        _walk_causes,
+    )
+
+    first = RuntimeError("first")
+    second = RuntimeError("second")
+    first.__cause__ = second
+    second.__cause__ = first
+
+    assert {id(exc) for exc in _walk_causes(first)} == {id(first), id(second)}
+    assert _classify_chunk_error(first) is None
+    assert _deterministic_failure(first) is False
+    # The status hunt in the interruption constructor walks the same chain.
+    assert (
+        ServiceInterrupted(completed_chunks=0, total_chunks=1, cause=first).status_code
+        is None
+    )

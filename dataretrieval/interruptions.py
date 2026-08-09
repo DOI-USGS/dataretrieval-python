@@ -31,6 +31,7 @@ would pull heavy dependencies into that lightweight leaf.
 from __future__ import annotations
 
 import socket
+from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
@@ -124,7 +125,7 @@ class FanOutInterrupted(DataRetrievalError):
         *,
         completed_chunks: int,
         total_chunks: int,
-        call: FanOut | None = None,
+        call: FanOut[Any] | None = None,
         retry_after: float | None = None,
         cause: BaseException | None = None,
     ) -> None:
@@ -140,10 +141,14 @@ class FanOutInterrupted(DataRetrievalError):
         self.call = call
         self.retry_after = retry_after
         self.status_code = getattr(type(self), "_DEFAULT_STATUS", None)
-        current = cause
-        while current is not None and self.status_code is None:
-            self.status_code = getattr(current, "status_code", None)
-            current = current.__cause__
+        if self.status_code is None and cause is not None:
+            # The status is usually a few frames down: a typed error raised
+            # ``from`` the httpx failure that carried it.
+            for current in _walk_causes(cause):
+                status = getattr(current, "status_code", None)
+                if status is not None:
+                    self.status_code = status
+                    break
         # Snapshot partial state at raise time so the exception stays a stable
         # record of the failure moment: ``exc.partial_frame`` /
         # ``.partial_response`` do NOT advance on a later ``call.resume()``
@@ -222,6 +227,39 @@ _PERMANENT_DNS_ERRORS = frozenset(
 )
 
 
+def _walk_causes(
+    exc: BaseException, *, follow_context: bool = False
+) -> Iterator[BaseException]:
+    """Yield ``exc`` and the exceptions it chains to, each at most once.
+
+    Every question this module asks about a failure -- is it transient, is it
+    deterministic, what status did it carry -- is "find the first exception in
+    this chain that satisfies P". One traversal answers all of them, so the
+    cycle guard and the choice of links cannot drift between callers.
+
+    ``__cause__`` (explicit ``raise ... from``) is always followed.
+    ``__context__`` (implicit chaining, from raising inside an ``except``
+    block) is followed only when ``follow_context`` is set, because it can
+    lead away from the failure being classified into whatever unrelated error
+    happened to be in flight.
+
+    The ``seen`` set keeps a chain that rejoins itself, or points back at an
+    ancestor, from looping.
+    """
+    seen: set[int] = set()
+    pending: list[BaseException | None] = [exc]
+    while pending:
+        current = pending.pop()
+        if current is None or id(current) in seen:
+            continue
+        seen.add(id(current))
+        yield current
+        if follow_context:
+            pending += [current.__cause__, current.__context__]
+        else:
+            pending.append(current.__cause__)
+
+
 def _deterministic_failure(exc: BaseException) -> bool:
     """Whether a transport failure would fail identically on every retry.
 
@@ -231,32 +269,20 @@ def _deterministic_failure(exc: BaseException) -> bool:
     needs. A *temporary* resolver failure is not in that class and stays
     retryable (see :data:`_PERMANENT_DNS_ERRORS`).
 
-    The original failure is several layers down and not always an explicit
-    ``raise ... from``: a DNS failure reaches us as ``NetworkError`` ->
+    Walks ``__context__`` as well as ``__cause__``, because the original
+    failure is several layers down and not always an explicit ``raise ...
+    from``: a DNS failure reaches us as ``NetworkError`` ->
     ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
-    linked by ``__context__`` (implicit chaining) rather than ``__cause__``.
-
-    Both links of every frame are visited, not just the first one present. A
-    frame can carry an explicit ``__cause__`` *and* an unrelated ``__context__``
-    (any ``raise X from Y`` inside an ``except`` block produces exactly that), so
-    following only the cause would walk off down the explicit branch and miss a
-    ``gaierror`` sitting on the implicit one -- spending the whole retry budget
-    on a hostname that will never resolve. The ``seen`` set keeps a chain that
-    rejoins itself, or points back at an ancestor, from looping.
+    linked by implicit chaining. Following only the cause would walk off down
+    the explicit branch and miss a ``gaierror`` sitting on the implicit one --
+    spending the whole retry budget on a hostname that will never resolve.
     """
-    seen: set[int] = set()
-    pending: list[BaseException | None] = [exc]
-    while pending:
-        current = pending.pop()
-        if current is None or id(current) in seen:
-            continue
-        seen.add(id(current))
+    for current in _walk_causes(exc, follow_context=True):
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
             # Return, not continue: the first resolver code found settles the chain.
             return current.errno in _PERMANENT_DNS_ERRORS
-        pending += [current.__cause__, current.__context__]
     return False
 
 
@@ -282,13 +308,14 @@ def _classify_chunk_error(
     exc: BaseException,
 ) -> tuple[type[FanOutInterrupted], float | None] | None:
     """Walk a wrapped pagination failure for a resumable transport cause."""
-    current: BaseException | None = exc
-    while current is not None:
-        result = _classify_transient(current)
-        if result is not None:
-            return result
-        current = current.__cause__
-    return None
+    return next(
+        (
+            result
+            for current in _walk_causes(exc)
+            if (result := _classify_transient(current)) is not None
+        ),
+        None,
+    )
 
 
 #: The name this taxonomy was published under, kept as a permanent alias so

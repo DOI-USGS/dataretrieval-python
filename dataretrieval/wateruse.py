@@ -42,7 +42,7 @@ Examples
 from __future__ import annotations
 
 import io
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable
 from typing import Any
 
 import httpx
@@ -336,40 +336,6 @@ def _validate_huc(value: object) -> str:
     return code
 
 
-class _LocationPlan:
-    """The Water Use fan-out's shape: one pre-built request per location.
-
-    Satisfies :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally,
-    without inheriting from :class:`~dataretrieval.ogc.planning.ChunkPlan` --
-    there is nothing to inherit. ``ChunkPlan`` divides one over-budget query
-    into byte-sized pieces; this divides nothing. The NWDC accepts one
-    ``location=`` per request, so the caller's locations arrive already
-    separate and the "plan" is just that list. Chunking is structural division;
-    this is only the operational distribution that follows.
-    """
-
-    def __init__(self, requests: list[httpx.Request]) -> None:
-        self._requests = requests
-
-    @property
-    def total(self) -> int:
-        return len(self._requests)
-
-    @property
-    def canonical_url(self) -> str | None:
-        """The first location's URL, standing for the query as a whole.
-
-        There is no single URL expressing "all of these locations" -- the
-        service has no such request -- so the aggregate response reports the
-        first, matching what the un-fanned single-location call would show.
-        """
-        return str(self._requests[0].url) if self._requests else None
-
-    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
-        for request in self._requests:
-            yield {"request": request}
-
-
 def _fan_out(
     requests: list[httpx.Request], headers: dict[str, str], ssl_check: bool
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -386,6 +352,11 @@ def _fan_out(
     drive too. This function is now only the NWDC-specific half: what a
     sub-request is, and how to read one.
 
+    The plan is the request list itself. ``FanOut`` asks a plan only to be
+    sized and iterable, and the NWDC accepts one ``location=`` per request, so
+    the caller's locations arrive already separate -- there is nothing to
+    divide and so nothing for a plan class to hold.
+
     The broad retry status set is on purpose: NWDC reports a bad query as a 400
     with a ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx
     really is an upstream fault worth re-sending.
@@ -400,7 +371,7 @@ def _fan_out(
     def raise_for_status(response: httpx.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
-    async def fetch(args: dict[str, Any]) -> tuple[pd.DataFrame, httpx.Response]:
+    async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
         """One location's full page walk, over the executor's shared client.
 
         ``active_client()`` is the client :meth:`FanOut._run` published for this
@@ -409,14 +380,14 @@ def _fan_out(
         """
         try:
             return await paginate(
-                args["request"],
+                request,
                 parse_response=parse,
                 follow_up=follow,
                 client=active_client(),
                 raise_for_status=raise_for_status,
             )
         except httpx.TransportError as exc:
-            raise network_error(args["request"].url, exc) from exc
+            raise network_error(request.url, exc) from exc
 
     def finalize(
         frame: pd.DataFrame, response: httpx.Response
@@ -428,12 +399,16 @@ def _fan_out(
     # what it did when it drove its own gather.
     with _progress.progress_context(service="wateruse", target_url=WATERUSE_URL):
         return FanOut(
-            _LocationPlan(requests),
+            requests,
             fetch,
             RetryPolicy.from_env(),
             finalize=finalize,
             client_options={"verify": ssl_check},
             default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
+            # No single URL expresses "all of these locations" -- the service
+            # has no such request -- so the aggregate reports the first,
+            # matching what an un-fanned single-location call would show.
+            canonical_url=str(requests[0].url) if requests else None,
         ).resume()
 
 

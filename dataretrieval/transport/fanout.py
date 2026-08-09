@@ -20,7 +20,7 @@ So this module owns distribution and nothing else: concurrency bounded by a
 semaphore, per-attempt retry, deterministic failure precedence, sparse
 completion tracking, and resume. It names no protocol concept — an adapter
 supplies a :class:`FanOutPlan` (whatever structure it divided into, if any) and
-an ``async def fetch(args) -> (df, response)``.
+an ``async def fetch(item) -> (df, response)``.
 
 Concurrency: :meth:`FanOut._run` dispatches every pending sub-request under one
 ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
@@ -59,7 +59,7 @@ import functools
 import os
 from collections.abc import Awaitable, Callable, Iterator
 from contextvars import copy_context
-from typing import Any, Protocol, cast
+from typing import Any, Generic, Protocol, TypeVar, cast
 
 import httpx
 import pandas as pd
@@ -71,11 +71,22 @@ from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
-from dataretrieval.exceptions import ConfigurationError
-from dataretrieval.interruptions import FanOutInterrupted, _classify_chunk_error
+from dataretrieval.interruptions import (
+    FanOutInterrupted,
+    _classify_chunk_error,
+    _walk_causes,
+)
 from dataretrieval.transport.http import network_error, open_async_client
-from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
+from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy, _read_env_number
 from dataretrieval.transport.retry import retry_async as _retry
+
+#: One sub-request's description, as the adapter's ``fetch`` wants it. The
+#: executor never inspects it — see :class:`FanOutPlan`.
+_Item = TypeVar("_Item")
+#: The same thing in :class:`FanOutPlan`, where it only ever comes *out* of the
+#: plan. Covariant so a ``list[httpx.Request]`` satisfies a plan of any
+#: supertype, the way ``Iterable`` is covariant for the same reason.
+_ItemCo = TypeVar("_ItemCo", covariant=True)
 
 # Fan-out concurrency cap, read at call time (not import) so test
 # ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;
@@ -114,27 +125,19 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
         integer >1 for bounded concurrency; ``None`` to disable the
         per-call cap entirely (the ``unbounded`` keyword).
     """
-    raw = os.environ.get(_CONCURRENCY_ENV)
-    if raw is None:
-        return default
-    raw = raw.strip()
-    if raw == "":
-        return default
-    if raw.lower() == _CONCURRENCY_UNBOUNDED:
+    # Only the ``unbounded`` keyword is specific to this knob; the rest is the
+    # same read-cast-validate every ``API_USGS_*`` number gets, so it delegates
+    # rather than growing a third copy with its own error wording.
+    if os.environ.get(_CONCURRENCY_ENV, "").strip().lower() == _CONCURRENCY_UNBOUNDED:
         return None
-    try:
-        value = int(raw)
-    except ValueError as exc:
-        raise ConfigurationError(
-            f"{_CONCURRENCY_ENV} must be a positive integer or "
-            f"'{_CONCURRENCY_UNBOUNDED}'; got {raw!r}."
-        ) from exc
-    if value < 1:
-        raise ConfigurationError(
-            f"{_CONCURRENCY_ENV} must be >= 1 (got {value}); use "
-            f"'{_CONCURRENCY_UNBOUNDED}' to disable the cap."
-        )
-    return value
+    return _read_env_number(
+        _CONCURRENCY_ENV,
+        default,
+        int,
+        f"a positive integer or '{_CONCURRENCY_UNBOUNDED}'",
+        minimum=1,
+        hint=f" Use '{_CONCURRENCY_UNBOUNDED}' to disable the cap.",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -142,45 +145,39 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
 # ---------------------------------------------------------------------------
 
 
-class FanOutPlan(Protocol):
+class FanOutPlan(Protocol[_ItemCo]):
     """
-    A fan-out's shape: how many sub-requests, their arguments, and the
-    identity of the whole query.
+    A fan-out's shape: how many sub-requests, and what each one is.
 
-    Structural, not nominal: an implementation satisfies this by having the
-    three members, not by inheriting. That is the right relationship here
-    because the two implementations share an interface and no implementation
-    at all. :class:`~dataretrieval.ogc.planning.ChunkPlan` derives its
-    sub-requests from a URL byte budget over multi-value axes; a Water Use
-    plan simply lists the locations the caller named. Neither has anything
-    the other could inherit.
+    Deliberately the two standard protocols rather than bespoke members. A
+    plan is a sized, iterable collection of sub-request descriptions, which is
+    exactly ``__len__`` + ``__iter__`` — so a plain ``list`` of pre-built
+    requests satisfies this with no adapter class, and a real planner
+    satisfies it by delegating (see
+    :class:`~dataretrieval.ogc.planning.ChunkPlan`, whose domain vocabulary is
+    ``total`` / ``iter_sub_args``). Naming them ``total`` and
+    ``iter_sub_args`` here would mean two names for ``len`` that could report
+    different counts, and a shim class for every adapter whose sub-requests
+    are already a list.
 
-    Attributes
-    ----------
-    total : int
-        Number of sub-requests in the plan. Bounds progress reporting and
-        sizes the degenerate semaphore when concurrency is unbounded.
-    canonical_url : str or None
-        URL identifying the query as a whole, restored onto the combined
-        response so the caller sees the request they made rather than
-        whichever sub-request happened to land last.
+    The item type is whatever an adapter's own ``fetch`` accepts: this executor
+    passes each item through untouched and never inspects it, so the OGC
+    getters yield kwargs dicts while Water Use yields ready
+    :class:`httpx.Request` objects.
+
+    Iteration order is load-bearing: :meth:`FanOut.resume` keys completed work
+    by position, so a plan that yielded a different order on a second pass
+    would resume the wrong sub-requests. ``len`` must agree with the number of
+    items iteration yields — the usual contract for a sized collection.
+
+    The identity of the query as a whole is *not* here: it is a value stamped
+    on the combined response, not a property of how the work divides, so it is
+    the ``canonical_url`` argument to :class:`FanOut`.
     """
 
-    @property
-    def total(self) -> int: ...
+    def __len__(self) -> int: ...
 
-    @property
-    def canonical_url(self) -> str | None: ...
-
-    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
-        """
-        Yield each sub-request's arguments, in a deterministic order.
-
-        Order is load-bearing: :meth:`FanOut.resume` keys completed work by
-        position, so a plan that yielded a different order on a second pass
-        would resume the wrong sub-requests.
-        """
-        ...
+    def __iter__(self) -> Iterator[_ItemCo]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -215,9 +212,10 @@ def active_client() -> httpx.AsyncClient | None:
 # Type aliases for the FanOut contract
 # ---------------------------------------------------------------------------
 
-# The per-sub-request fetcher an adapter injects and ``FanOut`` drives:
-# an ``async def fetch(args) -> (df, response)``.
-_Fetch = Callable[[dict[str, Any]], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
+# The per-sub-request fetcher an adapter injects and ``FanOut`` drives: an
+# ``async def fetch(item) -> (df, response)``, where ``item`` is whatever the
+# adapter's plan yields.
+_Fetch = Callable[[_Item], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
 
 # Caller-supplied transform applied to the combined result, so a resumed call
 # returns the same shape as an un-interrupted one rather than the executor's raw
@@ -234,7 +232,7 @@ def _passthrough_result(
     return frame, response
 
 
-class FanOut:
+class FanOut(Generic[_Item]):
     """
     Stateful handle for a fanned-out call.
 
@@ -256,8 +254,8 @@ class FanOut:
     callers reach it via ``FanOutInterrupted.call`` on the exception raised
     by a mid-stream failure.
 
-    :meth:`resume` is idempotent: :meth:`_run` iterates
-    :meth:`FanOutPlan.iter_sub_args` (deterministic order) and skips
+    :meth:`resume` is idempotent: :meth:`_run` iterates the plan
+    (deterministic order) and skips
     any index whose result is already in ``self._chunks``. The
     completion set is a sparse ``dict[int, (df, response)]`` so the
     gather can record scattered completions (e.g. indices [0, 2, 5]
@@ -267,16 +265,22 @@ class FanOut:
     Parameters
     ----------
     plan : FanOutPlan
-        The plan to execute.
+        The sub-requests to execute: anything sized and iterable, from a
+        :class:`~dataretrieval.ogc.planning.ChunkPlan` to a plain ``list`` of
+        pre-built requests.
     fetch : Callable
-        ``async def`` that issues a single sub-request, given the
-        substituted args dict, and returns ``(frame, response)``.
+        ``async def`` that issues a single sub-request, given one item from
+        ``plan``, and returns ``(frame, response)``.
     client_options : dict, optional
         Extra ``httpx.AsyncClient`` options for the shared client this run
         opens (e.g. ``{"verify": False}``).
     default_concurrent : int, optional
         This service's preferred in-flight cap when ``API_USGS_CONCURRENT``
         is unset. Defaults to 32.
+    canonical_url : str or None, optional
+        URL identifying the query as a whole, restored onto the combined
+        response so the caller sees the request they made rather than
+        whichever sub-request happened to land last.
 
     Attributes
     ----------
@@ -299,17 +303,20 @@ class FanOut:
 
     def __init__(
         self,
-        plan: FanOutPlan,
-        fetch: _Fetch,
+        plan: FanOutPlan[_Item],
+        fetch: _Fetch[_Item],
         retry_policy: RetryPolicy = _NO_RETRY,
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
         default_concurrent: int = _CONCURRENCY_DEFAULT,
+        *,
+        canonical_url: str | None = None,
     ) -> None:
         self.plan = plan
         self.fetch = fetch
         self.retry_policy = retry_policy
         self.finalize = finalize
+        self.canonical_url = canonical_url
         # This service's preferred cap when the user has not set
         # ``API_USGS_CONCURRENT``. Resolved at resume time, not here, so a
         # test's ``monkeypatch.setenv`` still applies. See
@@ -365,7 +372,7 @@ class FanOut:
         interrupted_class, retry_after = classification
         return interrupted_class(
             completed_chunks=self.completed_chunks,
-            total_chunks=self.plan.total,
+            total_chunks=len(self.plan),
             call=self,
             retry_after=retry_after,
             cause=exc,
@@ -373,17 +380,13 @@ class FanOut:
 
     def _normalize_failure(self, exc: BaseException) -> BaseException:
         """Map an explicitly caused transport failure into the public taxonomy."""
-        seen: set[int] = set()
-        current: BaseException | None = exc
-        while current is not None and id(current) not in seen:
-            seen.add(id(current))
+        for current in _walk_causes(exc):
             if isinstance(current, httpx.TransportError):
                 wrapped = network_error(
-                    self.plan.canonical_url or "unknown service", current
+                    self.canonical_url or "unknown service", current
                 )
                 wrapped.__cause__ = current
                 return wrapped
-            current = current.__cause__
         return exc
 
     @property
@@ -418,7 +421,7 @@ class FanOut:
     def _combine_responses(self) -> httpx.Response:
         """Aggregate completed responses under the canonical request URL."""
         responses = [response for _, response in self._chunks.values()]
-        return _combine_chunk_responses(responses, self.plan.canonical_url)
+        return _combine_chunk_responses(responses, self.canonical_url)
 
     @property
     def partial_frame(self) -> pd.DataFrame:
@@ -460,18 +463,18 @@ class FanOut:
         """
         return self._combine_responses() if self._chunks else None
 
-    def _pending(self) -> Iterator[tuple[int, dict[str, Any]]]:
+    def _pending(self) -> Iterator[tuple[int, _Item]]:
         """
-        Yield ``(index, sub_args)`` for sub-requests not yet completed.
+        Yield ``(index, item)`` for sub-requests not yet completed.
 
-        Walks :meth:`FanOutPlan.iter_sub_args` in deterministic order
-        and skips any index already in ``self._chunks``. :meth:`_run`
-        uses this to pick up exactly the sub-requests it still owes —
-        the mechanism behind idempotent resume.
+        Iterates the plan in its deterministic order and skips any index
+        already in ``self._chunks``. :meth:`_run` uses this to pick up
+        exactly the sub-requests it still owes — the mechanism behind
+        idempotent resume.
         """
-        for index, args in enumerate(self.plan.iter_sub_args()):
+        for index, item in enumerate(self.plan):
             if index not in self._chunks:
-                yield index, args
+                yield index, item
 
     def resume(self) -> tuple[pd.DataFrame, Any]:
         """
@@ -484,9 +487,9 @@ class FanOut:
         reporter still reaches the sub-requests.
 
         Idempotent: only sub-requests whose index isn't already in
-        ``self._chunks`` are re-issued. Sub-args order matches
-        :meth:`FanOutPlan.iter_sub_args` and is deterministic, so a
-        partial completion (sparse indices) resumes correctly.
+        ``self._chunks`` are re-issued. Item order is the plan's own and
+        is deterministic, so a partial completion (sparse indices)
+        resumes correctly.
 
         Returns
         -------
@@ -606,21 +609,21 @@ class FanOut:
             max_connections=max_concurrent, max_keepalive_connections=max_concurrent
         )
         semaphore = asyncio.Semaphore(
-            self.plan.total if max_concurrent is None else max_concurrent
+            len(self.plan) if max_concurrent is None else max_concurrent
         )
 
         async with open_async_client(limits=limits, **self.client_options) as client:
             with _active_client(client):
                 reporter = _progress.current()
                 if reporter is not None:
-                    reporter.set_chunks(self.plan.total)
+                    reporter.set_chunks(len(self.plan))
 
                 async def track(
-                    index: int, args: dict[str, Any]
+                    index: int, item: _Item
                 ) -> tuple[pd.DataFrame, httpx.Response]:
                     """One sub-request (with retry) + result-store + progress tick."""
                     result = await _retry(
-                        lambda: self.fetch(args), self.retry_policy, gate=semaphore
+                        lambda: self.fetch(item), self.retry_policy, gate=semaphore
                     )
                     self._chunks[index] = result
                     if reporter is not None:
@@ -645,7 +648,7 @@ class FanOut:
                 #   3. Only when every failure is a recognized transient do we
                 #      raise the first as a resumable ``FanOutInterrupted``.
                 results = await asyncio.gather(
-                    *(track(index, args) for index, args in self._pending()),
+                    *(track(index, item) for index, item in self._pending()),
                     return_exceptions=True,
                 )
                 failures = [r for r in results if isinstance(r, BaseException)]

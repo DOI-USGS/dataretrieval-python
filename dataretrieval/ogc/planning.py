@@ -573,3 +573,14 @@ class ChunkPlan:
             for axis, chunk in zip(self.axes, combo, strict=False):
                 sub_args[axis.arg_key] = axis.render(chunk)
             yield sub_args
+
+    # ``total`` and ``iter_sub_args`` are this class's domain vocabulary and
+    # stay as they are. The dunders are how a plan satisfies
+    # :class:`~dataretrieval.transport.fanout.FanOutPlan`, which asks for a
+    # sized iterable and nothing chunking-specific. They delegate rather than
+    # duplicate, so ``len(plan)`` cannot disagree with what iterating yields.
+    def __len__(self) -> int:
+        return self.total
+
+    def __iter__(self) -> Iterator[dict[str, Any]]:
+        return self.iter_sub_args()

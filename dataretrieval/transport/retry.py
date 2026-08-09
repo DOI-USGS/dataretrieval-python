@@ -106,14 +106,26 @@ def parse_retry_after(value: str | None) -> float | None:
 
 
 def _read_env_number(
-    name: str, default: _Number, cast: Callable[[str], _Number], expected: str
+    name: str,
+    default: _Number,
+    cast: Callable[[str], _Number],
+    expected: str,
+    *,
+    minimum: float = 0,
+    hint: str = "",
 ) -> _Number:
-    """Read a non-negative number from the environment, or ``default`` if unset.
+    """Read a bounded number from the environment, or ``default`` if unset.
+
+    The single parser behind every ``API_USGS_*`` numeric knob, so they share
+    one grammar and one error voice rather than each adapter hand-rolling the
+    read-cast-validate sequence its own way.
 
     Raises :class:`~dataretrieval.exceptions.ConfigurationError` -- a
     ``DataRetrievalError`` *and* a ``ValueError`` -- for an unusable value, so a
     typo in the environment doesn't escape a request path as a bare
-    ``ValueError`` that ``except DataRetrievalError`` misses.
+    ``ValueError`` that ``except DataRetrievalError`` misses. ``hint`` appends
+    a sentence pointing at the fix when a setting has one (e.g. the keyword
+    that disables a cap).
     """
     raw = os.environ.get(name, "").strip()
     if not raw:
@@ -121,13 +133,15 @@ def _read_env_number(
     try:
         value = cast(raw)
     except ValueError as exc:
-        raise ConfigurationError(f"{name} must be {expected} (got {raw!r}).") from exc
-    # ``nan`` passes every ordering test, so a bare ``< 0`` guard lets it through
-    # and then silently makes each budget comparison false.
+        raise ConfigurationError(
+            f"{name} must be {expected} (got {raw!r}).{hint}"
+        ) from exc
+    # ``nan`` passes every ordering test, so a bare ``< minimum`` guard lets it
+    # through and then silently makes each budget comparison false.
     if not math.isfinite(value):
-        raise ConfigurationError(f"{name} must be {expected} (got {raw!r}).")
-    if value < 0:
-        raise ConfigurationError(f"{name} must be >= 0 (got {value}).")
+        raise ConfigurationError(f"{name} must be {expected} (got {raw!r}).{hint}")
+    if value < minimum:
+        raise ConfigurationError(f"{name} must be >= {minimum:g} (got {value}).{hint}")
     return value
 
 
