@@ -95,6 +95,31 @@ def _ogc_query_params(
     return params
 
 
+def _partition_request_params(
+    params: dict[str, Any], *, use_cql2: bool
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Split URL parameters from multi-value CQL2 POST predicates."""
+    if use_cql2:
+        post_params = {
+            key: value
+            for key, value in params.items()
+            if isinstance(value, (list, tuple)) and len(value) > 1
+        }
+        return (
+            {key: value for key, value in params.items() if key not in post_params},
+            post_params,
+        )
+
+    get_params = {
+        key: ",".join(str(item) for item in value)
+        if isinstance(value, (list, tuple))
+        else value
+        for key, value in params.items()
+        if not (isinstance(value, (list, tuple)) and len(value) == 0)
+    }
+    return get_params, {}
+
+
 def _construct_api_requests(
     service: str,
     properties: list[str] | None = None,
@@ -106,28 +131,15 @@ def _construct_api_requests(
     """Construct an HTTP request object for the specified OGC API service."""
     service_url = f"{_ogc_base_url.get()}/collections/{service}/items"
     dialect = _dialect.get()
-
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
             kwargs[key] = _format_api_dates(
                 kwargs[key],
-                date=(service in dialect.date_only_services and key != "last_modified"),
+                date=service in dialect.date_only_services and key != "last_modified",
             )
-
-    if service in dialect.cql2_services:
-        post_params = {
-            k: v
-            for k, v in kwargs.items()
-            if isinstance(v, (list, tuple)) and len(v) > 1
-        }
-        params = {k: v for k, v in kwargs.items() if k not in post_params}
-    else:
-        post_params = {}
-        params = {
-            k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
-            for k, v in kwargs.items()
-            if not (isinstance(v, (list, tuple)) and len(v) == 0)
-        }
+    params, post_params = _partition_request_params(
+        kwargs, use_cql2=service in dialect.cql2_services
+    )
 
     _ogc_query_params(
         params,
