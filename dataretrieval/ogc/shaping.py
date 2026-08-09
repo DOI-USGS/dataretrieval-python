@@ -18,7 +18,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.response_metadata import BaseMetadata
 
 try:
     import geopandas as gpd

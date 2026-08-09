@@ -63,6 +63,33 @@ def _quote_cql_str(value: str) -> str:
     return value.replace("'", "''")
 
 
+def _skip_space(expr: str, i: int) -> int:
+    """Index of the first non-space character at or after ``i``."""
+    while i < len(expr) and expr[i].isspace():
+        i += 1
+    return i
+
+
+def _resume_after_or(expr: str, i: int) -> int | None:
+    """Where the clause after a top-level ``OR`` begins, if one starts at ``i``.
+
+    ``i`` is the index of a space that may open a ``<space>OR<space>``
+    separator. Returns the index of the next clause's first character, or
+    ``None`` when this space does not begin one -- so the caller's test is
+    "is this a separator?" rather than four nested boundary checks.
+
+    The trailing space is required: without it ``A ORDER BY b`` would split on
+    the ``OR`` inside ``ORDER``.
+    """
+    word_start = _skip_space(expr, i)
+    if expr[word_start : word_start + 2].lower() != "or":
+        return None
+    after_word = word_start + 2
+    if after_word >= len(expr) or not expr[after_word].isspace():
+        return None
+    return _skip_space(expr, after_word)
+
+
 def _split_top_level_or(expr: str) -> list[str]:
     """Split ``expr`` at each top-level ``OR``, respecting quotes and parens.
 
@@ -81,34 +108,18 @@ def _split_top_level_or(expr: str) -> list[str]:
         if in_quote is not None:
             if ch == in_quote:
                 in_quote = None
-            i += 1
-            continue
-        if ch in ("'", '"'):
+        elif ch in ("'", '"'):
             in_quote = ch
-            i += 1
-            continue
-        if ch == "(":
+        elif ch == "(":
             depth += 1
-            i += 1
-            continue
-        if ch == ")":
+        elif ch == ")":
             depth -= 1
-            i += 1
-            continue
-        if depth == 0 and ch.isspace():
-            j = i + 1
-            while j < n and expr[j].isspace():
-                j += 1
-            if j + 2 <= n and expr[j : j + 2].lower() == "or":
-                k = j + 2
-                if k < n and expr[k].isspace():
-                    m = k + 1
-                    while m < n and expr[m].isspace():
-                        m += 1
-                    parts.append(expr[last:i].strip())
-                    last = m
-                    i = m
-                    continue
+        elif depth == 0 and ch.isspace():
+            resume = _resume_after_or(expr, i + 1)
+            if resume is not None:
+                parts.append(expr[last:i].strip())
+                last = i = resume
+                continue
         i += 1
     parts.append(expr[last:].strip())
     return [p for p in parts if p]

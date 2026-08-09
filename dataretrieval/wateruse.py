@@ -55,11 +55,12 @@ from dataretrieval.combining import (
     _combine_chunk_responses,
 )
 from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import default_headers, open_async_client
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy, retry_async
 from dataretrieval.transport.sync import run_sync
-from dataretrieval.utils import BaseMetadata, _raise_for_status, to_str
+from dataretrieval.utils import _raise_for_status, to_str
 
 __all__ = [
     "get_wateruse",

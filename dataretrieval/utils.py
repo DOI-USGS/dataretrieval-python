@@ -20,6 +20,9 @@ from dataretrieval.exceptions import (
     URLTooLong,
     error_for_status,
 )
+from dataretrieval.response_metadata import (
+    BaseMetadata,  # noqa: F401  — compatibility re-export; defined there now
+)
 from dataretrieval.transport.retry import (
     _GATEWAY_STATUSES,
     RetryPolicy,
@@ -288,55 +291,6 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     if sort_key is not None:
         df = df.sort_values(by=sort_key, ignore_index=True)
     return df
-
-
-class BaseMetadata:
-    """Base class for metadata.
-
-    Attributes
-    ----------
-    url : str
-        Response url.
-    query_time: datetime.timedelta
-        Response elapsed time.
-    header: httpx.Headers
-        Response headers.
-
-    """
-
-    def __init__(self, response: httpx.Response) -> None:
-        """Generate a standard set of metadata informed by the response.
-
-        Parameters
-        ----------
-        response: ``httpx.Response``
-            Response object from the ``httpx`` module.
-
-        """
-
-        # Coerce httpx.URL -> str: BaseMetadata.url has always been str.
-        self.url = str(response.url)
-        self.query_time = response.elapsed
-        self.header = response.headers
-        self.comment: str | None = None
-
-        # # not sure what statistic_info is
-        # self.statistic_info = None
-
-        # # disclaimer seems to be only part of importWaterML1
-        # self.disclaimer = None
-
-    # ``site_info`` is set by ``nwis`` / ``wqp``-specific metadata classes; the
-    # modern ``waterdata`` metadata leaves it unimplemented (use
-    # ``waterdata.get_monitoring_locations`` to retrieve site descriptions).
-    @property
-    def site_info(self) -> Any:
-        raise NotImplementedError(
-            "site_info must be implemented by utils.BaseMetadata children"
-        )
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}(url={self.url})"
 
 
 _URL_TOO_LONG_EXAMPLE = """

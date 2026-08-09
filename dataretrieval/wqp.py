@@ -16,7 +16,9 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from .utils import BaseMetadata, _attach_datetime_columns, _query_with_retry
+from dataretrieval.response_metadata import BaseMetadata
+
+from .utils import _attach_datetime_columns, _query_with_retry
 
 __all__ = [
     "get_results",

@@ -24,10 +24,10 @@ from dataretrieval.ogc.shaping import (
     _attach_coordinates,
     _empty_feature_frame,
 )
+from dataretrieval.response_metadata import BaseMetadata
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.sync import run_sync
-from dataretrieval.utils import BaseMetadata
 from dataretrieval.waterdata.utils import BASE_URL
 
 __all__ = ["get_data"]
