@@ -28,6 +28,11 @@ the service forces it — a URL over the byte limit, or an API accepting one
 location per request — or because the caller asked for it. Both produce chunks;
 the reason is not part of the term.
 
+**Plan** — An enumeration of a query's chunks: how many there are, and what each
+one is. A plan says how a query divides; it does not execute. Computing a plan
+is protocol-specific — a byte budget, a per-location rule — while executing one
+is not, which is why the two live apart.
+
 **Fan-out** — Executing a query's chunks concurrently. Chunking is how the work
 divides; fan-out is how it is distributed. The two are independent, and only
 chunking depends on the service's protocol.

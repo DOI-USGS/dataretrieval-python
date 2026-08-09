@@ -148,11 +148,17 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
 
 class FanOutPlan(Protocol[_ChunkCo]):
     """
-    A fan-out's shape: how many chunks, and what each one is.
+    The contract a plan satisfies for a fan-out to execute it.
 
-    Deliberately the two standard protocols rather than bespoke members. A
-    plan is a sized, iterable collection of chunk descriptions, which is
-    exactly ``__len__`` + ``__iter__`` — so a plain ``list`` of pre-built
+    A **plan** enumerates a query's chunks -- how many, and what each one is
+    (see ``CONTEXT.md``). This protocol is that enumeration and nothing more,
+    which is why it is named for the role it plays here rather than for its
+    contents: :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and
+    so is a plain list of requests.
+
+    Deliberately the two standard protocols rather than bespoke members, since
+    an enumeration of chunks is exactly ``__len__`` + ``__iter__`` -- so a
+    plain ``list`` of pre-built
     requests satisfies this with no adapter class, and a real planner
     satisfies it by delegating (see
     :class:`~dataretrieval.ogc.planning.ChunkPlan`, whose domain vocabulary is
