@@ -13,10 +13,13 @@
 
 ## Environment
 - Use `pip install .[test,nldi]` (CI uses pip, not uv despite `uv.lock`). Docs: `pip install .[doc,nldi]`.
+- Full local gates additionally need `pip install .[metrics,security]` and `pre-commit`.
 
 ## Commands
+- Full feedback loop: `pre-commit run --all-files`, then `coverage run -m pytest tests/ && coverage report -m`, then `pip-audit --strict --progress-spinner off .`.
 - Lint: `ruff check .` and `ruff format --check .`.
-- Tests: `coverage run -m pytest tests/ && coverage report -m`, or focused like `pytest tests/waterdata_test.py::test_mock_get_samples`.
+- Tests: the coverage command enforces a reported 90.00% package branch-coverage floor; use focused tests like `pytest tests/waterdata_test.py::test_mock_get_samples` while iterating.
+- Dependencies: `pip-audit --strict --progress-spinner off .` audits the latest compatible core resolution, not optional extras or every allowed version.
 - Docs: install docs deps, `ipython kernel install --name "python3" --user`, then `make html` from `docs/`. `make docs` adds doctest+linkcheck (network-dependent).
 
 ## Testing Gotchas
@@ -25,6 +28,8 @@
 - `tests/waterdata_test.py` and `tests/waterdata_ratings_test.py` skip on Python <3.10, so a 3.9 run does not cover them.
 
 ## Implementation Notes
+- Treat Ruff `S` findings as defects unless a narrow, documented suppression explains why the flagged operation is safe in context.
+- Before copying a similar implementation, check whether the behavior belongs in a shared helper; keep explicit public getter signatures and docstrings even when their thin bodies intentionally rhyme.
 - HTTP client is `httpx` (migrated from `requests` in #289); new code should use `httpx` and tests should mock with `httpx_mock`.
 - Public download helpers return `(DataFrame, metadata)`.
 - `dataretrieval/__init__.py` star-imports service modules; `dataretrieval/waterdata/__init__.py` controls Water Data exports via `__all__`.

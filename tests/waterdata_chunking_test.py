@@ -801,7 +801,7 @@ def test_chunk_interrupted_pickles_as_degraded_across_process_boundary():
     ProcessPoolExecutor pool could not ship it back. ``__getstate__`` drops
     ``.call`` and pickles the documented degraded ``call=None`` state -- counts
     and retry hint preserved, ``.resume()`` gone (un-resumable cross-process)."""
-    import pickle
+    import pickle  # noqa: S403 - testing trusted compatibility round-trips
 
     plan = ChunkPlan(
         {"monitoring_location_id": ["A", "B", "C"]}, _fake_build, url_limit=8000
@@ -815,7 +815,7 @@ def test_chunk_interrupted_pickles_as_degraded_across_process_boundary():
     with pytest.raises((pickle.PicklingError, AttributeError)):
         pickle.dumps(exc.call.fetch)
 
-    revived = pickle.loads(pickle.dumps(exc))
+    revived = pickle.loads(pickle.dumps(exc))  # noqa: S301 - created above
     assert isinstance(revived, QuotaExhausted)
     assert revived.call is None  # degraded: no cross-process resume handle
     assert revived.completed_chunks == exc.completed_chunks
@@ -830,7 +830,7 @@ def test_chunk_interrupted_with_partial_data_pickles_intact():
     Exercises the path the no-completed-chunks case above doesn't: a real
     ``partial_frame`` (rows) and ``partial_response`` (a live ``httpx.Response``,
     which must itself remain picklable)."""
-    import pickle
+    import pickle  # noqa: S403 - testing trusted compatibility round-trips
 
     plan = ChunkPlan(
         {"monitoring_location_id": ["A", "B", "C"]}, _fake_build, url_limit=8000
@@ -849,7 +849,7 @@ def test_chunk_interrupted_with_partial_data_pickles_intact():
     assert exc.completed_chunks == 1
     assert not exc.partial_frame.empty and exc.partial_response is not None
 
-    revived = pickle.loads(pickle.dumps(exc))
+    revived = pickle.loads(pickle.dumps(exc))  # noqa: S301 - created above
     assert revived.call is None
     assert revived.partial_frame["id"].tolist() == ["A"]
     assert isinstance(revived.partial_response, httpx.Response)

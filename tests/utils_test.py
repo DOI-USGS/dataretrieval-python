@@ -200,7 +200,7 @@ class Test_error_taxonomy:
         back from multiprocessing / lithops workers, and their constructor fields
         (status_code, retry_after, url) must survive the trip."""
         import copy
-        import pickle
+        import pickle  # noqa: S403 - testing trusted compatibility round-trips
 
         import httpx
 
@@ -213,7 +213,10 @@ class Test_error_taxonomy:
             exceptions.NetworkError("could not reach the service"),
         ]
         for err in samples:
-            for revived in (pickle.loads(pickle.dumps(err)), copy.deepcopy(err)):
+            for revived in (
+                pickle.loads(pickle.dumps(err)),  # noqa: S301 - created above
+                copy.deepcopy(err),
+            ):
                 assert type(revived) is type(err)
                 assert str(revived) == str(err)
                 if isinstance(err, exceptions.HTTPError):
@@ -302,7 +305,7 @@ class Test_BaseMetadata:
 
     def test_pickle_keeps_historical_import_path(self):
         """New pickles remain readable by releases predating the class move."""
-        import pickle
+        import pickle  # noqa: S403 - testing trusted compatibility round-trips
 
         from dataretrieval._response_metadata import BaseMetadata
 
@@ -315,7 +318,8 @@ class Test_BaseMetadata:
         payload = pickle.dumps(md)
 
         assert b"dataretrieval.utils" in payload
-        assert pickle.loads(payload).__class__ is BaseMetadata
+        revived = pickle.loads(payload)  # noqa: S301 - payload created above
+        assert revived.__class__ is BaseMetadata
 
 
 class Test_to_str:

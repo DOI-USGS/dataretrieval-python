@@ -114,7 +114,21 @@ about the upstream service rather than about this package.
 ### Coding Standards and Style
 
 The continuous integration and pre-commit configurations enforce formatting,
-linting, and strict type checking. Run the relevant checks before opening a PR:
+linting, security-smell checks, and strict type checking. The shortest complete
+local feedback loop before opening a PR is:
+
+```bash
+pre-commit run --all-files
+coverage run -m pytest tests/
+coverage report -m
+pip-audit --strict --progress-spinner off .
+```
+
+Coverage measures branches in the package itself, excludes the generated
+``_version.py``, and fails when the reported total rounds below 90.00%. This is
+a repository-wide floor, not a claim that every changed line is tested.
+
+The equivalent individual checks are:
 
 ```bash
 ruff check .
@@ -153,6 +167,19 @@ can forbid an edge, never require one), and package-wide cycle detection (see
 ADR 0003). If you are adding a rule and it is purely "module A must not import
 module B", it belongs in `.importlinter`. A boundary that legitimately moves is
 one edit there, plus the ADR it cites.
+
+Ruff's ``S`` rules provide the static security-smell gate. Suppress a finding
+only at the narrowest justified scope and explain why it is safe; tests ignore
+``assert`` warnings, pickle compatibility tests ignore pickle warnings, and
+retry jitter explicitly marks its non-cryptographic randomness.
+
+CI also audits the latest compatible resolution of the core runtime
+dependencies on Python 3.10. Install that tool locally with
+`pip install -e '.[security]'`; the feedback loop above invokes the same command.
+
+This catches known vulnerabilities in the resolution users receive today. It
+does not prove every version allowed by broad constraints is safe, and project
+path mode does not audit optional extras.
 
 To see the *trend* rather than a pass/fail, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
