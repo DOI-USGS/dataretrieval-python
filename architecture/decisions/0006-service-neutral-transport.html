@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1482a1b9"></script>
+      <script src="../../_static/documentation_options.js?v=224c4007"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -66,6 +66,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0006: Use a service-neutral transport layer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0008-fan-out-execution.html">ADR 0008: Separate fan-out execution from chunk planning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -108,7 +109,9 @@
 <h1>ADR 0006: Use a service-neutral transport layer<a class="headerlink" href="#adr-0006-use-a-service-neutral-transport-layer" title="Link to this heading"></a></h1>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Accepted</p>
+<p>Accepted. The clause assigning resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state to OGC is
+superseded by <a class="reference internal" href="0008-fan-out-execution.html"><span class="doc">ADR 0008: Separate fan-out execution from chunk planning</span></a>, which moves fan-out <em>execution</em>
+into transport and leaves chunk <em>planning</em> in OGC. The rest stands.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>

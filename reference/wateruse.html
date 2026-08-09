@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1482a1b9"></script>
+      <script src="../_static/documentation_options.js?v=224c4007"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -59,7 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.wateruse</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.DEFAULT_CONCURRENT_REQUESTS"><code class="docutils literal notranslate"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.MODELS"><code class="docutils literal notranslate"><span class="pre">MODELS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.TIME_RESOLUTIONS"><code class="docutils literal notranslate"><span class="pre">TIME_RESOLUTIONS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.wateruse.get_wateruse"><code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code></a></li>
@@ -131,14 +131,16 @@ variables.</p>
 </pre></div>
 </div>
 <dl class="py data">
-<dt class="sig sig-object py" id="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">MAX_CONCURRENT_REQUESTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="Link to this definition"></a></dt>
-<dd><p>Maximum locations fetched concurrently when a list of state/county/huc
-selectors is fanned out (one request per location). Kept conservative
-because every location retries independently, so the burst a rate-limit
-episode produces is this number times the retry count; the NWDC tolerates
-this level of concurrency without rate-limit errors (verified by stress
-test). Set <code class="docutils literal notranslate"><span class="pre">wateruse.MAX_CONCURRENT_REQUESTS</span> <span class="pre">=</span> <span class="pre">1</span></code> for serial.</p>
+<dt class="sig sig-object py" id="dataretrieval.wateruse.DEFAULT_CONCURRENT_REQUESTS">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.wateruse.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#dataretrieval.wateruse.DEFAULT_CONCURRENT_REQUESTS" title="Link to this definition"></a></dt>
+<dd><p>This service’s preferred in-flight cap when <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> is
+unset. Lower than the package default of 32 because every location retries
+independently, so a rate-limit episode bursts this number times the retry
+count; the NWDC tolerates this level without rate-limit errors (verified by
+stress test) and higher has not been tested. Setting <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>
+overrides it – see <code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.transport.fanout._resolve_concurrency()</span></code>
+for why the general setting outranks a module’s default rather than the
+reverse.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -172,8 +174,12 @@ pages; this function follows those pages transparently and concatenates
 them into one frame.</p>
 <p>Each selector also accepts a list of values. The NWDC queries one area per
 request, so a list is fanned out into one request per value — up to
-<a class="reference internal" href="#dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS" title="dataretrieval.wateruse.MAX_CONCURRENT_REQUESTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MAX_CONCURRENT_REQUESTS</span></code></a> in parallel — and the results are
-concatenated in the order given.</p>
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> in parallel, defaulting to
+<a class="reference internal" href="#dataretrieval.wateruse.DEFAULT_CONCURRENT_REQUESTS" title="dataretrieval.wateruse.DEFAULT_CONCURRENT_REQUESTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></code></a> for this service — and the results are
+concatenated in the order given. A fan-out interrupted by a rate limit or an
+upstream fault raises a resumable
+<a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.interruptions.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a>, whose
+<code class="docutils literal notranslate"><span class="pre">.call.resume()</span></code> re-issues only the locations that did not complete.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -231,9 +237,12 @@ gallons per day).</p></li>
     given selector is malformed (an unrecognized state, a county code that
     is not five digits, or a HUC of invalid length).</p></li>
 <li><p><a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><strong>DataRetrievalError</strong></a> – On an HTTP error response, the typed subclass for the status (see
-    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a>); or
-    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> on a connection-level
-    failure (timeout, DNS).</p></li>
+    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a>). A transient 429,
+    5xx, or recoverable connection failure that exhausts inline retries is
+    raised as a resumable
+    <a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.interruptions.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a>; a deterministic
+    connection failure (for example, a permanently unresolvable host)
+    remains a <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>

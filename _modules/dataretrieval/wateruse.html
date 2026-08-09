@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1482a1b9"></script>
+      <script src="../../_static/documentation_options.js?v=224c4007"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -118,25 +118,21 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">progress</span> <span class="k">as</span> <span class="n">_progress</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.combining</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">_combine_chunk_frames</span><span class="p">,</span>
-    <span class="n">_combine_chunk_responses</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span><span class="p">,</span> <span class="n">open_async_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOut</span><span class="p">,</span> <span class="n">active_client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span><span class="p">,</span> <span class="n">network_error</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">paginate</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span><span class="p">,</span> <span class="n">retry_async</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.sync</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_sync</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_status</span><span class="p">,</span> <span class="n">to_str</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -144,9 +140,8 @@
     <span class="s2">&quot;WATERUSE_URL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MODELS&quot;</span><span class="p">,</span>
     <span class="s2">&quot;TIME_RESOLUTIONS&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;MAX_CONCURRENT_REQUESTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DEFAULT_CONCURRENT_REQUESTS&quot;</span><span class="p">,</span>
 <span class="p">]</span>
-
 
 <span class="n">WATERUSE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.water.usgs.gov/nwaa-data/data&quot;</span>
 <span class="n">_WATERUSE_HOST</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="n">WATERUSE_URL</span><span class="p">)</span><span class="o">.</span><span class="n">host</span>
@@ -167,13 +162,15 @@
 <span class="c1">#: Temporal resolutions: monthly, annual calendar year, annual water year.</span>
 <span class="n">TIME_RESOLUTIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span> <span class="s2">&quot;annualcy&quot;</span><span class="p">,</span> <span class="s2">&quot;annualwy&quot;</span><span class="p">)</span>
 
-<span class="c1">#: Maximum locations fetched concurrently when a list of state/county/huc</span>
-<span class="c1">#: selectors is fanned out (one request per location). Kept conservative</span>
-<span class="c1">#: because every location retries independently, so the burst a rate-limit</span>
-<span class="c1">#: episode produces is this number times the retry count; the NWDC tolerates</span>
-<span class="c1">#: this level of concurrency without rate-limit errors (verified by stress</span>
-<span class="c1">#: test). Set ``wateruse.MAX_CONCURRENT_REQUESTS = 1`` for serial.</span>
-<span class="n">MAX_CONCURRENT_REQUESTS</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="c1">#: This service&#39;s preferred in-flight cap when ``API_USGS_CONCURRENT`` is</span>
+<span class="c1">#: unset. Lower than the package default of 32 because every location retries</span>
+<span class="c1">#: independently, so a rate-limit episode bursts this number times the retry</span>
+<span class="c1">#: count; the NWDC tolerates this level without rate-limit errors (verified by</span>
+<span class="c1">#: stress test) and higher has not been tested. Setting ``API_USGS_CONCURRENT``</span>
+<span class="c1">#: overrides it -- see :func:`dataretrieval.transport.fanout._resolve_concurrency`</span>
+<span class="c1">#: for why the general setting outranks a module&#39;s default rather than the</span>
+<span class="c1">#: reverse.</span>
+<span class="n">DEFAULT_CONCURRENT_REQUESTS</span> <span class="o">=</span> <span class="mi">4</span>
 
 <span class="c1"># Page responses carry the HUC12 identifier in this column; it must stay a</span>
 <span class="c1"># string so leading zeros (e.g. &quot;010900020502&quot;) survive the round trip.</span>
@@ -207,8 +204,12 @@
 
 <span class="sd">    Each selector also accepts a list of values. The NWDC queries one area per</span>
 <span class="sd">    request, so a list is fanned out into one request per value — up to</span>
-<span class="sd">    :data:`MAX_CONCURRENT_REQUESTS` in parallel — and the results are</span>
-<span class="sd">    concatenated in the order given.</span>
+<span class="sd">    ``API_USGS_CONCURRENT`` in parallel, defaulting to</span>
+<span class="sd">    :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are</span>
+<span class="sd">    concatenated in the order given. A fan-out interrupted by a rate limit or an</span>
+<span class="sd">    upstream fault raises a resumable</span>
+<span class="sd">    :class:`~dataretrieval.interruptions.FanOutInterrupted`, whose</span>
+<span class="sd">    ``.call.resume()`` re-issues only the locations that did not complete.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -278,9 +279,12 @@
 <span class="sd">        is not five digits, or a HUC of invalid length).</span>
 <span class="sd">    DataRetrievalError</span>
 <span class="sd">        On an HTTP error response, the typed subclass for the status (see</span>
-<span class="sd">        :func:`dataretrieval.exceptions.error_for_status`); or</span>
-<span class="sd">        :class:`~dataretrieval.exceptions.NetworkError` on a connection-level</span>
-<span class="sd">        failure (timeout, DNS).</span>
+<span class="sd">        :func:`dataretrieval.exceptions.error_for_status`). A transient 429,</span>
+<span class="sd">        5xx, or recoverable connection failure that exhausts inline retries is</span>
+<span class="sd">        raised as a resumable</span>
+<span class="sd">        :class:`~dataretrieval.interruptions.FanOutInterrupted`; a deterministic</span>
+<span class="sd">        connection failure (for example, a permanently unresolvable host)</span>
+<span class="sd">        remains a :class:`~dataretrieval.exceptions.NetworkError`.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -326,16 +330,7 @@
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">_resolve_locations</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">county</span><span class="p">,</span> <span class="n">huc</span><span class="p">)</span>
     <span class="p">]</span>
-    <span class="c1"># ``_run_sync`` drives the async fan-out via an anyio portal, so it is safe</span>
-    <span class="c1"># even inside an already-running event loop (e.g. a Jupyter notebook).</span>
-    <span class="c1"># ``error_url`` is the host reported in any connection-error message (this</span>
-    <span class="c1"># module builds its own requests, so it has no OGC request-builder base).</span>
-    <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">run_sync</span><span class="p">(</span>
-        <span class="k">lambda</span><span class="p">:</span> <span class="n">_fan_out</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">),</span>
-        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span>
-        <span class="n">error_url</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_fan_out</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span></div>
 
 
 
@@ -421,18 +416,59 @@
     <span class="k">return</span> <span class="n">code</span>
 
 
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_fan_out</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_LocationPlan</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Water Use fan-out&#39;s shape: one pre-built request per location.</span>
+
+<span class="sd">    Satisfies :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally,</span>
+<span class="sd">    without inheriting from :class:`~dataretrieval.ogc.planning.ChunkPlan` --</span>
+<span class="sd">    there is nothing to inherit. ``ChunkPlan`` divides one over-budget query</span>
+<span class="sd">    into byte-sized pieces; this divides nothing. The NWDC accepts one</span>
+<span class="sd">    ``location=`` per request, so the caller&#39;s locations arrive already</span>
+<span class="sd">    separate and the &quot;plan&quot; is just that list. Chunking is structural division;</span>
+<span class="sd">    this is only the operational distribution that follows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span> <span class="o">=</span> <span class="n">requests</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">canonical_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The first location&#39;s URL, standing for the query as a whole.</span>
+
+<span class="sd">        There is no single URL expressing &quot;all of these locations&quot; -- the</span>
+<span class="sd">        service has no such request -- so the aggregate response reports the</span>
+<span class="sd">        first, matching what the un-fanned single-location call would show.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_sub_args</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="k">for</span> <span class="n">request</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requests</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fan_out</span><span class="p">(</span>
     <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch every request (each paginated) concurrently over one shared client.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch every request (each paginated) over the shared fan-out executor.</span>
 
 <span class="sd">    Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`</span>
 <span class="sd">    with NWDC strategies: parse a CSV page and read its ``Link`` header cursor</span>
 <span class="sd">    (``parse``), follow that cursor (``follow``), and raise the typed error</span>
-<span class="sd">    carrying the NWDC ``detail`` (``raise_for_status``). Concurrency is bounded</span>
-<span class="sd">    by a semaphore at :data:`MAX_CONCURRENT_REQUESTS`, and ``asyncio.gather``</span>
-<span class="sd">    preserves input order, so the concatenation is deterministic. The shared</span>
-<span class="sd">    :class:`httpx.AsyncClient` keeps connections alive across pages and requests.</span>
+<span class="sd">    carrying the NWDC ``detail`` (``raise_for_status``).</span>
+
+<span class="sd">    Everything else -- bounded concurrency, per-attempt retry, failure</span>
+<span class="sd">    precedence, progress, and resumable interruption -- belongs to</span>
+<span class="sd">    :class:`~dataretrieval.transport.fanout.FanOut`, which Water Data and NGWMN</span>
+<span class="sd">    drive too. This function is now only the NWDC-specific half: what a</span>
+<span class="sd">    sub-request is, and how to read one.</span>
+
+<span class="sd">    The broad retry status set is on purpose: NWDC reports a bad query as a 400</span>
+<span class="sd">    with a ``{&quot;detail&quot;: ...}`` envelope, so unlike WQP and StreamStats its 5xx</span>
+<span class="sd">    really is an upstream fault worth re-sending.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
@@ -444,67 +480,41 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">detail_from</span><span class="o">=</span><span class="n">_nwdc_error_detail</span><span class="p">)</span>
 
-    <span class="c1"># The broad status set on purpose: NWDC reports a bad query as a 400 with a</span>
-    <span class="c1"># ``{&quot;detail&quot;: ...}`` envelope, so unlike WQP and StreamStats its 5xx really</span>
-    <span class="c1"># is an upstream fault worth re-sending. Note the cost is multiplied by the</span>
-    <span class="c1"># fan-out -- see MAX_CONCURRENT_REQUESTS.</span>
-    <span class="n">policy</span> <span class="o">=</span> <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">open_async_client</span><span class="p">(</span><span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-        <span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">MAX_CONCURRENT_REQUESTS</span><span class="p">))</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;One location&#39;s full page walk, over the executor&#39;s shared client.</span>
 
-        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_one</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">attempt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-                <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
-                    <span class="n">request</span><span class="p">,</span>
-                    <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
-                    <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
-                    <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
-                    <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
-                <span class="p">)</span>
+<span class="sd">        ``active_client()`` is the client :meth:`FanOut._run` published for this</span>
+<span class="sd">        run; borrowing it keeps every location&#39;s pages on one connection pool</span>
+<span class="sd">        instead of opening a client per location.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
+                <span class="n">args</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">],</span>
+                <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
+                <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">active_client</span><span class="p">(),</span>
+                <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">network_error</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
-            <span class="c1"># ``retry_async`` owns the gate: the slot is acquired per attempt,</span>
-            <span class="c1"># so a location backing off isn&#39;t holding one. A later-page failure</span>
-            <span class="c1"># is intentionally wrapped by ``paginate`` and propagates instead of</span>
-            <span class="c1"># restarting a partially completed walk.</span>
-            <span class="k">return</span> <span class="k">await</span> <span class="n">retry_async</span><span class="p">(</span><span class="n">attempt</span><span class="p">,</span> <span class="n">policy</span><span class="p">,</span> <span class="n">gate</span><span class="o">=</span><span class="n">semaphore</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span>
+        <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-        <span class="c1"># ``return_exceptions`` so every location is joined before the client</span>
-        <span class="c1"># block exits. Letting the first failure propagate out of the gather</span>
-        <span class="c1"># closed the shared client from under its still-running siblings: a</span>
-        <span class="c1"># location mid-page-walk (or asleep on a ``Retry-After`` backoff) then</span>
-        <span class="c1"># failed with &quot;Cannot send a request, as the client has been closed&quot; on</span>
-        <span class="c1"># a task nobody was awaiting any more -- a spurious error, and an</span>
-        <span class="c1"># unretrieved-exception warning, both attributable to our own teardown.</span>
-        <span class="c1"># The cost is that a fatal error waits for the slowest sibling; that is</span>
-        <span class="c1"># the price of not abandoning in-flight work mid-request.</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="o">*</span><span class="p">(</span><span class="n">_one</span><span class="p">(</span><span class="n">req</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">),</span> <span class="n">return_exceptions</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
-
-    <span class="c1"># A cancellation or interrupt signal (``CancelledError``,</span>
-    <span class="c1"># ``KeyboardInterrupt`` -- non-``Exception``) wins over any request failure:</span>
-    <span class="c1"># gathering with ``return_exceptions`` captures it like any other result, and</span>
-    <span class="c1"># reporting a sibling&#39;s HTTP error instead would swallow the user&#39;s stop</span>
-    <span class="c1"># signal. Otherwise raise in input order, so which failure a caller sees</span>
-    <span class="c1"># stays deterministic rather than depending on which location lost the race.</span>
-    <span class="c1"># (Same precedence the chunked fan-out applies -- see ``ChunkedCall._run``.)</span>
-    <span class="n">failures</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">)]</span>
-    <span class="k">for</span> <span class="n">failure</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">failure</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">failure</span>
-    <span class="k">if</span> <span class="n">failures</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">failures</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">)]</span>
-
-    <span class="c1"># Reuse the transport combine helpers: drop empty frames and concat, and fold</span>
-    <span class="c1"># the per-location responses into one (headers from the response with the</span>
-    <span class="c1"># lowest reported remaining quota plus summed response durations), keeping</span>
-    <span class="c1"># the first request&#39;s URL as the query identity.</span>
-    <span class="n">frames</span> <span class="o">=</span> <span class="p">[</span><span class="n">frame</span> <span class="k">for</span> <span class="n">frame</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]</span>
-    <span class="n">responses</span> <span class="o">=</span> <span class="p">[</span><span class="n">resp</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">resp</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">_combine_chunk_frames</span><span class="p">(</span><span class="n">frames</span><span class="p">),</span> <span class="n">_combine_chunk_responses</span><span class="p">(</span>
-        <span class="n">responses</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="c1"># ``progress_context`` activates the reporter ``FanOut`` ticks into; without</span>
+    <span class="c1"># it Water Use would run the shared executor but print nothing, which is</span>
+    <span class="c1"># what it did when it drove its own gather.</span>
+    <span class="k">with</span> <span class="n">_progress</span><span class="o">.</span><span class="n">progress_context</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span> <span class="n">target_url</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FanOut</span><span class="p">(</span>
+            <span class="n">_LocationPlan</span><span class="p">(</span><span class="n">requests</span><span class="p">),</span>
+            <span class="n">fetch</span><span class="p">,</span>
+            <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+            <span class="n">finalize</span><span class="o">=</span><span class="n">finalize</span><span class="p">,</span>
+            <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
+            <span class="n">default_concurrent</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENT_REQUESTS</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>

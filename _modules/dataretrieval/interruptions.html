@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.interruptions &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.interruptions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.interruptions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Resumable fan-out interruption exceptions — the public resume contract.</span>
+
+<span class="sd">When a fanned-out request fails mid-stream (a 429, a 5xx, or a bare transport</span>
+<span class="sd">error), the work already completed is preserved and the call is resumable: the</span>
+<span class="sd">raised exception carries a ``.call`` handle whose ``resume()`` re-issues only</span>
+<span class="sd">the still-pending sub-requests. These exception types are that contract,</span>
+<span class="sd">re-exported at the top level (``from dataretrieval import ChunkInterrupted``).</span>
+<span class="sd">The execution machinery that raises and resumes them is</span>
+<span class="sd">:class:`dataretrieval.transport.fanout.FanOut`.</span>
+
+<span class="sd">Vocabulary, consistently: a **fan-out** is one logical query the service forces</span>
+<span class="sd">into several requests; a **sub-request** is one unit of a fan-out; a **chunk**</span>
+<span class="sd">is specifically a *byte-driven* slice, which is OGC planning vocabulary and</span>
+<span class="sd">belongs to :class:`~dataretrieval.ogc.planning.ChunkPlan`. Water Use fans out</span>
+<span class="sd">without chunking anything — the NWDC simply accepts one location per request —</span>
+<span class="sd">so the base class is :class:`FanOutInterrupted`.</span>
+
+<span class="sd">``ChunkInterrupted`` is retained as an alias of that same class, not a</span>
+<span class="sd">deprecated shim to delete later: it is the name published in the user guide and</span>
+<span class="sd">caught in user code, and aliasing costs nothing to keep. ``except</span>
+<span class="sd">ChunkInterrupted`` and ``except FanOutInterrupted`` are the same handler.</span>
+
+<span class="sd">This is a top-level leaf rather than a member of ``ogc`` or ``transport``,</span>
+<span class="sd">for the reason ADR 0006 gives for ``combining``, ``progress``, and</span>
+<span class="sd">``credentials``: adapters need it whether or not they go through transport, and</span>
+<span class="sd">an exception taxonomy is not HTTP execution policy. It stays out of</span>
+<span class="sd">:mod:`dataretrieval.exceptions` because it carries pandas/httpx state, which</span>
+<span class="sd">would pull heavy dependencies into that lightweight leaf.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span><span class="p">,</span> <span class="n">RateLimited</span><span class="p">,</span> <span class="n">TransientError</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOut</span>
+
+
+<div class="viewcode-block" id="FanOutInterrupted">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.FanOutInterrupted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FanOutInterrupted</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for mid-stream sub-request failures whose completed work</span>
+<span class="sd">    is preserved and resumable.</span>
+
+<span class="sd">    A ``FanOutInterrupted`` subclass means: a sub-request failed, but</span>
+<span class="sd">    ``FanOut`` still owns whatever completed successfully before</span>
+<span class="sd">    the failure. Call ``self.call.resume()`` to pick up where the</span>
+<span class="sd">    failure stopped you — only still-pending sub-requests are</span>
+<span class="sd">    re-issued.</span>
+
+<span class="sd">    Subclasses describe *why* ``FanOut`` stopped so callers can</span>
+<span class="sd">    pick a retry policy: :class:`QuotaExhausted` for 429 (wait for the</span>
+<span class="sd">    rate-limit window), :class:`ServiceInterrupted` for 5xx (wait for</span>
+<span class="sd">    the upstream to recover). The ``.call`` handle is the same object</span>
+<span class="sd">    across every interruption of a single fanned-out call — frames</span>
+<span class="sd">    accumulate across retries.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    call : FanOut or None</span>
+<span class="sd">        Resumable handle into the ``FanOut`` that raised this</span>
+<span class="sd">        exception. ``None`` only on hand-constructed exceptions (test</span>
+<span class="sd">        fixtures), where ``.call``-derived accessors degrade to</span>
+<span class="sd">        empty/``None``.</span>
+<span class="sd">    retry_after : float or None</span>
+<span class="sd">        Seconds the server suggested waiting (``Retry-After`` header).</span>
+<span class="sd">        ``None`` when the server gave no hint.</span>
+<span class="sd">    completed_chunks : int</span>
+<span class="sd">        Number of sub-requests successfully completed before the failure.</span>
+<span class="sd">    total_chunks : int</span>
+<span class="sd">        Total sub-requests in the plan.</span>
+<span class="sd">    partial_frame : pandas.DataFrame</span>
+<span class="sd">        Combined frame of work completed by the moment this exception</span>
+<span class="sd">        was raised. Snapshot at raise time — does NOT advance on a</span>
+<span class="sd">        later ``call.resume()`` (use ``exc.call.partial_frame`` for</span>
+<span class="sd">        the live view).</span>
+<span class="sd">    partial_response : httpx.Response or None</span>
+<span class="sd">        Raw aggregate response covering the completed sub-requests at</span>
+<span class="sd">        raise time; ``None`` if nothing had completed yet. Same snapshot</span>
+<span class="sd">        semantics as ``partial_frame``. (Raw, not finalized — use</span>
+<span class="sd">        ``exc.call.resume()`` for the finalized ``(df, metadata)`` result.)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Retry on any transient interruption, honoring the server&#39;s</span>
+<span class="sd">    ``Retry-After`` hint when present and falling back to a fixed wait</span>
+<span class="sd">    otherwise. Each new interruption keeps the already-completed work</span>
+<span class="sd">    intact — only the still-pending sub-requests are re-issued.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import time</span>
+<span class="sd">        from dataretrieval import ChunkInterrupted</span>
+
+<span class="sd">        # ``getter`` is any chunked OGC getter — e.g.</span>
+<span class="sd">        # ``waterdata.get_daily`` or ``ngwmn.get_water_level``.</span>
+<span class="sd">        try:</span>
+<span class="sd">            df, md = getter(monitoring_location_id=long_list_of_sites)</span>
+<span class="sd">        except ChunkInterrupted as exc:</span>
+<span class="sd">            while True:</span>
+<span class="sd">                time.sleep(exc.retry_after or 5 * 60)</span>
+<span class="sd">                try:</span>
+<span class="sd">                    df, md = exc.call.resume()</span>
+<span class="sd">                    break</span>
+<span class="sd">                except ChunkInterrupted as next_exc:</span>
+<span class="sd">                    exc = next_exc</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Subclasses override with a ``str.format`` template; the format</span>
+    <span class="c1"># call sees ``completed_chunks`` and ``total_chunks`` as kwargs.</span>
+    <span class="n">_MESSAGE_TEMPLATE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Fan-out interrupted after </span><span class="si">{completed_chunks}</span><span class="s2">/&quot;</span>
+        <span class="s2">&quot;</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; call .call.resume() to continue.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">completed_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">total_chunks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">call</span><span class="p">:</span> <span class="n">FanOut</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cause</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MESSAGE_TEMPLATE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">completed_chunks</span><span class="o">=</span><span class="n">completed_chunks</span><span class="p">,</span> <span class="n">total_chunks</span><span class="o">=</span><span class="n">total_chunks</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cause_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2"> Cause: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">cause</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">cause_msg</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed_chunks</span> <span class="o">=</span> <span class="n">completed_chunks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_chunks</span> <span class="o">=</span> <span class="n">total_chunks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_after</span> <span class="o">=</span> <span class="n">retry_after</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;_DEFAULT_STATUS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">cause</span>
+        <span class="k">while</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s2">&quot;status_code&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">__cause__</span>
+        <span class="c1"># Snapshot partial state at raise time so the exception stays a stable</span>
+        <span class="c1"># record of the failure moment: ``exc.partial_frame`` /</span>
+        <span class="c1"># ``.partial_response`` do NOT advance on a later ``call.resume()``</span>
+        <span class="c1"># (that live view is on ``call.partial_frame`` / ``.partial_response``).</span>
+        <span class="c1"># This keeps each interruption in a resume loop a faithful record of</span>
+        <span class="c1"># what it saw, rather than every exception aliasing the shared call&#39;s</span>
+        <span class="c1"># advancing state. ``.copy()`` guards the single-chunk fast path, where</span>
+        <span class="c1"># the combined frame may be returned verbatim.</span>
+        <span class="k">if</span> <span class="n">call</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_frame</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">partial_frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">partial_response</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">partial_response</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="c1"># Drop the live FanOut before pickling: its ``.fetch`` is an</span>
+        <span class="c1"># undecorated module function pickle can&#39;t reference by name, so the</span>
+        <span class="c1"># interruption can&#39;t cross a process boundary with ``.call`` attached.</span>
+        <span class="c1"># The degraded ``call=None`` form keeps the counts, retry hint, and the</span>
+        <span class="c1"># snapshotted partial frame / response — plain instance attributes the</span>
+        <span class="c1"># base ``__getstate__`` already pickles; only ``.resume()`` is lost</span>
+        <span class="c1"># (cross-process resume was never possible anyway).</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">(),</span> <span class="s2">&quot;call&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="QuotaExhausted">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.QuotaExhausted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuotaExhausted</span><span class="p">(</span><span class="n">FanOutInterrupted</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A sub-request returned HTTP 429 — the per-key rate-limit window</span>
+<span class="sd">    is exhausted. Subclass of :class:`FanOutInterrupted`.</span>
+
+<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    rate-limit window resets, ``.call.resume()`` re-issues only the</span>
+<span class="sd">    still-pending work. ``partial_frame`` holds what completed</span>
+<span class="sd">    before the 429.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;HTTP 429 after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; &quot;</span>
+        <span class="s2">&quot;catch QuotaExhausted (or FanOutInterrupted) to access &quot;</span>
+        <span class="s2">&quot;.partial_frame or .call.resume() once the rate-limit &quot;</span>
+        <span class="s2">&quot;window has rolled over.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">_DEFAULT_STATUS</span> <span class="o">=</span> <span class="mi">429</span></div>
+
+
+
+<div class="viewcode-block" id="ServiceInterrupted">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.ServiceInterrupted">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ServiceInterrupted</span><span class="p">(</span><span class="n">FanOutInterrupted</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A sub-request returned HTTP 5xx — the upstream service failed</span>
+<span class="sd">    transiently. Subclass of :class:`FanOutInterrupted`.</span>
+
+<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    upstream recovers, ``.call.resume()`` resumes only the</span>
+<span class="sd">    still-pending work.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Service error after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;sub-requests; catch ServiceInterrupted (or FanOutInterrupted) &quot;</span>
+        <span class="s2">&quot;and call .call.resume() once the upstream service recovers.&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># Resolver failures that will not resolve differently on a later attempt. The</span>
+<span class="c1"># temporary ones (notably EAI_AGAIN -- &quot;try again&quot;, raised while a resolver is</span>
+<span class="c1"># still coming up, on VPN reconnect, or after a laptop wakes) are deliberately</span>
+<span class="c1"># absent: those are worth another try. Looked up defensively because the EAI_*</span>
+<span class="c1"># constants are platform-dependent; an unrecognized code stays retryable, since</span>
+<span class="c1"># spending a few seconds on a retry is cheaper than dropping a recoverable call.</span>
+<span class="n">_PERMANENT_DNS_ERRORS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="n">code</span>
+    <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;EAI_NONAME&quot;</span><span class="p">,</span> <span class="s2">&quot;EAI_FAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;EAI_NODATA&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_deterministic_failure</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether a transport failure would fail identically on every retry.</span>
+
+<span class="sd">    An unsupported scheme or a request we built wrong is settled before a byte</span>
+<span class="sd">    goes out, and a hostname the resolver rejects outright won&#39;t be accepted on</span>
+<span class="sd">    the next attempt either -- so retrying only delays the error the caller</span>
+<span class="sd">    needs. A *temporary* resolver failure is not in that class and stays</span>
+<span class="sd">    retryable (see :data:`_PERMANENT_DNS_ERRORS`).</span>
+
+<span class="sd">    The original failure is several layers down and not always an explicit</span>
+<span class="sd">    ``raise ... from``: a DNS failure reaches us as ``NetworkError`` -&gt;</span>
+<span class="sd">    ``httpx.ConnectError`` -&gt; ``httpcore.ConnectError`` -&gt; ``socket.gaierror``,</span>
+<span class="sd">    linked by ``__context__`` (implicit chaining) rather than ``__cause__``.</span>
+
+<span class="sd">    Both links of every frame are visited, not just the first one present. A</span>
+<span class="sd">    frame can carry an explicit ``__cause__`` *and* an unrelated ``__context__``</span>
+<span class="sd">    (any ``raise X from Y`` inside an ``except`` block produces exactly that), so</span>
+<span class="sd">    following only the cause would walk off down the explicit branch and miss a</span>
+<span class="sd">    ``gaierror`` sitting on the implicit one -- spending the whole retry budget</span>
+<span class="sd">    on a hostname that will never resolve. The ``seen`` set keeps a chain that</span>
+<span class="sd">    rejoins itself, or points back at an ancestor, from looping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">pending</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">exc</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">pending</span><span class="p">:</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">pending</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">current</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">UnsupportedProtocol</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">LocalProtocolError</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">gaierror</span><span class="p">):</span>
+            <span class="c1"># Return, not continue: the first resolver code found settles the chain.</span>
+            <span class="k">return</span> <span class="n">current</span><span class="o">.</span><span class="n">errno</span> <span class="ow">in</span> <span class="n">_PERMANENT_DNS_ERRORS</span>
+        <span class="n">pending</span> <span class="o">+=</span> <span class="p">[</span><span class="n">current</span><span class="o">.</span><span class="n">__cause__</span><span class="p">,</span> <span class="n">current</span><span class="o">.</span><span class="n">__context__</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_classify_transient</span><span class="p">(</span>
+    <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">FanOutInterrupted</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Classify one failure as a resumable interruption.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">RateLimited</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QuotaExhausted</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">retry_after</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">TransientError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ServiceInterrupted</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">retry_after</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="p">(</span><span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">InvalidURL</span><span class="p">)):</span>
+        <span class="c1"># Some failures will fail the same way every time -- a bad scheme, a</span>
+        <span class="c1"># hostname that doesn&#39;t resolve. Offering to resume one would just</span>
+        <span class="c1"># hide the real error behind a retry that can never work.</span>
+        <span class="k">if</span> <span class="n">_deterministic_failure</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">ServiceInterrupted</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_classify_chunk_error</span><span class="p">(</span>
+    <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">FanOutInterrupted</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a wrapped pagination failure for a resumable transport cause.&quot;&quot;&quot;</span>
+    <span class="n">current</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">exc</span>
+    <span class="k">while</span> <span class="n">current</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">_classify_transient</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">__cause__</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1">#: The name this taxonomy was published under, kept as a permanent alias so</span>
+<span class="c1">#: ``except ChunkInterrupted`` keeps working. Same class object, not a subclass.</span>
+<span class="n">ChunkInterrupted</span> <span class="o">=</span> <span class="n">FanOutInterrupted</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ChunkInterrupted&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FanOutInterrupted&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;QuotaExhausted&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ServiceInterrupted&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1482a1b9"></script>
+      <script src="../../_static/documentation_options.js?v=224c4007"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,8 +81,9 @@
 <span class="sd">``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request</span>
 <span class="sd">fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That</span>
 <span class="sd">includes connection-level failures (timeouts, DNS, refused connections), which</span>
-<span class="sd">are wrapped as :class:`NetworkError` with the underlying ``httpx`` exception on</span>
-<span class="sd">``__cause__``.</span>
+<span class="sd">remain inside this taxonomy rather than leaking ``httpx`` exceptions. A</span>
+<span class="sd">deterministic failure is :class:`NetworkError`; a recoverable failure that</span>
+<span class="sd">exhausts retries during fan-out is a resumable ``ServiceInterrupted``.</span>
 
 <span class="sd">Most failures are an :class:`HTTPError` carrying the response ``.status_code``,</span>
 <span class="sd">of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest</span>
@@ -138,8 +139,9 @@
 <span class="sd">            else:</span>
 <span class="sd">                raise</span>
 
-<span class="sd">    Connection-level failures (timeouts, DNS) are wrapped as</span>
-<span class="sd">    :class:`NetworkError`, so this single clause covers them too.</span>
+<span class="sd">    Connection-level failures (timeouts, DNS) remain subclasses of this base:</span>
+<span class="sd">    :class:`NetworkError` when deterministic, or a resumable</span>
+<span class="sd">    ``ServiceInterrupted`` when recoverable fan-out retries are exhausted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#: HTTP status that triggered the error, or ``None`` for errors without one</span>

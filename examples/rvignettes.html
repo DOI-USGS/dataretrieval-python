@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g0368b472a documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=1482a1b9"></script>
+      <script src="../_static/documentation_options.js?v=224c4007"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -216,9 +216,176 @@ Retrieving: daily · 1 page · 1,096 rows
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieving: daily · 1 page · 364 rows
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:622</span>, in <span class="ansi-cyan-fg">FanOut._run.&lt;locals&gt;.track</span><span class="ansi-blue-fg">(index, args)</span>
+<span class="ansi-green-fg">    621</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;One sub-request (with retry) + result-store + progress tick.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">622</span> result = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _retry(
+<span class="ansi-green-fg">    623</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">lambda</span>: <span style="color: rgb(0,135,0)">self</span>.fetch(args), <span style="color: rgb(0,135,0)">self</span>.retry_policy, gate=semaphore
+<span class="ansi-green-fg">    624</span> )
+<span class="ansi-green-fg">    625</span> <span style="color: rgb(0,135,0)">self</span>._chunks[index] = result
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:365</span>, in <span class="ansi-cyan-fg">retry_async</span><span class="ansi-blue-fg">(afn, policy, gate)</span>
+<span class="ansi-green-fg">    364</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">365</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> attempt_once()
+<span class="ansi-green-fg">    366</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:  <span style="color: rgb(95,135,135)"># noqa: BLE001 - re-raised unless retryable</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:361</span>, in <span class="ansi-cyan-fg">retry_async.&lt;locals&gt;.attempt_once</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    360</span> credit_wait(time.monotonic() - started)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">361</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> afn()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:368</span>, in <span class="ansi-cyan-fg">_fetch_once</span><span class="ansi-blue-fg">(args)</span>
+<span class="ansi-green-fg">    367</span> req = _construct_api_requests(**args)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _walk_pages(geopd=GEOPANDAS, req=req)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:240</span>, in <span class="ansi-cyan-fg">_walk_pages</span><span class="ansi-blue-fg">(geopd, req, client)</span>
+<span class="ansi-green-fg">    238</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> sess.request(method, cursor, headers=headers, content=content)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">240</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _paginate(
+<span class="ansi-green-fg">    241</span>     req,
+<span class="ansi-green-fg">    242</span>     parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
+<span class="ansi-green-fg">    243</span>     follow_up=follow_up,
+<span class="ansi-green-fg">    244</span>     client=client,
+<span class="ansi-green-fg">    245</span> )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:167</span>, in <span class="ansi-cyan-fg">_paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, client, raise_for_status)</span>
+<span class="ansi-green-fg">    166</span> active_client = client <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> client <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> get_active_client()
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">167</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> paginate(
+<span class="ansi-green-fg">    168</span>     initial_req,
+<span class="ansi-green-fg">    169</span>     parse_response=parse_response,
+<span class="ansi-green-fg">    170</span>     follow_up=follow_up,
+<span class="ansi-green-fg">    171</span>     client=active_client,
+<span class="ansi-green-fg">    172</span>     raise_for_status=raise_for_status,
+<span class="ansi-green-fg">    173</span>     row_cap=_row_cap.get(),
+<span class="ansi-green-fg">    174</span> )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:86</span>, in <span class="ansi-cyan-fg">paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, raise_for_status, client, row_cap)</span>
+<span class="ansi-green-fg">     85</span> response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> session.send(initial_req)
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">86</span> <span class="ansi-black-fg ansi-yellow-bg">raise_for_status</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     87</span> initial_response = response
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:97</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
+<span class="ansi-green-fg">     96</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">97</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
+<span class="ansi-green-fg">     98</span>     status,
+<span class="ansi-green-fg">     99</span>     _error_body(resp),
+<span class="ansi-green-fg">    100</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
+<span class="ansi-green-fg">    101</span> )
+
+<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later.
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">QuotaExhausted</span>                            Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[5]</span><span class="ansi-green-fg">, line 14</span>
+<span class="ansi-green-fg">     10</span> siteNumber = <span class="ansi-yellow-fg">&#34;USGS-01491000&#34;</span>
+<span class="ansi-green-fg">     11</span> parameterCd = [<span class="ansi-yellow-fg">&#34;00010&#34;</span>, <span class="ansi-yellow-fg">&#34;00060&#34;</span>]  <span style="color: rgb(95,135,135)"># Temperature and discharge</span>
+<span class="ansi-green-fg">     12</span> statisticId = [<span class="ansi-yellow-fg">&#34;00001&#34;</span>, <span class="ansi-yellow-fg">&#34;00003&#34;</span>]  <span style="color: rgb(95,135,135)"># Maximum and mean</span>
+<span class="ansi-green-fg">     13</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">14</span> temperatureAndFlow, md = waterdata.get_daily(
+<span class="ansi-green-fg">     15</span>     monitoring_location_id=siteNumber,
+<span class="ansi-green-fg">     16</span>     parameter_code=parameterCd,
+<span class="ansi-green-fg">     17</span>     statistic_id=statisticId,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/time_series.py:254</span>, in <span class="ansi-cyan-fg">get_daily</span><span class="ansi-blue-fg">(monitoring_location_id, parameter_code, statistic_id, properties, time_series_id, daily_id, approval_status, unit_of_measure, qualifier, value, last_modified, skip_geometry, time, bbox, limit, filter, filter_lang, convert_type, max_rows, **queryables)</span>
+<span class="ansi-green-fg">    251</span> <span style="color: rgb(95,135,135)"># Build argument dictionary, omitting None values</span>
+<span class="ansi-green-fg">    252</span> args = _get_args(<span style="color: rgb(0,135,0)">locals</span>(), exclude={<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">max_rows</span><span class="ansi-yellow-fg">&#34;</span>})
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">254</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">get_ogc_data</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:223</span>, in <span class="ansi-cyan-fg">get_ogc_data</span><span class="ansi-blue-fg">(args, service, output_id, max_rows)</span>
+<span class="ansi-green-fg">    221</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> output_id <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    222</span>     output_id = _OUTPUT_ID_BY_SERVICE[service]
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">223</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_facade_get_ogc_data</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    224</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    225</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    226</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">output_id</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    227</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    228</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">base_url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">OGC_API_URL</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    229</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">extra_id_cols</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_EXTRA_ID_COLS</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    230</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">dialect</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">WATERDATA_DIALECT</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    231</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:347</span>, in <span class="ansi-cyan-fg">get_ogc_data</span><span class="ansi-blue-fg">(args, service, output_id, max_rows, base_url, extra_id_cols, dialect)</span>
+<span class="ansi-green-fg">    342</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> (
+<span class="ansi-green-fg">    343</span>     _progress.progress_context(service=service, target_url=base_url),
+<span class="ansi-green-fg">    344</span>     _row_cap(max_rows),
+<span class="ansi-green-fg">    345</span> ):
+<span class="ansi-green-fg">    346</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _ogc_base_url(base_url), _dialect(dialect):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">347</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_fetch_once</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:263</span>, in <span class="ansi-cyan-fg">multi_value_chunked.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(args, finalize)</span>
+<span class="ansi-green-fg">    259</span> retry_policy = RetryPolicy.from_env()
+<span class="ansi-green-fg">    260</span> <span style="color: rgb(95,135,135)"># The concurrency cap is resolved inside ``resume()`` from</span>
+<span class="ansi-green-fg">    261</span> <span style="color: rgb(95,135,135)"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
+<span class="ansi-green-fg">    262</span> <span style="color: rgb(95,135,135)"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">ChunkedCall</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">plan</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">retry_policy</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:523</span>, in <span class="ansi-cyan-fg">FanOut.resume</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    477</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    478</span> <span class="ansi-yellow-fg">Drive the call to completion and return the combined result.</span>
+<span class="ansi-green-fg">    479</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    510</span> <span class="ansi-yellow-fg">    again.</span>
+<span class="ansi-green-fg">    511</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    512</span> <span style="color: rgb(95,135,135)"># Drive inside the snapshot taken at construction (see ``__init__``).</span>
+<span class="ansi-green-fg">    513</span> <span style="color: rgb(95,135,135)"># ``start_blocking_portal`` copies the *calling* context into its</span>
+<span class="ansi-green-fg">    514</span> <span style="color: rgb(95,135,135)"># worker thread, and running here means that calling context is the</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    521</span> <span style="color: rgb(95,135,135)"># A later resume uses whichever reporter is active now (or none), while</span>
+<span class="ansi-green-fg">    522</span> <span style="color: rgb(95,135,135)"># retaining every other captured ambient needed to rebuild requests.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">523</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_ctx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">run</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_resume_in_context</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">_progress</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">current</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:535</span>, in <span class="ansi-cyan-fg">FanOut._resume_in_context</span><span class="ansi-blue-fg">(self, reporter)</span>
+<span class="ansi-green-fg">    529</span> concurrency = _resolve_concurrency(<span style="color: rgb(0,135,0)">self</span>.default_concurrent)
+<span class="ansi-green-fg">    530</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _progress._use_reporter(reporter), start_blocking_portal() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> portal:
+<span class="ansi-green-fg">    531</span>     <span style="color: rgb(95,135,135)"># ``portal.call`` returns ``Any`` because ``functools.partial``</span>
+<span class="ansi-green-fg">    532</span>     <span style="color: rgb(95,135,135)"># erases ``_run``&#39;s return type; restore the declared tuple.</span>
+<span class="ansi-green-fg">    533</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(
+<span class="ansi-green-fg">    534</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">tuple[pd.DataFrame, Any]</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">535</span>         <span class="ansi-black-fg ansi-yellow-bg">portal</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">call</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">functools</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">partial</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_run</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">concurrency</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>,
+<span class="ansi-green-fg">    536</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:338</span>, in <span class="ansi-cyan-fg">BlockingPortal.call</span><span class="ansi-blue-fg">(self, func, *args)</span>
+<span class="ansi-green-fg">    323</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">call</span>(
+<span class="ansi-green-fg">    324</span>     <span style="color: rgb(0,135,0)">self</span>,
+<span class="ansi-green-fg">    325</span>     func: Callable[[Unpack[PosArgsT]], Awaitable[T_Retval] | T_Retval],
+<span class="ansi-green-fg">    326</span>     *args: Unpack[PosArgsT],
+<span class="ansi-green-fg">    327</span> ) -&gt; T_Retval:
+<span class="ansi-green-fg">    328</span> <span style="color: rgb(188,188,188)">    </span><span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    329</span> <span class="ansi-yellow-fg">    Call the given function in the event loop thread.</span>
+<span class="ansi-green-fg">    330</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    336</span>
+<span class="ansi-green-fg">    337</span> <span class="ansi-yellow-fg">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">338</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(T_Retval, <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">start_task_soon</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:460</span>, in <span class="ansi-cyan-fg">Future.result</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    458</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> CancelledError()
+<span class="ansi-green-fg">    459</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">self</span>._state == FINISHED:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">460</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">__get_result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    461</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    462</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TimeoutError</span>()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:402</span>, in <span class="ansi-cyan-fg">Future.__get_result</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    400</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>._exception <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    401</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">402</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span style="color: rgb(0,135,0)">self</span>._exception
+<span class="ansi-green-fg">    403</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">finally</span>:
+<span class="ansi-green-fg">    404</span>         <span style="color: rgb(95,135,135)"># Break a reference cycle with the exception in self._exception</span>
+<span class="ansi-green-fg">    405</span>         <span style="color: rgb(0,135,0)">self</span> = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:263</span>, in <span class="ansi-cyan-fg">BlockingPortal._call_func</span><span class="ansi-blue-fg">(self, func, args, kwargs, future)</span>
+<span class="ansi-green-fg">    261</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> CancelScope() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> scope:
+<span class="ansi-green-fg">    262</span>         future.add_done_callback(callback)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span>         retval = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> retval_or_awaitable
+<span class="ansi-green-fg">    264</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    265</span>     retval = retval_or_awaitable
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:664</span>, in <span class="ansi-cyan-fg">FanOut._run</span><span class="ansi-blue-fg">(self, max_concurrent)</span>
+<span class="ansi-green-fg">    662</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> first_transient <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    663</span>             interrupted, exc = first_transient
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">664</span>             <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> interrupted <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+<span class="ansi-green-fg">    666</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>.finalize(*<span style="color: rgb(0,135,0)">self</span>._combine_raw())
+
+<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 sub-requests; catch QuotaExhausted (or FanOutInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has rolled over. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -245,9 +412,176 @@ Retrieving: daily · 1 page · 364 rows
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieving: continuous · 1 page · 97 rows
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:622</span>, in <span class="ansi-cyan-fg">FanOut._run.&lt;locals&gt;.track</span><span class="ansi-blue-fg">(index, args)</span>
+<span class="ansi-green-fg">    621</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;One sub-request (with retry) + result-store + progress tick.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">622</span> result = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _retry(
+<span class="ansi-green-fg">    623</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">lambda</span>: <span style="color: rgb(0,135,0)">self</span>.fetch(args), <span style="color: rgb(0,135,0)">self</span>.retry_policy, gate=semaphore
+<span class="ansi-green-fg">    624</span> )
+<span class="ansi-green-fg">    625</span> <span style="color: rgb(0,135,0)">self</span>._chunks[index] = result
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:365</span>, in <span class="ansi-cyan-fg">retry_async</span><span class="ansi-blue-fg">(afn, policy, gate)</span>
+<span class="ansi-green-fg">    364</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">365</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> attempt_once()
+<span class="ansi-green-fg">    366</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:  <span style="color: rgb(95,135,135)"># noqa: BLE001 - re-raised unless retryable</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:361</span>, in <span class="ansi-cyan-fg">retry_async.&lt;locals&gt;.attempt_once</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    360</span> credit_wait(time.monotonic() - started)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">361</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> afn()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:368</span>, in <span class="ansi-cyan-fg">_fetch_once</span><span class="ansi-blue-fg">(args)</span>
+<span class="ansi-green-fg">    367</span> req = _construct_api_requests(**args)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">368</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _walk_pages(geopd=GEOPANDAS, req=req)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:240</span>, in <span class="ansi-cyan-fg">_walk_pages</span><span class="ansi-blue-fg">(geopd, req, client)</span>
+<span class="ansi-green-fg">    238</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> sess.request(method, cursor, headers=headers, content=content)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">240</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _paginate(
+<span class="ansi-green-fg">    241</span>     req,
+<span class="ansi-green-fg">    242</span>     parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
+<span class="ansi-green-fg">    243</span>     follow_up=follow_up,
+<span class="ansi-green-fg">    244</span>     client=client,
+<span class="ansi-green-fg">    245</span> )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:167</span>, in <span class="ansi-cyan-fg">_paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, client, raise_for_status)</span>
+<span class="ansi-green-fg">    166</span> active_client = client <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> client <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> get_active_client()
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">167</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> paginate(
+<span class="ansi-green-fg">    168</span>     initial_req,
+<span class="ansi-green-fg">    169</span>     parse_response=parse_response,
+<span class="ansi-green-fg">    170</span>     follow_up=follow_up,
+<span class="ansi-green-fg">    171</span>     client=active_client,
+<span class="ansi-green-fg">    172</span>     raise_for_status=raise_for_status,
+<span class="ansi-green-fg">    173</span>     row_cap=_row_cap.get(),
+<span class="ansi-green-fg">    174</span> )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:86</span>, in <span class="ansi-cyan-fg">paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, raise_for_status, client, row_cap)</span>
+<span class="ansi-green-fg">     85</span> response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> session.send(initial_req)
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">86</span> <span class="ansi-black-fg ansi-yellow-bg">raise_for_status</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     87</span> initial_response = response
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:97</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
+<span class="ansi-green-fg">     96</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">97</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
+<span class="ansi-green-fg">     98</span>     status,
+<span class="ansi-green-fg">     99</span>     _error_body(resp),
+<span class="ansi-green-fg">    100</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
+<span class="ansi-green-fg">    101</span> )
+
+<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later.
+
+The above exception was the direct cause of the following exception:
+
+<span class="ansi-red-fg">QuotaExhausted</span>                            Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[6]</span><span class="ansi-green-fg">, line 10</span>
+<span class="ansi-green-fg">      6</span> &#34;&#34;&#34;
+<span class="ansi-green-fg">      7</span> siteNumber = <span class="ansi-yellow-fg">&#34;USGS-01491000&#34;</span>
+<span class="ansi-green-fg">      8</span> parameterCd = <span class="ansi-yellow-fg">&#34;00060&#34;</span>  <span style="color: rgb(95,135,135)"># Discharge</span>
+<span class="ansi-green-fg">      9</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">10</span> dischargeUnit, md = waterdata.get_continuous(
+<span class="ansi-green-fg">     11</span>     monitoring_location_id=siteNumber,
+<span class="ansi-green-fg">     12</span>     parameter_code=parameterCd,
+<span class="ansi-green-fg">     13</span>     time=<span class="ansi-yellow-fg">&#34;2012-05-12/2012-05-13&#34;</span>,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/time_series.py:452</span>, in <span class="ansi-cyan-fg">get_continuous</span><span class="ansi-blue-fg">(monitoring_location_id, parameter_code, statistic_id, properties, time_series_id, continuous_id, approval_status, unit_of_measure, qualifier, value, last_modified, time, limit, filter, filter_lang, convert_type, max_rows, **queryables)</span>
+<span class="ansi-green-fg">    449</span> <span style="color: rgb(95,135,135)"># Build argument dictionary, omitting None values</span>
+<span class="ansi-green-fg">    450</span> args = _get_args(<span style="color: rgb(0,135,0)">locals</span>(), exclude={<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">max_rows</span><span class="ansi-yellow-fg">&#34;</span>})
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">452</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">get_ogc_data</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/utils.py:223</span>, in <span class="ansi-cyan-fg">get_ogc_data</span><span class="ansi-blue-fg">(args, service, output_id, max_rows)</span>
+<span class="ansi-green-fg">    221</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> output_id <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    222</span>     output_id = _OUTPUT_ID_BY_SERVICE[service]
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">223</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_facade_get_ogc_data</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    224</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    225</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    226</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">output_id</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    227</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">max_rows</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    228</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">base_url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">OGC_API_URL</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    229</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">extra_id_cols</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_EXTRA_ID_COLS</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    230</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">dialect</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">WATERDATA_DIALECT</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    231</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:347</span>, in <span class="ansi-cyan-fg">get_ogc_data</span><span class="ansi-blue-fg">(args, service, output_id, max_rows, base_url, extra_id_cols, dialect)</span>
+<span class="ansi-green-fg">    342</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> (
+<span class="ansi-green-fg">    343</span>     _progress.progress_context(service=service, target_url=base_url),
+<span class="ansi-green-fg">    344</span>     _row_cap(max_rows),
+<span class="ansi-green-fg">    345</span> ):
+<span class="ansi-green-fg">    346</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _ogc_base_url(base_url), _dialect(dialect):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">347</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_fetch_once</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:263</span>, in <span class="ansi-cyan-fg">multi_value_chunked.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(args, finalize)</span>
+<span class="ansi-green-fg">    259</span> retry_policy = RetryPolicy.from_env()
+<span class="ansi-green-fg">    260</span> <span style="color: rgb(95,135,135)"># The concurrency cap is resolved inside ``resume()`` from</span>
+<span class="ansi-green-fg">    261</span> <span style="color: rgb(95,135,135)"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
+<span class="ansi-green-fg">    262</span> <span style="color: rgb(95,135,135)"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">ChunkedCall</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">plan</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">retry_policy</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:523</span>, in <span class="ansi-cyan-fg">FanOut.resume</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    477</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    478</span> <span class="ansi-yellow-fg">Drive the call to completion and return the combined result.</span>
+<span class="ansi-green-fg">    479</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    510</span> <span class="ansi-yellow-fg">    again.</span>
+<span class="ansi-green-fg">    511</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    512</span> <span style="color: rgb(95,135,135)"># Drive inside the snapshot taken at construction (see ``__init__``).</span>
+<span class="ansi-green-fg">    513</span> <span style="color: rgb(95,135,135)"># ``start_blocking_portal`` copies the *calling* context into its</span>
+<span class="ansi-green-fg">    514</span> <span style="color: rgb(95,135,135)"># worker thread, and running here means that calling context is the</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    521</span> <span style="color: rgb(95,135,135)"># A later resume uses whichever reporter is active now (or none), while</span>
+<span class="ansi-green-fg">    522</span> <span style="color: rgb(95,135,135)"># retaining every other captured ambient needed to rebuild requests.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">523</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_ctx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">run</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_resume_in_context</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">_progress</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">current</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:535</span>, in <span class="ansi-cyan-fg">FanOut._resume_in_context</span><span class="ansi-blue-fg">(self, reporter)</span>
+<span class="ansi-green-fg">    529</span> concurrency = _resolve_concurrency(<span style="color: rgb(0,135,0)">self</span>.default_concurrent)
+<span class="ansi-green-fg">    530</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _progress._use_reporter(reporter), start_blocking_portal() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> portal:
+<span class="ansi-green-fg">    531</span>     <span style="color: rgb(95,135,135)"># ``portal.call`` returns ``Any`` because ``functools.partial``</span>
+<span class="ansi-green-fg">    532</span>     <span style="color: rgb(95,135,135)"># erases ``_run``&#39;s return type; restore the declared tuple.</span>
+<span class="ansi-green-fg">    533</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(
+<span class="ansi-green-fg">    534</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">tuple[pd.DataFrame, Any]</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">535</span>         <span class="ansi-black-fg ansi-yellow-bg">portal</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">call</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">functools</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">partial</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_run</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">concurrency</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>,
+<span class="ansi-green-fg">    536</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:338</span>, in <span class="ansi-cyan-fg">BlockingPortal.call</span><span class="ansi-blue-fg">(self, func, *args)</span>
+<span class="ansi-green-fg">    323</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">call</span>(
+<span class="ansi-green-fg">    324</span>     <span style="color: rgb(0,135,0)">self</span>,
+<span class="ansi-green-fg">    325</span>     func: Callable[[Unpack[PosArgsT]], Awaitable[T_Retval] | T_Retval],
+<span class="ansi-green-fg">    326</span>     *args: Unpack[PosArgsT],
+<span class="ansi-green-fg">    327</span> ) -&gt; T_Retval:
+<span class="ansi-green-fg">    328</span> <span style="color: rgb(188,188,188)">    </span><span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    329</span> <span class="ansi-yellow-fg">    Call the given function in the event loop thread.</span>
+<span class="ansi-green-fg">    330</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    336</span>
+<span class="ansi-green-fg">    337</span> <span class="ansi-yellow-fg">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">338</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(T_Retval, <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">start_task_soon</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:460</span>, in <span class="ansi-cyan-fg">Future.result</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    458</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> CancelledError()
+<span class="ansi-green-fg">    459</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">self</span>._state == FINISHED:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">460</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">__get_result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    461</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    462</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TimeoutError</span>()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:402</span>, in <span class="ansi-cyan-fg">Future.__get_result</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    400</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>._exception <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    401</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">402</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span style="color: rgb(0,135,0)">self</span>._exception
+<span class="ansi-green-fg">    403</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">finally</span>:
+<span class="ansi-green-fg">    404</span>         <span style="color: rgb(95,135,135)"># Break a reference cycle with the exception in self._exception</span>
+<span class="ansi-green-fg">    405</span>         <span style="color: rgb(0,135,0)">self</span> = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:263</span>, in <span class="ansi-cyan-fg">BlockingPortal._call_func</span><span class="ansi-blue-fg">(self, func, args, kwargs, future)</span>
+<span class="ansi-green-fg">    261</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> CancelScope() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> scope:
+<span class="ansi-green-fg">    262</span>         future.add_done_callback(callback)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span>         retval = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> retval_or_awaitable
+<span class="ansi-green-fg">    264</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    265</span>     retval = retval_or_awaitable
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:664</span>, in <span class="ansi-cyan-fg">FanOut._run</span><span class="ansi-blue-fg">(self, max_concurrent)</span>
+<span class="ansi-green-fg">    662</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> first_transient <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    663</span>             interrupted, exc = first_transient
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">664</span>             <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> interrupted <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+<span class="ansi-green-fg">    666</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>.finalize(*<span style="color: rgb(0,135,0)">self</span>._combine_raw())
+
+<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 sub-requests; catch QuotaExhausted (or FanOutInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has rolled over. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -279,13 +613,13 @@ Retrieving: continuous · 1 page · 97 rows
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6794/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
+/tmp/ipykernel_6857/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_lower&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6794/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
+/tmp/ipykernel_6857/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed in a future release; use &#39;activity_start_date_upper&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6794/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed in a future release; use &#39;usgs_pcode&#39; instead.
+/tmp/ipykernel_6857/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed in a future release; use &#39;usgs_pcode&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6794/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6857/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed in a future release; use &#39;monitoring_location_id&#39; instead.
   dfLong, md = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -310,21 +644,21 @@ Retrieving: continuous · 1 page · 97 rows
 <div class="highlight"><pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:657</span>, in <span class="ansi-cyan-fg">ChunkedCall._run.&lt;locals&gt;.track</span><span class="ansi-blue-fg">(index, args)</span>
-<span class="ansi-green-fg">    656</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;One sub-request (with retry) + result-store + progress tick.&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">657</span> result = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _retry(
-<span class="ansi-green-fg">    658</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">lambda</span>: <span style="color: rgb(0,135,0)">self</span>.fetch(args), <span style="color: rgb(0,135,0)">self</span>.retry_policy, gate=semaphore
-<span class="ansi-green-fg">    659</span> )
-<span class="ansi-green-fg">    660</span> <span style="color: rgb(0,135,0)">self</span>._chunks[index] = result
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:622</span>, in <span class="ansi-cyan-fg">FanOut._run.&lt;locals&gt;.track</span><span class="ansi-blue-fg">(index, args)</span>
+<span class="ansi-green-fg">    621</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;One sub-request (with retry) + result-store + progress tick.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">622</span> result = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _retry(
+<span class="ansi-green-fg">    623</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">lambda</span>: <span style="color: rgb(0,135,0)">self</span>.fetch(args), <span style="color: rgb(0,135,0)">self</span>.retry_policy, gate=semaphore
+<span class="ansi-green-fg">    624</span> )
+<span class="ansi-green-fg">    625</span> <span style="color: rgb(0,135,0)">self</span>._chunks[index] = result
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:416</span>, in <span class="ansi-cyan-fg">retry_async</span><span class="ansi-blue-fg">(afn, policy, gate)</span>
-<span class="ansi-green-fg">    415</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">416</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> attempt_once()
-<span class="ansi-green-fg">    417</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:  <span style="color: rgb(95,135,135)"># noqa: BLE001 - re-raised unless retryable</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:365</span>, in <span class="ansi-cyan-fg">retry_async</span><span class="ansi-blue-fg">(afn, policy, gate)</span>
+<span class="ansi-green-fg">    364</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">365</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> attempt_once()
+<span class="ansi-green-fg">    366</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span> <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:  <span style="color: rgb(95,135,135)"># noqa: BLE001 - re-raised unless retryable</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:412</span>, in <span class="ansi-cyan-fg">retry_async.&lt;locals&gt;.attempt_once</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">    411</span> credit_wait(time.monotonic() - started)
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">412</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> afn()
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/retry.py:361</span>, in <span class="ansi-cyan-fg">retry_async.&lt;locals&gt;.attempt_once</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    360</span> credit_wait(time.monotonic() - started)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">361</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> afn()
 
 <span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/engine.py:368</span>, in <span class="ansi-cyan-fg">_fetch_once</span><span class="ansi-blue-fg">(args)</span>
 <span class="ansi-green-fg">    367</span> req = _construct_api_requests(**args)
@@ -403,35 +737,35 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">    346</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _ogc_base_url(base_url), _dialect(dialect):
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">347</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_fetch_once</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:775</span>, in <span class="ansi-cyan-fg">multi_value_chunked.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(args, finalize)</span>
-<span class="ansi-green-fg">    771</span> retry_policy = RetryPolicy.from_env()
-<span class="ansi-green-fg">    772</span> <span style="color: rgb(95,135,135)"># The concurrency cap is resolved inside ``resume()`` from</span>
-<span class="ansi-green-fg">    773</span> <span style="color: rgb(95,135,135)"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
-<span class="ansi-green-fg">    774</span> <span style="color: rgb(95,135,135)"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">775</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">ChunkedCall</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">plan</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">retry_policy</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:263</span>, in <span class="ansi-cyan-fg">multi_value_chunked.&lt;locals&gt;.decorator.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(args, finalize)</span>
+<span class="ansi-green-fg">    259</span> retry_policy = RetryPolicy.from_env()
+<span class="ansi-green-fg">    260</span> <span style="color: rgb(95,135,135)"># The concurrency cap is resolved inside ``resume()`` from</span>
+<span class="ansi-green-fg">    261</span> <span style="color: rgb(95,135,135)"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
+<span class="ansi-green-fg">    262</span> <span style="color: rgb(95,135,135)"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">ChunkedCall</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">plan</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">retry_policy</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:560</span>, in <span class="ansi-cyan-fg">ChunkedCall.resume</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-fg">    519</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">    520</span> <span class="ansi-yellow-fg">Drive the chunked call to completion and return the combined result.</span>
-<span class="ansi-green-fg">    521</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    551</span> <span class="ansi-yellow-fg">    condition to clear and call ``exc.call.resume()`` again.</span>
-<span class="ansi-green-fg">    552</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">    553</span> <span style="color: rgb(95,135,135)"># Drive inside the snapshot taken at construction (see ``__init__``).</span>
-<span class="ansi-green-fg">    554</span> <span style="color: rgb(95,135,135)"># ``start_blocking_portal`` copies the *calling* context into its</span>
-<span class="ansi-green-fg">    555</span> <span style="color: rgb(95,135,135)"># worker thread, and running here means that calling context is the</span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    558</span> <span style="color: rgb(95,135,135)"># when this is a resume fired long after the original ``with`` blocks</span>
-<span class="ansi-green-fg">    559</span> <span style="color: rgb(95,135,135)"># exited.</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">560</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_ctx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">run</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_resume_in_context</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:523</span>, in <span class="ansi-cyan-fg">FanOut.resume</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    477</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    478</span> <span class="ansi-yellow-fg">Drive the call to completion and return the combined result.</span>
+<span class="ansi-green-fg">    479</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    510</span> <span class="ansi-yellow-fg">    again.</span>
+<span class="ansi-green-fg">    511</span> <span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    512</span> <span style="color: rgb(95,135,135)"># Drive inside the snapshot taken at construction (see ``__init__``).</span>
+<span class="ansi-green-fg">    513</span> <span style="color: rgb(95,135,135)"># ``start_blocking_portal`` copies the *calling* context into its</span>
+<span class="ansi-green-fg">    514</span> <span style="color: rgb(95,135,135)"># worker thread, and running here means that calling context is the</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    521</span> <span style="color: rgb(95,135,135)"># A later resume uses whichever reporter is active now (or none), while</span>
+<span class="ansi-green-fg">    522</span> <span style="color: rgb(95,135,135)"># retaining every other captured ambient needed to rebuild requests.</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">523</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_ctx</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">run</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_resume_in_context</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">_progress</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">current</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:570</span>, in <span class="ansi-cyan-fg">ChunkedCall._resume_in_context</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-fg">    564</span> concurrency = _read_concurrency_env()
-<span class="ansi-green-fg">    565</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> start_blocking_portal() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> portal:
-<span class="ansi-green-fg">    566</span>     <span style="color: rgb(95,135,135)"># ``portal.call`` returns ``Any`` because ``functools.partial``</span>
-<span class="ansi-green-fg">    567</span>     <span style="color: rgb(95,135,135)"># erases ``_run``&#39;s return type; restore the declared tuple.</span>
-<span class="ansi-green-fg">    568</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(
-<span class="ansi-green-fg">    569</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">tuple[pd.DataFrame, Any]</span><span class="ansi-yellow-fg">&#34;</span>,
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">570</span>         <span class="ansi-black-fg ansi-yellow-bg">portal</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">call</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">functools</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">partial</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_run</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">concurrency</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>,
-<span class="ansi-green-fg">    571</span>     )
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:535</span>, in <span class="ansi-cyan-fg">FanOut._resume_in_context</span><span class="ansi-blue-fg">(self, reporter)</span>
+<span class="ansi-green-fg">    529</span> concurrency = _resolve_concurrency(<span style="color: rgb(0,135,0)">self</span>.default_concurrent)
+<span class="ansi-green-fg">    530</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _progress._use_reporter(reporter), start_blocking_portal() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> portal:
+<span class="ansi-green-fg">    531</span>     <span style="color: rgb(95,135,135)"># ``portal.call`` returns ``Any`` because ``functools.partial``</span>
+<span class="ansi-green-fg">    532</span>     <span style="color: rgb(95,135,135)"># erases ``_run``&#39;s return type; restore the declared tuple.</span>
+<span class="ansi-green-fg">    533</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(
+<span class="ansi-green-fg">    534</span>         <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">tuple[pd.DataFrame, Any]</span><span class="ansi-yellow-fg">&#34;</span>,
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">535</span>         <span class="ansi-black-fg ansi-yellow-bg">portal</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">call</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">functools</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">partial</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_run</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">concurrency</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">)</span>,
+<span class="ansi-green-fg">    536</span>     )
 
 <span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:338</span>, in <span class="ansi-cyan-fg">BlockingPortal.call</span><span class="ansi-blue-fg">(self, func, *args)</span>
 <span class="ansi-green-fg">    323</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">call</span>(
@@ -468,13 +802,13 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">    264</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
 <span class="ansi-green-fg">    265</span>     retval = retval_or_awaitable
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/chunking.py:699</span>, in <span class="ansi-cyan-fg">ChunkedCall._run</span><span class="ansi-blue-fg">(self, max_concurrent)</span>
-<span class="ansi-green-fg">    697</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> first_transient <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
-<span class="ansi-green-fg">    698</span>             interrupted, exc = first_transient
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">699</span>             <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> interrupted <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
-<span class="ansi-green-fg">    701</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>.finalize(*<span style="color: rgb(0,135,0)">self</span>._combine_raw())
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:664</span>, in <span class="ansi-cyan-fg">FanOut._run</span><span class="ansi-blue-fg">(self, max_concurrent)</span>
+<span class="ansi-green-fg">    662</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> first_transient <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    663</span>             interrupted, exc = first_transient
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">664</span>             <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> interrupted <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+<span class="ansi-green-fg">    666</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">self</span>.finalize(*<span style="color: rgb(0,135,0)">self</span>._combine_raw())
 
-<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 sub-requests; catch QuotaExhausted (or ChunkInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has rolled over. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later.
+<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 sub-requests; catch QuotaExhausted (or FanOutInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has rolled over. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later.
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -560,9 +894,112 @@ The above exception was the direct cause of the following exception:
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieving: observationIntervals · 1 page · 344 rows
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">RateLimited</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[10]</span><span class="ansi-green-fg">, line 6</span>
+<span class="ansi-green-fg">      2</span> discharge_stats &lt;- readNWISstat(siteNumbers=c(&#34;02319394&#34;),
+<span class="ansi-green-fg">      3</span>                    parameterCd=c(<span class="ansi-yellow-fg">&#34;00060&#34;</span>),
+<span class="ansi-green-fg">      4</span>                    statReportType=<span class="ansi-yellow-fg">&#34;annual&#34;</span>)
+<span class="ansi-green-fg">      5</span> &#34;&#34;&#34;
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">6</span> discharge_stats, md = waterdata.get_stats_date_range(
+<span class="ansi-green-fg">      7</span>     monitoring_location_id=<span class="ansi-yellow-fg">&#34;USGS-02319394&#34;</span>,
+<span class="ansi-green-fg">      8</span>     parameter_code=<span class="ansi-yellow-fg">&#34;00060&#34;</span>,
+<span class="ansi-green-fg">      9</span>     computation_type=<span class="ansi-yellow-fg">&#34;arithmetic_mean&#34;</span>,
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/time_series.py:1159</span>, in <span class="ansi-cyan-fg">get_stats_date_range</span><span class="ansi-blue-fg">(approval_status, computation_type, country_code, state, state_code, county_code, start_date, end_date, monitoring_location_id, page_size, parent_time_series_id, site_type_code, site_type_name, parameter_code, interval_type, expand_percentiles)</span>
+<span class="ansi-green-fg">   1153</span> <span style="color: rgb(95,135,135)"># Build argument dictionary, omitting None values</span>
+<span class="ansi-green-fg">   1154</span> params = _get_args(
+<span class="ansi-green-fg">   1155</span>     _with_state(<span style="color: rgb(0,135,0)">locals</span>(), to=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">fips_us</span><span class="ansi-yellow-fg">&#34;</span>, into=<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">state_code</span><span class="ansi-yellow-fg">&#34;</span>),
+<span class="ansi-green-fg">   1156</span>     exclude={<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">expand_percentiles</span><span class="ansi-yellow-fg">&#34;</span>},
+<span class="ansi-green-fg">   1157</span> )
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1159</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">stats</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">get_data</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">   1160</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">params</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   1161</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">observationIntervals</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   1162</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">expand_percentiles</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">expand_percentiles</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">   1163</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/stats.py:301</span>, in <span class="ansi-cyan-fg">get_data</span><span class="ansi-blue-fg">(args, service, expand_percentiles, client)</span>
+<span class="ansi-green-fg">    292</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">_run</span>() -&gt; <span style="color: rgb(0,135,0)">tuple</span>[pd.DataFrame, httpx.Response]:
+<span class="ansi-green-fg">    293</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> paginate(
+<span class="ansi-green-fg">    294</span>         req,
+<span class="ansi-green-fg">    295</span>         parse_response=parse_response,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    298</span>         raise_for_status=_raise_for_non_200,
+<span class="ansi-green-fg">    299</span>     )
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">301</span> df, response = <span class="ansi-black-fg ansi-yellow-bg">run_sync</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">_run</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">error_url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">url</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    303</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> expand_percentiles:
+<span class="ansi-green-fg">    304</span>     df = _expand_percentiles(df)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/sync.py:27</span>, in <span class="ansi-cyan-fg">run_sync</span><span class="ansi-blue-fg">(make_coro, service, error_url)</span>
+<span class="ansi-green-fg">     25</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> start_blocking_portal() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> portal:
+<span class="ansi-green-fg">     26</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">27</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">_T</span><span class="ansi-yellow-fg">&#34;</span>, <span class="ansi-black-fg ansi-yellow-bg">portal</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">call</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">make_coro</span><span class="ansi-black-fg ansi-yellow-bg">)</span>)
+<span class="ansi-green-fg">     28</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> httpx.TransportError <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> exc:
+<span class="ansi-green-fg">     29</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> network_error(error_url, exc) <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">exc</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:338</span>, in <span class="ansi-cyan-fg">BlockingPortal.call</span><span class="ansi-blue-fg">(self, func, *args)</span>
+<span class="ansi-green-fg">    323</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">call</span>(
+<span class="ansi-green-fg">    324</span>     <span style="color: rgb(0,135,0)">self</span>,
+<span class="ansi-green-fg">    325</span>     func: Callable[[Unpack[PosArgsT]], Awaitable[T_Retval] | T_Retval],
+<span class="ansi-green-fg">    326</span>     *args: Unpack[PosArgsT],
+<span class="ansi-green-fg">    327</span> ) -&gt; T_Retval:
+<span class="ansi-green-fg">    328</span> <span style="color: rgb(188,188,188)">    </span><span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    329</span> <span class="ansi-yellow-fg">    Call the given function in the event loop thread.</span>
+<span class="ansi-green-fg">    330</span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    336</span>
+<span class="ansi-green-fg">    337</span> <span class="ansi-yellow-fg">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">338</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> cast(T_Retval, <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">start_task_soon</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">func</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">*</span><span class="ansi-black-fg ansi-yellow-bg">args</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:460</span>, in <span class="ansi-cyan-fg">Future.result</span><span class="ansi-blue-fg">(self, timeout)</span>
+<span class="ansi-green-fg">    458</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> CancelledError()
+<span class="ansi-green-fg">    459</span> <span class="ansi-bold" style="color: rgb(0,135,0)">elif</span> <span style="color: rgb(0,135,0)">self</span>._state == FINISHED:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">460</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">__get_result</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    461</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    462</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">TimeoutError</span>()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/concurrent/futures/_base.py:402</span>, in <span class="ansi-cyan-fg">Future.__get_result</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-fg">    400</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>._exception <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    401</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">402</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span style="color: rgb(0,135,0)">self</span>._exception
+<span class="ansi-green-fg">    403</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">finally</span>:
+<span class="ansi-green-fg">    404</span>         <span style="color: rgb(95,135,135)"># Break a reference cycle with the exception in self._exception</span>
+<span class="ansi-green-fg">    405</span>         <span style="color: rgb(0,135,0)">self</span> = <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/anyio/from_thread.py:263</span>, in <span class="ansi-cyan-fg">BlockingPortal._call_func</span><span class="ansi-blue-fg">(self, func, args, kwargs, future)</span>
+<span class="ansi-green-fg">    261</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> CancelScope() <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> scope:
+<span class="ansi-green-fg">    262</span>         future.add_done_callback(callback)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">263</span>         retval = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> retval_or_awaitable
+<span class="ansi-green-fg">    264</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">    265</span>     retval = retval_or_awaitable
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/waterdata/stats.py:293</span>, in <span class="ansi-cyan-fg">get_data.&lt;locals&gt;._run</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">    292</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">_run</span>() -&gt; <span style="color: rgb(0,135,0)">tuple</span>[pd.DataFrame, httpx.Response]:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">293</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> paginate(
+<span class="ansi-green-fg">    294</span>         req,
+<span class="ansi-green-fg">    295</span>         parse_response=parse_response,
+<span class="ansi-green-fg">    296</span>         follow_up=follow_up,
+<span class="ansi-green-fg">    297</span>         client=client,
+<span class="ansi-green-fg">    298</span>         raise_for_status=_raise_for_non_200,
+<span class="ansi-green-fg">    299</span>     )
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:86</span>, in <span class="ansi-cyan-fg">paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, raise_for_status, client, row_cap)</span>
+<span class="ansi-green-fg">     84</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> _client_for(client) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> session:
+<span class="ansi-green-fg">     85</span>     response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> session.send(initial_req)
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">86</span>     <span class="ansi-black-fg ansi-yellow-bg">raise_for_status</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">     87</span>     initial_response = response
+<span class="ansi-green-fg">     88</span>     total_elapsed = _safe_elapsed(response)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.14/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:97</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
+<span class="ansi-green-fg">     95</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> status &lt; <span class="ansi-green-fg">400</span>:
+<span class="ansi-green-fg">     96</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
+<span class="ansi-green-fg">---&gt; </span><span class="ansi-green-fg">97</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> error_for_status(
+<span class="ansi-green-fg">     98</span>     status,
+<span class="ansi-green-fg">     99</span>     _error_body(resp),
+<span class="ansi-green-fg">    100</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
+<span class="ansi-green-fg">    101</span> )
+
+<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later.
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">

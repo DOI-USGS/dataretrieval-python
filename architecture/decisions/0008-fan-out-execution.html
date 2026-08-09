@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+g702c6ad97 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=224c4007"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADR template" href="template.html" />
+    <link rel="prev" title="ADR 0007: Organize service adapters behind stable facades" href="0007-adapter-facades.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#service-return-contracts">Service return contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0008: Separate fan-out execution from chunk planning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0008: Separate fan-out execution from chunk planning</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/0008-fan-out-execution.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-0008-separate-fan-out-execution-from-chunk-planning">
+<h1>ADR 0008: Separate fan-out execution from chunk planning<a class="headerlink" href="#adr-0008-separate-fan-out-execution-from-chunk-planning" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted. Supersedes the clause of <a class="reference internal" href="0006-service-neutral-transport.html"><span class="doc">ADR 0006: Use a service-neutral transport layer</span></a>
+assigning “resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state” to OGC’s protocol concerns; the rest
+of ADR 0006 stands.</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>Two services turn one logical query into several requests, for unrelated
+reasons. A Water Data or NGWMN query whose URL exceeds the server’s byte limit
+is split along its multi-value axes. A Water Use query naming several locations
+is split because the NWDC accepts one <code class="docutils literal notranslate"><span class="pre">location=</span></code> per request – its URLs run
+around 63 bytes against an 8000-byte budget, so the byte limit has nothing to do
+with it.</p>
+<p>Chunking is how you divide the data structurally; fan-out is how you distribute
+the work operationally. The two are orthogonal, and only the first is protocol
+knowledge: dividing a query needs the byte budget, the CQL2 grammar, and which
+parameters are list-valued, while distributing the pieces needs none of it.</p>
+<p>The package had not drawn that line. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> (division) and
+<code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> (distribution) sat side by side in <code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code> as
+siblings, and ADR 0006 grouped them together deliberately. That grouping was
+correct while a byte plan was the only thing anyone fanned out over. It stopped
+being correct once Water Use fanned out too: unable to reach an OGC-internal
+executor, <code class="docutils literal notranslate"><span class="pre">wateruse._fan_out</span></code> re-implemented the semaphore, the
+<code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>, and the cancellation-beats-HTTP-error failure precedence,
+with a comment naming <code class="docutils literal notranslate"><span class="pre">ChunkedCall._run</span></code> as the original. One subtle rule,
+two copies, synchronized by prose.</p>
+<p>The duplicate was not merely redundant. It lacked resume, so a rate limit
+partway through discarded every location that had already succeeded – against
+an hourly quota, on fan-outs that reach into the hundreds. It reported no
+progress. And it read its own module-global concurrency cap, so a user setting
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> to be polite to the service found one adapter ignoring
+them.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport.fanout</span></code> owns fan-out execution for every service:
+bounded concurrency, per-attempt retry, deterministic failure precedence, sparse
+completion tracking, and resume. It names no protocol concept. An adapter
+supplies a <code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code> and an <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span> <span class="pre">fetch(args)</span> <span class="pre">-&gt;</span> <span class="pre">(df,</span> <span class="pre">response)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code> is a <code class="docutils literal notranslate"><span class="pre">Protocol</span></code> of exactly three members – <code class="docutils literal notranslate"><span class="pre">total</span></code>,
+<code class="docutils literal notranslate"><span class="pre">canonical_url</span></code>, and <code class="docutils literal notranslate"><span class="pre">iter_sub_args()</span></code> – which is the whole surface the
+executor ever touched. It is structural rather than nominal because its two
+implementations share an interface and no implementation whatsoever:
+<code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> derives sub-requests from a byte budget over multi-value axes, and
+a Water Use plan lists locations the caller already named separately. Neither
+has anything the other could inherit, so an abstract base would be ceremony.</p>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code> keeps chunk planning: the byte budget, the axis
+partitioning, the CQL2 filter split, the <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> dial. Those are
+division, and division is protocol-specific.</p>
+<p>The interruption taxonomy moves to <code class="docutils literal notranslate"><span class="pre">dataretrieval.interruptions</span></code>, a top-level
+leaf, for the reason ADR 0006 gives for <code class="docutils literal notranslate"><span class="pre">combining</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">credentials</span></code>: adapters need it whether or not they went through transport,
+and an exception taxonomy is not HTTP execution policy. Its base class is
+renamed <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code>, since Water Use raises it without chunking
+anything. <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is retained as a permanent alias of the same
+class object – not a shim scheduled for deletion – because it is the name
+published in the user guide and caught in user code. The subclasses
+(<code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>, <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code>) were already neutral and are
+unchanged.</p>
+<p>Concurrency is one general setting with per-service defaults.
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> applies to every fanned-out call; a service may declare
+a different default for when it is unset. The precedence is deliberate: an
+explicitly set environment variable outranks a service default, never the
+reverse. A service that could override the general setting would make
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT=1</span></code> a lie. Service defaults say “absent instruction, this
+service prefers N”; they do not say “this service knows better than you”.</p>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Water Use gains resume, progress reporting, and the shared concurrency
+setting, and sheds roughly 75 lines of duplicated orchestration.</p></li>
+<li><p>One implementation of failure precedence, so cancellation-beats-error and
+deterministic failure ordering cannot drift between services.</p></li>
+<li><p><strong>Breaking:</strong> a Water Use fan-out interrupted by a 5xx, 429, or recoverable
+connection failure now raises <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code> / <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>
+rather than <code class="docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code> / <code class="docutils literal notranslate"><span class="pre">RateLimited</span></code> / <code class="docutils literal notranslate"><span class="pre">NetworkError</span></code>. All
+remain <code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code>, so broad handlers are unaffected, but a narrow
+handler around a Water Use call must widen. This is convergence, not novelty
+– it is what the OGC getters have always done – and it is what makes the
+failure resumable. Deterministic connection failures remain <code class="docutils literal notranslate"><span class="pre">NetworkError</span></code>.</p></li>
+<li><p><strong>Breaking:</strong> <code class="docutils literal notranslate"><span class="pre">wateruse.MAX_CONCURRENT_REQUESTS</span></code> is removed in favor of
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> and <code class="docutils literal notranslate"><span class="pre">wateruse.DEFAULT_CONCURRENT_REQUESTS</span></code>.</p></li>
+<li><p>Resume re-issues a failed location’s entire page walk, so pages fetched before
+the failure are fetched again. This already applied to OGC – a partial walk
+never enters the completion map – and is a cost, not a correctness problem.</p></li>
+<li><p>Water Use frames carry <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code>, not <code class="docutils literal notranslate"><span class="pre">id</span></code>, so <code class="docutils literal notranslate"><span class="pre">_combine_chunk_frames</span></code>
+concatenates them without deduplicating. Correct, because locations partition
+by construction, but the executor’s dedup safety net does not apply there.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transport</span></code> is no longer purely leaf-shaped: <code class="docutils literal notranslate"><span class="pre">fanout</span></code> is a composite that
+drives retry, pagination-borrowed clients, and combining. It remains HTTP
+execution policy, which is the test the package applies.</p></li>
+</ul>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> asserts that <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> contains no
+<code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>/<code class="docutils literal notranslate"><span class="pre">Semaphore</span></code>/<code class="docutils literal notranslate"><span class="pre">TaskGroup</span></code>, so the duplication cannot
+return; that both <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> and the Water Use plan satisfy <code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code>,
+including that <code class="docutils literal notranslate"><span class="pre">iter_sub_args()</span></code> is stable across passes and agrees with
+<code class="docutils literal notranslate"><span class="pre">total</span></code>, since resume keys completed work by position; that the Water Use plan
+does not inherit <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code>; and that an interruption taxonomy does not
+reappear inside <code class="docutils literal notranslate"><span class="pre">transport</span></code>. Adapter tests cover Water Use resume re-issuing
+only unfinished locations, progress ticks, and the concurrency precedence rule.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0007-adapter-facades.html" class="btn btn-neutral float-left" title="ADR 0007: Organize service adapters behind stable facades" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="template.html" class="btn btn-neutral float-right" title="ADR template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
