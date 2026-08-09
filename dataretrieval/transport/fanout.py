@@ -680,16 +680,25 @@ class FanOut(Generic[_Item]):
                 for exc in failures:
                     if not isinstance(exc, Exception):
                         raise exc
-                first_transient: tuple[FanOutInterrupted, BaseException] | None = None
+                # Classify first, build once. Every failure has to be
+                # examined -- a non-transient sibling must surface raw -- but
+                # only the first transient is ever raised. Asking
+                # ``wrap_failure`` per failure would snapshot the combined
+                # frame N times (a full concat over every completed
+                # sub-request) and discard all but one, which a batch of
+                # sub-requests failing together makes routine.
+                first_transient: BaseException | None = None
                 for exc in failures:
-                    interrupted = self.wrap_failure(exc)
-                    if interrupted is None:
+                    if _classify_chunk_error(exc) is None:
                         raise self._normalize_failure(exc)
                     if first_transient is None:
-                        first_transient = (interrupted, exc)
+                        first_transient = exc
                 if first_transient is not None:
-                    interrupted, exc = first_transient
-                    raise interrupted from exc
+                    interrupted = self.wrap_failure(first_transient)
+                    if interrupted is None:
+                        # Unreachable: classified as transient just above.
+                        raise self._normalize_failure(first_transient)
+                    raise interrupted from first_transient
 
         return self.finalize(*self._combine_raw())
 
