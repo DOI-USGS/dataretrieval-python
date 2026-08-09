@@ -49,7 +49,7 @@ jobs:
       - name: Complexity gate
         run: xenon --max-absolute C --max-modules B --max-average A dataretrieval
       - name: Cognitive complexity gate
-        run: complexipy --max-complexity-allowed 27 --failed dataretrieval
+        run: complexipy dataretrieval
       - name: Dependency-direction contracts
         # Rules and rationale live in .importlinter and the ADRs it cites.
         run: lint-imports

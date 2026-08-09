@@ -1,10 +1,10 @@
 ; Declarative dependency-direction contracts for ``dataretrieval``.
 ;
-; This file owns every rule that is purely a statement about the import graph.
-; ``tests/architecture_test.py`` owns the rules that are not: symbol-level
-; claims, ``__all__`` surfaces, AST shape, and the one boundary that must be
-; asserted positively. The split is deliberate and the two do not overlap --
-; a rule enforced twice is a rule that gets updated once.
+; This file owns dependency-direction rules. ``tests/architecture_test.py``
+; owns symbol-level claims, ``__all__`` surfaces, AST shape, positive imports,
+; and package-wide cycle detection (see ADR 0003). The split is deliberate and
+; the two do not overlap -- a rule enforced twice is a rule that gets updated
+; once.
 ;
 ; Run with ``lint-imports`` (installed by the ``[metrics]`` extra).
 
@@ -35,16 +35,6 @@ layers =
 exhaustive = True
 exhaustive_ignores =
     _version
-
-[importlinter:contract:acyclic]
-name = The runtime import graph is acyclic (ADR 0001)
-type = acyclic_siblings
-; Applied to the whole package, not just the two subsystems whose acyclicity
-; was previously asserted by hand. The claim held package-wide already; stating
-; it once at the root covers ``ogc`` and ``transport`` and every future
-; subpackage without a new rule per package.
-ancestors =
-    dataretrieval
 
 [importlinter:contract:ogc-consumers]
 name = Only NGWMN and Water Data consume the OGC subsystem (ADR 0003)
@@ -128,9 +118,9 @@ forbidden_modules =
 [importlinter:contract:waterdata-families]
 name = Water Data collection families do not reach through each other (ADR 0007)
 type = independence
-; Kept in step with ``_WATERDATA_FAMILIES`` in tests/architecture_test.py, which
-; derives the facade's expected export union from the same six modules. A
-; seventh family fails that test until it is listed there; add it here too.
+; This is the single collection-family inventory. ``tests/architecture_test.py``
+; reads it to derive the facade's expected export union, so adding a module here
+; brings it under both the independence contract and the facade check.
 modules =
     dataretrieval.waterdata.cql
     dataretrieval.waterdata.measurements

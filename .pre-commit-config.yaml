@@ -66,15 +66,14 @@ repos:
   # Cognitive-complexity ratchet, the counterpart to xenon's cyclomatic one.
   # The two measure different things: xenon counts branches, complexipy counts
   # how hard the control flow is to hold in your head, so nesting and early
-  # exits weigh differently. 27 is the package's current maximum
-  # (``nldi.get_features``), so this holds the line rather than demanding a
+  # exits weigh differently. 25 is the package's current maximum
+  # (``nwis._read_json``), so this holds the line rather than demanding a
   # refactor. Unlike xenon this one is per-function, so scanning only the
   # changed files gives the same verdict CI gives for the whole package.
   - repo: https://github.com/rohaquinlop/complexipy-pre-commit
     rev: v6.2.0
     hooks:
       - id: complexipy
-        args: ["--max-complexity-allowed", "27", "--failed"]
         files: ^dataretrieval/.*\.py$
 
   # Dependency-direction contracts (ADR 0003, 0005, 0006, 0007). Complements
