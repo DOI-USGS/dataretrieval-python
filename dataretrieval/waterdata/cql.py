@@ -187,7 +187,7 @@ def get_cql(
             skip_geometry=skip_geometry,
         )
 
-        df, response = fetch_ogc_request(req, service=collection)
+        df, response = fetch_ogc_request(req, collection=collection)
 
         return _finalize_ogc(
             df,
@@ -195,7 +195,7 @@ def get_cql(
             properties=properties_list,
             output_id=output_id,
             convert_type=convert_type,
-            service=collection,
+            collection=collection,
             extra_id_cols=_EXTRA_ID_COLS,
             dialect=WATERDATA_DIALECT,
         )

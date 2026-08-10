@@ -49,7 +49,7 @@ from dataretrieval.waterdata.utils import (
 _OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
 _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 
-#: Two real features per collection, captured from the live service and trimmed.
+#: Two real features per collection, captured from the live collection and trimmed.
 #: Property names, nesting, and value types (including the numeric-looking
 #: strings the API really sends) are verbatim; only the row count is reduced.
 #: Regenerate a collection by re-querying it with ``limit=2`` and replacing that
@@ -64,7 +64,7 @@ def _activate_waterdata_dialect():
     """Make the Water Data OGC base URL and dialect ambient for this module.
 
     Both are normally set together by ``get_ogc_data`` per call: the base URL
-    (the OGC package names no service of its own) and the dialect
+    (the OGC package names no collection of its own) and the dialect
     (monitoring-locations -> POST/CQL2; daily -> date-only time args). The
     direct ``_construct_api_requests``/``_construct_cql_request`` unit tests
     here bypass that entry point, so activate both module-wide so they
@@ -324,7 +324,7 @@ def test_check_profiles():
 
 
 def test_construct_api_requests_multivalue_get():
-    """Multi-value params use GET with comma-separated values for daily service."""
+    """Multi-value params use GET with comma-separated values for daily collection."""
     req = _construct_api_requests(
         "daily",
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
@@ -428,15 +428,15 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
 
 
 def test_get_cql_unknown_service_raises():
-    """An unknown service is rejected before any network call."""
+    """An unknown collection is rejected before any network call."""
     with pytest.raises(ValueError, match="Unknown collection"):
-        get_cql("not-a-service", {"op": "isNull", "args": [{"property": "x"}]})
+        get_cql("not-a-collection", {"op": "isNull", "args": [{"property": "x"}]})
 
 
 def test_waterdata_services_literal_matches_output_id_map():
     """The WATERDATA_SERVICES Literal and _OUTPUT_ID_BY_COLLECTION must enumerate
-    the same services: get_cql validates against the dict while the Literal
-    types the public signature, so drift would let one accept a service the other
+    the same collections: get_cql validates against the dict while the Literal
+    types the public signature, so drift would let one accept a collection the other
     rejects."""
     from typing import get_args
 
@@ -511,7 +511,7 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
 # --- mocked getter smoke tests ------------------------------------------------
 # These replace what used to be ~34 live calls to the Water Data API. Each one
 # serves a committed fixture (``tests/data/waterdata_ogc_fixtures.json``, two
-# real features per collection captured from the service) and asserts what we
+# real features per collection captured from the collection) and asserts what we
 # actually control: that the request we build carries the right params, and that
 # the frame we hand back has the right columns, dtypes, and ordering.
 #
@@ -567,7 +567,7 @@ def _sent(httpx_mock, collection=None):
 
 
 # --- samples (CSV) -----------------------------------------------------------
-# The samples service is CSV over a different host, so these use small CSV
+# The samples collection is CSV over a different host, so these use small CSV
 # bodies rather than the GeoJSON fixtures.
 
 _SAMPLES_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/samples-data/")
@@ -600,7 +600,7 @@ def test_samples_results(httpx_mock):
 
 
 @pytest.mark.parametrize(
-    ("service", "profile", "kwargs", "expect_path"),
+    ("collection", "profile", "kwargs", "expect_path"),
     [
         (
             "activities",
@@ -629,12 +629,12 @@ def test_samples_results(httpx_mock):
     ],
 )
 def test_samples_service_profile_routes_to_its_endpoint(
-    httpx_mock, service, profile, kwargs, expect_path
+    httpx_mock, collection, profile, kwargs, expect_path
 ):
-    """Each ``service``/``profile`` pair addresses ``/<service>/<profile>``.
+    """Each ``collection``/``profile`` pair addresses ``/<collection>/<profile>``.
 
-    Previously one live test per service asserted a column count against real
-    data (``len(df.columns) == 97``), which broke whenever the service added a
+    Previously one live test per collection asserted a column count against real
+    data (``len(df.columns) == 97``), which broke whenever the collection added a
     field. What is ours to get right is the routing and the parse, so that is
     what this checks.
     """
@@ -644,7 +644,7 @@ def test_samples_service_profile_routes_to_its_endpoint(
         text="Org_Identifier,Location_Identifier\nUSGS-WI,USGS-06719505\n",
     )
 
-    df, _ = get_samples(service=service, profile=profile, **kwargs)
+    df, _ = get_samples(service=collection, profile=profile, **kwargs)
 
     url = str(httpx_mock.get_requests()[0].url)
     assert expect_path in url
@@ -655,7 +655,7 @@ def test_samples_service_profile_routes_to_its_endpoint(
 
 
 def test_get_daily(httpx_mock):
-    """A daily query returns tidy rows with the service id renamed to
+    """A daily query returns tidy rows with the collection id renamed to
     ``daily_id`` and moved last, dates as ``date`` objects, values numeric."""
     _mock_items(httpx_mock, "daily")
 
@@ -692,7 +692,7 @@ def test_get_daily_sends_date_only_time_interval(httpx_mock):
 
 def test_get_daily_properties(httpx_mock):
     """``properties`` selects and orders the output columns, and is forwarded to
-    the service so it does the projection too."""
+    the collection so it does the projection too."""
     requested = [
         "daily_id",
         "monitoring_location_id",
@@ -714,14 +714,14 @@ def test_get_daily_properties(httpx_mock):
     assert df.shape[1] == len(requested)
     # ``daily_id`` is our name for the wire's ``id`` and ``geometry`` is governed
     # by ``skipGeometry``, not by ``properties`` -- neither is a real queryable,
-    # so neither may be forwarded or the service would reject the projection.
+    # so neither may be forwarded or the collection would reject the projection.
     sent = _sent(httpx_mock, "daily")[0]["properties"][0].split(",")
     assert "daily_id" not in sent and "geometry" not in sent
     assert sent == ["monitoring_location_id", "parameter_code", "time", "value"]
 
 
 def test_get_daily_properties_id(httpx_mock):
-    """``'id'`` in ``properties`` resolves to the service-specific id column
+    """``'id'`` in ``properties`` resolves to the collection-specific id column
     while keeping the caller's requested position."""
     _mock_items(httpx_mock, "daily")
 
@@ -805,7 +805,7 @@ def test_get_latest_daily(httpx_mock):
 
 def test_get_latest_daily_properties_geometry(httpx_mock):
     """Geometry survives an explicit ``properties`` list that omits it -- the
-    service returns it regardless unless ``skip_geometry`` is set, so the
+    collection returns it regardless unless ``skip_geometry`` is set, so the
     projection must not drop it."""
     _mock_items(httpx_mock, "latest-daily")
 
@@ -903,7 +903,7 @@ def test_get_cql_str_body_sent_verbatim(httpx_mock):
 
 
 def test_get_cql_properties_id_translation(httpx_mock):
-    """``properties=['id', ...]`` resolves ``id`` to the service's output id
+    """``properties=['id', ...]`` resolves ``id`` to the collection's output id
     column, preserving the requested order."""
     cql = {
         "op": "in",
@@ -970,7 +970,7 @@ def test_get_field_measurements_metadata(httpx_mock):
 
 
 def test_get_field_measurements_metadata_multi_site(httpx_mock):
-    """Multiple sites plus a parameter filter reach the service in one
+    """Multiple sites plus a parameter filter reach the collection in one
     request."""
     sites = ["USGS-07069000", "USGS-07064000", "USGS-07068000"]
     _mock_items(httpx_mock, "field-measurements-metadata")
@@ -1166,11 +1166,11 @@ def test_get_reference_table_accepts_numpy_int_max_rows(httpx_mock):
 # values); these pin the flattening, which is the part we own.
 
 
-def _mock_stats(httpx_mock, service):
+def _mock_stats(httpx_mock, collection):
     httpx_mock.add_response(
         method="GET",
-        url=re.compile(rf"^{re.escape(_STATS_BASE)}/{service}"),
-        json=_fixture(service),
+        url=re.compile(rf"^{re.escape(_STATS_BASE)}/{collection}"),
+        json=_fixture(collection),
     )
 
 

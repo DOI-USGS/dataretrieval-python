@@ -1,4 +1,4 @@
-"""Asking an OGC service to describe itself.
+"""Asking an OGC collection to describe itself.
 
 Queryables and collection schemas: which properties a collection accepts, and
 what columns it returns. Separate from request construction because answering
@@ -26,7 +26,7 @@ def _check_ogc_requests(
     """Retrieve one collection's queryables or response schema.
 
     ``base_url`` names the API to ask; it defaults to the one in scope for the
-    current call rather than to any particular service.
+    current call rather than to any particular collection.
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
@@ -43,7 +43,7 @@ def queryables_frame(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Tabulate one collection's queryable properties.
 
-    Reading an OGC queryables document is protocol knowledge, not service
+    Reading an OGC queryables document is protocol knowledge, not collection
     knowledge, so it lives here rather than in any one API's getters -- every
     OGC adapter in the package can offer the same table. ``base_url`` names
     the API to ask, defaulting to the one in scope for the current call.

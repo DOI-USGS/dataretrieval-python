@@ -44,7 +44,7 @@ def test_quote_cql_str_doubles_embedded_quotes():
 def test_construct_filter_lang_hyphenated():
     """The Python kwarg `filter_lang` is sent as URL key `filter-lang`."""
     req = _construct_api_requests(
-        service="continuous",
+        collection="continuous",
         monitoring_location_id="USGS-07374525",
         parameter_code="72255",
         filter="time >= '2023-01-01T00:00:00Z'",
@@ -99,7 +99,7 @@ def test_split_top_level_or_single_clause():
 
 
 @pytest.mark.parametrize(
-    "service",
+    "collection",
     [
         "daily",
         "continuous",
@@ -111,10 +111,10 @@ def test_split_top_level_or_single_clause():
         "channel-measurements",
     ],
 )
-def test_construct_filter_on_all_ogc_services(service):
+def test_construct_filter_on_all_ogc_services(collection):
     """Filter passthrough works uniformly for every OGC collection endpoint."""
     req = _construct_api_requests(
-        service=service,
+        collection=collection,
         filter="value > 0",
         filter_lang="cql-text",
     )

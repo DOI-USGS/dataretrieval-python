@@ -1340,7 +1340,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
     filter_expr = " OR ".join(clauses)
 
     args = {
-        "service": "daily",
+        "collection": "daily",
         "monitoring_location_id": sites,
         "filter": filter_expr,
     }
@@ -2039,7 +2039,7 @@ def test_chunker_exhausted_retries_still_resumable(monkeypatch):
         sites = list(args["sites"])
         if "S1" * 10 in sites:
             attempts["n"] += 1
-            raise ServiceUnavailable("503: service unavailable")
+            raise ServiceUnavailable("503: collection unavailable")
         return pd.DataFrame({"sites": sites}), _quota_response(500)
 
     decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)

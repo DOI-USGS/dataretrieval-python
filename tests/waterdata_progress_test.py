@@ -411,7 +411,7 @@ def test_walk_pages_reports_pages_and_rate_limit():
 
     assert len(df) == 2
     out = stream.getvalue()
-    # The service set on the context reaches _paginate's render via the contextvar.
+    # The collection set on the context reaches _paginate's render via the contextvar.
     assert "Retrieving: daily ·" in out
     assert "2 pages" in out
     assert "4,998 requests remaining" in out

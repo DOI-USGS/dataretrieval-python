@@ -271,7 +271,7 @@ def multi_value_chunked(
                 canonical_url=plan.canonical_url,
                 # The collection name, for the progress line the executor
                 # opens. ``get_ogc_data`` puts it in ``args``.
-                service=args.get("service"),
+                service=args.get("collection"),
             ).resume()
 
         return wrapper

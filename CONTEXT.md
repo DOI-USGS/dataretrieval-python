@@ -140,19 +140,12 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   Where the Water Data API itself names a thing `site-types` or
   `site_type_code`, that is the service's vocabulary and is reproduced
   faithfully rather than translated.
-- **`service` names a collection inside `dataretrieval.ogc`.** The public
-  surface is fixed: `waterdata.get_cql` takes `collection`, and the type alias
-  is `WATERDATA_COLLECTIONS` (`service=` and `WATERDATA_SERVICES` remain as a
-  deprecated keyword and a permanent alias). The `service` parameter threaded
-  through the OGC internals still names a collection.
+- `service` named a collection throughout the OGC machinery. Resolved: the
+  internals now say `collection`, `waterdata.get_cql` takes `collection`, and
+  the type alias is `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the
+  `WATERDATA_SERVICES` alias remain — a deprecated keyword and a permanent
+  alias respectively.
 
-  Renaming the internals was attempted and reverted: `service` legitimately
-  means the external system in `transport` and `progress`, where it labels a
-  progress line, so the same word carries both senses at different layers and
-  no mechanical rename separates them cleanly. The public surface was worth
-  fixing because that is where the confusion reaches users; the internals are
-  a mechanical follow-up whenever someone wants it.
-
-  Read `service` as "collection" inside `dataretrieval.ogc`, and as "external
-  system" in `transport` and `progress`. New code should prefer `collection`
-  where it means one.
+  `service` still means the external system in `transport` and `progress`,
+  where it labels a progress line, and in the public `waterdata.get_samples`
+  and `get_codes` parameters. Those are correct or frozen, not drift.

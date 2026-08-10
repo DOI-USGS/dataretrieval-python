@@ -1,7 +1,7 @@
 """Water Data API layer over the generic OGC facade.
 
 This module is the Water-Data-specific adapter: it supplies the
-service-to-id map, the CQL2/date-only dialect, and a
+collection-to-id map, the CQL2/date-only dialect, and a
 thin ``get_ogc_data`` wrapper that injects the Water Data defaults. The
 statistics path lives in its own :mod:`dataretrieval.waterdata.stats`
 module.
@@ -27,16 +27,16 @@ from dataretrieval.codes.states import apply_state
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
-# Endpoint constants live in one place for the whole service; they are re-bound
+# Endpoint constants live in one place for the whole collection; they are re-bound
 # here because ``waterdata.utils.OGC_API_URL`` is a documented path.
 from dataretrieval.waterdata.endpoints import BASE_URL, OGC_API_URL, SAMPLES_URL
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
 
-# Maps each OGC waterdata service to its user-facing ``id`` column (the name the
+# Maps each OGC waterdata collection to its user-facing ``id`` column (the name the
 # typed getters rename the wire ``id`` to, e.g. ``daily`` -> ``daily_id``).
-# ``get_cql`` validates its ``service`` argument against these keys and
+# ``get_cql`` validates its ``collection`` argument against these keys and
 # uses the value as the ``output_id`` for result shaping. Keep in sync with the
 # ``types.WATERDATA_SERVICES`` Literal (same keys).
 _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
@@ -53,10 +53,10 @@ _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "time-series-metadata": "time_series_id",
 }
 
-# Every service's output id EXCEPT the two that are genuinely user-facing
+# Every collection's output id EXCEPT the two that are genuinely user-facing
 # (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
 # per-record ids that ``_arrange_cols`` moves to the end of a result frame.
-# Derived from ``_OUTPUT_ID_BY_COLLECTION`` so adding a service can't silently
+# Derived from ``_OUTPUT_ID_BY_COLLECTION`` so adding a collection can't silently
 # leave a stray id column at the front again.
 _EXTRA_ID_COLS = frozenset(
     set(_OUTPUT_ID_BY_COLLECTION.values())
@@ -124,7 +124,7 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     ``state_name="Wisconsin"`` is normalized, mutual-exclusion-checked, and sent
     exactly like a named param. See
     :func:`dataretrieval.waterdata.get_queryables` for each collection's
-    filterable properties (the service rejects an unknown one with a 400).
+    filterable properties (the collection rejects an unknown one with a 400).
 
     ``**queryables`` always arrives as a dict (empty when unused) and the key is
     popped, so this is a no-op on getters without the passthrough and idempotent
@@ -174,13 +174,13 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
 
 def get_ogc_data(
     args: dict[str, Any],
-    service: str,
+    collection: str,
     output_id: str | None = None,
     max_rows: int | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
-    Defaults ``output_id`` from the Water Data service map when not given,
+    Defaults ``output_id`` from the Water Data collection map when not given,
     and supplies the Water Data extra-id columns and dialect, so the typed
     getters in ``api.py`` call this unchanged. (Sibling OGC APIs such as
     NGWMN call ``dataretrieval.ogc.get_ogc_data`` directly with their own
@@ -189,12 +189,12 @@ def get_ogc_data(
     Parameters
     ----------
     args : Dict[str, Any]
-        Dictionary of request arguments for the OGC service.
-    service : str
+        Dictionary of request arguments for the OGC collection.
+    collection : str
         The OGC API collection name (e.g., ``"daily"``).
     output_id : str, optional
         The user-facing id column the wire ``id`` is renamed to. Defaults
-        to ``_OUTPUT_ID_BY_COLLECTION[service]``; pass it explicitly only for
+        to ``_OUTPUT_ID_BY_COLLECTION[collection]``; pass it explicitly only for
         collections outside that map (e.g. reference-table collections).
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
@@ -210,10 +210,10 @@ def get_ogc_data(
         query time.
     """
     if output_id is None:
-        output_id = _OUTPUT_ID_BY_COLLECTION[service]
+        output_id = _OUTPUT_ID_BY_COLLECTION[collection]
     return _facade_get_ogc_data(
         args,
-        service,
+        collection,
         output_id,
         max_rows=max_rows,
         base_url=OGC_API_URL,

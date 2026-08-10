@@ -128,7 +128,7 @@ def _items_query(httpx_mock):
 
 def test_passthrough_queryables_sent_as_filters(httpx_mock):
     """An OGC getter forwards queryables that aren't in its explicit signature
-    (e.g. ``state_name``, ``site_type_code``) to the service as query filters,
+    (e.g. ``state_name``, ``site_type_code``) to the collection as query filters,
     alongside the named params."""
     _mock_daily(httpx_mock)
 

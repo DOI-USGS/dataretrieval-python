@@ -71,7 +71,7 @@ def _run_walk_pages(*, geopd, req, client):
 def test_get_args_basic():
     local_vars = {
         "monitoring_location_id": "USGS-123",
-        "service": "daily",
+        "collection": "daily",
         "output_id": "daily_id",
         "none_val": None,
         "other": "val",
@@ -83,7 +83,7 @@ def test_get_args_basic():
 def test_get_args_with_exclude():
     local_vars = {
         "monitoring_location_id": "USGS-123",
-        "service": "daily",
+        "collection": "daily",
         "output_id": "daily_id",
         "to_exclude": "secret",
         "other": "val",
@@ -223,7 +223,7 @@ def test_finalize_ogc_truncates_combined_to_max_rows():
         properties=None,
         output_id="thing_id",
         convert_type=False,
-        service="things",
+        collection="things",
         max_rows=3,
     )
     assert len(df) == 3
@@ -462,7 +462,7 @@ def _stats_initial_ok():
         "features": [],
     }
     resp.headers = {}
-    resp.url = "https://example.com/stats?service=foo"
+    resp.url = "https://example.com/stats?collection=foo"
     return resp
 
 
@@ -689,7 +689,7 @@ def test_handle_nesting_tolerates_missing_features_key():
 def test_get_resp_data_always_materializes_id_column():
     """``_get_resp_data`` must always materialize the ``id`` column
     (NaN-filled when no feature carries one) so the downstream
-    ``_arrange_cols`` rename to the service-specific output_id
+    ``_arrange_cols`` rename to the collection-specific output_id
     (``daily_id``, ``channel_measurements_id``, etc.) isn't a
     silent no-op."""
     resp = mock.MagicMock()
@@ -1120,8 +1120,8 @@ def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
 
     captured: dict = {}
 
-    def fake_get_ogc_data(args, service, *a, **k):
-        captured.update(args=args, service=service)
+    def fake_get_ogc_data(args, collection, *a, **k):
+        captured.update(args=args, collection=collection)
         return pd.DataFrame(), mock.Mock()
 
     monkeypatch.setattr(_metadata, "get_ogc_data", fake_get_ogc_data)
@@ -1135,7 +1135,7 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
     query dict (e.g. from ``get_reference_table``) is forwarded untouched."""
     captured: dict = {}
 
-    def fake_engine_get_ogc_data(args, service, output_id, **k):
+    def fake_engine_get_ogc_data(args, collection, output_id, **k):
         captured["args"] = dict(args)
         return pd.DataFrame(), mock.Mock()
 

@@ -290,9 +290,9 @@ def test_get_sites(httpx_mock):
 
 
 def test_get_sites_skip_geometry(httpx_mock):
-    """``skip_geometry=True`` is forwarded to the service and the resulting
+    """``skip_geometry=True`` is forwarded to the collection and the resulting
     frame has no geometry column."""
-    # Same fixture minus the geometry key, which is what the service sends back
+    # Same fixture minus the geometry key, which is what the collection sends back
     # when asked to skip it.
     bare = _collection(
         [_feature(f["properties"], id_=f["id"]) for f in _SITES["features"]]
@@ -321,7 +321,7 @@ def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
     for qs in sent:
         assert qs["state_name"] == ["Wisconsin"]
         # The shim rewrites into ``state_name``; raw ``state`` must not leak
-        # through, or the service would silently ignore it.
+        # through, or the collection would silently ignore it.
         assert "state" not in qs
 
 
@@ -374,7 +374,7 @@ def test_get_water_level(httpx_mock):
 
 def test_get_water_level_coerces_dialect_columns(httpx_mock):
     """The NGWMN dialect coerces ``sample_time`` to datetimes and the depth /
-    level columns to numbers, even though the service sends all of them as
+    level columns to numbers, even though the collection sends all of them as
     strings."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
 
@@ -392,13 +392,13 @@ def test_get_water_level_coerces_dialect_columns(httpx_mock):
 
 
 def test_get_water_level_datetime_subsets(httpx_mock):
-    """A bounded ``datetime`` is forwarded as an OGC interval, so the service
+    """A bounded ``datetime`` is forwarded as an OGC interval, so the collection
     returns a subset of the full record rather than us filtering client-side."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
     full, _ = ngwmn.get_water_level(monitoring_location_id=_SITE)
 
     httpx_mock.reset()
-    # What the service would return for the window: the 1978 observation drops.
+    # What the collection would return for the window: the 1978 observation drops.
     windowed_body = _collection(_WATER_LEVELS["features"][1:])
     _mock(httpx_mock, "waterLevelObs", windowed_body)
 
