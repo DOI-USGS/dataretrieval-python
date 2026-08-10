@@ -4,7 +4,7 @@ Public:
 
 - ``FILTER_LANG``: the type alias used for the ``filter_lang`` kwarg.
 
-Internal helpers used by ``chunking.multi_value_chunked``'s joint
+Internal helpers used by ``engine.multi_value_chunked``'s joint
 planner: ``_split_top_level_or`` (clause partitioning),
 ``_is_chunkable`` (filter-language gate), and
 ``_check_numeric_filter_pitfall`` (the lexicographic-comparison guard).

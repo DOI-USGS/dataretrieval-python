@@ -8,14 +8,10 @@ for each axis that minimizes total chunks while keeping every
 chunk URL under the budget. Requests that already fit get a
 trivial single-step plan — the executor has one code path either way.
 
-This module owns the OGC-specific half: the byte budget, the
-``parallel_chunks`` dial, and the ``multi_value_chunked`` decorator that
-ties a plan to a fetcher. Driving the resulting chunks to
-completion — bounded concurrency, retry, failure precedence, resume — is
-API-neutral and belongs to
-:class:`dataretrieval.transport.fanout.FanOut`, which this module hands
-its plan to. :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
-:class:`~dataretrieval.transport.fanout.FanOutPlan` structurally.
+This module owns the public ``parallel_chunks`` dial and preserves compatibility
+names from the former combined planner/executor. The OGC engine composes
+planning with API-neutral fan-out directly, avoiding an extra dependency hop in
+every getter call.
 
 Parallel chunks: the planner is conservative by default — it splits only as
 far as the byte limit forces. A caller who knows their result is large can opt
@@ -36,26 +32,17 @@ Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 
 from __future__ import annotations
 
-import functools
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Any
 
-import httpx
-import pandas as pd
-
-from dataretrieval._ambient import Ambient
-from dataretrieval.transport.fanout import (
-    FanOut,
-    _active_client,
-    _Fetch,
-    _Finalize,
-    _passthrough_result,
-    active_client,
+from dataretrieval.ogc.engine import (
+    _parallel_chunks,
 )
-from dataretrieval.transport.retry import RetryPolicy
+from dataretrieval.ogc.engine import (
+    multi_value_chunked as multi_value_chunked,
+)
+from dataretrieval.transport.fanout import FanOut, _active_client, active_client
 
-from .planning import ChunkPlan
 from .policy import _require_positive_int
 
 # Compatibility aliases. ``ChunkedCall`` was this module's executor before it
@@ -69,22 +56,6 @@ from .policy import _require_positive_int
 ChunkedCall = FanOut
 get_active_client = active_client
 _chunked_client = _active_client
-
-# Empirically the API replies HTTP 414 above ~8200 bytes of full URL —
-# matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
-# leaves ~200 bytes for request-line framing and proxy variance. The decorator
-# resolves this module-level default at call time when ``url_limit`` is None,
-# so a test can ``monkeypatch.setattr`` it on this module.
-_OGC_URL_BYTE_LIMIT = 8000
-
-
-# Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte
-# limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a
-# ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for
-# why). The ambient holds ``n`` — the requested cap on the plan's total
-# chunk count; ``1`` (the default, outside any block) means "off — chunk
-# only as much as the byte limit needs, no extra fan-out".
-_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
 
 
 @contextmanager
@@ -188,92 +159,3 @@ def parallel_chunks(n: int) -> Iterator[None]:
     _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
     with _parallel_chunks(n):
         yield
-
-
-def multi_value_chunked(
-    *,
-    build_request: Callable[..., httpx.Request],
-    url_limit: int | None = None,
-) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
-    """
-    Decorate an async fetcher to transparently chunk over-budget requests.
-
-    Returns a callable that builds a :class:`ChunkPlan` from ``args``,
-    constructs a :class:`ChunkedCall` over the decorated
-    ``async def fetch(args) -> (df, response)``, and drives it to
-    completion via :meth:`ChunkedCall.resume`. The plan splits multi-value
-    list params and the cql-text filter so each chunk URL fits the
-    byte limit. An already-fitting request is a one-step plan, unless an
-    active :func:`parallel_chunks` block asks the plan to fan out more
-    finely. See the module docstring for the concurrency model.
-
-    Parameters
-    ----------
-    build_request : Callable[..., httpx.Request]
-        Factory that turns a kwargs dict into a sized httpx request,
-        e.g. ``_construct_api_requests``. Called during planning to
-        measure each candidate plan.
-    url_limit : int, optional
-        Byte budget for the request (URL + body). When ``None``
-        (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is
-        resolved at call time so test patches via
-        ``monkeypatch.setattr`` take effect.
-
-    Returns
-    -------
-    Callable
-        A *synchronous* wrapper ``wrapper(args, *, finalize=...) ->
-        (df, response)`` that executes the underlying plan transparently
-        over the decorated async fetcher.
-
-    Raises
-    ------
-    Unchunkable
-        If no plan can fit ``url_limit``.
-    ChunkInterrupted
-        On a mid-execution transient — 429, 5xx, or a bare transport
-        error: :class:`QuotaExhausted` for 429, :class:`ServiceInterrupted`
-        for the rest. See :class:`ChunkedCall` for the resume semantics.
-
-    See Also
-    --------
-    ChunkPlan : Planning shape (axes, partitioning, passthrough).
-    ChunkedCall : Per-chunk execution and resume semantics.
-    """
-
-    def decorator(
-        fetch: _Fetch[dict[str, Any]],
-    ) -> Callable[..., tuple[pd.DataFrame, Any]]:
-        @functools.wraps(fetch)
-        def wrapper(
-            args: dict[str, Any],
-            *,
-            finalize: _Finalize = _passthrough_result,
-        ) -> tuple[pd.DataFrame, Any]:
-            limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
-            # Read the parallel_chunks dial ``n`` from the ambient set by
-            # ``parallel_chunks`` (1 = off outside any such block; otherwise the
-            # requested total chunk cap). It only affects *planning*, done
-            # here up front, so a later resume — which re-issues the
-            # already-planned chunks — needs no snapshot.
-            plan = ChunkPlan(
-                args, build_request, limit, max_chunks=_parallel_chunks.get()
-            )
-            retry_policy = RetryPolicy.from_env()
-            # The concurrency cap is resolved inside ``resume()`` from
-            # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
-            # ``total <= 1`` a one-element gather — no special branch.
-            return ChunkedCall(
-                plan,
-                fetch,
-                retry_policy,
-                finalize,
-                canonical_url=plan.canonical_url,
-                # The collection name, for the progress line the executor
-                # opens. ``get_ogc_data`` puts it in ``args``.
-                service=args.get("collection"),
-            ).resume()
-
-        return wrapper
-
-    return decorator

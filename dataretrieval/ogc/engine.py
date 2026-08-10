@@ -35,9 +35,10 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import httpx
 import pandas as pd
 
-import dataretrieval.ogc.chunking as chunking
+from dataretrieval._ambient import Ambient
 from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
+from dataretrieval.ogc.planning import ChunkPlan
 from dataretrieval.ogc.policy import (
     OgcApi,
     _require_positive_int,
@@ -51,7 +52,13 @@ from dataretrieval.ogc.requests import (
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
-from dataretrieval.transport.fanout import FanOut, active_client
+from dataretrieval.transport.fanout import (
+    FanOut,
+    _Fetch,
+    _Finalize,
+    _passthrough_result,
+    active_client,
+)
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
@@ -61,6 +68,15 @@ if TYPE_CHECKING:
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
+
+
+# Empirically the API replies HTTP 414 above ~8200 bytes of full URL. Resolve
+# this default at call time so tests and alternate deployments can patch it.
+_OGC_URL_BYTE_LIMIT = 8000
+
+# The public ``parallel_chunks`` context manager lives in ``ogc.chunking``;
+# execution reads the shared ambient here without depending on that facade.
+_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
 
 
 def _next_req_url(
@@ -305,13 +321,53 @@ def get_ogc_data(
         return _fetch_once(args, finalize=finalize)
 
 
-@chunking.multi_value_chunked(build_request=_construct_api_requests)
+def multi_value_chunked(
+    *,
+    build_request: Callable[..., httpx.Request],
+    url_limit: int | None = None,
+) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
+    """Decorate an async fetcher to transparently plan and execute chunks.
+
+    OGC-specific planning is composed here with the API-neutral
+    :class:`~dataretrieval.transport.fanout.FanOut` executor. The public
+    :func:`dataretrieval.ogc.chunking.parallel_chunks` context manager controls
+    optional finer fan-out through the shared ``_parallel_chunks`` ambient.
+    """
+
+    def decorator(
+        fetch: _Fetch[dict[str, Any]],
+    ) -> Callable[..., tuple[pd.DataFrame, Any]]:
+        @functools.wraps(fetch)
+        def wrapper(
+            args: dict[str, Any],
+            *,
+            finalize: _Finalize = _passthrough_result,
+        ) -> tuple[pd.DataFrame, Any]:
+            limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
+            plan = ChunkPlan(
+                args, build_request, limit, max_chunks=_parallel_chunks.get()
+            )
+            return FanOut(
+                plan,
+                fetch,
+                RetryPolicy.from_env(),
+                finalize,
+                canonical_url=plan.canonical_url,
+                service=args.get("collection"),
+            ).resume()
+
+        return wrapper
+
+    return decorator
+
+
+@multi_value_chunked(build_request=_construct_api_requests)
 async def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
 
-    ``@chunking.multi_value_chunked`` models every multi-value list
+    ``@multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
     the biggest chunk across all axes until each chunk URL fits,
     and iterates the cartesian product. With no chunkable inputs the
