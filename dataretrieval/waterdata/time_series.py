@@ -1006,14 +1006,16 @@ def get_stats_por(
         ...     end_date="01-31",
         ... )
     """
+    collection = "observationNormals"
+
     # Build argument dictionary, omitting None values
     params = _get_args(
-        _with_state(locals(), to="fips_us", into="state_code"),
+        _with_state(locals(), collection),
         exclude={"expand_percentiles"},
     )
 
     return stats.get_data(
-        args=params, service="observationNormals", expand_percentiles=expand_percentiles
+        args=params, service=collection, expand_percentiles=expand_percentiles
     )
 
 
@@ -1152,15 +1154,17 @@ def get_stats_date_range(
         ...     computation_type=["minimum", "maximum"],
         ... )
     """
+    collection = "observationIntervals"
+
     # Build argument dictionary, omitting None values
     params = _get_args(
-        _with_state(locals(), to="fips_us", into="state_code"),
+        _with_state(locals(), collection),
         exclude={"expand_percentiles"},
     )
 
     return stats.get_data(
         args=params,
-        service="observationIntervals",
+        service=collection,
         expand_percentiles=expand_percentiles,
     )
 

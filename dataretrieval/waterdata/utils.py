@@ -160,17 +160,33 @@ def _get_args(
     )
 
 
-def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
-    """Resolve the unified ``state`` argument into an endpoint's state queryable.
+#: Which state queryable each collection filters on, and in which
+#: representation. A fact about the collection, so it lives with the collection
+#: rather than being repeated at every getter that filters by state -- the
+#: shape ``ngwmn`` already uses for the same problem. Spans both the OGC
+#: collections and the Statistics API's resources, which differ here: the OGC
+#: metadata collections take a full state name, Statistics takes a FIPS code.
+_STATE_QUERYABLE: dict[str, dict[str, str]] = {
+    "monitoring-locations": {"to": "name", "into": "state_name"},
+    "time-series-metadata": {"to": "name", "into": "state_name"},
+    "combined-metadata": {"to": "name", "into": "state_name"},
+    "observationNormals": {"to": "fips_us", "into": "state_code"},
+    "observationIntervals": {"to": "fips_us", "into": "state_code"},
+}
+
+
+def _with_state(local_vars: dict[str, Any], collection: str) -> dict[str, Any]:
+    """Resolve the unified ``state`` argument into a collection's queryable.
 
     Returns the (mutated) args mapping. ``state`` is the canonical,
     format-flexible parameter (full name / postal / FIPS); it is normalized via
-    :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
-    and stored under ``into`` (the queryable this endpoint actually filters on).
+    :func:`~dataretrieval.codes.states.to_state` into whichever representation
+    and queryable ``collection`` filters on -- see :data:`_STATE_QUERYABLE`.
     It is additive sugar over the native ``state_code`` / ``state_name``
     parameters, which still accept the API's raw values (e.g. non-US FIPS);
     passing ``state`` together with either raises ``ValueError``.
     """
+    queryable = _STATE_QUERYABLE[collection]
     # Flatten ``**queryables`` first so a native state param arriving that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
     # explicit parameter) is visible to apply_state's mutual-exclusion guard.
@@ -178,7 +194,10 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     # check and silently send both.
     _flatten_queryables(local_vars)
     return apply_state(
-        local_vars, to=to, into=into, reject=("state_code", "state_name")
+        local_vars,
+        to=queryable["to"],
+        into=queryable["into"],
+        reject=("state_code", "state_name"),
     )
 
 
