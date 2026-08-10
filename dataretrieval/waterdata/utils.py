@@ -103,6 +103,7 @@ WATERDATA_API = OgcApi(
     base_url=OGC_API_URL,
     dialect=WATERDATA_DIALECT,
     extra_id_cols=_EXTRA_ID_COLS,
+    output_ids=_OUTPUT_ID_BY_COLLECTION,
 )
 
 # The Water-Data-specific *extras* on top of the engine's own no-normalize set
@@ -189,11 +190,13 @@ def get_ogc_data(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
-    Defaults ``output_id`` from the Water Data collection map when not given,
-    and supplies the Water Data extra-id columns and dialect, so the typed
-    getters in ``api.py`` call this unchanged. (Sibling OGC APIs such as
-    NGWMN call ``dataretrieval.ogc.get_ogc_data`` directly with their own
-    base URL and dialect rather than going through this Water Data wrapper.)
+    Supplies :data:`WATERDATA_API`, so the typed getters in ``api.py`` call
+    this unchanged. ``output_id`` is resolved by that value and only needs
+    passing for a collection outside its map (a reference table, say).
+
+    Sibling OGC APIs such as NGWMN call ``dataretrieval.ogc.get_ogc_data``
+    directly with their own :class:`~dataretrieval.ogc.OgcApi` rather than
+    going through this Water Data wrapper.
 
     Parameters
     ----------
@@ -218,8 +221,6 @@ def get_ogc_data(
         A metadata object with request information, including the URL and
         query time.
     """
-    if output_id is None:
-        output_id = _OUTPUT_ID_BY_COLLECTION[collection]
     return _facade_get_ogc_data(
         args,
         collection,

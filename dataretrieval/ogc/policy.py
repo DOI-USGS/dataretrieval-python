@@ -16,6 +16,7 @@ It must NOT import engine, shaping, or any collection adapter.
 from __future__ import annotations
 
 import numbers
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 
@@ -103,3 +104,18 @@ class OgcApi:
     base_url: str
     dialect: OgcDialect = DEFAULT_DIALECT
     extra_id_cols: frozenset[str] = frozenset()
+    #: How the wire ``id`` is renamed for the caller: a per-collection mapping,
+    #: or one name every collection uses. Excluded from the hash because a
+    #: mapping is unhashable and this value is identity, not a key.
+    output_ids: Mapping[str, str] | str = "id"
+
+    def output_id(self, collection: str) -> str:
+        """The user-facing name the wire ``id`` takes for ``collection``.
+
+        The caller should not have to know this -- it is a fact about the API,
+        so the API answers it. Callers with a collection outside the mapping
+        (a reference table, say) may still pass one explicitly.
+        """
+        if isinstance(self.output_ids, str):
+            return self.output_ids
+        return self.output_ids.get(collection, "id")

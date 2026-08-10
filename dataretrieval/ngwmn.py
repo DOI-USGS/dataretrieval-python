@@ -91,7 +91,11 @@ NGWMN_DIALECT = OgcDialect(
 
 #: The NGWMN OGC API. It carries no synthetic id columns, so only the base URL
 #: and the dialect differ from the default.
-NGWMN_API = OgcApi(base_url=NGWMN_OGC_API_URL, dialect=NGWMN_DIALECT)
+NGWMN_API = OgcApi(
+    base_url=NGWMN_OGC_API_URL,
+    dialect=NGWMN_DIALECT,
+    output_ids=_NGWMN_OUTPUT_ID,
+)
 
 
 def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -107,7 +111,6 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     return get_ogc_data(
         args,
         service,
-        output_id=_NGWMN_OUTPUT_ID,
         api=NGWMN_API,
     )
 

@@ -217,7 +217,7 @@ async def _walk_pages(
 def get_ogc_data(
     args: dict[str, Any],
     collection: str,
-    output_id: str,
+    output_id: str | None = None,
     *,
     api: OgcApi,
     max_rows: int | None = None,
@@ -281,6 +281,8 @@ def get_ogc_data(
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
+    if output_id is None:
+        output_id = api.output_id(collection)
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)

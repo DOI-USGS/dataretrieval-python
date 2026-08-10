@@ -23,7 +23,6 @@ from dataretrieval.ogc.requests import (
 )
 from dataretrieval.ogc.shaping import _finalize_ogc
 from dataretrieval.waterdata.utils import (
-    _OUTPUT_ID_BY_COLLECTION,
     OGC_API_URL,
     WATERDATA_API,
     _accept_legacy_kwargs,
@@ -144,12 +143,12 @@ def get_cql(
         ...     ' "02070010%"]}',
         ... )
     """
-    if collection not in _OUTPUT_ID_BY_COLLECTION:
+    if collection not in WATERDATA_API.output_ids:
         raise ValueError(
             f"Unknown collection {collection!r}. Valid collections: "
-            f"{sorted(_OUTPUT_ID_BY_COLLECTION)}."
+            f"{sorted(WATERDATA_API.output_ids)}."
         )
-    output_id = _OUTPUT_ID_BY_COLLECTION[collection]
+    output_id = WATERDATA_API.output_id(collection)
 
     # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a
