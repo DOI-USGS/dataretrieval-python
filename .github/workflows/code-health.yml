@@ -75,6 +75,16 @@ jobs:
           PY
           cat pyscn-sanity.txt
 
+      - name: Signals that mean something for this package
+        # pyscn grades six sub-scores and four of them do not apply here, so the
+        # composite moves for reasons that are not about this codebase. This
+        # extracts the three that do -- dead code, a NEW clone group, dependency
+        # depth -- and adds the interface cost of the public surface, which
+        # nothing else measures. See tools/health_signals.py for why each.
+        if: always()
+        continue-on-error: true
+        run: python tools/health_signals.py > health-signals.txt && cat health-signals.txt
+
       - name: Maintainability ranking (wily)
         # Worst-maintained files today, and how the package has moved recently.
         run: |
@@ -92,7 +102,17 @@ jobs:
         if: always()
         run: |
           {
-            echo '## Structural analysis'
+            echo '## Signals'
+            echo '```'
+            cat health-signals.txt 2>/dev/null || echo 'signals unavailable'
+            echo '```'
+            echo
+            echo '<details><summary>Full pyscn scores (advisory)</summary>'
+            echo
+            echo 'The composite averages six sub-scores; four do not apply to a'
+            echo 'function-oriented package, and Architecture penalises a leaf'
+            echo 'for being depended upon. Read the signals above instead.'
+            echo
             echo '```'
             if [[ -s pyscn-summary.txt ]]; then
               cat pyscn-summary.txt
@@ -101,6 +121,8 @@ jobs:
             fi
             cat pyscn-sanity.txt 2>/dev/null || true
             echo '```'
+            echo '</details>'
+            echo
             cat wily-summary.txt 2>/dev/null || true
             echo
             echo 'Full reports are attached to this run as the'
@@ -118,6 +140,7 @@ jobs:
             .pyscn/reports/
             pyscn-summary.txt
             pyscn-sanity.txt
+            health-signals.txt
             wily-summary.txt
           retention-days: 90
           if-no-files-found: warn
