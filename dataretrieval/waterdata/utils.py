@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
-from dataretrieval.ogc import OgcDialect, prepare_request_args
+from dataretrieval.ogc import OgcApi, OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
 # Endpoint constants live in one place for the whole collection; they are re-bound
@@ -94,6 +94,15 @@ WATERDATA_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("time", "monitoring_location_id"),
+)
+
+#: This package's view of the Water Data OGC API: where it lives, how it
+#: answers, and the synthetic id columns its results carry. Declared once so
+#: the engine and the shaper take one value instead of three arguments.
+WATERDATA_API = OgcApi(
+    base_url=OGC_API_URL,
+    dialect=WATERDATA_DIALECT,
+    extra_id_cols=_EXTRA_ID_COLS,
 )
 
 # The Water-Data-specific *extras* on top of the engine's own no-normalize set
@@ -216,9 +225,7 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        base_url=OGC_API_URL,
-        extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
+        api=WATERDATA_API,
     )
 
 
@@ -291,6 +298,7 @@ __all__ = [
     "BASE_URL",
     "OGC_API_URL",
     "SAMPLES_URL",
+    "WATERDATA_API",
     "WATERDATA_DIALECT",
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",

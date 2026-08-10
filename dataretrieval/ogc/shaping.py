@@ -12,14 +12,16 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import pandas as pd
 
+if TYPE_CHECKING:
+    from dataretrieval.ogc.policy import OgcApi, OgcDialect
+
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.context import _ogc_base_url
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 
 try:
     import geopandas as gpd
@@ -364,10 +366,8 @@ def _finalize_ogc(
     output_id: str,
     convert_type: bool,
     collection: str,
+    api: OgcApi,
     max_rows: int | None = None,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
-    base_url: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
 
@@ -390,11 +390,7 @@ def _finalize_ogc(
     ``base_url`` is captured with the finalizer so resumed calls query the same
     API's schema when their combined result is empty.
     """
-    if dialect is None:
-        dialect = DEFAULT_DIALECT
-    if base_url is None:
-        base_url = _ogc_base_url.get()
-    frame = _deal_with_empty(frame, properties, collection, base_url=base_url)
+    frame = _deal_with_empty(frame, properties, collection, base_url=api.base_url)
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match
     # regardless of whether the API returns snake_case (Water Data, where
@@ -408,9 +404,9 @@ def _finalize_ogc(
     if renames:
         frame = frame.rename(columns=renames)
     if convert_type:
-        frame = _type_cols(frame, dialect)
-    frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
-    frame = _sort_rows(frame, dialect)
+        frame = _type_cols(frame, api.dialect)
+    frame = _arrange_cols(frame, properties, output_id, api.extra_id_cols)
+    frame = _sort_rows(frame, api.dialect)
     if max_rows is not None:
         frame = frame.head(max_rows)
     return frame, BaseMetadata(response)

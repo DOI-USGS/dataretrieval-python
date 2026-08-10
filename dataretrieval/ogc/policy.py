@@ -73,3 +73,33 @@ class OgcDialect:
 # Default dialect: a plain OGC API with no CQL2-only collections and no
 # date-only collections (every time argument rendered as a full UTC datetime).
 DEFAULT_DIALECT = OgcDialect()
+
+
+@dataclass(frozen=True)
+class OgcApi:
+    """One OGC API's identity: where it lives and how it answers.
+
+    These three facts always travel together and are constant for a service,
+    so they are one value rather than three arguments threaded through the
+    engine and the shaper. An adapter declares its API once
+    (``waterdata.utils.WATERDATA_API``, ``ngwmn.NGWMN_API``) and passes that.
+
+    Adding a third OGC service is then one object, not three arguments to
+    thread through two layers and remember to keep consistent -- the mistake
+    the previous shape invited, and made: ``get_cql`` passed the dialect and
+    the id columns but let the base URL fall back to a default that happened
+    to be right.
+
+    Attributes
+    ----------
+    base_url : str
+        Root the collections hang off, e.g. ``.../ogcapi/v0``.
+    dialect : OgcDialect
+        Per-API quirks the request builder and shaper need.
+    extra_id_cols : frozenset[str]
+        Synthetic id columns this API's results carry, ordered to the front.
+    """
+
+    base_url: str
+    dialect: OgcDialect = DEFAULT_DIALECT
+    extra_id_cols: frozenset[str] = frozenset()

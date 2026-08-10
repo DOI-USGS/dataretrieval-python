@@ -23,10 +23,9 @@ from dataretrieval.ogc.requests import (
 )
 from dataretrieval.ogc.shaping import _finalize_ogc
 from dataretrieval.waterdata.utils import (
-    _EXTRA_ID_COLS,
     _OUTPUT_ID_BY_COLLECTION,
     OGC_API_URL,
-    WATERDATA_DIALECT,
+    WATERDATA_API,
     _accept_legacy_kwargs,
 )
 
@@ -186,8 +185,7 @@ def get_cql(
             output_id=output_id,
             convert_type=convert_type,
             collection=collection,
-            extra_id_cols=_EXTRA_ID_COLS,
-            dialect=WATERDATA_DIALECT,
+            api=WATERDATA_API,
         )
 
 

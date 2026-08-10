@@ -40,7 +40,7 @@ from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
-    OgcDialect,
+    OgcApi,
     _require_positive_int,
 )
 
@@ -219,10 +219,8 @@ def get_ogc_data(
     collection: str,
     output_id: str,
     *,
-    base_url: str,
+    api: OgcApi,
     max_rows: int | None = None,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -283,8 +281,6 @@ def get_ogc_data(
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
-    if dialect is None:
-        dialect = _DEFAULT_DIALECT
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
@@ -311,13 +307,11 @@ def get_ogc_data(
         convert_type=convert_type,
         collection=collection,
         max_rows=max_rows,
-        extra_id_cols=extra_id_cols,
-        dialect=dialect,
-        base_url=base_url,
+        api=api,
     )
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
-    with _row_cap(max_rows), _ogc_base_url(base_url), _dialect(dialect):
+    with _row_cap(max_rows), _ogc_base_url(api.base_url), _dialect(api.dialect):
         return _fetch_once(args, finalize=finalize)
 
 

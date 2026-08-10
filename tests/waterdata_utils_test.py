@@ -41,17 +41,14 @@ from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
-    _EXTRA_ID_COLS,
     OGC_API_URL,
-    WATERDATA_DIALECT,
+    WATERDATA_API,
     _get_args,
 )
 
 # The Water Data injection ``get_cql`` performs at its call site, so these tests
 # exercise the same result shape the typed getters produce.
-_finalize_ogc = functools.partial(
-    _ogc_finalize, extra_id_cols=_EXTRA_ID_COLS, dialect=WATERDATA_DIALECT
-)
+_finalize_ogc = functools.partial(_ogc_finalize, api=WATERDATA_API)
 
 _LOGGER_NAME = _utils_module.__name__
 

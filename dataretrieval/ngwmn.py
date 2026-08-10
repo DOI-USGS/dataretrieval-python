@@ -24,7 +24,7 @@ import pandas as pd
 
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import WATERDATA_BASE_URL
-from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
+from dataretrieval.ogc import OgcApi, OgcDialect, get_ogc_data, prepare_request_args
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -89,6 +89,10 @@ NGWMN_DIALECT = OgcDialect(
     sort_cols=("sample_time", "monitoring_location_id"),
 )
 
+#: The NGWMN OGC API. It carries no synthetic id columns, so only the base URL
+#: and the dialect differ from the default.
+NGWMN_API = OgcApi(base_url=NGWMN_OGC_API_URL, dialect=NGWMN_DIALECT)
+
 
 def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMetadata]:
     """Marshal a getter's arguments and dispatch to the shared OGC facade.
@@ -104,8 +108,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
-        base_url=NGWMN_OGC_API_URL,
-        dialect=NGWMN_DIALECT,
+        api=NGWMN_API,
     )
 
 
