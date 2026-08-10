@@ -17,8 +17,8 @@ and then fail in production.
 
 import asyncio
 import concurrent.futures
-import contextvars
 import datetime
+import functools
 import http.server
 import socket
 import threading
@@ -70,7 +70,9 @@ from dataretrieval.ogc.planning import (
     _request_bytes,
     _safe_request_bytes,
 )
-from dataretrieval.ogc.requests import _construct_api_requests
+from dataretrieval.ogc.requests import (
+    _construct_api_requests as _construct_api_requests_explicit,
+)
 from dataretrieval.transport import retry as _retry_mod
 from dataretrieval.transport.retry import (
     _RETRIES_DEFAULT,
@@ -81,6 +83,13 @@ from dataretrieval.transport.retry import (
     retry_async as _retry,
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
+from dataretrieval.waterdata.utils import OGC_API_URL
+
+# The joint-planner stress test drives the real request builder; bind the
+# target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
+_construct_api_requests = functools.partial(
+    _construct_api_requests_explicit, base_url=OGC_API_URL
+)
 
 
 def _aiozero(_d):
@@ -676,25 +685,24 @@ def test_resume_produces_dataset_identical_to_uninterrupted_run():
     assert sorted(df_a["id"].tolist()) == sorted(sites)
 
 
-def test_resume_rebuilds_in_captured_context():
-    """Regression: chunks are rebuilt by reading ambient ContextVars
-    (the engine threads base URL / dialect / row cap that way). A
-    ``call.resume()`` fired AFTER the originating ``with`` block exits —
-    the documented recovery for a mid-stream 429 — must still observe the
-    values active when the call was *created*, not the process defaults.
-    ``ChunkedCall`` snapshots the context at construction and runs every
-    drive inside it; without that snapshot a resumed NGWMN call would
-    rebuild its chunks against the wrong (default Water Data) base."""
-    var = contextvars.ContextVar("ctx_probe", default="DEFAULT")
+def test_resume_rebuilds_chunks_from_creation_time_bindings():
+    """Regression: everything a chunk rebuild needs (base URL, dialect,
+    row cap in production) is bound into the ``fetch``/``build_request``
+    closures when the call is created — ``get_ogc_data`` binds them with
+    ``functools.partial``. A ``call.resume()`` fired AFTER the originating
+    call returned — the documented recovery for a mid-stream 429 — re-issues
+    the pending chunks through those same bound callables, so every rebuilt
+    chunk observes the creation-time values. A reintroduced ambient read in
+    the fetch path would break this without any executor-side snapshot to
+    paper over it."""
     observed: list[str] = []
-
     state = {"calls": 0, "tripped": False}
 
-    async def fetch(args):
+    async def fetch(args, *, base):
         state["calls"] += 1
-        # The value visible at (re)build time — what _construct_api_requests
-        # would read from _ogc_base_url_var / _dialect_var in production.
-        observed.append(var.get())
+        # The value visible at (re)build time — what build_request receives
+        # from its ``functools.partial`` binding in production.
+        observed.append(base)
         if state["calls"] == 3 and not state["tripped"]:
             state["tripped"] = True
             raise RateLimited("429: Too many requests made.")
@@ -702,26 +710,24 @@ def test_resume_rebuilds_in_captured_context():
         return (pd.DataFrame({"id": sites}), _quota_response(500))
 
     sites = ["S" * 10 + str(i) for i in range(16)]
-    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+    # Bind the probe the way ``get_ogc_data`` binds ``base_url``: partial
+    # application at creation time, inside the originating call.
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(
+        functools.partial(fetch, base="https://in.example.org")
+    )
 
-    # Create + drive the call INSIDE the context, so the snapshot captures "IN".
-    token = var.set("IN")
-    try:
-        with pytest.raises(QuotaExhausted) as excinfo:
-            decorated({"sites": sites})
-    finally:
-        var.reset(token)
+    with pytest.raises(QuotaExhausted) as excinfo:
+        decorated({"sites": sites})
 
-    # The originating context has exited — the bare var is back to default.
-    assert var.get() == "DEFAULT"
     assert 0 < excinfo.value.completed_chunks < excinfo.value.total_chunks
 
-    # Resume OUTSIDE the context. Every rebuilt chunk must still see
-    # "IN" (the captured snapshot), never the leaked "DEFAULT".
+    # Resume outside the originating call. Every rebuilt chunk must be
+    # fetched through the closure created at call time, still carrying the
+    # bound base.
     observed.clear()
     df, _ = excinfo.value.call.resume()
     assert observed, "resume issued no chunks"
-    assert set(observed) == {"IN"}, observed
+    assert set(observed) == {"https://in.example.org"}, observed
     assert sorted(df["id"].tolist()) == sorted(sites)
 
 

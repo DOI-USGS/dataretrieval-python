@@ -25,9 +25,11 @@ inside a short-lived anyio blocking portal and use ``httpx.AsyncClient`` for
 pagination and bounded fan-out. Internal async functions are implementation
 details, not a second public API promise.
 
-Ambient per-call policy must propagate into the worker context. A resumable OGC
-call captures the context needed to rebuild its remaining requests after the
-original getter has returned.
+Ambient per-call policy (the progress reporter) must propagate into the worker
+context. A resumable OGC call binds the state needed to rebuild its remaining
+requests -- base URL, dialect, row cap -- into its fetch closures, so a resume
+fired after the original getter has returned rebuilds against the values the
+call was created with.
 
 Consequences
 ------------
@@ -42,6 +44,6 @@ Consequences
 Compliance
 ----------
 
-Tests exercise calls inside an already running event loop, ambient context
-capture on resume, cancellation precedence, bounded in-flight work, and shared
+Tests exercise calls inside an already running event loop, creation-time
+binding on resume, cancellation precedence, bounded in-flight work, and shared
 client ownership.

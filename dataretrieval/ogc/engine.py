@@ -36,7 +36,6 @@ import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
-from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
@@ -130,6 +129,7 @@ async def _paginate(
     follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
     client: httpx.AsyncClient | None = None,
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
+    row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Compatibility wrapper around collection-neutral cursor pagination."""
     session = client if client is not None else active_client()
@@ -139,7 +139,7 @@ async def _paginate(
         follow_up=follow_up,
         client=session,
         raise_for_status=raise_for_status,
-        row_cap=_row_cap.get(),
+        row_cap=row_cap,
     )
 
 
@@ -164,6 +164,8 @@ async def _walk_pages(
     geopd: bool,
     req: httpx.Request,
     client: httpx.AsyncClient | None = None,
+    *,
+    row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """
     Iterate paginated OGC API responses and aggregate them into one DataFrame.
@@ -182,6 +184,11 @@ async def _walk_pages(
     client : httpx.AsyncClient, optional
         Caller-borrowed client; ``None`` defers client management to
         :func:`_paginate`.
+    row_cap : int, optional
+        Stop following pages once this many rows have accumulated and
+        truncate to exactly this many. ``None`` (default) walks every page.
+        An early-stop download bound only — the combined-result cap is
+        applied in :func:`~dataretrieval.ogc.shaping._finalize_ogc`.
 
     Returns
     -------
@@ -211,6 +218,7 @@ async def _walk_pages(
         parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
         follow_up=follow_up,
         client=client,
+        row_cap=row_cap,
     )
 
 
@@ -303,7 +311,8 @@ def get_ogc_data(
     # this function). ``_finalize_ogc`` is the single source of result shape;
     # it also applies ``max_rows`` to the *combined* frame so the cap is the
     # exact total even when the plan chunks or the call is resumed, while
-    # ``_row_cap`` below only early-stops each chunk's pagination.
+    # the per-chunk ``row_cap`` bound below only early-stops each chunk's
+    # pagination.
     finalize = functools.partial(
         _finalize_ogc,
         properties=properties,
@@ -315,31 +324,46 @@ def get_ogc_data(
         dialect=dialect,
         base_url=base_url,
     )
+    # Bind the API target and quirks into the request builder and fetcher the
+    # same way ``finalize`` binds its own state: with ``functools.partial``.
+    # The plan sizes candidate chunks and a later ``exc.call.resume()``
+    # rebuilds them through these same bound callables, so the values the
+    # call was created with reach every chunk — even a resume fired long
+    # after this function returned — without any ambient state to snapshot.
+    build_request = functools.partial(
+        _construct_api_requests, base_url=base_url, dialect=dialect
+    )
+    fetch = functools.partial(
+        _fetch_once, build_request=build_request, row_cap=max_rows
+    )
+    run = chunking.multi_value_chunked(build_request=build_request)(fetch)
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
-    with _row_cap(max_rows), _ogc_base_url(base_url), _dialect(dialect):
-        return _fetch_once(args, finalize=finalize)
+    return run(args, finalize=finalize)
 
 
-@chunking.multi_value_chunked(build_request=_construct_api_requests)
 async def _fetch_once(
     args: dict[str, Any],
+    *,
+    build_request: Callable[..., httpx.Request],
+    row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
 
-    ``@chunking.multi_value_chunked`` models every multi-value list
-    parameter and the cql-text filter as a chunkable axis, greedy-halves
-    the biggest chunk across all axes until each chunk URL fits,
-    and iterates the cartesian product. With no chunkable inputs the
-    decorator passes args through unchanged. The decorator gathers every
+    The undecorated per-chunk fetcher: ``get_ogc_data`` binds
+    ``build_request`` (the target API's request builder) and ``row_cap``,
+    then wraps the result in ``chunking.multi_value_chunked``, which models
+    every multi-value list parameter and the cql-text filter as a chunkable
+    axis, greedy-halves the biggest chunk across all axes until each chunk
+    URL fits, and iterates the cartesian product. With no chunkable inputs
+    the decorator passes args through unchanged. The decorator gathers every
     chunk over one shared :class:`httpx.AsyncClient` (concurrency
-    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``). It also
-    returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
-    ``_fetch_once(args, finalize=...)`` synchronously. The return shape is
-    ``(frame, response)``.
+    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``) and
+    returns a *synchronous* wrapper, so ``get_ogc_data`` drives it
+    synchronously. The return shape is ``(frame, response)``.
     """
-    req = _construct_api_requests(**args)
-    return await _walk_pages(geopd=GEOPANDAS, req=req)
+    req = build_request(**args)
+    return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
 
 
 def fetch_ogc_request(

@@ -20,7 +20,6 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import ServiceInterrupted
-from dataretrieval.ogc.context import _row_cap
 from dataretrieval.ogc.dates import _format_api_dates
 from dataretrieval.ogc.engine import (
     _next_req_url,
@@ -50,13 +49,16 @@ from dataretrieval.waterdata.utils import (
 # The Water Data injection ``get_cql`` performs at its call site, so these tests
 # exercise the same result shape the typed getters produce.
 _finalize_ogc = functools.partial(
-    _ogc_finalize, extra_id_cols=_EXTRA_ID_COLS, dialect=WATERDATA_DIALECT
+    _ogc_finalize,
+    extra_id_cols=_EXTRA_ID_COLS,
+    dialect=WATERDATA_DIALECT,
+    base_url=OGC_API_URL,
 )
 
 _LOGGER_NAME = _utils_module.__name__
 
 
-def _run_walk_pages(*, geopd, req, client):
+def _run_walk_pages(*, geopd, req, client, row_cap=None):
     """Drive the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
@@ -65,7 +67,9 @@ def _run_walk_pages(*, geopd, req, client):
     keeps the historical sync-shaped call sites terse while exercising the
     real async pagination loop.
     """
-    return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
+    return asyncio.run(
+        _walk_pages(geopd=geopd, req=req, client=client, row_cap=row_cap)
+    )
 
 
 def test_get_args_basic():
@@ -146,7 +150,7 @@ def test_walk_pages_multiple_mocked():
 
 
 def test_row_cap_truncates_and_stops_within_first_page():
-    # Regression for BUG 2: ``_row_cap`` bounds the TOTAL rows. A first page
+    # Regression for BUG 2: ``row_cap`` bounds the TOTAL rows. A first page
     # already over the cap is truncated to exactly ``max_rows`` and the
     # ``next`` link is never followed.
     resp1 = mock.MagicMock()
@@ -167,8 +171,7 @@ def test_row_cap_truncates_and_stops_within_first_page():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    with _row_cap(2):
-        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client, row_cap=2)
 
     assert len(df) == 2  # truncated to the cap, not the page's 3 rows
     assert not mock_client.request.called  # ``next`` link never followed
@@ -200,8 +203,7 @@ def test_row_cap_stops_across_pages():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    with _row_cap(2):
-        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client, row_cap=2)
 
     assert len(df) == 2
     assert mock_client.request.call_count == 1  # fetched page 2, stopped before 3

@@ -58,7 +58,6 @@ import asyncio
 import functools
 import os
 from collections.abc import Awaitable, Callable, Iterator
-from contextvars import copy_context
 from typing import Any, Generic, Protocol, TypeVar, cast
 
 import httpx
@@ -346,17 +345,12 @@ class FanOut(Generic[_Chunk]):
         # own would defeat the shared connection pool. Empty for OGC, which
         # exposes no such flag.
         self.client_options = client_options or {}
-        # Snapshot the ambient context at construction time — i.e. inside the
-        # caller's ``with`` blocks (base URL, dialect, row cap, progress
-        # reporter). :meth:`resume` runs every drive inside this snapshot, so
-        # a *later* ``exc.call.resume()`` — which fires after those ``with``
-        # blocks have exited and reset their ContextVars — still rebuilds
-        # chunks against the original API's base URL/dialect rather than
-        # the process defaults. The adapter's request builder reads those
-        # ContextVars when it reconstructs each chunk, so the snapshot
-        # must outlive them. The mechanism is generic; which ambients matter is
-        # the adapter's business.
-        self._ctx = copy_context()
+        # No ambient state is snapshotted here: everything a chunk rebuild
+        # needs (base URL, dialect, row cap for the OGC getters) is closed
+        # over by the adapter's ``fetch``/plan, so a *later*
+        # ``exc.call.resume()`` — fired after the originating call
+        # returned — rebuilds chunks against the values the call was
+        # created with without this executor carrying adapter state.
         # Completed (frame, response) pairs keyed by sub-args index; sparse
         # (gathered chunks complete out of order — see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
@@ -536,38 +530,27 @@ class FanOut(Generic[_Chunk]):
             the underlying condition to clear and call ``exc.call.resume()``
             again.
         """
-        # Open the line out here, in the *calling* context, so an outer
+        # Open the line here, in the *calling* context, so an outer
         # reporter (a nested getter, or the caller's own ``progress_context``)
         # is the one found and reused; a drive that finds none gets a fresh
         # line, which is what makes a resume long after the interruption
-        # report progress at all.
-        #
-        # Then drive inside the snapshot taken at construction (see
-        # ``__init__``). ``start_blocking_portal`` copies the *calling* context
-        # into its worker thread, and running here means that calling context
-        # is the snapshot — so the base URL / dialect / row cap active when the
-        # call was created reach the rebuilt chunks, even when this is a
-        # resume fired long after the original ``with`` blocks exited. The
-        # reporter is the one ambient that must NOT come from the snapshot: a
-        # reporter captured there belongs to a context that has since closed
-        # it, so this drive's reporter is republished over it.
+        # report progress at all. ``start_blocking_portal`` copies this
+        # calling context into its worker thread, so the active reporter
+        # reaches the chunks. Chunk-rebuild state (base URL, dialect, row
+        # cap) travels in the adapter's ``fetch`` closure, not in ambient
+        # state, so no construction-time snapshot is needed for a resume
+        # fired after the originating call returned (see ``__init__``).
         with _progress.progress_context(
             service=self.service, target_url=self.canonical_url
         ):
-            return self._ctx.run(self._resume_in_context, _progress.current())
-
-    def _resume_in_context(
-        self, reporter: _progress.ProgressReporter | None
-    ) -> tuple[pd.DataFrame, Any]:
-        """Body of :meth:`resume`, run inside the captured context."""
-        concurrency = _resolve_concurrency(self.default_concurrent)
-        with _progress._active(reporter), start_blocking_portal() as portal:
-            # ``portal.call`` returns ``Any`` because ``functools.partial``
-            # erases ``_run``'s return type; restore the declared tuple.
-            return cast(
-                "tuple[pd.DataFrame, Any]",
-                portal.call(functools.partial(self._run, concurrency)),
-            )
+            concurrency = _resolve_concurrency(self.default_concurrent)
+            with start_blocking_portal() as portal:
+                # ``portal.call`` returns ``Any`` because ``functools.partial``
+                # erases ``_run``'s return type; restore the declared tuple.
+                return cast(
+                    "tuple[pd.DataFrame, Any]",
+                    portal.call(functools.partial(self._run, concurrency)),
+                )
 
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """

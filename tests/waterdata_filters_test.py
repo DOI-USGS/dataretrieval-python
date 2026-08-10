@@ -1,3 +1,4 @@
+import functools
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest import mock
@@ -11,8 +12,17 @@ from dataretrieval.ogc.filters import (
     _quote_cql_str,
     _split_top_level_or,
 )
-from dataretrieval.ogc.requests import _construct_api_requests
+from dataretrieval.ogc.requests import (
+    _construct_api_requests as _construct_api_requests_explicit,
+)
 from dataretrieval.waterdata import get_continuous
+from dataretrieval.waterdata.utils import OGC_API_URL
+
+# Bind the target API the way ``get_ogc_data`` does — explicitly — so the
+# direct construction tests below exercise the real builder.
+_construct_api_requests = functools.partial(
+    _construct_api_requests_explicit, base_url=OGC_API_URL
+)
 
 
 def _query_params(prepared_request):
@@ -20,8 +30,13 @@ def _query_params(prepared_request):
 
 
 def _fake_prepared_request(url="https://example.test"):
-    """Stand-in for the object ``_construct_api_requests`` returns."""
-    return SimpleNamespace(url=url, method="GET", headers={})
+    """Stand-in for the object ``_construct_api_requests`` returns.
+
+    Carries ``content`` because the planner sizes candidate chunks as
+    ``len(url) + len(content)`` — and with the builder bound per call, a
+    patched builder is what the planner measures.
+    """
+    return SimpleNamespace(url=url, method="GET", headers={}, content=b"")
 
 
 def _fake_response(url="https://example.test", elapsed_ms=1):
@@ -149,7 +164,7 @@ def test_long_filter_fans_out_into_multiple_requests():
     expr = _filter_chunking_clauses()
     sent_filters: list[str] = []
 
-    async def fake_walk_pages(*, geopd, req):
+    async def fake_walk_pages(*, geopd, req, row_cap=None):
         idx = len(sent_filters)
         sent_filters.append(_query_params(req).get("filter", [None])[0])
         return pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]}), _fake_response()
@@ -272,20 +287,18 @@ def test_cql_json_filter_is_not_chunked():
         sent_filters.append(kwargs.get("filter"))
         return _fake_prepared_request()
 
+    walk = mock.AsyncMock(
+        return_value=(
+            pd.DataFrame({"id": ["row-1"], "value": [1]}),
+            _fake_response(),
+        )
+    )
     with (
         mock.patch(
             "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=fake_construct_api_requests,
         ),
-        mock.patch(
-            "dataretrieval.ogc.engine._walk_pages",
-            new=mock.AsyncMock(
-                return_value=(
-                    pd.DataFrame({"id": ["row-1"], "value": [1]}),
-                    _fake_response(),
-                )
-            ),
-        ),
+        mock.patch("dataretrieval.ogc.engine._walk_pages", new=walk),
     ):
         get_continuous(
             monitoring_location_id="USGS-07374525",
@@ -294,7 +307,11 @@ def test_cql_json_filter_is_not_chunked():
             filter_lang="cql-json",
         )
 
-    assert sent_filters == [expr]
+    # The planner sizes through the (patched) builder and the fetch builds
+    # through it again; every call must carry the caller's cql-json filter
+    # verbatim — never split — and exactly one chunk is fetched.
+    assert sent_filters and set(sent_filters) == {expr}
+    assert walk.await_count == 1
 
 
 @pytest.mark.parametrize(

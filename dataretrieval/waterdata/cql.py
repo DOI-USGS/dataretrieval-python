@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval.ogc import fetch_ogc_request
-from dataretrieval.ogc.context import _ogc_base_url
 from dataretrieval.ogc.requests import (
     _as_str_list,
     _construct_cql_request,
@@ -165,30 +164,31 @@ def get_cql(
     wire_properties = _switch_properties_id(properties_list, output_id, collection)
 
     # The OGC package names no collection of its own, so this hand-built request
-    # path states the target itself -- request construction and the empty-result
-    # schema lookup in ``_finalize_ogc`` both read the base URL from here.
-    with _ogc_base_url(OGC_API_URL):
-        req = _construct_cql_request(
-            collection,
-            body,
-            properties=wire_properties,
-            bbox=bbox,
-            limit=limit,
-            skip_geometry=skip_geometry,
-        )
+    # path states the target itself -- to request construction and to the
+    # empty-result schema lookup in ``_finalize_ogc``.
+    req = _construct_cql_request(
+        collection,
+        body,
+        base_url=OGC_API_URL,
+        properties=wire_properties,
+        bbox=bbox,
+        limit=limit,
+        skip_geometry=skip_geometry,
+    )
 
-        df, response = fetch_ogc_request(req, collection=collection)
+    df, response = fetch_ogc_request(req, collection=collection)
 
-        return _finalize_ogc(
-            df,
-            response,
-            properties=properties_list,
-            output_id=output_id,
-            convert_type=convert_type,
-            collection=collection,
-            extra_id_cols=_EXTRA_ID_COLS,
-            dialect=WATERDATA_DIALECT,
-        )
+    return _finalize_ogc(
+        df,
+        response,
+        properties=properties_list,
+        output_id=output_id,
+        convert_type=convert_type,
+        collection=collection,
+        extra_id_cols=_EXTRA_ID_COLS,
+        dialect=WATERDATA_DIALECT,
+        base_url=OGC_API_URL,
+    )
 
 
 __all__ = ["get_cql"]

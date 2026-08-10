@@ -5,9 +5,8 @@ This module is the single source of truth for the :class:`OgcDialect` type
 It depends only on the stdlib, so any OGC submodule can import it without
 creating cycles.
 
-It names no endpoint: which collection an OGC call targets is the *adapter's*
-policy, supplied per call as ``base_url`` (see
-:data:`dataretrieval.ogc.context._ogc_base_url`). A default here would quietly
+It names no endpoint: which API an OGC call targets is the *adapter's*
+policy, supplied per call as ``base_url``. A default here would quietly
 point every generic OGC caller at one API.
 
 It must NOT import engine, shaping, or any collection adapter.
