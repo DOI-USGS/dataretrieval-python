@@ -105,12 +105,13 @@ Shared components
     state; ``requests`` owns argument normalization and HTTP request
     construction; ``schema`` executes queryables/schema requests; ``engine``
     supplies OGC cursor and response strategies to transport pagination;
-    ``planning`` determines chunk boundaries; ``chunking`` connects those plans
-    to the shared fan-out executor and retains compatibility aliases;
-    ``interruptions`` and ``retry`` re-export their moved compatibility
-    surfaces; and ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
-    their named protocol concerns. The full runtime OGC graph, including the
-    facade, is acyclic -- enforced by the package-wide fitness function in
+    ``planning`` determines chunk boundaries; ``engine`` composes those plans
+    with the shared fan-out executor; ``chunking`` owns the public
+    ``parallel_chunks`` dial and retains compatibility aliases; ``interruptions``
+    and ``retry`` re-export their moved compatibility surfaces; and ``shaping``,
+    ``dates``, ``filters``, and ``errors`` isolate their named protocol
+    concerns. The full runtime OGC graph, including the facade, is acyclic --
+    enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
@@ -343,4 +344,5 @@ Architecturally significant changes should:
 .. toctree::
    :maxdepth: 1
 
+   health-iterations
    decisions/index
