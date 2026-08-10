@@ -219,8 +219,8 @@ def get_ogc_data(
     collection: str,
     output_id: str,
     *,
+    base_url: str,
     max_rows: int | None = None,
-    base_url: str | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -246,12 +246,16 @@ def get_ogc_data(
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str, optional
-        OGC API base URL to target. Required in practice -- this package is
-        API-neutral and names no collection of its own; each adapter passes its
-        own base (e.g. ``waterdata.utils.OGC_API_URL``,
-        ``ngwmn.NGWMN_OGC_API_URL``). Falls back to the base URL already in
-        scope for the current call.
+    base_url : str
+        OGC API base URL to target. Required: this package is API-neutral and
+        names no API of its own, so each adapter passes its own base (e.g.
+        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``). It was
+        once optional, falling back to whatever was in ambient scope -- which
+        defaults to the empty string, so omitting it built a *relative*
+        ``/collections/{id}/items`` that planning accepted and only httpx
+        rejected at send time, surfacing as a NetworkError about an unknown
+        service. Requiring it moves that mistake to the call site, where mypy
+        catches it.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
@@ -281,9 +285,6 @@ def get_ogc_data(
 
     if dialect is None:
         dialect = _DEFAULT_DIALECT
-    if base_url is None:
-        base_url = _ogc_base_url.get()
-
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
