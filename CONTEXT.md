@@ -147,5 +147,18 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   alias respectively.
 
   `service` still means the external system in `transport` and `progress`,
-  where it labels a progress line, and in the public `waterdata.get_samples`
-  and `get_codes` parameters. Those are correct or frozen, not drift.
+  where it labels a progress line. That usage is correct.
+- `waterdata.get_samples(service=)` names a *resource*, not a service. The
+  Samples OpenAPI document declares `results`, `locations`, `activities`,
+  `projects` and `organizations` as tags and titles itself the "Resource
+  Center"; it never calls them services. They are also not collections --
+  they share 22 of 23 query parameters, so they are five projections of one
+  query rather than five sets of data, and the OGC definition of *collection*
+  is scoped to "access mechanisms defined by OGC API standard(s)", which
+  Samples does not implement. Kept as-is by decision: renaming a public
+  keyword costs a deprecation cycle for a term with no better-evidenced
+  replacement in reach.
+- `waterdata.get_codes(code_service=)` is correct and stays. The Samples
+  documentation calls it a "code service" in prose and serves it from
+  `/codeservice/`, so this reproduces the service's own vocabulary, like
+  `site-types`.

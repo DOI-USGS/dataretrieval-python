@@ -140,10 +140,10 @@ def get_cql(
     if service is not None:
         warnings.warn(
             "The `service` argument of get_cql() is deprecated; use `collection`. "
-            "OGC API - Features calls these collections -- the value is the "
-            "collectionId in /collections/{id}/items -- while `service` names the "
-            "API itself (Water Data, NGWMN). `service` will be removed on or "
-            "after 2027-08-09.",
+            "OGC API - Features names this value the collectionId "
+            "(17-069r4 Requirements 18 and 20, /collections/{id}/items), while "
+            "`service` names the API itself (Water Data, NGWMN). `service` will "
+            "be removed on or after 2027-08-09.",
             DeprecationWarning,
             stacklevel=2,
         )
