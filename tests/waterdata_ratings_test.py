@@ -201,6 +201,40 @@ def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
     assert "file_type" not in qs["filter"][0]
 
 
+def test_get_ratings_search_429_is_resumable(httpx_mock):
+    """A rate-limited search surfaces as a resumable interruption — parity
+    with the other getters, which drive the same executor — instead of a raw
+    ``RateLimited``; resuming finishes the interrupted stage."""
+    from dataretrieval.interruptions import QuotaExhausted
+
+    httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, status_code=429)
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+
+    with pytest.raises(QuotaExhausted) as excinfo:
+        get_ratings(monitoring_location_id="USGS-01104475", download_and_parse=False)
+
+    df, _ = excinfo.value.call.resume()
+    assert list(df["feature"])[0]["id"] == "USGS-01104475.exsa.rdb"
+
+
+def test_get_ratings_download_failure_surfaces_typed(httpx_mock):
+    """A failing download surfaces the module's typed error instead of being
+    logged and silently dropped from the result dict."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    httpx_mock.add_response(
+        method="GET",
+        url="https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb",
+        status_code=404,
+    )
+
+    with pytest.raises(DataRetrievalError):
+        get_ratings(monitoring_location_id="USGS-01104475")
+
+
 def test_stac_next_link_refuses_another_host(httpx_mock):
     """The STAC page walk must not follow a link off the ratings host.
 

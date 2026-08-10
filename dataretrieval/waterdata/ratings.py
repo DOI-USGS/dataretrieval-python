@@ -9,7 +9,6 @@ WDFN announcement at https://waterdata.usgs.gov/blog/wdfn-rating-curves/.
 
 from __future__ import annotations
 
-import logging
 import os
 from collections.abc import Iterable
 from typing import Any, Literal, get_args
@@ -17,28 +16,25 @@ from typing import Any, Literal, get_args
 import httpx
 import pandas as pd
 
-from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
-from dataretrieval.transport.http import (
-    HTTPX_DEFAULTS,
-)
+from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import (
     default_headers as _default_headers,
 )
 from dataretrieval.transport.http import (
-    get as _get,
+    open_async_client as _open_async_client,
 )
 from dataretrieval.transport.links import resolve_next_url
+from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.retry import RetryPolicy
 from dataretrieval.waterdata.endpoints import STAC_URL
 
 __all__ = ["get_ratings"]
 
-
-logger = logging.getLogger(__name__)
 
 RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
 _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
@@ -119,8 +115,19 @@ def get_ratings(
     Raises
     ------
     ValueError
-        For an unrecognized ``file_type`` value or an ISO 8601 duration in
-        ``time``.
+        For an unrecognized ``file_type`` value, an ISO 8601 duration in
+        ``time``, or a matching feature that carries no data asset.
+    DataRetrievalError
+        The typed subclass for an HTTP error response (see
+        :func:`transport.pagination.paginate`);
+        or :class:`~dataretrieval.exceptions.NetworkError` if a request
+        can't reach the service in a way retrying cannot fix.
+    FanOutInterrupted
+        A transient failure (429 / 5xx / timeout) survived the built-in
+        retries during the search or a download. ``exc.call.resume()``
+        finishes the interrupted stage (see :doc:`/userguide/errors`); the
+        assembled per-feature dict is returned by a fresh ``get_ratings``
+        call.
 
     Examples
     --------
@@ -186,25 +193,7 @@ def get_ratings(
     if file_path is not None:
         os.makedirs(file_path, exist_ok=True)
 
-    out: dict[str, pd.DataFrame] = {}
-    for feature in matching:
-        fid = feature["id"]
-        try:
-            out[fid] = _download_and_parse(feature, file_path, ssl_check)
-        # One bad feature shouldn't abort the batch: log and skip the module's
-        # typed errors (DataRetrievalError, e.g. an HTTPError from
-        # _raise_for_non_200) plus the transport / parse / file / missing-asset
-        # errors a single download can raise.
-        except (
-            DataRetrievalError,
-            httpx.HTTPError,
-            LookupError,
-            OSError,
-            ValueError,
-        ) as e:
-            logger.warning("Failed to download / parse %s: %s", fid, e)
-
-    return out
+    return _download_all(matching, file_path, ssl_check)
 
 
 def _as_list(x: str | Iterable[str]) -> list[str]:
@@ -242,8 +231,16 @@ def _search(
     ``limit`` is the page size (clamped to the service maximum of 10,000); the
     STAC ``next`` link is followed until exhausted so a result set larger than
     one page isn't silently truncated.
-    """
 
+    The page walk is :func:`dataretrieval.transport.pagination.paginate` with
+    STAC strategies, driven as a one-item
+    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor every
+    other getter uses -- so the search gets per-attempt retry, the stall
+    budget, a progress line, and the resumable interruption taxonomy instead
+    of a bespoke sync loop that had none of them. Pages carry features rather
+    than rows, so each page frame wraps the raw feature dicts in a single
+    ``feature`` column.
+    """
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
     if filter_str is not None:
         query_params["filter"] = filter_str
@@ -252,60 +249,122 @@ def _search(
     if bbox is not None:
         query_params["bbox"] = ",".join(map(str, bbox))
 
-    url: str | None = f"{STAC_URL}/search"
-    # ``params`` is sent only on the first request; each STAC ``next`` link
-    # already carries the query, so it is reset to None inside the loop.
-    params: dict[str, Any] | None = query_params
-    features: list[dict[str, Any]] = []
-    while url is not None:
-        response = _get(
-            url,
-            params=params,
-            headers=_default_headers(url),
-            verify=ssl_check,
-            **HTTPX_DEFAULTS,
-        )
-        _raise_for_non_200(response)
-        body = response.json()
-        features.extend(body.get("features", []))
+    url = f"{STAC_URL}/search"
+    req = httpx.Request("GET", url, params=query_params, headers=_default_headers(url))
+
+    def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+        body = resp.json()
+        page = pd.DataFrame({"feature": body.get("features", [])})
         # The STAC ``next`` link is a fully-formed GET href carrying the
-        # limit/filter/bbox and a continuation token, so follow it verbatim
-        # (dropping our own params) until the server stops emitting one.
+        # limit/filter/bbox and a continuation token, so it becomes the
+        # cursor verbatim -- except for the shared safety policy: the href is
+        # response data, so it is checked before it becomes a request. A link
+        # to another host would carry this request's API key off the
+        # authorized host, and one carrying ``user:pass@`` would mint an
+        # ``Authorization: Basic`` header the caller never configured.
         href = next(
             (lnk["href"] for lnk in body.get("links", []) if lnk.get("rel") == "next"),
             None,
         )
-        # Verbatim except for the credentials: the href is response data, so it
-        # is checked before it becomes a request. A link to another host would
-        # carry this request's API key off the authorized host, and one carrying
-        # ``user:pass@`` would mint an ``Authorization: Basic`` header the caller
-        # never configured.
-        url = (
-            None
-            if href is None
-            else resolve_next_url(href, response, service="ratings")
+        cursor = (
+            None if href is None else resolve_next_url(href, resp, service="ratings")
         )
-        params = None
-    return features
+        return page, cursor
+
+    async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
+        return await sess.get(cursor, headers=_default_headers(cursor))
+
+    async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
+        return await paginate(
+            request,
+            parse_response=parse_response,
+            follow_up=follow_up,
+            # Borrow the executor's shared client for every page.
+            client=active_client(),
+            raise_for_status=_raise_for_non_200,
+        )
+
+    df, _ = FanOut(
+        [req],
+        fetch,
+        RetryPolicy.from_env(),
+        client_options={"verify": ssl_check},
+        canonical_url=str(req.url),
+        service="ratings",
+    ).resume()
+    return [] if df.empty else list(df["feature"])
 
 
-def _download_and_parse(
-    feature: dict[str, Any],
-    file_path: str | None,
-    ssl_check: bool,
-) -> pd.DataFrame:
-    """Fetch the feature's data asset, parse RDB, optionally persist to disk."""
-    url = feature["assets"]["data"]["href"]
-    response = _get(
-        url, headers=_default_headers(url), verify=ssl_check, **HTTPX_DEFAULTS
-    )
+async def _fetch_rating(
+    feature: dict[str, Any], file_path: str | None
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Fetch one feature's data asset, parse RDB, optionally persist to disk.
+
+    Headers are evaluated against each asset href -- assets can live on a
+    different host than the catalog, and must not inherit its auth. Borrows
+    the executor's shared client; outside a drive (a direct unit call) it
+    opens a short-lived one.
+    """
+    fid = feature["id"]
+    href = feature.get("assets", {}).get("data", {}).get("href")
+    if not href:
+        raise ValueError(f"STAC feature {fid!r} carries no data asset href.")
+    headers = _default_headers(href)
+    session = active_client()
+    if session is not None:
+        response = await session.get(href, headers=headers)
+    else:
+        async with _open_async_client() as own:
+            response = await own.get(href, headers=headers)
     _raise_for_non_200(response)
 
     if file_path is not None:
-        with open(os.path.join(file_path, feature["id"]), "w") as f:
+        with open(os.path.join(file_path, fid), "w") as f:
             f.write(response.text)
 
     df = read_rdb(response.text)
     df.attrs["comment"] = extract_rdb_comment(response.text)
-    df.attrs["url"] = url
-    return df
+    df.attrs["url"] = href
+    return df, response
+
+
+def _download_all(
+    features: list[dict[str, Any]],
+    file_path: str | None,
+    ssl_check: bool,
+) -> dict[str, pd.DataFrame]:
+    """Download every feature's rating over the shared fan-out executor.
+
+    The plan is the feature list itself -- ``FanOut`` asks a plan only to be
+    sized and iterable -- so the downloads get bounded concurrency,
+    per-attempt retry, the progress line, and the resumable interruption
+    taxonomy in place of the previous serial loop, which had none of them and
+    logged-and-skipped every failure. A deterministic per-feature failure (a
+    missing asset, a malformed RDB) now surfaces typed instead of silently
+    dropping that rating from the result; a transient one is retried and, if
+    retries are exhausted, raised as a resumable interruption.
+
+    The public result is a dict keyed by feature id, so the fetch closure
+    accumulates it; the executor's combined frame is not the return shape and
+    is discarded.
+    """
+    out: dict[str, pd.DataFrame] = {}
+    if not features:
+        return out
+
+    async def fetch(feature: dict[str, Any]) -> tuple[pd.DataFrame, httpx.Response]:
+        df, response = await _fetch_rating(feature, file_path)
+        out[feature["id"]] = df
+        return df, response
+
+    FanOut(
+        features,
+        fetch,
+        RetryPolicy.from_env(),
+        client_options={"verify": ssl_check},
+        # No single URL expresses "all of these assets" -- the aggregate
+        # reports the first, matching what a single-feature call would show.
+        canonical_url=features[0].get("assets", {}).get("data", {}).get("href"),
+        service="ratings",
+    ).resume()
+    return out

@@ -538,6 +538,31 @@ def test_wateruse_does_not_reimplement_fan_out_orchestration() -> None:
     )
 
 
+def test_ratings_drives_http_through_the_shared_executor() -> None:
+    """Ratings must not issue one-off synchronous HTTP requests.
+
+    Its STAC page walk and per-feature downloads previously ran hand-rolled
+    sync loops over ``transport.http.get`` -- no retry, no stall budget, no
+    progress line, no resume, and N serial downloads. Both stages now drive
+    ``paginate``/``FanOut`` like every other multi-request path; assert the
+    direct sync entry points cannot quietly return.
+    """
+    path = PACKAGE_ROOT / "waterdata" / "ratings.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    transport_names = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and node.module == "dataretrieval.transport.http"
+        for alias in node.names
+    }
+    offenders = transport_names - {"default_headers", "open_async_client"}
+    assert not offenders, (
+        "ratings imports executing sync transport helpers instead of driving "
+        f"the shared executor: {sorted(offenders)}"
+    )
+
+
 def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     """What ``FanOut`` needs of a plan, checked on both real plan types.
 
