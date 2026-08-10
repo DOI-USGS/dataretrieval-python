@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@ faults.</p>
 <code class="docutils literal notranslate"><span class="pre">retryable</span></code> attributes. Status mapping lives in one policy function.</p>
 <p>Where automatic recovery is supported, retries are bounded, use exponential
 backoff with full jitter, honor only bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> delays, and preserve
-cancellation. OGC fan-out retains completed subrequests and raises a typed
+cancellation. OGC fan-out retains completed chunks and raises a typed
 <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> with a handle that resumes only missing work. Fatal or
 unknown failures are not disguised as resumable transients.</p>
 <p>The shared transport layer supplies bounded retry and callback-driven cursor

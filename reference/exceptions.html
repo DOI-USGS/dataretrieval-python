@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -362,8 +362,8 @@ call manually.</p>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a></p>
 <p>No chunking plan fits the URL byte limit.</p>
 <p>Raised by the Water Data chunker when even the smallest reducible plan
-(every list axis at one atom per sub-request, the filter at one clause per
-sub-request) still exceeds the server’s byte limit. Unlike
+(every list axis at one atom per chunk, the filter at one clause per
+chunk) still exceeds the server’s byte limit. Unlike
 <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a>, then, automatic splitting has already been tried and
 exhausted. Shrink the input lists, simplify the filter, or split the call
 manually.</p>
@@ -432,12 +432,12 @@ per request.</p>
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.</span></span><span class="sig-name descname"><span class="pre">FanOutInterrupted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FanOut</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#FanOutInterrupted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.FanOutInterrupted" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a></p>
-<p>Base class for mid-stream sub-request failures whose completed work
+<p>Base class for mid-stream chunk failures whose completed work
 is preserved and resumable.</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> subclass means: a sub-request failed, but
+<p>A <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> subclass means: a chunk failed, but
 <code class="docutils literal notranslate"><span class="pre">FanOut</span></code> still owns whatever completed successfully before
 the failure. Call <code class="docutils literal notranslate"><span class="pre">self.call.resume()</span></code> to pick up where the
-failure stopped you — only still-pending sub-requests are
+failure stopped you — only still-pending chunks are
 re-issued.</p>
 <p>Subclasses describe <em>why</em> <code class="docutils literal notranslate"><span class="pre">FanOut</span></code> stopped so callers can
 pick a retry policy: <a class="reference internal" href="#dataretrieval.QuotaExhausted" title="dataretrieval.QuotaExhausted"><code class="xref py py-class docutils literal notranslate"><span class="pre">QuotaExhausted</span></code></a> for 429 (wait for the
@@ -474,7 +474,7 @@ empty/<code class="docutils literal notranslate"><span class="pre">None</span></
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.completed_chunks">
 <span class="sig-name descname"><span class="pre">completed_chunks</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.completed_chunks" title="Link to this definition"></a></dt>
-<dd><p>Number of sub-requests successfully completed before the failure.</p>
+<dd><p>Number of chunks successfully completed before the failure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
@@ -485,7 +485,7 @@ empty/<code class="docutils literal notranslate"><span class="pre">None</span></
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.total_chunks">
 <span class="sig-name descname"><span class="pre">total_chunks</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.total_chunks" title="Link to this definition"></a></dt>
-<dd><p>Total sub-requests in the plan.</p>
+<dd><p>Total chunks in the plan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
@@ -510,7 +510,7 @@ the live view).</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.partial_response">
 <span class="sig-name descname"><span class="pre">partial_response</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.partial_response" title="Link to this definition"></a></dt>
-<dd><p>Raw aggregate response covering the completed sub-requests at
+<dd><p>Raw aggregate response covering the completed chunks at
 raise time; <code class="docutils literal notranslate"><span class="pre">None</span></code> if nothing had completed yet. Same snapshot
 semantics as <code class="docutils literal notranslate"><span class="pre">partial_frame</span></code>. (Raw, not finalized — use
 <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> for the finalized <code class="docutils literal notranslate"><span class="pre">(df,</span> <span class="pre">metadata)</span></code> result.)</p>
@@ -525,7 +525,7 @@ semantics as <code class="docutils literal notranslate"><span class="pre">partia
 <p>Retry on any transient interruption, honoring the server’s
 <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> hint when present and falling back to a fixed wait
 otherwise. Each new interruption keeps the already-completed work
-intact — only the still-pending sub-requests are re-issued.</p>
+intact — only the still-pending chunks are re-issued.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
 
@@ -557,9 +557,9 @@ connection failures (<code class="xref py py-class docutils literal notranslate"
 <dt class="sig sig-object py" id="dataretrieval.QuotaExhausted">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.</span></span><span class="sig-name descname"><span class="pre">QuotaExhausted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FanOut</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#QuotaExhausted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.QuotaExhausted" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.FanOutInterrupted" title="dataretrieval.interruptions.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a></p>
-<p>A sub-request returned HTTP 429 — the per-key rate-limit window
+<p>A chunk returned HTTP 429 — the per-key rate-limit window
 is exhausted. Subclass of <a class="reference internal" href="#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a>.</p>
-<p>The completed sub-requests are preserved on <code class="docutils literal notranslate"><span class="pre">.call</span></code>; once the
+<p>The completed chunks are preserved on <code class="docutils literal notranslate"><span class="pre">.call</span></code>; once the
 rate-limit window resets, <code class="docutils literal notranslate"><span class="pre">.call.resume()</span></code> re-issues only the
 still-pending work. <code class="docutils literal notranslate"><span class="pre">partial_frame</span></code> holds what completed
 before the 429.</p>
@@ -569,9 +569,9 @@ before the 429.</p>
 <dt class="sig sig-object py" id="dataretrieval.ServiceInterrupted">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.</span></span><span class="sig-name descname"><span class="pre">ServiceInterrupted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FanOut</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#ServiceInterrupted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.ServiceInterrupted" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.FanOutInterrupted" title="dataretrieval.interruptions.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a></p>
-<p>A sub-request returned HTTP 5xx — the upstream service failed
+<p>A chunk returned HTTP 5xx — the upstream service failed
 transiently. Subclass of <a class="reference internal" href="#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code></a>.</p>
-<p>The completed sub-requests are preserved on <code class="docutils literal notranslate"><span class="pre">.call</span></code>; once the
+<p>The completed chunks are preserved on <code class="docutils literal notranslate"><span class="pre">.call</span></code>; once the
 upstream recovers, <code class="docutils literal notranslate"><span class="pre">.call.resume()</span></code> resumes only the
 still-pending work.</p>
 </dd></dl>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../../../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,13 +81,13 @@
 <span class="sd">parameter (sites, parameter codes, …) plus the cql-text ``filter``,</span>
 <span class="sd">which splits along its top-level OR clauses. Any of them can fan the</span>
 <span class="sd">URL past the server&#39;s ~8 KB byte limit. ``ChunkPlan`` picks a fan-out</span>
-<span class="sd">for each axis that minimizes total sub-requests while keeping every</span>
-<span class="sd">sub-request URL under the budget. Requests that already fit get a</span>
+<span class="sd">for each axis that minimizes total chunks while keeping every</span>
+<span class="sd">chunk URL under the budget. Requests that already fit get a</span>
 <span class="sd">trivial single-step plan — the executor has one code path either way.</span>
 
 <span class="sd">This module owns the OGC-specific half: the byte budget, the</span>
 <span class="sd">``parallel_chunks`` dial, and the ``multi_value_chunked`` decorator that</span>
-<span class="sd">ties a plan to a fetcher. Driving the resulting sub-requests to</span>
+<span class="sd">ties a plan to a fetcher. Driving the resulting chunks to</span>
 <span class="sd">completion — bounded concurrency, retry, failure precedence, resume — is</span>
 <span class="sd">API-neutral and belongs to</span>
 <span class="sd">:class:`dataretrieval.transport.fanout.FanOut`, which this module hands</span>
@@ -97,7 +97,7 @@
 <span class="sd">Parallel chunks: the planner is conservative by default — it splits only as</span>
 <span class="sd">far as the byte limit forces. A caller who knows their result is large can opt</span>
 <span class="sd">into a finer split via the ``parallel_chunks(n)`` context manager, which fans</span>
-<span class="sd">the query out into ``n`` parallel sub-requests. ``n`` drives</span>
+<span class="sd">the query out into ``n`` parallel chunks. ``n`` drives</span>
 <span class="sd">:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.</span>
 
 <span class="sd">Concurrency, retries, and interruption semantics are documented on</span>
@@ -159,7 +159,7 @@
 <span class="c1"># limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a</span>
 <span class="c1"># ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for</span>
 <span class="c1"># why). The ambient holds ``n`` — the requested cap on the plan&#39;s total</span>
-<span class="c1"># sub-request count; ``1`` (the default, outside any block) means &quot;off — chunk</span>
+<span class="c1"># chunk count; ``1`` (the default, outside any block) means &quot;off — chunk</span>
 <span class="c1"># only as much as the byte limit needs, no extra fan-out&quot;.</span>
 <span class="n">_parallel_chunks</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;ogc_parallel_chunks&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
@@ -169,19 +169,19 @@
 <span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">parallel_chunks</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fan the OGC getters&#39; multi-value requests out into ``n`` parallel sub-requests.</span>
+<span class="sd">    Fan the OGC getters&#39; multi-value requests out into ``n`` parallel chunks.</span>
 
 <span class="sd">    By default the Water Data / NGWMN getters chunk a request only as much as</span>
-<span class="sd">    the server&#39;s ~8 KB URL-byte limit forces — the fewest sub-requests that</span>
+<span class="sd">    the server&#39;s ~8 KB URL-byte limit forces — the fewest chunks that</span>
 <span class="sd">    fit. That is the safe default, but it can be *needlessly* conservative.</span>
-<span class="sd">    Because every sub-request paginates, splitting a large result further costs</span>
-<span class="sd">    little or no extra quota *as long as each sub-request still spans many</span>
+<span class="sd">    Because every chunk paginates, splitting a large result further costs</span>
+<span class="sd">    little or no extra quota *as long as each chunk still spans many</span>
 <span class="sd">    pages* — rows-per-chunk far exceeding the page size (ten states pulled as</span>
 <span class="sd">    one request page nearly as many times as ten per-state requests would).</span>
-<span class="sd">    When a split leaves each sub-request only a page or two, its partial final</span>
+<span class="sd">    When a split leaves each chunk only a page or two, its partial final</span>
 <span class="sd">    page is extra, so finer chunks do add some requests. This context manager</span>
 <span class="sd">    lets a caller who *knows* their pull is large ask for that finer split. The</span>
-<span class="sd">    trade is roughly the same pages for more, smaller sub-requests, which gives</span>
+<span class="sd">    trade is roughly the same pages for more, smaller chunks, which gives</span>
 <span class="sd">    smoother progress, more even concurrency, and a smaller unit of</span>
 <span class="sd">    retry/resume.</span>
 
@@ -197,21 +197,21 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        The number of sub-requests to fan the whole call out into — a positive</span>
+<span class="sd">        The number of chunks to fan the whole call out into — a positive</span>
 <span class="sd">        integer such as ``2``, ``8``, or ``32``. It caps the plan&#39;s *total*</span>
-<span class="sd">        sub-request count (the cartesian product across every multi-value</span>
+<span class="sd">        chunk count (the cartesian product across every multi-value</span>
 <span class="sd">        argument combined, not per argument), so several multi-value arguments</span>
 <span class="sd">        cannot multiply past it. The cap is a ceiling, never exceeded: the</span>
 <span class="sd">        actual count is bounded below by what the ~8 KB URL limit already</span>
 <span class="sd">        forces and above by ``n``. So an ``n`` larger than the input allows</span>
-<span class="sd">        simply yields one sub-request per value, and with several multi-value</span>
+<span class="sd">        simply yields one chunk per value, and with several multi-value</span>
 <span class="sd">        arguments the total may land somewhat below ``n`` because splits are</span>
 <span class="sd">        whole (the plan can&#39;t always divide evenly onto ``n``). ``n=1`` asks</span>
 <span class="sd">        for no extra fan-out.</span>
 
-<span class="sd">        Each sub-request fetches at least one page, so it costs at least one</span>
+<span class="sd">        Each chunk fetches at least one page, so it costs at least one</span>
 <span class="sd">        request against your hourly rate limit — a larger ``n`` spends more</span>
-<span class="sd">        quota. How many sub-requests run *at once* is capped separately by</span>
+<span class="sd">        quota. How many chunks run *at once* is capped separately by</span>
 <span class="sd">        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds</span>
 <span class="sd">        quota without adding parallelism; the useful range is roughly ``2``</span>
 <span class="sd">        up to ``API_USGS_CONCURRENT``.</span>
@@ -233,20 +233,20 @@
 <span class="sd">    getters already do for oversized requests; opting in just brings them to a</span>
 <span class="sd">    request that would otherwise be a single call:</span>
 
-<span class="sd">    - ``max_rows``: each sub-request paginates up to ``max_rows`` rows</span>
+<span class="sd">    - ``max_rows``: each chunk paginates up to ``max_rows`` rows</span>
 <span class="sd">      independently, then the combined result is sorted and truncated to</span>
 <span class="sd">      ``max_rows``. So a call with ``max_rows`` set returns a *different*</span>
 <span class="sd">      (though still valid and deterministically sorted) row set inside a</span>
 <span class="sd">      ``parallel_chunks`` block than without one. The cap is drawn from the</span>
-<span class="sd">      union of the sub-requests, not a single stream. Don&#39;t pair a tight</span>
+<span class="sd">      union of the chunks, not a single stream. Don&#39;t pair a tight</span>
 <span class="sd">      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the</span>
 <span class="sd">      rows the un-fanned call would return.</span>
 <span class="sd">    - Resumability: a single request either fully succeeds or fully fails,</span>
 <span class="sd">      but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and</span>
 <span class="sd">      raise a resumable :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted`</span>
-<span class="sd">      (or ``QuotaExhausted``) carrying the completed sub-requests. Finish the</span>
+<span class="sd">      (or ``QuotaExhausted``) carrying the completed chunks. Finish the</span>
 <span class="sd">      call with ``exc.call.resume()``.</span>
-<span class="sd">    - Cross-sub-request de-duplication keys on the feature ``id``; features</span>
+<span class="sd">    - Cross-chunk de-duplication keys on the feature ``id``; features</span>
 <span class="sd">      with no ``id`` can&#39;t be deduped, so overlapping filter clauses split</span>
 <span class="sd">      across chunks may yield duplicate rows.</span>
 
@@ -282,7 +282,7 @@
 <span class="sd">    constructs a :class:`ChunkedCall` over the decorated</span>
 <span class="sd">    ``async def fetch(args) -&gt; (df, response)``, and drives it to</span>
 <span class="sd">    completion via :meth:`ChunkedCall.resume`. The plan splits multi-value</span>
-<span class="sd">    list params and the cql-text filter so each sub-request URL fits the</span>
+<span class="sd">    list params and the cql-text filter so each chunk URL fits the</span>
 <span class="sd">    byte limit. An already-fitting request is a one-step plan, unless an</span>
 <span class="sd">    active :func:`parallel_chunks` block asks the plan to fan out more</span>
 <span class="sd">    finely. See the module docstring for the concurrency model.</span>
@@ -318,7 +318,7 @@
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    ChunkPlan : Planning shape (axes, partitioning, passthrough).</span>
-<span class="sd">    ChunkedCall : Per-sub-request execution and resume semantics.</span>
+<span class="sd">    ChunkedCall : Per-chunk execution and resume semantics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span>
@@ -333,9 +333,9 @@
             <span class="n">limit</span> <span class="o">=</span> <span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="k">if</span> <span class="n">url_limit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">url_limit</span>
             <span class="c1"># Read the parallel_chunks dial ``n`` from the ambient set by</span>
             <span class="c1"># ``parallel_chunks`` (1 = off outside any such block; otherwise the</span>
-            <span class="c1"># requested total sub-request cap). It only affects *planning*, done</span>
+            <span class="c1"># requested total chunk cap). It only affects *planning*, done</span>
             <span class="c1"># here up front, so a later resume — which re-issues the</span>
-            <span class="c1"># already-planned sub-requests — needs no snapshot.</span>
+            <span class="c1"># already-planned chunks — needs no snapshot.</span>
             <span class="n">plan</span> <span class="o">=</span> <span class="n">ChunkPlan</span><span class="p">(</span>
                 <span class="n">args</span><span class="p">,</span> <span class="n">build_request</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">max_chunks</span><span class="o">=</span><span class="n">_parallel_chunks</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
             <span class="p">)</span>
@@ -351,7 +351,7 @@
                 <span class="n">canonical_url</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">,</span>
                 <span class="c1"># The collection name, for the progress line the executor</span>
                 <span class="c1"># opens. ``get_ogc_data`` puts it in ``args``.</span>
-                <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;service&quot;</span><span class="p">),</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collection&quot;</span><span class="p">),</span>
             <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">wrapper</span>

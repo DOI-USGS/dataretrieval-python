@@ -81,7 +81,7 @@ over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
 mid-stream, the work already completed is preserved: catch
 ``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears
--- only the unfinished sub-requests are re-issued.
+-- only the unfinished chunks are re-issued.
 
 (``ChunkInterrupted`` is the same class under its original name; either works.)
 
@@ -109,14 +109,14 @@ Chunk a large request more finely
 =================================
 
 By default the getters split an over-large request only as much as the
-server's ~8 KB URL limit forces -- the fewest sub-requests. Because each
-sub-request paginates, splitting a large result further costs little or no
-extra quota *as long as each sub-request still spans many pages*. (Ten states
+server's ~8 KB URL limit forces -- the fewest chunks. Because each
+chunk paginates, splitting a large result further costs little or no
+extra quota *as long as each chunk still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
-would; a split that leaves each sub-request only a page or two adds its partial
+would; a split that leaves each chunk only a page or two adds its partial
 final page.) So if you *know* your pull is large, ask for a finer split with
 ``parallel_chunks(n)``: you trade roughly the same pages for more, smaller
-sub-requests, which gives smoother progress, more even concurrency, and a
+chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. ``parallel_chunks`` is a scoped ``with`` block, so
 an aggressive setting can't leak into unrelated calls and accidentally spend
 quota:
@@ -131,12 +131,12 @@ quota:
         )
 
 ``n`` is a positive integer (e.g. ``2``, ``8``, ``32``) -- the number of
-sub-requests to fan the call out into; a non-integer or non-positive value
-raises ``ValueError`` at the ``with``. ``n`` caps the *total* sub-request count
+chunks to fan the call out into; a non-integer or non-positive value
+raises ``ValueError`` at the ``with``. ``n`` caps the *total* chunk count
 across every multi-value argument combined (not per argument), bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can't multiply past it, and
-``n=1`` asks for no extra fan-out. Each sub-request costs a request against your
+``n=1`` asks for no extra fan-out. Each chunk costs a request against your
 hourly rate limit. How many run *at once* is capped separately by
 ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds quota without
 adding parallelism -- the useful range is roughly ``2`` up to

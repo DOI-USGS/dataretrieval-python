@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.interruptions &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>dataretrieval.interruptions &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -80,17 +80,18 @@
 <span class="sd">When a fanned-out request fails mid-stream (a 429, a 5xx, or a bare transport</span>
 <span class="sd">error), the work already completed is preserved and the call is resumable: the</span>
 <span class="sd">raised exception carries a ``.call`` handle whose ``resume()`` re-issues only</span>
-<span class="sd">the still-pending sub-requests. These exception types are that contract,</span>
+<span class="sd">the still-pending chunks. These exception types are that contract,</span>
 <span class="sd">re-exported at the top level (``from dataretrieval import ChunkInterrupted``).</span>
 <span class="sd">The execution machinery that raises and resumes them is</span>
 <span class="sd">:class:`dataretrieval.transport.fanout.FanOut`.</span>
 
-<span class="sd">Vocabulary, consistently: a **fan-out** is one logical query the service forces</span>
-<span class="sd">into several requests; a **sub-request** is one unit of a fan-out; a **chunk**</span>
-<span class="sd">is specifically a *byte-driven* slice, which is OGC planning vocabulary and</span>
-<span class="sd">belongs to :class:`~dataretrieval.ogc.planning.ChunkPlan`. Water Use fans out</span>
-<span class="sd">without chunking anything — the NWDC simply accepts one location per request —</span>
-<span class="sd">so the base class is :class:`FanOutInterrupted`.</span>
+<span class="sd">Vocabulary, consistently (see ``CONTEXT.md``): a **chunk** is one of the</span>
+<span class="sd">requests a query was split into, named for being a piece rather than for why it</span>
+<span class="sd">became one; **chunking** is how a query is split; and a **fan-out** is the</span>
+<span class="sd">concurrent execution of a query&#39;s chunks. Water Use chunks one request per</span>
+<span class="sd">location, Water Data chunks to fit a URL byte budget -- different reasons, the</span>
+<span class="sd">same word. The base class is named :class:`FanOutInterrupted` because the</span>
+<span class="sd">failure interrupts the *execution*, not the split.</span>
 
 <span class="sd">``ChunkInterrupted`` is retained as an alias of that same class, not a</span>
 <span class="sd">deprecated shim to delete later: it is the name published in the user guide and</span>
@@ -124,13 +125,13 @@
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.FanOutInterrupted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FanOutInterrupted</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Base class for mid-stream sub-request failures whose completed work</span>
+<span class="sd">    Base class for mid-stream chunk failures whose completed work</span>
 <span class="sd">    is preserved and resumable.</span>
 
-<span class="sd">    A ``FanOutInterrupted`` subclass means: a sub-request failed, but</span>
+<span class="sd">    A ``FanOutInterrupted`` subclass means: a chunk failed, but</span>
 <span class="sd">    ``FanOut`` still owns whatever completed successfully before</span>
 <span class="sd">    the failure. Call ``self.call.resume()`` to pick up where the</span>
-<span class="sd">    failure stopped you — only still-pending sub-requests are</span>
+<span class="sd">    failure stopped you — only still-pending chunks are</span>
 <span class="sd">    re-issued.</span>
 
 <span class="sd">    Subclasses describe *why* ``FanOut`` stopped so callers can</span>
@@ -151,16 +152,16 @@
 <span class="sd">        Seconds the server suggested waiting (``Retry-After`` header).</span>
 <span class="sd">        ``None`` when the server gave no hint.</span>
 <span class="sd">    completed_chunks : int</span>
-<span class="sd">        Number of sub-requests successfully completed before the failure.</span>
+<span class="sd">        Number of chunks successfully completed before the failure.</span>
 <span class="sd">    total_chunks : int</span>
-<span class="sd">        Total sub-requests in the plan.</span>
+<span class="sd">        Total chunks in the plan.</span>
 <span class="sd">    partial_frame : pandas.DataFrame</span>
 <span class="sd">        Combined frame of work completed by the moment this exception</span>
 <span class="sd">        was raised. Snapshot at raise time — does NOT advance on a</span>
 <span class="sd">        later ``call.resume()`` (use ``exc.call.partial_frame`` for</span>
 <span class="sd">        the live view).</span>
 <span class="sd">    partial_response : httpx.Response or None</span>
-<span class="sd">        Raw aggregate response covering the completed sub-requests at</span>
+<span class="sd">        Raw aggregate response covering the completed chunks at</span>
 <span class="sd">        raise time; ``None`` if nothing had completed yet. Same snapshot</span>
 <span class="sd">        semantics as ``partial_frame``. (Raw, not finalized — use</span>
 <span class="sd">        ``exc.call.resume()`` for the finalized ``(df, metadata)`` result.)</span>
@@ -170,7 +171,7 @@
 <span class="sd">    Retry on any transient interruption, honoring the server&#39;s</span>
 <span class="sd">    ``Retry-After`` hint when present and falling back to a fixed wait</span>
 <span class="sd">    otherwise. Each new interruption keeps the already-completed work</span>
-<span class="sd">    intact — only the still-pending sub-requests are re-issued.</span>
+<span class="sd">    intact — only the still-pending chunks are re-issued.</span>
 
 <span class="sd">    .. code-block:: python</span>
 
@@ -195,7 +196,7 @@
     <span class="c1"># call sees ``completed_chunks`` and ``total_chunks`` as kwargs.</span>
     <span class="n">_MESSAGE_TEMPLATE</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;Fan-out interrupted after </span><span class="si">{completed_chunks}</span><span class="s2">/&quot;</span>
-        <span class="s2">&quot;</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; call .call.resume() to continue.&quot;</span>
+        <span class="s2">&quot;</span><span class="si">{total_chunks}</span><span class="s2"> chunks; call .call.resume() to continue.&quot;</span>
     <span class="p">)</span>
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -259,17 +260,17 @@
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.QuotaExhausted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">QuotaExhausted</span><span class="p">(</span><span class="n">FanOutInterrupted</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A sub-request returned HTTP 429 — the per-key rate-limit window</span>
+<span class="sd">    A chunk returned HTTP 429 — the per-key rate-limit window</span>
 <span class="sd">    is exhausted. Subclass of :class:`FanOutInterrupted`.</span>
 
-<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    The completed chunks are preserved on ``.call``; once the</span>
 <span class="sd">    rate-limit window resets, ``.call.resume()`` re-issues only the</span>
 <span class="sd">    still-pending work. ``partial_frame`` holds what completed</span>
 <span class="sd">    before the 429.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;HTTP 429 after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> sub-requests; &quot;</span>
+        <span class="s2">&quot;HTTP 429 after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> chunks; &quot;</span>
         <span class="s2">&quot;catch QuotaExhausted (or FanOutInterrupted) to access &quot;</span>
         <span class="s2">&quot;.partial_frame or .call.resume() once the rate-limit &quot;</span>
         <span class="s2">&quot;window has rolled over.&quot;</span>
@@ -282,17 +283,17 @@
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.ServiceInterrupted">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ServiceInterrupted</span><span class="p">(</span><span class="n">FanOutInterrupted</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A sub-request returned HTTP 5xx — the upstream service failed</span>
+<span class="sd">    A chunk returned HTTP 5xx — the upstream service failed</span>
 <span class="sd">    transiently. Subclass of :class:`FanOutInterrupted`.</span>
 
-<span class="sd">    The completed sub-requests are preserved on ``.call``; once the</span>
+<span class="sd">    The completed chunks are preserved on ``.call``; once the</span>
 <span class="sd">    upstream recovers, ``.call.resume()`` resumes only the</span>
 <span class="sd">    still-pending work.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_MESSAGE_TEMPLATE</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;Service error after </span><span class="si">{completed_chunks}</span><span class="s2">/</span><span class="si">{total_chunks}</span><span class="s2"> &quot;</span>
-        <span class="s2">&quot;sub-requests; catch ServiceInterrupted (or FanOutInterrupted) &quot;</span>
+        <span class="s2">&quot;chunks; catch ServiceInterrupted (or FanOutInterrupted) &quot;</span>
         <span class="s2">&quot;and call .call.resume() once the upstream service recovers.&quot;</span>
     <span class="p">)</span></div>
 

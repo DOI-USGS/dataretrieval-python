@@ -24,7 +24,7 @@ All request failures exposed by public service modules derive from
 
 Where automatic recovery is supported, retries are bounded, use exponential
 backoff with full jitter, honor only bounded ``Retry-After`` delays, and preserve
-cancellation. OGC fan-out retains completed subrequests and raises a typed
+cancellation. OGC fan-out retains completed chunks and raises a typed
 ``ChunkInterrupted`` with a handle that resumes only missing work. Fatal or
 unknown failures are not disguised as resumable transients.
 

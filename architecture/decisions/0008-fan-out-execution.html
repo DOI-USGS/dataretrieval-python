@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -148,22 +148,22 @@ bounded concurrency, per-attempt retry, deterministic failure precedence, sparse
 completion tracking, and resume. It names no protocol concept. An adapter
 supplies a <code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code> and an <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">def</span> <span class="pre">fetch(item)</span> <span class="pre">-&gt;</span> <span class="pre">(df,</span> <span class="pre">response)</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code> is a <code class="docutils literal notranslate"><span class="pre">Protocol</span></code> of <code class="docutils literal notranslate"><span class="pre">__len__</span></code> and <code class="docutils literal notranslate"><span class="pre">__iter__</span></code>, generic in the
-item type – a sized, iterable collection of sub-request descriptions, and
+item type – a sized, iterable collection of chunk descriptions, and
 nothing more. The executor passes each item to the adapter’s own <code class="docutils literal notranslate"><span class="pre">fetch</span></code>
 without inspecting it, so the item type is the adapter’s business: the OGC
 getters yield kwargs dicts, Water Use yields ready <code class="docutils literal notranslate"><span class="pre">httpx.Request</span></code> objects.</p>
 <p>The standard protocols, rather than bespoke members, are a deliberate choice.
-A plan declaring <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_sub_args()</span></code> would be stating <code class="docutils literal notranslate"><span class="pre">len</span></code>
+A plan declaring <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_chunk_args()</span></code> would be stating <code class="docutils literal notranslate"><span class="pre">len</span></code>
 twice under a private name: the two could then report different counts, and a
-test would have to assert they agree. Every adapter whose sub-requests are
+test would have to assert they agree. Every adapter whose chunks are
 already a list would also need a wrapper class whose only job is renaming
 <code class="docutils literal notranslate"><span class="pre">len</span></code>.</p>
 <p>With the standard names a plain <code class="docutils literal notranslate"><span class="pre">list</span></code> is a plan, which is exactly what Water
-Use passes. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> keeps <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_sub_args</span></code> as its own
+Use passes. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> keeps <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_chunk_args</span></code> as its own
 vocabulary and defines the dunders to delegate to them, so the two cannot
 disagree.</p>
 <p>The protocol is structural rather than nominal for the original reason:
-<code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> derives sub-requests from a byte budget over multi-value axes,
+<code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> derives chunks from a byte budget over multi-value axes,
 a list of requests derives nothing, and so there is no shared implementation an
 abstract base could hold.</p>
 <p>The identity of the query as a whole is <em>not</em> part of the plan. <code class="docutils literal notranslate"><span class="pre">canonical_url</span></code>
@@ -178,8 +178,9 @@ division, and division is protocol-specific.</p>
 leaf, for the reason ADR 0006 gives for <code class="docutils literal notranslate"><span class="pre">combining</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">credentials</span></code>: adapters need it whether or not they went through transport,
 and an exception taxonomy is not HTTP execution policy. Its base class is
-renamed <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code>, since Water Use raises it without chunking
-anything. <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is retained as a permanent alias of the same
+renamed <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> because the failure interrupts a query’s
+<em>execution</em> rather than its division – both Water Data and Water Use chunk,
+for different reasons, but what fails is the fan-out. <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is retained as a permanent alias of the same
 class object – not a shim scheduled for deletion – because it is the name
 published in the user guide and caught in user code. The subclasses
 (<code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>, <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code>) were already neutral and are
@@ -225,7 +226,7 @@ execution policy, which is the test the package applies.</p></li>
 contains no <code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>, <code class="docutils literal notranslate"><span class="pre">Semaphore</span></code>, or <code class="docutils literal notranslate"><span class="pre">TaskGroup</span></code>, so the
 duplication cannot return. That both plan types are sized and <em>repeatably</em>
 iterable – resume keys completed work by position, so a generator mistaken for
-a collection would re-issue the wrong sub-requests. And that an interruption
+a collection would re-issue the wrong chunks. And that an interruption
 taxonomy does not reappear inside <code class="docutils literal notranslate"><span class="pre">transport</span></code>.</p>
 <p>Adapter tests cover Water Use resume re-issuing only unfinished locations,
 progress ticks, and the concurrency precedence rule.</p>

@@ -49,25 +49,25 @@ completion tracking, and resume. It names no protocol concept. An adapter
 supplies a ``FanOutPlan`` and an ``async def fetch(item) -> (df, response)``.
 
 ``FanOutPlan`` is a ``Protocol`` of ``__len__`` and ``__iter__``, generic in the
-item type -- a sized, iterable collection of sub-request descriptions, and
+item type -- a sized, iterable collection of chunk descriptions, and
 nothing more. The executor passes each item to the adapter's own ``fetch``
 without inspecting it, so the item type is the adapter's business: the OGC
 getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
 
 The standard protocols, rather than bespoke members, are a deliberate choice.
-A plan declaring ``total`` and ``iter_sub_args()`` would be stating ``len``
+A plan declaring ``total`` and ``iter_chunk_args()`` would be stating ``len``
 twice under a private name: the two could then report different counts, and a
-test would have to assert they agree. Every adapter whose sub-requests are
+test would have to assert they agree. Every adapter whose chunks are
 already a list would also need a wrapper class whose only job is renaming
 ``len``.
 
 With the standard names a plain ``list`` is a plan, which is exactly what Water
-Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_sub_args`` as its own
+Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_chunk_args`` as its own
 vocabulary and defines the dunders to delegate to them, so the two cannot
 disagree.
 
 The protocol is structural rather than nominal for the original reason:
-``ChunkPlan`` derives sub-requests from a byte budget over multi-value axes,
+``ChunkPlan`` derives chunks from a byte budget over multi-value axes,
 a list of requests derives nothing, and so there is no shared implementation an
 abstract base could hold.
 
@@ -85,8 +85,9 @@ The interruption taxonomy moves to ``dataretrieval.interruptions``, a top-level
 leaf, for the reason ADR 0006 gives for ``combining``, ``progress``, and
 ``credentials``: adapters need it whether or not they went through transport,
 and an exception taxonomy is not HTTP execution policy. Its base class is
-renamed ``FanOutInterrupted``, since Water Use raises it without chunking
-anything. ``ChunkInterrupted`` is retained as a permanent alias of the same
+renamed ``FanOutInterrupted`` because the failure interrupts a query's
+*execution* rather than its division -- both Water Data and Water Use chunk,
+for different reasons, but what fails is the fan-out. ``ChunkInterrupted`` is retained as a permanent alias of the same
 class object -- not a shim scheduled for deletion -- because it is the name
 published in the user guide and caught in user code. The subclasses
 (``QuotaExhausted``, ``ServiceInterrupted``) were already neutral and are
@@ -133,7 +134,7 @@ Compliance
 contains no ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
 duplication cannot return. That both plan types are sized and *repeatably*
 iterable -- resume keys completed work by position, so a generator mistaken for
-a collection would re-issue the wrong sub-requests. And that an interruption
+a collection would re-issue the wrong chunks. And that an interruption
 taxonomy does not reappear inside ``transport``.
 
 Adapter tests cover Water Use resume re-issuing only unfinished locations,

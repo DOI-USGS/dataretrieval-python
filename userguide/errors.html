@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Handling errors &mdash; dataretrieval 0.1.dev1+g3474c3cc7 documentation</title>
+  <title>Handling errors &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c5287ecf"></script>
+      <script src="../_static/documentation_options.js?v=fde7ea40"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -165,7 +165,7 @@ over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
 mid-stream, the work already completed is preserved: catch
 <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> and call <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> once the condition clears
-– only the unfinished sub-requests are re-issued.</p>
+– only the unfinished chunks are re-issued.</p>
 <p>(<code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is the same class under its original name; either works.)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOutInterrupted</span>
@@ -189,14 +189,14 @@ counties, or HUCs.</p>
 <section id="chunk-a-large-request-more-finely">
 <h2>Chunk a large request more finely<a class="headerlink" href="#chunk-a-large-request-more-finely" title="Link to this heading"></a></h2>
 <p>By default the getters split an over-large request only as much as the
-server’s ~8 KB URL limit forces – the fewest sub-requests. Because each
-sub-request paginates, splitting a large result further costs little or no
-extra quota <em>as long as each sub-request still spans many pages</em>. (Ten states
+server’s ~8 KB URL limit forces – the fewest chunks. Because each
+chunk paginates, splitting a large result further costs little or no
+extra quota <em>as long as each chunk still spans many pages</em>. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
-would; a split that leaves each sub-request only a page or two adds its partial
+would; a split that leaves each chunk only a page or two adds its partial
 final page.) So if you <em>know</em> your pull is large, ask for a finer split with
 <code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code>: you trade roughly the same pages for more, smaller
-sub-requests, which gives smoother progress, more even concurrency, and a
+chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> is a scoped <code class="docutils literal notranslate"><span class="pre">with</span></code> block, so
 an aggressive setting can’t leak into unrelated calls and accidentally spend
 quota:</p>
@@ -209,12 +209,12 @@ quota:</p>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">n</span></code> is a positive integer (e.g. <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">32</span></code>) – the number of
-sub-requests to fan the call out into; a non-integer or non-positive value
-raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> at the <code class="docutils literal notranslate"><span class="pre">with</span></code>. <code class="docutils literal notranslate"><span class="pre">n</span></code> caps the <em>total</em> sub-request count
+chunks to fan the call out into; a non-integer or non-positive value
+raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> at the <code class="docutils literal notranslate"><span class="pre">with</span></code>. <code class="docutils literal notranslate"><span class="pre">n</span></code> caps the <em>total</em> chunk count
 across every multi-value argument combined (not per argument), bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can’t multiply past it, and
-<code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks for no extra fan-out. Each sub-request costs a request against your
+<code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks for no extra fan-out. Each chunk costs a request against your
 hourly rate limit. How many run <em>at once</em> is capped separately by
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> (default 32), so an <code class="docutils literal notranslate"><span class="pre">n</span></code> beyond that adds quota without
 adding parallelism – the useful range is roughly <code class="docutils literal notranslate"><span class="pre">2</span></code> up to
