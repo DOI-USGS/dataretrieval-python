@@ -2,7 +2,7 @@
 
 This module holds the side-effect-free planning half of the chunker:
 deciding how to split one over-budget OGC request into URL-fitting
-sub-requests (:class:`ChunkPlan` and the axis/byte-accounting helpers).
+chunks (:class:`ChunkPlan` and the axis/byte-accounting helpers).
 It has no event loop, retry policy, or network state — those live in
 :mod:`dataretrieval.ogc.chunking` (resumable execution) and
 :mod:`dataretrieval.transport.retry` (retry policy), which import the plan and
@@ -98,7 +98,7 @@ def _safe_request_bytes(
     url_limit: int,
 ) -> int:
     """
-    Size a candidate sub-request, treating ``httpx.InvalidURL`` as "too large".
+    Size a candidate chunk, treating ``httpx.InvalidURL`` as "too large".
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component
     (``MAX_URL_LENGTH``) and raises ``httpx.InvalidURL`` for anything
@@ -111,7 +111,7 @@ def _safe_request_bytes(
     build_request : Callable[..., httpx.Request]
         Factory that turns a kwargs dict into a sized request.
     args : dict[str, Any]
-        Per-sub-request kwargs to pass through to ``build_request``.
+        Per-chunk kwargs to pass through to ``build_request``.
     url_limit : int
         The chunker's byte budget; returned + 1 on overflow.
 
@@ -145,7 +145,7 @@ class _Axis:
     ----------
     arg_key : str
         The args-dict key this axis substitutes back into when a
-        sub-request is rendered.
+        chunk is rendered.
     atoms : tuple of str
         The smallest indivisible units along this axis (one site, one
         OR-clause, …). A "chunk" is a contiguous slice of ``atoms``.
@@ -246,7 +246,7 @@ def _split_at(chunks: list[list[str]], idx: int) -> None:
     The single primitive both planning passes use to fan an axis out. It
     preserves the partition invariants every consumer relies on: *coverage*
     (each atom survives, exactly once) and *contiguous, deterministic order*
-    (resume and :meth:`ChunkPlan.iter_sub_args` depend on it). Kept in one
+    (resume and :meth:`ChunkPlan.iter_chunk_args` depend on it). Kept in one
     place so those invariants can't drift between :meth:`ChunkPlan._plan`
     (byte-driven) and :meth:`ChunkPlan._refine` (fan-out-driven).
     """
@@ -257,16 +257,16 @@ def _split_at(chunks: list[list[str]], idx: int) -> None:
 
 class ChunkPlan:
     """
-    Strategy for issuing one user-level request as URL-fitting sub-requests.
+    Strategy for issuing one user-level request as URL-fitting chunks.
 
-    Every sub-request URL fits ``url_limit``. Constructing a plan *is* planning:
+    Every chunk URL fits ``url_limit``. Constructing a plan *is* planning:
     ``ChunkPlan(args, build_request, url_limit)`` extracts the
     chunkable axes, runs greedy halving on the biggest chunk across
     all axes, and stores the result.
 
     Passthrough requests (no chunkable axes, or already fitting) are
     represented as a trivial plan with empty ``axes`` / ``chunks`` and
-    ``total == 1``; :meth:`iter_sub_args` yields the original args
+    ``total == 1``; :meth:`iter_chunk_args` yields the original args
     unchanged so the ``ChunkedCall`` loop is the same shape either
     way.
 
@@ -279,18 +279,18 @@ class ChunkPlan:
         e.g. ``_construct_api_requests``.
     url_limit : int
         Byte budget for the request (URL + body) — a hard ceiling every
-        sub-request must fit.
+        chunk must fit.
     max_chunks : int, optional
-        Hard cap on the plan's total sub-request count (default ``1`` = off).
+        Hard cap on the plan's total chunk count (default ``1`` = off).
         ``1`` chunks only as much as ``url_limit`` requires — the most
-        conservative plan, fewest sub-requests — so a fitting request is a
+        conservative plan, fewest chunks — so a fitting request is a
         passthrough. A cap of ``2`` or more fans the plan out to up to
-        ``max_chunks`` sub-requests overall (the cartesian product across axes,
+        ``max_chunks`` chunks overall (the cartesian product across axes,
         never fewer than the byte budget already forces). The cap applies to
         the plan as a whole, not per axis, so several multi-value axes can't
         multiply past it. The plan never exceeds the cap and may land below it
         when no whole split lands on it exactly. ``max_chunks`` is a
-        sub-request count, so a value below ``1`` (``0`` or negative) is a
+        chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
         :meth:`_refine`.
@@ -299,7 +299,7 @@ class ChunkPlan:
     ----------
     args : dict
         The original user-level args this plan was built for. Bound to
-        the plan so :meth:`iter_sub_args` is self-contained.
+        the plan so :meth:`iter_chunk_args` is self-contained.
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
@@ -330,7 +330,7 @@ class ChunkPlan:
         max_chunks: int = 1,
     ) -> None:
         if max_chunks < 1:
-            # ``max_chunks`` is a sub-request *count*: the minimum is ``1``
+            # ``max_chunks`` is a chunk *count*: the minimum is ``1``
             # (the ambient default outside any ``parallel_chunks`` block),
             # which means "off — no extra fan-out". ``0`` or negative is a
             # meaningless count and can only be a caller bug, so fail loudly
@@ -376,7 +376,7 @@ class ChunkPlan:
         # "needs chunking" signal, so swallow it and proceed to plan.
         # When the unchunked URL does build, preserve it as ``canonical_url``
         # so ``BaseMetadata.url`` echoes the user's original query verbatim.
-        # Only fall back to a worst-case sub-request URL when the URL itself
+        # Only fall back to a worst-case chunk URL when the URL itself
         # can't be constructed.
         try:
             initial_request = build_request(**args)
@@ -390,7 +390,7 @@ class ChunkPlan:
 
         # A request that already fits and hasn't opted into finer chunking is
         # the common passthrough: leave ``axes``/``chunks`` empty so
-        # ``total == 1`` and ``iter_sub_args`` yields the original args
+        # ``total == 1`` and ``iter_chunk_args`` yields the original args
         # verbatim. ``max_chunks == 1`` (off / no extra fan-out) means
         # "don't split", so it takes this path; only ``max_chunks >= 2`` asks
         # for extra fan-out and sets the axes up to be refined below.
@@ -400,7 +400,7 @@ class ChunkPlan:
         self.axes = axes
         self.chunks = {axis.arg_key: [list(axis.atoms)] for axis in axes}
         if not fits:
-            # Hard pass: greedy-halve until every worst-case sub-request fits
+            # Hard pass: greedy-halve until every worst-case chunk fits
             # the byte budget (may raise ``Unchunkable``).
             self._plan(build_request, url_limit)
         # Soft pass: optionally split further than the byte budget requires.
@@ -410,7 +410,7 @@ class ChunkPlan:
 
         if self.canonical_url is None:
             # Original URL was un-constructable (httpx.InvalidURL); fall
-            # back to the worst-case sub-request URL so
+            # back to the worst-case chunk URL so
             # ``BaseMetadata.url`` still surfaces something
             # informative. If even that overflows, leave canonical_url
             # as None (set above) and let the response's own URL stand.
@@ -425,7 +425,7 @@ class ChunkPlan:
         """
         Greedy-halve the biggest chunk across axes until every URL fits.
 
-        Halving continues until the worst-case sub-request URL fits
+        Halving continues until the worst-case chunk URL fits
         ``url_limit``, mutating ``self.chunks`` in place. List axes and the
         filter axis are treated uniformly — each is just a list of atoms
         joined by its axis's separator.
@@ -456,7 +456,7 @@ class ChunkPlan:
                 raise Unchunkable(
                     f"Request exceeds {url_limit} bytes (URL + body) at the "
                     f"smallest reducible plan (every axis at one atom per "
-                    f"sub-request). Reduce input sizes, shorten or simplify "
+                    f"chunk). Reduce input sizes, shorten or simplify "
                     f"the filter, or split the call manually."
                 )
             _split_at(self.chunks[biggest_axis.arg_key], biggest_idx)
@@ -472,7 +472,7 @@ class ChunkPlan:
         below the cap).
 
         Implementation. Each split multiplies the plan by ``(k+1)/k`` for the
-        chosen axis (adding ``total // k`` sub-requests, not one), so a split
+        chosen axis (adding ``total // k`` chunks, not one), so a split
         is taken only when it keeps :attr:`total` within the cap. When no
         in-budget split remains, the plan stops *below* the cap rather than
         overshooting (two even axes can reach 4 but not 5, so a cap of 5 yields
@@ -498,12 +498,12 @@ class ChunkPlan:
                 return
             # Largest splittable chunk among the axes whose split still fits the
             # cap. Splitting any chunk of an axis with ``k`` chunks turns that
-            # ``k`` into ``k+1``, so it adds ``total // k`` sub-requests (the
+            # ``k`` into ``k+1``, so it adds ``total // k`` chunks (the
             # product of the other axes) regardless of which chunk. Hence the
             # budget test is per axis, not per chunk. Skipping an over-budget
             # axis makes ``max_chunks`` a true ceiling. The ranking key is atom
             # count (``len``), not URL bytes like ``_plan`` — this pass balances
-            # work across sub-requests rather than fitting a byte budget. A
+            # work across chunks rather than fitting a byte budget. A
             # chunk of size 1 can't be split further. Stable input order breaks
             # ties by axis order, then lowest index within an axis.
             candidate: tuple[_Axis, int] | None = None
@@ -526,7 +526,7 @@ class ChunkPlan:
 
     def _worst_case_args(self) -> dict[str, Any]:
         """
-        Args for the largest sub-request the current partition will issue.
+        Args for the largest chunk the current partition will issue.
 
         Each axis contributes its longest chunk (by URL-encoded bytes),
         rendered back into the args dict.
@@ -540,7 +540,7 @@ class ChunkPlan:
     @property
     def total(self) -> int:
         """
-        Total sub-request count: product of per-axis chunk counts.
+        Total chunk count: product of per-axis chunk counts.
 
         Returns
         -------
@@ -550,9 +550,9 @@ class ChunkPlan:
         """
         return math.prod((len(self.chunks[ax.arg_key]) for ax in self.axes), start=1)
 
-    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
+    def iter_chunk_args(self) -> Iterator[dict[str, Any]]:
         """
-        Yield substituted args for each sub-request, in deterministic order.
+        Yield substituted args for each chunk, in deterministic order.
 
         The order is the cartesian product over axes in extraction order. The
         same plan yields the same sub-args sequence on every invocation, so
@@ -569,12 +569,12 @@ class ChunkPlan:
             return
         chunk_lists = [self.chunks[ax.arg_key] for ax in self.axes]
         for combo in itertools.product(*chunk_lists):
-            sub_args = dict(self.args)
+            chunk_args = dict(self.args)
             for axis, chunk in zip(self.axes, combo, strict=False):
-                sub_args[axis.arg_key] = axis.render(chunk)
-            yield sub_args
+                chunk_args[axis.arg_key] = axis.render(chunk)
+            yield chunk_args
 
-    # ``total`` and ``iter_sub_args`` are this class's domain vocabulary and
+    # ``total`` and ``iter_chunk_args`` are this class's domain vocabulary and
     # stay as they are. The dunders are how a plan satisfies
     # :class:`~dataretrieval.transport.fanout.FanOutPlan`, which asks for a
     # sized iterable and nothing chunking-specific. They delegate rather than
@@ -583,4 +583,4 @@ class ChunkPlan:
         return self.total
 
     def __iter__(self) -> Iterator[dict[str, Any]]:
-        return self.iter_sub_args()
+        return self.iter_chunk_args()

@@ -56,7 +56,7 @@ _REQUIRED_ARGUMENTS = {
     "get_codes": ("code_service",),
     "get_combined_metadata": (),
     "get_continuous": (),
-    "get_cql": ("service", "cql"),
+    "get_cql": ("collection", "cql"),
     "get_daily": (),
     "get_field_measurements": (),
     "get_field_measurements_metadata": (),

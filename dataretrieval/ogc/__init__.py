@@ -1,13 +1,13 @@
 """Generic OGC API engine shared by the Water Data and NGWMN getters.
 
-The public facade exposes only the minimal service-adapter seam:
+The public facade exposes only the minimal collection-adapter seam:
 
 - :class:`OgcDialect` — per-API request/response quirks.
 - :func:`prepare_request_args` — normalize caller kwargs for the engine.
 - :func:`get_ogc_data` — full orchestrated OGC fetch (chunking + pagination).
 - :func:`fetch_ogc_request` — execute a pre-built request with pagination.
 
-Service adapters (NGWMN, Water Data's generic wrapper) import from this
+Collection adapters (NGWMN, Water Data's generic wrapper) import from this
 facade rather than reaching into engine internals. Generic execution policy
 lives in :mod:`dataretrieval.transport`; the engine retains compatibility
 wrappers at previous private paths.

@@ -1,7 +1,7 @@
 """Result recombination: merge per-chunk frames and responses (no I/O).
 
 These utilities assemble the output of a chunked/fan-out call from its
-individual per-sub-request results.  They have no event-loop, retry, or
+individual per-chunk results.  They have no event-loop, retry, or
 network state — they're pure data transforms shared by protocol-specific
 chunk execution, service fan-out, and cursor-driven pagination.
 
@@ -157,7 +157,7 @@ def _combine_chunk_responses(
     responses: list[httpx.Response], canonical_url: str | None
 ) -> httpx.Response:
     """
-    Fold per-sub-request responses into a single aggregated response.
+    Fold per-chunk responses into a single aggregated response.
 
     For a multi-response input, returns a shallow copy of
     ``responses[0]`` with ``.headers`` set to those of the response reporting
@@ -174,7 +174,7 @@ def _combine_chunk_responses(
     Parameters
     ----------
     responses : list[httpx.Response]
-        One response per completed sub-request, in caller-provided order.
+        One response per completed chunk, in caller-provided order.
     canonical_url : str or None
         URL of the unchunked original request. ``None`` skips the URL
         override — used by the passthrough path (the fetcher's

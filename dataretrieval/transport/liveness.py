@@ -8,7 +8,7 @@ both point *down* at it rather than at each other, and leaves any future produce
 of liveness (a streaming body reader, a chunk-level fetch) somewhere to report.
 
 The stamp lives in a :class:`~contextvars.ContextVar` so concurrent retrievals --
-each sub-request of a chunked call, each location of a Water Use fan-out --
+each chunk of a chunked call, each location of a Water Use fan-out --
 measure their own silence instead of sharing one clock.
 """
 

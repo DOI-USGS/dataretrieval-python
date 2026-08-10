@@ -120,7 +120,7 @@ def _get_resp_data(
     The non-geopandas branch normalizes each feature's ``properties`` object,
     flattening nested dictionaries with an underscore separator, then adds the
     top-level ``id`` and a ``geometry`` column containing the coordinates. The
-    ``id`` column is always added so the downstream service-specific rename
+    ``id`` column is always added so the downstream collection-specific rename
     works even when all IDs are missing; ``geometry`` is added only when
     coordinates are present. Feature-level envelope fields are deliberately
     excluded.
@@ -143,7 +143,7 @@ def _get_resp_data(
         properties = [feature.get("properties") or {} for feature in features]
         df = pd.json_normalize(properties, sep="_")
         # Always materialize the feature-level ID (possibly all-None) so
-        # ``_arrange_cols`` can perform the documented service-specific rename.
+        # ``_arrange_cols`` can perform the documented collection-specific rename.
         df["id"] = [feature.get("id") for feature in features]
         _attach_coordinates(df, features)
         return df
@@ -169,7 +169,7 @@ def _get_resp_data(
 def _deal_with_empty(
     return_list: pd.DataFrame,
     properties: list[str] | None,
-    service: str,
+    collection: str,
     *,
     base_url: str | None = None,
 ) -> pd.DataFrame:
@@ -178,7 +178,7 @@ def _deal_with_empty(
 
     If `return_list` is empty, determines the column names to use:
         - If `properties` is not provided or contains only NaN values,
-          retrieves schema properties from the specified service.
+          retrieves schema properties from the specified collection.
         - Otherwise, uses the provided `properties` list as column names.
 
     Parameters
@@ -187,11 +187,11 @@ def _deal_with_empty(
         The DataFrame to check for emptiness.
     properties : Optional[List[str]]
         List of property names to use as columns, or None.
-    service : str
-        The service endpoint to query for schema properties if needed.
+    collection : str
+        The collection endpoint to query for schema properties if needed.
     base_url : str, optional
         OGC API base URL to use for that schema query. Defaults to the base
-        URL in scope for the current call, not to any particular service.
+        URL in scope for the current call, not to any particular collection.
 
     Returns
     -------
@@ -207,7 +207,7 @@ def _deal_with_empty(
             from dataretrieval.ogc.schema import _check_ogc_requests
 
             schema, _ = _check_ogc_requests(
-                endpoint=service, req_type="schema", base_url=base_url
+                endpoint=collection, req_type="schema", base_url=base_url
             )
             properties = list(schema.get("properties", {}).keys())
         return pd.DataFrame(columns=properties)
@@ -252,8 +252,8 @@ def _arrange_cols(
         local_properties = list(properties)
         if "geometry" in df.columns and "geometry" not in local_properties:
             local_properties.append("geometry")
-        # 'id' is a valid service column, but expose it under the
-        # service-specific output_id name instead.
+        # 'id' is a valid collection column, but expose it under the
+        # collection-specific output_id name instead.
         if "id" in local_properties:
             local_properties[local_properties.index("id")] = output_id
         df = df.loc[:, [col for col in local_properties if col in df.columns]]
@@ -363,7 +363,7 @@ def _finalize_ogc(
     properties: list[str] | None,
     output_id: str,
     convert_type: bool,
-    service: str,
+    collection: str,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
@@ -384,7 +384,7 @@ def _finalize_ogc(
     the chunker's raw frame and bare ``httpx.Response``.
 
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
-    rather than only per-sub-request, so a chunked call's total is bounded
+    rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
     ``base_url`` is captured with the finalizer so resumed calls query the same
@@ -394,7 +394,7 @@ def _finalize_ogc(
         dialect = DEFAULT_DIALECT
     if base_url is None:
         base_url = _ogc_base_url.get()
-    frame = _deal_with_empty(frame, properties, service, base_url=base_url)
+    frame = _deal_with_empty(frame, properties, collection, base_url=base_url)
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match
     # regardless of whether the API returns snake_case (Water Data, where

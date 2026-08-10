@@ -227,8 +227,8 @@ class Unchunkable(RequestTooLarge):
     """No chunking plan fits the URL byte limit.
 
     Raised by the Water Data chunker when even the smallest reducible plan
-    (every list axis at one atom per sub-request, the filter at one clause per
-    sub-request) still exceeds the server's byte limit. Unlike
+    (every list axis at one atom per chunk, the filter at one clause per
+    chunk) still exceeds the server's byte limit. Unlike
     :class:`URLTooLong`, then, automatic splitting has already been tried and
     exhausted. Shrink the input lists, simplify the filter, or split the call
     manually.

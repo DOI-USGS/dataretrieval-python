@@ -1,4 +1,4 @@
-"""Bounded, resumable fan-out execution over a plan of sub-requests.
+"""Bounded, resumable fan-out execution over a plan of chunks.
 
 A fan-out is one logical query the service forces into several requests. Two
 unrelated reasons produce one:
@@ -22,24 +22,24 @@ completion tracking, and resume. It names no protocol concept — an adapter
 supplies a :class:`FanOutPlan` (whatever structure it divided into, if any) and
 an ``async def fetch(item) -> (df, response)``.
 
-Concurrency: :meth:`FanOut._run` dispatches every pending sub-request under one
+Concurrency: :meth:`FanOut._run` dispatches every pending chunk under one
 ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
 ``asyncio.Semaphore`` -- not the client's connection pool, which is merely sized
-to match -- caps the sub-requests in flight at ``N``; see :meth:`FanOut._run`
+to match -- caps the chunks in flight at ``N``; see :meth:`FanOut._run`
 for why the gate must be the semaphore rather than the pool.
-``API_USGS_CONCURRENT`` resolves ``N``: an integer N > 1 allows N sub-requests
+``API_USGS_CONCURRENT`` resolves ``N``: an integer N > 1 allows N chunks
 in flight; ``1`` forces sequential dispatch; the literal ``unbounded`` lifts the
-cap. ``N`` bounds only how many of a query's sub-requests are in flight at once
+cap. ``N`` bounds only how many of a query's chunks are in flight at once
 -- a client-side trade-off between open connections and fan-out latency. It does
 not affect the API rate limit: a fanned-out call issues the same number of
-sub-requests regardless of ``N``, so ``N`` changes their timing, not the total
+chunks regardless of ``N``, so ``N`` changes their timing, not the total
 request volume. The USGS API rate-limits by volume over time (HTTP 429), not by
 simultaneity; set ``API_USGS_PAT`` to raise that quota. The default of 32 is a
 conservative cap that keeps connection use modest. The fan-out runs in a
 short-lived worker thread (an ``anyio`` blocking portal), so it works whether or
 not the caller is already inside an event loop (Jupyter / IPython / async apps).
 
-Retries: each sub-request is retried on a transient failure (429, 5xx,
+Retries: each chunk is retried on a transient failure (429, 5xx,
 connect/read timeout) with exponential backoff + full jitter, honoring a server
 ``Retry-After`` when present. ``API_USGS_RETRIES`` sets the cap (default 4;
 ``0`` disables). A ``Retry-After`` longer than the per-call ceiling escalates to
@@ -47,9 +47,9 @@ a resumable interruption.
 
 Interruption: any mid-stream transient failure surfaces as a
 :class:`~dataretrieval.interruptions.FanOutInterrupted` subclass carrying
-``.call``, a :class:`FanOut` handle owning the already-completed sub-request
+``.call``, a :class:`FanOut` handle owning the already-completed chunk
 state. Call ``.call.resume()`` once the underlying condition clears; only the
-still-pending sub-requests are re-issued.
+still-pending chunks are re-issued.
 """
 
 from __future__ import annotations
@@ -81,13 +81,13 @@ from dataretrieval.transport.http import network_error, open_async_client
 from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry
 
-#: One sub-request's description, as the adapter's ``fetch`` wants it. The
+#: One chunk's description, as the adapter's ``fetch`` wants it. The
 #: executor never inspects it — see :class:`FanOutPlan`.
-_Item = TypeVar("_Item")
+_Chunk = TypeVar("_Chunk")
 #: The same thing in :class:`FanOutPlan`, where it only ever comes *out* of the
 #: plan. Covariant so a ``list[httpx.Request]`` satisfies a plan of any
 #: supertype, the way ``Iterable`` is covariant for the same reason.
-_ItemCo = TypeVar("_ItemCo", covariant=True)
+_ChunkCo = TypeVar("_ChunkCo", covariant=True)
 
 # Fan-out concurrency cap, read at call time (not import) so test
 # ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;
@@ -122,7 +122,7 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
     Returns
     -------
     int or None
-        ``1`` for sequential dispatch (one sub-request at a time); an
+        ``1`` for sequential dispatch (one chunk at a time); an
         integer >1 for bounded concurrency; ``None`` to disable the
         per-call cap entirely (the ``unbounded`` keyword).
     """
@@ -146,19 +146,25 @@ def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
 # ---------------------------------------------------------------------------
 
 
-class FanOutPlan(Protocol[_ItemCo]):
+class FanOutPlan(Protocol[_ChunkCo]):
     """
-    A fan-out's shape: how many sub-requests, and what each one is.
+    The contract a plan satisfies for a fan-out to execute it.
 
-    Deliberately the two standard protocols rather than bespoke members. A
-    plan is a sized, iterable collection of sub-request descriptions, which is
-    exactly ``__len__`` + ``__iter__`` — so a plain ``list`` of pre-built
+    A **plan** is defined in ``CONTEXT.md``. This protocol is that enumeration
+    and nothing more, which is why it is named for the role it plays here
+    rather than for its contents:
+    :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and so is a
+    plain list of requests.
+
+    Deliberately the two standard protocols rather than bespoke members, since
+    an enumeration of chunks is exactly ``__len__`` + ``__iter__`` -- so a
+    plain ``list`` of pre-built
     requests satisfies this with no adapter class, and a real planner
     satisfies it by delegating (see
     :class:`~dataretrieval.ogc.planning.ChunkPlan`, whose domain vocabulary is
-    ``total`` / ``iter_sub_args``). Naming them ``total`` and
-    ``iter_sub_args`` here would mean two names for ``len`` that could report
-    different counts, and a shim class for every adapter whose sub-requests
+    ``total`` / ``iter_chunk_args``). Naming them ``total`` and
+    ``iter_chunk_args`` here would mean two names for ``len`` that could report
+    different counts, and a shim class for every adapter whose chunks
     are already a list.
 
     The item type is whatever an adapter's own ``fetch`` accepts: this executor
@@ -168,7 +174,7 @@ class FanOutPlan(Protocol[_ItemCo]):
 
     Iteration order is load-bearing: :meth:`FanOut.resume` keys completed work
     by position, so a plan that yielded a different order on a second pass
-    would resume the wrong sub-requests. ``len`` must agree with the number of
+    would resume the wrong chunks. ``len`` must agree with the number of
     items iteration yields — the usual contract for a sized collection.
 
     The identity of the query as a whole is *not* here: it is a value stamped
@@ -178,7 +184,7 @@ class FanOutPlan(Protocol[_ItemCo]):
 
     def __len__(self) -> int: ...
 
-    def __iter__(self) -> Iterator[_ItemCo]: ...
+    def __iter__(self) -> Iterator[_ChunkCo]: ...
 
 
 # ---------------------------------------------------------------------------
@@ -187,7 +193,7 @@ class FanOutPlan(Protocol[_ItemCo]):
 
 # The per-call ``httpx.AsyncClient``, published for the duration of
 # ``FanOut._run`` so paginated-loop helpers reuse the same connection pool
-# across every sub-request. ``None`` outside a fan-out — paginated helpers then
+# across every chunk. ``None`` outside a fan-out — paginated helpers then
 # open their own short-lived client. Deliberately a plain ContextVar-backed
 # ambient rather than a parameter: the fetch closure an adapter injects is often
 # several frames below the client's owner.
@@ -213,10 +219,10 @@ def active_client() -> httpx.AsyncClient | None:
 # Type aliases for the FanOut contract
 # ---------------------------------------------------------------------------
 
-# The per-sub-request fetcher an adapter injects and ``FanOut`` drives: an
+# The per-chunk fetcher an adapter injects and ``FanOut`` drives: an
 # ``async def fetch(item) -> (df, response)``, where ``item`` is whatever the
 # adapter's plan yields.
-_Fetch = Callable[[_Item], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
+_Fetch = Callable[[_Chunk], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
 
 # Caller-supplied transform applied to the combined result, so a resumed call
 # returns the same shape as an un-interrupted one rather than the executor's raw
@@ -233,17 +239,17 @@ def _passthrough_result(
     return frame, response
 
 
-class FanOut(Generic[_Item]):
+class FanOut(Generic[_Chunk]):
     """
     Stateful handle for a fanned-out call.
 
-    Holds the in-flight state (per-sub-request frames and responses)
+    Holds the in-flight state (per-chunk frames and responses)
     and the async fetcher. A single :meth:`resume` entry point drives
     the call from wherever it is to completion — used both for the
     first invocation and for subsequent retries after a
     :class:`~dataretrieval.interruptions.FanOutInterrupted`.
 
-    :meth:`_run` gathers every pending sub-request over one shared
+    :meth:`_run` gathers every pending chunk over one shared
     :class:`httpx.AsyncClient`, applies the failure-precedence rules, and
     combines; :meth:`resume` drives it through an ``anyio`` blocking
     portal so it works whether or not the caller is already inside an
@@ -266,11 +272,11 @@ class FanOut(Generic[_Item]):
     Parameters
     ----------
     plan : FanOutPlan
-        The sub-requests to execute: anything sized and iterable, from a
+        The chunks to execute: anything sized and iterable, from a
         :class:`~dataretrieval.ogc.planning.ChunkPlan` to a plain ``list`` of
         pre-built requests.
     fetch : Callable
-        ``async def`` that issues a single sub-request, given one item from
+        ``async def`` that issues a single chunk, given one item from
         ``plan``, and returns ``(frame, response)``.
     client_options : dict, optional
         Extra ``httpx.AsyncClient`` options for the shared client this run
@@ -281,7 +287,7 @@ class FanOut(Generic[_Item]):
     canonical_url : str or None, optional
         URL identifying the query as a whole, restored onto the combined
         response so the caller sees the request they made rather than
-        whichever sub-request happened to land last. Also the destination
+        whichever chunk happened to land last. Also the destination
         :meth:`resume` labels its progress line with.
     service : str or None, optional
         Human-facing name of what is being retrieved (e.g. ``"daily"``,
@@ -293,14 +299,14 @@ class FanOut(Generic[_Item]):
     plan : FanOutPlan
         The plan being driven (read-only after construction).
     fetch : Callable
-        The async per-sub-request fetch function.
+        The async per-chunk fetch function.
     finalize : Callable
         Transform applied to the combined result (see :data:`_Finalize`) at
         the terminal :meth:`_run` return, so a completed call yields the
         caller's finished shape. The ``partial_*`` accessors deliberately
         skip it and stay raw.
     partial_frame : pandas.DataFrame
-        Raw combined frame of completed sub-requests (live; recomputed per
+        Raw combined frame of completed chunks (live; recomputed per
         access). Not finalized — call :meth:`resume` for the finished shape.
     partial_response : httpx.Response or None
         Raw aggregate response (canonical URL restored), or ``None`` when
@@ -309,8 +315,8 @@ class FanOut(Generic[_Item]):
 
     def __init__(
         self,
-        plan: FanOutPlan[_Item],
-        fetch: _Fetch[_Item],
+        plan: FanOutPlan[_Chunk],
+        fetch: _Fetch[_Chunk],
         retry_policy: RetryPolicy = _NO_RETRY,
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
@@ -345,14 +351,14 @@ class FanOut(Generic[_Item]):
         # reporter). :meth:`resume` runs every drive inside this snapshot, so
         # a *later* ``exc.call.resume()`` — which fires after those ``with``
         # blocks have exited and reset their ContextVars — still rebuilds
-        # sub-requests against the original API's base URL/dialect rather than
+        # chunks against the original API's base URL/dialect rather than
         # the process defaults. The adapter's request builder reads those
-        # ContextVars when it reconstructs each sub-request, so the snapshot
+        # ContextVars when it reconstructs each chunk, so the snapshot
         # must outlive them. The mechanism is generic; which ambients matter is
         # the adapter's business.
         self._ctx = copy_context()
         # Completed (frame, response) pairs keyed by sub-args index; sparse
-        # (gathered sub-requests complete out of order — see class docstring).
+        # (gathered chunks complete out of order — see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
         # order is completion order (relied on by :meth:`_combine_raw`).
         self._chunks: dict[int, tuple[pd.DataFrame, httpx.Response]] = {}
@@ -369,7 +375,7 @@ class FanOut(Generic[_Item]):
         Parameters
         ----------
         exc : BaseException
-            The exception raised by a sub-request.
+            The exception raised by a chunk.
 
         Returns
         -------
@@ -402,11 +408,11 @@ class FanOut(Generic[_Item]):
 
     @property
     def completed_chunks(self) -> int:
-        """Number of sub-requests completed so far."""
+        """Number of chunks completed so far."""
         return len(self._chunks)
 
     def _combine_raw(self) -> tuple[pd.DataFrame, httpx.Response]:
-        """Assemble the raw ``(frame, response)`` from completed sub-requests,
+        """Assemble the raw ``(frame, response)`` from completed chunks,
         before :attr:`finalize` runs.
 
         Frames concatenate in sub-args *index* order (``sorted`` keys —
@@ -426,7 +432,7 @@ class FanOut(Generic[_Item]):
         return self._combine_frames(), self._combine_responses()
 
     def _combine_frames(self) -> pd.DataFrame:
-        """Combine completed frames in deterministic sub-request order."""
+        """Combine completed frames in deterministic chunk order."""
         return _combine_chunk_frames([self._chunks[i][0] for i in sorted(self._chunks)])
 
     def _combine_responses(self) -> httpx.Response:
@@ -437,7 +443,7 @@ class FanOut(Generic[_Item]):
     @property
     def partial_frame(self) -> pd.DataFrame:
         """
-        Raw combined frame of sub-requests that have completed so far.
+        Raw combined frame of chunks that have completed so far.
 
         Live — recomputed on each access so it reflects current state
         across resume attempts. Deliberately the *raw* combined frame
@@ -451,7 +457,7 @@ class FanOut(Generic[_Item]):
         Returns
         -------
         pandas.DataFrame
-            Combined frame of completed sub-requests, or an empty
+            Combined frame of completed chunks, or an empty
             ``DataFrame`` when nothing has completed.
         """
         return self._combine_frames() if self._chunks else pd.DataFrame()
@@ -469,18 +475,18 @@ class FanOut(Generic[_Item]):
         Returns
         -------
         httpx.Response or None
-            Aggregated response when at least one sub-request has
+            Aggregated response when at least one chunk has
             completed, ``None`` otherwise.
         """
         return self._combine_responses() if self._chunks else None
 
-    def _pending(self) -> Iterator[tuple[int, _Item]]:
+    def _pending(self) -> Iterator[tuple[int, _Chunk]]:
         """
-        Yield ``(index, item)`` for sub-requests not yet completed.
+        Yield ``(index, item)`` for chunks not yet completed.
 
         Iterates the plan in its deterministic order and skips any index
         already in ``self._chunks``. :meth:`_run` uses this to pick up
-        exactly the sub-requests it still owes — the mechanism behind
+        exactly the chunks it still owes — the mechanism behind
         idempotent resume.
         """
         for index, item in enumerate(self.plan):
@@ -496,7 +502,7 @@ class FanOut(Generic[_Item]):
         works whether or not the caller is already inside an event loop
         (Jupyter / IPython / async apps). The portal copies the calling
         context, so the active progress reporter still reaches the
-        sub-requests.
+        chunks.
 
         This executor is what emits progress events, so it is also what owns
         the reporter's lifetime: an adapter that drives a ``FanOut`` gets the
@@ -504,7 +510,7 @@ class FanOut(Generic[_Item]):
         ``with progress_context(...)`` block. A reporter already active
         (a nested getter, or a caller's own context) is reused unchanged.
 
-        Idempotent: only sub-requests whose index isn't already in
+        Idempotent: only chunks whose index isn't already in
         ``self._chunks`` are re-issued. Item order is the plan's own and
         is deterministic, so a partial completion (sparse indices)
         resumes correctly.
@@ -512,7 +518,7 @@ class FanOut(Generic[_Item]):
         Returns
         -------
         df : pandas.DataFrame
-            Combined data from every successful sub-request.
+            Combined data from every successful chunk.
         response
             The finalized aggregate — a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
@@ -540,7 +546,7 @@ class FanOut(Generic[_Item]):
         # ``__init__``). ``start_blocking_portal`` copies the *calling* context
         # into its worker thread, and running here means that calling context
         # is the snapshot — so the base URL / dialect / row cap active when the
-        # call was created reach the rebuilt sub-requests, even when this is a
+        # call was created reach the rebuilt chunks, even when this is a
         # resume fired long after the original ``with`` blocks exited. The
         # reporter is the one ambient that must NOT come from the snapshot: a
         # reporter captured there belongs to a context that has since closed
@@ -565,12 +571,12 @@ class FanOut(Generic[_Item]):
 
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """
-        Gather every pending sub-request over one shared
+        Gather every pending chunk over one shared
         :class:`httpx.AsyncClient` and return the combined, finalized result.
 
-        Pending sub-requests (:meth:`_pending`) fan out under
+        Pending chunks (:meth:`_pending`) fan out under
         ``asyncio.gather`` with ``return_exceptions=True`` so completed
-        sub-requests survive a sibling's transient failure. On a
+        chunks survive a sibling's transient failure. On a
         recognized transient (:class:`~dataretrieval.exceptions.RateLimited`,
         :class:`~dataretrieval.exceptions.ServiceUnavailable`, or a bare
         ``httpx.HTTPError`` / ``httpx.InvalidURL``) a
@@ -578,7 +584,7 @@ class FanOut(Generic[_Item]):
         ``.call``; ``exc.call.resume()`` then re-issues only the unfinished
         indices through this same runner.
 
-        The gather dispatches *every* pending sub-request at once, but an
+        The gather dispatches *every* pending chunk at once, but an
         ``asyncio.Semaphore`` caps the number of concurrent fetches at
         ``N = max_concurrent`` — ``None`` lifts the cap, ``N=1`` runs them
         one at a time. The connection pool is sized to the same ``N``
@@ -586,14 +592,14 @@ class FanOut(Generic[_Item]):
         so the in-flight fetches reuse keepalive connections.
 
         The semaphore, not the pool, is deliberately the throttle. If the
-        pool throttled instead, the excess sub-requests would queue
+        pool throttled instead, the excess chunks would queue
         *inside* httpx waiting for a connection, and that wait counts
         against the pool-acquire timeout (60 s, from ``HTTPX_ASYNC_DEFAULTS``).
         A batch of slow pages that keeps every connection busy past that
         window would then trip ``httpx.PoolTimeout`` on the queued tail —
         a purely client-side failure that consumes the retry budget and
         surfaces as a spurious resumable ``ServiceInterrupted``. Holding
-        sub-requests at the semaphore keeps them out of the pool until a
+        chunks at the semaphore keeps them out of the pool until a
         slot frees, so the pool timeout only fires for a genuinely stuck
         connection.
 
@@ -603,13 +609,13 @@ class FanOut(Generic[_Item]):
         Parameters
         ----------
         max_concurrent : int or None
-            Maximum sub-requests in flight (the semaphore value, and the
+            Maximum chunks in flight (the semaphore value, and the
             connection-pool size). ``None`` lifts the cap entirely.
 
         Returns
         -------
         df : pandas.DataFrame
-            Combined data from every sub-request.
+            Combined data from every chunk.
         response
             The finalized aggregate — a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
@@ -619,8 +625,8 @@ class FanOut(Generic[_Item]):
         Raises
         ------
         FanOutInterrupted
-            On a transient sub-request failure. ``.call`` is ``self``,
-            holding the sparse completed sub-requests; ``.call.resume()``
+            On a transient chunk failure. ``.call`` is ``self``,
+            holding the sparse completed chunks; ``.call.resume()``
             re-issues the unfinished ones.
         """
         # The semaphore is the throttle; the pool is merely sized to match
@@ -644,9 +650,9 @@ class FanOut(Generic[_Item]):
                     reporter.set_chunks(len(self.plan))
 
                 async def track(
-                    index: int, item: _Item
+                    index: int, item: _Chunk
                 ) -> tuple[pd.DataFrame, httpx.Response]:
-                    """One sub-request (with retry) + result-store + progress tick."""
+                    """One chunk (with retry) + result-store + progress tick."""
                     result = await _retry(
                         lambda: self.fetch(item), self.retry_policy, gate=semaphore
                     )
@@ -657,7 +663,7 @@ class FanOut(Generic[_Item]):
                         reporter.start_chunk(self.completed_chunks)
                     return result
 
-                # Dispatch every pending sub-request concurrently; the
+                # Dispatch every pending chunk concurrently; the
                 # semaphore (held by ``_retry`` per attempt) is the only throttle.
                 # ``return_exceptions`` keeps completed pairs after a sibling
                 # fails, so partial state stays recoverable via :meth:`resume`.
@@ -685,8 +691,8 @@ class FanOut(Generic[_Item]):
                 # only the first transient is ever raised. Asking
                 # ``wrap_failure`` per failure would snapshot the combined
                 # frame N times (a full concat over every completed
-                # sub-request) and discard all but one, which a batch of
-                # sub-requests failing together makes routine.
+                # chunk) and discard all but one, which a batch of
+                # chunks failing together makes routine.
                 first_transient: BaseException | None = None
                 for exc in failures:
                     if _classify_chunk_error(exc) is None:

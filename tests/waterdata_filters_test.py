@@ -44,7 +44,7 @@ def test_quote_cql_str_doubles_embedded_quotes():
 def test_construct_filter_lang_hyphenated():
     """The Python kwarg `filter_lang` is sent as URL key `filter-lang`."""
     req = _construct_api_requests(
-        service="continuous",
+        collection="continuous",
         monitoring_location_id="USGS-07374525",
         parameter_code="72255",
         filter="time >= '2023-01-01T00:00:00Z'",
@@ -99,7 +99,7 @@ def test_split_top_level_or_single_clause():
 
 
 @pytest.mark.parametrize(
-    "service",
+    "collection",
     [
         "daily",
         "continuous",
@@ -111,10 +111,10 @@ def test_split_top_level_or_single_clause():
         "channel-measurements",
     ],
 )
-def test_construct_filter_on_all_ogc_services(service):
+def test_construct_filter_on_all_ogc_services(collection):
     """Filter passthrough works uniformly for every OGC collection endpoint."""
     req = _construct_api_requests(
-        service=service,
+        collection=collection,
         filter="value > 0",
         filter_lang="cql-text",
     )
@@ -143,9 +143,9 @@ def _filter_size_aware_build(**kwargs):
 
 def test_long_filter_fans_out_into_multiple_requests():
     """An oversized top-level OR filter triggers multiple HTTP
-    sub-requests via the joint planner; every original clause is
-    preserved across sub-requests; results concatenate to one row per
-    sub-request given the one-row-per-chunk mock."""
+    chunks via the joint planner; every original clause is
+    preserved across chunks; results concatenate to one row per
+    chunk given the one-row-per-chunk mock."""
     expr = _filter_chunking_clauses()
     sent_filters: list[str] = []
 
@@ -181,7 +181,7 @@ def test_long_filter_fans_out_into_multiple_requests():
 
 
 def test_long_filter_deduplicates_cross_chunk_overlap():
-    """Features returned by multiple sub-requests with the same ``id``
+    """Features returned by multiple chunks with the same ``id``
     are deduplicated in the concatenated result."""
     expr = _filter_chunking_clauses()
     call_count = {"n": 0}
@@ -215,7 +215,7 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
 
 
 def test_empty_chunks_do_not_downgrade_geodataframe():
-    """A mix of empty and non-empty sub-request responses must not
+    """A mix of empty and non-empty chunk responses must not
     downgrade a GeoDataFrame-typed result to a plain DataFrame.
     ``_get_resp_data`` returns ``pd.DataFrame()`` on empty responses,
     which would otherwise strip geometry/CRS from the concatenated

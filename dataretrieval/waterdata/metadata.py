@@ -332,7 +332,7 @@ def get_monitoring_locations(
         ...     properties=["monitoring_location_id", "state_name", "country_name"],
         ... )
     """
-    service = "monitoring-locations"
+    collection = "monitoring-locations"
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
@@ -340,7 +340,7 @@ def get_monitoring_locations(
         _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
     )
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_time_series_metadata(
@@ -583,7 +583,7 @@ def get_time_series_metadata(
         ...     begin="1990-01-01/..",
         ... )
     """
-    service = "time-series-metadata"
+    collection = "time-series-metadata"
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
@@ -591,7 +591,7 @@ def get_time_series_metadata(
         _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
     )
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_combined_metadata(
@@ -842,14 +842,14 @@ site_type_code : string or iterable of strings, optional
         ... )
 
     """
-    service = "combined-metadata"
+    collection = "combined-metadata"
 
     # Resolve the unified `state` argument into the OGC `state_name` queryable.
     args = _get_args(
         _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
     )
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_field_measurements_metadata(
@@ -980,11 +980,11 @@ def get_field_measurements_metadata(
         ... )
 
     """
-    service = "field-measurements-metadata"
+    collection = "field-measurements-metadata"
 
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 __all__ = [

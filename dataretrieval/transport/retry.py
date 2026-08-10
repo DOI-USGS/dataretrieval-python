@@ -43,7 +43,7 @@ _RETRIES_DEFAULT = 4
 _RETRY_BASE_BACKOFF = 0.5
 _RETRY_MAX_BACKOFF = 30.0
 _RETRY_AFTER_CAP = 60.0
-# Most a server-named delay is nudged by, to keep sub-requests handed the same
+# Most a server-named delay is nudged by, to keep chunks handed the same
 # hint from waking together. Small on purpose: the server named the wait, so
 # jitter here decorrelates rather than extends it.
 _RETRY_AFTER_JITTER = 1.0
@@ -182,7 +182,7 @@ class RetryPolicy:
         A jittered component is always included, even when the server named a
         delay: a hint of ``0`` -- or a ``Retry-After`` date that has already
         passed -- would otherwise become a zero-delay re-send against a service
-        that just asked us to slow down, and sub-requests handed the same hint
+        that just asked us to slow down, and chunks handed the same hint
         would all wake at the same instant and burst together.
 
         On a server hint that jitter is a small decorrelating nudge rather than

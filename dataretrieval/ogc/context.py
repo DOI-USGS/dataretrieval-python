@@ -15,11 +15,15 @@ _row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)
 
 # OGC base URL targeted by request construction and schema lookup. Empty by
 # default *on purpose*: this package is API-neutral, so the adapter naming the
-# service is the one that sets it (``get_ogc_data(base_url=...)`` does, and a
-# hand-built request path such as ``waterdata.get_cql`` enters this context
-# itself). A default endpoint here would silently send a caller that forgot to
-# set it -- e.g. an NGWMN path -- to whichever API happened to be the default;
-# an unset value instead fails loudly on the malformed URL.
+# collection is the one that sets it (``get_ogc_data`` requires ``base_url`` and
+# scopes it here, and a hand-built request path such as ``waterdata.get_cql``
+# enters this context itself). A default endpoint here would silently send a
+# caller that forgot to set it -- e.g. an NGWMN path -- to whichever API
+# happened to be the default, which is the worse failure.
+#
+# The empty default is not itself a good error -- see ``get_ogc_data``'s
+# ``base_url`` docs for what it produces. The guard is that required argument,
+# not this value.
 _ogc_base_url: Ambient[str] = Ambient("ogc_base_url", "")
 
 # Per-call request and response dialect.

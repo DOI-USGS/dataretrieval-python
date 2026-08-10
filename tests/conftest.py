@@ -4,7 +4,7 @@ Test scaffolding for the dataretrieval test suite.
 * Relaxes ``pytest-httpx``'s strict-mode flags so unconsumed mocks and
   unmatched requests don't fail the suite (keeps mocked-URL setup terse).
 * Pins the chunker env for every test (see ``_pin_chunker_env``), so
-  sub-request dispatch is deterministic and mocked retries measure attempt
+  chunk dispatch is deterministic and mocked retries measure attempt
   counts rather than wall clock. Concurrency and retry tests opt in by
   re-setting the env vars inside their body via ``monkeypatch.setenv``.
 """
@@ -39,7 +39,7 @@ def _pin_chunker_env(monkeypatch):
 
     Production defaults ``API_USGS_CONCURRENT`` to 32,
     ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
-    Pinning ``API_USGS_CONCURRENT=1`` keeps sub-request dispatch
+    Pinning ``API_USGS_CONCURRENT=1`` keeps chunk dispatch
     deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
     a single transient surface immediately rather than be retried.
     Concurrency and retry tests opt in by overriding the env inside

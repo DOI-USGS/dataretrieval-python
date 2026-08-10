@@ -37,29 +37,29 @@ _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 # ---------------------------------------------------------------------------
 
 
-def _switch_arg_id(ls: dict[str, Any], id_name: str, service: str) -> dict[str, Any]:
+def _switch_arg_id(ls: dict[str, Any], id_name: str, collection: str) -> dict[str, Any]:
     """Switch argument id from its package-specific identifier to the
     standardized "id" key that the API recognizes."""
-    service_id = service.replace("-", "_") + "_id"
+    collection_id = collection.replace("-", "_") + "_id"
     if "id" not in ls:
-        if service_id in ls:
-            ls["id"] = ls[service_id]
+        if collection_id in ls:
+            ls["id"] = ls[collection_id]
         elif id_name in ls:
             ls["id"] = ls[id_name]
-    ls.pop(service_id, None)
+    ls.pop(collection_id, None)
     ls.pop(id_name, None)
     return ls
 
 
 def _switch_properties_id(
-    properties: list[str] | None, id_name: str, service: str
+    properties: list[str] | None, id_name: str, collection: str
 ) -> list[str]:
     """Build the wire ``properties`` list, dropping every id alias and
     ``geometry``."""
     if not properties:
         return []
-    service_id = service.replace("-", "_") + "_id"
-    drop = {"id", "geometry", id_name, service_id}
+    collection_id = collection.replace("-", "_") + "_id"
+    drop = {"id", "geometry", id_name, collection_id}
     normalized = (p.replace("-", "_") for p in properties)
     return [p for p in normalized if p not in drop]
 
@@ -120,9 +120,9 @@ def _partition_request_params(
     return get_params, {}
 
 
-def _items_url(service: str) -> str:
-    """The OGC items endpoint for ``service`` under the active base URL."""
-    return f"{_ogc_base_url.get()}/collections/{service}/items"
+def _items_url(collection: str) -> str:
+    """The OGC items endpoint for ``collection`` under the active base URL."""
+    return f"{_ogc_base_url.get()}/collections/{collection}/items"
 
 
 def _cql2_post_request(
@@ -141,24 +141,26 @@ def _cql2_post_request(
 
 
 def _construct_api_requests(
-    service: str,
+    collection: str,
     properties: list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     skip_geometry: bool | None = None,
     **kwargs: Any,
 ) -> httpx.Request:
-    """Construct an HTTP request object for the specified OGC API service."""
-    service_url = _items_url(service)
+    """Construct an HTTP request object for the specified OGC API collection."""
+    service_url = _items_url(collection)
     dialect = _dialect.get()
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
             kwargs[key] = _format_api_dates(
                 kwargs[key],
-                date=service in dialect.date_only_services and key != "last_modified",
+                date=(
+                    collection in dialect.date_only_services and key != "last_modified"
+                ),
             )
     params, post_params = _partition_request_params(
-        kwargs, use_cql2=service in dialect.cql2_services
+        kwargs, use_cql2=collection in dialect.cql2_services
     )
 
     _ogc_query_params(
@@ -185,7 +187,7 @@ def _construct_api_requests(
 
 
 def _construct_cql_request(
-    service: str,
+    collection: str,
     cql_body: str,
     *,
     properties: list[str] | None = None,
@@ -194,7 +196,7 @@ def _construct_cql_request(
     skip_geometry: bool | None = None,
 ) -> httpx.Request:
     """Build a POST/CQL2 request from a verbatim CQL2 body."""
-    service_url = _items_url(service)
+    service_url = _items_url(collection)
     params = _ogc_query_params(
         {},
         properties=properties,
@@ -294,7 +296,10 @@ def prepare_request_args(
     by forgetting to union them back in.
     """
     no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
-    to_exclude = {"service", "output_id"}
+    # Both spellings: this drops the caller's collection selector out of the
+    # query string, and public getters still name that local ``service``
+    # (waterdata.get_samples) or ``service=`` during the get_cql deprecation.
+    to_exclude = {"collection", "service", "output_id"}
     if exclude:
         to_exclude.update(exclude)
 

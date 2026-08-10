@@ -15,10 +15,10 @@ so a sibling package (e.g. NGWMN) can drive it without importing
 API-specific behavior is supplied by the caller:
 
 * ``output_id`` — the user-facing column the wire ``id`` is renamed to,
-  passed explicitly (no service map lives here).
+  passed explicitly (no collection map lives here).
 * ``base_url`` — the OGC API base to target.
 * ``extra_id_cols`` — synthetic id columns to push to the end of a result.
-* ``dialect`` — an :class:`OgcDialect` describing which services need
+* ``dialect`` — an :class:`OgcDialect` describing which collections need
   POST/CQL2 and which use date-only (vs. full datetime) time arguments.
 """
 
@@ -131,7 +131,7 @@ async def _paginate(
     client: httpx.AsyncClient | None = None,
     raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around service-neutral cursor pagination."""
+    """Compatibility wrapper around collection-neutral cursor pagination."""
     session = client if client is not None else active_client()
     return await paginate(
         initial_req,
@@ -216,11 +216,11 @@ async def _walk_pages(
 
 def get_ogc_data(
     args: dict[str, Any],
-    service: str,
+    collection: str,
     output_id: str,
     *,
+    base_url: str,
     max_rows: int | None = None,
-    base_url: str | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -234,29 +234,33 @@ def get_ogc_data(
     Parameters
     ----------
     args : Dict[str, Any]
-        Dictionary of request arguments for the OGC service.
-    service : str
+        Dictionary of request arguments for the OGC collection.
+    collection : str
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
     output_id : str
         The user-facing id column the wire ``id`` is renamed to. Required —
-        the per-API service-to-id map lives in the caller, not here.
+        the per-API collection-to-id map lives in the caller, not here.
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str, optional
-        OGC API base URL to target. Required in practice -- this package is
-        API-neutral and names no service of its own; each adapter passes its
-        own base (e.g. ``waterdata.utils.OGC_API_URL``,
-        ``ngwmn.NGWMN_OGC_API_URL``). Falls back to the base URL already in
-        scope for the current call.
+    base_url : str
+        OGC API base URL to target. Required: this package is API-neutral and
+        names no API of its own, so each adapter passes its own base (e.g.
+        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``). It was
+        once optional, falling back to whatever was in ambient scope -- which
+        defaults to the empty string, so omitting it built a *relative*
+        ``/collections/{id}/items`` that planning accepted and only httpx
+        rejected at send time, surfacing as a NetworkError about an unknown
+        service. Requiring it moves that mistake to the call site, where mypy
+        catches it.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
     dialect : OgcDialect, optional
-        Per-API request quirks (CQL2-only services, date-only services).
+        Per-API request quirks (CQL2-only collections, date-only collections).
         Defaults to a plain OGC API with neither.
 
     Returns
@@ -270,7 +274,7 @@ def get_ogc_data(
     -----
     - The function does not mutate the input `args` dictionary.
     - Handles optional arguments such as `convert_type`.
-    - Applies column cleanup and reordering based on service and properties.
+    - Applies column cleanup and reordering based on collection and properties.
     """
     # Enforce a genuine positive integer up front: a float (even ``10.0``) or
     # ``bool`` would pass a bare ``< 1`` check and then crash deep in
@@ -281,17 +285,14 @@ def get_ogc_data(
 
     if dialect is None:
         dialect = _DEFAULT_DIALECT
-    if base_url is None:
-        base_url = _ogc_base_url.get()
-
     args = args.copy()
-    args["service"] = service
-    args = _switch_arg_id(args, id_name=output_id, service=service)
+    args["collection"] = collection
+    args = _switch_arg_id(args, id_name=output_id, collection=collection)
     # Capture `properties` before the id-switch so post-processing sees
     # the user-facing names, not the wire-format ones.
     properties = args.get("properties")
     args["properties"] = _switch_properties_id(
-        properties, id_name=output_id, service=service
+        properties, id_name=output_id, collection=collection
     )
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
@@ -302,13 +303,13 @@ def get_ogc_data(
     # this function). ``_finalize_ogc`` is the single source of result shape;
     # it also applies ``max_rows`` to the *combined* frame so the cap is the
     # exact total even when the plan chunks or the call is resumed, while
-    # ``_row_cap`` below only early-stops each sub-request's pagination.
+    # ``_row_cap`` below only early-stops each chunk's pagination.
     finalize = functools.partial(
         _finalize_ogc,
         properties=properties,
         output_id=output_id,
         convert_type=convert_type,
-        service=service,
+        collection=collection,
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
         dialect=dialect,
@@ -328,10 +329,10 @@ async def _fetch_once(
 
     ``@chunking.multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
-    the biggest chunk across all axes until each sub-request URL fits,
+    the biggest chunk across all axes until each chunk URL fits,
     and iterates the cartesian product. With no chunkable inputs the
     decorator passes args through unchanged. The decorator gathers every
-    sub-request over one shared :class:`httpx.AsyncClient` (concurrency
+    chunk over one shared :class:`httpx.AsyncClient` (concurrency
     bounded by a semaphore, sized from ``API_USGS_CONCURRENT``). It also
     returns a *synchronous* wrapper, so ``get_ogc_data`` keeps calling
     ``_fetch_once(args, finalize=...)`` synchronously. The return shape is
@@ -344,7 +345,7 @@ async def _fetch_once(
 def fetch_ogc_request(
     request: httpx.Request,
     *,
-    service: str,
+    collection: str,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Execute a prepared OGC request with pagination, returning (df, response).
 
@@ -360,7 +361,7 @@ def fetch_ogc_request(
     ----------
     request : httpx.Request
         A fully-constructed OGC API request (typically a POST/CQL2).
-    service : str
+    collection : str
         Collection name, used only for progress-context labelling.
 
     Returns
@@ -379,5 +380,5 @@ def fetch_ogc_request(
         _fetch,
         RetryPolicy.from_env(),
         canonical_url=str(request.url),
-        service=service,
+        service=collection,
     ).resume()

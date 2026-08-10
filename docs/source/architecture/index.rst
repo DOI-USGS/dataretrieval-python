@@ -246,14 +246,14 @@ A typical OGC-backed call follows this sequence::
         -> normalize and validate arguments
         -> select OGC dialect and build a chunk plan
         -> enter a short-lived anyio blocking portal
-        -> execute subrequests through a shared httpx.AsyncClient
-        -> paginate each subrequest
+        -> execute chunks through a shared httpx.AsyncClient
+        -> paginate each chunk
         -> retry bounded transient failures
         -> combine and deduplicate pages/chunks
         -> shape columns and types
         -> return DataFrame and BaseMetadata
 
-A transient failure after some subrequests complete raises a resumable
+A transient failure after some chunks complete raises a resumable
 interruption. The retained ``FanOut`` (available as ``ChunkedCall`` on the OGC
 compatibility path) reissues only missing work and applies the same finalization
 path when resumed. Cancellation and non-transient programming errors take
@@ -293,7 +293,7 @@ Resource and configuration view
     complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
     time: without this bound, four retries of a request that times out after a
     minute add up to four silent minutes. Progress restarts the budget — a page
-    received, or a queued sub-request acquiring its concurrency slot. Neither a
+    received, or a queued chunk acquiring its concurrency slot. Neither a
     slow but productive download nor the tail of a wide fan-out is cut short,
     and an attempt already in flight is never interrupted. This bound never
     withholds the first retry, so one slow attempt cannot disable retry by
@@ -306,7 +306,7 @@ Resource and configuration view
     retrieval results.
 
 ``dataretrieval.transport`` centralizes HTTP timeout, redirect, and
-authentication policy. OGC subrequest fan-out and Water Use location
+authentication policy. OGC chunk fan-out and Water Use location
 fan-out retain separate explicit concurrency caps because their upstream costs
 and request shapes differ.
 
