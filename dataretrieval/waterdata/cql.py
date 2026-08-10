@@ -9,7 +9,6 @@ getter when one fits -- it validates more and reads better.
 from __future__ import annotations
 
 import json
-import warnings
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
@@ -28,6 +27,7 @@ from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_COLLECTION,
     OGC_API_URL,
     WATERDATA_DIALECT,
+    _accept_legacy_kwargs,
 )
 
 if TYPE_CHECKING:
@@ -37,11 +37,19 @@ if TYPE_CHECKING:
     )
 
 
+@_accept_legacy_kwargs(
+    {"service": "collection"},
+    detail=(
+        "OGC API - Features names this value the collectionId (17-069r4 "
+        "Requirements 18 and 20, /collections/{id}/items), while `service` "
+        "names the API itself (Water Data, NGWMN). `service` will be removed "
+        "on or after 2027-08-09."
+    ),
+)
 def get_cql(
-    collection: WATERDATA_COLLECTIONS | None = None,
-    cql: str | dict[str, Any] | None = None,
+    collection: WATERDATA_COLLECTIONS,
+    cql: str | dict[str, Any],
     *,
-    service: WATERDATA_COLLECTIONS | None = None,
     properties: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
@@ -137,24 +145,6 @@ def get_cql(
         ...     ' "02070010%"]}',
         ... )
     """
-    if service is not None:
-        warnings.warn(
-            "The `service` argument of get_cql() is deprecated; use `collection`. "
-            "OGC API - Features names this value the collectionId "
-            "(17-069r4 Requirements 18 and 20, /collections/{id}/items), while "
-            "`service` names the API itself (Water Data, NGWMN). `service` will "
-            "be removed on or after 2027-08-09.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if collection is None:
-            collection = service
-    # Both are required; they carry defaults only so the deprecated ``service``
-    # spelling can still reach the resolution above.
-    if collection is None:
-        raise TypeError("get_cql() missing required argument: 'collection'")
-    if cql is None:
-        raise TypeError("get_cql() missing required argument: 'cql'")
     if collection not in _OUTPUT_ID_BY_COLLECTION:
         raise ValueError(
             f"Unknown collection {collection!r}. Valid collections: "

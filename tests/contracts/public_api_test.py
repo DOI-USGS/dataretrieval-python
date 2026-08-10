@@ -56,11 +56,7 @@ _REQUIRED_ARGUMENTS = {
     "get_codes": ("code_service",),
     "get_combined_metadata": (),
     "get_continuous": (),
-    # Both are required in practice; they carry defaults for the duration of
-    # the ``service`` -> ``collection`` deprecation window, because a caller
-    # still spelling ``service=`` must be able to reach the alias resolution.
-    # Restore to ("collection", "cql") when ``service`` is removed.
-    "get_cql": (),
+    "get_cql": ("collection", "cql"),
     "get_daily": (),
     "get_field_measurements": (),
     "get_field_measurements_metadata": (),

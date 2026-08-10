@@ -416,7 +416,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
     value a collection -- it is the ``collectionId`` in ``/collections/{id}``.
     The rename must not silently change behavior for callers using the old name.
     """
-    with pytest.warns(DeprecationWarning, match="use `collection`"):
+    with pytest.warns(DeprecationWarning, match="use 'collection'"):
         with pytest.raises(ValueError, match="Unknown collection"):
             get_cql(service="not-a-collection", cql="a=1")
 
@@ -425,6 +425,11 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
         warnings.simplefilter("error", DeprecationWarning)
         with pytest.raises(ValueError, match="Unknown collection"):
             get_cql(collection="not-a-collection", cql="a=1")
+
+    # Passing both spellings is ambiguous and refused, which the hand-rolled
+    # shim this replaced did not do -- it silently dropped ``service``.
+    with pytest.raises(TypeError, match="received both"):
+        get_cql(service="daily", collection="daily", cql="a=1")
 
 
 def test_get_cql_unknown_service_raises():

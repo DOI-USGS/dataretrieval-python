@@ -21,12 +21,9 @@ _row_cap: Ambient[int | None] = Ambient("ogc_row_cap", None)
 # caller that forgot to set it -- e.g. an NGWMN path -- to whichever API
 # happened to be the default, which is the worse failure.
 #
-# The empty default is not itself a good error, though. It builds a *relative*
-# ``/collections/{id}/items`` that planning accepts and only httpx rejects at
-# send time, as an ``UnsupportedProtocol`` the fan-out reports as a
-# ``NetworkError``. So the guard is the required ``base_url`` argument rather
-# than this default; entering an OGC request path without setting either is a
-# programming error this value cannot report well.
+# The empty default is not itself a good error -- see ``get_ogc_data``'s
+# ``base_url`` docs for what it produces. The guard is that required argument,
+# not this value.
 _ogc_base_url: Ambient[str] = Ambient("ogc_base_url", "")
 
 # Per-call request and response dialect.

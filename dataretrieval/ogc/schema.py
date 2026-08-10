@@ -13,7 +13,6 @@ import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.context import _ogc_base_url
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 from dataretrieval.transport.http import default_headers as _default_headers
@@ -21,7 +20,7 @@ from dataretrieval.transport.http import get as _get
 
 
 def _check_ogc_requests(
-    endpoint: str, req_type: str = "queryables", *, base_url: str | None = None
+    endpoint: str, req_type: str = "queryables", *, base_url: str
 ) -> tuple[dict[str, Any], httpx.Response]:
     """Retrieve one collection's queryables or response schema.
 
@@ -30,8 +29,6 @@ def _check_ogc_requests(
     """
     if req_type not in ("queryables", "schema"):
         raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
-    if base_url is None:
-        base_url = _ogc_base_url.get()
     url = f"{base_url}/collections/{endpoint}/{req_type}"
     response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
     _raise_for_non_200(response)
@@ -39,7 +36,7 @@ def _check_ogc_requests(
 
 
 def queryables_frame(
-    collection: str, *, base_url: str | None = None
+    collection: str, *, base_url: str
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Tabulate one collection's queryable properties.
 

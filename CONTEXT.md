@@ -141,10 +141,10 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   `site_type_code`, that is the service's vocabulary and is reproduced
   faithfully rather than translated.
 - `service` named a collection throughout the OGC machinery. Resolved: the
-  internals now say `collection`, `waterdata.get_cql` takes `collection`, and
-  the type alias is `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the
-  `WATERDATA_SERVICES` alias remain — a deprecated keyword and a permanent
-  alias respectively.
+  OGC internals, the Water Data wrappers, and all eleven typed getters now say
+  `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
+  `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
+  alias remain — a deprecated keyword and a permanent alias respectively.
 
   `service` still means the external system in `transport` and `progress`,
   where it labels a progress line. That usage is correct.

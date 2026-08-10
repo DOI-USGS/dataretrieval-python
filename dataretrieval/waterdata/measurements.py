@@ -220,12 +220,12 @@ def get_field_measurements(
         ...     time="P20Y",
         ... )
     """
-    service = "field-measurements"
+    collection = "field-measurements"
 
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_peaks(
@@ -361,11 +361,11 @@ def get_peaks(
         ... )
 
     """
-    service = "peaks"
+    collection = "peaks"
 
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_channel(
@@ -561,11 +561,11 @@ def get_channel(
         ...     monitoring_location_id="USGS-02238500",
         ... )
     """
-    service = "channel-measurements"
+    collection = "channel-measurements"
 
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 __all__ = ["get_field_measurements", "get_peaks", "get_channel"]

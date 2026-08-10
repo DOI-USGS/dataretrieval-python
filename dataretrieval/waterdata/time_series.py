@@ -248,12 +248,12 @@ def get_daily(
         ...     time="P7D",
         ... )
     """
-    service = "daily"
+    collection = "daily"
 
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_continuous(
@@ -446,12 +446,12 @@ def get_continuous(
         ...     filter_lang="cql-text",
         ... )
     """
-    service = "continuous"
+    collection = "continuous"
 
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_latest_continuous(
@@ -657,12 +657,12 @@ def get_latest_continuous(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
-    service = "latest-continuous"
+    collection = "latest-continuous"
 
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_latest_daily(
@@ -869,12 +869,12 @@ def get_latest_daily(
         ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]
         ... )
     """
-    service = "latest-daily"
+    collection = "latest-daily"
 
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, service, max_rows=max_rows)
+    return get_ogc_data(args, collection, max_rows=max_rows)
 
 
 def get_stats_por(

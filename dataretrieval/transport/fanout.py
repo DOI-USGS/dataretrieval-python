@@ -150,11 +150,11 @@ class FanOutPlan(Protocol[_ChunkCo]):
     """
     The contract a plan satisfies for a fan-out to execute it.
 
-    A **plan** enumerates a query's chunks -- how many, and what each one is
-    (see ``CONTEXT.md``). This protocol is that enumeration and nothing more,
-    which is why it is named for the role it plays here rather than for its
-    contents: :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and
-    so is a plain list of requests.
+    A **plan** is defined in ``CONTEXT.md``. This protocol is that enumeration
+    and nothing more, which is why it is named for the role it plays here
+    rather than for its contents:
+    :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and so is a
+    plain list of requests.
 
     Deliberately the two standard protocols rather than bespoke members, since
     an enumeration of chunks is exactly ``__len__`` + ``__iter__`` -- so a

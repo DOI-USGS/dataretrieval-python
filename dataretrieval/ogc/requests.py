@@ -40,13 +40,13 @@ _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 def _switch_arg_id(ls: dict[str, Any], id_name: str, collection: str) -> dict[str, Any]:
     """Switch argument id from its package-specific identifier to the
     standardized "id" key that the API recognizes."""
-    service_id = collection.replace("-", "_") + "_id"
+    collection_id = collection.replace("-", "_") + "_id"
     if "id" not in ls:
-        if service_id in ls:
-            ls["id"] = ls[service_id]
+        if collection_id in ls:
+            ls["id"] = ls[collection_id]
         elif id_name in ls:
             ls["id"] = ls[id_name]
-    ls.pop(service_id, None)
+    ls.pop(collection_id, None)
     ls.pop(id_name, None)
     return ls
 
@@ -58,8 +58,8 @@ def _switch_properties_id(
     ``geometry``."""
     if not properties:
         return []
-    service_id = collection.replace("-", "_") + "_id"
-    drop = {"id", "geometry", id_name, service_id}
+    collection_id = collection.replace("-", "_") + "_id"
+    drop = {"id", "geometry", id_name, collection_id}
     normalized = (p.replace("-", "_") for p in properties)
     return [p for p in normalized if p not in drop]
 
