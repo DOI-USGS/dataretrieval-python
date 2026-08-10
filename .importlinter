@@ -76,6 +76,17 @@ forbidden_modules =
 ; to work, and the default (indirect included) forbids exactly that.
 allow_indirect_imports = True
 
+[importlinter:contract:cql-facade]
+name = get_cql consumes the OGC facade only, never its internals (ADR 0007)
+type = forbidden
+source_modules =
+    dataretrieval.waterdata.cql
+; Same shape as the NGWMN contract above: the facade is the whole seam, and
+; the wildcard covers any new ``ogc`` submodule the day it is added.
+forbidden_modules =
+    dataretrieval.ogc.**
+allow_indirect_imports = True
+
 [importlinter:contract:ogc-internal-seams]
 name = OGC internal seams (ADR 0003)
 type = forbidden

@@ -47,6 +47,7 @@ from dataretrieval.ogc.policy import (
 # the symbols its orchestration uses.
 from dataretrieval.ogc.requests import (
     _construct_api_requests,
+    _construct_cql_request,
     _switch_arg_id,
     _switch_properties_id,
 )
@@ -231,6 +232,7 @@ def get_ogc_data(
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
+    cql_body: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -270,6 +272,17 @@ def get_ogc_data(
     dialect : OgcDialect, optional
         Per-API request quirks (CQL2-only collections, date-only collections).
         Defaults to a plain OGC API with neither.
+    cql_body : str, optional
+        A verbatim CQL2 JSON body to POST against ``collection`` instead of
+        building the query from ``args``. The one entry point for queries the
+        typed argument model cannot express (top-level ``or``, ``like``
+        wildcards, nested boolean trees). With a body, only the
+        ``properties``, ``bbox``, ``limit``, ``skip_geometry``, and
+        ``convert_type`` keys of ``args`` are consulted; there are no
+        multi-value axes to chunk, and the body's size is the server's
+        judgement (mirroring the planner's cql-json passthrough), so the
+        request is driven as a one-item fan-out with the same retry,
+        progress, interruption, and finalization as every chunked call.
 
     Returns
     -------
@@ -324,6 +337,39 @@ def get_ogc_data(
         dialect=dialect,
         base_url=base_url,
     )
+
+    if cql_body is not None:
+        # ``args["properties"]`` holds the wire property list after the
+        # id-switch above; ``finalize`` holds the pre-switch, user-facing
+        # list, exactly as on the chunked path.
+        req = _construct_cql_request(
+            collection,
+            cql_body,
+            base_url=base_url,
+            properties=args.get("properties") or None,
+            bbox=args.get("bbox"),
+            limit=args.get("limit"),
+            skip_geometry=args.get("skip_geometry"),
+        )
+
+        async def _fetch_cql(
+            request: httpx.Request,
+        ) -> tuple[pd.DataFrame, httpx.Response]:
+            return await _walk_pages(geopd=GEOPANDAS, req=request, row_cap=max_rows)
+
+        # A one-item fan-out: same executor, retry, progress line, and
+        # resumable-interruption semantics as the chunked path — and the same
+        # ``finalize``, so a later ``exc.call.resume()`` returns the finished
+        # ``(df, BaseMetadata)`` shape rather than a raw response pair.
+        return FanOut(
+            [req],
+            _fetch_cql,
+            RetryPolicy.from_env(),
+            finalize,
+            canonical_url=str(req.url),
+            service=collection,
+        ).resume()
+
     # Bind the API target and quirks into the request builder and fetcher the
     # same way ``finalize`` binds its own state: with ``functools.partial``.
     # The plan sizes candidate chunks and a later ``exc.call.resume()``
@@ -364,45 +410,3 @@ async def _fetch_once(
     """
     req = build_request(**args)
     return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
-
-
-def fetch_ogc_request(
-    request: httpx.Request,
-    *,
-    collection: str,
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Execute a prepared OGC request with pagination, returning (df, response).
-
-    This is the facade-level entry point for generalized CQL requests: the
-    caller builds its own :class:`httpx.Request` (e.g. via
-    :func:`~dataretrieval.ogc.requests._construct_cql_request`) and hands it
-    here. The request is driven as a one-item
-    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor the
-    typed getters use -- so pagination, retry, progress reporting, and error
-    handling are identical to their path through :func:`_walk_pages`.
-
-    Parameters
-    ----------
-    request : httpx.Request
-        A fully-constructed OGC API request (typically a POST/CQL2).
-    collection : str
-        Collection name, used only for progress-context labelling.
-
-    Returns
-    -------
-    pd.DataFrame
-        Concatenated page results.
-    httpx.Response
-        Aggregated response metadata.
-    """
-
-    async def _fetch(req: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-        return await _walk_pages(geopd=GEOPANDAS, req=req)
-
-    return FanOut(
-        [request],
-        _fetch,
-        RetryPolicy.from_env(),
-        canonical_url=str(request.url),
-        service=collection,
-    ).resume()

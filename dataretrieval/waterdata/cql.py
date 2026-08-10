@@ -14,13 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval.ogc import fetch_ogc_request
-from dataretrieval.ogc.requests import (
-    _as_str_list,
-    _construct_cql_request,
-    _switch_properties_id,
-)
-from dataretrieval.ogc.shaping import _finalize_ogc
+from dataretrieval.ogc import get_ogc_data, prepare_request_args
 from dataretrieval.waterdata.utils import (
     _EXTRA_ID_COLS,
     _OUTPUT_ID_BY_COLLECTION,
@@ -156,38 +150,27 @@ def get_cql(
     # config file) don't need to re-parse it.
     body = json.dumps(cql, separators=(",", ":")) if isinstance(cql, dict) else cql
 
-    properties_list = _as_str_list(properties, "properties")
-
-    # Drop id aliases (``daily_id``/``id``) and ``geometry`` from the wire
-    # ``properties`` (the feature ``id`` is always returned and renamed
-    # downstream), matching the typed getters.
-    wire_properties = _switch_properties_id(properties_list, output_id, collection)
-
-    # The OGC package names no collection of its own, so this hand-built request
-    # path states the target itself -- to request construction and to the
-    # empty-result schema lookup in ``_finalize_ogc``.
-    req = _construct_cql_request(
-        collection,
-        body,
-        base_url=OGC_API_URL,
-        properties=wire_properties,
-        bbox=bbox,
-        limit=limit,
-        skip_geometry=skip_geometry,
+    # The engine owns the rest — the wire-properties id-switch, request
+    # construction, pagination, and finalization — behind the same facade
+    # entry the typed getters use; ``cql_body`` selects the verbatim-CQL2
+    # shape. This adapter contributes only the Water Data specifics.
+    args = prepare_request_args(
+        {
+            "properties": properties,
+            "bbox": bbox,
+            "limit": limit,
+            "skip_geometry": skip_geometry,
+            "convert_type": convert_type,
+        }
     )
-
-    df, response = fetch_ogc_request(req, collection=collection)
-
-    return _finalize_ogc(
-        df,
-        response,
-        properties=properties_list,
-        output_id=output_id,
-        convert_type=convert_type,
-        collection=collection,
+    return get_ogc_data(
+        args,
+        collection,
+        output_id,
+        base_url=OGC_API_URL,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
-        base_url=OGC_API_URL,
+        cql_body=body,
     )
 
 
