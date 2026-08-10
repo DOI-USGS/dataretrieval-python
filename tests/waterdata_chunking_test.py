@@ -45,7 +45,6 @@ from dataretrieval.exceptions import (
     TransientError,
     Unchunkable,
 )
-from dataretrieval.ogc import chunking as _chunking
 from dataretrieval.ogc import engine as _engine
 from dataretrieval.ogc.chunking import (
     ChunkedCall,
@@ -367,7 +366,7 @@ def test_multi_value_chunked_emits_3d_cartesian_product():
 
 
 def test_multi_value_chunked_lazy_url_limit(monkeypatch):
-    """``url_limit=None`` → resolve chunking._OGC_URL_BYTE_LIMIT at call
+    """``url_limit=None`` → resolve engine._OGC_URL_BYTE_LIMIT at call
     time, so tests that patch the constant affect this decorator too."""
     calls = []
 
@@ -378,7 +377,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
             elapsed=datetime.timedelta(seconds=0.1), headers={}
         )
 
-    monkeypatch.setattr(_chunking, "_OGC_URL_BYTE_LIMIT", 240)
+    monkeypatch.setattr(_engine, "_OGC_URL_BYTE_LIMIT", 240)
     # 4 sites of 10 chars → exceeds 240 → planner splits.
     fetch({"sites": ["S" * 10 + str(i) for i in range(4)]})
     assert len(calls) > 1, "patched constant should drive chunking"

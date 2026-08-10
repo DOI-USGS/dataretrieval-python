@@ -35,12 +35,12 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import httpx
 import pandas as pd
 
-import dataretrieval.ogc.chunking as chunking
+from dataretrieval._ambient import Ambient
 from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
+from dataretrieval.ogc.planning import ChunkPlan
 from dataretrieval.ogc.policy import (
-    DEFAULT_DIALECT,
-    OgcDialect,
+    OgcApi,
     _require_positive_int,
 )
 
@@ -52,7 +52,13 @@ from dataretrieval.ogc.requests import (
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
-from dataretrieval.transport.fanout import FanOut, active_client
+from dataretrieval.transport.fanout import (
+    FanOut,
+    _Fetch,
+    _Finalize,
+    _passthrough_result,
+    active_client,
+)
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
@@ -63,8 +69,14 @@ if TYPE_CHECKING:
 # Set up logger for this module
 logger = logging.getLogger(__name__)
 
-# Compatibility alias: the old name used internally and in tests.
-_DEFAULT_DIALECT = DEFAULT_DIALECT
+
+# Empirically the API replies HTTP 414 above ~8200 bytes of full URL. Resolve
+# this default at call time so tests and alternate deployments can patch it.
+_OGC_URL_BYTE_LIMIT = 8000
+
+# The public ``parallel_chunks`` context manager lives in ``ogc.chunking``;
+# execution reads the shared ambient here without depending on that facade.
+_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
 
 
 def _next_req_url(
@@ -217,12 +229,10 @@ async def _walk_pages(
 def get_ogc_data(
     args: dict[str, Any],
     collection: str,
-    output_id: str,
+    output_id: str | None = None,
     *,
-    base_url: str,
+    api: OgcApi,
     max_rows: int | None = None,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -238,30 +248,22 @@ def get_ogc_data(
     collection : str
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
-    output_id : str
-        The user-facing id column the wire ``id`` is renamed to. Required —
-        the per-API collection-to-id map lives in the caller, not here.
+    output_id : str, optional
+        The user-facing id column the wire ``id`` is renamed to. Defaults to
+        whatever ``api`` registers for this collection; pass one only for a
+        collection the API does not register, such as a reference table whose
+        ids follow a rule rather than a list.
+    api : OgcApi
+        Which OGC API to target: its base URL, its dialect, the synthetic id
+        columns its results carry, and the id it renames the wire ``id`` to.
+        Required, because this package is API-neutral and names no API of its
+        own -- each adapter declares its own (``waterdata.utils.WATERDATA_API``,
+        ``ngwmn.NGWMN_API``) and passes that.
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str
-        OGC API base URL to target. Required: this package is API-neutral and
-        names no API of its own, so each adapter passes its own base (e.g.
-        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``). It was
-        once optional, falling back to whatever was in ambient scope -- which
-        defaults to the empty string, so omitting it built a *relative*
-        ``/collections/{id}/items`` that planning accepted and only httpx
-        rejected at send time, surfacing as a NetworkError about an unknown
-        service. Requiring it moves that mistake to the call site, where mypy
-        catches it.
-    extra_id_cols : set or frozenset, optional
-        Synthetic id columns to push to the end of a result frame (see
-        :func:`_arrange_cols`). Defaults to an empty set.
-    dialect : OgcDialect, optional
-        Per-API request quirks (CQL2-only collections, date-only collections).
-        Defaults to a plain OGC API with neither.
 
     Returns
     -------
@@ -283,8 +285,8 @@ def get_ogc_data(
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
-    if dialect is None:
-        dialect = _DEFAULT_DIALECT
+    if output_id is None:
+        output_id = api.output_id(collection)
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
@@ -311,23 +313,61 @@ def get_ogc_data(
         convert_type=convert_type,
         collection=collection,
         max_rows=max_rows,
-        extra_id_cols=extra_id_cols,
-        dialect=dialect,
-        base_url=base_url,
+        api=api,
     )
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
-    with _row_cap(max_rows), _ogc_base_url(base_url), _dialect(dialect):
+    with _row_cap(max_rows), _ogc_base_url(api.base_url), _dialect(api.dialect):
         return _fetch_once(args, finalize=finalize)
 
 
-@chunking.multi_value_chunked(build_request=_construct_api_requests)
+def multi_value_chunked(
+    *,
+    build_request: Callable[..., httpx.Request],
+    url_limit: int | None = None,
+) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
+    """Decorate an async fetcher to transparently plan and execute chunks.
+
+    OGC-specific planning is composed here with the API-neutral
+    :class:`~dataretrieval.transport.fanout.FanOut` executor. The public
+    :func:`dataretrieval.ogc.chunking.parallel_chunks` context manager controls
+    optional finer fan-out through the shared ``_parallel_chunks`` ambient.
+    """
+
+    def decorator(
+        fetch: _Fetch[dict[str, Any]],
+    ) -> Callable[..., tuple[pd.DataFrame, Any]]:
+        @functools.wraps(fetch)
+        def wrapper(
+            args: dict[str, Any],
+            *,
+            finalize: _Finalize = _passthrough_result,
+        ) -> tuple[pd.DataFrame, Any]:
+            limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
+            plan = ChunkPlan(
+                args, build_request, limit, max_chunks=_parallel_chunks.get()
+            )
+            return FanOut(
+                plan,
+                fetch,
+                RetryPolicy.from_env(),
+                finalize,
+                canonical_url=plan.canonical_url,
+                service=args.get("collection"),
+            ).resume()
+
+        return wrapper
+
+    return decorator
+
+
+@multi_value_chunked(build_request=_construct_api_requests)
 async def _fetch_once(
     args: dict[str, Any],
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
 
-    ``@chunking.multi_value_chunked`` models every multi-value list
+    ``@multi_value_chunked`` models every multi-value list
     parameter and the cql-text filter as a chunkable axis, greedy-halves
     the biggest chunk across all axes until each chunk URL fits,
     and iterates the cartesian product. With no chunkable inputs the

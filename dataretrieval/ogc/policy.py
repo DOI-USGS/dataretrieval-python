@@ -16,6 +16,7 @@ It must NOT import engine, shaping, or any collection adapter.
 from __future__ import annotations
 
 import numbers
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 
@@ -73,3 +74,81 @@ class OgcDialect:
 # Default dialect: a plain OGC API with no CQL2-only collections and no
 # date-only collections (every time argument rendered as a full UTC datetime).
 DEFAULT_DIALECT = OgcDialect()
+
+
+@dataclass(frozen=True)
+class OgcApi:
+    """One OGC API's identity: where it lives and how it answers.
+
+    These three facts always travel together and are constant for a service,
+    so they are one value rather than three arguments threaded through the
+    engine and the shaper. An adapter declares its API once
+    (``waterdata.utils.WATERDATA_API``, ``ngwmn.NGWMN_API``) and passes that.
+
+    Adding a third OGC service is then one object, not three arguments to
+    thread through two layers and remember to keep consistent -- the mistake
+    the previous shape invited, and made: ``get_cql`` passed the dialect and
+    the id columns but let the base URL fall back to a default that happened
+    to be right.
+
+    Attributes
+    ----------
+    base_url : str
+        Root the collections hang off, e.g. ``.../ogcapi/v0``.
+    dialect : OgcDialect
+        Per-API quirks the request builder and shaper need.
+    extra_id_cols : frozenset[str]
+        Synthetic id columns this API's results carry, ordered to the front.
+    """
+
+    base_url: str
+    dialect: OgcDialect = DEFAULT_DIALECT
+    extra_id_cols: frozenset[str] = frozenset()
+    #: How the wire ``id`` is renamed for the caller: a per-collection mapping,
+    #: or a single name when the API applies one to every collection. Excluded
+    #: from hashing because a mapping is unhashable.
+    output_ids: Mapping[str, str] | str = field(default="id", hash=False)
+
+    def output_id(self, collection: str) -> str:
+        """The user-facing name the wire ``id`` takes for ``collection``.
+
+        The caller should not have to know this -- it is a fact about the API,
+        so the API answers it. Callers with a collection outside the mapping
+        (a reference table, whose ids follow a rule rather than a list) pass
+        one explicitly instead.
+
+        Raises
+        ------
+        KeyError
+            If this API registers ids per collection and does not know this
+            one. Deliberately loud: a silent fallback would rename the id
+            column to something no Water Data collection uses, mis-shaping the
+            result instead of reporting the unregistered collection.
+        """
+        if isinstance(self.output_ids, str):
+            return self.output_ids
+        try:
+            return self.output_ids[collection]
+        except KeyError:
+            raise KeyError(
+                f"{collection!r} has no output id registered for this API. "
+                f"Known collections: {sorted(self.output_ids)}."
+            ) from None
+
+    def knows(self, collection: str) -> bool:
+        """Whether this API recognizes ``collection``.
+
+        Ask this rather than testing ``collection in api.output_ids``: that
+        works only for the mapping form, and silently becomes a substring test
+        when an API names one id for every collection.
+        """
+        if isinstance(self.output_ids, str):
+            return True
+        return collection in self.output_ids
+
+    @property
+    def collections(self) -> tuple[str, ...]:
+        """Registered collection names, or empty when ids are not per-collection."""
+        if isinstance(self.output_ids, str):
+            return ()
+        return tuple(sorted(self.output_ids))

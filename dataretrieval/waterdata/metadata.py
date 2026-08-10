@@ -336,9 +336,7 @@ def get_monitoring_locations(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), collection), exclude={"max_rows"})
 
     return get_ogc_data(args, collection, max_rows=max_rows)
 
@@ -587,9 +585,7 @@ def get_time_series_metadata(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), collection), exclude={"max_rows"})
 
     return get_ogc_data(args, collection, max_rows=max_rows)
 
@@ -845,9 +841,7 @@ site_type_code : string or iterable of strings, optional
     collection = "combined-metadata"
 
     # Resolve the unified `state` argument into the OGC `state_name` queryable.
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), collection), exclude={"max_rows"})
 
     return get_ogc_data(args, collection, max_rows=max_rows)
 

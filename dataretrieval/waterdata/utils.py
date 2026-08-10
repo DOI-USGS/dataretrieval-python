@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
-from dataretrieval.ogc import OgcDialect, prepare_request_args
+from dataretrieval.ogc import OgcApi, OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
 # Endpoint constants live in one place for the whole collection; they are re-bound
@@ -96,6 +96,16 @@ WATERDATA_DIALECT = OgcDialect(
     sort_cols=("time", "monitoring_location_id"),
 )
 
+#: This package's view of the Water Data OGC API: where it lives, how it
+#: answers, and the synthetic id columns its results carry. Declared once so
+#: the engine and the shaper take one value instead of three arguments.
+WATERDATA_API = OgcApi(
+    base_url=OGC_API_URL,
+    dialect=WATERDATA_DIALECT,
+    extra_id_cols=_EXTRA_ID_COLS,
+    output_ids=_OUTPUT_ID_BY_COLLECTION,
+)
+
 # The Water-Data-specific *extras* on top of the engine's own no-normalize set
 # (which already covers the date-range params and ``bbox``). Scalar non-string
 # knobs are caught by runtime type, so only iterables with special handling
@@ -150,17 +160,37 @@ def _get_args(
     )
 
 
-def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
-    """Resolve the unified ``state`` argument into an endpoint's state queryable.
+#: Which state queryable each endpoint filters on, and in which
+#: representation. A fact about the endpoint, so it lives with the endpoint
+#: rather than being repeated at every getter that filters by state -- the
+#: shape ``ngwmn`` already uses for the same problem.
+#:
+#: Keyed by OGC collection *and* by Statistics API resource, because both
+#: accept a state filter and they disagree about it: the OGC metadata
+#: collections take a full state name, Statistics takes a FIPS code. Those are
+#: different kinds of thing (see ``CONTEXT.md``) and only share this table
+#: because the question is the same one.
+_STATE_QUERYABLE: dict[str, dict[str, str]] = {
+    "monitoring-locations": {"to": "name", "into": "state_name"},
+    "time-series-metadata": {"to": "name", "into": "state_name"},
+    "combined-metadata": {"to": "name", "into": "state_name"},
+    "observationNormals": {"to": "fips_us", "into": "state_code"},
+    "observationIntervals": {"to": "fips_us", "into": "state_code"},
+}
+
+
+def _with_state(local_vars: dict[str, Any], endpoint: str) -> dict[str, Any]:
+    """Resolve the unified ``state`` argument into an endpoint's queryable.
 
     Returns the (mutated) args mapping. ``state`` is the canonical,
     format-flexible parameter (full name / postal / FIPS); it is normalized via
-    :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
-    and stored under ``into`` (the queryable this endpoint actually filters on).
+    :func:`~dataretrieval.codes.states.to_state` into whichever representation
+    and queryable ``endpoint`` filters on -- see :data:`_STATE_QUERYABLE`.
     It is additive sugar over the native ``state_code`` / ``state_name``
     parameters, which still accept the API's raw values (e.g. non-US FIPS);
     passing ``state`` together with either raises ``ValueError``.
     """
+    queryable = _STATE_QUERYABLE[endpoint]
     # Flatten ``**queryables`` first so a native state param arriving that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
     # explicit parameter) is visible to apply_state's mutual-exclusion guard.
@@ -168,7 +198,10 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     # check and silently send both.
     _flatten_queryables(local_vars)
     return apply_state(
-        local_vars, to=to, into=into, reject=("state_code", "state_name")
+        local_vars,
+        to=queryable["to"],
+        into=queryable["into"],
+        reject=("state_code", "state_name"),
     )
 
 
@@ -180,11 +213,13 @@ def get_ogc_data(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
-    Defaults ``output_id`` from the Water Data collection map when not given,
-    and supplies the Water Data extra-id columns and dialect, so the typed
-    getters in ``api.py`` call this unchanged. (Sibling OGC APIs such as
-    NGWMN call ``dataretrieval.ogc.get_ogc_data`` directly with their own
-    base URL and dialect rather than going through this Water Data wrapper.)
+    Supplies :data:`WATERDATA_API`, so the typed getters in ``api.py`` call
+    this unchanged. ``output_id`` is resolved by that value and only needs
+    passing for a collection outside its map (a reference table, say).
+
+    Sibling OGC APIs such as NGWMN call ``dataretrieval.ogc.get_ogc_data``
+    directly with their own :class:`~dataretrieval.ogc.OgcApi` rather than
+    going through this Water Data wrapper.
 
     Parameters
     ----------
@@ -209,16 +244,12 @@ def get_ogc_data(
         A metadata object with request information, including the URL and
         query time.
     """
-    if output_id is None:
-        output_id = _OUTPUT_ID_BY_COLLECTION[collection]
     return _facade_get_ogc_data(
         args,
         collection,
         output_id,
         max_rows=max_rows,
-        base_url=OGC_API_URL,
-        extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
+        api=WATERDATA_API,
     )
 
 
@@ -291,6 +322,7 @@ __all__ = [
     "BASE_URL",
     "OGC_API_URL",
     "SAMPLES_URL",
+    "WATERDATA_API",
     "WATERDATA_DIALECT",
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",

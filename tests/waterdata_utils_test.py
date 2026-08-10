@@ -41,17 +41,14 @@ from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
-    _EXTRA_ID_COLS,
     OGC_API_URL,
-    WATERDATA_DIALECT,
+    WATERDATA_API,
     _get_args,
 )
 
 # The Water Data injection ``get_cql`` performs at its call site, so these tests
 # exercise the same result shape the typed getters produce.
-_finalize_ogc = functools.partial(
-    _ogc_finalize, extra_id_cols=_EXTRA_ID_COLS, dialect=WATERDATA_DIALECT
-)
+_finalize_ogc = functools.partial(_ogc_finalize, api=WATERDATA_API)
 
 _LOGGER_NAME = _utils_module.__name__
 
@@ -1070,19 +1067,19 @@ def test_with_state_routes_into_native_queryable():
     """``_with_state`` resolves the canonical ``state`` argument into the
     endpoint's native queryable (any encoding -> the requested representation)
     and leaves args without ``state`` untouched."""
-    assert _utils_module._with_state({"state": "WI"}, to="name", into="state_name") == {
+    assert _utils_module._with_state({"state": "WI"}, "monitoring-locations") == {
         "state_name": "Wisconsin"
     }
-    assert _utils_module._with_state(
-        {"state": "Wisconsin"}, to="fips_us", into="state_code"
-    ) == {"state_code": "US:55"}
+    assert _utils_module._with_state({"state": "Wisconsin"}, "observationNormals") == {
+        "state_code": "US:55"
+    }
     # Multi-value state fans out element-wise.
     assert _utils_module._with_state(
-        {"state": ["WI", "55"]}, to="name", into="state_name"
+        {"state": ["WI", "55"]}, "monitoring-locations"
     ) == {"state_name": ["Wisconsin", "Wisconsin"]}
     # No ``state`` -> mapping returned unchanged.
     assert _utils_module._with_state(
-        {"state_name": "Ohio"}, to="name", into="state_name"
+        {"state_name": "Ohio"}, "monitoring-locations"
     ) == {"state_name": "Ohio"}
 
 
@@ -1091,11 +1088,11 @@ def test_with_state_conflict_raises():
     is ambiguous and raises."""
     with pytest.raises(ValueError, match="not both"):
         _utils_module._with_state(
-            {"state": "WI", "state_code": "55"}, to="name", into="state_name"
+            {"state": "WI", "state_code": "55"}, "monitoring-locations"
         )
     with pytest.raises(ValueError, match="not both"):
         _utils_module._with_state(
-            {"state": "WI", "state_name": "Wisconsin"}, to="name", into="state_name"
+            {"state": "WI", "state_name": "Wisconsin"}, "monitoring-locations"
         )
 
 
@@ -1107,8 +1104,7 @@ def test_with_state_conflict_via_queryables_raises():
     with pytest.raises(ValueError, match="not both"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
-            to="name",
-            into="state_name",
+            "monitoring-locations",
         )
 
 
