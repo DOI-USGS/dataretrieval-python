@@ -387,7 +387,7 @@ def _finalize_ogc(
     rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
     per-``_paginate`` ``_row_cap`` is only an early-stop download bound.
-    ``base_url`` is captured with the finalizer so resumed calls query the same
+    ``api`` is captured with the finalizer so resumed calls query the same
     API's schema when their combined result is empty.
     """
     frame = _deal_with_empty(frame, properties, collection, base_url=api.base_url)

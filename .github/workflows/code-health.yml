@@ -51,30 +51,6 @@ jobs:
           pyscn analyze --json --no-open dataretrieval 2>&1 | tee pyscn-summary.txt
           pyscn analyze --html --no-open dataretrieval >/dev/null
 
-      - name: Check the analysis actually resolved the package
-        # pyscn infers a project root, and when it guesses wrong it silently
-        # resolves only a fraction of the imports -- which *raises* the score,
-        # because most of what it grades is dependency-derived. A degraded run
-        # therefore looks like an improved one. Record the resolved edge count
-        # next to the score so that is visible rather than flattering.
-        if: always()
-        continue-on-error: true
-        run: |
-          python - <<'PY' > pyscn-sanity.txt
-          import glob, json, os
-          reports = sorted(glob.glob(".pyscn/reports/*.json"))
-          if not reports:
-              print("no pyscn JSON report found"); raise SystemExit
-          s = json.load(open(reports[-1]))["system"]["Summary"]
-          root, deps = s["ProjectRoot"], s["TotalDependencies"]
-          print(f"modules={s['TotalModules']} resolved_dependencies={deps} root={root}")
-          if os.path.realpath(root) != os.path.realpath(os.getcwd()):
-              print(f"WARNING: project root {root!r} is not the checkout; "
-                    "import resolution is probably degraded and the scores "
-                    "above are not comparable to previous runs.")
-          PY
-          cat pyscn-sanity.txt
-
       - name: Signals that mean something for this package
         # pyscn grades six sub-scores and four of them do not apply here, so the
         # composite moves for reasons that are not about this codebase. This
@@ -119,7 +95,6 @@ jobs:
             else
               echo 'pyscn produced no output'
             fi
-            cat pyscn-sanity.txt 2>/dev/null || true
             echo '```'
             echo '</details>'
             echo
@@ -139,7 +114,6 @@ jobs:
           path: |
             .pyscn/reports/
             pyscn-summary.txt
-            pyscn-sanity.txt
             health-signals.txt
             wily-summary.txt
           retention-days: 90

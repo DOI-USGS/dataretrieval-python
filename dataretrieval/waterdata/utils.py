@@ -160,12 +160,16 @@ def _get_args(
     )
 
 
-#: Which state queryable each collection filters on, and in which
-#: representation. A fact about the collection, so it lives with the collection
+#: Which state queryable each endpoint filters on, and in which
+#: representation. A fact about the endpoint, so it lives with the endpoint
 #: rather than being repeated at every getter that filters by state -- the
-#: shape ``ngwmn`` already uses for the same problem. Spans both the OGC
-#: collections and the Statistics API's resources, which differ here: the OGC
-#: metadata collections take a full state name, Statistics takes a FIPS code.
+#: shape ``ngwmn`` already uses for the same problem.
+#:
+#: Keyed by OGC collection *and* by Statistics API resource, because both
+#: accept a state filter and they disagree about it: the OGC metadata
+#: collections take a full state name, Statistics takes a FIPS code. Those are
+#: different kinds of thing (see ``CONTEXT.md``) and only share this table
+#: because the question is the same one.
 _STATE_QUERYABLE: dict[str, dict[str, str]] = {
     "monitoring-locations": {"to": "name", "into": "state_name"},
     "time-series-metadata": {"to": "name", "into": "state_name"},
@@ -175,18 +179,18 @@ _STATE_QUERYABLE: dict[str, dict[str, str]] = {
 }
 
 
-def _with_state(local_vars: dict[str, Any], collection: str) -> dict[str, Any]:
-    """Resolve the unified ``state`` argument into a collection's queryable.
+def _with_state(local_vars: dict[str, Any], endpoint: str) -> dict[str, Any]:
+    """Resolve the unified ``state`` argument into an endpoint's queryable.
 
     Returns the (mutated) args mapping. ``state`` is the canonical,
     format-flexible parameter (full name / postal / FIPS); it is normalized via
     :func:`~dataretrieval.codes.states.to_state` into whichever representation
-    and queryable ``collection`` filters on -- see :data:`_STATE_QUERYABLE`.
+    and queryable ``endpoint`` filters on -- see :data:`_STATE_QUERYABLE`.
     It is additive sugar over the native ``state_code`` / ``state_name``
     parameters, which still accept the API's raw values (e.g. non-US FIPS);
     passing ``state`` together with either raises ``ValueError``.
     """
-    queryable = _STATE_QUERYABLE[collection]
+    queryable = _STATE_QUERYABLE[endpoint]
     # Flatten ``**queryables`` first so a native state param arriving that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
     # explicit parameter) is visible to apply_state's mutual-exclusion guard.

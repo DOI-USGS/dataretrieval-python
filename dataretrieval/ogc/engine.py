@@ -39,7 +39,6 @@ import dataretrieval.ogc.chunking as chunking
 from dataretrieval.ogc.context import _dialect, _ogc_base_url, _row_cap
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
-    DEFAULT_DIALECT,
     OgcApi,
     _require_positive_int,
 )
@@ -62,9 +61,6 @@ if TYPE_CHECKING:
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
-
-# Compatibility alias: the old name used internally and in tests.
-_DEFAULT_DIALECT = DEFAULT_DIALECT
 
 
 def _next_req_url(
@@ -236,30 +232,22 @@ def get_ogc_data(
     collection : str
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
-    output_id : str
-        The user-facing id column the wire ``id`` is renamed to. Required —
-        the per-API collection-to-id map lives in the caller, not here.
+    output_id : str, optional
+        The user-facing id column the wire ``id`` is renamed to. Defaults to
+        whatever ``api`` registers for this collection; pass one only for a
+        collection the API does not register, such as a reference table whose
+        ids follow a rule rather than a list.
+    api : OgcApi
+        Which OGC API to target: its base URL, its dialect, the synthetic id
+        columns its results carry, and the id it renames the wire ``id`` to.
+        Required, because this package is API-neutral and names no API of its
+        own -- each adapter declares its own (``waterdata.utils.WATERDATA_API``,
+        ``ngwmn.NGWMN_API``) and passes that.
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for cheap previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str
-        OGC API base URL to target. Required: this package is API-neutral and
-        names no API of its own, so each adapter passes its own base (e.g.
-        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``). It was
-        once optional, falling back to whatever was in ambient scope -- which
-        defaults to the empty string, so omitting it built a *relative*
-        ``/collections/{id}/items`` that planning accepted and only httpx
-        rejected at send time, surfacing as a NetworkError about an unknown
-        service. Requiring it moves that mistake to the call site, where mypy
-        catches it.
-    extra_id_cols : set or frozenset, optional
-        Synthetic id columns to push to the end of a result frame (see
-        :func:`_arrange_cols`). Defaults to an empty set.
-    dialect : OgcDialect, optional
-        Per-API request quirks (CQL2-only collections, date-only collections).
-        Defaults to a plain OGC API with neither.
 
     Returns
     -------

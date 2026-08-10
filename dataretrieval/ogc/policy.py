@@ -105,17 +105,50 @@ class OgcApi:
     dialect: OgcDialect = DEFAULT_DIALECT
     extra_id_cols: frozenset[str] = frozenset()
     #: How the wire ``id`` is renamed for the caller: a per-collection mapping,
-    #: or one name every collection uses. Excluded from the hash because a
-    #: mapping is unhashable and this value is identity, not a key.
-    output_ids: Mapping[str, str] | str = "id"
+    #: or a single name when the API applies one to every collection. Excluded
+    #: from hashing because a mapping is unhashable.
+    output_ids: Mapping[str, str] | str = field(default="id", hash=False)
 
     def output_id(self, collection: str) -> str:
         """The user-facing name the wire ``id`` takes for ``collection``.
 
         The caller should not have to know this -- it is a fact about the API,
         so the API answers it. Callers with a collection outside the mapping
-        (a reference table, say) may still pass one explicitly.
+        (a reference table, whose ids follow a rule rather than a list) pass
+        one explicitly instead.
+
+        Raises
+        ------
+        KeyError
+            If this API registers ids per collection and does not know this
+            one. Deliberately loud: a silent fallback would rename the id
+            column to something no Water Data collection uses, mis-shaping the
+            result instead of reporting the unregistered collection.
         """
         if isinstance(self.output_ids, str):
             return self.output_ids
-        return self.output_ids.get(collection, "id")
+        try:
+            return self.output_ids[collection]
+        except KeyError:
+            raise KeyError(
+                f"{collection!r} has no output id registered for this API. "
+                f"Known collections: {sorted(self.output_ids)}."
+            ) from None
+
+    def knows(self, collection: str) -> bool:
+        """Whether this API recognizes ``collection``.
+
+        Ask this rather than testing ``collection in api.output_ids``: that
+        works only for the mapping form, and silently becomes a substring test
+        when an API names one id for every collection.
+        """
+        if isinstance(self.output_ids, str):
+            return True
+        return collection in self.output_ids
+
+    @property
+    def collections(self) -> tuple[str, ...]:
+        """Registered collection names, or empty when ids are not per-collection."""
+        if isinstance(self.output_ids, str):
+            return ()
+        return tuple(sorted(self.output_ids))

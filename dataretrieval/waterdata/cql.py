@@ -143,10 +143,10 @@ def get_cql(
         ...     ' "02070010%"]}',
         ... )
     """
-    if collection not in WATERDATA_API.output_ids:
+    if not WATERDATA_API.knows(collection):
         raise ValueError(
             f"Unknown collection {collection!r}. Valid collections: "
-            f"{sorted(WATERDATA_API.output_ids)}."
+            f"{list(WATERDATA_API.collections)}."
         )
     output_id = WATERDATA_API.output_id(collection)
 

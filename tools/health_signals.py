@@ -15,6 +15,7 @@ proxy for whether a module is deep.
 import ast
 import glob
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -22,14 +23,22 @@ BASELINE = Path(".pyscn-known-clones.json")
 PACKAGE = Path("dataretrieval")
 
 
+_TREES: dict[str, ast.Module] = {}
 _SPANS: dict[str, dict[int, str]] = {}
+
+
+def tree_for(path):
+    """Parse each file once; both walks below want the same trees."""
+    if path not in _TREES:
+        _TREES[path] = ast.parse(Path(path).read_text(encoding="utf-8"))
+    return _TREES[path]
 
 
 def enclosing(path, start):
     if path not in _SPANS:
         _SPANS[path] = {
             n.lineno: n.name
-            for n in ast.walk(ast.parse(Path(path).read_text(encoding="utf-8")))
+            for n in ast.walk(tree_for(path))
             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
         }
     for line in range(start, start + 3):
@@ -55,7 +64,7 @@ def required_arguments():
     """Public functions carrying required arguments, worst module first."""
     out = []
     for path in sorted(PACKAGE.rglob("*.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"))
+        tree = tree_for(str(path))
         declared = None
         for node in tree.body:
             if isinstance(node, ast.Assign) and any(
@@ -85,6 +94,19 @@ if not reports:
     print("no pyscn JSON report found")
     sys.exit(0)
 report = json.loads(Path(reports[-1]).read_text())
+
+# pyscn infers a project root, and when it guesses wrong it resolves only a
+# fraction of the imports -- which *raises* its scores, because most of what it
+# grades is dependency-derived. A degraded run therefore looks like an improved
+# one. Report the root so that is visible rather than flattering.
+summary = report["system"]["Summary"]
+root = summary["ProjectRoot"]
+if os.path.realpath(root) != os.path.realpath(os.getcwd()):
+    print(
+        f"WARNING: pyscn resolved against {root!r}, not this checkout -- import\n"
+        f"resolution is probably degraded and these numbers are not comparable."
+    )
+print(f"modules              {summary['TotalModules']}")
 
 dead = report["dead_code"]["summary"]["total_findings"]
 deps = report["system"]["DependencyAnalysis"]
