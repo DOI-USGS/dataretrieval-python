@@ -525,10 +525,18 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         >>> dataretrieval.show_configuration()
         config file  /home/u/.dataretrieval/config.toml (found)
         profile      default
-        api_key      <set>       /home/u/.dataretrieval/config.toml
-        concurrency  32          built-in default
-        retries      8           $API_USGS_RETRIES
-        progress     auto        built-in default
+        api_key          <set>      /home/u/.dataretrieval/config.toml
+        concurrency      32         built-in default
+        retries          8          $API_USGS_RETRIES
+        progress         auto       built-in default
+        parallel_chunks  1          built-in default
+        stall_timeout    60s        built-in default
+
+        A built-in default is package-wide. An adapter may prefer its own for
+        its own calls; a value from any source above overrides both.
+
+        adapter overrides
+          ngwmn  concurrency  4  /home/u/.dataretrieval/config.toml [ngwmn]
     """
     out = sys.stdout if stream is None else stream
     try:
@@ -593,10 +601,14 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
             file=out,
         )
 
-    _show_adapter_overrides(out, cell)
+    _show_adapter_overrides(out, cell, {name: source for name, _value, source in rows})
 
 
-def _show_adapter_overrides(out: TextIO, cell: Callable[..., str]) -> None:
+def _show_adapter_overrides(
+    out: TextIO,
+    cell: Callable[[Callable[[], object]], str],
+    package_wide: Mapping[str, str],
+) -> None:
     """Print the adapter-scoped settings that differ from the rows above.
 
     Only settings actually overridden, and only adapters that override one: a
@@ -609,7 +621,11 @@ def _show_adapter_overrides(out: TextIO, cell: Callable[..., str]) -> None:
             if name not in ADAPTER_SETTINGS[adapter]:
                 continue
             scoped = cell(partial(_source_label, name, adapter))
-            if scoped == cell(partial(_source_label, name)):
+            # ``package_wide`` is what the rows above already resolved. Asking
+            # again would repeat the work once per adapter *and* consume the
+            # shared error-dedupe state, so a broken config's message could be
+            # collapsed here before the row that needs it prints.
+            if scoped == package_wide[name]:
                 continue  # inherited from the package-wide tier
             value = cell(partial(_DISPLAYS[name], adapter))
             overrides.append((adapter, name, value, scoped))
@@ -960,11 +976,9 @@ def _normalize_adapters(
     """
     out: dict[_ScopeKey, _SettingValue] = {}
     for keyword in unknown:
-        if keyword in SETTINGS:
-            raise ConfigurationError(
-                f"{keyword}= in configure() takes a value directly, not a "
-                f"table. Write configure({keyword}=...)."
-            )
+        # Every setting and every adapter is a named parameter, so anything
+        # reaching the catch-all is a name this module does not know -- most
+        # often a misspelled setting, which must not be quietly ignored.
         raise ConfigurationError(
             f"configure() got an unexpected keyword {keyword!r}. Settings are "
             f"passed directly ({', '.join(SETTINGS)}); a table is per-adapter "
@@ -1185,12 +1199,19 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
         if raw is not None and (raw.strip() or name in _BLANK_MEANS_SET):
             return raw, _env_source_label(env)
 
+    # One load serves both file tiers. Reading the file twice -- once for the
+    # adapter table, once for the top level -- cost a second stat on every
+    # adapter-scoped resolution, and the common case (no table for this
+    # adapter) is the one that paid it.
+    path = config_path()
+    parsed = _load_file(path)
+
     if scoped is not None:
-        from_adapter = _adapter_file_settings(scoped)
+        from_adapter = _adapter_file_settings(scoped, path, parsed)
         if name in from_adapter:
             return from_adapter[name]
 
-    from_file = _file_settings()
+    from_file = _file_settings(path, parsed)
     if name in from_file:
         return from_file[name]
 
@@ -1206,7 +1227,9 @@ def _active_profile() -> str | None:
     return env.strip() if env and env.strip() else None
 
 
-def _file_settings() -> Mapping[str, tuple[str, str]]:
+def _file_settings(
+    path: Path | None = None, parsed: _ParsedFile | None = None
+) -> Mapping[str, tuple[str, str]]:
     """File-sourced settings, each with a label naming exactly where it came from.
 
     A selected ``[profiles.<name>]`` table layers over the file's top-level
@@ -1220,8 +1243,10 @@ def _file_settings() -> Mapping[str, tuple[str, str]]:
     is ignored rather than failing every request from inside
     :func:`~dataretrieval.utils._default_headers`.
     """
-    path = config_path()
-    parsed = _load_file(path)
+    if path is None:
+        path = config_path()
+    if parsed is None:
+        parsed = _load_file(path)
     profile = _active_profile()
 
     # Settings resolve one at a time and lazily, so this runs once per setting
@@ -1275,7 +1300,9 @@ def _file_settings() -> Mapping[str, tuple[str, str]]:
     return result
 
 
-def _adapter_file_settings(adapter: str) -> Mapping[str, tuple[str, str]]:
+def _adapter_file_settings(
+    adapter: str, path: Path, parsed: _ParsedFile
+) -> Mapping[str, tuple[str, str]]:
     """The ``[<adapter>]`` table's settings, validated on first use.
 
     Kept separate from :func:`_file_settings` because it layers *above* it
@@ -1283,8 +1310,6 @@ def _adapter_file_settings(adapter: str) -> Mapping[str, tuple[str, str]]:
     value outranks the top-level one, and a profile's does not reach in here at
     all -- a profile names a whole configuration, not one adapter's slice.
     """
-    path = config_path()
-    parsed = _load_file(path)
     table = parsed.adapters.get(adapter)
     if not table:
         return {}
@@ -1480,7 +1505,7 @@ def _scalars(
                 f"{path}: unknown setting {key!r} at {where} (ignored). "
                 f"Known settings: {', '.join(SETTINGS)}.",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=_WARN_STACKLEVEL,
             )
             continue
         if key == "parallel_chunks" and where == _TOP_LEVEL:
