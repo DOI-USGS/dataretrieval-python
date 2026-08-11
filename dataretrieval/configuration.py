@@ -219,7 +219,16 @@ _ScopeKey = str | tuple[str, str]
 # same frame. Merged, an outer ``configure(WaterdataConfiguration(...))`` would
 # beat an inner ``configure(Configuration(concurrency=1))`` -- inverting
 # nesting, and silently discarding the per-call ``parallel_chunks(n)`` block.
-_Frame = Mapping[_ScopeKey, _SettingValue]
+#
+# Each entry pairs the raw value with the label naming where it came from, the
+# same shape the file tier returns (:func:`_adapter_file_settings`). The label
+# is built while the configuration object is still in hand, because that is the
+# only place the *profile* is known: a value from
+# ``WaterdataConfiguration.load("bulk")`` and one from
+# ``WaterdataConfiguration(...)`` are indistinguishable by the time they reach
+# the frame, so a label rebuilt at resolution time could only ever say
+# "some block", never which profile.
+_Frame = Mapping[_ScopeKey, tuple[_SettingValue, str]]
 _scope: ContextVar[tuple[_Frame, ...]] = ContextVar(
     "dataretrieval_configuration", default=()
 )
@@ -316,6 +325,18 @@ class BaseConfiguration:
     #: every call site and stops the roster being spelled twice.
     adapter: ClassVar[str | None] = None
 
+    #: The named profile these settings were read from, or ``None`` for a
+    #: configuration written in code. Provenance rather than a setting: it
+    #: records *where the values came from*, which is what lets
+    #: :func:`show_configuration` name the profile that supplied each value
+    #: instead of reporting every block alike.
+    #:
+    #: A ``ClassVar`` shadowed per instance by :meth:`load`, so it is neither a
+    #: field nor part of equality -- two configurations carrying the same
+    #: settings stay interchangeable however each was spelled, which is what
+    #: "a configuration is a value" means.
+    profile: ClassVar[str | None] = None
+
     def __post_init__(self) -> None:
         for name, value in self.values().items():
             if value is not None:
@@ -372,7 +393,8 @@ class BaseConfiguration:
         Returns
         -------
         BaseConfiguration
-            An instance of the class it was called on.
+            An instance of the class it was called on, remembering the profile
+            it was read from so :func:`show_configuration` can name it.
         """
         adapter = cls.adapter
         if adapter is None:
@@ -381,11 +403,33 @@ class BaseConfiguration:
                 "the package-wide configuration has none. Put shared keys at "
                 "the top level of the file."
             )
-        return cls(**_named_profile(adapter, profile, cls.settings()))
+        loaded = cls(**_named_profile(adapter, profile, cls.settings()))
+        # The class is frozen, so the provenance goes on the same way the
+        # dataclass sets its own fields. It is deliberately not one of them:
+        # the profile name is where these values came from, not one of the
+        # values, and :meth:`settings` is built from the fields.
+        object.__setattr__(loaded, "profile", profile)
+        return loaded
 
     def _source(self, name: str) -> str:
         """How one of this configuration's settings is named in an error."""
         return f"{name}= in {type(self).__name__}()"
+
+    def _provenance(self) -> str:
+        """How :func:`show_configuration` reports a value this supplied.
+
+        The profile is named in the file's own spelling -- ``[waterdata.bulk]``
+        -- so the report answers "which profile set this?" rather than only
+        "a block did", and the answer is greppable in the file that holds it.
+        A configuration written in code has no profile, so it names its adapter
+        alone; the package-wide one narrows to nothing and names neither.
+        """
+        if self.adapter is None:
+            return "configure() block"
+        scope = self.adapter
+        if self.profile is not None:
+            scope = f"{scope}.{self.profile}"
+        return f"configure() block [{scope}]"
 
 
 @dataclass(frozen=True)
@@ -580,8 +624,11 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
     of error messages; they were already checked when each configuration was
     constructed, so nothing new can fail at this point except the two
     call-shaped mistakes below.
+
+    Each value is stored with the label naming the configuration it came from,
+    because this is the last point where that is known -- see :data:`_Frame`.
     """
-    overrides: dict[_ScopeKey, _SettingValue] = {}
+    overrides: dict[_ScopeKey, tuple[_SettingValue, str]] = {}
     seen: set[str | None] = set()
     for configuration in configurations:
         if not isinstance(configuration, BaseConfiguration):
@@ -599,21 +646,25 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
                 "between them would be undefined, so combine them into one."
             )
         seen.add(adapter)
+        label = configuration._provenance()
         for name, value in configuration.values().items():
             key: _ScopeKey = name if adapter is None else (adapter, name)
-            overrides[key] = (
+            raw = (
                 None
                 if value is None
                 else _validated_raw(name, value, configuration._source(name))
             )
+            overrides[key] = (raw, label)
     return overrides
 
 
 def show_configuration(*, stream: TextIO | None = None) -> None:
     """Print the effective configuration and the source of each setting.
 
-    A debugging aid for "why is this using my old key?". The API key is never
-    printed -- only whether one is set and where it came from.
+    A debugging aid for "why is this using my old key?". Every value is
+    reported with the source that supplied it, named exactly: which variable,
+    which table of the file, and -- when a caller selected one -- which
+    profile. The API key is never printed, only whether one is set.
 
     Parameters
     ----------
@@ -622,25 +673,34 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
 
     Examples
     --------
+    The sample below is generated by running this function, not written by
+    hand; ``test_show_configuration_sample_output_is_current`` re-runs it and
+    fails if the two drift apart.
+
     .. code-block:: text
 
-        >>> dataretrieval.show_configuration()
+        >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        ...     dataretrieval.show_configuration()
         config file  /home/u/.dataretrieval/config.toml (found)
-        api_key          <set>      /home/u/.dataretrieval/config.toml
-        concurrency      32         built-in default
-        retries          8          $API_USGS_RETRIES
-        progress         auto       built-in default
-        parallel_chunks  1          built-in default
-        stall_timeout    60s        built-in default
+        api_key          <set>  /home/u/.dataretrieval/config.toml
+        concurrency      16     /home/u/.dataretrieval/config.toml
+        retries          8      $API_USGS_RETRIES
+        progress         auto   built-in default
+        parallel_chunks  1      built-in default
+        stall_timeout    60s    built-in default
 
         A built-in default is package-wide. An adapter may prefer its own for
         its own calls; a value from any source above overrides both.
 
         adapter overrides
-          ngwmn  concurrency  4  /home/u/.dataretrieval/config.toml [ngwmn]
+          waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+          ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-        not reported: nldi (not imported, so the settings each accepts are
-        unknown here)
+        profiles in the file: [waterdata.bulk]
+          A profile applies only where a row above names it; select one in
+          code with <Adapter>Configuration.load("<name>").
+
+        not reported: nldi (not imported, so the settings each accepts are unknown here)
     """
     out = sys.stdout if stream is None else stream
     try:
@@ -674,9 +734,13 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
 
     # Probing the file once here means a whole-file problem -- unparseable
     # TOML, a bad value at the top level -- is reported on the file row rather
-    # than repeated in every setting's row below.
+    # than repeated in every setting's row below. The parsed form is kept for
+    # the profile section, which asks what the file *defines* rather than what
+    # resolved; an unparseable file defines nothing, and has already said so
+    # here.
+    parsed = _NO_FILE
     try:
-        _current_file()
+        _, parsed = _current_file()
         status = "found" if path.exists() else "not found"
     except ConfigurationError as exc:
         reported = str(exc)
@@ -705,6 +769,8 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         )
 
     _show_adapter_overrides(out, cell, {name: source for name, _value, source in rows})
+    _show_profiles(out, parsed)
+    _show_unimported_adapters(out)
 
 
 def _show_adapter_overrides(
@@ -718,17 +784,18 @@ def _show_adapter_overrides(
     full adapter-by-setting grid would be mostly inherited values, burying the
     answer to "what will this call use" under the rows that change nothing.
 
-    An adapter this process has not imported is *named* rather than skipped.
-    Its settings are unknown here (:func:`settings_for` returns ``None``), so
-    the honest report is that it was not covered -- omitting it silently would
-    read as "nothing configured for it", which is a different claim.
+    Each row names its source exactly, which for a selected profile is the
+    profile: ``configure() block [waterdata.bulk]`` rather than a bare block,
+    so the report answers *which* profile put that value there.
+
+    An adapter this process has not imported has no vocabulary to resolve
+    against, so it is skipped here and named by
+    :func:`_show_unimported_adapters` instead.
     """
     overrides: list[tuple[str, str, str, str]] = []
-    unknown: list[str] = []
     for adapter in ADAPTERS:
         accepted = settings_for(adapter)
         if accepted is None:
-            unknown.append(adapter)
             continue
         for name in _ALL_SETTINGS:
             if name not in accepted:
@@ -757,9 +824,50 @@ def _show_adapter_overrides(
                 file=out,
             )
 
-    if unknown:
+
+def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
+    """Print the named profiles the file defines, selected or not.
+
+    A named profile does nothing until a caller selects it, and that is the
+    thing readers of a configuration file get wrong: adding
+    ``[waterdata.bulk]`` changes no run on its own. A report that mentioned a
+    profile only when one had been selected would leave that silence with
+    nothing to explain it -- the file would look ignored.
+
+    Names come from the parsed file, so an unimported adapter's profiles are
+    listed too. What such a profile *means* is what needs the import; what it
+    is called is a fact about the file, and withholding it here would make the
+    section's answer depend on which optional extras happened to be installed.
+    """
+    defined = [
+        f"[{adapter}.{name}]"
+        for adapter in ADAPTERS
+        for name in sorted(_named_profiles(parsed, adapter))
+    ]
+    if not defined:
+        return
+    print(f"\nprofiles in the file: {', '.join(defined)}", file=out)
+    print(
+        "  A profile applies only where a row above names it; select one in\n"
+        '  code with <Adapter>Configuration.load("<name>").',
+        file=out,
+    )
+
+
+def _show_unimported_adapters(out: TextIO) -> None:
+    """Name the adapters this process cannot report on, and say why.
+
+    An adapter is only known to accept a setting once the module declaring that
+    vocabulary has been imported, and NLDI is deliberately imported on demand
+    for the geopandas extra. So the rows above cannot cover it. Omitting it
+    silently would read as "nothing is configured for nldi", which is a
+    different claim and the wrong one -- this is the honest cost of validating
+    an adapter's keys lazily (ADR 0011).
+    """
+    unimported = [a for a in ADAPTERS if settings_for(a) is None]
+    if unimported:
         print(
-            f"\nnot reported: {', '.join(unknown)} "
+            f"\nnot reported: {', '.join(unimported)} "
             "(not imported, so the settings each accepts are unknown here)",
             file=out,
         )
@@ -1261,12 +1369,14 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
 
     # Innermost block first: a value set by a nested block wins over both
     # scopes of an enclosing one. Within one block the adapter-scoped value is
-    # the more specific of the two, so it is asked first.
+    # the more specific of the two, so it is asked first. Each entry already
+    # carries its own label, which is what keeps the profile a value came from
+    # reportable (:data:`_Frame`).
     for frame in reversed(_scope.get()):
         if scoped is not None and (scoped, name) in frame:
-            return frame[(scoped, name)], f"configure() block [{scoped}]"
+            return frame[(scoped, name)]
         if name in frame:
-            return frame[name], "configure() block"
+            return frame[name]
 
     # No per-adapter environment variables: seven adapters times four settings
     # is a namespace nobody can hold in mind, and an exported variable is
@@ -1306,6 +1416,27 @@ def _accepts(adapter: str, name: str) -> bool:
     return name in _ALL_SETTINGS if accepted is None else name in accepted
 
 
+def _named_profiles(parsed: _ParsedFile, adapter: str) -> dict[str, dict[str, Any]]:
+    """The named profiles the file defines for *adapter*, by name.
+
+    A sub-table of an adapter's table is a named profile: ``[waterdata.bulk]``
+    parses as a sub-table of ``[waterdata]``, and everything else in that table
+    is a setting of the adapter's default profile. The two readers of that rule
+    -- selecting a profile and reporting which ones exist -- share this one
+    definition so they cannot come to disagree about what a profile is.
+
+    Tables are returned raw, since an adapter this process has not imported has
+    no vocabulary to check them against. That is enough to *name* a profile,
+    which is all the report needs; reading one still goes through
+    :func:`_named_profile`.
+    """
+    return {
+        name: table
+        for name, table in parsed.adapters.get(adapter, {}).items()
+        if isinstance(table, dict)
+    }
+
+
 def _named_profile(
     adapter: str, profile: str, allowed: frozenset[str]
 ) -> dict[str, Any]:
@@ -1319,11 +1450,7 @@ def _named_profile(
     field of which class ended up holding it.
     """
     path, parsed = _current_file()
-    named = {
-        name: table
-        for name, table in parsed.adapters.get(adapter, {}).items()
-        if isinstance(table, dict)
-    }
+    named = _named_profiles(parsed, adapter)
     if profile not in named:
         if not parsed.exists:
             raise ConfigurationError(

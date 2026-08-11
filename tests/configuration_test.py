@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import io
 import os
+import pathlib
 import re
+import textwrap
 import threading
 from dataclasses import dataclass
 from typing import ClassVar
@@ -1655,3 +1658,236 @@ def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
     assert isinstance(loaded, WaterdataConfiguration)
     assert loaded.values() == {"concurrency": "unbounded", "parallel_chunks": 8}
     assert loaded.retries is configuration._UNSET
+
+
+# --- show_configuration() reports profiles --------------------------------
+#
+# The report exists to answer "why is this call using that value?", so every
+# row names the source that supplied it. A value from a profile is the case a
+# bare "configure() block" answers badly: a configuration written in code and
+# one loaded from a table reach the chain by the same route, and only the
+# latter has a name in a file the caller can go and read.
+
+#: The file the documented sample is generated from. Exercises every section:
+#: package-wide keys, an adapter's default profile, and a named profile.
+_SAMPLE_FILE = (
+    'api_key = "0123456789abcdef"\n'
+    "concurrency = 16\n"
+    "\n[ngwmn]\n"
+    "concurrency = 4\n"
+    "\n[waterdata.bulk]\n"
+    "parallel_chunks = 8\n"
+)
+
+#: The illustrative path the samples print, standing in for the temporary file
+#: the test actually writes. Substituting it is the *only* edit made to the
+#: captured output -- everything else has to match what the function printed.
+_SAMPLE_PATH = "/home/u/.dataretrieval/config.toml"
+
+#: The two lines above the captured output in both samples.
+_SAMPLE_PROMPT = (
+    '>>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):\n'
+    "...     dataretrieval.show_configuration()"
+)
+
+
+def _documented_sample() -> str:
+    """The sample output embedded in ``show_configuration``'s docstring."""
+    doc = inspect.getdoc(dataretrieval.show_configuration) or ""
+    _, _, block = doc.partition(".. code-block:: text\n\n")
+    return textwrap.dedent(block).strip("\n")
+
+
+def test_show_configuration_names_the_profile_a_value_came_from(config_file):
+    """A value from a profile is reported with that profile, not with "a block".
+
+    ``WaterdataConfiguration.load("bulk")`` and ``WaterdataConfiguration(...)``
+    enter the chain by the same route and are indistinguishable once their
+    values are in the block, so a report that said only ``configure() block``
+    left a caller who selected the wrong profile -- or who had forgotten a
+    profile was selected at all -- with nothing to look at. The label is the
+    table's own spelling, so it is greppable in the file that defines it.
+    """
+    config_file("[waterdata.bulk]\nconcurrency = 6\n")
+    out = io.StringIO()
+
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        dataretrieval.show_configuration(stream=out)
+
+    assert "configure() block [waterdata.bulk]" in out.getvalue()
+
+    # A configuration written in code has no profile to name, so it names its
+    # adapter alone rather than inventing one -- and the package-wide one
+    # narrows to nothing, so it names neither.
+    out = io.StringIO()
+    with dataretrieval.configure(
+        WaterdataConfiguration(concurrency=6), Configuration(retries=3)
+    ):
+        dataretrieval.show_configuration(stream=out)
+    text = out.getvalue()
+
+    assert "configure() block [waterdata]" in text
+    # The file still *defines* the profile, so it is still listed as available;
+    # what must not happen is a value being attributed to it.
+    assert "configure() block [waterdata.bulk]" not in text
+    retries_row = next(line for line in text.splitlines() if line.startswith("retries"))
+    assert retries_row.endswith("configure() block")
+
+
+def test_a_loaded_profile_remembers_its_name_without_becoming_a_setting(config_file):
+    """The profile name is provenance, so it is not a field and not a value.
+
+    Keeping it off the fields is what stops it reaching :meth:`settings`, the
+    ``configure()`` frame, and equality: two configurations carrying the same
+    settings stay interchangeable however each was spelled, which is what
+    makes a configuration a value rather than a record of how it was built.
+    """
+    config_file("[waterdata.bulk]\nconcurrency = 6\n")
+
+    loaded = WaterdataConfiguration.load("bulk")
+    written = WaterdataConfiguration(concurrency=6)
+
+    assert loaded.profile == "bulk"
+    assert written.profile is None
+    assert "profile" not in loaded.settings()
+    assert loaded == written
+
+
+def test_show_configuration_lists_the_profiles_the_file_defines(
+    config_file, monkeypatch
+):
+    """A named profile is inert until selected, so the file's are listed too.
+
+    "I added ``[waterdata.bulk]`` and nothing changed" is the confusion this
+    section exists for: the profiles are there, and no row above names one
+    because no caller selected one. A report that mentioned a profile only
+    once it had been selected would leave that silence unexplained.
+
+    Names are read from the parsed file, so an adapter this process never
+    imported still has its profiles listed: what a table *means* needs the
+    import, what it is called does not, and hiding it would make the section
+    depend on which optional extras happened to be installed.
+    """
+    monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
+    config_file(
+        "[ngwmn]\nconcurrency = 4\n\n"
+        "[ngwmn.gentle]\nconcurrency = 2\n\n"
+        "[waterdata.bulk]\nparallel_chunks = 8\n\n"
+        "[nldi.gentle]\nretries = 1\n"
+    )
+    out = io.StringIO()
+
+    dataretrieval.show_configuration(stream=out)
+    text = out.getvalue()
+    listed = text.split("profiles in the file: ", 1)[1].splitlines()[0]
+
+    assert listed == "[waterdata.bulk], [ngwmn.gentle], [nldi.gentle]"
+    # The adapter's *default* profile is not a named one: it is always in
+    # effect and already shows up as a source, so listing it here is noise.
+    assert "[ngwmn]" not in listed
+    # Inert, and the report says so by never naming one as a source.
+    assert "configure() block" not in text
+
+
+def test_show_configuration_reports_an_unimported_adapter(config_file, monkeypatch):
+    """An adapter this process cannot report on is named, never omitted.
+
+    NLDI is imported on demand for the geopandas extra, so a process that has
+    not touched it cannot say which settings it accepts -- the honest cost of
+    validating an adapter's keys lazily (ADR 0011). Leaving it out of the
+    report would read as "nothing is configured for nldi", which is a
+    different claim from "this report could not check", and the caller cannot
+    tell which one they are looking at.
+    """
+    config_file("")
+    monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
+    out = io.StringIO()
+
+    dataretrieval.show_configuration(stream=out)
+    text = out.getvalue()
+
+    assert "not reported: nldi" in text
+    assert "not imported" in text
+    # An adapter that *was* imported is covered by the rows above, so it must
+    # not be named as uncoverable.
+    assert "waterdata" not in text.split("not reported:", 1)[1]
+
+    # The line is a statement about this process, not about nldi: once the
+    # module is imported its configuration registers and the caveat goes away.
+    @dataclass(frozen=True)
+    class _AsImported(configuration.BaseConfiguration):
+        adapter: ClassVar[str] = "nldi"
+
+        retries: int | None = configuration._UNSET
+
+    monkeypatch.setitem(configuration._REGISTRY, "nldi", _AsImported)
+    out = io.StringIO()
+    dataretrieval.show_configuration(stream=out)
+    assert "not reported" not in out.getvalue()
+
+
+def test_show_configuration_sample_output_is_current(config_file, monkeypatch):
+    """The documented samples are this function's real output, not a drawing.
+
+    Both had drifted from it -- the docstring wrapped a line the function
+    prints whole, the user guide had lost a paragraph -- because a sample kept
+    by hand is only ever as fresh as the last person who remembered it. So
+    the scenario is rebuilt here and the output compared verbatim; the only
+    edit is swapping the temporary path for the illustrative one.
+
+    Regenerate by running this test and copying the reported ``actual`` into
+    both places, never by editing them to taste.
+    """
+    path = config_file(_SAMPLE_FILE)
+    monkeypatch.setenv("API_USGS_RETRIES", "8")
+    # The sample shows the report a caller with the geopandas extra uninstalled
+    # sees; in this suite something has usually imported nldi already.
+    monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
+
+    out = io.StringIO()
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        dataretrieval.show_configuration(stream=out)
+    actual = out.getvalue().replace(str(path), _SAMPLE_PATH).strip("\n")
+
+    assert _documented_sample() == f"{_SAMPLE_PROMPT}\n{actual}"
+
+    # The user guide shows the same sample, indented into its code block, and
+    # goes stale the same way. Checked here rather than in a docs test because
+    # the thing that makes it stale is a change to this function's output.
+    guide = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "docs"
+        / "source"
+        / "userguide"
+        / "configuration.rst"
+    )
+    if not guide.exists():  # pragma: no cover - docs are absent from an sdist
+        pytest.skip("docs tree not present")
+    block = textwrap.indent(f"{_SAMPLE_PROMPT}\n{actual}", "   ")
+    assert block in guide.read_text(encoding="utf-8")
+
+
+def test_show_configuration_survives_a_malformed_profile(config_file):
+    """Explaining a broken configuration is the job, so nothing here validates.
+
+    The section lists what the file *defines*; a profile's keys are checked when a
+    caller selects it. So a profile holding a value that fails its grammar --
+    or the nested table a file migrated from the retired ``[profiles.<name>]``
+    layout still carries -- is reported rather than taking the report down
+    with it, which is the one moment a caller most needs it.
+    """
+    config_file(
+        '[waterdata.bulk]\nconcurrency = "nope"\n\n'
+        "[ngwmn.gentle]\n\n[ngwmn.gentle.nested]\nconcurrency = 2\n"
+    )
+    out = io.StringIO()
+
+    dataretrieval.show_configuration(stream=out)  # must not raise
+
+    listed = out.getvalue().split("profiles in the file: ", 1)[1].splitlines()[0]
+    assert listed == "[waterdata.bulk], [ngwmn.gentle]"
+    # Selecting one is where the grammar is checked, and it still is.
+    with pytest.raises(configuration.ConfigurationError, match="integer"):
+        WaterdataConfiguration.load("bulk")
+    with pytest.raises(configuration.ConfigurationError, match="contains a table"):
+        NgwmnConfiguration.load("gentle")

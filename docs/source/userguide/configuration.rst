@@ -347,33 +347,54 @@ Checking what is in effect
 --------------------------
 
 ``show_configuration()`` reports each setting's effective value and where it came
-from. It never prints the key itself:
+from. It never prints the key itself. The report below is what a file holding a
+key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
+``[waterdata.bulk]`` profile produces, with ``API_USGS_RETRIES`` exported and
+the ``bulk`` profile selected for the block:
 
 .. code-block:: python
 
-   >>> dataretrieval.show_configuration()
+   >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+   ...     dataretrieval.show_configuration()
    config file  /home/u/.dataretrieval/config.toml (found)
-   api_key          <set>       /home/u/.dataretrieval/config.toml
-   concurrency      32          built-in default
-   retries          8           $API_USGS_RETRIES
-   progress         auto        built-in default
-   parallel_chunks  1           built-in default
-   stall_timeout    60s         built-in default
+   api_key          <set>  /home/u/.dataretrieval/config.toml
+   concurrency      16     /home/u/.dataretrieval/config.toml
+   retries          8      $API_USGS_RETRIES
+   progress         auto   built-in default
+   parallel_chunks  1      built-in default
+   stall_timeout    60s    built-in default
+
+   A built-in default is package-wide. An adapter may prefer its own for
+   its own calls; a value from any source above overrides both.
 
    adapter overrides
-     ngwmn  concurrency  4  /home/u/.dataretrieval/config.toml [ngwmn]
+     waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+     ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-   not reported: nldi (not imported, so the settings each accepts are
-   unknown here)
+   profiles in the file: [waterdata.bulk]
+     A profile applies only where a row above names it; select one in
+     code with <Adapter>Configuration.load("<name>").
+
+   not reported: nldi (not imported, so the settings each accepts are unknown here)
 
 Each line names the exact source, including which table inside the file, which
-is usually enough to answer "why is it still using my old key?". Only settings
-actually overridden for an adapter get a row in the second section; everything
-else is inherited from the rows above it.
+is usually enough to answer "why is it still using my old key?". A value that
+came from a profile names the profile — ``configure() block
+[waterdata.bulk]``, not merely "a block" — so a report taken from inside a
+``with`` block says which selection produced it. Only settings actually
+overridden for an adapter get a row in the second section; everything else is
+inherited from the rows above it.
+
+The profile section lists what the *file* defines, whether or not this run
+selected any of it. A named profile does nothing until a caller selects it, so
+seeing ``[waterdata.bulk]`` there while no row above mentions it is the answer
+to "I added a profile and nothing changed".
 
 The last line is the honest cost of validating an adapter's settings lazily:
 ``dataretrieval`` cannot say what ``nldi`` accepts until something imports it,
-so it says that rather than quietly omitting the service.
+so it says that rather than quietly omitting the service. It is named rather
+than left out, because an omitted service would read as "nothing is configured
+for it", which is a different claim.
 
 It never raises. A malformed file or a value that fails its grammar is reported
 in place — on the ``config file`` line for a whole-file problem, or in that
