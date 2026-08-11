@@ -117,10 +117,11 @@ class TestDefaultHeadersHostScoping:
 
     def test_generic_ogc_request_excludes_key_for_custom_host(self):
         """A caller-supplied OGC base URL never inherits Water Data auth."""
-        from dataretrieval.ogc.requests import _construct_api_requests, _ogc_base_url
+        from dataretrieval.ogc.requests import _construct_api_requests
 
-        with _ogc_base_url("https://features.example.org/ogcapi"):
-            request = _construct_api_requests("things")
+        request = _construct_api_requests(
+            "things", base_url="https://features.example.org/ogcapi"
+        )
         assert "X-Api-Key" not in request.headers
 
     def test_rating_download_scopes_headers_to_asset_url(self):

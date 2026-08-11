@@ -1,5 +1,6 @@
 import copy
 import datetime
+import functools
 import json
 import re
 import warnings
@@ -12,13 +13,15 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
-from dataretrieval.ogc.context import _ogc_base_url
-from dataretrieval.ogc.engine import _dialect
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
-    _construct_api_requests,
-    _construct_cql_request,
     _normalize_str_iterable,
+)
+from dataretrieval.ogc.requests import (
+    _construct_api_requests as _construct_api_requests_explicit,
+)
+from dataretrieval.ogc.requests import (
+    _construct_cql_request as _construct_cql_request_explicit,
 )
 from dataretrieval.waterdata import (
     get_channel,
@@ -59,19 +62,18 @@ _OGC_FIXTURES = json.loads(
 )
 
 
-@pytest.fixture(autouse=True)
-def _activate_waterdata_dialect():
-    """Make the Water Data OGC base URL and dialect ambient for this module.
-
-    Both are normally set together by ``get_ogc_data`` per call: the base URL
-    (the OGC package names no collection of its own) and the dialect
-    (monitoring-locations -> POST/CQL2; daily -> date-only time args). The
-    direct ``_construct_api_requests``/``_construct_cql_request`` unit tests
-    here bypass that entry point, so activate both module-wide so they
-    exercise the real Water Data behavior.
-    """
-    with _ogc_base_url(OGC_API_URL), _dialect(WATERDATA_DIALECT):
-        yield
+# The direct request-construction unit tests below bypass ``get_ogc_data``,
+# which is what normally binds the Water Data base URL and dialect (the OGC
+# package names no collection of its own). Bind them here the same way the
+# engine does — explicitly, via ``functools.partial`` — so the tests exercise
+# the real Water Data behavior (monitoring-locations -> POST/CQL2; daily ->
+# date-only time args).
+_construct_api_requests = functools.partial(
+    _construct_api_requests_explicit, base_url=OGC_API_URL, dialect=WATERDATA_DIALECT
+)
+_construct_cql_request = functools.partial(
+    _construct_cql_request_explicit, base_url=OGC_API_URL
+)
 
 
 def mock_request(httpx_mock, request_url, file_path):

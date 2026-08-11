@@ -1,10 +1,11 @@
 """OGC argument normalization and HTTP request construction.
 
-Ambient request state lives in :mod:`dataretrieval.ogc.context`; queryables and
-schema execution live in :mod:`dataretrieval.ogc.schema`. Neither is re-exported
-from here -- importing the schema helper only to forward it would give this
-module an edge to the one part of OGC that executes HTTP, which is exactly what
-request *construction* is supposed to be free of.
+The API to target and its quirks are explicit parameters (``base_url``,
+``dialect``) -- construction states everything it needs. Queryables and schema
+execution live in :mod:`dataretrieval.ogc.schema`, not re-exported from here --
+importing the schema helper only to forward it would give this module an edge
+to the one part of OGC that executes HTTP, which is exactly what request
+*construction* is supposed to be free of.
 """
 
 from __future__ import annotations
@@ -16,9 +17,8 @@ from typing import Any
 
 import httpx
 
-from dataretrieval.ogc.context import _dialect as _dialect
-from dataretrieval.ogc.context import _ogc_base_url as _ogc_base_url
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.transport.http import default_headers as _default_headers
 
 # ---------------------------------------------------------------------------
@@ -120,9 +120,9 @@ def _partition_request_params(
     return get_params, {}
 
 
-def _items_url(collection: str) -> str:
-    """The OGC items endpoint for ``collection`` under the active base URL."""
-    return f"{_ogc_base_url.get()}/collections/{collection}/items"
+def _items_url(collection: str, base_url: str) -> str:
+    """The OGC items endpoint for ``collection`` under ``base_url``."""
+    return f"{base_url}/collections/{collection}/items"
 
 
 def _cql2_post_request(
@@ -146,11 +146,20 @@ def _construct_api_requests(
     bbox: list[float] | None = None,
     limit: int | None = None,
     skip_geometry: bool | None = None,
+    *,
+    base_url: str,
+    dialect: OgcDialect | None = None,
     **kwargs: Any,
 ) -> httpx.Request:
-    """Construct an HTTP request object for the specified OGC API collection."""
-    service_url = _items_url(collection)
-    dialect = _dialect.get()
+    """Construct an HTTP request object for the specified OGC API collection.
+
+    ``base_url`` is required: this package is API-neutral and names no API of
+    its own, so the adapter naming the collection states the API it targets.
+    ``dialect`` defaults to a plain OGC API with no per-collection quirks.
+    """
+    service_url = _items_url(collection, base_url)
+    if dialect is None:
+        dialect = DEFAULT_DIALECT
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
             kwargs[key] = _format_api_dates(
@@ -190,13 +199,18 @@ def _construct_cql_request(
     collection: str,
     cql_body: str,
     *,
+    base_url: str,
     properties: list[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     skip_geometry: bool | None = None,
 ) -> httpx.Request:
-    """Build a POST/CQL2 request from a verbatim CQL2 body."""
-    service_url = _items_url(collection)
+    """Build a POST/CQL2 request from a verbatim CQL2 body.
+
+    ``base_url`` is required for the same reason as in
+    :func:`_construct_api_requests`.
+    """
+    service_url = _items_url(collection, base_url)
     params = _ogc_query_params(
         {},
         properties=properties,
