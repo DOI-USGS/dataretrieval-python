@@ -111,10 +111,19 @@ elapsed time, and the response headers. Describes the *retrieval*, not the data.
 
 ## Configuration
 
-**Configuration** — The resolved set of settings a call will use. The word is
-spelled in full for the concept, and as the verb **configure** for the action of
-applying one. ``config`` is the abbreviation, reserved for the module and the
-file — a name containing it should refer to one of those, not to the concept.
+**Configuration profile** — A named set of settings for one adapter, stored in
+the configuration file or built in code. **Configuration** is the short form.
+A profile is an *input* to resolution, never its result.
+
+**Default profile** — The profile an adapter uses when no other is selected:
+the `[<adapter>]` table's own keys. Always in effect. A **named profile**
+(`[<adapter>.bulk]`) is in effect only when a caller selects it, so adding one
+to a file never changes an existing script.
+
+**Effective configuration** — The resolved set of settings a call will use:
+what the chain produces after every profile, variable and default has been
+applied. Distinct from a configuration profile, which is one contribution to
+it. **Configure** is the verb for applying one.
 
 **Setting** — One named tunable the caller may adjust: the API key, the
 concurrency cap, the retry count, the progress line, the fan-out baseline. A
@@ -142,9 +151,9 @@ adapter-scoped.
 order is resolved per setting rather than per source: a value supplied for one
 setting does not displace another setting's value from a lower source.
 
-**Profile** — A named group of setting values that can be selected as a unit,
-so a caller switches between whole configurations rather than restating each
-value.
+**Selection** — Naming which profile an adapter should use. Done in code; a
+profile is never selected by the environment or implied by the file, so the
+set of profiles in a file is inert until something asks for one.
 
 **Built-in default** — The value a setting takes when no source supplies one.
 Package-wide.
