@@ -85,7 +85,7 @@ from dataretrieval.waterdata import WaterdataConfiguration
 
 with dataretrieval.configure(
     WaterdataConfiguration.load("overnight"),  # a profile in config.toml
-    NgwmnConfiguration(concurrency=2),         # built here
+    NgwmnConfiguration(concurrency=2),  # built here
 ):
     ...
 ```
