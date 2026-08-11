@@ -194,6 +194,12 @@ otherwise: an adapter-scoped value outranks a package-wide one only within the
 same source, so ``API_USGS_CONCURRENT`` exported for one run still beats a
 ``[ngwmn] concurrency`` in the file.
 
+Between ``configure`` blocks that tie-break applies per block: an adapter
+table beats a package-wide value set by the *same* block, while anything set
+by a block nested inside it wins over both. So a ``configure(concurrency=1)``
+can still throttle a call an enclosing block had scoped to one adapter, and
+the innermost block decides.
+
 Each adapter accepts only the settings it reads. ``concurrency`` and
 ``parallel_chunks`` are meaningless to an adapter that issues a single request,
 so ``[streamstats] parallel_chunks = 8`` is an error rather than a line that

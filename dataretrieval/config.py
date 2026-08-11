@@ -32,9 +32,9 @@ an adapter table outranks a package-wide value set by the same ``configure``
 call, while a value set by a block nested inside it wins over both, so the
 innermost block still decides. Which settings an adapter accepts is its own
 vocabulary -- ``concurrency`` means nothing to an adapter that issues one
-request -- and is
-declared by the ``TypedDict`` schemas below. The API key is not among them: it
-belongs to the gateway fronting a host, which Water Data and NGWMN share.
+request -- and is declared by the ``TypedDict`` schemas below. The API key is
+not among them: it belongs to the gateway fronting a host, which Water Data
+and NGWMN share.
 
 This module is a leaf: it imports only the standard library plus the Python 3.10
 ``tomli`` backport, so any module can depend on it without an import cycle or
@@ -283,10 +283,9 @@ _ScopeKey = str | tuple[str, str]
 # written at the same depth. Without it, an outer ``configure(waterdata=...)``
 # would beat an inner ``configure(concurrency=1)`` -- inverting nesting, and
 # silently discarding the per-call ``parallel_chunks(n)`` block.
-_ScopeEntry = tuple[_SettingValue, int]
-_NO_OVERRIDES: Mapping[_ScopeKey, _ScopeEntry] = MappingProxyType({})
-_scope: ContextVar[Mapping[_ScopeKey, _ScopeEntry]] = ContextVar(
-    "dataretrieval_configuration", default=_NO_OVERRIDES
+_Frame = Mapping[_ScopeKey, _SettingValue]
+_scope: ContextVar[tuple[_Frame, ...]] = ContextVar(
+    "dataretrieval_configuration", default=()
 )
 
 # Resolved config-file path, memoized on the raw ``DATARETRIEVAL_CONFIG``
@@ -431,12 +430,10 @@ def configure(
         *this* block outranks a package-wide value set by the same block; a
         value set by a block nested inside this one still wins over both.
 
-        ``api_key`` is not among them: it authenticates to the gateway
-        fronting a host, and Water Data and NGWMN share one host, one key and
-        one quota. ``progress`` likewise stays package-wide -- there is one
-        progress line per call. The deprecated ``nwis`` has no table, because
-        its calls do not retry and the setting could only be reported as live
-        and then ignored. See ADR 0010.
+        ``api_key`` and ``progress`` are not among them, and the deprecated
+        ``nwis`` has no table at all -- its calls do not retry, so a setting
+        could only be reported as live and then ignored. See ADR 0010 for why
+        each is excluded.
 
     Yields
     ------
@@ -488,20 +485,14 @@ def configure(
     # The selected profile rides in the same mapping as the settings, so
     # nesting and per-key inheritance fall out of one merge. ``_PROFILE_KEY``
     # is not in ``SETTINGS``, so it is never resolved as one.
-    outer = _scope.get()
-    depth = max((d for _value, d in outer.values()), default=0) + 1
-    merged: dict[_ScopeKey, _ScopeEntry] = {
-        **outer,
-        **{key: (value, depth) for key, value in overrides.items()},
-    }
     if profile is not _UNSET:
-        merged[_PROFILE_KEY] = (_normalize_profile(profile), depth)
-    token = _scope.set(merged)
+        overrides[_PROFILE_KEY] = _normalize_profile(profile)
+    token = _scope.set((*_scope.get(), overrides))
     try:
         # An explicitly selected profile is a value supplied to this block, so
         # validate its existence on entry rather than on a later request.
         if profile is not _UNSET and profile is not None:
-            _file_settings()
+            _file_settings(*_current_file())
         yield
     finally:
         _scope.reset(token)
@@ -572,7 +563,7 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
     # which ``_file_settings`` raises, not ``_load_file`` -- is also reported
     # here rather than in all five rows.
     try:
-        _file_settings()
+        _file_settings(*_current_file())
         status = "found" if path.exists() else "not found"
     except ConfigurationError as exc:
         reported = str(exc)
@@ -975,14 +966,15 @@ def _normalize_adapters(
     second.
     """
     out: dict[_ScopeKey, _SettingValue] = {}
-    for keyword in unknown:
+    if unknown:
         # Every setting and every adapter is a named parameter, so anything
         # reaching the catch-all is a name this module does not know -- most
-        # often a misspelled setting, which must not be quietly ignored.
+        # often a misspelled setting, which must not be quietly ignored. Only
+        # the first is named: the rest are usually the same mistake repeated.
         raise ConfigurationError(
-            f"configure() got an unexpected keyword {keyword!r}. Settings are "
-            f"passed directly ({', '.join(SETTINGS)}); a table is per-adapter "
-            f"({', '.join(ADAPTERS)})."
+            f"configure() got an unexpected keyword {next(iter(unknown))!r}. "
+            f"Settings are passed directly ({', '.join(SETTINGS)}); a table is "
+            f"per-adapter ({', '.join(ADAPTERS)})."
         )
     for adapter, table in adapters.items():
         if not isinstance(table, Mapping):
@@ -1175,20 +1167,14 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
         adapter if adapter is not None and name in ADAPTER_SETTINGS[adapter] else None
     )
 
-    scope = _scope.get()
-    from_adapter_block = scope.get((scoped, name)) if scoped is not None else None
-    from_package_block = scope.get(name)
-    if from_adapter_block is not None and (
-        # Same depth means one block named both; the adapter-scoped value is
-        # the more specific of the two. A *deeper* package-wide value was
-        # written by an inner block and wins, which is what makes a nested
-        # ``configure(concurrency=1)`` able to throttle a call an outer block
-        # had scoped to that adapter.
-        from_package_block is None or from_adapter_block[1] >= from_package_block[1]
-    ):
-        return from_adapter_block[0], f"configure() block [{scoped}]"
-    if from_package_block is not None:
-        return from_package_block[0], "configure() block"
+    # Innermost block first: a value set by a nested block wins over both
+    # scopes of an enclosing one. Within one block the adapter-scoped value is
+    # the more specific of the two, so it is asked first.
+    for frame in reversed(_scope.get()):
+        if scoped is not None and (scoped, name) in frame:
+            return frame[(scoped, name)], f"configure() block [{scoped}]"
+        if name in frame:
+            return frame[name], "configure() block"
 
     # No per-adapter environment variables: seven adapters times four settings
     # is a namespace nobody can hold in mind, and an exported variable is
@@ -1203,8 +1189,7 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
     # adapter table, once for the top level -- cost a second stat on every
     # adapter-scoped resolution, and the common case (no table for this
     # adapter) is the one that paid it.
-    path = config_path()
-    parsed = _load_file(path)
+    path, parsed = _current_file()
 
     if scoped is not None:
         from_adapter = _adapter_file_settings(scoped, path, parsed)
@@ -1220,16 +1205,26 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
 
 def _active_profile() -> str | None:
     """The selected profile name: a :func:`configure` block wins over the env."""
-    scope = _scope.get()
-    if _PROFILE_KEY in scope:
-        return scope[_PROFILE_KEY][0]
+    for frame in reversed(_scope.get()):
+        if _PROFILE_KEY in frame:
+            return frame[_PROFILE_KEY]
     env = os.environ.get(PROFILE_ENV)
     return env.strip() if env and env.strip() else None
 
 
-def _file_settings(
-    path: Path | None = None, parsed: _ParsedFile | None = None
-) -> Mapping[str, tuple[str, str]]:
+def _current_file() -> tuple[Path, _ParsedFile]:
+    """The config file as currently loaded: its path and its parsed form.
+
+    One helper so the two always travel together. They are a single fact, and
+    handing the top-level tier a different ``_ParsedFile`` than the adapter
+    tier saw in the same resolution is exactly the drift that made an
+    adapter-scoped read load the file twice.
+    """
+    path = config_path()
+    return path, _load_file(path)
+
+
+def _file_settings(path: Path, parsed: _ParsedFile) -> Mapping[str, tuple[str, str]]:
     """File-sourced settings, each with a label naming exactly where it came from.
 
     A selected ``[profiles.<name>]`` table layers over the file's top-level
@@ -1243,10 +1238,6 @@ def _file_settings(
     is ignored rather than failing every request from inside
     :func:`~dataretrieval.utils._default_headers`.
     """
-    if path is None:
-        path = config_path()
-    if parsed is None:
-        parsed = _load_file(path)
     profile = _active_profile()
 
     # Settings resolve one at a time and lazily, so this runs once per setting
@@ -1278,7 +1269,9 @@ def _file_settings(
         # DATARETRIEVAL_PROFILE export is then ignored rather than failing every
         # request -- but a name the caller just typed into configure() is a typo
         # worth reporting at the ``with``, which is what its docstring promises.
-        if not parsed.exists and _PROFILE_KEY not in _scope.get():
+        if not parsed.exists and not any(
+            _PROFILE_KEY in frame for frame in _scope.get()
+        ):
             # Not memoized: this depends on the active scope, not on the file.
             return MappingProxyType(merged)
         if not parsed.exists:
