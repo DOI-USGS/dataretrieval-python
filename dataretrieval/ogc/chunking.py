@@ -24,8 +24,9 @@ the query out into ``n`` parallel chunks. ``n`` drives
 :meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.
 
 Concurrency, retries, and interruption semantics are documented on
-:mod:`dataretrieval.transport.fanout`; ``API_USGS_CONCURRENT`` and
-``API_USGS_RETRIES`` are read there.
+:mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``
+settings are resolved there, through the chain in
+:mod:`dataretrieval.config`.
 
 Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 ``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,
@@ -124,9 +125,9 @@ def parallel_chunks(n: int) -> Iterator[None]:
         Each chunk fetches at least one page, so it costs at least one
         request against your hourly rate limit — a larger ``n`` spends more
         quota. How many chunks run *at once* is capped separately by
-        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds
-        quota without adding parallelism; the useful range is roughly ``2``
-        up to ``API_USGS_CONCURRENT``.
+        the ``concurrency`` setting (default 32), so an ``n`` beyond that
+        adds quota without adding parallelism; the useful range is roughly
+        ``2`` up to the effective ``concurrency``.
 
     Yields
     ------

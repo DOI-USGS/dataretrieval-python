@@ -27,9 +27,11 @@ Concurrency: :meth:`FanOut._run` dispatches every pending chunk under one
 ``asyncio.Semaphore`` -- not the client's connection pool, which is merely sized
 to match -- caps the chunks in flight at ``N``; see :meth:`FanOut._run`
 for why the gate must be the semaphore rather than the pool.
-``API_USGS_CONCURRENT`` resolves ``N``: an integer N > 1 allows N chunks
-in flight; ``1`` forces sequential dispatch; the literal ``unbounded`` lifts the
-cap. ``N`` bounds only how many of a query's chunks are in flight at once
+The ``concurrency`` setting resolves ``N`` -- a ``configure()`` block, then
+``API_USGS_CONCURRENT``, then the config file, and per adapter as well as
+package-wide: an integer N > 1 allows N chunks in flight; ``1`` forces
+sequential dispatch; the literal ``unbounded`` lifts the cap. ``N`` bounds only
+how many of a query's chunks are in flight at once
 -- a client-side trade-off between open connections and fan-out latency. It does
 not affect the API rate limit: a fanned-out call issues the same number of
 chunks regardless of ``N``, so ``N`` changes their timing, not the total
@@ -41,9 +43,10 @@ not the caller is already inside an event loop (Jupyter / IPython / async apps).
 
 Retries: each chunk is retried on a transient failure (429, 5xx,
 connect/read timeout) with exponential backoff + full jitter, honoring a server
-``Retry-After`` when present. ``API_USGS_RETRIES`` sets the cap (default 4;
-``0`` disables). A ``Retry-After`` longer than the per-call ceiling escalates to
-a resumable interruption.
+``Retry-After`` when present. The ``retries`` setting caps them (default 4;
+``0`` disables), resolved through the same chain and scopable per adapter. A
+``Retry-After`` longer than the per-call ceiling escalates to a resumable
+interruption.
 
 Interruption: any mid-stream transient failure surfaces as a
 :class:`~dataretrieval.interruptions.FanOutInterrupted` subclass carrying
@@ -236,8 +239,8 @@ class FanOut(Generic[_Chunk]):
         Extra ``httpx.AsyncClient`` options for the shared client this run
         opens (e.g. ``{"verify": False}``).
     default_concurrent : int, optional
-        This service's preferred in-flight cap when ``API_USGS_CONCURRENT``
-        is unset. Defaults to 32.
+        This adapter's preferred in-flight cap for when nothing is
+        configured. Any resolved ``concurrency`` outranks it. Defaults to 32.
     canonical_url : str or None, optional
         URL identifying the query as a whole, restored onto the combined
         response so the caller sees the request they made rather than
