@@ -7,9 +7,13 @@ that happen to need them is how a credential reaches a host nobody authorized:
 the code that attaches a key and the code that removes it have to agree, and the
 only way to guarantee they agree is to have them read the same predicate.
 
-This is deliberately a leaf. It sits below HTTP mechanics (which attaches the
-header) and below progress reporting (which tells an unauthenticated caller where
-to register), so neither has to depend on the other to learn the same fact.
+This sits below HTTP mechanics (which attaches the header) and below progress
+reporting (which tells an unauthenticated caller where to register), so neither
+has to depend on the other to learn the same fact. Its only first-party
+dependency is :mod:`dataretrieval.config`, which is itself a
+standard-library-only leaf and sits directly beneath this module in the layers
+contract -- it supplies the key's *value*, while the questions this module
+owns are which host may receive it and how it is withheld from every other.
 """
 
 from __future__ import annotations
@@ -89,10 +93,6 @@ def api_key() -> str | None:
     through :func:`dataretrieval.config.api_key`, so host scoping applies
     identically no matter which source supplied the key.
     """
-    # Imported lazily: this leaf is imported by transport, and config raises
-    # from this package's exception taxonomy.
-    from dataretrieval import config as _config
-
     return _config.api_key()
 
 
