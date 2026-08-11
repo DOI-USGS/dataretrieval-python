@@ -18,11 +18,13 @@ See https://api.waterdata.usgs.gov/ngwmn/ogcapi for the API reference.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
+from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 
@@ -30,6 +32,7 @@ if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
 
 __all__ = [
+    "NgwmnConfiguration",
     "get_sites",
     "get_water_level",
     "get_lithology",
@@ -429,3 +432,44 @@ def get_providers(
         ... )
     """
     return _get("providers", locals())
+
+
+@dataclass(frozen=True)
+class NgwmnConfiguration(BaseConfiguration):
+    """Settings for NGWMN calls alone.
+
+    NGWMN is a second OGC API on the Water Data host, so its queries
+    divide along the same URL byte budget and take the same two fan-out
+    dials. The API key is not among them: one gateway fronts both
+    adapters, so one key and one quota pool serve them (ADR 0010).
+
+    Lives here rather than in :mod:`dataretrieval.configuration` so a
+    setting's definition sits with the code that reads it (ADR 0011).
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Where to send this service's requests, instead of its own base.
+        Code only -- the file and the environment refuse it.
+    concurrency : int or str, optional
+        Cap on simultaneous sub-requests, or ``"unbounded"``.
+    parallel_chunks : int, optional
+        Baseline fan-out for multi-value queries. Each sub-request spends
+        rate-limit quota, so raise it only for pulls you know are large.
+    """
+
+    adapter: ClassVar[str] = "ngwmn"
+
+    retries: int | None = _UNSET
+    stall_timeout: float | int | None = _UNSET
+    base_url: str | None = _UNSET
+    concurrency: int | str | None = _UNSET
+    parallel_chunks: int | None = _UNSET
+
+
+_register(NgwmnConfiguration)

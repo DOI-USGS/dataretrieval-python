@@ -43,7 +43,8 @@ from __future__ import annotations
 
 import io
 from collections.abc import Callable, Iterable
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, ClassVar
 
 import httpx
 import pandas as pd
@@ -51,6 +52,7 @@ import pandas as pd
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
+from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers, network_error
@@ -59,6 +61,7 @@ from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
 
 __all__ = [
+    "NwdcConfiguration",
     "get_wateruse",
     "WATERUSE_URL",
     "MODELS",
@@ -464,3 +467,39 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
     except ValueError:
         return None
     return body.get("detail") if isinstance(body, dict) else None
+
+
+@dataclass(frozen=True)
+class NwdcConfiguration(BaseConfiguration):
+    """Settings for NWDC calls alone.
+
+    No ``parallel_chunks``: the NWDC is a plain CSV service, so a query
+    fans out per location rather than being divided along a URL byte
+    budget. There is nothing for the planner to divide more finely.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` so a
+    setting's definition sits with the code that reads it (ADR 0011).
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Where to send this service's requests, instead of its own base.
+        Code only -- the file and the environment refuse it.
+    concurrency : int or str, optional
+        Cap on simultaneous sub-requests, or ``"unbounded"``.
+    """
+
+    adapter: ClassVar[str] = "nwdc"
+
+    retries: int | None = _UNSET
+    stall_timeout: float | int | None = _UNSET
+    base_url: str | None = _UNSET
+    concurrency: int | str | None = _UNSET
+
+
+_register(NwdcConfiguration)

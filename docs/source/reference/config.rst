@@ -1,7 +1,7 @@
 .. _config:
 
-dataretrieval.config
---------------------
+dataretrieval.configuration
+---------------------------
 
 Layered configuration: a ``dataretrieval.configure(...)`` block, then
 the ``API_USGS_*`` environment variables, then
@@ -9,6 +9,7 @@ the ``API_USGS_*`` environment variables, then
 :doc:`configuration guide </userguide/configuration>` for the settings and
 worked examples.
 
-.. automodule:: dataretrieval.config
-    :members: configure, show_configuration, config_path, ConfigurationError
+.. automodule:: dataretrieval.configuration
+    :members: configure, Configuration, BaseConfiguration, show_configuration,
+              config_path, settings_for, ConfigurationError
     :show-inheritance:

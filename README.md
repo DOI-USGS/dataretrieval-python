@@ -54,9 +54,9 @@ can override a file without editing it:
 from getpass import getpass
 
 import dataretrieval
-from dataretrieval import waterdata
+from dataretrieval import Configuration, waterdata
 
-with dataretrieval.configure(api_key=getpass("USGS API key: ")):
+with dataretrieval.configure(Configuration(api_key=getpass("USGS API key: "))):
     df, metadata = waterdata.get_daily(monitoring_location_id="USGS-01646500")
 ```
 

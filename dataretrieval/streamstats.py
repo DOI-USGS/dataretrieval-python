@@ -7,14 +7,22 @@
 from __future__ import annotations
 
 import json
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any, ClassVar, cast
 
 import httpx
 
 from dataretrieval._querying import _get_with_retry
+from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 
-__all__ = ["download_workspace", "get_sample_watershed", "get_watershed", "Watershed"]
+__all__ = [
+    "StreamstatsConfiguration",
+    "Watershed",
+    "download_workspace",
+    "get_sample_watershed",
+    "get_watershed",
+]
 
 STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
 
@@ -215,3 +223,35 @@ class Watershed:
         self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
         self.parameters = streamstats_json["parameters"]
         self._workspaceID = streamstats_json["workspaceID"]
+
+
+@dataclass(frozen=True)
+class StreamstatsConfiguration(BaseConfiguration):
+    """Settings for StreamStats calls alone.
+
+    No fan-out dials: a StreamStats query is answered by a single
+    request.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` so a
+    setting's definition sits with the code that reads it (ADR 0011).
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Where to send this service's requests, instead of its own base.
+        Code only -- the file and the environment refuse it.
+    """
+
+    adapter: ClassVar[str] = "streamstats"
+
+    retries: int | None = _UNSET
+    stall_timeout: float | int | None = _UNSET
+    base_url: str | None = _UNSET
+
+
+_register(StreamstatsConfiguration)

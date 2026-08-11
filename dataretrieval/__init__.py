@@ -20,8 +20,10 @@ imported on demand: ``from dataretrieval import nldi``.
 
 Settings -- the Water Data API key, fan-out concurrency, retries, the progress
 line -- resolve through :mod:`dataretrieval.configuration`: a
-``with dataretrieval.configure(...)`` block, then the ``API_USGS_*`` environment
-variables, then ``~/.dataretrieval/config.toml``. ``dataretrieval.show_configuration()``
+``with dataretrieval.configure(Configuration(...))`` block, then the
+``API_USGS_*`` environment variables, then ``~/.dataretrieval/config.toml``.
+A setting for one service goes on that adapter's own configuration, such as
+``waterdata.WaterdataConfiguration``. ``dataretrieval.show_configuration()``
 reports what is in effect and where each value came from.
 
 A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
@@ -42,7 +44,12 @@ except PackageNotFoundError:
 # Layered configuration: a ``with configure(...)`` block, the environment, then
 # the config file. The canonical home is ``dataretrieval.configuration``;
 # the callable is named ``configure`` so it doesn't shadow that module.
-from dataretrieval.configuration import configure, show_configuration
+#
+# The module itself is deliberately absent from ``__all__`` below: it and the
+# ``Configuration`` class differ only by case, and keeping the module out of the
+# package's exports means ``from dataretrieval import configuration,
+# Configuration`` never arises (ADR 0011).
+from dataretrieval.configuration import Configuration, configure, show_configuration
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataRetrievalError,
@@ -76,7 +83,6 @@ from dataretrieval.interruptions import (
 from dataretrieval.ogc.chunking import parallel_chunks
 
 from . import (
-    configuration,
     exceptions,
     ngwmn,
     nwdc,
@@ -89,6 +95,7 @@ from . import (
 
 __all__ = [
     # layered configuration (canonical home: ``dataretrieval.configuration``)
+    "Configuration",
     "configure",
     "show_configuration",
     "ConfigurationError",
@@ -121,5 +128,4 @@ __all__ = [
     # parallel-chunks control (defined in ogc.chunking)
     "parallel_chunks",
     "__version__",
-    "configuration",
 ]

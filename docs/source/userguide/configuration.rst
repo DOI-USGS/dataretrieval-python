@@ -57,6 +57,12 @@ Settings
        stops and the failure surfaces. Bounds the wall-clock cost of a dead
        connection, which ``retries`` alone does not — it counts attempts, not
        seconds. Progress resets the clock; ``0`` disables the bound.
+   * - ``base_url``
+     - the service's own
+     - *(none — code only)*
+     - Where to send one service's requests. Per adapter, and settable only in
+       a ``configure`` block: a file that silently redirected the library to
+       another host would be a supply-chain hazard.
 
 
 Where settings come from
@@ -64,10 +70,12 @@ Where settings come from
 
 Highest precedence first:
 
-1. An active ``dataretrieval.configure(...)`` block.
+1. An active ``dataretrieval.configure(...)`` block — including a named
+   profile a caller loaded from the file, because loading one is code.
 2. The environment variable for that setting.
 3. The configuration file — ``~/.dataretrieval/config.toml``, or the path in
-   ``DATARETRIEVAL_CONFIG``.
+   ``DATARETRIEVAL_CONFIG``: the adapter's own ``[<adapter>]`` table first,
+   then the top-level keys.
 4. The built-in default.
 
 Precedence applies **per setting**. An environment that sets only
@@ -86,6 +94,11 @@ file. The one exception is ``API_USGS_PROGRESS``, where blank has always meant
    preserving the existing ``API_USGS_*`` variables as authoritative runtime
    overrides. The reasoning is in :doc:`ADR 0009
    </architecture/decisions/0009-layered-configuration>`.
+
+   The one exception is a profile you name in code: that is a more deliberate
+   act than a variable inherited from a shell, so it outranks the environment.
+   Everything you did *not* name still follows the rule above. See :doc:`ADR
+   0011 </architecture/decisions/0011-configuration-profiles>`.
 
 
 An environment variable
@@ -133,45 +146,11 @@ Point ``DATARETRIEVAL_CONFIG`` at a different path to override the location —
 useful for a container or a job scheduler that mounts secrets elsewhere.
 
 
-Profiles
-~~~~~~~~
-
-A ``[profiles.<name>]`` table layers over the top-level keys, so a profile
-only states what differs:
-
-.. code-block:: toml
-
-   # top level = the defaults every profile starts from
-   api_key = "your_api_key_here"
-   concurrency = 16
-
-   [profiles.bulk-pull]
-   # api_key is inherited from the top level; only the differences go here
-   concurrency = "unbounded"
-   parallel_chunks = 8
-
-   [profiles.polite]
-   # likewise inherits api_key
-   concurrency = 2
-
-Select one for a run, or for a block:
-
-.. code-block:: bash
-
-   DATARETRIEVAL_PROFILE=bulk-pull python overnight_job.py
-
-.. code-block:: python
-
-   with dataretrieval.configure(profile="bulk-pull"):
-       df, md = waterdata.get_daily(monitoring_location_id=many_sites)
-
-Both profiles above inherit the top-level ``api_key`` — you write the key once.
-
 Per-adapter settings
 ~~~~~~~~~~~~~~~~~~~~
 
-A profile switches *whole* configurations. To tune one service and leave the
-rest alone, name the adapter — the same name you import:
+To tune one service and leave the rest alone, name the adapter — the same name
+you import:
 
 .. code-block:: toml
 
@@ -185,7 +164,12 @@ rest alone, name the adapter — the same name you import:
 
 .. code-block:: python
 
-   with dataretrieval.configure(ngwmn={"concurrency": 4}, wqp={"retries": 2}):
+   from dataretrieval.ngwmn import NgwmnConfiguration
+   from dataretrieval.wqp import WqpConfiguration
+
+   with dataretrieval.configure(
+       NgwmnConfiguration(concurrency=4), WqpConfiguration(retries=2)
+   ):
        ...
 
 An adapter table *overrides* the top-level one per setting, so ``[ngwmn]``
@@ -195,31 +179,82 @@ same source, so ``API_USGS_CONCURRENT`` exported for one run still beats a
 ``[ngwmn] concurrency`` in the file.
 
 Between ``configure`` blocks that tie-break applies per block: an adapter
-table beats a package-wide value set by the *same* block, while anything set
-by a block nested inside it wins over both. So a ``configure(concurrency=1)``
-can still throttle a call an enclosing block had scoped to one adapter, and
-the innermost block decides.
+configuration beats a package-wide value set by the *same* block, while
+anything set by a block nested inside it wins over both. So a
+``configure(Configuration(concurrency=1))`` can still throttle a call an
+enclosing block had scoped to one adapter, and the innermost block decides.
 
-Each adapter accepts only the settings it reads. ``concurrency`` and
-``parallel_chunks`` are meaningless to an adapter that issues a single request,
-so ``[streamstats] parallel_chunks = 8`` is an error rather than a line that
-quietly does nothing:
+Each adapter accepts only the settings it reads, and they are the fields of its
+configuration class — ``concurrency`` and ``parallel_chunks`` are meaningless to
+an adapter that issues a single request, so ``StreamstatsConfiguration`` has no
+such field and ``[streamstats] parallel_chunks = 8`` is an error rather than a
+line that quietly does nothing:
 
-======================================  ==========================================
-Adapter                                 Accepts
-======================================  ==========================================
-``waterdata``, ``ngwmn``                ``concurrency``, ``parallel_chunks``,
-                                        ``retries``, ``stall_timeout``
-``nwdc``                                ``concurrency``, ``retries``,
-                                        ``stall_timeout``
-``wqp``, ``nldi``, ``streamstats``      ``retries``, ``stall_timeout``
-======================================  ==========================================
+====================================  ======================================  ========================================
+Adapter                               Configuration                           Accepts
+====================================  ======================================  ========================================
+``waterdata``                         ``waterdata.WaterdataConfiguration``    ``concurrency``, ``parallel_chunks``,
+                                                                              ``retries``, ``stall_timeout``,
+                                                                              ``base_url``
+``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same five
+``nwdc``                              ``nwdc.NwdcConfiguration``              ``concurrency``, ``retries``,
+                                                                              ``stall_timeout``, ``base_url``
+``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpConfiguration`` and so on      ``retries``, ``stall_timeout``,
+                                                                              ``base_url``
+====================================  ======================================  ========================================
+
+Each class lives in the module whose code reads those settings, so a setting's
+definition sits next to its use rather than in a service-neutral file.
 
 ``api_key`` is deliberately not per-adapter. It authenticates to the *gateway*
 in front of a host, and Water Data and NGWMN are served from the same host —
 one key, one hourly quota shared between them — so a per-adapter key would
 describe a distinction the service does not have. ``progress`` is likewise
 package-wide: there is one progress line per call.
+
+
+Named profiles
+~~~~~~~~~~~~~~
+
+A profile is a named set of settings **for one adapter**. The ``[<adapter>]``
+table is that adapter's default profile and is always in effect; a
+``[<adapter>.<name>]`` table is a named one, inert until you select it, so
+adding one never changes an existing script:
+
+.. code-block:: toml
+
+   api_key = "your_api_key_here"
+
+   [waterdata]
+   concurrency = 16          # the default profile: always in effect
+
+   [waterdata.bulk-pull]
+   concurrency = "unbounded" # only when selected
+   parallel_chunks = 8
+
+   [ngwmn.gentle]
+   concurrency = 2
+
+Select one in code, and compose as many as you have adapters:
+
+.. code-block:: python
+
+   from dataretrieval.ngwmn import NgwmnConfiguration
+   from dataretrieval.waterdata import WaterdataConfiguration
+
+   with dataretrieval.configure(
+       WaterdataConfiguration.load("bulk-pull"),
+       NgwmnConfiguration.load("gentle"),
+   ):
+       df, md = waterdata.get_daily(monitoring_location_id=many_sites)
+
+A named profile states only what differs: everything it does not name still
+comes from the adapter's default profile, the package-wide keys, and the tiers
+below — per setting. The ``api_key`` above is written once and both profiles
+use it.
+
+Naming two configurations for the same adapter raises, because there would be
+no defined order between them. Combine them into one instead.
 
 
 A ``configure`` block
@@ -231,14 +266,19 @@ The highest-precedence source, and the one to use when a setting must apply to
 .. code-block:: python
 
    import dataretrieval
-   from dataretrieval import waterdata
+   from dataretrieval import Configuration, waterdata
 
-   with dataretrieval.configure(api_key=secrets["usgs"]):
+   with dataretrieval.configure(Configuration(api_key=secrets["usgs"])):
        df, md = waterdata.get_daily(
            monitoring_location_id="USGS-05114000",
            parameter_code="00060",
            time="P7D",
        )
+
+``configure`` takes configuration objects positionally, and nothing else. The
+adapter a configuration targets is a property of its class, so you never
+restate it — and ``Configuration`` targets none of them in particular, which is
+what makes it package-wide.
 
 Because it is backed by a :class:`~contextvars.ContextVar`, the value applies
 to the current thread and to asyncio tasks started inside the block, and
@@ -249,7 +289,7 @@ web service or a notebook working with more than one account:
 
    # each thread keeps its own key; no os.environ mutation, no race
    def fetch_for(user):
-       with dataretrieval.configure(api_key=vault.read(user.key_path)):
+       with dataretrieval.configure(Configuration(api_key=vault.read(user.key_path))):
            return waterdata.get_daily(monitoring_location_id=user.sites)
 
 Blocks nest and merge per setting, so an inner block that tunes one thing
@@ -257,19 +297,19 @@ keeps the rest:
 
 .. code-block:: python
 
-   with dataretrieval.configure(api_key=key, concurrency=8):
+   with dataretrieval.configure(Configuration(api_key=key, concurrency=8)):
        ...
-       with dataretrieval.configure(concurrency=1):  # api_key still applies
+       # api_key still applies
+       with dataretrieval.configure(Configuration(concurrency=1)):
            ...
 
-Values are validated on entry, so a typo raises at the ``with`` statement
-rather than deep inside a later request.
+Values are validated when the configuration is *constructed*, so a typo raises
+on the line you wrote it on rather than deep inside a later request.
 
 Omitted settings inherit from an outer block or a lower-precedence source.
 Passing ``None`` explicitly suppresses those sources and restores built-in
-behavior for that block. For example, ``configure(api_key=None)`` makes an
-anonymous call even if ``API_USGS_PAT`` is set, while ``profile=None`` selects
-the file's top-level settings instead of ``DATARETRIEVAL_PROFILE``.
+behavior for that block. ``Configuration(api_key=None)``, for example, makes an
+anonymous call even if ``API_USGS_PAT`` is set.
 
 .. tip::
 
@@ -288,20 +328,32 @@ from. It never prints the key itself:
 
    >>> dataretrieval.show_configuration()
    config file  /home/u/.dataretrieval/config.toml (found)
-   profile      bulk-pull
    api_key          <set>       /home/u/.dataretrieval/config.toml
-   concurrency      unbounded   /home/u/.dataretrieval/config.toml [profiles.bulk-pull]
+   concurrency      32          built-in default
    retries          8           $API_USGS_RETRIES
    progress         auto        built-in default
-   parallel_chunks  8           /home/u/.dataretrieval/config.toml [profiles.bulk-pull]
+   parallel_chunks  1           built-in default
+   stall_timeout    60s         built-in default
+
+   adapter overrides
+     ngwmn  concurrency  4  /home/u/.dataretrieval/config.toml [ngwmn]
+
+   not reported: nldi (not imported, so the settings each accepts are
+   unknown here)
 
 Each line names the exact source, including which table inside the file, which
-is usually enough to answer "why is it still using my old key?".
+is usually enough to answer "why is it still using my old key?". Only settings
+actually overridden for an adapter get a row in the second section; everything
+else is inherited from the rows above it.
 
-It never raises. A malformed file, a value that fails its grammar, or a
-profile that no longer exists is reported in place — on the ``config file``
-line for a whole-file problem, or in that setting's own row — because a broken
-configuration is exactly when you reach for this.
+The last line is the honest cost of validating an adapter's settings lazily:
+``dataretrieval`` cannot say what ``nldi`` accepts until something imports it,
+so it says that rather than quietly omitting the service.
+
+It never raises. A malformed file or a value that fails its grammar is reported
+in place — on the ``config file`` line for a whole-file problem, or in that
+setting's own row — because a broken configuration is exactly when you reach
+for this.
 
 
 Why ``parallel_chunks`` has no environment variable
@@ -324,19 +376,20 @@ Set it per call, which is almost always what you want:
        df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
 or as a baseline in the config file — deliberately written, and visible in
-``show_configuration()``. Put it in a ``[profiles.<name>]`` table rather than at the
-top level: a profile applies only to runs that select it, while a top-level
-value applies to every query in every process that reads the file, which is
-how a setting added for one bulk pull quietly exhausts an hourly quota months
-later. ``dataretrieval`` warns if it finds one at the top level.
+``show_configuration()``. Put it in a ``[<adapter>.<name>]`` table rather than
+at the top level: a named profile applies only to runs that select it, while a
+top-level value applies to every query in every process that reads the file,
+which is how a setting added for one bulk pull quietly exhausts an hourly quota
+months later. ``dataretrieval`` warns if it finds one at the top level.
 
 The value limits optional refinement only. URL-byte safety can require more
 sub-requests than the configured value, and an input with nothing to split
 stays a single request.
 
-``parallel_chunks(n)`` is sugar for ``configure(parallel_chunks=n)``: one
-scoping mechanism, so the innermost block wins whichever spelling set it, and
-``show_configuration()`` always reports the value the chunker will actually use.
+``parallel_chunks(n)`` is sugar for
+``configure(Configuration(parallel_chunks=n))``: one scoping mechanism, so the
+innermost block wins whichever spelling set it, and ``show_configuration()``
+always reports the value the chunker will actually use.
 
 
 Keeping a key out of your environment entirely
@@ -349,10 +402,12 @@ If your credentials live in a secret manager, nothing needs to touch
 
    import dataretrieval
    import boto3
-   from dataretrieval import waterdata
+   from dataretrieval import Configuration, waterdata
 
-   with dataretrieval.configure(api_key=boto3.client("secretsmanager")
-                                .get_secret_value(SecretId="usgs-pat")["SecretString"]):
+   secrets = boto3.client("secretsmanager")
+   key = secrets.get_secret_value(SecretId="usgs-pat")["SecretString"]
+
+   with dataretrieval.configure(Configuration(api_key=key)):
        df, md = waterdata.get_continuous(monitoring_location_id="USGS-05114000")
 
 Wherever the key comes from, it is sent only to ``api.waterdata.usgs.gov`` and

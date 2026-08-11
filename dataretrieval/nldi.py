@@ -10,12 +10,15 @@ See https://api.water.usgs.gov/nldi/linked-data for the API reference.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Any, Literal, cast
+from typing import Any, ClassVar, Literal, cast
 
 from dataretrieval._querying import _query_with_retry
+from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 
 __all__ = [
+    "NldiConfiguration",
     "get_flowlines",
     "get_basin",
     "get_features",
@@ -583,3 +586,39 @@ def _validate_feature_source_comid(
         raise ValueError(
             "Specify one origin type - comid or feature_source is required"
         )
+
+
+@dataclass(frozen=True)
+class NldiConfiguration(BaseConfiguration):
+    """Settings for NLDI calls alone.
+
+    No fan-out dials: an NLDI query is answered by a single request.
+
+    This adapter is imported on demand for the geopandas extra, so this
+    class registers itself later than the rest -- which is exactly why
+    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
+    rather than being derived from what has been imported.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` so a
+    setting's definition sits with the code that reads it (ADR 0011).
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Where to send this service's requests, instead of its own base.
+        Code only -- the file and the environment refuse it.
+    """
+
+    adapter: ClassVar[str] = "nldi"
+
+    retries: int | None = _UNSET
+    stall_timeout: float | int | None = _UNSET
+    base_url: str | None = _UNSET
+
+
+_register(NldiConfiguration)

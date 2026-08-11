@@ -63,5 +63,4 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     # concurrency -- can never influence a test run. Config tests opt in by
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
-    monkeypatch.delenv("DATARETRIEVAL_PROFILE", raising=False)
     configuration._reset_file_cache()

@@ -7,12 +7,19 @@ import io
 import os
 import re
 import threading
+from dataclasses import dataclass
+from typing import ClassVar
 
 import pytest
 
 import dataretrieval
 from dataretrieval import configuration
+from dataretrieval.configuration import Configuration
+from dataretrieval.ngwmn import NgwmnConfiguration
+from dataretrieval.nwdc import NwdcConfiguration
 from dataretrieval.utils import _default_headers
+from dataretrieval.waterdata import WaterdataConfiguration
+from dataretrieval.wqp import WqpConfiguration
 
 WATERDATA_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
 
@@ -63,7 +70,7 @@ def test_env_outranks_file(config_file, monkeypatch):
 def test_block_outranks_file_and_env(config_file, monkeypatch):
     config_file('api_key = "file-key"\n')
     monkeypatch.setenv("API_USGS_PAT", "env-key")
-    with dataretrieval.configure(api_key="block-key"):
+    with dataretrieval.configure(Configuration(api_key="block-key")):
         assert configuration.api_key() == "block-key"
     assert configuration.api_key() == "env-key"
 
@@ -82,8 +89,8 @@ def test_precedence_is_per_setting_not_per_source(config_file, monkeypatch):
 
 
 def test_blocks_nest_and_merge_per_setting():
-    with dataretrieval.configure(api_key="outer", concurrency=4):
-        with dataretrieval.configure(concurrency=8):
+    with dataretrieval.configure(Configuration(api_key="outer", concurrency=4)):
+        with dataretrieval.configure(Configuration(concurrency=8)):
             assert configuration.concurrency() == 8
             assert configuration.api_key() == "outer"  # inherited from the outer block
         assert configuration.concurrency() == 4  # inner block restored on exit
@@ -91,7 +98,7 @@ def test_blocks_nest_and_merge_per_setting():
 
 def test_omitted_setting_inherits_lower_source(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "env-key")
-    with dataretrieval.configure(concurrency=2):
+    with dataretrieval.configure(Configuration(concurrency=2)):
         assert configuration.api_key() == "env-key"
 
 
@@ -99,7 +106,9 @@ def test_explicit_none_suppresses_lower_sources(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "env-key")
     monkeypatch.setenv("API_USGS_CONCURRENT", "4")
     monkeypatch.setenv("API_USGS_PROGRESS", "true")
-    with dataretrieval.configure(api_key=None, concurrency=None, progress=None):
+    with dataretrieval.configure(
+        Configuration(api_key=None, concurrency=None, progress=None)
+    ):
         assert configuration.api_key() is None
         assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
         assert configuration.progress() is None
@@ -108,24 +117,27 @@ def test_explicit_none_suppresses_lower_sources(monkeypatch):
     assert configuration.progress() is True
 
 
-def test_block_validates_eagerly():
-    """A bad value raises at the ``with``, not inside a later request."""
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"concurrency": 0},
+        {"retries": -1},
+        {"parallel_chunks": 0},
+        {"progress": "flase"},
+    ],
+)
+def test_a_configuration_validates_its_own_settings(settings):
+    """A bad value raises where it was written, not inside a later request.
+
+    Construction is earlier than the ``with``, which is earlier than the
+    request the value would otherwise have broken.
+    """
     with pytest.raises(configuration.ConfigurationError):
-        with dataretrieval.configure(concurrency=0):
-            pass
-    with pytest.raises(configuration.ConfigurationError):
-        with dataretrieval.configure(retries=-1):
-            pass
-    with pytest.raises(configuration.ConfigurationError):
-        with dataretrieval.configure(parallel_chunks=0):
-            pass
-    with pytest.raises(configuration.ConfigurationError):
-        with dataretrieval.configure(progress="flase"):
-            pass
+        Configuration(**settings)
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "expected"),
+    ("settings", "expected"),
     [
         ({"api_key": 123}, "string"),
         ({"concurrency": 1.5}, "integer"),
@@ -133,24 +145,99 @@ def test_block_validates_eagerly():
         ({"retries": "2"}, "integer"),
         ({"progress": []}, "bool"),
         ({"parallel_chunks": True}, "integer"),
-        ({"profile": 123}, "string"),
     ],
 )
-def test_block_rejects_values_outside_annotated_types(kwargs, expected):
+def test_configuration_rejects_values_outside_annotated_types(settings, expected):
     with pytest.raises(configuration.ConfigurationError, match=expected):
-        with dataretrieval.configure(**kwargs):
-            pass
+        Configuration(**settings)
 
 
 def test_block_accepts_ints_and_strings():
-    with dataretrieval.configure(concurrency="unbounded"):
+    with dataretrieval.configure(Configuration(concurrency="unbounded")):
         assert configuration.concurrency() is None
-    with dataretrieval.configure(concurrency=8):
+    with dataretrieval.configure(Configuration(concurrency=8)):
         assert configuration.concurrency() == 8
-    with dataretrieval.configure(progress=False):
+    with dataretrieval.configure(Configuration(progress=False)):
         assert configuration.progress() is False
-    with dataretrieval.configure(progress=True):
+    with dataretrieval.configure(Configuration(progress=True)):
         assert configuration.progress() is True
+
+
+def test_configure_takes_configurations_and_nothing_else():
+    """The argument is an object, so a stray mapping or keyword cannot pass.
+
+    ``configure(ngwmn={"concurrency": 2})`` was the earlier spelling, and it is
+    exactly what a reader of an old script will try. Naming the replacement in
+    the error is the difference between a two-minute fix and a search.
+    """
+    with pytest.raises(configuration.ConfigurationError, match="configuration objects"):
+        with dataretrieval.configure({"concurrency": 2}):
+            pass
+    with pytest.raises(configuration.ConfigurationError, match="configuration objects"):
+        with dataretrieval.configure("waterdata"):
+            pass
+    # Settings are no longer keywords on ``configure`` at all.
+    with pytest.raises(TypeError):
+        with dataretrieval.configure(api_key="k"):
+            pass
+
+
+def test_two_configurations_for_one_adapter_raise():
+    """They are the one pairing with no defined order between them.
+
+    Silently letting the last win would make a block's meaning depend on
+    argument order, which nothing in the surrounding chain does.
+    """
+    with pytest.raises(configuration.ConfigurationError, match="two configurations"):
+        with dataretrieval.configure(
+            WaterdataConfiguration(concurrency=2),
+            WaterdataConfiguration(retries=1),
+        ):
+            pass
+
+    # Same rule for the package-wide configuration, which targets no adapter.
+    with pytest.raises(configuration.ConfigurationError, match="package-wide"):
+        with dataretrieval.configure(
+            Configuration(retries=1), Configuration(retries=2)
+        ):
+            pass
+
+    # Two *different* adapters in one block is the whole point of the feature.
+    with dataretrieval.configure(
+        WaterdataConfiguration(concurrency=2), NgwmnConfiguration(concurrency=8)
+    ):
+        assert configuration.concurrency(adapter="waterdata") == 2
+        assert configuration.concurrency(adapter="ngwmn") == 8
+
+
+def test_a_configuration_resolves_end_to_end(config_file, monkeypatch):
+    """Every tier below a passed configuration still applies, per setting."""
+    config_file('api_key = "file-key"\nstall_timeout = 15\n')
+    monkeypatch.setenv("API_USGS_RETRIES", "9")
+
+    with dataretrieval.configure(Configuration(concurrency=3)):
+        assert configuration.concurrency() == 3  # from the configuration
+        assert configuration.retries() == 9  # still from the environment
+        assert configuration.api_key() == "file-key"  # still from the file
+        assert configuration.stall_timeout() == 15  # still from the file
+        assert (
+            configuration.parallel_chunks() == configuration.DEFAULT_PARALLEL_CHUNKS
+        )  # still the built-in default
+
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
+
+
+def test_an_adapter_configuration_narrows_to_one_adapter(monkeypatch):
+    """The adapter is a property of the class, so nothing else moves."""
+    monkeypatch.delenv("API_USGS_RETRIES")  # pinned by the autouse fixture
+
+    with dataretrieval.configure(NgwmnConfiguration(retries=1)):
+        assert configuration.retries(adapter="ngwmn") == 1
+        # Every other adapter, and the package-wide read, are untouched --
+        # including waterdata, which shares NGWMN's host and its API key.
+        for other in ("waterdata", "nwdc", "wqp", "streamstats"):
+            assert configuration.retries(adapter=other) == configuration.DEFAULT_RETRIES
+        assert configuration.retries() == configuration.DEFAULT_RETRIES
 
 
 # --- isolation (the point of issue #352) ---------------------------------
@@ -166,7 +253,7 @@ def test_threads_do_not_leak_credentials_into_each_other():
     started = threading.Barrier(2)
 
     def worker(name: str, key: str) -> None:
-        with dataretrieval.configure(api_key=key):
+        with dataretrieval.configure(Configuration(api_key=key)):
             started.wait(timeout=5)  # force the blocks to overlap in time
             seen[name] = configuration.api_key()
 
@@ -186,7 +273,7 @@ def test_asyncio_tasks_do_not_leak_credentials_into_each_other():
     """Concurrent asyncio tasks each keep their own key."""
 
     async def worker(key: str) -> str | None:
-        with dataretrieval.configure(api_key=key):
+        with dataretrieval.configure(Configuration(api_key=key)):
             await asyncio.sleep(0)  # yield, letting the other task interleave
             return configuration.api_key()
 
@@ -199,82 +286,78 @@ def test_asyncio_tasks_do_not_leak_credentials_into_each_other():
 # --- the file ------------------------------------------------------------
 
 
-def test_profile_layers_over_top_level(config_file, monkeypatch):
+def test_named_profile_is_selected_in_code(config_file):
+    """``[<adapter>.<name>]`` reaches the chain only when a caller loads it."""
     config_file(
         'api_key = "shared"\nconcurrency = 4\n\n'
-        '[profiles.bulk]\nconcurrency = "unbounded"\n'
-    )
-    with dataretrieval.configure(profile="bulk"):
-        assert configuration.concurrency() is None  # from the profile
-        assert configuration.api_key() == "shared"  # inherited from the top level
-    assert configuration.concurrency() == 4  # outside the block, top level again
-
-
-def test_profile_selected_by_env(config_file, monkeypatch):
-    config_file("concurrency = 4\n\n[profiles.bulk]\nconcurrency = 16\n")
-    monkeypatch.setenv(configuration.PROFILE_ENV, "bulk")
-    assert configuration.concurrency() == 16
-
-
-def test_block_profile_outranks_env_profile(config_file, monkeypatch):
-    config_file("[profiles.a]\nconcurrency = 2\n\n[profiles.b]\nconcurrency = 3\n")
-    monkeypatch.setenv(configuration.PROFILE_ENV, "a")
-    with dataretrieval.configure(profile="b"):
-        assert configuration.concurrency() == 3
-
-
-def test_none_profile_selects_top_level(config_file, monkeypatch):
-    config_file("concurrency = 4\n\n[profiles.bulk]\nconcurrency = 16\n")
-    monkeypatch.setenv(configuration.PROFILE_ENV, "bulk")
-    with dataretrieval.configure(profile=None):
-        assert configuration.concurrency() == 4
-    assert configuration.concurrency() == 16
-
-
-def test_unknown_profile_raises(config_file):
-    config_file("concurrency = 4\n")
-    with pytest.raises(configuration.ConfigurationError, match="not defined"):
-        with dataretrieval.configure(profile="nope"):
-            pass
-
-
-def test_selected_profile_is_ignored_when_there_is_no_file(tmp_path, monkeypatch):
-    """A lingering ``DATARETRIEVAL_PROFILE`` must not break every request.
-
-    With no config file there are no profiles to select from and the whole
-    file layer is inert, so the selection is moot rather than a typo. Raising
-    here would surface from ``_default_headers`` on every call — including
-    legacy services that never read the configuration.
-    """
-    monkeypatch.delenv("API_USGS_CONCURRENT")  # pinned by the autouse fixture
-    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
-    monkeypatch.setenv(configuration.PROFILE_ENV, "long-gone")
-    configuration._reset_file_cache()
-
-    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
-    assert _default_headers(WATERDATA_URL)["User-Agent"].startswith(
-        "python-dataretrieval/"
+        "[waterdata]\nretries = 2\n\n"
+        '[waterdata.bulk]\nconcurrency = "unbounded"\n'
     )
 
+    # Inert until selected: the file alone changes nothing about concurrency.
+    assert configuration.concurrency(adapter="waterdata") == 4
 
-def test_profile_typed_into_configure_is_checked_even_with_no_file(
-    tmp_path, monkeypatch
-):
-    """An explicitly named profile is a typo to report, not ambient state.
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        assert configuration.concurrency(adapter="waterdata") is None  # the profile
+        assert configuration.retries(adapter="waterdata") == 2  # default profile
+        assert configuration.api_key() == "shared"  # package-wide, from the file
+        # It narrows to one adapter, so a sibling on the same host is untouched.
+        assert configuration.concurrency(adapter="ngwmn") == 4
 
-    The leniency above is for a *lingering export*, which the caller may not
-    even know is set. A name passed to ``configure`` was just typed, and
-    silently proceeding on defaults would drop exactly the settings the caller
-    asked for — so it raises at the ``with``, as that function documents.
+    assert configuration.concurrency(adapter="waterdata") == 4
+
+
+def test_a_code_selected_profile_outranks_the_environment(config_file, monkeypatch):
+    """ADR 0011 inverts ADR 0009's environment-above-file rule for this case.
+
+    A profile named in code is a more deliberate act than a variable inherited
+    from a shell, and losing to that variable is what a caller would file a bug
+    about.
     """
+    config_file("[waterdata.gentle]\nconcurrency = 2\n")
+    monkeypatch.setenv("API_USGS_CONCURRENT", "16")
+
+    assert configuration.concurrency(adapter="waterdata") == 16
+    with dataretrieval.configure(WaterdataConfiguration.load("gentle")):
+        assert configuration.concurrency(adapter="waterdata") == 2
+
+
+def test_several_named_profiles_are_selected_independently(config_file):
+    """One block, two adapters, a different named profile for each."""
+    config_file(
+        "[waterdata.bulk]\nconcurrency = 32\n\n"
+        "[waterdata.polite]\nconcurrency = 2\n\n"
+        "[ngwmn.gentle]\nconcurrency = 4\n"
+    )
+
+    with dataretrieval.configure(
+        WaterdataConfiguration.load("polite"), NgwmnConfiguration.load("gentle")
+    ):
+        assert configuration.concurrency(adapter="waterdata") == 2
+        assert configuration.concurrency(adapter="ngwmn") == 4
+
+
+def test_loading_an_undefined_profile_raises(config_file):
+    """A name the caller just typed is a typo, not a silent fall-through."""
+    config_file("[waterdata]\nconcurrency = 4\n\n[waterdata.bulk]\nretries = 8\n")
+    with pytest.raises(configuration.ConfigurationError, match="no .waterdata.nope."):
+        WaterdataConfiguration.load("nope")
+
+
+def test_loading_a_profile_with_no_file_says_so(tmp_path, monkeypatch):
     monkeypatch.delenv("API_USGS_CONCURRENT")  # pinned by the autouse fixture
     monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
-    monkeypatch.delenv(configuration.PROFILE_ENV, raising=False)
     configuration._reset_file_cache()
 
     with pytest.raises(configuration.ConfigurationError, match="no configuration file"):
-        with dataretrieval.configure(profile="also-gone"):
-            pass
+        WaterdataConfiguration.load("also-gone")
+
+
+def test_the_package_wide_configuration_has_no_profiles(config_file):
+    """A profile belongs to one adapter, so ``Configuration`` cannot name one."""
+    config_file("[waterdata.bulk]\nconcurrency = 8\n")
+    with pytest.raises(configuration.ConfigurationError, match="package-wide"):
+        Configuration.load("bulk")
 
 
 def test_missing_file_is_not_an_error(tmp_path, monkeypatch):
@@ -354,9 +437,22 @@ def test_unknown_setting_warns_but_is_ignored(config_file):
 
 
 def test_unknown_table_raises(config_file):
-    """A profile written as ``[bulk]`` instead of ``[profiles.bulk]``."""
+    """A profile written as ``[bulk]`` instead of ``[waterdata.bulk]``."""
     config_file("[bulk]\nconcurrency = 4\n")
     with pytest.raises(configuration.ConfigurationError, match="unknown table"):
+        configuration.concurrency()
+
+
+def test_the_retired_profiles_table_names_its_replacement(config_file):
+    """Nothing shipped with ``[profiles.<name>]``, but the docs described it.
+
+    The generic "unknown table" message would send its author hunting for a
+    typo in a table spelled exactly as they had been told to spell it.
+    """
+    config_file("[profiles.bulk]\nconcurrency = 4\n")
+    with pytest.raises(
+        configuration.ConfigurationError, match=r"\[<adapter>\.<name>\]"
+    ):
         configuration.concurrency()
 
 
@@ -559,7 +655,7 @@ def test_file_sourced_key_is_still_host_scoped(config_file):
 
 
 def test_block_sourced_key_is_still_host_scoped():
-    with dataretrieval.configure(api_key="block-key"):
+    with dataretrieval.configure(Configuration(api_key="block-key")):
         assert _default_headers(WATERDATA_URL)["X-Api-Key"] == "block-key"
         assert "X-Api-Key" not in _default_headers("https://example.com/data")
 
@@ -622,7 +718,7 @@ def test_credential_keyword_cannot_enter_queryables(forbidden):
 def test_retry_policy_reads_the_block():
     from dataretrieval.transport.retry import RetryPolicy
 
-    with dataretrieval.configure(retries=3):
+    with dataretrieval.configure(Configuration(retries=3)):
         assert RetryPolicy.from_configuration().max_retries == 3
 
 
@@ -638,7 +734,7 @@ def test_parallel_chunks_baseline_comes_from_config(config_file):
 
 
 def test_parallel_chunks_and_configure_share_one_mechanism():
-    """``parallel_chunks(n)`` is sugar for ``configure(parallel_chunks=n)``.
+    """``parallel_chunks(n)`` is sugar for a package-wide ``Configuration``.
 
     They must not be two competing scopes: whichever block is innermost wins,
     so ``show_configuration()`` always reports the value the chunker will use.
@@ -646,11 +742,11 @@ def test_parallel_chunks_and_configure_share_one_mechanism():
     from dataretrieval.ogc.chunking import parallel_chunks
 
     with parallel_chunks(2):
-        with dataretrieval.configure(parallel_chunks=8):
+        with dataretrieval.configure(Configuration(parallel_chunks=8)):
             assert configuration.parallel_chunks() == 8
         assert configuration.parallel_chunks() == 2
 
-    with dataretrieval.configure(parallel_chunks=8):
+    with dataretrieval.configure(Configuration(parallel_chunks=8)):
         with parallel_chunks(2):
             assert configuration.parallel_chunks() == 2
         assert configuration.parallel_chunks() == 8
@@ -665,9 +761,9 @@ def test_parallel_chunks_has_no_environment_variable():
 def test_progress_reporter_reads_the_block():
     from dataretrieval.progress import ProgressReporter
 
-    with dataretrieval.configure(progress=True):
+    with dataretrieval.configure(Configuration(progress=True)):
         assert ProgressReporter(stream=io.StringIO()).enabled
-    with dataretrieval.configure(progress=False):
+    with dataretrieval.configure(Configuration(progress=False)):
         assert not ProgressReporter(stream=io.StringIO()).enabled
 
 
@@ -743,10 +839,10 @@ def test_top_level_parallel_chunks_warns(config_file):
         assert configuration.parallel_chunks() == 8
 
 
-def test_parallel_chunks_in_a_profile_does_not_warn(config_file, recwarn):
-    config_file("[profiles.bulk]\nparallel_chunks = 8\n")
-    with dataretrieval.configure(profile="bulk"):
-        assert configuration.parallel_chunks() == 8
+def test_parallel_chunks_in_a_named_profile_does_not_warn(config_file, recwarn):
+    config_file("[waterdata.bulk]\nparallel_chunks = 8\n")
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        assert configuration.parallel_chunks(adapter="waterdata") == 8
     assert not [w for w in recwarn if "parallel_chunks" in str(w.message)]
 
 
@@ -811,7 +907,7 @@ def test_default_config_path_follows_a_changed_home(tmp_path, monkeypatch):
 
 def test_show_config_renderers_cover_every_setting():
     """Guarded with a raise, not an assert, so ``python -O`` keeps the check."""
-    assert set(configuration._DISPLAYS) == set(configuration.SETTINGS)
+    assert set(configuration._DISPLAYS) == set(configuration._ALL_SETTINGS)
 
 
 def test_unselected_profile_is_not_validated(config_file):
@@ -821,19 +917,20 @@ def test_unselected_profile_is_not_validated(config_file):
     actually selected -- the same blast-radius rule ``_default_headers``
     follows for the key itself.
     """
-    config_file('api_key = "good"\n\n[profiles.experimental]\nconcurrency = 0\n')
+    config_file('api_key = "good"\n\n[waterdata.experimental]\nconcurrency = 0\n')
     assert _default_headers(WATERDATA_URL)["X-Api-Key"] == "good"
-    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
+    assert configuration.concurrency(adapter="waterdata") == (
+        configuration.DEFAULT_CONCURRENCY
+    )
 
     # Selecting it still reports the problem.
     with pytest.raises(configuration.ConfigurationError, match="experimental"):
-        with dataretrieval.configure(profile="experimental"):
-            configuration.concurrency()
+        WaterdataConfiguration.load("experimental")
 
 
 def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn):
-    config_file("concurrency = 4\n\n[profiles.other]\nnot_a_setting = 1\n")
-    assert configuration.concurrency() == 4
+    config_file("concurrency = 4\n\n[waterdata.other]\nnot_a_setting = 1\n")
+    assert configuration.concurrency(adapter="waterdata") == 4
     assert not [w for w in recwarn if "unknown setting" in str(w.message)]
 
 
@@ -885,7 +982,9 @@ def test_one_block_configures_several_adapters(config_file):
     config_file("")
 
     with dataretrieval.configure(
-        ngwmn={"concurrency": 2}, nwdc={"concurrency": 8}, retries=7
+        Configuration(retries=7),
+        NgwmnConfiguration(concurrency=2),
+        NwdcConfiguration(concurrency=8),
     ):
         assert configuration.concurrency(adapter="ngwmn") == 2
         assert configuration.concurrency(adapter="nwdc") == 8
@@ -913,16 +1012,22 @@ def test_adapter_block_outranks_the_package_wide_block(config_file):
     """Within one source, the adapter-scoped value is the more specific one."""
     config_file("")
 
-    with dataretrieval.configure(concurrency=16, ngwmn={"concurrency": 2}):
+    with dataretrieval.configure(
+        Configuration(concurrency=16), NgwmnConfiguration(concurrency=2)
+    ):
         assert configuration.concurrency(adapter="ngwmn") == 2
         assert configuration.concurrency(adapter="waterdata") == 16
 
 
 def test_adapter_rejects_a_setting_it_does_not_read(config_file):
-    """A single-shot adapter has nothing to fan out, so ``concurrency`` is a typo."""
-    with pytest.raises(configuration.ConfigurationError, match="not a setting the wqp"):
-        with dataretrieval.configure(wqp={"concurrency": 2}):
-            pass
+    """A single-shot adapter has nothing to fan out, so ``concurrency`` is a typo.
+
+    From code the refusal is a ``TypeError`` from the dataclass itself: the
+    setting is not a field of ``WqpConfiguration``, so there is nowhere to put
+    it. That is the same refusal a type checker makes before the code runs.
+    """
+    with pytest.raises(TypeError, match="concurrency"):
+        WqpConfiguration(concurrency=2)
 
     config_file("[wqp]\nconcurrency = 2\n")
     with pytest.raises(
@@ -931,40 +1036,71 @@ def test_adapter_rejects_a_setting_it_does_not_read(config_file):
         configuration.retries(adapter="wqp")
 
 
-def test_api_key_is_never_adapter_scoped(config_file):
+def test_api_key_is_never_adapter_scoped():
     """The key belongs to the gateway fronting a host, not to an adapter.
 
     Water Data and NGWMN are two adapters on one host sharing one key and one
     quota pool, so a per-adapter key would model a distinction that does not
     exist (ADR 0010).
     """
-    assert not any("api_key" in s for s in configuration.ADAPTER_SETTINGS.values())
+    for adapter in configuration.ADAPTERS:
+        accepted = configuration.settings_for(adapter)
+        assert accepted is not None or adapter == "nldi"
+        assert accepted is None or "api_key" not in accepted
 
-    with pytest.raises(
-        configuration.ConfigurationError, match="not a setting the ngwmn"
-    ):
-        with dataretrieval.configure(ngwmn={"api_key": "x"}):
-            pass
+    with pytest.raises(TypeError, match="api_key"):
+        NgwmnConfiguration(api_key="x")
 
 
-def test_a_misspelled_setting_is_not_taken_for_an_adapter():
-    """``**adapters`` is a catch-all, so a typo must not be silently swallowed.
+def test_a_misspelled_setting_is_not_silently_swallowed():
+    """A typo must fail, not be accepted and ignored.
 
-    Accepting ``configure(concurrancy=8)`` as an unknown adapter and ignoring
-    it would be the worst outcome for a module whose job is to be trustworthy
-    about what a call will use.
+    ``Configuration(concurrancy=8)`` is not a field, so the dataclass refuses
+    it by name -- the worst outcome for a module whose job is to be
+    trustworthy about what a call will use would be to take it and drop it.
     """
-    with pytest.raises(configuration.ConfigurationError, match="unexpected keyword"):
-        with dataretrieval.configure(concurrancy=8):
-            pass
+    with pytest.raises(TypeError, match="concurrancy"):
+        Configuration(concurrancy=8)
 
 
-def test_adapter_schema_names_a_real_module():
-    """Every key in the registry names a module a caller can import."""
+def test_adapter_roster_names_real_modules_that_register_themselves():
+    """Every name in the roster resolves to an adapter that owns a schema.
+
+    Two halves of one declaration: the roster is what parsing a file needs
+    (is ``[ngwmn]`` a table or a typo?), and the class is what validating that
+    table's keys needs. A name in one and not the other is a configuration
+    nothing could reach.
+    """
     import importlib
 
     for adapter in configuration.ADAPTERS:
         importlib.import_module(f"dataretrieval.{adapter}")
+        accepted = configuration.settings_for(adapter)
+        assert accepted is not None, f"{adapter} registered no configuration class"
+        assert accepted >= {"retries", "stall_timeout", "base_url"}
+
+
+def test_registering_an_adapter_outside_the_roster_raises():
+    """The roster is the authority, so a class cannot invent an adapter."""
+
+    @dataclass(frozen=True)
+    class BogusConfiguration(configuration.BaseConfiguration):
+        adapter: ClassVar[str] = "not-an-adapter"
+
+    with pytest.raises(configuration.ConfigurationError, match="not one of"):
+        configuration._register(BogusConfiguration)
+
+
+def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
+    """``None`` means "cannot validate these keys yet", never "invalid".
+
+    NLDI is imported on demand for the geopandas extra, so a roster built from
+    imports would reject a perfectly good ``[nldi]`` table until something
+    happened to import that module.
+    """
+    monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
+    assert configuration.settings_for("nldi") is None
+    assert "nldi" in configuration.ADAPTERS
 
 
 def test_every_adapter_is_actually_wired_to_a_read_site():
@@ -987,32 +1123,15 @@ def test_every_adapter_is_actually_wired_to_a_read_site():
     assert not missing, (
         f"adapters with a schema but no read site: {missing}. Either pass "
         'adapter="<name>" where that adapter builds its policy or fan-out, or '
-        "drop it from ADAPTER_SETTINGS."
+        "drop it from configuration.ADAPTERS."
     )
 
 
-def test_adapter_table_inside_a_profile_is_refused(config_file):
-    """``[profiles.x.ngwmn]`` reads as composable and is not; say so."""
-    config_file(
-        "[profiles.gentle]\nconcurrency = 2\n\n"
-        "[profiles.gentle.ngwmn]\nconcurrency = 1\n"
-    )
-
-    # Raised at ``with`` entry, where ``configure`` validates the profile it
-    # was handed -- before any request, not from inside one.
-    with pytest.raises(configuration.ConfigurationError, match="adapter table inside"):
-        with dataretrieval.configure(profile="gentle"):
-            pass
-
-
-def test_a_non_finite_stall_timeout_is_refused(config_file):
+def test_a_non_finite_stall_timeout_is_refused():
     """``inf`` parses as a float and silently disables the bound it sets."""
-    config_file("")
-
     for bad in (float("inf"), float("nan")):
         with pytest.raises(configuration.ConfigurationError, match="finite"):
-            with dataretrieval.configure(stall_timeout=bad):
-                pass
+            Configuration(stall_timeout=bad)
 
 
 def test_stall_timeout_resolves_through_the_chain(config_file, monkeypatch):
@@ -1025,8 +1144,71 @@ def test_stall_timeout_resolves_through_the_chain(config_file, monkeypatch):
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "42")
     assert configuration.stall_timeout() == 42
 
-    with dataretrieval.configure(stall_timeout=2.5):
+    with dataretrieval.configure(Configuration(stall_timeout=2.5)):
         assert configuration.stall_timeout() == 2.5
+
+
+def test_base_url_applies_from_code_and_is_refused_from_the_file(config_file):
+    """A redirect belongs where a reader of the script sees it (ADR 0011).
+
+    A configuration file that silently sent a data-retrieval library to another
+    host would be a supply-chain-shaped hazard, so the file refuses the setting
+    outright rather than accepting it and being trusted.
+    """
+    config_file("")
+
+    with dataretrieval.configure(
+        WaterdataConfiguration(base_url="https://mirror.example/ogcapi")
+    ):
+        assert configuration.base_url(adapter="waterdata") == (
+            "https://mirror.example/ogcapi"
+        )
+        # It names one service, so it never reaches another.
+        assert configuration.base_url(adapter="ngwmn") is None
+    assert configuration.base_url(adapter="waterdata") is None
+
+    for text in (
+        'base_url = "https://evil.example"\n',
+        "[waterdata]\nbase_url = 'x'\n",
+    ):
+        config_file(text)
+        with pytest.raises(
+            configuration.ConfigurationError, match="only be set in code"
+        ):
+            configuration.base_url(adapter="waterdata")
+
+
+def test_base_url_must_be_an_absolute_http_url():
+    """A bare host would fail far from here, inside the request builder."""
+    with pytest.raises(configuration.ConfigurationError, match="absolute"):
+        WaterdataConfiguration(base_url="mirror.example")
+    with pytest.raises(configuration.ConfigurationError, match="absolute"):
+        WaterdataConfiguration(base_url="file:///etc/passwd")
+
+
+def test_the_validate_hook_can_refuse_a_combination():
+    """Per-setting grammar is shared with the file; this is for the rest."""
+
+    @dataclass(frozen=True)
+    class Fussy(configuration.BaseConfiguration):
+        adapter: ClassVar[str] = "waterdata"
+
+        concurrency: int | str | None = configuration._UNSET
+        parallel_chunks: int | None = configuration._UNSET
+
+        def validate(self) -> None:
+            supplied = self.values()
+            if supplied.get("parallel_chunks", 1) > supplied.get("concurrency", 1):
+                raise configuration.ConfigurationError(
+                    "parallel_chunks above concurrency only queues sub-requests."
+                )
+
+    assert Fussy(concurrency=8, parallel_chunks=4).settings() == {
+        "concurrency",
+        "parallel_chunks",
+    }
+    with pytest.raises(configuration.ConfigurationError, match="only queues"):
+        Fussy(concurrency=2, parallel_chunks=8)
 
 
 def test_show_configuration_lists_only_real_overrides(config_file):
@@ -1055,8 +1237,8 @@ def test_inner_block_can_lower_a_setting_an_outer_block_scoped(config_file):
     """
     config_file("")
 
-    with dataretrieval.configure(waterdata={"concurrency": 32}):
-        with dataretrieval.configure(concurrency=1):
+    with dataretrieval.configure(WaterdataConfiguration(concurrency=32)):
+        with dataretrieval.configure(Configuration(concurrency=1)):
             assert configuration.concurrency(adapter="waterdata") == 1
         assert configuration.concurrency(adapter="waterdata") == 32
 
@@ -1065,7 +1247,9 @@ def test_adapter_scope_still_wins_within_one_block(config_file):
     """Depth breaks ties between blocks, never within one."""
     config_file("")
 
-    with dataretrieval.configure(concurrency=16, waterdata={"concurrency": 4}):
+    with dataretrieval.configure(
+        Configuration(concurrency=16), WaterdataConfiguration(concurrency=4)
+    ):
         assert configuration.concurrency(adapter="waterdata") == 4
         assert configuration.concurrency(adapter="wqp") == 16
 
@@ -1073,13 +1257,13 @@ def test_adapter_scope_still_wins_within_one_block(config_file):
 def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
     """``parallel_chunks(n)`` is a per-call request and must not be discarded.
 
-    It delegates to ``configure(parallel_chunks=n)``, which writes the
-    package-wide key -- so before depth was tracked, any enclosing
-    ``configure(waterdata={"parallel_chunks": ...})`` silently outranked it.
+    It delegates to a package-wide ``Configuration``, so it writes the
+    package-wide key -- and before blocks were kept as separate frames, any
+    enclosing ``WaterdataConfiguration(parallel_chunks=...)`` outranked it.
     """
     from dataretrieval.waterdata import parallel_chunks
 
-    with dataretrieval.configure(waterdata={"parallel_chunks": 2}):
+    with dataretrieval.configure(WaterdataConfiguration(parallel_chunks=2)):
         with parallel_chunks(16):
             assert configuration.parallel_chunks(adapter="waterdata") == 16
         assert configuration.parallel_chunks(adapter="waterdata") == 2

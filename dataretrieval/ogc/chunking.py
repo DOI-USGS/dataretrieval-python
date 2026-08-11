@@ -178,11 +178,13 @@ def parallel_chunks(n: int) -> Iterator[None]:
     # Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared
     # rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).
     _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
-    # Sugar for ``configure(parallel_chunks=n)`` rather than a second scope of
+    # Sugar for a package-wide ``Configuration`` rather than a second scope of
     # its own: two competing ContextVars would let ``show_configuration()`` report a
     # value the chunker does not use. Sharing one means the innermost block
-    # wins, whichever spelling opened it.
-    with _configuration.configure(parallel_chunks=n):
+    # wins, whichever spelling opened it -- and package-wide rather than scoped
+    # to one adapter, because this block is a per-call request that must reach
+    # whichever adapter the call goes to.
+    with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
         yield
 
 

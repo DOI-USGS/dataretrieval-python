@@ -11,17 +11,20 @@ See https://waterqualitydata.us/webservices_documentation for the API reference.
 from __future__ import annotations
 
 import warnings
+from dataclasses import dataclass
 from io import StringIO
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
 
 __all__ = [
+    "WqpConfiguration",
     "get_results",
     "what_sites",
     "what_organizations",
@@ -761,3 +764,35 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
             _warn_wqx3_unavailable()
             warnings.simplefilter("ignore", DeprecationWarning)
         return wqp_url(service)
+
+
+@dataclass(frozen=True)
+class WqpConfiguration(BaseConfiguration):
+    """Settings for Water Quality Portal calls alone.
+
+    No fan-out dials: a WQP query is answered by a single request, so a
+    concurrency cap could only report a number nothing honours.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` so a
+    setting's definition sits with the code that reads it (ADR 0011).
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Where to send this service's requests, instead of its own base.
+        Code only -- the file and the environment refuse it.
+    """
+
+    adapter: ClassVar[str] = "wqp"
+
+    retries: int | None = _UNSET
+    stall_timeout: float | int | None = _UNSET
+    base_url: str | None = _UNSET
+
+
+_register(WqpConfiguration)

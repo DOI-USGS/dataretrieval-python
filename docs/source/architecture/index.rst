@@ -277,9 +277,13 @@ Resource and configuration view
 -------------------------------
 
 Every setting resolves per key through an active ``configure()`` block, its
-environment variable when one exists, the selected profile and top-level
+environment variable when one exists, the adapter's own table and the top-level
 values in ``~/.dataretrieval/config.toml``, then its built-in default.
-``show_configuration()`` reports the effective source while redacting credentials.
+``configure()`` takes configuration objects -- a package-wide ``Configuration``
+and at most one per adapter -- and each adapter's class is defined in the module
+that reads those settings, so ``configuration`` stays a leaf holding only the
+adapter roster. ``show_configuration()`` reports the effective source while
+redacting credentials.
 
 The settings themselves -- names, defaults, environment variables, and the
 config-file format -- are catalogued once in the

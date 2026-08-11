@@ -39,6 +39,7 @@ from dataretrieval.combining import (
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
+from dataretrieval.configuration import Configuration
 from dataretrieval.exceptions import (
     DataRetrievalError,
     NetworkError,
@@ -764,7 +765,7 @@ def test_resume_reads_concurrency_from_the_caller_not_the_snapshot(monkeypatch):
 
     monkeypatch.setattr(_chunking.ChunkedCall, "_run", spy_run)
 
-    with dataretrieval.configure(concurrency=2):
+    with dataretrieval.configure(Configuration(concurrency=2)):
         excinfo.value.call.resume()
 
     assert seen == [2], seen
@@ -1697,7 +1698,7 @@ def test_configure_concurrency_controls_dispatch(monkeypatch):
         _concurrency_probe(in_flight)
     )
 
-    with dataretrieval.configure(concurrency=2):
+    with dataretrieval.configure(Configuration(concurrency=2)):
         df, _ = fetch({"sites": list(_EIGHT_SINGLETON_SITES)})
 
     assert len(df) == len(_EIGHT_SINGLETON_SITES)
@@ -2454,7 +2455,9 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
         with parallel_chunks(2):
             assert _configuration.parallel_chunks() == 2
         assert _configuration.parallel_chunks() == 32  # outer restored
-        with dataretrieval.configure(parallel_chunks=4):  # the other spelling
+        with dataretrieval.configure(
+            Configuration(parallel_chunks=4)
+        ):  # the other spelling
             assert _configuration.parallel_chunks() == 4
         assert _configuration.parallel_chunks() == 32
     assert _configuration.parallel_chunks() == 1  # default (off) outside any block
