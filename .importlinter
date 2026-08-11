@@ -63,10 +63,15 @@ ignore_imports =
     dataretrieval -> dataretrieval.ogc.chunking
 
 [importlinter:contract:ogc-facade]
-name = NGWMN consumes the OGC facade only, never its internals (ADR 0007)
+name = Facade-only OGC consumers, never its internals (ADR 0007)
 type = forbidden
+; Listed per module rather than by package: most of ``waterdata`` (``ratings``,
+; ``reference``, ``samples``, ``stats``, the package ``__init__``) legitimately
+; imports ``ogc`` internals today, so only the modules that have earned the
+; facade-only seam belong here.
 source_modules =
     dataretrieval.ngwmn
+    dataretrieval.waterdata.cql
 ; The wildcard is what makes this durable: a new ``ogc`` submodule is covered
 ; the day it is added, without editing this contract.
 forbidden_modules =
@@ -74,17 +79,6 @@ forbidden_modules =
 ; Direct imports only. Reaching an internal *through* the facade is the design,
 ; not a violation -- ``ngwmn -> ogc -> ogc.engine`` is how the seam is supposed
 ; to work, and the default (indirect included) forbids exactly that.
-allow_indirect_imports = True
-
-[importlinter:contract:cql-facade]
-name = get_cql consumes the OGC facade only, never its internals (ADR 0007)
-type = forbidden
-source_modules =
-    dataretrieval.waterdata.cql
-; Same shape as the NGWMN contract above: the facade is the whole seam, and
-; the wildcard covers any new ``ogc`` submodule the day it is added.
-forbidden_modules =
-    dataretrieval.ogc.**
 allow_indirect_imports = True
 
 [importlinter:contract:ogc-internal-seams]

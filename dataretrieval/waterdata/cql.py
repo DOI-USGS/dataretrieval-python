@@ -14,13 +14,11 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval.ogc import get_ogc_data, prepare_request_args
 from dataretrieval.waterdata.utils import (
-    _EXTRA_ID_COLS,
     _OUTPUT_ID_BY_COLLECTION,
-    OGC_API_URL,
-    WATERDATA_DIALECT,
     _accept_legacy_kwargs,
+    _get_args,
+    get_ogc_data,
 )
 
 if TYPE_CHECKING:
@@ -143,7 +141,6 @@ def get_cql(
             f"Unknown collection {collection!r}. Valid collections: "
             f"{sorted(_OUTPUT_ID_BY_COLLECTION)}."
         )
-    output_id = _OUTPUT_ID_BY_COLLECTION[collection]
 
     # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a
@@ -151,10 +148,11 @@ def get_cql(
     body = json.dumps(cql, separators=(",", ":")) if isinstance(cql, dict) else cql
 
     # The engine owns the rest — the wire-properties id-switch, request
-    # construction, pagination, and finalization — behind the same facade
+    # construction, pagination, and finalization — behind the same Water Data
     # entry the typed getters use; ``cql_body`` selects the verbatim-CQL2
-    # shape. This adapter contributes only the Water Data specifics.
-    args = prepare_request_args(
+    # shape. ``output_id`` defaults from the collection map, which the guard
+    # above has already confirmed covers ``collection``.
+    args = _get_args(
         {
             "properties": properties,
             "bbox": bbox,
@@ -163,15 +161,7 @@ def get_cql(
             "convert_type": convert_type,
         }
     )
-    return get_ogc_data(
-        args,
-        collection,
-        output_id,
-        base_url=OGC_API_URL,
-        extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
-        cql_body=body,
-    )
+    return get_ogc_data(args, collection, cql_body=body)
 
 
 __all__ = ["get_cql"]

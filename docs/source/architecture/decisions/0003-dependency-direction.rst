@@ -47,7 +47,7 @@ Compliance
 ----------
 
 ``.importlinter`` is the single authority for dependency direction. It declares
-the layer stack, the allowlist of OGC consumers, NGWMN's facade-only seam, OGC's
+the layer stack, the allowlist of OGC consumers, the facade-only seam, OGC's
 independence from legacy utilities, the NWIS quarantine, and collection-family
 independence; ``lint-imports`` checks all of it against the transitive import
 graph in pre-commit and CI. A boundary that legitimately moves is one edit, in
@@ -63,12 +63,13 @@ forbidden, and full-graph cycle detection. Import Linter's
 and one of its descendants. A new rule that is purely about module-to-module
 direction belongs in ``.importlinter``.
 
-Named contracts verify the current boundaries: NGWMN's only OGC dependency is
-the facade, ``ogc.shaping`` does not depend on ``ogc.engine``, Water Use and the
-other non-OGC adapters cannot reach the OGC subsystem at all. The fitness
-functions verify that the runtime graph is acyclic package-wide rather than only
-within ``ogc`` and ``transport``. ``waterdata.utils`` not bulk re-exporting
-private OGC helpers stays there too, because that claim is about the module's
+Named contracts verify the current boundaries: the only OGC dependency of
+NGWMN and ``waterdata.cql`` is the facade, ``ogc.shaping`` does not depend on
+``ogc.engine``, Water Use and the other non-OGC adapters cannot reach the OGC
+subsystem at all. The fitness functions verify that the runtime graph is
+acyclic package-wide rather than only within ``ogc`` and ``transport``.
+``waterdata.utils`` not bulk re-exporting private OGC helpers stays there too,
+because that claim is about the module's
 ``__all__``.
 
 The OGC consumer list is an allowlist, so a new service module is refused until

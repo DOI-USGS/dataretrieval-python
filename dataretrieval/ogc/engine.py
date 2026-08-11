@@ -274,15 +274,11 @@ def get_ogc_data(
         Defaults to a plain OGC API with neither.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
-        building the query from ``args``. The one entry point for queries the
-        typed argument model cannot express (top-level ``or``, ``like``
-        wildcards, nested boolean trees). With a body, only the
+        building the query from ``args``. With a body, only the
         ``properties``, ``bbox``, ``limit``, ``skip_geometry``, and
         ``convert_type`` keys of ``args`` are consulted; there are no
         multi-value axes to chunk, and the body's size is the server's
-        judgement (mirroring the planner's cql-json passthrough), so the
-        request is driven as a one-item fan-out with the same retry,
-        progress, interruption, and finalization as every chunked call.
+        judgement, mirroring the planner's cql-json passthrough.
 
     Returns
     -------
@@ -346,16 +342,11 @@ def get_ogc_data(
             collection,
             cql_body,
             base_url=base_url,
-            properties=args.get("properties") or None,
+            properties=args.get("properties"),
             bbox=args.get("bbox"),
             limit=args.get("limit"),
             skip_geometry=args.get("skip_geometry"),
         )
-
-        async def _fetch_cql(
-            request: httpx.Request,
-        ) -> tuple[pd.DataFrame, httpx.Response]:
-            return await _walk_pages(geopd=GEOPANDAS, req=request, row_cap=max_rows)
 
         # A one-item fan-out: same executor, retry, progress line, and
         # resumable-interruption semantics as the chunked path — and the same
@@ -363,7 +354,7 @@ def get_ogc_data(
         # ``(df, BaseMetadata)`` shape rather than a raw response pair.
         return FanOut(
             [req],
-            _fetch_cql,
+            functools.partial(_walk_pages, GEOPANDAS, row_cap=max_rows),
             RetryPolicy.from_env(),
             finalize,
             canonical_url=str(req.url),
