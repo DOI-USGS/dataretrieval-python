@@ -101,10 +101,11 @@ Shared components
     (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
     ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
     Internally, ``policy`` defines the dialect type, control validation, and
-    endpoint constants; ``context`` owns ambient base URL, dialect, and row cap
-    state; ``requests`` owns argument normalization and HTTP request
-    construction; ``schema`` executes queryables/schema requests; ``engine``
-    supplies OGC cursor and response strategies to transport pagination;
+    endpoint constants; ``requests`` owns argument normalization and HTTP
+    request construction, taking the target ``base_url`` and ``dialect`` as
+    explicit parameters; ``schema`` executes queryables/schema requests;
+    ``engine`` supplies OGC cursor and response strategies to transport
+    pagination and binds per-call state into its fetch closures;
     ``planning`` determines chunk boundaries; ``chunking`` connects those plans
     to the shared fan-out executor and retains compatibility aliases;
     ``interruptions`` and ``retry`` re-export their moved compatibility

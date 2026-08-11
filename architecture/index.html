@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+gd5eab2077 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+gf31b47301 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=fde7ea40"></script>
+      <script src="../_static/documentation_options.js?v=e52d37ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -190,10 +190,11 @@ policy. Their return types intentionally reflect their upstream data models.</p>
 (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>) exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>,
 <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>, <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code>, and <code class="docutils literal notranslate"><span class="pre">fetch_ogc_request</span></code>.
 Internally, <code class="docutils literal notranslate"><span class="pre">policy</span></code> defines the dialect type, control validation, and
-endpoint constants; <code class="docutils literal notranslate"><span class="pre">context</span></code> owns ambient base URL, dialect, and row cap
-state; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP request
-construction; <code class="docutils literal notranslate"><span class="pre">schema</span></code> executes queryables/schema requests; <code class="docutils literal notranslate"><span class="pre">engine</span></code>
-supplies OGC cursor and response strategies to transport pagination;
+endpoint constants; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP
+request construction, taking the target <code class="docutils literal notranslate"><span class="pre">base_url</span></code> and <code class="docutils literal notranslate"><span class="pre">dialect</span></code> as
+explicit parameters; <code class="docutils literal notranslate"><span class="pre">schema</span></code> executes queryables/schema requests;
+<code class="docutils literal notranslate"><span class="pre">engine</span></code> supplies OGC cursor and response strategies to transport
+pagination and binds per-call state into its fetch closures;
 <code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries; <code class="docutils literal notranslate"><span class="pre">chunking</span></code> connects those plans
 to the shared fan-out executor and retains compatibility aliases;
 <code class="docutils literal notranslate"><span class="pre">interruptions</span></code> and <code class="docutils literal notranslate"><span class="pre">retry</span></code> re-export their moved compatibility
