@@ -35,8 +35,12 @@ class WaterdataConfiguration(BaseConfiguration):
     stall_timeout : float, optional
         Seconds a call may go without receiving any data before retrying stops.
     base_url : str, optional
-        Where to send Water Data requests, instead of the service's own base.
-        Code only -- the file and the environment refuse it.
+        Root to send Water Data requests to, instead of the service's own. The
+        package appends its own paths, so one value moves all four families
+        together -- ``/ogcapi/v0``, ``/samples-data``, ``/statistics/v0`` and
+        ``/stac/v0``. Code only: the file and the environment refuse it. The
+        API key is scoped to the host that honors it, so a redirected call
+        carries no key.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional

@@ -15,6 +15,7 @@ import pytest
 import dataretrieval
 from dataretrieval import configuration, nwdc
 from dataretrieval import progress as _progress
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.nwdc import _next_page_url, _resolve_locations, get_wateruse
 from dataretrieval.transport import fanout as _fanout
 from dataretrieval.utils import BaseMetadata
@@ -513,6 +514,67 @@ def test_next_page_url_strips_credentials_from_the_cursor():
     with httpx.Client(transport=httpx.MockTransport(capture)) as client:
         client.get(cursor)
     assert sent["auth"] is None
+
+
+def test_a_configured_base_url_redirects_the_request(httpx_mock):
+    """The whole call moves, page walk included, or the redirect is a half-truth.
+
+    The page-two mock is served from the mirror and its cursor names the mirror:
+    if either the request or the ``rel="next"`` walk had stayed on the NWDC's
+    host, one of them would go unmocked and this would fail rather than quietly
+    talk to the service the block redirected away from.
+    """
+    mirror = re.compile(r"^https://mirror\.example/data")
+    httpx_mock.add_response(
+        method="GET",
+        url=mirror,
+        text=_CSV_P1,
+        headers={"link": '<https://mirror.example/data?skip=2>; rel="next"'},
+    )
+    httpx_mock.add_response(method="GET", url=mirror, text=_CSV_P2)
+
+    with dataretrieval.configure(
+        nwdc.NwdcConfiguration(base_url="https://mirror.example/data")
+    ):
+        df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert len(df) == 3
+    assert [urlsplit(str(r.url)).netloc for r in httpx_mock.get_requests()] == [
+        "mirror.example",
+        "mirror.example",
+    ]
+
+
+def test_next_page_url_drops_the_service_rewrite_when_redirected():
+    """The alias list and the rewrite are facts about the NWDC, not about URLs.
+
+    Nothing but the NWDC answers for ``water.usgs.gov``, so a call an
+    ``NwdcConfiguration(base_url=...)`` pointed elsewhere gets the general rule
+    instead: follow a link only back to the host that served the page. Keeping
+    the rewrite would send page two of a mirrored query to the USGS -- and
+    refusing the mirror's own cursor would throw away page one.
+    """
+    mirrored = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<https://mirror.example/data?skip=600>; rel="next"'},
+        request=httpx.Request("GET", "https://mirror.example/data"),
+    )
+
+    assert _next_page_url(mirrored, host="mirror.example") == (
+        "https://mirror.example/data?skip=600"
+    )
+
+    # A cursor back to the real service is now the cross-host case, refused for
+    # the same reason a foreign link is refused on an ordinary call.
+    strayed = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<https://api.water.usgs.gov/nwaa-data/data>; rel="next"'},
+        request=httpx.Request("GET", "https://mirror.example/data"),
+    )
+    with pytest.raises(DataRetrievalError, match="cross-host"):
+        _next_page_url(strayed, host="mirror.example")
 
 
 def test_module_exposes_catalog_constants():

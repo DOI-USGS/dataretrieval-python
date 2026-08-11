@@ -30,7 +30,7 @@ from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.endpoints import STATISTICS_API_URL
+from dataretrieval.waterdata.endpoints import STATISTICS_API_URL, redirected
 
 __all__ = ["get_data"]
 
@@ -249,7 +249,7 @@ def get_data(
         :doc:`/userguide/errors`).
     """
 
-    url = f"{STATISTICS_API_URL}/{service}"
+    url = f"{redirected(STATISTICS_API_URL)}/{service}"
     req = httpx.Request(
         method="GET",
         url=url,

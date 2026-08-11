@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import Any, ClassVar, Literal, cast
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _query_with_retry
 from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 
@@ -36,6 +37,19 @@ NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
+
+
+def _api_base() -> str:
+    """The NLDI base this call targets: a block's redirect, or the service's.
+
+    Every URL below is built from this rather than from
+    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
+    reaches every navigation, basin, and catalog request alike -- a redirect
+    that covered only some of them would leave the library asking the real
+    service about the mirror's data. Resolved per call, because a ``configure``
+    block is scoped to a ``with`` statement rather than to the process.
+    """
+    return _configuration.base_url(adapter="nldi") or NLDI_API_BASE_URL
 
 
 def _query_nldi(
@@ -188,7 +202,7 @@ def get_basin(
     if not feature_id:
         raise ValueError("feature_id is required")
 
-    url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/basin"
+    url = f"{_api_base()}/{feature_source}/{feature_id}/basin"
     simplified_str = str(simplified).lower()
     split_catchment_str = str(split_catchment).lower()
     query_params = {
@@ -298,7 +312,7 @@ def _navigation_request(
     string keeps its documented parameter order.
     """
     origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
-    url = f"{NLDI_API_BASE_URL}/{origin}/navigation/{navigation_mode}/{tail}"
+    url = f"{_api_base()}/{origin}/navigation/{navigation_mode}/{tail}"
     return url, {"distance": str(distance)}
 
 
@@ -329,7 +343,7 @@ def _get_features_request(
                 "Provide only one origin type - feature_source and feature_id cannot"
                 " be provided with lat or long"
             )
-        return f"{NLDI_API_BASE_URL}/comid/position", {"coords": f"POINT({long} {lat})"}
+        return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
     if (comid is not None or data_source is not None) and navigation_mode is None:
         raise ValueError(
@@ -343,7 +357,7 @@ def _get_features_request(
         _validate_data_source(feature_source)
 
     if not navigation_mode:
-        return f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}", {}
+        return f"{_api_base()}/{feature_source}/{feature_id}", {}
 
     navigation_mode = _validate_navigation_mode(navigation_mode)
     url, query_params = _navigation_request(
@@ -388,7 +402,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     """
     # validate the data source
     _validate_data_source(data_source)
-    url = f"{NLDI_API_BASE_URL}/{data_source}"
+    url = f"{_api_base()}/{data_source}"
     feature_collection = cast("dict[str, Any]", _query_nldi(url, {}))
     gdf = _features_to_gdf(feature_collection)
     return gdf
@@ -536,7 +550,7 @@ def _validate_data_source(data_source: str) -> None:
 
     # get the available data/feature sources - if not already cached
     if _AVAILABLE_DATA_SOURCES is None:
-        url = f"{NLDI_API_BASE_URL}/"
+        url = f"{_api_base()}/"
         available_data_sources = _query_nldi(url, {})
         if not isinstance(available_data_sources, list) or not all(
             isinstance(ds, dict) and "source" in ds for ds in available_data_sources
@@ -610,8 +624,10 @@ class NldiConfiguration(BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Where to send this service's requests, instead of its own base.
-        Code only -- the file and the environment refuse it.
+        Linked-data base to send NLDI requests to, instead of the
+        service's own (``NLDI_API_BASE_URL``). Every navigation, basin
+        and catalog request is built on it. Code only: the file and the
+        environment refuse it.
     """
 
     adapter: ClassVar[str] = "nldi"

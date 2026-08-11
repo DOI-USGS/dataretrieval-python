@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 
@@ -44,6 +45,11 @@ if TYPE_CHECKING:
     import httpx
     from pandas import DataFrame
 
+
+#: Root the Water Quality Portal serves both its interfaces from. Private
+#: because the two builders below are the documented way to name a WQP URL;
+#: this is only the piece they share, and the piece a redirect replaces.
+_WQP_BASE_URL = "https://www.waterqualitydata.us"
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
 result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
@@ -635,22 +641,33 @@ def _validate_service(service: str, valid_services: list[str], profile: str) -> 
         )
 
 
+def _service_base() -> str:
+    """The WQP root this call targets: a block's redirect, or the portal's own.
+
+    The portal serves the legacy and WQX3 interfaces from one root under
+    different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
+    both follow it. Redirecting only the interface a caller happened to use
+    first would leave the other pointed at the service they were trying not to
+    talk to. Resolved per call, because a ``configure`` block is scoped to a
+    ``with`` statement.
+    """
+    return _configuration.base_url(adapter="wqp") or _WQP_BASE_URL
+
+
 def wqp_url(service: str) -> str:
     """Construct the WQP URL for a given service."""
 
-    base_url = "https://www.waterqualitydata.us/data/"
     _warn_legacy_use()
     _validate_service(service, services_legacy, "Legacy")
-    return f"{base_url}{service}/Search?"
+    return f"{_service_base()}/data/{service}/Search?"
 
 
 def wqx3_url(service: str) -> str:
     """Construct the WQP URL for a given WQX 3.0 service."""
 
-    base_url = "https://www.waterqualitydata.us/wqx3/"
     _warn_wqx3_use()
     _validate_service(service, services_wqx3, "WQX3.0")
-    return f"{base_url}{service}/search?"
+    return f"{_service_base()}/wqx3/{service}/search?"
 
 
 class WQP_Metadata(BaseMetadata):
@@ -784,8 +801,10 @@ class WqpConfiguration(BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Where to send this service's requests, instead of its own base.
-        Code only -- the file and the environment refuse it.
+        Root to send WQP requests to, instead of the portal's own. Both
+        interfaces hang off it, so one value moves the legacy ``/data/``
+        and the WQX3 ``/wqx3/`` paths together. Code only: the file and
+        the environment refuse it.
     """
 
     adapter: ClassVar[str] = "wqp"

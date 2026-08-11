@@ -29,7 +29,12 @@ from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
 # Endpoint constants live in one place for the whole collection; they are re-bound
 # here because ``waterdata.utils.OGC_API_URL`` is a documented path.
-from dataretrieval.waterdata.endpoints import BASE_URL, OGC_API_URL, SAMPLES_URL
+from dataretrieval.waterdata.endpoints import (
+    BASE_URL,
+    OGC_API_URL,
+    SAMPLES_URL,
+    redirected,
+)
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -262,7 +267,11 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        base_url=OGC_API_URL,
+        # ``redirected`` honors a ``WaterdataConfiguration(base_url=...)`` set
+        # by an enclosing ``configure`` block, and is a no-op otherwise. Called
+        # here rather than bound once at import because the block is scoped to
+        # a ``with`` statement.
+        base_url=redirected(OGC_API_URL),
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
         # Which settings table these calls read. Declared here, in the one

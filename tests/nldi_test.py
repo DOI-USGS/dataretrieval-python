@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 from geopandas import GeoDataFrame
 
+import dataretrieval
 import dataretrieval.nldi as nldi
 from dataretrieval.nldi import (
     NLDI_API_BASE_URL,
@@ -442,3 +443,33 @@ def test_query_504_raises_service_unavailable(httpx_mock):
     # legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
     with pytest.raises(ServiceUnavailable, match="504"):
         query(url, {"a": "1"})
+
+
+def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
+    """The block moves the catalog probe and the query alike.
+
+    NLDI validates a feature source against a catalog it fetches itself, so a
+    redirect that reached only the getter's own URL would leave the library
+    asking the real service whether the mirror's sources exist -- and the mirror
+    exists precisely because the caller cannot or should not reach the service.
+    Both mocks are on the mirror, so either one straying fails this.
+    """
+    mirror = "https://mirror.example/nldi"
+    httpx_mock.add_response(
+        method="GET", url=f"{mirror}/", json=[{"source": "WQP"}, {"source": "comid"}]
+    )
+    with open("tests/data/nldi_get_basin.json") as body:
+        httpx_mock.add_response(
+            method="GET",
+            url=(
+                f"{mirror}/WQP/USGS-054279485/basin"
+                "?simplified=true&splitCatchment=false"
+            ),
+            text=body.read(),
+        )
+
+    with dataretrieval.configure(nldi.NldiConfiguration(base_url=mirror)):
+        gdf = get_basin(feature_source="WQP", feature_id="USGS-054279485")
+
+    assert isinstance(gdf, GeoDataFrame)
+    assert {str(r.url).startswith(mirror) for r in httpx_mock.get_requests()} == {True}

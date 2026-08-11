@@ -31,6 +31,7 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.http import (
     get as _get,
 )
+from dataretrieval.waterdata.endpoints import redirected
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     PROFILES,
@@ -70,7 +71,13 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
             f"Valid options are: {valid_code_services}."
         )
 
-    url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
+    # ``redirected`` applies a ``WaterdataConfiguration(base_url=...)`` from an
+    # enclosing block; the Samples database is one of the four families that
+    # move together when a caller redirects the adapter.
+    url = (
+        f"{redirected(SAMPLES_URL)}/codeservice/{code_service}"
+        "?mimeType=application%2Fjson"
+    )
 
     response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
 
@@ -366,7 +373,7 @@ def get_samples(
     if "boundingBox" in params:
         params["boundingBox"] = to_str(params["boundingBox"])
 
-    url = f"{SAMPLES_URL}/{service}/{profile}"
+    url = f"{redirected(SAMPLES_URL)}/{service}/{profile}"
 
     df, response = _get_samples_csv(url, params, ssl_check)
     df = _attach_datetime_columns(df)
@@ -428,7 +435,7 @@ def get_samples_summary(
             f"request, got {type(monitoring_location_id).__name__}."
         )
 
-    url = f"{SAMPLES_URL}/summary/{quote(monitoring_location_id, safe='')}"
+    url = f"{redirected(SAMPLES_URL)}/summary/{quote(monitoring_location_id, safe='')}"
     params = {"mimeType": "text/csv"}
 
     df, response = _get_samples_csv(url, params, ssl_check)

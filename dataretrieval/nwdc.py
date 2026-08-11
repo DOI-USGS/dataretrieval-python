@@ -49,6 +49,7 @@ from typing import Any, ClassVar
 import httpx
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
@@ -244,20 +245,26 @@ def get_wateruse(
     # Drop params the caller left unset; the service rejects empty values.
     base_params = {k: v for k, v in base_params.items() if v is not None}
 
+    # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
+    # service's own endpoint. Resolved once per call -- the block is scoped to
+    # a ``with`` statement -- and threaded through every request and the page
+    # walk, so a redirected call cannot half-follow the redirect.
+    service_url = _configuration.base_url(adapter="nwdc") or WATERUSE_URL
+
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each handled by shared transport
     # pagination, and concatenate the results.
-    headers = default_headers(WATERUSE_URL)
+    headers = default_headers(service_url)
     requests = [
         httpx.Request(
             "GET",
-            WATERUSE_URL,
+            service_url,
             params={**base_params, "location": location},
             headers=headers,
         )
         for location in _resolve_locations(state, county, huc)
     ]
-    return _fan_out(requests, headers, ssl_check)
+    return _fan_out(requests, headers, ssl_check, host=httpx.URL(service_url).host)
 
 
 # Valid HUC code lengths (digits) → the hydrologic-unit level they query.
@@ -343,7 +350,11 @@ def _validate_huc(value: object) -> str:
 
 
 def _fan_out(
-    requests: list[httpx.Request], headers: dict[str, str], ssl_check: bool
+    requests: list[httpx.Request],
+    headers: dict[str, str],
+    ssl_check: bool,
+    *,
+    host: str = _WATERUSE_HOST,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Fetch every request (each paginated) over the shared fan-out executor.
 
@@ -369,7 +380,7 @@ def _fan_out(
     """
 
     def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
-        return _read_csv_page(response), _next_page_url(response)
+        return _read_csv_page(response), _next_page_url(response, host=host)
 
     async def follow(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
         return await sess.get(cursor, headers=headers)
@@ -430,7 +441,9 @@ def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
         ) from exc
 
 
-def _next_page_url(response: httpx.Response) -> str | None:
+def _next_page_url(
+    response: httpx.Response, *, host: str = _WATERUSE_HOST
+) -> str | None:
     """Return the absolute URL of the next page, or None if this is the last.
 
     Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx into
@@ -442,10 +455,19 @@ def _next_page_url(response: httpx.Response) -> str | None:
     cursor that still points somewhere else after that is refused -- following
     it would send Water Use requests, and any credentials on them, to a host the
     caller never asked for.
+
+    ``host`` is the host this call is actually talking to, which is not the
+    NWDC's when a ``configure`` block redirected the adapter. The alias list and
+    the rewrite are facts about *this* service -- nothing else answers for
+    ``water.usgs.gov`` -- so a redirected call gets the general rule instead:
+    follow a link only back to the host that served the page. Applying the
+    NWDC's rewrite there would send page two of a mirrored query to the USGS.
     """
     url = response.links.get("next", {}).get("url")
     if not url:
         return None
+    if host != _WATERUSE_HOST:
+        return resolve_next_url(url, response, service="Water Use")
     return resolve_next_url(
         url,
         response,
@@ -488,8 +510,10 @@ class NwdcConfiguration(BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Where to send this service's requests, instead of its own base.
-        Code only -- the file and the environment refuse it.
+        Endpoint to send NWDC requests to, instead of the service's own
+        (``WATERUSE_URL``). A ``rel="next"`` cursor is then followed only
+        back to that host, since the service's own host aliases mean
+        nothing there. Code only: the file and the environment refuse it.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     """

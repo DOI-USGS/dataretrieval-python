@@ -142,6 +142,16 @@ ENV_VARS: dict[str, str] = {
     "stall_timeout": "API_USGS_STALL_TIMEOUT",
 }
 
+#: Variables the environment is *refused* for, by setting. Named here rather
+#: than simply left out of :data:`ENV_VARS`, because leaving them out only makes
+#: the environment silent: a caller who exports ``API_USGS_BASE_URL`` -- the
+#: spelling every other setting's variable predicts -- has redirected nothing
+#: and would learn that from the traffic rather than from us. The file refuses
+#: the same key in the same words (:func:`_accepted_keys`), for the reason ADR
+#: 0011 gives: a redirect a shell profile or a config file can set is one no
+#: reader of the script can see.
+_REFUSED_ENV_VARS: dict[str, str] = {"base_url": "API_USGS_BASE_URL"}
+
 #: Environment variable holding an explicit path to the configuration file.
 CONFIG_PATH_ENV = "DATARETRIEVAL_CONFIG"
 
@@ -1127,10 +1137,17 @@ def base_url(*, adapter: str | None = None) -> str | None:
     """An adapter's configured base URL, or ``None`` for its built-in one.
 
     Settable from code only: an adapter configuration may carry it, and both
-    the file and the environment refuse it. A file that silently redirects a
-    data-retrieval library to another host is a supply-chain-shaped hazard,
-    while a ``configure`` block keeps the redirect where a reader of the script
-    sees it (ADR 0011).
+    the file and the environment refuse it -- the file at :func:`_accepted_keys`
+    and the environment at :data:`_REFUSED_ENV_VARS`, each with an error naming
+    the block to write instead. A file that silently redirects a data-retrieval
+    library to another host is a supply-chain-shaped hazard, while a
+    ``configure`` block keeps the redirect where a reader of the script sees it
+    (ADR 0011).
+
+    ``None`` rather than a default, because there is no one base URL: what an
+    adapter's requests are built on is the adapter's own fact. Each read site
+    spells its own fallback -- ``base_url(adapter="nldi") or NLDI_API_BASE_URL``
+    -- so the service's URL stays declared beside the service.
     """
     raw, source = _resolve("base_url", adapter)
     if raw is None:
@@ -1360,6 +1377,21 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
         its own blank-value rule), and where it came from -- ``None`` with
         ``_BUILT_IN`` when nothing configured it.
     """
+    # Refused before anything is consulted, not at the environment's turn in
+    # the chain. The file refuses ``base_url`` whether or not a block also set
+    # one -- it raises while the file is read -- and the two surfaces are one
+    # rule, so a variable that cannot work must not be silently outranked by a
+    # block that happens to work. Unsetting it is the only fix, and the message
+    # says so.
+    refused = _REFUSED_ENV_VARS.get(name)
+    if refused is not None and refused in os.environ:
+        raise ConfigurationError(
+            f"{_env_source_label(refused)} is set, but {name!r} may only be set "
+            "in code, in a configure() block, never from the environment. Unset "
+            f"it and pass the value on the adapter's configuration, e.g. "
+            f"WaterdataConfiguration({name}=...)."
+        )
+
     # ``None`` unless this adapter actually reads this setting, so a setting
     # outside its vocabulary resolves package-wide rather than looking for a
     # scope it could never have been written into.

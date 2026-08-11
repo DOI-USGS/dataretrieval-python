@@ -7,12 +7,14 @@ leaf -- the host that serves these endpoints is the host that honors the API
 key -- while the paths below stay here rather than importing OGC policy
 internals.
 
-This module imports nothing but that leaf, so a family module can name its
-endpoint without also taking on an OGC or transport edge.
+This module imports only leaves -- the credentials host and the configuration
+chain -- so a family module can name its endpoint, and honor a caller's
+redirect, without also taking on an OGC or transport edge.
 """
 
 from __future__ import annotations
 
+from dataretrieval import configuration as _configuration
 from dataretrieval.credentials import WATERDATA_BASE_URL
 
 #: Root of the modernized Water Data APIs.
@@ -31,6 +33,28 @@ STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
 #: STAC catalog serving NWIS rating-curve assets.
 STAC_URL = f"{BASE_URL}/stac/v0"
 
+
+def redirected(endpoint: str) -> str:
+    """Move one endpoint onto the base URL a ``configure`` block set, if any.
+
+    Water Data is one adapter serving four families -- OGC, samples,
+    statistics, ratings -- so ``WaterdataConfiguration(base_url=...)`` names the
+    *root* they all hang off, and every constant above is built from
+    :data:`BASE_URL` so that swapping that prefix moves all of them together. A
+    redirect that reached only the family a caller happened to call first would
+    send the rest to the service the caller was trying not to talk to, which is
+    the one mistake a redirect must not make.
+
+    Resolved per call rather than at import, because a ``configure`` block is
+    scoped to a ``with`` statement and delivered through a ``ContextVar``: a
+    constant computed once could only ever describe the process, not the call.
+    """
+    override = _configuration.base_url(adapter="waterdata")
+    if override is None:
+        return endpoint
+    return override + endpoint.removeprefix(BASE_URL)
+
+
 __all__ = [
     "BASE_URL",
     "OGC_API_URL",
@@ -38,4 +62,5 @@ __all__ = [
     "STAC_URL",
     "STATISTICS_API_URL",
     "STATISTICS_API_VERSION",
+    "redirected",
 ]

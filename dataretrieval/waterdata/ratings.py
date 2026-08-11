@@ -33,7 +33,7 @@ from dataretrieval.transport.http import (
     get as _get,
 )
 from dataretrieval.transport.links import resolve_next_url
-from dataretrieval.waterdata.endpoints import STAC_URL
+from dataretrieval.waterdata.endpoints import STAC_URL, redirected
 
 __all__ = ["get_ratings"]
 
@@ -252,7 +252,7 @@ def _search(
     if bbox is not None:
         query_params["bbox"] = ",".join(map(str, bbox))
 
-    url: str | None = f"{STAC_URL}/search"
+    url: str | None = f"{redirected(STAC_URL)}/search"
     # ``params`` is sent only on the first request; each STAC ``next`` link
     # already carries the query, so it is reset to None inside the loop.
     params: dict[str, Any] | None = query_params

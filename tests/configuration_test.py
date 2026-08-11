@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import io
+import json
 import os
 import pathlib
 import re
@@ -16,15 +17,31 @@ from typing import ClassVar
 import pytest
 
 import dataretrieval
-from dataretrieval import configuration
+from dataretrieval import configuration, streamstats, waterdata
 from dataretrieval.configuration import Configuration
 from dataretrieval.ngwmn import NgwmnConfiguration
 from dataretrieval.nwdc import DEFAULT_CONCURRENT_REQUESTS, NwdcConfiguration
+from dataretrieval.streamstats import StreamstatsConfiguration
 from dataretrieval.utils import _default_headers
-from dataretrieval.waterdata import WaterdataConfiguration
+from dataretrieval.waterdata import WaterdataConfiguration, endpoints
 from dataretrieval.wqp import WqpConfiguration
 
 WATERDATA_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
+
+# Where the base-URL tests redirect to. A host the suite can never reach, so a
+# redirect that failed to apply shows up as an unmocked request rather than as
+# a real one.
+_MIRROR = "https://mirror.example/waterdata"
+_MIRROR_RE = re.compile(r"^https://mirror\.example/")
+_WATERDATA_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/")
+
+# One committed page of the ``daily`` collection, shared with the Water Data
+# suite. Real response shape rather than a hand-made stub, so a redirect is
+# exercised through the same shaping the getters normally do; it carries no
+# ``links``, so nothing paginates.
+_DAILY_PAGE = json.loads(
+    (pathlib.Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
+)["daily"]
 
 
 @pytest.fixture
@@ -1358,6 +1375,124 @@ def test_base_url_must_be_an_absolute_http_url():
         WaterdataConfiguration(base_url="mirror.example")
     with pytest.raises(configuration.ConfigurationError, match="absolute"):
         WaterdataConfiguration(base_url="file:///etc/passwd")
+
+
+def test_base_url_is_refused_from_the_environment(monkeypatch):
+    """The environment is refused out loud, not merely unread.
+
+    ``API_USGS_BASE_URL`` is the spelling every other setting's variable
+    predicts, so a caller who exports it believes they have redirected
+    something. Leaving it out of ``ENV_VARS`` would make that belief wrong and
+    silent; the error names the block to write instead.
+    """
+    monkeypatch.setenv("API_USGS_BASE_URL", "https://evil.example")
+
+    with pytest.raises(configuration.ConfigurationError, match="only be set in code"):
+        configuration.base_url(adapter="waterdata")
+
+    # Refused even under a block that sets one, matching the file: the variable
+    # cannot work, and being quietly outranked is how it survives to a run where
+    # nothing outranks it. Unsetting it is the only fix.
+    with dataretrieval.configure(WaterdataConfiguration(base_url=_MIRROR)):
+        with pytest.raises(
+            configuration.ConfigurationError, match="only be set in code"
+        ):
+            configuration.base_url(adapter="waterdata")
+
+    # A configuration in this state is exactly what show_configuration() exists
+    # to explain, so it reports the failure rather than raising out of it.
+    out = io.StringIO()
+    dataretrieval.show_configuration(stream=out)
+    assert "only be set in code" in out.getvalue()
+
+
+def test_a_water_data_redirect_moves_every_endpoint_family():
+    """Water Data is one adapter serving four APIs, so all four move together.
+
+    A redirect that reached the OGC collections but left samples, statistics,
+    and ratings on the service's own host would send most of a caller's traffic
+    to the host they were redirecting away from -- the one mistake a redirect
+    must not make.
+    """
+    with dataretrieval.configure(WaterdataConfiguration(base_url=_MIRROR)):
+        moved = {
+            name: endpoints.redirected(getattr(endpoints, name))
+            for name in ("OGC_API_URL", "SAMPLES_URL", "STATISTICS_API_URL", "STAC_URL")
+        }
+
+    assert moved == {
+        "OGC_API_URL": f"{_MIRROR}/ogcapi/v0",
+        "SAMPLES_URL": f"{_MIRROR}/samples-data",
+        "STATISTICS_API_URL": f"{_MIRROR}/statistics/v0",
+        "STAC_URL": f"{_MIRROR}/stac/v0",
+    }
+    # Outside the block the constants are the service's own again.
+    assert endpoints.redirected(endpoints.OGC_API_URL) == endpoints.OGC_API_URL
+
+    # The swap is a prefix swap, so an endpoint declared on some other root
+    # would be rewritten into nonsense rather than moved. Derived from the
+    # module's exports so a fifth family added later is covered the day it
+    # lands, which the four literals above cannot be.
+    declared = [n for n in endpoints.__all__ if n.endswith("_URL") and n != "BASE_URL"]
+    assert declared and all(
+        getattr(endpoints, name).startswith(endpoints.BASE_URL) for name in declared
+    )
+
+
+def test_a_code_base_url_redirects_the_adapters_requests(httpx_mock):
+    """The setting has to move real traffic, not just resolve to a string.
+
+    Two adapters with unrelated request machinery -- the OGC engine and a plain
+    one-shot GET -- because "the configuration reaches the request" is a claim
+    about each adapter's wiring, and one of them passing says nothing about the
+    other.
+    """
+    httpx_mock.add_response(method=None, url=_MIRROR_RE, json=_DAILY_PAGE)
+    httpx_mock.add_response(method=None, url=_WATERDATA_RE, json=_DAILY_PAGE)
+
+    with dataretrieval.configure(WaterdataConfiguration(base_url=_MIRROR)):
+        waterdata.get_daily(monitoring_location_id="USGS-05427718")
+    redirected_url = str(httpx_mock.get_requests()[-1].url)
+
+    # Nothing configured: back to the service's own base, so the redirect is
+    # scoped to the block rather than latched somewhere at import.
+    waterdata.get_daily(monitoring_location_id="USGS-05427718")
+    direct_url = str(httpx_mock.get_requests()[-1].url)
+
+    assert redirected_url.startswith(f"{_MIRROR}/ogcapi/v0/collections/daily/items")
+    assert direct_url.startswith(f"{endpoints.OGC_API_URL}/collections/daily/items")
+
+    streamstats_mirror = "https://mirror.example/streamstats"
+    with dataretrieval.configure(StreamstatsConfiguration(base_url=streamstats_mirror)):
+        streamstats.download_workspace("workspace-id")
+    assert str(httpx_mock.get_requests()[-1].url).startswith(
+        f"{streamstats_mirror}/download"
+    )
+
+
+def test_a_redirected_adapter_is_not_sent_the_api_key(httpx_mock):
+    """The key is scoped to the host that honors it, and a mirror is not it.
+
+    ``credentials.accepts_api_key`` is checked where the header is attached, so
+    a redirect needs no second rule to be safe -- but "needs no rule" is exactly
+    the kind of claim that stops being true silently, and the cost of it being
+    wrong is a credential handed to whatever host the block named.
+    """
+    httpx_mock.add_response(method=None, url=_MIRROR_RE, json=_DAILY_PAGE)
+    httpx_mock.add_response(method=None, url=_WATERDATA_RE, json=_DAILY_PAGE)
+
+    with dataretrieval.configure(Configuration(api_key="secret")):
+        with dataretrieval.configure(WaterdataConfiguration(base_url=_MIRROR)):
+            waterdata.get_daily(monitoring_location_id="USGS-05427718")
+        redirected_request = httpx_mock.get_requests()[-1]
+
+        # The same key, the same call, the service's own host: the control that
+        # keeps this test from passing because no key was configured at all.
+        waterdata.get_daily(monitoring_location_id="USGS-05427718")
+        direct_request = httpx_mock.get_requests()[-1]
+
+    assert "X-Api-Key" not in redirected_request.headers
+    assert direct_request.headers["X-Api-Key"] == "secret"
 
 
 def test_the_validate_hook_can_refuse_a_combination():

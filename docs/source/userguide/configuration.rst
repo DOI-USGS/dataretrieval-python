@@ -62,7 +62,8 @@ Settings
      - *(none — code only)*
      - Where to send one service's requests. Per adapter, and settable only in
        a ``configure`` block: a file that silently redirected the library to
-       another host would be a supply-chain hazard.
+       another host would be a supply-chain hazard. See
+       :ref:`configuration-redirect`.
 
 
 Where settings come from
@@ -437,6 +438,55 @@ stays a single request.
 innermost block wins whichever spelling set it, and ``show_configuration()``
 always reports the value the chunker will actually use.
 
+
+.. _configuration-redirect:
+
+Pointing an adapter at another host
+-----------------------------------
+
+``base_url`` sends one adapter's requests somewhere else — a staging instance,
+a mirror, or a recording proxy — for the duration of a block:
+
+.. code-block:: python
+
+   import dataretrieval
+   from dataretrieval import waterdata
+   from dataretrieval.waterdata import WaterdataConfiguration
+
+   with dataretrieval.configure(
+       WaterdataConfiguration(base_url="https://staging.example/waterdata")
+   ):
+       df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
+
+It names one adapter, so nothing else moves: NGWMN is served from the same host
+as Water Data, and a ``WaterdataConfiguration`` still leaves it alone. What the
+value replaces is that adapter's own base, and the package appends its usual
+paths to it — for Water Data that is the root all four of its APIs hang off, so
+one value moves the OGC collections, the Samples database, the statistics
+service and the STAC catalog together.
+
+**Code only.** The configuration file and the environment both refuse it. A
+``base_url`` key anywhere in the file, and an exported ``API_USGS_BASE_URL``,
+each raise a ``ConfigurationError`` saying the setting *may only be set in
+code, in a configure() block* and naming the configuration to pass it on
+instead.
+
+A file or a shell export that silently redirected a data-retrieval library to
+another host would be a supply-chain hazard: nothing at the call site would
+show it, and a script that reads correctly would be talking to someone else's
+service. A ``with`` block keeps the redirect where a reader of the script sees
+it. The refusal is loud rather than silent for the same reason — a variable
+that was quietly ignored would leave you believing you had redirected
+something.
+
+**The API key does not follow.** It is scoped to the one host that honors it
+(:ref:`below <configuration-secret-store>`), so a redirected call goes out
+without it. That is deliberate: the host you redirected to is not the host you
+gave a credential to. If the mirror needs its own credential, it needs its own
+mechanism.
+
+
+.. _configuration-secret-store:
 
 Keeping a key out of your environment entirely
 ----------------------------------------------

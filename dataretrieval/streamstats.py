@@ -12,6 +12,7 @@ from typing import Any, ClassVar, cast
 
 import httpx
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _get_with_retry
 from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 from dataretrieval.transport.http import HTTPX_DEFAULTS
@@ -25,6 +26,17 @@ __all__ = [
 ]
 
 STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
+
+
+def _service_base() -> str:
+    """The StreamStats base this call targets: a block's redirect, or its own.
+
+    Both endpoints below hang off this, so a
+    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
+    than the one endpoint a caller happened to reach first. Resolved per call,
+    because a ``configure`` block is scoped to a ``with`` statement.
+    """
+    return _configuration.base_url(adapter="streamstats") or STREAMSTATS_URL
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -47,7 +59,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
     """
     payload = {"workspaceID": workspaceID, "format": format}
-    url = f"{STREAMSTATS_URL}/download"
+    url = f"{_service_base()}/download"
 
     r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
     return r
@@ -150,7 +162,7 @@ def get_watershed(
         "includefeatures": includefeatures,
         "simplify": simplify,
     }
-    url = f"{STREAMSTATS_URL}/watershed.geojson"
+    url = f"{_service_base()}/watershed.geojson"
 
     r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
 
@@ -243,8 +255,9 @@ class StreamstatsConfiguration(BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Where to send this service's requests, instead of its own base.
-        Code only -- the file and the environment refuse it.
+        Services base to send StreamStats requests to, instead of its own
+        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:
+        the file and the environment refuse it.
     """
 
     adapter: ClassVar[str] = "streamstats"

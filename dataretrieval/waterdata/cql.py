@@ -21,6 +21,7 @@ from dataretrieval.ogc.requests import (
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import _finalize_ogc
+from dataretrieval.waterdata.endpoints import redirected
 from dataretrieval.waterdata.utils import (
     _EXTRA_ID_COLS,
     _OUTPUT_ID_BY_COLLECTION,
@@ -165,11 +166,15 @@ def get_cql(
 
     # The OGC package names no collection of its own, so this hand-built request
     # path states the target itself -- to request construction and to the
-    # empty-result schema lookup in ``_finalize_ogc``.
+    # empty-result schema lookup in ``_finalize_ogc``. Resolved once so both
+    # reach the same API: a redirect that moved the query but left the schema
+    # lookup on the service's own host would describe one API's empty result
+    # with another's columns.
+    api_base = redirected(OGC_API_URL)
     req = _construct_cql_request(
         collection,
         body,
-        base_url=OGC_API_URL,
+        base_url=api_base,
         properties=wire_properties,
         bbox=bbox,
         limit=limit,
@@ -187,7 +192,7 @@ def get_cql(
         collection=collection,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
-        base_url=OGC_API_URL,
+        base_url=api_base,
     )
 
 

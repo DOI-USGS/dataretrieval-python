@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 from pandas import DataFrame
 
+import dataretrieval
 import dataretrieval.wqp as wqp
 from dataretrieval.wqp import (
     WQP_Metadata,
@@ -140,6 +141,30 @@ def test_wqp_url_profiles(builder, service, expected, warning):
     """Each profile keeps its warning policy and exact endpoint casing."""
     with pytest.warns(warning):
         assert builder(service) == expected
+
+
+def test_a_configured_base_url_moves_both_interfaces():
+    """One root, both paths: the portal serves legacy and WQX3 from one host.
+
+    Redirecting only the interface a caller happened to use first would leave
+    the other pointed at the service they were redirecting away from, which is
+    the failure a redirect exists to prevent.
+    """
+    mirror = "https://mirror.example/wqp"
+
+    with dataretrieval.configure(wqp.WqpConfiguration(base_url=mirror)):
+        with pytest.warns(DeprecationWarning):
+            legacy = wqp.wqp_url("Result")
+        with pytest.warns(UserWarning):
+            wqx3 = wqp.wqx3_url("Result")
+
+    assert legacy == f"{mirror}/data/Result/Search?"
+    assert wqx3 == f"{mirror}/wqx3/Result/search?"
+
+    # Outside the block, the portal's own root again -- the redirect is scoped
+    # to the ``with`` statement, not latched at import.
+    with pytest.warns(DeprecationWarning):
+        assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
 
 
 @pytest.mark.parametrize(

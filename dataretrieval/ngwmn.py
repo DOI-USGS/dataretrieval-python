@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
 from dataretrieval.credentials import WATERDATA_BASE_URL
@@ -107,7 +108,11 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
-        base_url=NGWMN_OGC_API_URL,
+        # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
+        # this service's own base. Resolved per call because the block is
+        # scoped to a ``with`` statement, and read here because this is the one
+        # place the NGWMN base is named.
+        base_url=_configuration.base_url(adapter="ngwmn") or NGWMN_OGC_API_URL,
         dialect=NGWMN_DIALECT,
         adapter="ngwmn",
     )
@@ -454,8 +459,10 @@ class NgwmnConfiguration(BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Where to send this service's requests, instead of its own base.
-        Code only -- the file and the environment refuse it.
+        OGC API base to send NGWMN requests to, instead of the service's
+        own (``NGWMN_OGC_API_URL``). Code only: the file and the
+        environment refuse it. The API key is scoped to the host that
+        honors it, so a redirected call carries no key.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional
