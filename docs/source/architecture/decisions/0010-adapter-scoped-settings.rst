@@ -4,9 +4,19 @@ ADR 0010: Adapter-scoped settings
 Status
 ------
 
-Accepted. Supersedes the "One flat set of setting names" and "Per-service
-overrides are deferred" clauses of :doc:`0009-layered-configuration`; the rest
-of ADR 0009 stands.
+Accepted, except for two clauses. Supersedes the "One flat set of setting
+names" and "Per-service overrides are deferred" clauses of
+:doc:`0009-layered-configuration`; the rest of ADR 0009 stands, subject to what
+ADR 0011 supersedes there.
+
+:doc:`0011-configuration-profiles` supersedes decisions 5 and 8 below --
+adapter schemas held centrally as ``TypedDict``, and each adapter a named
+keyword on ``configure()``. Each adapter now declares a ``BaseConfiguration``
+subclass in the module that *reads* those settings, and ``configure()`` takes
+instances of them positionally, which is what removes the adapter roster from
+the call site. The spelling shown in decision 1 goes with decision 8. Decisions
+2, 3, 4, 6 and 7 stand: the tiers, source-major precedence, package-wide
+environment variables, the host-scoped key, and the adapter names.
 
 Context
 -------
@@ -105,6 +115,14 @@ Settings are scoped to the **adapter**, not the service, and not the host.
                                     wqp={"retries": 2}):
            ...
 
+   .. note::
+
+      The file table stands; the ``configure()`` spelling above is superseded
+      by :doc:`0011-configuration-profiles` along with decision 8. One block
+      still configures several adapters at once, now as
+      ``configure(NgwmnConfiguration(concurrency=4),
+      WqpConfiguration(retries=2))``.
+
 2. **The top-level tier survives.** An adapter table *overrides* it per key; it
    does not replace it. Every setting still has a package-wide spelling, and
    the shipped ``API_USGS_*`` variables are package-wide by construction.
@@ -131,6 +149,12 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    annotations. A key an adapter does not accept raises ``ConfigurationError``
    at block entry, the way an unknown profile already does.
 
+   *Superseded by* :doc:`0011-configuration-profiles`. The schema is now a
+   frozen dataclass owned by the adapter, for the same "the annotations are the
+   schema" reason -- what changed is where it lives. A ``TypedDict`` had to be
+   declared centrally to annotate a central keyword, which put a Water Data
+   setting's definition in a module that knows nothing about Water Data.
+
 6. **The API key stays host-scoped and is not an adapter setting.**
    ``credentials`` keeps sole ownership of which host honors the key. There is
    no ``[ngwmn] api_key``.
@@ -147,6 +171,16 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    exists to turn a misspelled *setting* into a message naming the settings --
    ``configure(concurrancy=8)`` would otherwise be a bare ``TypeError``.
 
+   *Superseded by* :doc:`0011-configuration-profiles`. ``configure()`` takes
+   configuration objects positionally instead, so the adapter is named by the
+   class rather than by a keyword. The type checking survives -- a setting an
+   adapter does not read is not a field of its class -- and the catch-all is
+   no longer needed for a misspelling, because
+   ``WaterdataConfiguration(concurrancy=8)`` is already a ``TypeError`` naming
+   the keyword that does not exist. What the change buys is that ``configure()``
+   no longer enumerates the adapters at all: that enumeration was the roster
+   this ADR left spelled in four places.
+
 Consequences
 ------------
 
@@ -158,7 +192,9 @@ Consequences
   a hand-maintained table removes the failure mode where a new adapter setting
   is added and the validation table is not, and over a dataclass per adapter it
   keeps the payload a plain mapping, so the file and block paths share one
-  validator and ``config`` grows no runtime classes.
+  validator and ``configuration`` grows no runtime classes. *Superseded with
+  decision 5*: the classes exist, and live with their adapters rather than in
+  the leaf.
 
 - **A configuration object is still refused, but on narrower grounds than ADR
   0009 stated.** That ADR rejected an object because it had no way to *reach*
@@ -166,6 +202,12 @@ Consequences
   ``ContextVar`` remains the delivery mechanism and the type is only the
   payload's shape. ``TypedDict`` is chosen over a dataclass for the reason
   above, not because an object could not be delivered.
+
+  *Withdrawn by* :doc:`0011-configuration-profiles`, which took the remaining
+  step. Narrowing the objection to a payload-shape preference is what left it
+  open, and a dataclass turned out to buy the thing a mapping could not: an
+  instance knows which adapter it targets, so the caller stops naming one and
+  the roster stops being duplicated.
 
 - **``show_configuration()`` grows a second section, not a matrix.** It prints
   the top-level tier as today, then only those adapter overrides actually set.
@@ -183,8 +225,8 @@ Consequences
   and never appeared in ``show_configuration()`` -- a gap in ADR 0009's own
   claim that every setting resolves through one chain. It is package-wide by
   default and adapter-scopable. ``dataretrieval/transport/env.py`` existed only
-  to parse it and is deleted, so ``config`` is now the only module in the
-  package that reads ``os.environ`` for a setting.
+  to parse it and is deleted, so ``configuration`` is now the only module in
+  the package that reads ``os.environ`` for a setting.
 
 - **``ssl_check`` stays a per-call argument and does not become a setting.**
   It is a defaulted keyword on 23 shipped getters across four adapters --
@@ -213,20 +255,24 @@ Consequences
   ``ssl_check`` should be deprecated outright is a public-API question left to
   its own change.
 
-- ``tests/config_test.py`` covers adapter-table resolution, top-level
+- ``tests/configuration_test.py`` covers adapter-table resolution, top-level
   inheritance per setting, source-major precedence (the environment still
   outranks an adapter table), an adapter block outranking a package-wide one,
   and rejection of a setting an adapter does not read -- from both the file and
   ``configure()``.
-- ``test_a_misspelled_setting_is_not_taken_for_an_adapter`` pins the
-  ``**adapters`` catch-all against swallowing a typo'd setting name, which
-  would otherwise be silently accepted and silently ignored.
-- ``test_api_key_is_never_adapter_scoped`` asserts no adapter schema contains
-  ``api_key``.
-- ``test_adapter_schema_names_a_real_module`` imports every key in the
-  registry, so a renamed adapter cannot leave a schema pointing at nothing.
-- ``lint-imports`` continues to place ``config`` between ``credentials`` and
-  ``exceptions``.
+- ``test_api_key_is_never_adapter_scoped`` asserts no adapter configuration
+  accepts ``api_key``.
+- ``test_adapter_roster_names_real_modules_that_register_themselves`` imports
+  every name in the roster, so a renamed adapter cannot leave a configuration
+  pointing at nothing.
+- ``lint-imports`` continues to place ``configuration`` between ``credentials``
+  and ``exceptions``.
+
+The two entries covering decision 8's ``**adapters`` catch-all
+(``test_a_misspelled_setting_is_not_taken_for_an_adapter``) and the central
+``TypedDict`` registry (``test_adapter_schema_names_a_real_module``) went with
+the clauses ADR 0011 superseded; the checks they stood for are named above in
+their current form.
 
 Notes
 -----

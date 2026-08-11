@@ -132,8 +132,8 @@ def get_wateruse(
     :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are
     concatenated in the order given. That cap resolves through the
     configuration chain, so it can be raised or lowered for this service alone
-    (``configure(nwdc={"concurrency": 2})``, or an ``[nwdc]`` table in the
-    config file) as well as package-wide via ``API_USGS_CONCURRENT``; see
+    (``configure(NwdcConfiguration(concurrency=2))``, or an ``[nwdc]`` table in
+    the config file) as well as package-wide via ``API_USGS_CONCURRENT``; see
     :doc:`the configuration guide </userguide/configuration>`. A fan-out
     interrupted by a rate limit or an upstream fault raises a resumable
     :class:`~dataretrieval.interruptions.FanOutInterrupted`, whose

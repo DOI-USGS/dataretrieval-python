@@ -4,11 +4,32 @@ ADR 0009: Layered configuration resolution
 Status
 ------
 
-Accepted, except for two clauses. "One flat set of setting names" and
-"Per-service overrides are deferred" below are superseded by
-:doc:`0010-adapter-scoped-settings`, which found the premise of the first --
-that every service accepts the same settings -- to be false. The chain, the
-``ContextVar`` delivery, and the leaf constraint stand.
+Accepted, with clauses superseded twice.
+
+:doc:`0010-adapter-scoped-settings` supersedes "One flat set of setting names"
+and "Per-service overrides are deferred" below, having found the premise of the
+first -- that every service accepts the same settings -- to be false.
+
+:doc:`0011-configuration-profiles` supersedes three more:
+
+- **The** ``[profiles.<name>]`` **table** in step 3 of the chain, and the
+  recommendation in "``parallel_chunks`` at the top level of the file warns" to
+  put the setting in one. A profile is now named under the adapter it
+  configures (``[<adapter>.<name>]``); the global table and
+  ``DATARETRIEVAL_PROFILE`` are retired, since a table that switched every
+  service at once could not carry per-service detail.
+- **"The environment ranks above the file"**, inverted for -- and only for -- a
+  profile selected in code. Everything the caller did not name in code still
+  follows the rule as written here.
+- **The refusal of a configuration object**, stated in the leaf clause ("a
+  scoped action, not a ``Configuration`` dataclass") and in "A configuration
+  object would have no way to reach the call". ``configure()`` now takes
+  exactly such objects. The grounds were that an instance had no way to reach a
+  free function; the ``ContextVar`` this ADR established is that way, and ADR
+  0010 had already narrowed the objection to a payload-shape preference.
+
+The chain itself, the ``ContextVar`` delivery, host-scoped credentials, and the
+leaf constraint stand.
 
 Context
 -------
@@ -53,7 +74,7 @@ Supporting decisions:
   file: container and CI tooling routinely materializes one. The exception is
   ``progress``, where a blank ``API_USGS_PROGRESS`` has always meant "off" --
   so "does blank count as a value?" is a property of the setting
-  (``config._BLANK_MEANS_SET``) rather than an extra tier in the chain.
+  (``configuration._BLANK_MEANS_SET``) rather than an extra tier in the chain.
 - **The environment ranks above the file.** This follows the established
   precedence used by `pip
   <https://pip.pypa.io/en/stable/topics/configuration/#precedence-override-order>`_
@@ -168,6 +189,6 @@ Compliance
 asserts the module imports nothing from ``dataretrieval`` other than the
 ``exceptions`` taxonomy leaf, and no third-party package other than the
 ``tomli`` backport.
-``tests/config_test.py`` covers the precedence chain, per-setting merging,
+``tests/configuration_test.py`` covers the precedence chain, per-setting merging,
 thread and asyncio isolation, host scoping for file-sourced keys, redaction in
 ``show_configuration``, and rejection of credential parameters on public getters.

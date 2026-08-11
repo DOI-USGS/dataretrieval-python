@@ -293,9 +293,9 @@ class FanOut(Generic[_Chunk]):
         # events — see :meth:`resume`.
         self.service = service
         # Which adapter's settings this drive resolves, so a ``[ngwmn]`` table
-        # or a ``configure(ngwmn=...)`` block reaches only NGWMN calls. Distinct
-        # from ``service`` above, which is a *display label* for the progress
-        # line and is variously a collection name or prose. ``None`` resolves
+        # or an ``NgwmnConfiguration`` reaches only NGWMN calls. Distinct from
+        # ``service`` above, which is a *display label* for the progress line
+        # and is variously a collection name or prose. ``None`` resolves
         # package-wide. See ADR 0010.
         self.adapter = adapter
         # This service's preferred cap for when nothing is configured. Resolved

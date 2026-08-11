@@ -75,7 +75,22 @@ api_key = "your_api_key_here"
 
 `dataretrieval.show_configuration()` reports what is in effect and where each setting
 came from, without printing the key. Concurrency, retries, and the progress
-line are configured the same way — see the
+line are configured the same way, and can be narrowed to one service: a
+`configure()` block takes at most one configuration per adapter, each either
+built in code or loaded by name from a profile in the file.
+
+```python
+from dataretrieval.ngwmn import NgwmnConfiguration
+from dataretrieval.waterdata import WaterdataConfiguration
+
+with dataretrieval.configure(
+    WaterdataConfiguration.load("overnight"),  # a profile in config.toml
+    NgwmnConfiguration(concurrency=2),         # built here
+):
+    ...
+```
+
+See the
 [configuration guide](https://doi-usgs.github.io/dataretrieval-python/userguide/configuration.html).
 
 The following example retrieves daily streamflow data for a specific

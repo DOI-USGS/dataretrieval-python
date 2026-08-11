@@ -131,8 +131,9 @@ _NO_NORMALIZE_PARAMS = frozenset(
 # inspects *values*, so a secret pasted into ``state_name=`` travels just the
 # same, and the name space belongs to the server (``get_queryables``) rather
 # than to us. The point is to answer the caller who reasonably guesses that a
-# credential goes here, with a TypeError naming ``configure(api_key=...)``
-# instead of a token in a URL. It errs toward rejecting for that reason.
+# credential goes here, with a TypeError naming
+# ``configure(Configuration(api_key=...))`` instead of a token in a URL. It
+# errs toward rejecting for that reason.
 _FORBIDDEN_QUERYABLE_MARKERS = (
     "apikey",
     "authorization",
@@ -179,7 +180,7 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
         names = ", ".join(f"{name}=" for name in sorted(forbidden))
         raise TypeError(
             f"Credentials cannot be passed as query parameters ({names}); "
-            "use dataretrieval.configure(api_key=...) instead."
+            "use dataretrieval.configure(Configuration(api_key=...)) instead."
         )
     local_vars.update(queryables)
     return local_vars

@@ -4,13 +4,14 @@ ADR 0011: Configuration profiles, scoped to one adapter
 Status
 ------
 
-Proposed. When accepted it supersedes two clauses of
-:doc:`0010-adapter-scoped-settings` -- decision 5 (adapter schemas held
-centrally as ``TypedDict``) and decision 8 (each adapter a named keyword on
-``configure``) -- and one of :doc:`0009-layered-configuration`: the
-environment-above-file rule, which is inverted for a profile selected in code.
-The chain, the ``ContextVar`` delivery, host-scoped credentials and the leaf
-constraint stand.
+Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings` --
+decision 5 (adapter schemas held centrally as ``TypedDict``) and decision 8
+(each adapter a named keyword on ``configure``) -- and three of
+:doc:`0009-layered-configuration`: the global ``[profiles.<name>]`` table; the
+environment-above-file rule, inverted for a profile selected in code; and the
+refusal of a configuration object, which ADR 0010 had already narrowed to a
+preference about the payload's shape. The chain, the ``ContextVar`` delivery,
+host-scoped credentials and the leaf constraint stand.
 
 Context
 -------
@@ -187,19 +188,33 @@ Consequences
 Compliance
 ----------
 
-To be satisfied before this ADR moves to Accepted:
+Satisfied. In ``tests/configuration_test.py``:
 
-- Tests must cover: several named profiles selected independently per adapter;
-  a named profile inheriting the default profile and the package-wide keys per
-  key; a named profile never applying unless selected; two configurations for
-  one adapter raising; a code-selected profile beating an environment
-  variable; the innermost block winning; a table for an unimported adapter
-  staying valid; a malformed table for one adapter not failing another's call;
-  and a URL override applying from code while rejected from the file.
-- An architecture test must assert the configuration module imports no
-  adapter, that every name in the roster resolves to a real adapter module,
-  and that every adapter configuration is wired to a read site.
-- ``lint-imports`` must keep ``configuration`` below ``credentials``.
+- ``test_several_named_profiles_are_selected_independently`` -- one block,
+  a different profile per adapter.
+- ``test_a_named_profile_layers_per_key_over_the_tiers_below`` -- a profile
+  inherits its adapter's default profile and the package-wide keys per key.
+- ``test_adding_a_named_profile_changes_nothing_until_it_is_selected`` -- a
+  named profile is inert until something selects it.
+- ``test_two_configurations_for_one_adapter_raise``.
+- ``test_a_code_selected_profile_outranks_the_environment``, plus a case per
+  rung of the seven-rung ladder above, each written against one file that
+  populates every rung with a distinct value.
+- ``test_inner_block_can_lower_a_setting_an_outer_block_scoped`` -- the
+  innermost block wins, including over an adapter-scoped outer one.
+- ``test_a_table_for_an_unimported_adapter_stays_valid`` and
+  ``test_a_malformed_table_does_not_fail_another_adapters_call`` -- the
+  blast-radius rule under lazy validation.
+- ``test_base_url_applies_from_code_and_is_refused_from_the_file``, with
+  ``test_base_url_is_refused_from_the_environment`` for the other source.
+- ``test_adapter_roster_names_real_modules_that_register_themselves`` and
+  ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
+  resolves, and no configuration exists that nothing reads.
+
+``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
+asserts the module imports no adapter -- ``dataretrieval.exceptions`` is its
+only first-party import -- and ``lint-imports`` keeps ``configuration`` below
+``credentials``.
 
 Notes
 -----

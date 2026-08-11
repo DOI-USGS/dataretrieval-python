@@ -4,13 +4,82 @@
 Configuration
 =============
 
-``dataretrieval`` has a handful of settings — most importantly your Water Data
-API key. Each one resolves through the same ordered chain, so you can pick the
-mechanism that suits how your code runs.
+``dataretrieval`` retrieves from several services, and most of what you would
+want to adjust — a concurrency cap, a retry budget, where requests go — belongs
+to *one* of them. So a **configuration profile** is a named set of settings for
+one adapter, written in code or stored in your configuration file, and a
+``configure`` block puts one profile per adapter into effect for the calls
+inside it. The Water Data API key is the exception that proves the rule: it
+authenticates to a gateway rather than to an adapter, so it stays package-wide.
 
 .. contents::
    :local:
    :depth: 1
+
+
+.. _configuration-one-block:
+
+One block, several services
+---------------------------
+
+This is the case the mechanism exists for. Say the file holds what you would
+write once and keep — the key, a retry budget, and Water Data's everyday
+concurrency — plus two named profiles for the shapes you only sometimes want:
+
+.. code-block:: toml
+
+   api_key = "your_api_key_here"   # package-wide: every adapter that reads it
+   retries = 6
+
+   [waterdata]
+   concurrency = 16                # waterdata's default profile: always active
+
+   [waterdata.overnight]           # a named profile: only when selected
+   concurrency = "unbounded"
+   parallel_chunks = 8
+
+   [ngwmn.gentle]
+   concurrency = 2
+
+Then one block configures three services, taking two of them from the file by
+name and building the third on the spot:
+
+.. code-block:: python
+
+   import dataretrieval
+   from dataretrieval import ngwmn, waterdata, wqp
+   from dataretrieval.ngwmn import NgwmnConfiguration
+   from dataretrieval.waterdata import WaterdataConfiguration
+   from dataretrieval.wqp import WqpConfiguration
+
+   with dataretrieval.configure(
+       WaterdataConfiguration.load("overnight"),  # from the file, by name
+       NgwmnConfiguration.load("gentle"),         # from the file, by name
+       WqpConfiguration(retries=2),               # built here
+   ):
+       flow, _ = waterdata.get_daily(monitoring_location_id=sites, time="P30D")
+       levels, _ = ngwmn.get_water_level(monitoring_location_id=wells)
+       samples, _ = wqp.get_results(siteid=sites)
+
+Inside the block Water Data runs unbounded and asks the planner for eight
+chunks, NGWMN runs two requests at a time, and WQP retries twice. Everything a
+configuration does *not* name still comes from below it, per setting: Water
+Data and NGWMN both retry six times and both send the ``api_key``, written once
+at the top of the file, because a configuration contributes what it names and
+inherits the rest. Only WQP named ``retries``, so only WQP departs from the
+file's six.
+
+Outside the block nothing has changed, and putting those two profiles in the
+file changed nothing on its own — a named profile is inert until a caller
+selects it, which is what makes one safe to add to a file other people's jobs
+also read.
+
+Two rules keep a block like that unambiguous. A configuration knows which
+adapter it targets — that is a property of its class — so you never restate it,
+and ``Configuration`` targets none of them, which is what makes it
+package-wide. And there is at most one configuration per adapter: naming two
+raises rather than picking one, because there would be no defined order between
+them — combine them into one instead.
 
 
 Settings
@@ -230,14 +299,11 @@ package-wide: there is one progress line per call.
 Named profiles
 ~~~~~~~~~~~~~~
 
-A profile is a named set of settings **for one adapter**. The ``[<adapter>]``
-table is that adapter's default profile and is always in effect; a
-``[<adapter>.<name>]`` table is a named one, inert until you select it, so
-adding one never changes an existing script:
+An adapter can hold more than one shape at a time. The ``[<adapter>]`` table is
+that adapter's **default profile** — always in effect, as above — while a
+``[<adapter>.<name>]`` table is a **named profile**, inert until you select it:
 
 .. code-block:: toml
-
-   api_key = "your_api_key_here"
 
    [waterdata]
    concurrency = 16          # the default profile: always in effect
@@ -246,26 +312,12 @@ adding one never changes an existing script:
    concurrency = "unbounded" # only when selected
    parallel_chunks = 8
 
-   [ngwmn.gentle]
-   concurrency = 2
-
-Select one in code, and compose as many as you have adapters:
-
-.. code-block:: python
-
-   from dataretrieval.ngwmn import NgwmnConfiguration
-   from dataretrieval.waterdata import WaterdataConfiguration
-
-   with dataretrieval.configure(
-       WaterdataConfiguration.load("bulk-pull"),
-       NgwmnConfiguration.load("gentle"),
-   ):
-       df, md = waterdata.get_daily(monitoring_location_id=many_sites)
+So one file can hold an overnight bulk shape beside a polite daytime one, and
+name as many of each as an adapter has uses for.
 
 A named profile states only what differs: everything it does not name still
 comes from the adapter's default profile, the package-wide keys, and the tiers
-below — per setting. The ``api_key`` above is written once and both profiles
-use it.
+below — per setting.
 
 ``load`` reads the table and hands you a configuration object, so a name the
 file does not define raises there and then, listing the names it does define —
@@ -277,10 +329,8 @@ since selecting one is something your code did.
 A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
 not a Water Data profile carrying NGWMN detail, and selecting it says so rather
 than quietly ignoring the nested table. Two adapters means two profiles,
-selected in the same block, as above.
-
-Naming two configurations for the same adapter raises, because there would be
-no defined order between them. Combine them into one instead.
+selected in the same block, as in :ref:`the example above
+<configuration-one-block>`.
 
 
 A ``configure`` block
@@ -305,6 +355,15 @@ The highest-precedence source, and the one to use when a setting must apply to
 adapter a configuration targets is a property of its class, so you never
 restate it — and ``Configuration`` targets none of them in particular, which is
 what makes it package-wide.
+
+.. note::
+
+   Settings are not keywords on ``configure``. ``configure(api_key=...)`` and
+   the per-adapter mappings ``configure(ngwmn={"concurrency": 4})`` were an
+   earlier spelling and are gone; write ``Configuration(api_key=...)`` and
+   ``NgwmnConfiguration(concurrency=4)`` instead. Passing anything that is not
+   a configuration raises and names the replacement, so an old script says what
+   to write rather than failing obscurely.
 
 Because it is backed by a :class:`~contextvars.ContextVar`, the value applies
 to the current thread and to asyncio tasks started inside the block, and
