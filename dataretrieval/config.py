@@ -27,8 +27,12 @@ others, so one block can be gentle with one service while leaving the rest
 alone. Precedence stays *source-major*: the chain still walks block, then
 environment, then file, and an adapter-scoped value outranks a package-wide one
 only *within* the same source. So a variable exported for one run still beats a
-stale adapter table. Which settings an adapter accepts is its own vocabulary --
-``concurrency`` means nothing to an adapter that issues one request -- and is
+stale adapter table. Within the block source that tie-break applies per block:
+an adapter table outranks a package-wide value set by the same ``configure``
+call, while a value set by a block nested inside it wins over both, so the
+innermost block still decides. Which settings an adapter accepts is its own
+vocabulary -- ``concurrency`` means nothing to an adapter that issues one
+request -- and is
 declared by the ``TypedDict`` schemas below. The API key is not among them: it
 belongs to the gateway fronting a host, which Water Data and NGWMN share.
 
@@ -401,10 +405,38 @@ def configure(
         Sets the baseline that :func:`dataretrieval.parallel_chunks` overrides
         per call. Each sub-request spends rate-limit quota, so raise it only
         for pulls you know are large.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving *any* data before retrying
+        stops and the failure surfaces. Bounds the wall-clock cost of a dead
+        connection, which ``retries`` does not -- it counts attempts, not
+        seconds. Progress resets the clock; ``0`` disables the bound.
     profile : str, optional
         Name of a ``[profiles.<name>]`` table in the configuration file to
         layer over the file's top-level settings. Pass ``None`` to ignore an
         environment-selected profile.
+    waterdata, ngwmn, nwdc, wqp, nldi, streamstats : mapping, optional
+        Settings for that adapter alone, overriding the package-wide value
+        above it per key::
+
+            with dataretrieval.configure(
+                ngwmn={"concurrency": 4}, wqp={"retries": 2}
+            ):
+                ...
+
+        Each adapter accepts only the settings it reads -- ``concurrency`` and
+        ``parallel_chunks`` mean nothing to one that issues a single request --
+        and each parameter is annotated with its own ``TypedDict``
+        (:class:`NgwmnSettings` and so on), so a type checker rejects a key the
+        adapter does not accept before the code runs. An adapter table set by
+        *this* block outranks a package-wide value set by the same block; a
+        value set by a block nested inside this one still wins over both.
+
+        ``api_key`` is not among them: it authenticates to the gateway
+        fronting a host, and Water Data and NGWMN share one host, one key and
+        one quota. ``progress`` likewise stays package-wide -- there is one
+        progress line per call. The deprecated ``nwis`` has no table, because
+        its calls do not retry and the setting could only be reported as live
+        and then ignored. See ADR 0010.
 
     Yields
     ------
