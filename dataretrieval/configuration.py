@@ -18,6 +18,16 @@ Sources, highest precedence first:
    selects it with ``<Adapter>Configuration.load("<name>")``.
 4. The built-in default.
 
+Those are the four *sources*, which is the decomposition this module is built
+around -- one branch each in :func:`_resolve`. ADR 0011 states the same order
+as seven rungs by splitting three of them into the scopes inside: source 1 into
+a configuration instance and a selected profile, which cannot disagree because
+both name one adapter and two configurations for one adapter raise; source 3
+into the ``[<adapter>]`` table above the top-level keys; and source 4 into an
+adapter's own built-in preference above the package default. That last scope is
+invisible here because this module never supplies it -- it arrives as the
+``default`` a read site like :func:`concurrency` passes for its own service.
+
 Precedence applies **per setting**, not per source: an environment that sets only
 ``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. Putting
 the environment above the file follows common deployment conventions and keeps

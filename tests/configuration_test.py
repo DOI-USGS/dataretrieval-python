@@ -16,7 +16,7 @@ import dataretrieval
 from dataretrieval import configuration
 from dataretrieval.configuration import Configuration
 from dataretrieval.ngwmn import NgwmnConfiguration
-from dataretrieval.nwdc import NwdcConfiguration
+from dataretrieval.nwdc import DEFAULT_CONCURRENT_REQUESTS, NwdcConfiguration
 from dataretrieval.utils import _default_headers
 from dataretrieval.waterdata import WaterdataConfiguration
 from dataretrieval.wqp import WqpConfiguration
@@ -435,10 +435,31 @@ def test_a_named_profile_cannot_hold_a_nested_table(config_file):
 
 
 def test_loading_an_undefined_profile_raises(config_file):
-    """A name the caller just typed is a typo, not a silent fall-through."""
-    config_file("[waterdata]\nconcurrency = 4\n\n[waterdata.bulk]\nretries = 8\n")
-    with pytest.raises(configuration.ConfigurationError, match="no .waterdata.nope."):
-        WaterdataConfiguration.load("nope")
+    """A name the caller just typed is a typo, not a silent fall-through.
+
+    The message lists what the file *does* define, because a misspelling is
+    only obvious next to the spelling that was meant -- and only for this
+    adapter, since selecting a profile is per adapter and another service's
+    profile names are not candidates for what the caller meant to type.
+    """
+    config_file(
+        "[waterdata]\nconcurrency = 4\n\n"
+        "[waterdata.bulk]\nretries = 8\n\n"
+        "[waterdata.polite]\nretries = 1\n\n"
+        "[ngwmn.gentle]\nconcurrency = 2\n"
+    )
+    with pytest.raises(configuration.ConfigurationError) as excinfo:
+        WaterdataConfiguration.load("bluk")
+    message = str(excinfo.value)
+    assert "no [waterdata.bluk]" in message
+    assert "bulk, polite" in message
+    assert "gentle" not in message
+
+    # An adapter with no profiles at all says so rather than trailing off after
+    # the colon, which would read as a truncated message.
+    config_file("[waterdata]\nconcurrency = 4\n")
+    with pytest.raises(configuration.ConfigurationError, match="waterdata: none"):
+        WaterdataConfiguration.load("bulk")
 
 
 def test_loading_a_profile_with_no_file_says_so(tmp_path, monkeypatch):
@@ -1417,3 +1438,220 @@ def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
         with parallel_chunks(16):
             assert configuration.parallel_chunks(adapter="waterdata") == 16
         assert configuration.parallel_chunks(adapter="waterdata") == 2
+
+
+# --- the precedence ladder (ADR 0011) ------------------------------------
+#
+# ADR 0011 states the ladder in seven rungs, highest first:
+#
+#   1  a configuration instance passed to configure()
+#   2  a profile selected in code, <Adapter>Configuration.load("<name>")
+#   3  the setting's environment variable
+#   4  the adapter's default profile in the file, [<adapter>]
+#   5  the package-wide keys at the top of the file
+#   6  the adapter's built-in preference, passed by the adapter's own read site
+#   7  the package built-in default
+#
+# The tests below walk it as a *chain*: each one knocks the rung above out and
+# asserts the next takes over. Seven independent single-rung assertions would
+# all still pass if two rungs collapsed into one, which is the mistake worth
+# catching -- rungs 2 and 3 are the pair a refactor is most likely to fuse,
+# since 2 above 3 is the one place ADR 0011 inverts ADR 0009.
+#
+# ``nwdc`` and ``concurrency`` are the pair that can express all seven. NWDC is
+# the adapter that ships a built-in preference of its own -- 4 concurrent
+# requests, because the service is only stress-tested that far -- distinct from
+# the package default of 32, and that difference is the only way rungs 6 and 7
+# can be told apart at all.
+
+#: Rungs 5, 4 and 2, with a distinct value per rung so a resolved number
+#: identifies the table it came from. Top-level keys are written first because
+#: TOML assigns a bare key to whichever table header precedes it: moved below
+#: ``[nwdc]``, ``concurrency = 15`` would quietly stop being a rung-5 key and
+#: become a second rung-4 one, and the tests would still pass by coincidence.
+_LADDER_FILE = (
+    "concurrency = 15\n"  # rung 5: the package-wide keys
+    "retries = 7\n"  # rung 5 again, for a setting no profile names
+    "\n[nwdc]\n"
+    "concurrency = 14\n"  # rung 4: the adapter's default profile
+    "\n[nwdc.tuned]\n"
+    "concurrency = 12\n"  # rung 2: inert until load() selects it
+)
+
+#: Rung 3, which is not in the file.
+_LADDER_ENV = 13
+
+#: Rung 1, which is not in the file either.
+_LADDER_INSTANCE = 11
+
+
+def _nwdc_concurrency() -> int | None:
+    """Resolve ``concurrency`` the way NWDC's own fan-out does.
+
+    Through the adapter's read site rather than a bare ``concurrency()``, so
+    the built-in preference at rung 6 is really in the chain and the ladder is
+    exercised as the adapter experiences it.
+    """
+    return configuration.concurrency(DEFAULT_CONCURRENT_REQUESTS, adapter="nwdc")
+
+
+def test_a_configuration_instance_tops_the_ladder(config_file, monkeypatch):
+    """Rung 1 over every other rung, all six of them present at once."""
+    config_file(_LADDER_FILE)
+    monkeypatch.setenv("API_USGS_CONCURRENT", str(_LADDER_ENV))
+
+    with dataretrieval.configure(NwdcConfiguration(concurrency=_LADDER_INSTANCE)):
+        assert _nwdc_concurrency() == _LADDER_INSTANCE
+
+
+def test_a_loaded_profile_beats_the_environment(config_file, monkeypatch):
+    """Rung 2 over rung 3 -- the one inversion ADR 0011 exists to make.
+
+    ADR 0009 put the environment above the file, and a named profile lives in
+    the file, so the naive reading is that ``API_USGS_CONCURRENT`` in the shell
+    wins. It does not: what reaches the chain is the caller *naming* the
+    profile in code, which is a more deliberate act than a variable inherited
+    from whatever started the process, and losing to that variable is the
+    behaviour a caller would file a bug about.
+
+    The inversion is also bounded, which the second half asserts: it covers
+    what the profile names and nothing else, so ``retries`` -- which the file
+    sets at the top level and no selected profile mentions -- still follows the
+    original environment-above-file rule inside the very same block.
+    """
+    config_file(_LADDER_FILE)
+    monkeypatch.setenv("API_USGS_CONCURRENT", str(_LADDER_ENV))
+    monkeypatch.setenv("API_USGS_RETRIES", "9")
+
+    assert _nwdc_concurrency() == _LADDER_ENV  # rung 3, until a profile is selected
+    with dataretrieval.configure(NwdcConfiguration.load("tuned")):
+        assert _nwdc_concurrency() == 12  # rung 2 wins for the key it names...
+        assert configuration.retries(adapter="nwdc") == 9  # ...and only that key
+    assert _nwdc_concurrency() == _LADDER_ENV  # and the shell has it back on exit
+
+
+def test_the_environment_beats_the_adapters_default_profile(config_file, monkeypatch):
+    """Rung 3 over rung 4: the file's always-on table is still just the file."""
+    config_file(_LADDER_FILE)
+    monkeypatch.setenv("API_USGS_CONCURRENT", str(_LADDER_ENV))
+
+    assert _nwdc_concurrency() == _LADDER_ENV
+    monkeypatch.delenv("API_USGS_CONCURRENT")
+    assert _nwdc_concurrency() == 14
+
+
+def test_the_adapters_default_profile_beats_the_package_wide_keys(config_file):
+    """Rung 4 over rung 5: within the file, the narrower table decides."""
+    config_file(_LADDER_FILE)
+
+    assert _nwdc_concurrency() == 14
+    config_file("concurrency = 15\n")  # the [nwdc] table gone
+    assert _nwdc_concurrency() == 15
+
+
+def test_the_package_wide_keys_beat_the_adapters_built_in_preference(config_file):
+    """Rung 5 over rung 6: a user-written value outranks an adapter's taste.
+
+    The adapter's preference is a default, not a cap. One able to override a
+    setting the user actually wrote would make that setting a lie -- so a
+    top-level key the user never scoped to NWDC still reaches NWDC's calls.
+    """
+    config_file("concurrency = 15\n")
+
+    assert _nwdc_concurrency() == 15
+    config_file("")
+    assert _nwdc_concurrency() == DEFAULT_CONCURRENT_REQUESTS
+
+
+def test_the_adapters_built_in_preference_beats_the_package_built_in_default(
+    config_file,
+):
+    """Rung 6 over rung 7, and only for the adapter that stated a preference."""
+    config_file("")
+
+    assert _nwdc_concurrency() == DEFAULT_CONCURRENT_REQUESTS
+    assert DEFAULT_CONCURRENT_REQUESTS != configuration.DEFAULT_CONCURRENCY
+    # It is the read site's own figure, not a property of the adapter, so a
+    # caller that states no preference lands on the package default instead --
+    # which is what makes rungs 6 and 7 two rungs rather than one.
+    assert (
+        configuration.concurrency(adapter="nwdc") == configuration.DEFAULT_CONCURRENCY
+    )
+
+
+def test_the_package_built_in_default_is_the_floor(config_file):
+    """Rung 7: with the six rungs above it empty, every setting still resolves.
+
+    The floor is what makes the whole chain optional -- a caller who has
+    configured nothing at all gets working values rather than an error.
+    """
+    config_file("")
+
+    for adapter in (None, *configuration.ADAPTERS):
+        assert configuration.concurrency(adapter=adapter) == (
+            configuration.DEFAULT_CONCURRENCY
+        )
+        assert configuration.retries(adapter=adapter) == configuration.DEFAULT_RETRIES
+        assert configuration.parallel_chunks(adapter=adapter) == (
+            configuration.DEFAULT_PARALLEL_CHUNKS
+        )
+        assert configuration.stall_timeout(adapter=adapter) == (
+            configuration.DEFAULT_STALL_TIMEOUT
+        )
+
+
+def test_the_top_two_rungs_cannot_tie(config_file):
+    """Rungs 1 and 2 both target one adapter, so no block can hold both.
+
+    That is what stops the ladder needing a tie-break nobody could remember:
+    the same-adapter rule refuses the pairing where the order would matter,
+    and between *nested* blocks the ordinary rule applies -- the innermost
+    decides, whichever kind of configuration it holds.
+    """
+    config_file(_LADDER_FILE)
+
+    with pytest.raises(configuration.ConfigurationError, match="two configurations"):
+        with dataretrieval.configure(
+            NwdcConfiguration(concurrency=_LADDER_INSTANCE),
+            NwdcConfiguration.load("tuned"),
+        ):
+            pass
+
+    with dataretrieval.configure(NwdcConfiguration(concurrency=_LADDER_INSTANCE)):
+        with dataretrieval.configure(NwdcConfiguration.load("tuned")):
+            assert _nwdc_concurrency() == 12
+    with dataretrieval.configure(NwdcConfiguration.load("tuned")):
+        with dataretrieval.configure(NwdcConfiguration(concurrency=_LADDER_INSTANCE)):
+            assert _nwdc_concurrency() == _LADDER_INSTANCE
+
+    # "Rung 1 above rung 2" is a claim about one adapter, so a *package-wide*
+    # instance is not the thing it is talking about: it targets no adapter at
+    # all. Alongside a loaded profile in one block the adapter-scoped value is
+    # the more specific of the two and wins for that adapter (ADR 0010), while
+    # the package-wide value still governs every other adapter.
+    with dataretrieval.configure(
+        Configuration(concurrency=_LADDER_INSTANCE), NwdcConfiguration.load("tuned")
+    ):
+        assert _nwdc_concurrency() == 12
+        assert configuration.concurrency(adapter="wqp") == _LADDER_INSTANCE
+
+
+def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
+    """``load`` is a constructor: it reads one table and returns the class.
+
+    Only what the table names is carried, so every other setting stays unset
+    and keeps inheriting from the rungs below rather than being pinned to a
+    default the profile never asked for. That is what makes a profile a
+    *contribution* to the chain rather than a replacement for it.
+    """
+    config_file(
+        "concurrency = 16\n\n"
+        "[waterdata]\nretries = 2\n\n"
+        '[waterdata.bulk]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
+    )
+
+    loaded = WaterdataConfiguration.load("bulk")
+
+    assert isinstance(loaded, WaterdataConfiguration)
+    assert loaded.values() == {"concurrency": "unbounded", "parallel_chunks": 8}
+    assert loaded.retries is configuration._UNSET

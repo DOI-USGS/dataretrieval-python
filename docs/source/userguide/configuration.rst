@@ -70,13 +70,23 @@ Where settings come from
 
 Highest precedence first:
 
-1. An active ``dataretrieval.configure(...)`` block — including a named
-   profile a caller loaded from the file, because loading one is code.
-2. The environment variable for that setting.
-3. The configuration file — ``~/.dataretrieval/config.toml``, or the path in
-   ``DATARETRIEVAL_CONFIG``: the adapter's own ``[<adapter>]`` table first,
-   then the top-level keys.
-4. The built-in default.
+1. A configuration passed to an active ``dataretrieval.configure(...)`` block.
+2. A named profile you selected in that block —
+   ``WaterdataConfiguration.load("bulk")``.
+3. The environment variable for that setting.
+4. The adapter's default profile in the configuration file: the
+   ``[<adapter>]`` table.
+5. The package-wide keys at the top of the configuration file —
+   ``~/.dataretrieval/config.toml``, or the path in ``DATARETRIEVAL_CONFIG``.
+6. The adapter's own built-in preference, where it has one — NWDC asks for a
+   ``concurrency`` of 4, because that is as far as the service is
+   stress-tested. It is a default, not a cap: anything you set above outranks
+   it.
+7. The package built-in default, which for ``concurrency`` is 32.
+
+The top two rungs both name a single adapter, and naming two configurations
+for one adapter raises, so they cannot disagree inside one block. Between
+nested blocks the innermost decides, as it does for everything else.
 
 Precedence applies **per setting**. An environment that sets only
 ``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect —
@@ -95,10 +105,13 @@ file. The one exception is ``API_USGS_PROGRESS``, where blank has always meant
    overrides. The reasoning is in :doc:`ADR 0009
    </architecture/decisions/0009-layered-configuration>`.
 
-   The one exception is a profile you name in code: that is a more deliberate
-   act than a variable inherited from a shell, so it outranks the environment.
-   Everything you did *not* name still follows the rule above. See :doc:`ADR
-   0011 </architecture/decisions/0011-configuration-profiles>`.
+   The one exception is rung 2 above rung 3 — a profile you name in code. That
+   is a more deliberate act than a variable inherited from whatever started
+   your process, and having it lose to that variable is the kind of thing you
+   would file a bug about. The inversion covers what the profile names and
+   nothing else: every setting you did *not* name still follows the
+   environment-above-file rule, in the same block. See :doc:`ADR 0011
+   </architecture/decisions/0011-configuration-profiles>`.
 
 
 An environment variable
@@ -252,6 +265,13 @@ A named profile states only what differs: everything it does not name still
 comes from the adapter's default profile, the package-wide keys, and the tiers
 below — per setting. The ``api_key`` above is written once and both profiles
 use it.
+
+``load`` reads the table and hands you a configuration object, so a name the
+file does not define raises there and then, listing the names it does define —
+a profile you just typed is more likely a typo than a request to fall through
+to settings you did not ask for. What comes back is inert until you pass it to
+``configure``; that is what puts a selected profile above the environment,
+since selecting one is something your code did.
 
 A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
 not a Water Data profile carrying NGWMN detail, and selecting it says so rather
