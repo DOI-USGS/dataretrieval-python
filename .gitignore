@@ -118,3 +118,7 @@ ENV/
 
 # pyscn analysis reports (rebuildable: `pyscn analyze dataretrieval`)
 .pyscn/
+
+# Working design note for the layered-configuration work; the durable
+# record is ADR 0009 + docs/source/userguide/configuration.rst.
+CONFIG-PLAN.md

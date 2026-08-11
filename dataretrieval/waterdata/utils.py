@@ -115,6 +115,38 @@ _NO_NORMALIZE_PARAMS = frozenset(
     }
 )
 
+# Credential-shaped kwargs must never reach the generic queryable passthrough:
+# URLs are retained by clients, proxies, logs, and response metadata.
+#
+# Matched as *substrings* of the separator-stripped name, not as exact names:
+# an exact-match list missed the spelling the library's own docs make most
+# tempting -- ``x_api_key``, after the ``X-Api-Key`` header.
+#
+# This catches the plausible mistake; it is not a security control. Nothing
+# inspects *values*, so a secret pasted into ``state_name=`` travels just the
+# same, and the name space belongs to the server (``get_queryables``) rather
+# than to us. The point is to answer the caller who reasonably guesses that a
+# credential goes here, with a TypeError naming ``configure(api_key=...)``
+# instead of a token in a URL. It errs toward rejecting for that reason.
+_FORBIDDEN_QUERYABLE_MARKERS = (
+    "apikey",
+    "authorization",
+    "credential",
+    "password",
+    "passwd",
+    "secret",
+    "token",
+)
+
+# Whole names that are credentials on their own but too short to match as
+# substrings without catching legitimate queryables.
+#
+# ``session`` is deliberately absent from both lists: it carries no secret, so
+# rejecting it with a credentials message told users the wrong thing, and as a
+# substring it claimed part of a namespace the *server* owns -- any future
+# queryable containing it would have been unreachable behind that message.
+_FORBIDDEN_QUERYABLE_NAMES = frozenset({"auth", "key", "pat", "pw"})
+
 
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     """Merge a getter's ``**queryables`` passthrough kwargs into ``local_vars``.
@@ -130,7 +162,21 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     popped, so this is a no-op on getters without the passthrough and idempotent
     if called twice.
     """
-    local_vars.update(local_vars.pop("queryables", {}))
+    queryables = local_vars.pop("queryables", {})
+    forbidden = set()
+    for name in queryables:
+        flat = name.replace("_", "").replace("-", "").casefold()
+        if flat in _FORBIDDEN_QUERYABLE_NAMES or any(
+            marker in flat for marker in _FORBIDDEN_QUERYABLE_MARKERS
+        ):
+            forbidden.add(name)
+    if forbidden:
+        names = ", ".join(f"{name}=" for name in sorted(forbidden))
+        raise TypeError(
+            f"Credentials cannot be passed as query parameters ({names}); "
+            "use dataretrieval.configure(api_key=...) instead."
+        )
+    local_vars.update(queryables)
     return local_vars
 
 
@@ -219,6 +265,11 @@ def get_ogc_data(
         base_url=OGC_API_URL,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
+        # Which settings table these calls read. Declared here, in the one
+        # wrapper every Water Data getter goes through, rather than derived
+        # from ``base_url``: NGWMN is served from the same host, so a URL
+        # cannot tell the two adapters apart (ADR 0010).
+        adapter="waterdata",
     )
 
 

@@ -56,7 +56,6 @@ from __future__ import annotations
 
 import asyncio
 import functools
-import os
 from collections.abc import Awaitable, Callable, Iterator
 from typing import Any, Generic, Protocol, TypeVar, cast
 
@@ -64,6 +63,7 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
+from dataretrieval import config as _config
 from dataretrieval import progress as _progress
 from dataretrieval._ambient import Ambient
 from dataretrieval.combining import (
@@ -75,7 +75,6 @@ from dataretrieval.interruptions import (
     _classify_chunk_error,
     _walk_causes,
 )
-from dataretrieval.transport.env import _read_env_number
 from dataretrieval.transport.http import network_error, open_async_client
 from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry
@@ -88,56 +87,12 @@ _Chunk = TypeVar("_Chunk")
 #: supertype, the way ``Iterable`` is covariant for the same reason.
 _ChunkCo = TypeVar("_ChunkCo", covariant=True)
 
-# Fan-out concurrency cap, read at call time (not import) so test
-# ``monkeypatch.setenv`` applies. Value grammar in :func:`_read_concurrency_env`;
-# the concurrency model is in the module docstring.
-_CONCURRENCY_ENV = "API_USGS_CONCURRENT"
-_CONCURRENCY_DEFAULT = 32
-_CONCURRENCY_UNBOUNDED = "unbounded"
-
-
-def _resolve_concurrency(default: int = _CONCURRENCY_DEFAULT) -> int | None:
-    """
-    Resolve the parallelism cap: the general setting, or a module's default.
-
-    ``API_USGS_CONCURRENT`` is the general knob and applies to every fanned-out
-    call in the package. A module may pass a different ``default`` when its
-    service warrants one — Water Use ships a lower figure than the OGC getters,
-    because the NWDC is only stress-tested to that level.
-
-    The ordering is deliberate: an explicitly set environment variable wins over
-    a module's default, never the reverse. A module that could override the
-    general setting would make ``API_USGS_CONCURRENT=1`` a lie — the user
-    dialing concurrency down to be polite to the service would find one adapter
-    quietly ignoring them, which is precisely the defect this consolidates away.
-    Module defaults express "absent instruction, this service prefers N"; they
-    do not express "this service knows better than you".
-
-    Parameters
-    ----------
-    default : int
-        Cap to use when ``API_USGS_CONCURRENT`` is unset or empty.
-
-    Returns
-    -------
-    int or None
-        ``1`` for sequential dispatch (one chunk at a time); an
-        integer >1 for bounded concurrency; ``None`` to disable the
-        per-call cap entirely (the ``unbounded`` keyword).
-    """
-    # Only the ``unbounded`` keyword is specific to this knob; the rest is the
-    # same read-cast-validate every ``API_USGS_*`` number gets, so it delegates
-    # rather than growing a third copy with its own error wording.
-    if os.environ.get(_CONCURRENCY_ENV, "").strip().lower() == _CONCURRENCY_UNBOUNDED:
-        return None
-    return _read_env_number(
-        _CONCURRENCY_ENV,
-        default,
-        int,
-        f"a positive integer or '{_CONCURRENCY_UNBOUNDED}'",
-        minimum=1,
-        hint=f" Use '{_CONCURRENCY_UNBOUNDED}' to disable the cap.",
-    )
+# The fan-out concurrency cap resolves through
+# :func:`dataretrieval.config.concurrency`, which owns the setting's name, its
+# grammar (``1`` sequential, >1 bounded, ``unbounded`` uncapped) and its
+# built-in default. Naming any of those here too would let this module and the
+# chain disagree about what a value means. The concurrency model -- why the cap
+# is a semaphore rather than the connection pool -- is in the module docstring.
 
 
 # ---------------------------------------------------------------------------
@@ -290,7 +245,7 @@ class FanOut(Generic[_Chunk]):
         :meth:`resume` labels its progress line with.
     service : str or None, optional
         Human-facing name of what is being retrieved (e.g. ``"daily"``,
-        ``"wateruse"``), used to label the progress line :meth:`resume`
+        ``"nwdc"``), used to label the progress line :meth:`resume`
         opens. ``None`` leaves the line unlabelled.
 
     Attributes
@@ -319,10 +274,11 @@ class FanOut(Generic[_Chunk]):
         retry_policy: RetryPolicy = _NO_RETRY,
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
-        default_concurrent: int = _CONCURRENCY_DEFAULT,
+        default_concurrent: int = _config.DEFAULT_CONCURRENCY,
         *,
         canonical_url: str | None = None,
         service: str | None = None,
+        adapter: str | None = None,
     ) -> None:
         self.plan = plan
         self.fetch = fetch
@@ -333,10 +289,17 @@ class FanOut(Generic[_Chunk]):
         # to ``canonical_url``, because this class is what emits the progress
         # events — see :meth:`resume`.
         self.service = service
-        # This service's preferred cap when the user has not set
-        # ``API_USGS_CONCURRENT``. Resolved at resume time, not here, so a
-        # test's ``monkeypatch.setenv`` still applies. See
-        # :func:`_resolve_concurrency` for why the env var outranks it.
+        # Which adapter's settings this drive resolves, so a ``[ngwmn]`` table
+        # or a ``configure(ngwmn=...)`` block reaches only NGWMN calls. Distinct
+        # from ``service`` above, which is a *display label* for the progress
+        # line and is variously a collection name or prose. ``None`` resolves
+        # package-wide. See ADR 0010.
+        self.adapter = adapter
+        # This service's preferred cap for when nothing is configured. Resolved
+        # at resume time, not here, so a setting that arrives after this call
+        # was built still applies. Anything the chain resolves outranks it --
+        # see :func:`dataretrieval.config.concurrency` for why a service
+        # preference must not override an explicit setting.
         self.default_concurrent = default_concurrent
         # Extra ``httpx.AsyncClient`` options merged into the shared client this
         # run opens (``verify`` for the Water Use ``ssl_check`` flag, say). The
@@ -543,7 +506,14 @@ class FanOut(Generic[_Chunk]):
         with _progress.progress_context(
             service=self.service, target_url=self.canonical_url
         ):
-            concurrency = _resolve_concurrency(self.default_concurrent)
+            # Resolve concurrency here, per drive, rather than at construction.
+            # It is the one dial a caller adjusts precisely *while* retrying --
+            # the documented recovery from QuotaExhausted is to wait and
+            # re-issue more gently -- so a ``configure()`` block entered
+            # between the interruption and the resume has to win.
+            concurrency = _config.concurrency(
+                self.default_concurrent, adapter=self.adapter
+            )
             with start_blocking_portal() as portal:
                 # ``portal.call`` returns ``Any`` because ``functools.partial``
                 # erases ``_run``'s return type; restore the declared tuple.

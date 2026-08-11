@@ -25,4 +25,6 @@ records sequentially.
    0006-service-neutral-transport
    0007-adapter-facades
    0008-fan-out-execution
+   0009-layered-configuration
+   0010-adapter-scoped-settings
    template

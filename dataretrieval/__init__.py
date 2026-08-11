@@ -11,11 +11,18 @@ Access each service through its submodule::
     df, meta = nwis.get_dv(sites="05427718")
 
 Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
-``wateruse`` (NWDC water-use data), ``nldi``, ``streamstats``, and the
+``nwdc`` (National Water Availability Assessment Data Companion, incl.
+water use), ``nldi``, ``streamstats``, and the
 deprecated ``nwis``.
 
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
+
+Settings -- the Water Data API key, fan-out concurrency, retries, the progress
+line -- resolve through :mod:`dataretrieval.config`: a
+``with dataretrieval.configure(...)`` block, then the ``API_USGS_*`` environment
+variables, then ``~/.dataretrieval/config.toml``. ``dataretrieval.show_configuration()``
+reports what is in effect and where each value came from.
 
 A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
 (the taxonomy lives in ``dataretrieval.exceptions``); connection-level failures
@@ -32,6 +39,10 @@ try:
 except PackageNotFoundError:
     __version__ = "version-unknown"
 
+# Layered configuration: a ``with configure(...)`` block, the environment, then
+# the config file. The canonical home is ``dataretrieval.config``;
+# the callable is named ``configure`` so it doesn't shadow that module.
+from dataretrieval.config import configure, show_configuration
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataRetrievalError,
@@ -65,29 +76,34 @@ from dataretrieval.interruptions import (
 from dataretrieval.ogc.chunking import parallel_chunks
 
 from . import (
+    config,
     exceptions,
     ngwmn,
+    nwdc,
     nwis,
     streamstats,
     utils,
     waterdata,
-    wateruse,
     wqp,
 )
 
 __all__ = [
+    # layered configuration (canonical home: ``dataretrieval.config``)
+    "config",
+    "configure",
+    "show_configuration",
+    "ConfigurationError",
     # service modules
     "ngwmn",
+    "nwdc",
     "nwis",
     "streamstats",
     "utils",
     "waterdata",
-    "wateruse",
     "wqp",
     # error taxonomy (canonical home: ``dataretrieval.exceptions``), re-exported
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
-    "ConfigurationError",
     "DataRetrievalError",
     "HTTPError",
     "NetworkError",

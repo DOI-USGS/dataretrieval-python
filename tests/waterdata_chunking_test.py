@@ -32,6 +32,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import dataretrieval
+from dataretrieval import config as _config
 from dataretrieval.combining import (
     _QUOTA_HEADER,
     _combine_chunk_frames,
@@ -50,7 +52,6 @@ from dataretrieval.ogc import engine as _engine
 from dataretrieval.ogc.chunking import (
     ChunkedCall,
     _chunked_client,
-    _parallel_chunks,
     get_active_client,
     multi_value_chunked,
     parallel_chunks,
@@ -75,7 +76,6 @@ from dataretrieval.ogc.requests import (
 )
 from dataretrieval.transport import retry as _retry_mod
 from dataretrieval.transport.retry import (
-    _RETRIES_DEFAULT,
     RetryPolicy,
     _retryable,
 )
@@ -729,6 +729,45 @@ def test_resume_rebuilds_chunks_from_creation_time_bindings():
     assert observed, "resume issued no chunks"
     assert set(observed) == {"https://in.example.org"}, observed
     assert sorted(df["id"].tolist()) == sorted(sites)
+
+
+def test_resume_reads_concurrency_from_the_caller_not_the_snapshot(monkeypatch):
+    """A ``configure()`` block around a ``resume()`` must actually take effect.
+
+    The concurrency cap is the one dial a caller adjusts precisely *when*
+    retrying -- the documented recovery from ``QuotaExhausted`` is to wait and
+    re-issue more gently -- so ``resume()`` resolves it per drive rather than
+    carrying a value fixed when the call was constructed. A ``configure()``
+    block entered between the interruption and the resume therefore wins.
+    """
+    state = {"calls": 0}
+
+    async def fetch(args):
+        state["calls"] += 1
+        if state["calls"] == 3:
+            raise RateLimited("429: Too many requests made.")
+        sites = list(args["sites"])
+        return (pd.DataFrame({"id": sites}), _quota_response(500))
+
+    sites = ["S" * 10 + str(i) for i in range(16)]
+    decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
+    with pytest.raises(QuotaExhausted) as excinfo:
+        decorated({"sites": sites})
+
+    # Spy on the real, decorator-built ChunkedCall rather than a hand-made one.
+    seen: list[int | None] = []
+    original_run = _chunking.ChunkedCall._run
+
+    async def spy_run(self, max_concurrent):
+        seen.append(max_concurrent)
+        return await original_run(self, max_concurrent)
+
+    monkeypatch.setattr(_chunking.ChunkedCall, "_run", spy_run)
+
+    with dataretrieval.configure(concurrency=2):
+        excinfo.value.call.resume()
+
+    assert seen == [2], seen
 
 
 def test_chunker_passes_through_non_429_runtime_error():
@@ -1421,8 +1460,8 @@ def test_iter_chunk_args_passthrough_yields_a_copy():
 # --- async fan-out path ----------------------------------------------------
 #
 # Every chunk is gathered over one ``httpx.AsyncClient`` and
-# concurrency is bounded by an ``asyncio.Semaphore`` sized from
-# ``API_USGS_CONCURRENT`` (the client's connection pool is sized to
+# concurrency is bounded by an ``asyncio.Semaphore`` sized from the effective
+# configuration (the client's connection pool is sized to
 # match, but the semaphore is the throttle — see ``ChunkedCall._run``).
 # The conftest's ``_pin_chunker_env`` autouse pins
 # ``API_USGS_CONCURRENT=1`` (sequential dispatch) for the whole suite;
@@ -1650,6 +1689,21 @@ def test_fan_out_in_flight_high_water_mark_is_the_cap(
     assert in_flight["max"] == expected_high_water
 
 
+def test_configure_concurrency_controls_dispatch(monkeypatch):
+    """The highest-precedence block setting reaches the execution semaphore."""
+    monkeypatch.setenv("API_USGS_CONCURRENT", "1")
+    in_flight = {"now": 0, "max": 0}
+    fetch = multi_value_chunked(build_request=_fake_build, url_limit=240)(
+        _concurrency_probe(in_flight)
+    )
+
+    with dataretrieval.configure(concurrency=2):
+        df, _ = fetch({"sites": list(_EIGHT_SINGLETON_SITES)})
+
+    assert len(df) == len(_EIGHT_SINGLETON_SITES)
+    assert in_flight["max"] == 2
+
+
 def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
     """End-to-end regression for the pool-timeout starvation bug: the
     fan-out must survive every pooled connection staying busy past the
@@ -1847,19 +1901,19 @@ def test_retry_policy_long_retry_after_escalates():
     assert not policy.should_retry(attempt=1, retry_after=120.0)  # escalates
 
 
-def test_retry_policy_from_env(monkeypatch):
+def test_retry_policy_from_config(monkeypatch):
     monkeypatch.setenv("API_USGS_RETRIES", "2")
-    assert RetryPolicy.from_env().max_retries == 2
+    assert RetryPolicy.from_configuration().max_retries == 2
     monkeypatch.setenv("API_USGS_RETRIES", "0")
-    assert RetryPolicy.from_env().max_retries == 0
+    assert RetryPolicy.from_configuration().max_retries == 0
     monkeypatch.delenv("API_USGS_RETRIES", raising=False)
-    assert RetryPolicy.from_env().max_retries == _RETRIES_DEFAULT
+    assert RetryPolicy.from_configuration().max_retries == _config.DEFAULT_RETRIES
     monkeypatch.setenv("API_USGS_RETRIES", "-1")
     with pytest.raises(ValueError):
-        RetryPolicy.from_env()
+        RetryPolicy.from_configuration()
     monkeypatch.setenv("API_USGS_RETRIES", "lots")
     with pytest.raises(ValueError):
-        RetryPolicy.from_env()
+        RetryPolicy.from_configuration()
 
 
 def test_retry_policy_rejects_invalid_settings():
@@ -1871,12 +1925,12 @@ def test_retry_policy_rejects_invalid_settings():
         RetryPolicy(max_backoff=-1.0)
 
 
-def test_retry_policy_from_env_honors_monkeypatched_constants(monkeypatch):
+def test_retry_policy_from_config_honors_monkeypatched_constants(monkeypatch):
     # The timing knobs are read from the module constants at call time, so
     # monkeypatching them (as the module comment promises) takes effect.
     monkeypatch.setattr(_retry_mod, "_RETRY_MAX_BACKOFF", 0.0)
     monkeypatch.setattr(_retry_mod, "_RETRY_BASE_BACKOFF", 0.0)
-    policy = RetryPolicy.from_env()
+    policy = RetryPolicy.from_configuration()
     assert policy.max_backoff == 0.0 and policy.base_backoff == 0.0
 
 
@@ -2384,16 +2438,24 @@ def test_cap_does_not_mask_unchunkable():
         ChunkPlan(args, _fake_build, url_limit=10, max_chunks=32)
 
 
-def test_parallel_chunks_publishes_n_on_the_ambient():
-    """The context manager publishes ``n`` on the ambient for the block and
-    restores the previous value on exit — including proper nesting."""
-    assert _parallel_chunks.get() == 1  # default (off, = no extra fan-out)
+def test_parallel_chunks_publishes_n_as_the_effective_setting():
+    """The context manager sets ``n`` for the block and restores the previous
+    value on exit — including proper nesting.
+
+    ``parallel_chunks(n)`` is sugar for ``configure(parallel_chunks=n)``, so
+    both forms share one scoping mechanism and the innermost block wins.
+    Outside any block the configured baseline applies, which is ``1`` — off —
+    unless a config file raised it."""
+    assert _config.parallel_chunks() == 1  # default (off, = no extra fan-out)
     with parallel_chunks(32):
-        assert _parallel_chunks.get() == 32
+        assert _config.parallel_chunks() == 32
         with parallel_chunks(2):
-            assert _parallel_chunks.get() == 2
-        assert _parallel_chunks.get() == 32  # outer restored
-    assert _parallel_chunks.get() == 1  # default (off) outside any block
+            assert _config.parallel_chunks() == 2
+        assert _config.parallel_chunks() == 32  # outer restored
+        with dataretrieval.configure(parallel_chunks=4):  # the other spelling
+            assert _config.parallel_chunks() == 4
+        assert _config.parallel_chunks() == 32
+    assert _config.parallel_chunks() == 1  # default (off) outside any block
 
 
 @pytest.mark.parametrize(
@@ -2417,7 +2479,7 @@ def test_parallel_chunks_rejects_non_positive_int(bad):
     with pytest.raises(ValueError, match="must be a positive integer"):
         with parallel_chunks(bad):
             pass
-    assert _parallel_chunks.get() == 1  # default (off) — unchanged by a rejected call
+    assert _config.parallel_chunks() == 1  # unchanged by a rejected call
 
 
 def test_parallel_chunks_drives_end_to_end_fan_out():

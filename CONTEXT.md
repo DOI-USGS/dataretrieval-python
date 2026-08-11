@@ -71,8 +71,12 @@ statistics. The package's primary target.
 **NGWMN** — The National Ground-Water Monitoring Network, a distinct OGC API
 covering sites, water levels, lithology, well construction, and providers.
 
-**NWDC** — The National Water Availability Assessment Data Companion, providing
-modeled national-scale water-use data.
+**NWDC** — The National Water Availability Assessment Data Companion. Serves
+ten modeled national-scale datasets, of which the water-use models are five;
+the rest are hydrologic, atmospheric-forcing, and assessment outputs. The
+package reaches it through the `nwdc` adapter, named for the service like every
+other adapter. Legacy: that module was `wateruse`, which named one subset of
+what the service offers.
 
 **WQP** — The Water Quality Portal, a multi-agency water-quality clearinghouse.
 
@@ -104,6 +108,61 @@ term. Legacy: the deprecated NWIS getters and the WQP profiles call this a
 
 **Metadata** — The second half of every getter's return: the request URL, the
 elapsed time, and the response headers. Describes the *retrieval*, not the data.
+
+## Configuration
+
+**Configuration** — The resolved set of settings a call will use. The word is
+spelled in full for the concept, and as the verb **configure** for the action of
+applying one. ``config`` is the abbreviation, reserved for the module and the
+file — a name containing it should refer to one of those, not to the concept.
+
+**Setting** — One named tunable the caller may adjust: the API key, the
+concurrency cap, the retry count, the progress line, the fan-out baseline. A
+setting means the same thing wherever it applies, but it does not apply
+everywhere: `concurrency` and `parallel_chunks` are meaningless to an adapter
+that issues one request, and `ssl_check` is meaningful to only three. Which
+settings an adapter accepts is part of that adapter's vocabulary.
+
+**Package-wide setting** — A setting that applies to every adapter: the retry
+count, the progress line, the stall timeout. Set once, honored everywhere.
+
+**Adapter-scoped setting** — A setting named under one adapter, applying to
+that adapter and no other. It overrides the package-wide value for that adapter
+alone; it does not replace the package-wide tier. An adapter rejects a setting
+it has no use for, rather than accepting and ignoring it.
+
+The scope is the *adapter*, not the service and not the host, because the
+adapter is what owns the conventions being tuned. The API key is the
+counter-example that fixes the distinction: it belongs to the gateway fronting
+a host, so Water Data and NGWMN — two adapters, one host — necessarily share
+one key and one quota pool. Credentials are host-scoped; tunables are
+adapter-scoped.
+
+**Source** — Where a setting's value came from. Sources are ordered, and the
+order is resolved per setting rather than per source: a value supplied for one
+setting does not displace another setting's value from a lower source.
+
+**Profile** — A named group of setting values that can be selected as a unit,
+so a caller switches between whole configurations rather than restating each
+value.
+
+**Built-in default** — The value a setting takes when no source supplies one.
+Package-wide.
+
+**Adapter default** — The value a *particular adapter* prefers when no source
+supplies one, because that adapter warrants a different figure — NWDC asks for
+4 concurrent requests where the OGC getters take 32. Supplied by the adapter in
+code, not by the user. It replaces the built-in default for calls through that
+adapter and nothing else. A value from any source outranks it: an adapter able
+to override an explicit setting would make that setting a lie.
+
+Distinct from an **adapter-scoped setting**, which is the *user* naming a value
+for one adapter. Both narrow to a single adapter; only one of them is something
+the caller wrote.
+
+All three are called "the default" in casual use, and they are not the same
+value. Where the distinction matters — reporting what a call will actually use
+— say which one is meant.
 
 ## Boundaries
 

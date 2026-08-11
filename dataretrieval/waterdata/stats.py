@@ -290,9 +290,10 @@ def get_data(
     df, response = FanOut(
         [req],
         _fetch,
-        RetryPolicy.from_env(),
+        RetryPolicy.from_configuration(adapter="waterdata"),
         canonical_url=str(req.url),
         service=service,
+        adapter="waterdata",
     ).resume()
 
     if expand_percentiles:

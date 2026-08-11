@@ -176,7 +176,7 @@ def get_cql(
         skip_geometry=skip_geometry,
     )
 
-    df, response = fetch_ogc_request(req, collection=collection)
+    df, response = fetch_ogc_request(req, collection=collection, adapter="waterdata")
 
     return _finalize_ogc(
         df,

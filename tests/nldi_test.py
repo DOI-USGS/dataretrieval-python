@@ -56,7 +56,9 @@ def test_query_nldi_opts_into_retry(monkeypatch):
     monkeypatch.setattr(nldi, "_query_with_retry", query)
 
     assert nldi._query_nldi("https://example.test", {}) == {}
-    query.assert_called_once_with("https://example.test", payload={})
+    # ``adapter`` names whose settings the retry resolves, so a ``[nldi]``
+    # table reaches these calls and no others.
+    query.assert_called_once_with("https://example.test", payload={}, adapter="nldi")
 
 
 def mock_request(httpx_mock, request_url, file_path):

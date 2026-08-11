@@ -102,7 +102,7 @@ mid-stream, the work already completed is preserved: catch
             except FanOutInterrupted as again:
                 exc = again
 
-The same loop works for ``wateruse.get_wateruse`` with a list of states,
+The same loop works for ``nwdc.get_wateruse`` with a list of states,
 counties, or HUCs.
 
 Chunk a large request more finely

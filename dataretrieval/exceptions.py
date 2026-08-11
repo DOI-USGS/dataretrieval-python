@@ -13,7 +13,10 @@ of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
 :class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
-:func:`error_for_status` maps a status to its type.
+:func:`error_for_status` maps a status to its type. ``ConfigurationError`` is
+the one member that is not a request failure at all: it reports an unusable
+setting or config file, raised from wherever a setting is first resolved --
+which, because resolution is lazy, is inside whichever getter runs first.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
 for type checking. Any module can therefore import it without pulling in pandas
@@ -48,7 +51,15 @@ __all__ = [
 
 
 class DataRetrievalError(Exception):
-    """Base class for every failed-request error in ``dataretrieval``.
+    """Base class for every ``dataretrieval`` error.
+
+    Almost every member is a failed request, and the read-anywhere fields below
+    describe one. The exception is :class:`ConfigurationError`, which reports a
+    configuration the library cannot use; it appears here because configuration
+    is resolved lazily on the request path, so it surfaces from inside a getter
+    and one ``except DataRetrievalError`` should cover it too. It carries no
+    status and is not retryable, so the branching idiom below routes it to the
+    final ``raise``.
 
     Catch it to handle any USGS or EPA service failure uniformly, and branch on
     the read-anywhere fields below without needing the concrete subclass::
@@ -256,15 +267,18 @@ class NetworkError(DataRetrievalError):
 
 
 class ConfigurationError(DataRetrievalError, ValueError):
-    """A ``dataretrieval`` setting holds a value that can't be used.
-
-    The setting may be an environment variable or a policy field; either way,
-    no request was issued.
+    """A ``dataretrieval`` setting holds a value that can't be used, so no
+    request was issued -- an environment variable, a policy field, a malformed
+    ``config.toml``, or a profile the file does not define.
 
     It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches
-    it rather than letting a bare ``ValueError`` escape a request path, and a
-    :class:`ValueError` so code that already treats a bad setting as one keeps
-    working.
+    it rather than letting a bare ``ValueError`` escape a request path. That
+    matters because settings resolve lazily, on the request path: a broken
+    config file surfaces from inside whichever getter runs first, and belongs in
+    the same handler as any other failure of that call. It is *also* a
+    :class:`ValueError`, so code that already treats a bad setting as one keeps
+    working whether the value came from the environment, a file, or a
+    :func:`dataretrieval.configure` block.
     """
 
 

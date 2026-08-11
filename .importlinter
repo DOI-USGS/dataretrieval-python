@@ -21,7 +21,11 @@ type = layers
 containers =
     dataretrieval
 layers =
-    ngwmn | nldi | nwis | streamstats | waterdata | wateruse | wqp
+; The deprecated ``wateruse`` alias re-exports ``nwdc``, so it sits above the
+; adapters rather than beside them. A compatibility facade may depend on the
+; adapter it forwards to; nothing may depend on the facade.
+    wateruse
+    ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
     ogc
     utils
     _querying
@@ -32,6 +36,7 @@ layers =
     _wqx
     _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
+    config
     exceptions
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.
@@ -114,6 +119,7 @@ source_modules =
     dataretrieval.streamstats
     dataretrieval.transport
     dataretrieval.utils
+    dataretrieval.nwdc
     dataretrieval.waterdata
     dataretrieval.wateruse
     dataretrieval.wqp

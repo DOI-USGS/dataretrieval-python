@@ -231,6 +231,7 @@ def get_ogc_data(
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
+    adapter: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -336,7 +337,9 @@ def get_ogc_data(
     fetch = functools.partial(
         _fetch_once, build_request=build_request, row_cap=max_rows
     )
-    run = chunking.multi_value_chunked(build_request=build_request)(fetch)
+    run = chunking.multi_value_chunked(build_request=build_request, adapter=adapter)(
+        fetch
+    )
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
     return run(args, finalize=finalize)
@@ -358,9 +361,9 @@ async def _fetch_once(
     URL fits, and iterates the cartesian product. With no chunkable inputs
     the decorator passes args through unchanged. The decorator gathers every
     chunk over one shared :class:`httpx.AsyncClient` (concurrency
-    bounded by a semaphore, sized from ``API_USGS_CONCURRENT``) and
-    returns a *synchronous* wrapper, so ``get_ogc_data`` drives it
-    synchronously. The return shape is ``(frame, response)``.
+    bounded by a semaphore, sized from the effective ``concurrency``
+    setting) and returns a *synchronous* wrapper, so ``get_ogc_data`` drives
+    it synchronously. The return shape is ``(frame, response)``.
     """
     req = build_request(**args)
     return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
@@ -370,6 +373,7 @@ def fetch_ogc_request(
     request: httpx.Request,
     *,
     collection: str,
+    adapter: str | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Execute a prepared OGC request with pagination, returning (df, response).
 
@@ -402,7 +406,8 @@ def fetch_ogc_request(
     return FanOut(
         [request],
         _fetch,
-        RetryPolicy.from_env(),
+        RetryPolicy.from_configuration(adapter=adapter),
         canonical_url=str(request.url),
         service=collection,
+        adapter=adapter,
     ).resume()

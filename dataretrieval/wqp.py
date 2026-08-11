@@ -199,7 +199,9 @@ def get_results(
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
-    response = _query_with_retry(url, kwargs, delimiter=";", ssl_check=ssl_check)
+    response = _query_with_retry(
+        url, kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+    )
 
     df = _read_wqp_csv(response.text)
     df = _attach_datetime_columns(df)
@@ -229,7 +231,7 @@ def _what(
         url = _legacy_only_url(service, legacy=legacy)
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=";", ssl_check=ssl_check
+        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
     return df, WQP_Metadata(response, **kwargs)

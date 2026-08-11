@@ -41,7 +41,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
     payload = {"workspaceID": workspaceID, "format": format}
     url = f"{STREAMSTATS_URL}/download"
 
-    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
     return r
     # data = r.raw.read()
 
@@ -144,7 +144,7 @@ def get_watershed(
     }
     url = f"{STREAMSTATS_URL}/watershed.geojson"
 
-    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
 
     if format == "geojson":
         return r

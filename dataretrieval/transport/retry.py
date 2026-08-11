@@ -11,6 +11,7 @@ from typing import NamedTuple, TypeVar
 
 import httpx
 
+from dataretrieval import config as _config
 from dataretrieval import progress as _progress
 from dataretrieval.exceptions import (
     ConfigurationError,
@@ -18,7 +19,6 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import _deterministic_failure
-from dataretrieval.transport.env import _read_env_number
 from dataretrieval.transport.liveness import (
     credit_wait,
     elapsed_since_progress,
@@ -38,8 +38,6 @@ from dataretrieval.transport.liveness import (
 # on a request that can never succeed and delays the caller's error.
 _RETRYABLE_STATUSES = frozenset({429, *range(500, 600)})
 _GATEWAY_STATUSES = frozenset({429, 502, 503, 504})
-_RETRIES_ENV = "API_USGS_RETRIES"
-_RETRIES_DEFAULT = 4
 _RETRY_BASE_BACKOFF = 0.5
 _RETRY_MAX_BACKOFF = 30.0
 _RETRY_AFTER_CAP = 60.0
@@ -49,8 +47,6 @@ _RETRY_AFTER_CAP = 60.0
 _RETRY_AFTER_JITTER = 1.0
 # Attempts the no-progress budget never withholds; see RetryPolicy.allows_wait.
 _STALL_EXEMPT_ATTEMPTS = 1
-_STALL_TIMEOUT_ENV = "API_USGS_STALL_TIMEOUT"
-_STALL_TIMEOUT_DEFAULT = 60.0
 
 _T = TypeVar("_T")
 
@@ -64,8 +60,10 @@ class RetryPolicy:
     call may go on receiving nothing.
     """
 
-    #: Attempts after the first. ``0`` disables retry entirely.
-    max_retries: int = _RETRIES_DEFAULT
+    #: Attempts after the first. ``0`` disables retry entirely. The default is
+    #: ``config``'s, not a second copy of it: a directly-constructed policy and
+    #: one built by :meth:`from_configuration` must agree on the retry budget.
+    max_retries: int = _config.DEFAULT_RETRIES
     #: First backoff ceiling; doubles per attempt up to :attr:`max_backoff`.
     base_backoff: float = _RETRY_BASE_BACKOFF
     #: Ceiling for our own exponential backoff.
@@ -91,7 +89,7 @@ class RetryPolicy:
     #: productive download is never cut short, and an attempt already in flight
     #: is never interrupted. ``0`` disables the bound. See :meth:`allows_wait`
     #: for how it is applied.
-    stall_timeout: float = _STALL_TIMEOUT_DEFAULT
+    stall_timeout: float = _config.DEFAULT_STALL_TIMEOUT
 
     def __post_init__(self) -> None:
         if self.max_retries < 0:
@@ -107,25 +105,32 @@ class RetryPolicy:
             raise ConfigurationError("retry backoff settings must be non-negative.")
 
     @classmethod
-    def from_env(cls, retryable_statuses: frozenset[int] | None = None) -> RetryPolicy:
-        """Build a policy from current environment and module defaults."""
+    def from_configuration(
+        cls,
+        retryable_statuses: frozenset[int] | None = None,
+        *,
+        adapter: str | None = None,
+    ) -> RetryPolicy:
+        """Build a policy from the effective configuration and module defaults.
+
+        ``max_retries`` and ``stall_timeout`` both resolve through
+        :mod:`dataretrieval.config` -- a ``configure()`` block, then the
+        environment variable, then the config file. ``adapter`` names the
+        adapter this policy is for, so a ``[wqp] retries = 2`` table applies to
+        WQP calls and nothing else; ``None`` resolves package-wide. The pure
+        timing knobs stay module constants read at call time so a test's
+        ``monkeypatch.setattr`` still applies.
+        """
         statuses = (
             _RETRYABLE_STATUSES if retryable_statuses is None else retryable_statuses
         )
         return cls(
             retryable_statuses=statuses,
-            max_retries=_read_env_number(
-                _RETRIES_ENV, _RETRIES_DEFAULT, int, "a non-negative integer"
-            ),
+            max_retries=_config.retries(adapter=adapter),
             base_backoff=_RETRY_BASE_BACKOFF,
             max_backoff=_RETRY_MAX_BACKOFF,
             retry_after_cap=_RETRY_AFTER_CAP,
-            stall_timeout=_read_env_number(
-                _STALL_TIMEOUT_ENV,
-                _STALL_TIMEOUT_DEFAULT,
-                float,
-                "a non-negative number of seconds",
-            ),
+            stall_timeout=_config.stall_timeout(adapter=adapter),
         )
 
     def should_retry(self, attempt: int, retry_after: float | None) -> bool:
@@ -272,7 +277,7 @@ async def retry_async(
     silence. A caller that gated its own body would have to rediscover both, and
     nothing would catch it getting them wrong.
     """
-    policy = RetryPolicy.from_env() if policy is None else policy
+    policy = RetryPolicy.from_configuration() if policy is None else policy
     attempt = 0
     note_progress()
 
@@ -303,7 +308,7 @@ def retry_sync(fn: Callable[[], _T], policy: RetryPolicy | None = None) -> _T:
     not caught because the loop handles ``Exception`` rather than
     ``BaseException``.
     """
-    policy = RetryPolicy.from_env() if policy is None else policy
+    policy = RetryPolicy.from_configuration() if policy is None else policy
     attempt = 0
     note_progress()
     while True:
