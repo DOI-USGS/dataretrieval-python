@@ -1327,7 +1327,25 @@ def _named_profile(
         )
 
     where = f"[{adapter}.{profile}]"
-    values = _accepted_keys(named[profile], path, where, allowed)
+    table = named[profile]
+
+    # A profile is one flat set of settings for one adapter, so a table inside
+    # one is a shape the grammar has no reading for -- most likely a file
+    # migrated from the retired ``[profiles.bulk.ngwmn]``, where a profile did
+    # carry per-service detail. Dropping it silently would leave the author
+    # believing they had tuned something. Checked here rather than at parse
+    # time for the same reason keys are: a malformed profile for one adapter
+    # must not fail another adapter's call.
+    nested = sorted(key for key, value in table.items() if isinstance(value, dict))
+    if nested:
+        raise ConfigurationError(
+            f"{path}: {where} contains a table, [{adapter}.{profile}.{nested[0]}]. "
+            "A profile names settings for one adapter and nothing else; to "
+            "configure two adapters for one run, give each its own profile and "
+            "select both in the same configure() block."
+        )
+
+    values = _accepted_keys(table, path, where, allowed)
     for name, value in values.items():
         source = f"{path}: {name!r} at {where}"
         _validate_raw(name, _coerce_typed(name, value, source), source)
@@ -1533,7 +1551,10 @@ def _accepted_keys(
         if isinstance(value, dict):
             # A named profile -- ``[waterdata.bulk]`` parses as a sub-table of
             # ``[waterdata]``. Inert until a caller selects it, so it is
-            # neither a setting here nor an error.
+            # neither a setting here nor an error. Only an adapter's table can
+            # reach this: the top level rejects unknown tables when it parses,
+            # and :func:`_named_profile` refuses a table inside a profile, so a
+            # sub-table here is always a profile rather than deeper nesting.
             continue
         if key in ADAPTER_ONLY_SETTINGS:
             # Rejected from the file wherever it appears. A file that silently

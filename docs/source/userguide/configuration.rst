@@ -253,6 +253,11 @@ comes from the adapter's default profile, the package-wide keys, and the tiers
 below — per setting. The ``api_key`` above is written once and both profiles
 use it.
 
+A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
+not a Water Data profile carrying NGWMN detail, and selecting it says so rather
+than quietly ignoring the nested table. Two adapters means two profiles,
+selected in the same block, as above.
+
 Naming two configurations for the same adapter raises, because there would be
 no defined order between them. Combine them into one instead.
 

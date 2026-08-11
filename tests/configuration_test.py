@@ -337,6 +337,103 @@ def test_several_named_profiles_are_selected_independently(config_file):
         assert configuration.concurrency(adapter="ngwmn") == 4
 
 
+def test_a_named_profile_layers_per_key_over_the_tiers_below(config_file):
+    """Selecting a profile replaces keys, never whole tiers.
+
+    Every level of the file overrides the one below it *per key* (ADR 0011), so
+    one adapter-scoped read here draws each of its four settings from a
+    different table.
+    """
+    config_file(
+        "concurrency = 16\nretries = 3\nstall_timeout = 30\n\n"
+        "[waterdata]\nretries = 2\n\n"
+        '[waterdata.bulk]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
+    )
+
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        # the profile, over a package-wide key it names...
+        assert configuration.concurrency(adapter="waterdata") is None
+        # ...the default profile, over a package-wide key the profile is silent
+        # about...
+        assert configuration.retries(adapter="waterdata") == 2
+        # ...the package-wide key, which neither table touched...
+        assert configuration.stall_timeout(adapter="waterdata") == 30
+        # ...and a setting only the profile names.
+        assert configuration.parallel_chunks(adapter="waterdata") == 8
+
+
+def _resolved_settings() -> dict[object, object]:
+    """Every setting this process can resolve, package-wide and per adapter.
+
+    A snapshot rather than a handful of assertions, because the claim under
+    test is about what a file does *not* change -- and naming the settings
+    individually would only prove it for the ones the author thought of.
+    """
+    snapshot: dict[object, object] = {
+        "api_key": configuration.api_key(),
+        "progress": configuration.progress(),
+    }
+    for adapter in (None, *configuration.ADAPTERS):
+        snapshot[(adapter, "concurrency")] = configuration.concurrency(adapter=adapter)
+        snapshot[(adapter, "retries")] = configuration.retries(adapter=adapter)
+        snapshot[(adapter, "parallel_chunks")] = configuration.parallel_chunks(
+            adapter=adapter
+        )
+        snapshot[(adapter, "stall_timeout")] = configuration.stall_timeout(
+            adapter=adapter
+        )
+        snapshot[(adapter, "base_url")] = configuration.base_url(adapter=adapter)
+    return snapshot
+
+
+def test_adding_a_named_profile_changes_nothing_until_it_is_selected(config_file):
+    """Inertness is what makes a profile safe to add to a file others share.
+
+    A named profile that could shift a setting on its own would make every
+    addition to a shared ``config.toml`` a change to every script reading it,
+    which is the failure the retired global ``[profiles.<name>]`` table had.
+    """
+    shared = 'api_key = "shared"\nconcurrency = 4\n\n[waterdata]\nretries = 2\n'
+    config_file(shared)
+    before = _resolved_settings()
+
+    config_file(
+        shared + '\n[waterdata.bulk]\nconcurrency = "unbounded"\n'
+        "retries = 9\nparallel_chunks = 8\nstall_timeout = 5\n"
+    )
+    assert _resolved_settings() == before
+
+    # ...and the profile does reach the chain once it is named in code, so the
+    # comparison above is inertness rather than a profile nothing can select.
+    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        assert configuration.parallel_chunks(adapter="waterdata") == 8
+
+
+def test_a_named_profile_cannot_hold_a_nested_table(config_file):
+    """``[waterdata.bulk.ngwmn]`` is the retired shape, not a deeper profile.
+
+    A profile carries settings for the one adapter it belongs to, so a table
+    inside one has no reading. Refused rather than skipped: silently dropping
+    it would leave the author believing they had tuned NGWMN.
+    """
+    config_file(
+        "[waterdata.bulk]\nparallel_chunks = 8\n\n"
+        "[waterdata.bulk.ngwmn]\nconcurrency = 2\n"
+    )
+
+    # Still inert, like every other problem inside an unselected profile: an
+    # unrelated call resolves without ever reading it.
+    assert configuration.retries(adapter="ngwmn") == configuration.DEFAULT_RETRIES
+    assert configuration.parallel_chunks(adapter="waterdata") == (
+        configuration.DEFAULT_PARALLEL_CHUNKS
+    )
+
+    with pytest.raises(
+        configuration.ConfigurationError, match=r"\[waterdata\.bulk\.ngwmn\]"
+    ):
+        WaterdataConfiguration.load("bulk")
+
+
 def test_loading_an_undefined_profile_raises(config_file):
     """A name the caller just typed is a typo, not a silent fall-through."""
     config_file("[waterdata]\nconcurrency = 4\n\n[waterdata.bulk]\nretries = 8\n")
@@ -454,6 +551,21 @@ def test_the_retired_profiles_table_names_its_replacement(config_file):
         configuration.ConfigurationError, match=r"\[<adapter>\.<name>\]"
     ):
         configuration.concurrency()
+
+
+def test_the_retired_profile_environment_variable_is_ignored(config_file, monkeypatch):
+    """``DATARETRIEVAL_PROFILE`` went with the table it selected (ADR 0011).
+
+    A profile is now named in code. A variable exported once in a shell profile
+    and inherited by every subprocess is the opposite shape: invisible at the
+    call site, and able to switch every service at once. Honoring it under the
+    new grammar would restore exactly what the grammar removed.
+    """
+    config_file('concurrency = 4\n\n[waterdata.bulk]\nconcurrency = "unbounded"\n')
+    monkeypatch.setenv("DATARETRIEVAL_PROFILE", "bulk")
+
+    assert configuration.concurrency(adapter="waterdata") == 4
+    assert "DATARETRIEVAL_PROFILE" not in configuration.ENV_VARS.values()
 
 
 def test_typed_toml_values_are_normalized(config_file):
@@ -932,6 +1044,44 @@ def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn
     config_file("concurrency = 4\n\n[waterdata.other]\nnot_a_setting = 1\n")
     assert configuration.concurrency(adapter="waterdata") == 4
     assert not [w for w in recwarn if "unknown setting" in str(w.message)]
+
+
+def test_a_malformed_table_does_not_fail_another_adapters_call(config_file):
+    """The blast-radius rule, on the tier a whole adapter table sits in.
+
+    Keys are checked when *that* adapter first resolves a setting, so a bad
+    value in ``[nldi]`` costs a Water Data call nothing -- which is also what
+    lets an adapter's vocabulary live in a module this leaf cannot import.
+    """
+    config_file(
+        'api_key = "good"\n\n[nldi]\nretries = -1\n\n[waterdata]\nretries = 2\n'
+    )
+
+    assert configuration.retries(adapter="waterdata") == 2
+    assert _default_headers(WATERDATA_URL)["X-Api-Key"] == "good"
+
+    # The adapter that owns the table still gets the error, naming the table.
+    with pytest.raises(configuration.ConfigurationError, match=r"\[nldi\]"):
+        configuration.retries(adapter="nldi")
+
+
+def test_a_table_for_an_unimported_adapter_stays_valid(config_file, monkeypatch):
+    """A file must not be conditionally valid by which extras are installed.
+
+    NLDI is imported on demand for the geopandas extra, so with the roster
+    derived from imports a ``[nldi]`` table would be a typo until something
+    happened to import that module. The roster is a plain name tuple instead,
+    and an adapter that has registered no class has its keys checked against
+    the package-wide settings.
+    """
+    monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
+    config_file("retries = 5\n\n[nldi]\nretries = 9\n\n[nldi.gentle]\nretries = 1\n")
+
+    assert configuration.settings_for("nldi") is None  # not an error: unknown yet
+    assert configuration.retries(adapter="nldi") == 9  # its default profile applies
+    assert configuration.retries(adapter="waterdata") == 5  # and narrows to nldi
+    # The named profile under it is as inert as any other.
+    assert configuration.retries() == 5
 
 
 def test_show_config_does_not_promise_a_built_in_default_holds_everywhere(
