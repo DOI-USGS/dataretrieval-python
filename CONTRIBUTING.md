@@ -115,9 +115,10 @@ about the upstream service rather than about this package.
 
 **Before adding a small helper, check whether a leaf already generalizes it.**
 This package keeps its general mechanisms in dependency-free leaves --
-`_ambient.Ambient` for scoped context values, `transport.retry._read_env_number`
-for `API_USGS_*` settings, `transport.links.resolve_next_url` for pagination
-cursors. Each of those has been re-implemented at least once by someone who
+`_ambient.Ambient` for scoped context values, `config` for every setting
+(`API_USGS_*`, the config file, and `configure()` blocks all resolve through
+it, and it is the only module that reads the environment for one),
+`transport.links.resolve_next_url` for pagination cursors. Each of those has been re-implemented at least once by someone who
 did not know it was there, and the copies drift: the same question gets a
 different cycle guard, a different error message, a different edge case. None
 of the automated checks catch it, because two eight-line helpers are below the
