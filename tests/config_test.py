@@ -1031,3 +1031,43 @@ def test_show_configuration_lists_only_real_overrides(config_file):
     override_section = text.split("adapter overrides", 1)[1]
     assert "waterdata" not in override_section
     assert "streamstats" not in override_section
+
+
+def test_inner_block_can_lower_a_setting_an_outer_block_scoped(config_file):
+    """The innermost block wins across *both* scopes, not just within one.
+
+    An adapter-scoped value is the more specific of two written by the same
+    block. It must not outrank one written by a block nested *inside* it, or
+    the documented recovery from QuotaExhausted -- wait, then re-issue more
+    gently -- cannot be expressed once any adapter table is in play.
+    """
+    config_file("")
+
+    with dataretrieval.configure(waterdata={"concurrency": 32}):
+        with dataretrieval.configure(concurrency=1):
+            assert config.concurrency(adapter="waterdata") == 1
+        assert config.concurrency(adapter="waterdata") == 32
+
+
+def test_adapter_scope_still_wins_within_one_block(config_file):
+    """Depth breaks ties between blocks, never within one."""
+    config_file("")
+
+    with dataretrieval.configure(concurrency=16, waterdata={"concurrency": 4}):
+        assert config.concurrency(adapter="waterdata") == 4
+        assert config.concurrency(adapter="wqp") == 16
+
+
+def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
+    """``parallel_chunks(n)`` is a per-call request and must not be discarded.
+
+    It delegates to ``configure(parallel_chunks=n)``, which writes the
+    package-wide key -- so before depth was tracked, any enclosing
+    ``configure(waterdata={"parallel_chunks": ...})`` silently outranked it.
+    """
+    from dataretrieval.waterdata import parallel_chunks
+
+    with dataretrieval.configure(waterdata={"parallel_chunks": 2}):
+        with parallel_chunks(16):
+            assert config.parallel_chunks(adapter="waterdata") == 16
+        assert config.parallel_chunks(adapter="waterdata") == 2

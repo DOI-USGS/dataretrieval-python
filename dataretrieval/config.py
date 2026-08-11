@@ -273,8 +273,15 @@ _PROFILE_KEY = "\0profile"
 # nesting, per-key inheritance, and restore-on-exit keep falling out of a
 # single merge, whichever scope a block sets.
 _ScopeKey = str | tuple[str, str]
-_NO_OVERRIDES: Mapping[_ScopeKey, _SettingValue] = MappingProxyType({})
-_scope: ContextVar[Mapping[_ScopeKey, _SettingValue]] = ContextVar(
+# Each entry carries the nesting depth of the ``configure`` block that wrote
+# it. Depth is what makes "the innermost block wins" true across *both* scopes:
+# an adapter-scoped value outranks a package-wide one only when the two were
+# written at the same depth. Without it, an outer ``configure(waterdata=...)``
+# would beat an inner ``configure(concurrency=1)`` -- inverting nesting, and
+# silently discarding the per-call ``parallel_chunks(n)`` block.
+_ScopeEntry = tuple[_SettingValue, int]
+_NO_OVERRIDES: Mapping[_ScopeKey, _ScopeEntry] = MappingProxyType({})
+_scope: ContextVar[Mapping[_ScopeKey, _ScopeEntry]] = ContextVar(
     "dataretrieval_configuration", default=_NO_OVERRIDES
 )
 
@@ -449,9 +456,14 @@ def configure(
     # The selected profile rides in the same mapping as the settings, so
     # nesting and per-key inheritance fall out of one merge. ``_PROFILE_KEY``
     # is not in ``SETTINGS``, so it is never resolved as one.
-    merged = {**_scope.get(), **overrides}
+    outer = _scope.get()
+    depth = max((d for _value, d in outer.values()), default=0) + 1
+    merged: dict[_ScopeKey, _ScopeEntry] = {
+        **outer,
+        **{key: (value, depth) for key, value in overrides.items()},
+    }
     if profile is not _UNSET:
-        merged[_PROFILE_KEY] = _normalize_profile(profile)
+        merged[_PROFILE_KEY] = (_normalize_profile(profile), depth)
     token = _scope.set(merged)
     try:
         # An explicitly selected profile is a value supplied to this block, so
@@ -1118,10 +1130,19 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str]:
     )
 
     scope = _scope.get()
-    if scoped is not None and (scoped, name) in scope:
-        return scope[(scoped, name)], f"configure() block [{scoped}]"
-    if name in scope:
-        return scope[name], "configure() block"
+    from_adapter_block = scope.get((scoped, name)) if scoped is not None else None
+    from_package_block = scope.get(name)
+    if from_adapter_block is not None and (
+        # Same depth means one block named both; the adapter-scoped value is
+        # the more specific of the two. A *deeper* package-wide value was
+        # written by an inner block and wins, which is what makes a nested
+        # ``configure(concurrency=1)`` able to throttle a call an outer block
+        # had scoped to that adapter.
+        from_package_block is None or from_adapter_block[1] >= from_package_block[1]
+    ):
+        return from_adapter_block[0], f"configure() block [{scoped}]"
+    if from_package_block is not None:
+        return from_package_block[0], "configure() block"
 
     # No per-adapter environment variables: seven adapters times four settings
     # is a namespace nobody can hold in mind, and an exported variable is
@@ -1148,7 +1169,7 @@ def _active_profile() -> str | None:
     """The selected profile name: a :func:`configure` block wins over the env."""
     scope = _scope.get()
     if _PROFILE_KEY in scope:
-        return scope[_PROFILE_KEY]
+        return scope[_PROFILE_KEY][0]
     env = os.environ.get(PROFILE_ENV)
     return env.strip() if env and env.strip() else None
 
