@@ -12,13 +12,22 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Chunked,
+    _Concurrent,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 
 __all__ = ["WaterdataConfiguration"]
 
 
 @dataclass(frozen=True)
-class WaterdataConfiguration(BaseConfiguration):
+class WaterdataConfiguration(
+    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
+):
     """Settings for Water Data calls alone.
 
     Pass one to :func:`dataretrieval.configure` to narrow a setting to this
@@ -48,15 +57,13 @@ class WaterdataConfiguration(BaseConfiguration):
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
+    # The settings this service reads, named by the groups they come from:
+    # every adapter's retry dials, a redirectable base, and -- because Water
+    # Data queries divide along a URL byte budget and are executed concurrently
+    # -- both fan-out dials. Each group declares the setting itself once, in
+    # :mod:`dataretrieval.configuration`, which is also where its grammar and
+    # its coercion live.
     adapter: ClassVar[str] = "waterdata"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
-    # Water Data queries divide along a URL byte budget and are executed
-    # concurrently, so both fan-out dials mean something here.
-    concurrency: int | str | None = _UNSET
-    parallel_chunks: int | None = _UNSET
 
 
 _register(WaterdataConfiguration)

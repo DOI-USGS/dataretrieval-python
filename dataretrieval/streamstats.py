@@ -14,7 +14,12 @@ import httpx
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _get_with_retry
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 
 __all__ = [
@@ -36,7 +41,7 @@ def _service_base() -> str:
     than the one endpoint a caller happened to reach first. Resolved per call,
     because a ``configure`` block is scoped to a ``with`` statement.
     """
-    return _configuration.base_url(adapter="streamstats") or STREAMSTATS_URL
+    return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -238,14 +243,16 @@ class Watershed:
 
 
 @dataclass(frozen=True)
-class StreamstatsConfiguration(BaseConfiguration):
+class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for StreamStats calls alone.
 
     No fan-out dials: a StreamStats query is answered by a single
     request.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` so a
-    setting's definition sits with the code that reads it (ADR 0011).
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
 
     Parameters
     ----------
@@ -260,11 +267,10 @@ class StreamstatsConfiguration(BaseConfiguration):
         the file and the environment refuse it.
     """
 
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "streamstats"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
 
 
 _register(StreamstatsConfiguration)

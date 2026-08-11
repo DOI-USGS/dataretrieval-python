@@ -1318,6 +1318,24 @@ def test_every_adapter_is_actually_wired_to_a_read_site():
     )
 
 
+def test_a_misspelled_adapter_at_a_read_site_raises():
+    """The other half of the invariant above, which a grep cannot check.
+
+    ``adapter="waterdatas"`` used to resolve *silently* package-wide: no table
+    matches the typo, every setting is accepted because nothing knows the
+    schema, and a ``[waterdata]`` table or a ``WaterdataConfiguration`` is then
+    ignored with nothing raised anywhere. The grep only sees that the correctly
+    spelled string occurs somewhere; it cannot see a second, wrong one.
+    """
+    with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
+        configuration.retries(adapter="waterdatas")
+
+    # Every read site funnels through one resolver, so the check reaches them
+    # all -- including the accessors that would otherwise return a default.
+    with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
+        configuration.base_url(adapter="nwis", default="https://example.invalid")
+
+
 def test_a_non_finite_stall_timeout_is_refused():
     """``inf`` parses as a float and silently disables the bound it sets."""
     for bad in (float("inf"), float("nan")):
@@ -1436,6 +1454,64 @@ def test_a_water_data_redirect_moves_every_endpoint_family():
     declared = [n for n in endpoints.__all__ if n.endswith("_URL") and n != "BASE_URL"]
     assert declared and all(
         getattr(endpoints, name).startswith(endpoints.BASE_URL) for name in declared
+    )
+
+
+def test_every_water_data_endpoint_use_goes_through_redirected():
+    """``redirected()`` is a wrap-at-every-use-site seam, so check every site.
+
+    Water Data is the one adapter that cannot resolve its base at a single
+    choke point: four families hang off one root, each building its own URL
+    from a constant. The test above proves the constants all derive from
+    ``BASE_URL``; this one proves the *use sites* actually pass them through
+    the wrapper. Without it a new family module -- or a second use of an
+    existing constant -- would send traffic to api.waterdata.usgs.gov from
+    inside a block a caller opened precisely to avoid it, with nothing failing:
+    what ``redirected()``'s own docstring calls the one mistake a redirect must
+    not make.
+
+    Written as an AST scan for the same reason as
+    ``test_every_adapter_is_actually_wired_to_a_read_site``: the invariant is a
+    fact about the source, and nothing at runtime can observe a use site that
+    was simply never written.
+    """
+    import ast
+    import pathlib
+
+    wrapped = {n for n in endpoints.__all__ if n.endswith("_URL")}
+    package = pathlib.Path(endpoints.__file__).parent
+
+    bare: list[str] = []
+    for path in sorted(package.rglob("*.py")):
+        if path.name == "endpoints.py":
+            continue  # where the constants are declared and the wrapper lives
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        # Every ``redirected(X)`` argument is a legitimate use; anything else
+        # naming a constant is not. Collected first so the walk below can tell
+        # the two apart by node identity rather than by position.
+        allowed = {
+            node.args[0]
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "redirected"
+            and node.args
+        }
+        for node in ast.walk(tree):
+            # Loads only: the ``from ... import`` that binds the name and the
+            # ``__all__`` re-export (a string, not a Name) are not use sites.
+            if (
+                isinstance(node, ast.Name)
+                and isinstance(node.ctx, ast.Load)
+                and node.id in wrapped
+                and node not in allowed
+            ):
+                bare.append(f"{path.name}:{node.lineno}: {node.id}")
+
+    assert not bare, (
+        "Water Data endpoint constants used without redirected(): "
+        f"{bare}. Wrap each one -- redirected(OGC_API_URL) -- or the request "
+        "ignores WaterdataConfiguration(base_url=...)."
     )
 
 

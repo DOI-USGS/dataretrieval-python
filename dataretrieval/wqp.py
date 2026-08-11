@@ -19,7 +19,13 @@ import pandas as pd
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
+from dataretrieval.credentials import refuse_credential_keywords
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
@@ -651,7 +657,7 @@ def _service_base() -> str:
     talk to. Resolved per call, because a ``configure`` block is scoped to a
     ``with`` statement.
     """
-    return _configuration.base_url(adapter="wqp") or _WQP_BASE_URL
+    return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
 
 
 def wqp_url(service: str) -> str:
@@ -726,7 +732,18 @@ class WQP_Metadata(BaseMetadata):
 
 
 def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-    """Check kwargs for unsupported parameters."""
+    """Check kwargs for unsupported parameters.
+
+    Every WQP getter's ``**kwargs`` funnels through here on its way to the
+    query payload, so this is the choke point where a credential-shaped name is
+    refused. The predicate is the credentials leaf's, shared with Water Data's
+    ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
+    getter now that ``configure(Configuration(api_key=...))`` is the spelling,
+    and this is the adapter with the widest passthrough -- ten getters, whose
+    filter names the portal rather than this package defines.
+    """
+    refuse_credential_keywords(kwargs)
+
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
@@ -784,14 +801,16 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
 
 
 @dataclass(frozen=True)
-class WqpConfiguration(BaseConfiguration):
+class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for Water Quality Portal calls alone.
 
     No fan-out dials: a WQP query is answered by a single request, so a
     concurrency cap could only report a number nothing honours.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` so a
-    setting's definition sits with the code that reads it (ADR 0011).
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
 
     Parameters
     ----------
@@ -807,11 +826,10 @@ class WqpConfiguration(BaseConfiguration):
         the environment refuse it.
     """
 
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "wqp"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
 
 
 _register(WqpConfiguration)

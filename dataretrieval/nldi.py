@@ -16,7 +16,12 @@ from typing import Any, ClassVar, Literal, cast
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _query_with_retry
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 
 __all__ = [
     "NldiConfiguration",
@@ -48,8 +53,12 @@ def _api_base() -> str:
     that covered only some of them would leave the library asking the real
     service about the mirror's data. Resolved per call, because a ``configure``
     block is scoped to a ``with`` statement rather than to the process.
+
+    Six call sites, which is what this seam is for; choosing between the
+    redirect and the service's own base is the accessor's job, not each
+    service's.
     """
-    return _configuration.base_url(adapter="nldi") or NLDI_API_BASE_URL
+    return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
 
 
 def _query_nldi(
@@ -603,7 +612,7 @@ def _validate_feature_source_comid(
 
 
 @dataclass(frozen=True)
-class NldiConfiguration(BaseConfiguration):
+class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for NLDI calls alone.
 
     No fan-out dials: an NLDI query is answered by a single request.
@@ -613,8 +622,10 @@ class NldiConfiguration(BaseConfiguration):
     the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
     rather than being derived from what has been imported.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` so a
-    setting's definition sits with the code that reads it (ADR 0011).
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
 
     Parameters
     ----------
@@ -630,11 +641,10 @@ class NldiConfiguration(BaseConfiguration):
         environment refuse it.
     """
 
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "nldi"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
 
 
 _register(NldiConfiguration)

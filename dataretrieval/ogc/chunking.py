@@ -57,7 +57,6 @@ from dataretrieval.transport.fanout import (
 from dataretrieval.transport.retry import RetryPolicy
 
 from .planning import ChunkPlan
-from .policy import _require_positive_int
 
 # Compatibility aliases. ``ChunkedCall`` was this module's executor before it
 # moved down to transport as the API-neutral ``FanOut``; ``get_active_client``
@@ -175,9 +174,16 @@ def parallel_chunks(n: int) -> Iterator[None]:
     --------
     ChunkPlan._refine : the planning-side effect of ``n``.
     """
-    # Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared
-    # rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).
-    _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
+    # Fail loudly on a bad ``n`` at ``with`` entry, before any request -- and
+    # fail by the *setting's* grammar, not a second one written here. ``n`` is
+    # ``parallel_chunks``: the same bool/Integral rejection and the same lower
+    # bound, from the table that owns them, so raising the floor there cannot
+    # leave this block accepting a value the chain would then refuse. Spelled
+    # with the source label this block is written as, so the message names
+    # ``parallel_chunks(n)`` rather than the ``Configuration`` built below.
+    # ``ConfigurationError`` is a ``ValueError``, so callers catching that
+    # still catch this.
+    _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
     # Sugar for a package-wide ``Configuration`` rather than a second scope of
     # its own: two competing ContextVars would let ``show_configuration()`` report a
     # value the chunker does not use. Sharing one means the innermost block

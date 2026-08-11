@@ -53,7 +53,13 @@ from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Concurrent,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers, network_error
@@ -249,7 +255,7 @@ def get_wateruse(
     # service's own endpoint. Resolved once per call -- the block is scoped to
     # a ``with`` statement -- and threaded through every request and the page
     # walk, so a redirected call cannot half-follow the redirect.
-    service_url = _configuration.base_url(adapter="nwdc") or WATERUSE_URL
+    service_url = _configuration.base_url(adapter="nwdc", default=WATERUSE_URL)
 
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each handled by shared transport
@@ -492,15 +498,17 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
 
 
 @dataclass(frozen=True)
-class NwdcConfiguration(BaseConfiguration):
+class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration):
     """Settings for NWDC calls alone.
 
     No ``parallel_chunks``: the NWDC is a plain CSV service, so a query
     fans out per location rather than being divided along a URL byte
     budget. There is nothing for the planner to divide more finely.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` so a
-    setting's definition sits with the code that reads it (ADR 0011).
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
 
     Parameters
     ----------
@@ -518,12 +526,10 @@ class NwdcConfiguration(BaseConfiguration):
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     """
 
+    # One request per location, fanned out but never chunked, so this service
+    # reads the retry dials, a redirectable base and ``concurrency`` -- but not
+    # ``parallel_chunks``, which divides a query it never divides.
     adapter: ClassVar[str] = "nwdc"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
-    concurrency: int | str | None = _UNSET
 
 
 _register(NwdcConfiguration)

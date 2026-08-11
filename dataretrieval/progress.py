@@ -31,6 +31,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TextIO
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._ambient import Ambient
 from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
 
@@ -82,8 +83,6 @@ def _enabled_default(stream: TextIO) -> bool:
     a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
     logs, and CI.
     """
-    from dataretrieval import configuration as _configuration
-
     # config owns the grammar, so this is already a bool: the same value means
     # the same thing whether it came from a configure() block, the environment,
     # or the file. Re-parsing here is what let those three disagree.

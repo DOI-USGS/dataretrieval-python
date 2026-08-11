@@ -25,7 +25,14 @@ import pandas as pd
 
 from dataretrieval import configuration as _configuration
 from dataretrieval.codes.states import apply_state
-from dataretrieval.configuration import _UNSET, BaseConfiguration, _register
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Chunked,
+    _Concurrent,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 from dataretrieval.credentials import WATERDATA_BASE_URL
 from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 
@@ -112,7 +119,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         # this service's own base. Resolved per call because the block is
         # scoped to a ``with`` statement, and read here because this is the one
         # place the NGWMN base is named.
-        base_url=_configuration.base_url(adapter="ngwmn") or NGWMN_OGC_API_URL,
+        base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
         dialect=NGWMN_DIALECT,
         adapter="ngwmn",
     )
@@ -440,7 +447,9 @@ def get_providers(
 
 
 @dataclass(frozen=True)
-class NgwmnConfiguration(BaseConfiguration):
+class NgwmnConfiguration(
+    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
+):
     """Settings for NGWMN calls alone.
 
     NGWMN is a second OGC API on the Water Data host, so its queries
@@ -448,8 +457,10 @@ class NgwmnConfiguration(BaseConfiguration):
     dials. The API key is not among them: one gateway fronts both
     adapters, so one key and one quota pool serve them (ADR 0010).
 
-    Lives here rather than in :mod:`dataretrieval.configuration` so a
-    setting's definition sits with the code that reads it (ADR 0011).
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
 
     Parameters
     ----------
@@ -470,13 +481,11 @@ class NgwmnConfiguration(BaseConfiguration):
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
+    # NGWMN rides the same OGC engine as Water Data, so it reads the same
+    # groups: retry dials, a redirectable base, and both fan-out dials. The
+    # settings themselves are declared once in
+    # :mod:`dataretrieval.configuration`, beside the grammar that parses them.
     adapter: ClassVar[str] = "ngwmn"
-
-    retries: int | None = _UNSET
-    stall_timeout: float | int | None = _UNSET
-    base_url: str | None = _UNSET
-    concurrency: int | str | None = _UNSET
-    parallel_chunks: int | None = _UNSET
 
 
 _register(NgwmnConfiguration)

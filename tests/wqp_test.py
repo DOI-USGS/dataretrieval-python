@@ -256,6 +256,30 @@ def test_check_kwargs():
         kwargs = _check_kwargs(kwargs)
 
 
+@pytest.mark.parametrize(
+    "name", ["api_key", "x_api_key", "access_token", "password", "pat", "auth"]
+)
+def test_credential_shaped_wqp_kwargs_are_rejected(name):
+    """WQP has the widest ``**kwargs`` passthrough in the package.
+
+    Its ten getters forward whatever the caller names straight into the query
+    string, so ``api_key=`` -- the plausible guess now that ``configure()``
+    takes ``Configuration(api_key=...)`` -- would put a secret in a URL that
+    clients, proxies and logs retain. Same predicate and same message as Water
+    Data's ``**queryables`` guard, because it is the same mistake.
+    """
+    with pytest.raises(TypeError, match="Credentials cannot be passed"):
+        _check_kwargs({name: "SECRET"})
+
+
+@pytest.mark.parametrize(
+    "name", ["siteid", "characteristicName", "statecode", "providers", "pCode"]
+)
+def test_real_wqp_filters_still_pass_through(name):
+    """The denylist must not claim names the portal owns."""
+    assert _check_kwargs({name: "v"})[name] == "v"
+
+
 def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):
     """A valid user-supplied WQX3.0 profile must not be overwritten.
 

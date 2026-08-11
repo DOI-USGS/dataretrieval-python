@@ -174,9 +174,13 @@ Consequences
 - **``configure(api_key=...)`` breaks.** The README, the configuration guide,
   the PR description and ADR 0009's examples all use it and all must change in
   the same commit.
-- **``show_configuration()`` can only report profiles for adapters that have
-  been imported.** It says so rather than omitting them, which is the honest
-  cost of lazy validation.
+- **``show_configuration()`` can only resolve the settings an adapter accepts
+  once that adapter has been imported.** It names the adapters it could not
+  check rather than omitting them silently, which is the honest cost of lazy
+  validation. The *profile list* is not import-limited: what a profile is
+  called is a fact about the file, so every ``[<adapter>.<name>]`` table it
+  defines is listed, imported or not -- withholding one would make the
+  section's answer depend on which optional extras happened to be installed.
 - **Two names differ only by case** -- the ``configuration`` module and the
   ``Configuration`` class. The module stays out of the package's public
   exports so the confusing import line cannot arise.
@@ -206,10 +210,17 @@ Satisfied. In ``tests/configuration_test.py``:
   ``test_a_malformed_table_does_not_fail_another_adapters_call`` -- the
   blast-radius rule under lazy validation.
 - ``test_base_url_applies_from_code_and_is_refused_from_the_file``, with
-  ``test_base_url_is_refused_from_the_environment`` for the other source.
+  ``test_base_url_is_refused_from_the_environment`` for the other source, and
+  ``test_every_water_data_endpoint_use_goes_through_redirected`` -- an AST scan
+  over ``dataretrieval/waterdata`` for the one adapter that cannot resolve its
+  base at a single choke point, so a family module cannot quietly keep sending
+  traffic to the host a caller redirected away from.
 - ``test_adapter_roster_names_real_modules_that_register_themselves`` and
   ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
-  resolves, and no configuration exists that nothing reads.
+  resolves, and no configuration exists that nothing reads. An adapter name
+  the code does not recognize now raises out of ``_resolve`` rather than
+  falling through to the package-wide value, so the grep is a backstop rather
+  than the only guard.
 
 ``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
 asserts the module imports no adapter -- ``dataretrieval.exceptions`` is its

@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval.codes.states import apply_state
+from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
@@ -120,39 +121,6 @@ _NO_NORMALIZE_PARAMS = frozenset(
     }
 )
 
-# Credential-shaped kwargs must never reach the generic queryable passthrough:
-# URLs are retained by clients, proxies, logs, and response metadata.
-#
-# Matched as *substrings* of the separator-stripped name, not as exact names:
-# an exact-match list missed the spelling the library's own docs make most
-# tempting -- ``x_api_key``, after the ``X-Api-Key`` header.
-#
-# This catches the plausible mistake; it is not a security control. Nothing
-# inspects *values*, so a secret pasted into ``state_name=`` travels just the
-# same, and the name space belongs to the server (``get_queryables``) rather
-# than to us. The point is to answer the caller who reasonably guesses that a
-# credential goes here, with a TypeError naming
-# ``configure(Configuration(api_key=...))`` instead of a token in a URL. It
-# errs toward rejecting for that reason.
-_FORBIDDEN_QUERYABLE_MARKERS = (
-    "apikey",
-    "authorization",
-    "credential",
-    "password",
-    "passwd",
-    "secret",
-    "token",
-)
-
-# Whole names that are credentials on their own but too short to match as
-# substrings without catching legitimate queryables.
-#
-# ``session`` is deliberately absent from both lists: it carries no secret, so
-# rejecting it with a credentials message told users the wrong thing, and as a
-# substring it claimed part of a namespace the *server* owns -- any future
-# queryable containing it would have been unreachable behind that message.
-_FORBIDDEN_QUERYABLE_NAMES = frozenset({"auth", "key", "pat", "pw"})
-
 
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     """Merge a getter's ``**queryables`` passthrough kwargs into ``local_vars``.
@@ -169,19 +137,12 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     if called twice.
     """
     queryables = local_vars.pop("queryables", {})
-    forbidden = set()
-    for name in queryables:
-        flat = name.replace("_", "").replace("-", "").casefold()
-        if flat in _FORBIDDEN_QUERYABLE_NAMES or any(
-            marker in flat for marker in _FORBIDDEN_QUERYABLE_MARKERS
-        ):
-            forbidden.add(name)
-    if forbidden:
-        names = ", ".join(f"{name}=" for name in sorted(forbidden))
-        raise TypeError(
-            f"Credentials cannot be passed as query parameters ({names}); "
-            "use dataretrieval.configure(Configuration(api_key=...)) instead."
-        )
+    # A credential-shaped name would go out in the query string, which is the
+    # one thing this passthrough must not forward. The predicate lives in the
+    # credentials leaf rather than here: what motivates it -- ``api_key=`` being
+    # a plausible guess now that ``configure()`` takes it -- is package-wide,
+    # and WQP's ``**kwargs`` search filters read the same list.
+    refuse_credential_keywords(queryables)
     local_vars.update(queryables)
     return local_vars
 

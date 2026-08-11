@@ -2480,8 +2480,13 @@ def test_parallel_chunks_rejects_non_positive_int(bad):
     """``n`` must be a positive integer; every other shape — zero, negative, a
     float, a string (including a numeric one and the old level names), ``None``,
     a ``bool``, a list — raises ``ValueError`` at ``with`` entry, before any
-    request, and leaves the ambient untouched."""
-    with pytest.raises(ValueError, match="must be a positive integer"):
+    request, and leaves the ambient untouched.
+
+    The message comes from the ``parallel_chunks`` grammar in the configuration
+    chain, which is the one that owns this setting's bound; a
+    ``ConfigurationError`` is a ``ValueError``, which is the contract callers
+    were given here."""
+    with pytest.raises(ValueError, match="must be an integer"):
         with parallel_chunks(bad):
             pass
     assert _configuration.parallel_chunks() == 1  # unchanged by a rejected call
