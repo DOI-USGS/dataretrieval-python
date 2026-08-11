@@ -36,7 +36,7 @@ Decision
 --------
 
 Every setting resolves through one ordered chain, owned by a new
-``dataretrieval.config`` module:
+``dataretrieval.configuration`` module:
 
 1. An active ``dataretrieval.configure(...)`` block (a ``ContextVar``).
 2. The setting's environment variable.
@@ -102,7 +102,7 @@ Supporting decisions:
   splittable query in every process that reads the file. A
   ``[profiles.<name>]`` table is opt-in per run, which is the shape this
   setting wants; the top-level form still works but says so.
-- **``dataretrieval.config`` is a lightweight leaf.** It uses only the standard
+- **``dataretrieval.configuration`` is a lightweight leaf.** It uses only the standard
   library, the ``tomli`` backport on Python 3.10, and
   ``dataretrieval.exceptions`` -- itself a dependency-free leaf, so this adds
   no weight and cannot cycle. It is read by ``utils``
@@ -118,7 +118,7 @@ Supporting decisions:
   than one per service. Services differ in the *value* they want, not the
   vocabulary, and that difference is expressed as a caller-supplied default:
   ``wateruse`` passes its ``DEFAULT_CONCURRENT_REQUESTS`` of 4 to
-  ``config.concurrency()`` where the OGC getters take the package default of
+  ``configuration.concurrency()`` where the OGC getters take the package default of
   32, and the single-shot adapters pass ``_GATEWAY_STATUSES`` to
   ``RetryPolicy.from_configuration()`` because WQP and StreamStats report a rejected
   query as a 500. A value resolved from the chain always outranks a caller
@@ -130,7 +130,7 @@ Supporting decisions:
   known service difference is a default, which the caller already supplies, so
   nothing needs it yet. If something does, the shape is a namespace inside this
   chain -- a ``[wateruse]`` table beside the top-level keys, read as
-  ``config.concurrency(default, service=...)``. It costs a second dimension in
+  ``configuration.concurrency(default, service=...)``. It costs a second dimension in
   resolution, which ``show_configuration()`` must then render as a matrix rather than
   a list, and that cost should buy a real requirement before it is paid.
 

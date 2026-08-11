@@ -90,7 +90,7 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 #: independently, so a rate-limit episode bursts this number times the retry
 #: count; the NWDC tolerates this level without rate-limit errors (verified by
 #: stress test) and higher has not been tested. Any configured concurrency
-#: overrides it -- see :func:`dataretrieval.config.concurrency` for why the
+#: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the
 #: general setting outranks a module's default rather than the reverse.
 DEFAULT_CONCURRENT_REQUESTS = 4
 

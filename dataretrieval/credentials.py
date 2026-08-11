@@ -10,7 +10,7 @@ only way to guarantee they agree is to have them read the same predicate.
 This sits below HTTP mechanics (which attaches the header) and below progress
 reporting (which tells an unauthenticated caller where to register), so neither
 has to depend on the other to learn the same fact. Its only first-party
-dependency is :mod:`dataretrieval.config`, which is itself a
+dependency is :mod:`dataretrieval.configuration`, which is itself a
 standard-library-only leaf and sits directly beneath this module in the layers
 contract -- it supplies the key's *value*, while the questions this module
 owns are which host may receive it and how it is withheld from every other.
@@ -20,13 +20,13 @@ from __future__ import annotations
 
 import httpx
 
-from dataretrieval import config as _config
+from dataretrieval import configuration as _configuration
 
 #: Environment variable holding the USGS Water Data personal access token.
 #: Taken from the chain that reads it rather than spelled again here -- the
 #: same rule ``test_credential_policy_has_one_definition`` enforces for the
 #: authorized host, and for the same reason: two copies stop agreeing silently.
-API_KEY_ENV = _config.ENV_VARS["api_key"]
+API_KEY_ENV = _configuration.ENV_VARS["api_key"]
 
 #: Where to register for a key. Surfaced once, by the progress reporter, when a
 #: query against the authorized host runs without one -- unauthenticated callers
@@ -90,10 +90,10 @@ def api_key() -> str | None:
     Lives here, next to the host check and
     :func:`strip_api_key_from_untrusted_host`, so reading the key and the rules
     governing where it may travel stay in one module. The value itself resolves
-    through :func:`dataretrieval.config.api_key`, so host scoping applies
+    through :func:`dataretrieval.configuration.api_key`, so host scoping applies
     identically no matter which source supplied the key.
     """
-    return _config.api_key()
+    return _configuration.api_key()
 
 
 def strip_api_key_from_untrusted_host(request: httpx.Request) -> None:

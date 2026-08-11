@@ -19,7 +19,7 @@ deprecated ``nwis``.
 imported on demand: ``from dataretrieval import nldi``.
 
 Settings -- the Water Data API key, fan-out concurrency, retries, the progress
-line -- resolve through :mod:`dataretrieval.config`: a
+line -- resolve through :mod:`dataretrieval.configuration`: a
 ``with dataretrieval.configure(...)`` block, then the ``API_USGS_*`` environment
 variables, then ``~/.dataretrieval/config.toml``. ``dataretrieval.show_configuration()``
 reports what is in effect and where each value came from.
@@ -40,9 +40,9 @@ except PackageNotFoundError:
     __version__ = "version-unknown"
 
 # Layered configuration: a ``with configure(...)`` block, the environment, then
-# the config file. The canonical home is ``dataretrieval.config``;
+# the config file. The canonical home is ``dataretrieval.configuration``;
 # the callable is named ``configure`` so it doesn't shadow that module.
-from dataretrieval.config import configure, show_configuration
+from dataretrieval.configuration import configure, show_configuration
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataRetrievalError,
@@ -76,7 +76,7 @@ from dataretrieval.interruptions import (
 from dataretrieval.ogc.chunking import parallel_chunks
 
 from . import (
-    config,
+    configuration,
     exceptions,
     ngwmn,
     nwdc,
@@ -88,8 +88,7 @@ from . import (
 )
 
 __all__ = [
-    # layered configuration (canonical home: ``dataretrieval.config``)
-    "config",
+    # layered configuration (canonical home: ``dataretrieval.configuration``)
     "configure",
     "show_configuration",
     "ConfigurationError",
@@ -122,4 +121,5 @@ __all__ = [
     # parallel-chunks control (defined in ogc.chunking)
     "parallel_chunks",
     "__version__",
+    "configuration",
 ]

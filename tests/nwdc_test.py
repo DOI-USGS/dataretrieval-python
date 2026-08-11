@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 
 import dataretrieval
-from dataretrieval import config, nwdc
+from dataretrieval import configuration, nwdc
 from dataretrieval import progress as _progress
 from dataretrieval.nwdc import _next_page_url, _resolve_locations, get_wateruse
 from dataretrieval.transport import fanout as _fanout
@@ -656,15 +656,15 @@ def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
     quietly ignoring them -- the defect that motivated consolidating the knob.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "7")
-    assert config.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
+    assert configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
 
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
     assert (
-        config.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS)
+        configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS)
         == nwdc.DEFAULT_CONCURRENT_REQUESTS
     )
     # The service default is deliberately below the package-wide 32.
-    assert nwdc.DEFAULT_CONCURRENT_REQUESTS < config.DEFAULT_CONCURRENCY
+    assert nwdc.DEFAULT_CONCURRENT_REQUESTS < configuration.DEFAULT_CONCURRENCY
 
 
 def test_fan_out_reports_progress(httpx_mock, monkeypatch):

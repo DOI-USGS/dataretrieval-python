@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from dataretrieval import config
+from dataretrieval import configuration
 
 
 def pytest_collection_modifyitems(config, items):
@@ -64,4 +64,4 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
     monkeypatch.delenv("DATARETRIEVAL_PROFILE", raising=False)
-    config._reset_file_cache()
+    configuration._reset_file_cache()

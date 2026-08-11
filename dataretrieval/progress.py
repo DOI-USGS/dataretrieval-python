@@ -82,12 +82,12 @@ def _enabled_default(stream: TextIO) -> bool:
     a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
     logs, and CI.
     """
-    from dataretrieval import config as _config
+    from dataretrieval import configuration as _configuration
 
     # config owns the grammar, so this is already a bool: the same value means
     # the same thing whether it came from a configure() block, the environment,
     # or the file. Re-parsing here is what let those three disagree.
-    override = _config.progress()
+    override = _configuration.progress()
     if override is not None:
         return override
     if _in_jupyter_kernel():

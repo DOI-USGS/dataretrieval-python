@@ -1,4 +1,4 @@
-"""Tests for layered configuration resolution (``dataretrieval.config``)."""
+"""Tests for layered configuration resolution (``dataretrieval.configuration``)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import threading
 import pytest
 
 import dataretrieval
-from dataretrieval import config
+from dataretrieval import configuration
 from dataretrieval.utils import _default_headers
 
 WATERDATA_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
@@ -25,10 +25,10 @@ def config_file(tmp_path, monkeypatch):
         path = tmp_path / "config.toml"
         path.write_text(text)
         path.chmod(0o600)  # keep the loose-permission warning out of the way
-        for env in config.ENV_VARS.values():
+        for env in configuration.ENV_VARS.values():
             monkeypatch.delenv(env, raising=False)
-        monkeypatch.setenv(config.CONFIG_PATH_ENV, str(path))
-        config._reset_file_cache()
+        monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(path))
+        configuration._reset_file_cache()
         return path
 
     return write
@@ -38,34 +38,34 @@ def config_file(tmp_path, monkeypatch):
 
 
 def test_default_when_nothing_is_configured(monkeypatch):
-    for env in config.ENV_VARS.values():
+    for env in configuration.ENV_VARS.values():
         monkeypatch.delenv(env, raising=False)
-    assert config.api_key() is None
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
-    assert config.retries() == config.DEFAULT_RETRIES
-    assert config.parallel_chunks() == config.DEFAULT_PARALLEL_CHUNKS
-    assert config.progress() is None
+    assert configuration.api_key() is None
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
+    assert configuration.retries() == configuration.DEFAULT_RETRIES
+    assert configuration.parallel_chunks() == configuration.DEFAULT_PARALLEL_CHUNKS
+    assert configuration.progress() is None
 
 
 def test_env_is_used_when_no_file_or_block(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "env-key")
     monkeypatch.setenv("API_USGS_CONCURRENT", "4")
-    assert config.api_key() == "env-key"
-    assert config.concurrency() == 4
+    assert configuration.api_key() == "env-key"
+    assert configuration.concurrency() == 4
 
 
 def test_env_outranks_file(config_file, monkeypatch):
     config_file('api_key = "file-key"\n')
     monkeypatch.setenv("API_USGS_PAT", "env-key")
-    assert config.api_key() == "env-key"
+    assert configuration.api_key() == "env-key"
 
 
 def test_block_outranks_file_and_env(config_file, monkeypatch):
     config_file('api_key = "file-key"\n')
     monkeypatch.setenv("API_USGS_PAT", "env-key")
     with dataretrieval.configure(api_key="block-key"):
-        assert config.api_key() == "block-key"
-    assert config.api_key() == "env-key"
+        assert configuration.api_key() == "block-key"
+    assert configuration.api_key() == "env-key"
 
 
 def test_precedence_is_per_setting_not_per_source(config_file, monkeypatch):
@@ -73,9 +73,9 @@ def test_precedence_is_per_setting_not_per_source(config_file, monkeypatch):
     config_file("concurrency = 16\n")
     monkeypatch.setenv("API_USGS_PAT", "env-key")
     monkeypatch.setenv("API_USGS_RETRIES", "9")
-    assert config.concurrency() == 16  # from the file
-    assert config.api_key() == "env-key"  # still from the env
-    assert config.retries() == 9  # still from the env
+    assert configuration.concurrency() == 16  # from the file
+    assert configuration.api_key() == "env-key"  # still from the env
+    assert configuration.retries() == 9  # still from the env
 
 
 # --- the configure() block -----------------------------------------------
@@ -84,15 +84,15 @@ def test_precedence_is_per_setting_not_per_source(config_file, monkeypatch):
 def test_blocks_nest_and_merge_per_setting():
     with dataretrieval.configure(api_key="outer", concurrency=4):
         with dataretrieval.configure(concurrency=8):
-            assert config.concurrency() == 8
-            assert config.api_key() == "outer"  # inherited from the outer block
-        assert config.concurrency() == 4  # inner block restored on exit
+            assert configuration.concurrency() == 8
+            assert configuration.api_key() == "outer"  # inherited from the outer block
+        assert configuration.concurrency() == 4  # inner block restored on exit
 
 
 def test_omitted_setting_inherits_lower_source(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "env-key")
     with dataretrieval.configure(concurrency=2):
-        assert config.api_key() == "env-key"
+        assert configuration.api_key() == "env-key"
 
 
 def test_explicit_none_suppresses_lower_sources(monkeypatch):
@@ -100,26 +100,26 @@ def test_explicit_none_suppresses_lower_sources(monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "4")
     monkeypatch.setenv("API_USGS_PROGRESS", "true")
     with dataretrieval.configure(api_key=None, concurrency=None, progress=None):
-        assert config.api_key() is None
-        assert config.concurrency() == config.DEFAULT_CONCURRENCY
-        assert config.progress() is None
-    assert config.api_key() == "env-key"
-    assert config.concurrency() == 4
-    assert config.progress() is True
+        assert configuration.api_key() is None
+        assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
+        assert configuration.progress() is None
+    assert configuration.api_key() == "env-key"
+    assert configuration.concurrency() == 4
+    assert configuration.progress() is True
 
 
 def test_block_validates_eagerly():
     """A bad value raises at the ``with``, not inside a later request."""
-    with pytest.raises(config.ConfigurationError):
+    with pytest.raises(configuration.ConfigurationError):
         with dataretrieval.configure(concurrency=0):
             pass
-    with pytest.raises(config.ConfigurationError):
+    with pytest.raises(configuration.ConfigurationError):
         with dataretrieval.configure(retries=-1):
             pass
-    with pytest.raises(config.ConfigurationError):
+    with pytest.raises(configuration.ConfigurationError):
         with dataretrieval.configure(parallel_chunks=0):
             pass
-    with pytest.raises(config.ConfigurationError):
+    with pytest.raises(configuration.ConfigurationError):
         with dataretrieval.configure(progress="flase"):
             pass
 
@@ -137,20 +137,20 @@ def test_block_validates_eagerly():
     ],
 )
 def test_block_rejects_values_outside_annotated_types(kwargs, expected):
-    with pytest.raises(config.ConfigurationError, match=expected):
+    with pytest.raises(configuration.ConfigurationError, match=expected):
         with dataretrieval.configure(**kwargs):
             pass
 
 
 def test_block_accepts_ints_and_strings():
     with dataretrieval.configure(concurrency="unbounded"):
-        assert config.concurrency() is None
+        assert configuration.concurrency() is None
     with dataretrieval.configure(concurrency=8):
-        assert config.concurrency() == 8
+        assert configuration.concurrency() == 8
     with dataretrieval.configure(progress=False):
-        assert config.progress() is False
+        assert configuration.progress() is False
     with dataretrieval.configure(progress=True):
-        assert config.progress() is True
+        assert configuration.progress() is True
 
 
 # --- isolation (the point of issue #352) ---------------------------------
@@ -168,7 +168,7 @@ def test_threads_do_not_leak_credentials_into_each_other():
     def worker(name: str, key: str) -> None:
         with dataretrieval.configure(api_key=key):
             started.wait(timeout=5)  # force the blocks to overlap in time
-            seen[name] = config.api_key()
+            seen[name] = configuration.api_key()
 
     threads = [
         threading.Thread(target=worker, args=("a", "key-a")),
@@ -188,7 +188,7 @@ def test_asyncio_tasks_do_not_leak_credentials_into_each_other():
     async def worker(key: str) -> str | None:
         with dataretrieval.configure(api_key=key):
             await asyncio.sleep(0)  # yield, letting the other task interleave
-            return config.api_key()
+            return configuration.api_key()
 
     async def main() -> list[str | None]:
         return list(await asyncio.gather(worker("key-a"), worker("key-b")))
@@ -205,35 +205,35 @@ def test_profile_layers_over_top_level(config_file, monkeypatch):
         '[profiles.bulk]\nconcurrency = "unbounded"\n'
     )
     with dataretrieval.configure(profile="bulk"):
-        assert config.concurrency() is None  # from the profile
-        assert config.api_key() == "shared"  # inherited from the top level
-    assert config.concurrency() == 4  # outside the block, top level again
+        assert configuration.concurrency() is None  # from the profile
+        assert configuration.api_key() == "shared"  # inherited from the top level
+    assert configuration.concurrency() == 4  # outside the block, top level again
 
 
 def test_profile_selected_by_env(config_file, monkeypatch):
     config_file("concurrency = 4\n\n[profiles.bulk]\nconcurrency = 16\n")
-    monkeypatch.setenv(config.PROFILE_ENV, "bulk")
-    assert config.concurrency() == 16
+    monkeypatch.setenv(configuration.PROFILE_ENV, "bulk")
+    assert configuration.concurrency() == 16
 
 
 def test_block_profile_outranks_env_profile(config_file, monkeypatch):
     config_file("[profiles.a]\nconcurrency = 2\n\n[profiles.b]\nconcurrency = 3\n")
-    monkeypatch.setenv(config.PROFILE_ENV, "a")
+    monkeypatch.setenv(configuration.PROFILE_ENV, "a")
     with dataretrieval.configure(profile="b"):
-        assert config.concurrency() == 3
+        assert configuration.concurrency() == 3
 
 
 def test_none_profile_selects_top_level(config_file, monkeypatch):
     config_file("concurrency = 4\n\n[profiles.bulk]\nconcurrency = 16\n")
-    monkeypatch.setenv(config.PROFILE_ENV, "bulk")
+    monkeypatch.setenv(configuration.PROFILE_ENV, "bulk")
     with dataretrieval.configure(profile=None):
-        assert config.concurrency() == 4
-    assert config.concurrency() == 16
+        assert configuration.concurrency() == 4
+    assert configuration.concurrency() == 16
 
 
 def test_unknown_profile_raises(config_file):
     config_file("concurrency = 4\n")
-    with pytest.raises(config.ConfigurationError, match="not defined"):
+    with pytest.raises(configuration.ConfigurationError, match="not defined"):
         with dataretrieval.configure(profile="nope"):
             pass
 
@@ -244,14 +244,14 @@ def test_selected_profile_is_ignored_when_there_is_no_file(tmp_path, monkeypatch
     With no config file there are no profiles to select from and the whole
     file layer is inert, so the selection is moot rather than a typo. Raising
     here would surface from ``_default_headers`` on every call — including
-    legacy services that never read the config.
+    legacy services that never read the configuration.
     """
     monkeypatch.delenv("API_USGS_CONCURRENT")  # pinned by the autouse fixture
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
-    monkeypatch.setenv(config.PROFILE_ENV, "long-gone")
-    config._reset_file_cache()
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
+    monkeypatch.setenv(configuration.PROFILE_ENV, "long-gone")
+    configuration._reset_file_cache()
 
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
     assert _default_headers(WATERDATA_URL)["User-Agent"].startswith(
         "python-dataretrieval/"
     )
@@ -268,26 +268,26 @@ def test_profile_typed_into_configure_is_checked_even_with_no_file(
     asked for — so it raises at the ``with``, as that function documents.
     """
     monkeypatch.delenv("API_USGS_CONCURRENT")  # pinned by the autouse fixture
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
-    monkeypatch.delenv(config.PROFILE_ENV, raising=False)
-    config._reset_file_cache()
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
+    monkeypatch.delenv(configuration.PROFILE_ENV, raising=False)
+    configuration._reset_file_cache()
 
-    with pytest.raises(config.ConfigurationError, match="no configuration file"):
+    with pytest.raises(configuration.ConfigurationError, match="no configuration file"):
         with dataretrieval.configure(profile="also-gone"):
             pass
 
 
 def test_missing_file_is_not_an_error(tmp_path, monkeypatch):
     monkeypatch.delenv("API_USGS_CONCURRENT")  # pinned by the autouse fixture
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
-    config._reset_file_cache()
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path / "absent.toml"))
+    configuration._reset_file_cache()
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
 
 
 def test_malformed_file_raises_pointing_at_the_file(config_file):
     path = config_file("api_key = \n")
-    with pytest.raises(config.ConfigurationError) as excinfo:
-        config.api_key()
+    with pytest.raises(configuration.ConfigurationError) as excinfo:
+        configuration.api_key()
     assert "not valid TOML" in str(excinfo.value)
     assert str(path) in str(excinfo.value)
 
@@ -295,16 +295,16 @@ def test_malformed_file_raises_pointing_at_the_file(config_file):
 def test_non_utf8_file_raises_config_error(config_file):
     path = config_file("")
     path.write_bytes(b'api_key = "\xff"\n')
-    with pytest.raises(config.ConfigurationError, match="not valid UTF-8"):
-        config.api_key()
+    with pytest.raises(configuration.ConfigurationError, match="not valid UTF-8"):
+        configuration.api_key()
 
 
 def test_config_path_must_not_be_a_directory(tmp_path, monkeypatch):
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(tmp_path))
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(tmp_path))
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
-    config._reset_file_cache()
-    with pytest.raises(config.ConfigurationError, match="directory"):
-        config.concurrency()
+    configuration._reset_file_cache()
+    with pytest.raises(configuration.ConfigurationError, match="directory"):
+        configuration.concurrency()
 
 
 @pytest.mark.skipif(os.name != "posix", reason="needs /dev/null")
@@ -318,10 +318,10 @@ def test_dev_null_config_path_means_no_configuration(monkeypatch):
     """
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
     monkeypatch.delenv("API_USGS_PAT", raising=False)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, "/dev/null")
-    config._reset_file_cache()
-    assert config.api_key() is None
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, "/dev/null")
+    configuration._reset_file_cache()
+    assert configuration.api_key() is None
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX directory permissions")
@@ -331,9 +331,9 @@ def test_inaccessible_config_path_raises(tmp_path, monkeypatch):
     path = parent / "config.toml"
     path.write_text("concurrency = 4\n")
     parent.chmod(0)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(path))
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(path))
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
-    config._reset_file_cache()
+    configuration._reset_file_cache()
     try:
         try:
             path.stat()
@@ -341,8 +341,8 @@ def test_inaccessible_config_path_raises(tmp_path, monkeypatch):
             pass
         else:  # pragma: no cover - root or a filesystem that ignores mode bits
             pytest.skip("filesystem does not enforce directory mode bits")
-        with pytest.raises(config.ConfigurationError, match="could not access"):
-            config.concurrency()
+        with pytest.raises(configuration.ConfigurationError, match="could not access"):
+            configuration.concurrency()
     finally:
         parent.chmod(0o700)
 
@@ -350,22 +350,22 @@ def test_inaccessible_config_path_raises(tmp_path, monkeypatch):
 def test_unknown_setting_warns_but_is_ignored(config_file):
     config_file('concurrency = 4\napi_kye = "typo"\n')
     with pytest.warns(UserWarning, match="unknown setting"):
-        assert config.concurrency() == 4
+        assert configuration.concurrency() == 4
 
 
 def test_unknown_table_raises(config_file):
     """A profile written as ``[bulk]`` instead of ``[profiles.bulk]``."""
     config_file("[bulk]\nconcurrency = 4\n")
-    with pytest.raises(config.ConfigurationError, match="unknown table"):
-        config.concurrency()
+    with pytest.raises(configuration.ConfigurationError, match="unknown table"):
+        configuration.concurrency()
 
 
 def test_typed_toml_values_are_normalized(config_file):
     """``tomllib`` returns typed values that normalize into shared parsers."""
     config_file("concurrency = 16\nretries = 0\nprogress = true\n")
-    assert config.concurrency() == 16
-    assert config.retries() == 0
-    assert config.progress() is True
+    assert configuration.concurrency() == 16
+    assert configuration.retries() == 0
+    assert configuration.progress() is True
 
 
 @pytest.mark.parametrize(
@@ -380,26 +380,26 @@ def test_typed_toml_values_are_normalized(config_file):
 )
 def test_toml_rejects_wrong_scalar_types(config_file, text):
     config_file(text)
-    with pytest.raises(config.ConfigurationError):
-        config.parallel_chunks()
+    with pytest.raises(configuration.ConfigurationError):
+        configuration.parallel_chunks()
 
 
 def test_file_edit_is_picked_up(config_file, monkeypatch):
     path = config_file("concurrency = 4\n")
-    assert config.concurrency() == 4
+    assert configuration.concurrency() == 4
     original = path.stat()
     path.write_text("concurrency = 8\n")
     os.utime(path, ns=(original.st_atime_ns, original.st_mtime_ns))
     # Windows ctime is creation time, so unchanged metadata must fall back to
     # comparing raw content before the parsed cache is reused.
-    monkeypatch.setattr(config.os, "name", "nt")
-    assert config.concurrency() == 8
+    monkeypatch.setattr(configuration.os, "name", "nt")
+    assert configuration.concurrency() == 8
 
 
 def test_explicit_config_path_is_expanded(monkeypatch):
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, "~/somewhere/config.toml")
-    assert str(config.config_path()).startswith(os.path.expanduser("~"))
-    assert "~" not in str(config.config_path())
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, "~/somewhere/config.toml")
+    assert str(configuration.config_path()).startswith(os.path.expanduser("~"))
+    assert "~" not in str(configuration.config_path())
 
 
 def test_relative_config_path_follows_the_working_directory(tmp_path, monkeypatch):
@@ -417,16 +417,16 @@ def test_relative_config_path_follows_the_working_directory(tmp_path, monkeypatc
     (first / "config.toml").write_text("concurrency = 4\n")
     (second / "config.toml").write_text("concurrency = 9\n")
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, "config.toml")
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, "config.toml")
 
     monkeypatch.chdir(first)
-    config._reset_file_cache()
-    assert config.config_path() == first / "config.toml"
-    assert config.concurrency() == 4
+    configuration._reset_file_cache()
+    assert configuration.config_path() == first / "config.toml"
+    assert configuration.concurrency() == 4
 
     monkeypatch.chdir(second)
-    assert config.config_path() == second / "config.toml"
-    assert config.concurrency() == 9
+    assert configuration.config_path() == second / "config.toml"
+    assert configuration.concurrency() == 9
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX file modes")
@@ -434,20 +434,20 @@ def test_world_readable_file_with_a_key_warns(tmp_path, monkeypatch):
     path = tmp_path / "config.toml"
     path.write_text('api_key = "secret"\n')
     path.chmod(0o644)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(path))
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(path))
     monkeypatch.delenv("API_USGS_PAT", raising=False)
-    config._reset_file_cache()
+    configuration._reset_file_cache()
     with pytest.warns(UserWarning, match="readable by other users"):
-        assert config.api_key() == "secret"
+        assert configuration.api_key() == "secret"
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX file modes")
 def test_permission_change_is_checked_on_cached_file(config_file):
     path = config_file('api_key = "secret"\n')
-    assert config.api_key() == "secret"
+    assert configuration.api_key() == "secret"
     path.chmod(0o644)
     with pytest.warns(UserWarning, match="readable by other users"):
-        assert config.api_key() == "secret"
+        assert configuration.api_key() == "secret"
 
 
 @pytest.mark.skipif(os.name != "posix", reason="POSIX file modes")
@@ -455,10 +455,10 @@ def test_no_permission_warning_without_a_key(tmp_path, monkeypatch, recwarn):
     path = tmp_path / "config.toml"
     path.write_text("concurrency = 4\n")
     path.chmod(0o644)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, str(path))
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(path))
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
-    config._reset_file_cache()
-    assert config.concurrency() == 4
+    configuration._reset_file_cache()
+    assert configuration.concurrency() == 4
     assert not [w for w in recwarn if "readable by other users" in str(w.message)]
 
 
@@ -467,63 +467,65 @@ def test_no_permission_warning_without_a_key(tmp_path, monkeypatch, recwarn):
 
 def test_api_key_is_stripped_and_blank_means_none(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "  key-with-newline\n")
-    assert config.api_key() == "key-with-newline"
+    assert configuration.api_key() == "key-with-newline"
     monkeypatch.setenv("API_USGS_PAT", "   ")
-    assert config.api_key() is None
+    assert configuration.api_key() is None
 
 
 def test_blank_numeric_env_falls_back_to_the_default(monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "")
     monkeypatch.setenv("API_USGS_RETRIES", "")
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
-    assert config.retries() == config.DEFAULT_RETRIES
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
+    assert configuration.retries() == configuration.DEFAULT_RETRIES
 
 
 def test_blank_progress_env_means_off_not_unset(monkeypatch):
     """Preserved from the pre-config behavior: blank disables the line."""
     monkeypatch.setenv("API_USGS_PROGRESS", "")
-    assert config.progress() is False
+    assert configuration.progress() is False
 
 
 @pytest.mark.parametrize("value", ["0", "false", "no", "off", "FALSE"])
 def test_progress_falsey_values(monkeypatch, value):
     monkeypatch.setenv("API_USGS_PROGRESS", value)
-    assert config.progress() is False
+    assert configuration.progress() is False
 
 
 @pytest.mark.parametrize("value", ["1", "true", "yes", "on"])
 def test_progress_truthy_values(monkeypatch, value):
     monkeypatch.setenv("API_USGS_PROGRESS", value)
-    assert config.progress() is True
+    assert configuration.progress() is True
 
 
 def test_legacy_unknown_progress_env_still_means_on(monkeypatch):
     monkeypatch.setenv("API_USGS_PROGRESS", "legacy-nonempty-value")
-    assert config.progress() is True
+    assert configuration.progress() is True
 
 
 @pytest.mark.parametrize("value", ["nope", "-1", "0"])
 def test_invalid_concurrency_raises(monkeypatch, value):
     monkeypatch.setenv("API_USGS_CONCURRENT", value)
     with pytest.raises(ValueError):  # ConfigurationError is a ValueError
-        config.concurrency()
+        configuration.concurrency()
 
 
 def test_unbounded_concurrency(monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "unbounded")
-    assert config.concurrency() is None
+    assert configuration.concurrency() is None
 
 
 def test_error_message_names_the_source(config_file, monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "nope")
-    with pytest.raises(config.ConfigurationError, match=r"\$?API_USGS_CONCURRENT"):
-        config.concurrency()
+    with pytest.raises(
+        configuration.ConfigurationError, match=r"\$?API_USGS_CONCURRENT"
+    ):
+        configuration.concurrency()
     monkeypatch.delenv("API_USGS_CONCURRENT")
     path = config_file('concurrency = "nope"\n')
     # ``match`` is a regex, and a Windows path is mostly escapes:
     # ``C:\\Users\\...`` makes ``\\U`` an invalid escape.
-    with pytest.raises(config.ConfigurationError, match=re.escape(str(path))):
-        config.concurrency()
+    with pytest.raises(configuration.ConfigurationError, match=re.escape(str(path))):
+        configuration.concurrency()
 
 
 # --- security ------------------------------------------------------------
@@ -627,12 +629,12 @@ def test_retry_policy_reads_the_block():
 def test_parallel_chunks_baseline_comes_from_config(config_file):
     from dataretrieval.ogc.chunking import parallel_chunks
 
-    assert config.parallel_chunks() == 1
+    assert configuration.parallel_chunks() == 1
     config_file("parallel_chunks = 8\n")
-    assert config.parallel_chunks() == 8
+    assert configuration.parallel_chunks() == 8
     with parallel_chunks(2):  # an explicit block still wins over the file
-        assert config.parallel_chunks() == 2
-    assert config.parallel_chunks() == 8
+        assert configuration.parallel_chunks() == 2
+    assert configuration.parallel_chunks() == 8
 
 
 def test_parallel_chunks_and_configure_share_one_mechanism():
@@ -645,19 +647,19 @@ def test_parallel_chunks_and_configure_share_one_mechanism():
 
     with parallel_chunks(2):
         with dataretrieval.configure(parallel_chunks=8):
-            assert config.parallel_chunks() == 8
-        assert config.parallel_chunks() == 2
+            assert configuration.parallel_chunks() == 8
+        assert configuration.parallel_chunks() == 2
 
     with dataretrieval.configure(parallel_chunks=8):
         with parallel_chunks(2):
-            assert config.parallel_chunks() == 2
-        assert config.parallel_chunks() == 8
+            assert configuration.parallel_chunks() == 2
+        assert configuration.parallel_chunks() == 8
 
 
 def test_parallel_chunks_has_no_environment_variable():
     """It spends quota, so it is deliberately file/block-only (see ENV_VARS)."""
-    assert "parallel_chunks" not in config.ENV_VARS
-    assert "parallel_chunks" in config.SETTINGS
+    assert "parallel_chunks" not in configuration.ENV_VARS
+    assert "parallel_chunks" in configuration.SETTINGS
 
 
 def test_progress_reporter_reads_the_block():
@@ -681,36 +683,36 @@ def test_blank_env_does_not_mask_the_config_file(config_file, monkeypatch):
     request unauthenticated.
     """
     config_file('api_key = "file-key"\nconcurrency = 4\nretries = 7\nprogress = true\n')
-    for env in config.ENV_VARS.values():
+    for env in configuration.ENV_VARS.values():
         monkeypatch.setenv(env, "")
 
-    assert config.api_key() == "file-key"
-    assert config.concurrency() == 4
-    assert config.retries() == 7
+    assert configuration.api_key() == "file-key"
+    assert configuration.concurrency() == 4
+    assert configuration.retries() == 7
     # ``progress`` is the documented exception: a blank API_USGS_PROGRESS has
     # always meant "off", so for that setting blank *is* a value and outranks
-    # the file. The asymmetry is declared once, in config._BLANK_MEANS_SET.
-    assert config.progress() is False
-    assert set(config._BLANK_MEANS_SET) == {"progress"}
+    # the file. The asymmetry is declared once, in configuration._BLANK_MEANS_SET.
+    assert configuration.progress() is False
+    assert set(configuration._BLANK_MEANS_SET) == {"progress"}
 
 
 def test_blank_progress_env_keeps_its_legacy_meaning(monkeypatch):
     """With no file, blank keeps the environment-only meaning it always had."""
     monkeypatch.setenv("API_USGS_PROGRESS", "")
     monkeypatch.setenv("API_USGS_CONCURRENT", "")
-    assert config.progress() is False  # blank has always meant "off"
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    assert configuration.progress() is False  # blank has always meant "off"
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
 
 
 def test_config_error_is_in_the_error_taxonomy():
     """A broken config surfaces from inside a getter, so it must be catchable."""
     import dataretrieval.exceptions as exceptions
 
-    assert issubclass(config.ConfigurationError, exceptions.DataRetrievalError)
+    assert issubclass(configuration.ConfigurationError, exceptions.DataRetrievalError)
     assert issubclass(
-        config.ConfigurationError, ValueError
+        configuration.ConfigurationError, ValueError
     )  # legacy handlers still work
-    assert config.ConfigurationError is exceptions.ConfigurationError
+    assert configuration.ConfigurationError is exceptions.ConfigurationError
 
 
 def test_show_config_reports_a_broken_file_instead_of_raising(config_file):
@@ -721,7 +723,7 @@ def test_show_config_reports_a_broken_file_instead_of_raising(config_file):
     text = out.getvalue()
     assert "ERROR:" in text
     # Every setting still gets a row rather than the report dying part-way.
-    for name in config.SETTINGS:
+    for name in configuration.SETTINGS:
         assert name in text
 
 
@@ -738,13 +740,13 @@ def test_top_level_parallel_chunks_warns(config_file):
     """It spends quota in every process, so steer it into a profile."""
     with pytest.warns(UserWarning, match="parallel_chunks"):
         config_file("parallel_chunks = 8\n")
-        assert config.parallel_chunks() == 8
+        assert configuration.parallel_chunks() == 8
 
 
 def test_parallel_chunks_in_a_profile_does_not_warn(config_file, recwarn):
     config_file("[profiles.bulk]\nparallel_chunks = 8\n")
     with dataretrieval.configure(profile="bulk"):
-        assert config.parallel_chunks() == 8
+        assert configuration.parallel_chunks() == 8
     assert not [w for w in recwarn if "parallel_chunks" in str(w.message)]
 
 
@@ -759,12 +761,12 @@ def test_non_regular_config_path_is_empty_configuration(monkeypatch):
     """
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
     monkeypatch.delenv("API_USGS_PAT", raising=False)
-    monkeypatch.setenv(config.CONFIG_PATH_ENV, "/dev/null")
-    config._reset_file_cache()
-    assert config.api_key() is None
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, "/dev/null")
+    configuration._reset_file_cache()
+    assert configuration.api_key() is None
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
     # Stable across repeated resolutions, unlike a stream that drains.
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
 
 
 def test_broken_config_does_not_break_unrelated_services(config_file):
@@ -776,13 +778,13 @@ def test_broken_config_does_not_break_unrelated_services(config_file):
     """
     config_file("this is not = valid toml [[[\n")
 
-    # Legacy hosts never get the key, so they never touch the config.
+    # Legacy hosts never get the key, so they never touch the configuration.
     assert "X-Api-Key" not in _default_headers("https://waterservices.usgs.gov/nwis/dv")
     assert "X-Api-Key" not in _default_headers("https://www.waterqualitydata.us/data")
 
     # The authorized host still fails loudly rather than silently going out
     # unauthenticated and hitting the anonymous rate limit.
-    with pytest.raises(config.ConfigurationError):
+    with pytest.raises(configuration.ConfigurationError):
         _default_headers(WATERDATA_URL)
 
 
@@ -794,21 +796,22 @@ def test_default_config_path_follows_a_changed_home(tmp_path, monkeypatch):
     nothing and this asserted against the runner's real home directory.
     """
     home_var = "USERPROFILE" if os.name == "nt" else "HOME"
-    monkeypatch.delenv(config.CONFIG_PATH_ENV, raising=False)
+    monkeypatch.delenv(configuration.CONFIG_PATH_ENV, raising=False)
     monkeypatch.setenv(home_var, str(tmp_path / "first"))
-    config._reset_file_cache()
-    first = config.config_path()
+    configuration._reset_file_cache()
+    first = configuration.config_path()
     assert first == tmp_path / "first" / ".dataretrieval" / "config.toml"
 
     monkeypatch.setenv(home_var, str(tmp_path / "second"))
     assert (
-        config.config_path() == tmp_path / "second" / ".dataretrieval" / "config.toml"
+        configuration.config_path()
+        == tmp_path / "second" / ".dataretrieval" / "config.toml"
     )
 
 
 def test_show_config_renderers_cover_every_setting():
     """Guarded with a raise, not an assert, so ``python -O`` keeps the check."""
-    assert set(config._DISPLAYS) == set(config.SETTINGS)
+    assert set(configuration._DISPLAYS) == set(configuration.SETTINGS)
 
 
 def test_unselected_profile_is_not_validated(config_file):
@@ -820,17 +823,17 @@ def test_unselected_profile_is_not_validated(config_file):
     """
     config_file('api_key = "good"\n\n[profiles.experimental]\nconcurrency = 0\n')
     assert _default_headers(WATERDATA_URL)["X-Api-Key"] == "good"
-    assert config.concurrency() == config.DEFAULT_CONCURRENCY
+    assert configuration.concurrency() == configuration.DEFAULT_CONCURRENCY
 
     # Selecting it still reports the problem.
-    with pytest.raises(config.ConfigurationError, match="experimental"):
+    with pytest.raises(configuration.ConfigurationError, match="experimental"):
         with dataretrieval.configure(profile="experimental"):
-            config.concurrency()
+            configuration.concurrency()
 
 
 def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn):
     config_file("concurrency = 4\n\n[profiles.other]\nnot_a_setting = 1\n")
-    assert config.concurrency() == 4
+    assert configuration.concurrency() == 4
     assert not [w for w in recwarn if "unknown setting" in str(w.message)]
 
 
@@ -844,13 +847,15 @@ def test_show_config_does_not_promise_a_built_in_default_holds_everywhere(
     will this actually use", so it must not let the reader take a package-wide
     row as an answer for every service.
     """
-    from dataretrieval import config
+    from dataretrieval import configuration
     from dataretrieval.nwdc import DEFAULT_CONCURRENT_REQUESTS
 
     # The suite pins API_USGS_CONCURRENT so dispatch is deterministic; clear it
     # so the two kinds of default are what actually differ here.
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
-    assert config.concurrency() != config.concurrency(DEFAULT_CONCURRENT_REQUESTS)
+    assert configuration.concurrency() != configuration.concurrency(
+        DEFAULT_CONCURRENT_REQUESTS
+    )
 
     dataretrieval.show_configuration()
     out = capsys.readouterr().out
@@ -866,13 +871,13 @@ def test_adapter_table_overrides_the_top_level_per_setting(config_file):
     config_file("concurrency = 16\nretries = 3\n\n[ngwmn]\nconcurrency = 4\n")
 
     # The adapter that asked for it gets it...
-    assert config.concurrency(adapter="ngwmn") == 4
+    assert configuration.concurrency(adapter="ngwmn") == 4
     # ...its sibling on the same host does not...
-    assert config.concurrency(adapter="waterdata") == 16
+    assert configuration.concurrency(adapter="waterdata") == 16
     # ...and the package-wide read is untouched.
-    assert config.concurrency() == 16
+    assert configuration.concurrency() == 16
     # Per setting, not per table: retries still comes from the top level.
-    assert config.retries(adapter="ngwmn") == 3
+    assert configuration.retries(adapter="ngwmn") == 3
 
 
 def test_one_block_configures_several_adapters(config_file):
@@ -882,11 +887,14 @@ def test_one_block_configures_several_adapters(config_file):
     with dataretrieval.configure(
         ngwmn={"concurrency": 2}, nwdc={"concurrency": 8}, retries=7
     ):
-        assert config.concurrency(adapter="ngwmn") == 2
-        assert config.concurrency(adapter="nwdc") == 8
-        assert config.concurrency(adapter="waterdata") == config.DEFAULT_CONCURRENCY
+        assert configuration.concurrency(adapter="ngwmn") == 2
+        assert configuration.concurrency(adapter="nwdc") == 8
+        assert (
+            configuration.concurrency(adapter="waterdata")
+            == configuration.DEFAULT_CONCURRENCY
+        )
         # A package-wide value in the same block still reaches every adapter.
-        assert config.retries(adapter="ngwmn") == 7
+        assert configuration.retries(adapter="ngwmn") == 7
 
 
 def test_environment_outranks_an_adapter_table(config_file, monkeypatch):
@@ -898,7 +906,7 @@ def test_environment_outranks_an_adapter_table(config_file, monkeypatch):
     config_file("[ngwmn]\nconcurrency = 4\n")
     monkeypatch.setenv("API_USGS_CONCURRENT", "7")
 
-    assert config.concurrency(adapter="ngwmn") == 7
+    assert configuration.concurrency(adapter="ngwmn") == 7
 
 
 def test_adapter_block_outranks_the_package_wide_block(config_file):
@@ -906,19 +914,21 @@ def test_adapter_block_outranks_the_package_wide_block(config_file):
     config_file("")
 
     with dataretrieval.configure(concurrency=16, ngwmn={"concurrency": 2}):
-        assert config.concurrency(adapter="ngwmn") == 2
-        assert config.concurrency(adapter="waterdata") == 16
+        assert configuration.concurrency(adapter="ngwmn") == 2
+        assert configuration.concurrency(adapter="waterdata") == 16
 
 
 def test_adapter_rejects_a_setting_it_does_not_read(config_file):
     """A single-shot adapter has nothing to fan out, so ``concurrency`` is a typo."""
-    with pytest.raises(config.ConfigurationError, match="not a setting the wqp"):
+    with pytest.raises(configuration.ConfigurationError, match="not a setting the wqp"):
         with dataretrieval.configure(wqp={"concurrency": 2}):
             pass
 
     config_file("[wqp]\nconcurrency = 2\n")
-    with pytest.raises(config.ConfigurationError, match="not a setting that table"):
-        config.retries(adapter="wqp")
+    with pytest.raises(
+        configuration.ConfigurationError, match="not a setting that table"
+    ):
+        configuration.retries(adapter="wqp")
 
 
 def test_api_key_is_never_adapter_scoped(config_file):
@@ -928,9 +938,11 @@ def test_api_key_is_never_adapter_scoped(config_file):
     quota pool, so a per-adapter key would model a distinction that does not
     exist (ADR 0010).
     """
-    assert not any("api_key" in s for s in config.ADAPTER_SETTINGS.values())
+    assert not any("api_key" in s for s in configuration.ADAPTER_SETTINGS.values())
 
-    with pytest.raises(config.ConfigurationError, match="not a setting the ngwmn"):
+    with pytest.raises(
+        configuration.ConfigurationError, match="not a setting the ngwmn"
+    ):
         with dataretrieval.configure(ngwmn={"api_key": "x"}):
             pass
 
@@ -942,7 +954,7 @@ def test_a_misspelled_setting_is_not_taken_for_an_adapter():
     it would be the worst outcome for a module whose job is to be trustworthy
     about what a call will use.
     """
-    with pytest.raises(config.ConfigurationError, match="unexpected keyword"):
+    with pytest.raises(configuration.ConfigurationError, match="unexpected keyword"):
         with dataretrieval.configure(concurrancy=8):
             pass
 
@@ -951,7 +963,7 @@ def test_adapter_schema_names_a_real_module():
     """Every key in the registry names a module a caller can import."""
     import importlib
 
-    for adapter in config.ADAPTERS:
+    for adapter in configuration.ADAPTERS:
         importlib.import_module(f"dataretrieval.{adapter}")
 
 
@@ -968,10 +980,10 @@ def test_every_adapter_is_actually_wired_to_a_read_site():
 
     source = "\n".join(
         p.read_text(encoding="utf-8")
-        for p in pathlib.Path(config.__file__).parent.rglob("*.py")
-        if p.name != "config.py"
+        for p in pathlib.Path(configuration.__file__).parent.rglob("*.py")
+        if p.name != "configuration.py"
     )
-    missing = [a for a in config.ADAPTERS if f'adapter="{a}"' not in source]
+    missing = [a for a in configuration.ADAPTERS if f'adapter="{a}"' not in source]
     assert not missing, (
         f"adapters with a schema but no read site: {missing}. Either pass "
         'adapter="<name>" where that adapter builds its policy or fan-out, or '
@@ -988,7 +1000,7 @@ def test_adapter_table_inside_a_profile_is_refused(config_file):
 
     # Raised at ``with`` entry, where ``configure`` validates the profile it
     # was handed -- before any request, not from inside one.
-    with pytest.raises(config.ConfigurationError, match="adapter table inside"):
+    with pytest.raises(configuration.ConfigurationError, match="adapter table inside"):
         with dataretrieval.configure(profile="gentle"):
             pass
 
@@ -998,7 +1010,7 @@ def test_a_non_finite_stall_timeout_is_refused(config_file):
     config_file("")
 
     for bad in (float("inf"), float("nan")):
-        with pytest.raises(config.ConfigurationError, match="finite"):
+        with pytest.raises(configuration.ConfigurationError, match="finite"):
             with dataretrieval.configure(stall_timeout=bad):
                 pass
 
@@ -1007,14 +1019,14 @@ def test_stall_timeout_resolves_through_the_chain(config_file, monkeypatch):
     """It was read straight from os.environ, so a block and the file were mute."""
     config_file("stall_timeout = 15\n\n[wqp]\nstall_timeout = 300\n")
 
-    assert config.stall_timeout() == 15
-    assert config.stall_timeout(adapter="wqp") == 300
+    assert configuration.stall_timeout() == 15
+    assert configuration.stall_timeout(adapter="wqp") == 300
 
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "42")
-    assert config.stall_timeout() == 42
+    assert configuration.stall_timeout() == 42
 
     with dataretrieval.configure(stall_timeout=2.5):
-        assert config.stall_timeout() == 2.5
+        assert configuration.stall_timeout() == 2.5
 
 
 def test_show_configuration_lists_only_real_overrides(config_file):
@@ -1045,8 +1057,8 @@ def test_inner_block_can_lower_a_setting_an_outer_block_scoped(config_file):
 
     with dataretrieval.configure(waterdata={"concurrency": 32}):
         with dataretrieval.configure(concurrency=1):
-            assert config.concurrency(adapter="waterdata") == 1
-        assert config.concurrency(adapter="waterdata") == 32
+            assert configuration.concurrency(adapter="waterdata") == 1
+        assert configuration.concurrency(adapter="waterdata") == 32
 
 
 def test_adapter_scope_still_wins_within_one_block(config_file):
@@ -1054,8 +1066,8 @@ def test_adapter_scope_still_wins_within_one_block(config_file):
     config_file("")
 
     with dataretrieval.configure(concurrency=16, waterdata={"concurrency": 4}):
-        assert config.concurrency(adapter="waterdata") == 4
-        assert config.concurrency(adapter="wqp") == 16
+        assert configuration.concurrency(adapter="waterdata") == 4
+        assert configuration.concurrency(adapter="wqp") == 16
 
 
 def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
@@ -1069,5 +1081,5 @@ def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
 
     with dataretrieval.configure(waterdata={"parallel_chunks": 2}):
         with parallel_chunks(16):
-            assert config.parallel_chunks(adapter="waterdata") == 16
-        assert config.parallel_chunks(adapter="waterdata") == 2
+            assert configuration.parallel_chunks(adapter="waterdata") == 16
+        assert configuration.parallel_chunks(adapter="waterdata") == 2

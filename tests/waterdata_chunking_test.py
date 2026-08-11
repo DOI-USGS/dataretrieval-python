@@ -33,7 +33,7 @@ import pandas as pd
 import pytest
 
 import dataretrieval
-from dataretrieval import config as _config
+from dataretrieval import configuration as _configuration
 from dataretrieval.combining import (
     _QUOTA_HEADER,
     _combine_chunk_frames,
@@ -1907,7 +1907,9 @@ def test_retry_policy_from_config(monkeypatch):
     monkeypatch.setenv("API_USGS_RETRIES", "0")
     assert RetryPolicy.from_configuration().max_retries == 0
     monkeypatch.delenv("API_USGS_RETRIES", raising=False)
-    assert RetryPolicy.from_configuration().max_retries == _config.DEFAULT_RETRIES
+    assert (
+        RetryPolicy.from_configuration().max_retries == _configuration.DEFAULT_RETRIES
+    )
     monkeypatch.setenv("API_USGS_RETRIES", "-1")
     with pytest.raises(ValueError):
         RetryPolicy.from_configuration()
@@ -2446,16 +2448,16 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
     both forms share one scoping mechanism and the innermost block wins.
     Outside any block the configured baseline applies, which is ``1`` — off —
     unless a config file raised it."""
-    assert _config.parallel_chunks() == 1  # default (off, = no extra fan-out)
+    assert _configuration.parallel_chunks() == 1  # default (off, = no extra fan-out)
     with parallel_chunks(32):
-        assert _config.parallel_chunks() == 32
+        assert _configuration.parallel_chunks() == 32
         with parallel_chunks(2):
-            assert _config.parallel_chunks() == 2
-        assert _config.parallel_chunks() == 32  # outer restored
+            assert _configuration.parallel_chunks() == 2
+        assert _configuration.parallel_chunks() == 32  # outer restored
         with dataretrieval.configure(parallel_chunks=4):  # the other spelling
-            assert _config.parallel_chunks() == 4
-        assert _config.parallel_chunks() == 32
-    assert _config.parallel_chunks() == 1  # default (off) outside any block
+            assert _configuration.parallel_chunks() == 4
+        assert _configuration.parallel_chunks() == 32
+    assert _configuration.parallel_chunks() == 1  # default (off) outside any block
 
 
 @pytest.mark.parametrize(
@@ -2479,7 +2481,7 @@ def test_parallel_chunks_rejects_non_positive_int(bad):
     with pytest.raises(ValueError, match="must be a positive integer"):
         with parallel_chunks(bad):
             pass
-    assert _config.parallel_chunks() == 1  # unchanged by a rejected call
+    assert _configuration.parallel_chunks() == 1  # unchanged by a rejected call
 
 
 def test_parallel_chunks_drives_end_to_end_fan_out():

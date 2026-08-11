@@ -96,7 +96,7 @@ Public service facades
 Shared components
 ^^^^^^^^^^^^^^^^^
 
-``dataretrieval.config``
+``dataretrieval.configuration``
     Lightweight configuration leaf: standard library plus the ``tomli``
     backport on Python 3.10. It resolves scoped overrides, environment
     variables, a TOML file with optional profiles, and built-in defaults in
@@ -321,7 +321,7 @@ architecturally is the behavior around them:
   ``Retry-After`` values.
 * Progress reporting is best-effort: a reporting failure must never change
   retrieval results.
-* ``dataretrieval.config`` is a stdlib-only leaf, so any module may depend on
+* ``dataretrieval.configuration`` is a stdlib-only leaf, so any module may depend on
   it without an import cycle.
 
 ``dataretrieval.transport`` centralizes HTTP timeout, redirect, and

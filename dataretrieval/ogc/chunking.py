@@ -26,7 +26,7 @@ the query out into ``n`` parallel chunks. ``n`` drives
 Concurrency, retries, and interruption semantics are documented on
 :mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``
 settings are resolved there, through the chain in
-:mod:`dataretrieval.config`.
+:mod:`dataretrieval.configuration`.
 
 Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 ``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,
@@ -45,7 +45,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval import config as _config
+from dataretrieval import configuration as _configuration
 from dataretrieval.transport.fanout import (
     FanOut,
     _active_client,
@@ -182,7 +182,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     # its own: two competing ContextVars would let ``show_configuration()`` report a
     # value the chunker does not use. Sharing one means the innermost block
     # wins, whichever spelling opened it.
-    with _config.configure(parallel_chunks=n):
+    with _configuration.configure(parallel_chunks=n):
         yield
 
 
@@ -258,7 +258,7 @@ def multi_value_chunked(
                 args,
                 build_request,
                 limit,
-                max_chunks=_config.parallel_chunks(adapter=adapter),
+                max_chunks=_configuration.parallel_chunks(adapter=adapter),
             )
             retry_policy = RetryPolicy.from_configuration(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the

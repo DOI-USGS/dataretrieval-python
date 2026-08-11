@@ -123,7 +123,8 @@ the file and the environment. A file that silently redirects a data-retrieval
 library to another host is a supply-chain-shaped hazard; an in-code block
 keeps the redirect where a reader sees it.
 
-**The module is renamed** ``dataretrieval.config`` -> ``dataretrieval.configuration``,
+**The module is renamed** ``dataretrieval.config`` to
+``dataretrieval.configuration``,
 and ADR 0009's rule reserving ``config`` as an abbreviation for the module and
 the file is withdrawn. The path has never been released, so no alias is
 needed.

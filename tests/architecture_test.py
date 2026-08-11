@@ -166,7 +166,7 @@ def test_runtime_import_graph_is_acyclic() -> None:
 def test_config_is_a_standard_library_only_leaf() -> None:
     """Configuration resolution must stay importable from anywhere.
 
-    ``dataretrieval.config`` is read by ``utils`` (headers), ``ogc.chunking``
+    ``dataretrieval.configuration`` is read by ``utils`` (headers), ``ogc.chunking``
     (concurrency), ``ogc.retry``, and ``ogc.progress``. If it imported any of
     them -- or any third-party package -- it would create a cycle or make the
     cheapest module in the package expensive. ``tomli`` is the one allowed
@@ -181,14 +181,14 @@ def test_config_is_a_standard_library_only_leaf() -> None:
     request path, so a broken config file must be catchable as
     ``except DataRetrievalError`` like any other failure of that call.
     """
-    imports = _runtime_imports(PACKAGE_ROOT / "config.py")
+    imports = _runtime_imports(PACKAGE_ROOT / "configuration.py")
     first_party = {
         name
         for name in imports
         if name.startswith("dataretrieval") and name != "dataretrieval.exceptions"
     }
     assert not first_party, (
-        "dataretrieval.config may only import dataretrieval.exceptions: "
+        "dataretrieval.configuration may only import dataretrieval.exceptions: "
         f"{sorted(first_party)}"
     )
     roots = {module.partition(".")[0] for module in imports}
@@ -197,7 +197,8 @@ def test_config_is_a_standard_library_only_leaf() -> None:
     allowed = {"dataretrieval", "tomli", "tomllib"}
     third_party = roots - sys.stdlib_module_names - allowed
     assert not third_party, (
-        f"dataretrieval.config gained third-party dependencies: {sorted(third_party)}"
+        "dataretrieval.configuration gained third-party dependencies: "
+        f"{sorted(third_party)}"
     )
 
 
@@ -395,11 +396,11 @@ def test_credential_policy_has_one_definition() -> None:
 
 def _waterdata_family_paths() -> tuple[str, ...]:
     """Read the collection-family inventory from its dependency contract."""
-    config = configparser.ConfigParser()
-    config.read(PACKAGE_ROOT.parent / ".importlinter")
+    parser = configparser.ConfigParser()
+    parser.read(PACKAGE_ROOT.parent / ".importlinter")
     return tuple(
         module.removeprefix("dataretrieval.").replace(".", "/") + ".py"
-        for module in config["importlinter:contract:waterdata-families"][
+        for module in parser["importlinter:contract:waterdata-families"][
             "modules"
         ].split()
     )
