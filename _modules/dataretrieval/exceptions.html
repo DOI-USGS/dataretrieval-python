@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g0ff534c2c documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+ge9026ab5a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=968d90f6"></script>
+      <script src="../../_static/documentation_options.js?v=2dfd532f"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,7 +90,9 @@
 <span class="sd">aren&#39;t a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
 <span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
-<span class="sd">:func:`error_for_status` maps a status to its type.</span>
+<span class="sd">:func:`error_for_status` maps a status to its type. The *warning* side of the</span>
+<span class="sd">taxonomy lives here too: :class:`SkippedItemWarning` (specialized by</span>
+<span class="sd">:class:`SkippedRatingWarning`), a per-item skip inside a batched retrieval.</span>
 
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
 <span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
@@ -119,6 +121,8 @@
     <span class="s2">&quot;NetworkError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NoSitesError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ConfigurationError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SkippedItemWarning&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SkippedRatingWarning&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error_for_status&quot;</span><span class="p">,</span>
     <span class="s2">&quot;parse_retry_after&quot;</span><span class="p">,</span>
 <span class="p">]</span>
@@ -396,6 +400,50 @@
             <span class="s2">&quot;No sites/data found using the selection criteria specified in &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
+
+
+
+<span class="c1"># --- Skipped work ---------------------------------------------------------</span>
+
+
+<div class="viewcode-block" id="SkippedItemWarning">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.SkippedItemWarning">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SkippedItemWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One item of a batched retrieval was skipped; the rest were returned.</span>
+
+<span class="sd">    The policy for batch getters whose items are independent documents: an</span>
+<span class="sd">    item that fails *deterministically* -- so retrying would reproduce the</span>
+<span class="sd">    failure -- is dropped from the result under a warning naming it, because</span>
+<span class="sd">    aborting would discard every other item&#39;s data over one bad entry.</span>
+<span class="sd">    Transient failures (429 / 5xx / timeouts / connection drops) are never</span>
+<span class="sd">    skipped -- they are retried and, if retries run out, raised as a</span>
+<span class="sd">    resumable interruption. Rate limiting in particular is systematic, so</span>
+<span class="sd">    skipping there would silently drop most of a batch; that silent loss is</span>
+<span class="sd">    the failure mode this policy exists to prevent.</span>
+
+<span class="sd">    A warning rather than a log line so it is visible by default. To make</span>
+<span class="sd">    any skip fatal (strict all-or-nothing behavior)::</span>
+
+<span class="sd">        warnings.filterwarnings(&quot;error&quot;, category=SkippedItemWarning)</span>
+
+<span class="sd">    Getters emit a subclass naming their surface (e.g.</span>
+<span class="sd">    :class:`SkippedRatingWarning`), so a filter can also target one getter.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SkippedRatingWarning">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.SkippedRatingWarning">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SkippedRatingWarning</span><span class="p">(</span><span class="n">SkippedItemWarning</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A rating feature was skipped by</span>
+<span class="sd">    :func:`dataretrieval.waterdata.get_ratings`.</span>
+
+<span class="sd">    Emitted when a single STAC feature fails deterministically -- a stale</span>
+<span class="sd">    catalog entry (404 on its data asset), a feature carrying no data asset,</span>
+<span class="sd">    a malformed RDB file. The failed feature&#39;s id is absent from the returned</span>
+<span class="sd">    dict. See :class:`SkippedItemWarning` for the policy and how to escalate</span>
+<span class="sd">    a skip to an error.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 

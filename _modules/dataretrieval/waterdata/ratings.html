@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g0ff534c2c documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+ge9026ab5a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=968d90f6"></script>
+      <script src="../../../_static/documentation_options.js?v=2dfd532f"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -86,36 +86,31 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span><span class="p">,</span> <span class="n">SkippedRatingWarning</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_format_api_dates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">_quote_cql_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">_check_monitoring_location_id</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_rdb_comment</span><span class="p">,</span> <span class="n">read_rdb</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOut</span><span class="p">,</span> <span class="n">active_client</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">default_headers</span> <span class="k">as</span> <span class="n">_default_headers</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get</span> <span class="k">as</span> <span class="n">_get</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">paginate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">STAC_URL</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_ratings&quot;</span><span class="p">]</span>
 
-
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">RATING_FILE_TYPE</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;exsa&quot;</span><span class="p">,</span> <span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="s2">&quot;corr&quot;</span><span class="p">]</span>
 <span class="n">_VALID_FILE_TYPES</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">RATING_FILE_TYPE</span><span class="p">)</span>
@@ -200,6 +195,30 @@
 <span class="sd">    ValueError</span>
 <span class="sd">        For an unrecognized ``file_type`` value or an ISO 8601 duration in</span>
 <span class="sd">        ``time``.</span>
+<span class="sd">    DataRetrievalError</span>
+<span class="sd">        The typed subclass for an HTTP error response during the search (see</span>
+<span class="sd">        :func:`transport.pagination.paginate`);</span>
+<span class="sd">        or :class:`~dataretrieval.exceptions.NetworkError` if a request</span>
+<span class="sd">        can&#39;t reach the service in a way retrying cannot fix.</span>
+<span class="sd">    FanOutInterrupted</span>
+<span class="sd">        A transient failure (429 / 5xx / timeout) survived the built-in</span>
+<span class="sd">        retries during the search or a download. ``exc.call.resume()``</span>
+<span class="sd">        finishes the interrupted stage (see :doc:`/userguide/errors`); the</span>
+<span class="sd">        assembled per-feature dict is returned by a fresh ``get_ratings``</span>
+<span class="sd">        call.</span>
+
+<span class="sd">    Warns</span>
+<span class="sd">    -----</span>
+<span class="sd">    SkippedRatingWarning</span>
+<span class="sd">        One feature of the batch failed *deterministically* -- a stale</span>
+<span class="sd">        catalog entry (404 on its data asset), a feature with no data asset,</span>
+<span class="sd">        a malformed RDB file. That feature is skipped and its id is absent</span>
+<span class="sd">        from the returned dict; the rest of the batch is unaffected. A site</span>
+<span class="sd">        with no published rating never warns -- it matches no feature in the</span>
+<span class="sd">        search, so there is nothing to skip. See</span>
+<span class="sd">        :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy</span>
+<span class="sd">        (transients never skip) and the ``filterwarnings`` recipe that makes</span>
+<span class="sd">        a skip fatal.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -265,25 +284,7 @@
     <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">matching</span><span class="p">:</span>
-        <span class="n">fid</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">_download_and_parse</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span>
-        <span class="c1"># One bad feature shouldn&#39;t abort the batch: log and skip the module&#39;s</span>
-        <span class="c1"># typed errors (DataRetrievalError, e.g. an HTTPError from</span>
-        <span class="c1"># _raise_for_non_200) plus the transport / parse / file / missing-asset</span>
-        <span class="c1"># errors a single download can raise.</span>
-        <span class="k">except</span> <span class="p">(</span>
-            <span class="n">DataRetrievalError</span><span class="p">,</span>
-            <span class="n">httpx</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">,</span>
-            <span class="ne">LookupError</span><span class="p">,</span>
-            <span class="ne">OSError</span><span class="p">,</span>
-            <span class="ne">ValueError</span><span class="p">,</span>
-        <span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to download / parse </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fid</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">out</span></div>
+    <span class="k">return</span> <span class="n">_download_all</span><span class="p">(</span><span class="n">matching</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span></div>
 
 
 
@@ -322,8 +323,14 @@
 <span class="sd">    ``limit`` is the page size (clamped to the service maximum of 10,000); the</span>
 <span class="sd">    STAC ``next`` link is followed until exhausted so a result set larger than</span>
 <span class="sd">    one page isn&#39;t silently truncated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    The page walk is :func:`dataretrieval.transport.pagination.paginate` with</span>
+<span class="sd">    STAC strategies, driven as a one-item</span>
+<span class="sd">    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor and</span>
+<span class="sd">    semantics (retry, stall budget, progress line, resumable interruption) as</span>
+<span class="sd">    every other getter. Pages carry features rather than rows, so each page</span>
+<span class="sd">    frame wraps the raw feature dicts in a single ``feature`` column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)}</span>
     <span class="k">if</span> <span class="n">filter_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_str</span>
@@ -332,63 +339,170 @@
     <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">bbox</span><span class="p">))</span>
 
-    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
-    <span class="c1"># ``params`` is sent only on the first request; each STAC ``next`` link</span>
-    <span class="c1"># already carries the query, so it is reset to None inside the loop.</span>
-    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">query_params</span>
-    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">while</span> <span class="n">url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>
-            <span class="n">url</span><span class="p">,</span>
-            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">url</span><span class="p">),</span>
-            <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">_raise_for_non_200</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-        <span class="n">body</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-        <span class="n">features</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_response</span><span class="p">(</span><span class="n">resp</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">page</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;feature&quot;</span><span class="p">:</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="p">[])})</span>
         <span class="c1"># The STAC ``next`` link is a fully-formed GET href carrying the</span>
-        <span class="c1"># limit/filter/bbox and a continuation token, so follow it verbatim</span>
-        <span class="c1"># (dropping our own params) until the server stops emitting one.</span>
+        <span class="c1"># limit/filter/bbox and a continuation token, so it becomes the</span>
+        <span class="c1"># cursor verbatim -- except for the shared safety policy: the href is</span>
+        <span class="c1"># response data, so it is checked before it becomes a request. A link</span>
+        <span class="c1"># to another host would carry this request&#39;s API key off the</span>
+        <span class="c1"># authorized host, and one carrying ``user:pass@`` would mint an</span>
+        <span class="c1"># ``Authorization: Basic`` header the caller never configured.</span>
         <span class="n">href</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
             <span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s2">&quot;href&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">lnk</span> <span class="ow">in</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;links&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">lnk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rel&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;next&quot;</span><span class="p">),</span>
             <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># Verbatim except for the credentials: the href is response data, so it</span>
-        <span class="c1"># is checked before it becomes a request. A link to another host would</span>
-        <span class="c1"># carry this request&#39;s API key off the authorized host, and one carrying</span>
-        <span class="c1"># ``user:pass@`` would mint an ``Authorization: Basic`` header the caller</span>
-        <span class="c1"># never configured.</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">href</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="n">resolve_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">None</span> <span class="k">if</span> <span class="n">href</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">resolve_next_url</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">features</span>
+        <span class="k">return</span> <span class="n">page</span><span class="p">,</span> <span class="n">cursor</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">follow_up</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sess</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">cursor</span><span class="p">))</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span>
+            <span class="n">parse_response</span><span class="o">=</span><span class="n">parse_response</span><span class="p">,</span>
+            <span class="n">follow_up</span><span class="o">=</span><span class="n">follow_up</span><span class="p">,</span>
+            <span class="c1"># Borrow the executor&#39;s shared client for every page.</span>
+            <span class="n">client</span><span class="o">=</span><span class="n">active_client</span><span class="p">(),</span>
+            <span class="n">raise_for_status</span><span class="o">=</span><span class="n">_raise_for_non_200</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">FanOut</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">req</span><span class="p">],</span>
+        <span class="n">fetch</span><span class="p">,</span>
+        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
+        <span class="n">canonical_url</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+    <span class="c1"># Every page frame is built with a ``feature`` column, and the combine</span>
+    <span class="c1"># helpers preserve it, so the empty case needs no special branch.</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;feature&quot;</span><span class="p">])</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_download_and_parse</span><span class="p">(</span>
-    <span class="n">feature</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch the feature&#39;s data asset, parse RDB, optionally persist to disk.&quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="s2">&quot;assets&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;href&quot;</span><span class="p">]</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">verify</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span>
-    <span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The feature&#39;s data-asset href, or ``None`` when the catalog omits it.&quot;&quot;&quot;</span>
+    <span class="n">href</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assets&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;href&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">href</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_inert_response</span><span class="p">(</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">headers</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Headers</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A body-less stand-in the executor can aggregate.</span>
+
+<span class="sd">    The executor keeps every completed item&#39;s response until the drive ends,</span>
+<span class="sd">    but its aggregation reads only status, headers, and URL -- never the</span>
+<span class="sd">    body. Handing it a stand-in keeps a large batch from pinning every</span>
+<span class="sd">    downloaded file in memory for the whole drive. ``elapsed`` is left</span>
+<span class="sd">    unset; the aggregate&#39;s ``_safe_elapsed`` treats that as zero.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">))</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_rating</span><span class="p">(</span>
+    <span class="n">feature</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch one feature&#39;s data asset, parse RDB, optionally persist to disk.</span>
+
+<span class="sd">    Headers are evaluated against each asset href -- assets can live on a</span>
+<span class="sd">    different host than the catalog, and must not inherit its auth. Runs</span>
+<span class="sd">    inside a drive: the executor publishes the shared client before any</span>
+<span class="sd">    fetch starts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fid</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+    <span class="n">href</span> <span class="o">=</span> <span class="n">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">href</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;STAC feature </span><span class="si">{</span><span class="n">fid</span><span class="si">!r}</span><span class="s2"> carries no data asset href.&quot;</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_default_headers</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">active_client</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;_fetch_rating must run inside a FanOut drive.&quot;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">href</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
     <span class="n">_raise_for_non_200</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">feature</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">fid</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="n">df</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_rdb_comment</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">url</span>
-    <span class="k">return</span> <span class="n">df</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">href</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">response</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_download_all</span><span class="p">(</span>
+    <span class="n">features</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Download every feature&#39;s rating over the shared fan-out executor.</span>
+
+<span class="sd">    The plan is the feature list itself -- ``FanOut`` asks a plan only to be</span>
+<span class="sd">    sized and iterable -- so the downloads get bounded concurrency,</span>
+<span class="sd">    per-attempt retry, the progress line, and the resumable interruption</span>
+<span class="sd">    taxonomy in place of the previous serial loop, which had none of them.</span>
+
+<span class="sd">    Failure policy (rationale on</span>
+<span class="sd">    :class:`~dataretrieval.exceptions.SkippedItemWarning`): a *transient*</span>
+<span class="sd">    failure (429 / 5xx / timeout / connection drop) re-raises so the executor</span>
+<span class="sd">    retries and then raises resumable; a *deterministic* per-feature failure</span>
+<span class="sd">    warns with :class:`~dataretrieval.exceptions.SkippedRatingWarning` and</span>
+<span class="sd">    skips the feature. ``OSError`` writing ``file_path`` propagates -- a</span>
+<span class="sd">    local disk problem is not a per-feature condition. Raw ``httpx`` errors</span>
+<span class="sd">    pass through untouched so the executor can classify and retry them.</span>
+
+<span class="sd">    The public result is a dict keyed by feature id, so the fetch closure</span>
+<span class="sd">    accumulates it; the executor&#39;s combined frame is not the return shape and</span>
+<span class="sd">    is discarded. Both outcomes hand the executor a body-less</span>
+<span class="sd">    :func:`_inert_response` -- a skip so the item counts as complete (a later</span>
+<span class="sd">    ``resume()`` continues past it rather than re-attempting), a success so</span>
+<span class="sd">    the drive doesn&#39;t pin every downloaded file in memory while keeping the</span>
+<span class="sd">    real status and quota headers for aggregation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">feature</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
+        <span class="n">fid</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;missing id&gt;&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_fetch_rating</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">,</span> <span class="ne">LookupError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">DataRetrievalError</span><span class="p">)</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">retryable</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="c1"># transient: the executor retries, then raises resumable</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Skipping rating </span><span class="si">{</span><span class="n">fid</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">SkippedRatingWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># 204: completed, no content.</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_inert_response</span><span class="p">(</span>
+                <span class="mi">204</span><span class="p">,</span> <span class="n">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
+            <span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">_inert_response</span><span class="p">(</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
+        <span class="p">)</span>
+
+    <span class="n">FanOut</span><span class="p">(</span>
+        <span class="n">features</span><span class="p">,</span>
+        <span class="n">fetch</span><span class="p">,</span>
+        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
+        <span class="c1"># No single URL expresses &quot;all of these assets&quot; -- the aggregate</span>
+        <span class="c1"># reports the first, matching what a single-feature call would show.</span>
+        <span class="n">canonical_url</span><span class="o">=</span><span class="n">_asset_href</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">out</span>
 </pre></div>
 
            </div>
