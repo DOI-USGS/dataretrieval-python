@@ -52,11 +52,9 @@ from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.transport.fanout import FanOut, active_client
-from dataretrieval.transport.http import default_headers, network_error
+from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.links import resolve_next_url
-from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.retry import RetryPolicy
+from dataretrieval.transport.pagination import run_paginated
 
 __all__ = [
     "get_wateruse",
@@ -341,18 +339,12 @@ def _fan_out(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Fetch every request (each paginated) over the shared fan-out executor.
 
-    Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`
-    with NWDC strategies: parse a CSV page and read its ``Link`` header cursor
-    (``parse``), follow that cursor (``follow``), and raise the typed error
-    carrying the NWDC ``detail`` (``raise_for_status``).
+    This function is only the NWDC-specific half: parse a CSV page and read
+    its ``Link`` header cursor, follow that cursor, raise the typed error
+    carrying the NWDC ``detail``, and shape the result.
+    :func:`~dataretrieval.transport.pagination.run_paginated` owns the rest.
 
-    Everything else -- bounded concurrency, per-attempt retry, failure
-    precedence, progress, and resumable interruption -- belongs to
-    :class:`~dataretrieval.transport.fanout.FanOut`, which Water Data and NGWMN
-    drive too. This function is now only the NWDC-specific half: what a
-    chunk is, and how to read one.
-
-    The plan is the request list itself. ``FanOut`` asks a plan only to be
+    The plan is the request list itself. The executor asks a plan only to be
     sized and iterable, and the NWDC accepts one ``location=`` per request, so
     the caller's locations arrive already separate -- there is nothing to
     divide and so nothing for a plan class to hold.
@@ -371,43 +363,21 @@ def _fan_out(
     def raise_for_status(response: httpx.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
-    async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-        """One location's full page walk, over the executor's shared client.
-
-        ``active_client()`` is the client :meth:`FanOut._run` published for this
-        run; borrowing it keeps every location's pages on one connection pool
-        instead of opening a client per location.
-        """
-        try:
-            return await paginate(
-                request,
-                parse_response=parse,
-                follow_up=follow,
-                client=active_client(),
-                raise_for_status=raise_for_status,
-            )
-        except httpx.TransportError as exc:
-            raise network_error(request.url, exc) from exc
-
     def finalize(
         frame: pd.DataFrame, response: httpx.Response
     ) -> tuple[pd.DataFrame, BaseMetadata]:
         return frame, BaseMetadata(response)
 
-    return FanOut(
+    return run_paginated(
         requests,
-        fetch,
-        RetryPolicy.from_env(),
+        parse_response=parse,
+        follow_up=follow,
+        raise_for_status=raise_for_status,
         finalize=finalize,
         client_options={"verify": ssl_check},
         default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
-        # No single URL expresses "all of these locations" -- the service
-        # has no such request -- so the aggregate reports the first,
-        # matching what an un-fanned single-location call would show.
-        canonical_url=str(requests[0].url) if requests else None,
-        # Labels the progress line the executor opens for this drive.
         service="wateruse",
-    ).resume()
+    )
 
 
 def _read_csv_page(response: httpx.Response) -> pd.DataFrame:

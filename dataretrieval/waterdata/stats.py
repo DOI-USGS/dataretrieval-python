@@ -26,10 +26,8 @@ from dataretrieval.ogc.shaping import (
     _empty_feature_frame,
     _geo_feature_frame,
 )
-from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers
-from dataretrieval.transport.pagination import paginate
-from dataretrieval.transport.retry import RetryPolicy
+from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.waterdata.endpoints import STATISTICS_API_URL
 
 __all__ = ["get_data"]
@@ -273,27 +271,14 @@ def get_data(
             method, url=url, params={**args, "next_token": cursor}, headers=headers
         )
 
-    async def _fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-        return await paginate(
-            request,
-            parse_response=parse_response,
-            follow_up=follow_up,
-            # Borrow the executor's shared client unless a caller injected one.
-            client=client if client is not None else active_client(),
-            raise_for_status=_raise_for_non_200,
-        )
-
-    # A one-item fan-out. Statistics has no chunkable axis, so the plan is a
-    # single request -- but running it through the same executor as every other
-    # getter is what gives it retry, the resumable interruption taxonomy, and
-    # the progress line, instead of a private sync bridge that had none of them.
-    df, response = FanOut(
+    df, response = run_paginated(
         [req],
-        _fetch,
-        RetryPolicy.from_env(),
-        canonical_url=str(req.url),
+        parse_response=parse_response,
+        follow_up=follow_up,
+        raise_for_status=_raise_for_non_200,
+        client=client,
         service=service,
-    ).resume()
+    )
 
     if expand_percentiles:
         df = _expand_percentiles(df)

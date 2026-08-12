@@ -762,7 +762,9 @@ def test_permanent_transport_failure_remains_a_network_error(monkeypatch):
         failure.__context__ = resolution
         raise failure
 
-    monkeypatch.setattr(wateruse, "paginate", fail)
+    from dataretrieval.transport import pagination
+
+    monkeypatch.setattr(pagination, "paginate", fail)
 
     with pytest.raises(dataretrieval.NetworkError) as excinfo:
         get_wateruse(model="wu-public-supply-wd", state="RI")
