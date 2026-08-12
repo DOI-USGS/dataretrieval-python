@@ -126,23 +126,26 @@ class TestDefaultHeadersHostScoping:
 
     def test_rating_download_scopes_headers_to_asset_url(self):
         """The ratings adapter evaluates auth against each asset href."""
+        import asyncio
+
         import pandas as pd
 
         import dataretrieval.waterdata.ratings as ratings
 
         asset_url = "https://objects.example.org/ratings/site.rdb"
         feature = {"id": "site.rdb", "assets": {"data": {"href": asset_url}}}
-        response = mock.Mock(text="rating body")
+        client = mock.AsyncMock(spec=httpx.AsyncClient)
+        client.get.return_value = mock.Mock(text="rating body")
         with (
-            mock.patch.object(ratings, "_get", return_value=response) as get,
+            mock.patch.object(ratings, "active_client", return_value=client),
             mock.patch.object(ratings, "_raise_for_non_200"),
             mock.patch.object(ratings, "read_rdb", return_value=pd.DataFrame()),
             mock.patch.object(ratings, "extract_rdb_comment", return_value=""),
         ):
-            ratings._download_and_parse(feature, file_path=None, ssl_check=True)
+            asyncio.run(ratings._fetch_rating(feature, file_path=None))
 
-        assert get.call_args.args[0] == asset_url
-        assert "X-Api-Key" not in get.call_args.kwargs["headers"]
+        assert client.get.call_args.args[0] == asset_url
+        assert "X-Api-Key" not in client.get.call_args.kwargs["headers"]
 
     def test_sync_redirect_strips_key_before_cross_host_request(self):
         """The synchronous transport guard runs again for redirects."""

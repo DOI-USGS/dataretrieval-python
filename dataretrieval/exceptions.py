@@ -13,7 +13,9 @@ of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
 :class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
-:func:`error_for_status` maps a status to its type.
+:func:`error_for_status` maps a status to its type. The *warning* side of the
+taxonomy lives here too: :class:`SkippedItemWarning` (specialized by
+:class:`SkippedRatingWarning`), a per-item skip inside a batched retrieval.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
 for type checking. Any module can therefore import it without pulling in pandas
@@ -42,6 +44,8 @@ __all__ = [
     "NetworkError",
     "NoSitesError",
     "ConfigurationError",
+    "SkippedItemWarning",
+    "SkippedRatingWarning",
     "error_for_status",
     "parse_retry_after",
 ]
@@ -287,6 +291,44 @@ class NoSitesError(DataRetrievalError):
             "No sites/data found using the selection criteria specified in "
             f"url: {self.url}"
         )
+
+
+# --- Skipped work ---------------------------------------------------------
+
+
+class SkippedItemWarning(UserWarning):
+    """One item of a batched retrieval was skipped; the rest were returned.
+
+    The policy for batch getters whose items are independent documents: an
+    item that fails *deterministically* -- so retrying would reproduce the
+    failure -- is dropped from the result under a warning naming it, because
+    aborting would discard every other item's data over one bad entry.
+    Transient failures (429 / 5xx / timeouts / connection drops) are never
+    skipped -- they are retried and, if retries run out, raised as a
+    resumable interruption. Rate limiting in particular is systematic, so
+    skipping there would silently drop most of a batch; that silent loss is
+    the failure mode this policy exists to prevent.
+
+    A warning rather than a log line so it is visible by default. To make
+    any skip fatal (strict all-or-nothing behavior)::
+
+        warnings.filterwarnings("error", category=SkippedItemWarning)
+
+    Getters emit a subclass naming their surface (e.g.
+    :class:`SkippedRatingWarning`), so a filter can also target one getter.
+    """
+
+
+class SkippedRatingWarning(SkippedItemWarning):
+    """A rating feature was skipped by
+    :func:`dataretrieval.waterdata.get_ratings`.
+
+    Emitted when a single STAC feature fails deterministically -- a stale
+    catalog entry (404 on its data asset), a feature carrying no data asset,
+    a malformed RDB file. The failed feature's id is absent from the returned
+    dict. See :class:`SkippedItemWarning` for the policy and how to escalate
+    a skip to an error.
+    """
 
 
 def error_for_status(
