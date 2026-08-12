@@ -143,6 +143,21 @@ def _literal_exports(path: Path) -> set[str]:
     raise AssertionError(f"{path.relative_to(PACKAGE_ROOT.parent)} has no __all__")
 
 
+def _imports_from(path: Path, module: str) -> set[str]:
+    """Names *path* imports from *module*, wherever the import appears.
+
+    Walks the whole tree rather than only ``tree.body`` so a function-local
+    import can't slip past an import-surface rule.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    return {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module == module
+        for alias in node.names
+    }
+
+
 def test_exceptions_has_no_runtime_third_party_dependency() -> None:
     """The shared error-policy leaf must remain cheap and cycle-safe."""
     imports = _runtime_imports(PACKAGE_ROOT / "exceptions.py")
@@ -170,19 +185,13 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     means request construction is migrating back into engine.
     """
     path = PACKAGE_ROOT / "ogc" / "engine.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    imported = {
-        alias.name
-        for node in tree.body
-        if isinstance(node, ast.ImportFrom)
-        and node.module == "dataretrieval.ogc.requests"
-        for alias in node.names
-    }
+    imported = _imports_from(path, "dataretrieval.ogc.requests")
     assert len(imported) <= _MAX_ENGINE_REQUEST_IMPORTS, (
         "ogc.engine imports more request names than before; use the canonical "
         "requests module instead of expanding engine's request surface.\n"
         f"limit={_MAX_ENGINE_REQUEST_IMPORTS}\nobserved={sorted(imported)}"
     )
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     referenced = {
         node.id
         for node in ast.walk(tree)
@@ -485,14 +494,7 @@ def test_ogc_request_construction_does_not_execute_http() -> None:
     be either vacuous or a list of exceptions.
     """
     path = PACKAGE_ROOT / "ogc" / "requests.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    transport_names = {
-        alias.name
-        for node in tree.body
-        if isinstance(node, ast.ImportFrom)
-        and node.module == "dataretrieval.transport.http"
-        for alias in node.names
-    }
+    transport_names = _imports_from(path, "dataretrieval.transport.http")
     assert transport_names == {"default_headers"}, (
         f"ogc.requests imports executing transport helpers: {sorted(transport_names)}"
     )
@@ -547,16 +549,10 @@ def test_ratings_drives_http_through_the_shared_executor() -> None:
     ``paginate``/``FanOut`` like every other multi-request path; assert the
     direct sync entry points cannot quietly return.
     """
-    path = PACKAGE_ROOT / "waterdata" / "ratings.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    transport_names = {
-        alias.name
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-        and node.module == "dataretrieval.transport.http"
-        for alias in node.names
-    }
-    offenders = transport_names - {"default_headers", "open_async_client"}
+    transport_names = _imports_from(
+        PACKAGE_ROOT / "waterdata" / "ratings.py", "dataretrieval.transport.http"
+    )
+    offenders = transport_names - {"default_headers"}
     assert not offenders, (
         "ratings imports executing sync transport helpers instead of driving "
         f"the shared executor: {sorted(offenders)}"

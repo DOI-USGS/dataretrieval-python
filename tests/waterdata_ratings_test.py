@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
+from dataretrieval.interruptions import QuotaExhausted
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter
 
@@ -69,17 +70,17 @@ USGS\t01104475\t0.30\t1.2
 """
 
 
+_GOOD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
+_BAD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.99999999.exsa.rdb"
+
+
 def _stub_search_response():
     return {
         "features": [
             {
                 "id": "USGS-01104475.exsa.rdb",
                 "properties": {"file_type": "exsa"},
-                "assets": {
-                    "data": {
-                        "href": "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
-                    }
-                },
+                "assets": {"data": {"href": _GOOD_ASSET}},
             }
         ]
     }
@@ -92,11 +93,7 @@ def test_get_ratings_mocked_search_and_download(httpx_mock, tmp_path):
         url=STAC_SEARCH_RE,
         json=_stub_search_response(),
     )
-    httpx_mock.add_response(
-        method="GET",
-        url="https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb",
-        text=_SAMPLE_RDB,
-    )
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
 
     out = get_ratings(
         monitoring_location_id="USGS-01104475",
@@ -123,10 +120,7 @@ def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
         url=STAC_SEARCH_RE,
         json=_stub_search_response(),
     )
-    asset_url = (
-        "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
-    )
-    httpx_mock.add_response(method="GET", url=asset_url, text=_SAMPLE_RDB)
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
 
     out = get_ratings(
         monitoring_location_id="USGS-01104475",
@@ -139,7 +133,7 @@ def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
         "# header line one",
         "# header line two",
     ]
-    assert df.attrs["url"] == asset_url
+    assert df.attrs["url"] == _GOOD_ASSET
 
 
 def test_get_ratings_download_and_parse_false_returns_features(httpx_mock):
@@ -206,8 +200,6 @@ def test_get_ratings_search_429_is_resumable(httpx_mock):
     """A rate-limited search surfaces as a resumable interruption — parity
     with the other getters, which drive the same executor — instead of a raw
     ``RateLimited``; resuming finishes the interrupted stage."""
-    from dataretrieval.interruptions import QuotaExhausted
-
     httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, status_code=429)
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
@@ -218,10 +210,6 @@ def test_get_ratings_search_429_is_resumable(httpx_mock):
 
     df, _ = excinfo.value.call.resume()
     assert list(df["feature"])[0]["id"] == "USGS-01104475.exsa.rdb"
-
-
-_GOOD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
-_BAD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.99999999.exsa.rdb"
 
 
 def _two_feature_search_response():
@@ -295,8 +283,6 @@ def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
     """A rate-limited download must never be skipped -- it is raised as a
     resumable interruption, and resuming completes the batch. The escalation
     filter proves no ``SkippedRatingWarning`` fires along the way."""
-    from dataretrieval.interruptions import QuotaExhausted
-
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
     )
