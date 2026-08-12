@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from dataretrieval import configuration
+from dataretrieval import settings
 
 
 def pytest_collection_modifyitems(config, items):
@@ -63,4 +63,4 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     # concurrency -- can never influence a test run. Config tests opt in by
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
-    configuration._reset_file_cache()
+    settings._reset_file_cache()

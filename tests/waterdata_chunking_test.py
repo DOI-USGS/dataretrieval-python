@@ -33,13 +33,12 @@ import pandas as pd
 import pytest
 
 import dataretrieval
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval.combining import (
     _QUOTA_HEADER,
     _combine_chunk_frames,
     _combine_chunk_responses,
 )
-from dataretrieval.configuration import Configuration
 from dataretrieval.exceptions import (
     DataRetrievalError,
     NetworkError,
@@ -75,6 +74,7 @@ from dataretrieval.ogc.planning import (
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
 )
+from dataretrieval.settings import Settings
 from dataretrieval.transport import retry as _retry_mod
 from dataretrieval.transport.retry import (
     RetryPolicy,
@@ -765,7 +765,7 @@ def test_resume_reads_concurrency_from_the_caller_not_the_snapshot(monkeypatch):
 
     monkeypatch.setattr(_chunking.ChunkedCall, "_run", spy_run)
 
-    with dataretrieval.configure(Configuration(concurrency=2)):
+    with dataretrieval.configure(Settings(concurrency=2)):
         excinfo.value.call.resume()
 
     assert seen == [2], seen
@@ -1698,7 +1698,7 @@ def test_configure_concurrency_controls_dispatch(monkeypatch):
         _concurrency_probe(in_flight)
     )
 
-    with dataretrieval.configure(Configuration(concurrency=2)):
+    with dataretrieval.configure(Settings(concurrency=2)):
         df, _ = fetch({"sites": list(_EIGHT_SINGLETON_SITES)})
 
     assert len(df) == len(_EIGHT_SINGLETON_SITES)
@@ -1904,19 +1904,17 @@ def test_retry_policy_long_retry_after_escalates():
 
 def test_retry_policy_from_config(monkeypatch):
     monkeypatch.setenv("API_USGS_RETRIES", "2")
-    assert RetryPolicy.from_configuration().max_retries == 2
+    assert RetryPolicy.from_settings().max_retries == 2
     monkeypatch.setenv("API_USGS_RETRIES", "0")
-    assert RetryPolicy.from_configuration().max_retries == 0
+    assert RetryPolicy.from_settings().max_retries == 0
     monkeypatch.delenv("API_USGS_RETRIES", raising=False)
-    assert (
-        RetryPolicy.from_configuration().max_retries == _configuration.DEFAULT_RETRIES
-    )
+    assert RetryPolicy.from_settings().max_retries == _settings.DEFAULT_RETRIES
     monkeypatch.setenv("API_USGS_RETRIES", "-1")
     with pytest.raises(ValueError):
-        RetryPolicy.from_configuration()
+        RetryPolicy.from_settings()
     monkeypatch.setenv("API_USGS_RETRIES", "lots")
     with pytest.raises(ValueError):
-        RetryPolicy.from_configuration()
+        RetryPolicy.from_settings()
 
 
 def test_retry_policy_rejects_invalid_settings():
@@ -1933,7 +1931,7 @@ def test_retry_policy_from_config_honors_monkeypatched_constants(monkeypatch):
     # monkeypatching them (as the module comment promises) takes effect.
     monkeypatch.setattr(_retry_mod, "_RETRY_MAX_BACKOFF", 0.0)
     monkeypatch.setattr(_retry_mod, "_RETRY_BASE_BACKOFF", 0.0)
-    policy = RetryPolicy.from_configuration()
+    policy = RetryPolicy.from_settings()
     assert policy.max_backoff == 0.0 and policy.base_backoff == 0.0
 
 
@@ -2449,18 +2447,16 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
     both forms share one scoping mechanism and the innermost block wins.
     Outside any block the configured baseline applies, which is ``1`` — off —
     unless a config file raised it."""
-    assert _configuration.parallel_chunks() == 1  # default (off, = no extra fan-out)
+    assert _settings.parallel_chunks() == 1  # default (off, = no extra fan-out)
     with parallel_chunks(32):
-        assert _configuration.parallel_chunks() == 32
+        assert _settings.parallel_chunks() == 32
         with parallel_chunks(2):
-            assert _configuration.parallel_chunks() == 2
-        assert _configuration.parallel_chunks() == 32  # outer restored
-        with dataretrieval.configure(
-            Configuration(parallel_chunks=4)
-        ):  # the other spelling
-            assert _configuration.parallel_chunks() == 4
-        assert _configuration.parallel_chunks() == 32
-    assert _configuration.parallel_chunks() == 1  # default (off) outside any block
+            assert _settings.parallel_chunks() == 2
+        assert _settings.parallel_chunks() == 32  # outer restored
+        with dataretrieval.configure(Settings(parallel_chunks=4)):  # the other spelling
+            assert _settings.parallel_chunks() == 4
+        assert _settings.parallel_chunks() == 32
+    assert _settings.parallel_chunks() == 1  # default (off) outside any block
 
 
 @pytest.mark.parametrize(
@@ -2489,7 +2485,7 @@ def test_parallel_chunks_rejects_non_positive_int(bad):
     with pytest.raises(ValueError, match="must be an integer"):
         with parallel_chunks(bad):
             pass
-    assert _configuration.parallel_chunks() == 1  # unchanged by a rejected call
+    assert _settings.parallel_chunks() == 1  # unchanged by a rejected call
 
 
 def test_parallel_chunks_drives_end_to_end_fan_out():

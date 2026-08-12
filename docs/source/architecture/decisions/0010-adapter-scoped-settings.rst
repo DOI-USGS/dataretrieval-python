@@ -4,14 +4,21 @@ ADR 0010: Adapter-scoped settings
 Status
 ------
 
-Accepted, except for two clauses. Supersedes the "One flat set of setting
-names" and "Per-service overrides are deferred" clauses of
+Accepted, except for two clauses, and re-spelled by
+:doc:`0012-pydantic-settings` -- which also settles decision 5's worry directly:
+the schemas are pydantic models, so their annotations are checked rather than
+decorative, and an adapter that drifted to ``retries: str | None`` now rejects
+an integer at construction instead of type-checking clean and failing when a
+value reaches the chain.
+
+Supersedes the "One flat set of setting names" and "Per-service overrides are
+deferred" clauses of
 :doc:`0009-layered-configuration`; the rest of ADR 0009 stands, subject to what
 ADR 0011 supersedes there.
 
 :doc:`0011-configuration-profiles` supersedes decisions 5 and 8 below --
 adapter schemas held centrally as ``TypedDict``, and each adapter a named
-keyword on ``configure()``. Each adapter now declares a ``BaseConfiguration``
+keyword on ``configure()``. Each adapter now declares a ``AdapterSettings``
 subclass in the module that *reads* those settings, and ``configure()`` takes
 instances of them positionally, which is what removes the adapter roster from
 the call site. The spelling shown in decision 1 goes with decision 8. Decisions
@@ -120,8 +127,8 @@ Settings are scoped to the **adapter**, not the service, and not the host.
       The file table stands; the ``configure()`` spelling above is superseded
       by :doc:`0011-configuration-profiles` along with decision 8. One block
       still configures several adapters at once, now as
-      ``configure(NgwmnConfiguration(concurrency=4),
-      WqpConfiguration(retries=2))``.
+      ``configure(NgwmnSettings(concurrency=4),
+      WqpSettings(retries=2))``.
 
 2. **The top-level tier survives.** An adapter table *overrides* it per key; it
    does not replace it. Every setting still has a package-wide spelling, and
@@ -176,7 +183,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    class rather than by a keyword. The type checking survives -- a setting an
    adapter does not read is not a field of its class -- and the catch-all is
    no longer needed for a misspelling, because
-   ``WaterdataConfiguration(concurrancy=8)`` is already a ``TypeError`` naming
+   ``WaterdataSettings(concurrancy=8)`` is already a ``TypeError`` naming
    the keyword that does not exist. What the change buys is that ``configure()``
    no longer enumerates the adapters at all: that enumeration was the roster
    this ADR left spelled in four places.
@@ -209,7 +216,7 @@ Consequences
   instance knows which adapter it targets, so the caller stops naming one and
   the roster stops being duplicated.
 
-- **``show_configuration()`` grows a second section, not a matrix.** It prints
+- **``show_settings()`` grows a second section, not a matrix.** It prints
   the top-level tier as today, then only those adapter overrides actually set.
   A seven-by-eight grid of mostly-inherited values would bury the answer to
   "what will this call use".
@@ -222,7 +229,7 @@ Consequences
 
 - **``stall_timeout`` joins the chain.** ``API_USGS_STALL_TIMEOUT`` was read
   directly from ``os.environ``, so it could not be set by a block or the file
-  and never appeared in ``show_configuration()`` -- a gap in ADR 0009's own
+  and never appeared in ``show_settings()`` -- a gap in ADR 0009's own
   claim that every setting resolves through one chain. It is package-wide by
   default and adapter-scopable. ``dataretrieval/transport/env.py`` existed only
   to parse it and is deleted, so ``configuration`` is now the only module in
@@ -251,11 +258,11 @@ Consequences
   nothing. The ``bool`` type cannot even carry a CA bundle path, which is the
   value a caller actually wants.
 
-  The configuration guide documents ``SSL_CERT_FILE`` for that case. Whether
+  The settings guide documents ``SSL_CERT_FILE`` for that case. Whether
   ``ssl_check`` should be deprecated outright is a public-API question left to
   its own change.
 
-- ``tests/configuration_test.py`` covers adapter-table resolution, top-level
+- ``tests/settings_test.py`` covers adapter-table resolution, top-level
   inheritance per setting, source-major precedence (the environment still
   outranks an adapter table), an adapter block outranking a package-wide one,
   and rejection of a setting an adapter does not read -- from both the file and

@@ -9,11 +9,10 @@ file (ADR 0011).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import ClassVar
 
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.settings import (
+    AdapterSettings,
     _Chunked,
     _Concurrent,
     _Redirectable,
@@ -21,12 +20,11 @@ from dataretrieval.configuration import (
     _Retrying,
 )
 
-__all__ = ["WaterdataConfiguration"]
+__all__ = ["WaterdataSettings"]
 
 
-@dataclass(frozen=True)
-class WaterdataConfiguration(
-    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
+class WaterdataSettings(
+    _Chunked, _Concurrent, _Redirectable, _Retrying, AdapterSettings
 ):
     """Settings for Water Data calls alone.
 
@@ -34,7 +32,7 @@ class WaterdataConfiguration(
     service, leaving every other adapter on whatever the tiers below it
     resolve::
 
-        with dataretrieval.configure(WaterdataConfiguration(concurrency=8)):
+        with dataretrieval.configure(WaterdataSettings(concurrency=8)):
             df, md = waterdata.get_daily(monitoring_location_id=sites)
 
     Parameters
@@ -61,9 +59,9 @@ class WaterdataConfiguration(
     # every adapter's retry dials, a redirectable base, and -- because Water
     # Data queries divide along a URL byte budget and are executed concurrently
     # -- both fan-out dials. Each group declares the setting itself once, in
-    # :mod:`dataretrieval.configuration`, which is also where its grammar and
+    # :mod:`dataretrieval.settings`, which is also where its grammar and
     # its coercion live.
     adapter: ClassVar[str] = "waterdata"
 
 
-_register(WaterdataConfiguration)
+_register(WaterdataSettings)

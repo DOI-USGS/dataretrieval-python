@@ -406,7 +406,7 @@ def fetch_ogc_request(
     return FanOut(
         [request],
         _fetch,
-        RetryPolicy.from_configuration(adapter=adapter),
+        RetryPolicy.from_settings(adapter=adapter),
         canonical_url=str(request.url),
         service=collection,
         adapter=adapter,

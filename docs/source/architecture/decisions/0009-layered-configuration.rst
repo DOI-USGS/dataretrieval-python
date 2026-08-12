@@ -4,7 +4,22 @@ ADR 0009: Layered configuration resolution
 Status
 ------
 
-Accepted, with clauses superseded twice.
+Accepted, with clauses superseded three times.
+
+:doc:`0012-pydantic-settings` supersedes the *third-party* half of the
+"``dataretrieval.settings`` is a lightweight leaf" clause below, and renames
+the vocabulary this ADR introduced -- ``Configuration`` is ``Settings``,
+``show_configuration()`` is ``show_settings()``, and the module is
+``dataretrieval.settings``. The chain itself is unchanged; it is now expressed
+as an ordered tuple of ``PydanticBaseSettingsSource`` implementations rather
+than as branches of a hand-written ``_resolve``. The clause's *first-party*
+half -- that the module imports no adapter and nothing but the exceptions leaf
+-- stands, and is still asserted.
+
+The prose below has been re-spelled in the new vocabulary, so a reader arriving
+from a cross-reference does not have to translate; the decisions themselves are
+as they were taken. Where it still says "configuration" as an English word
+rather than as a class name, that is deliberate.
 
 :doc:`0010-adapter-scoped-settings` supersedes "One flat set of setting names"
 and "Per-service overrides are deferred" below, having found the premise of the
@@ -22,7 +37,7 @@ first -- that every service accepts the same settings -- to be false.
   profile selected in code. Everything the caller did not name in code still
   follows the rule as written here.
 - **The refusal of a configuration object**, stated in the leaf clause ("a
-  scoped action, not a ``Configuration`` dataclass") and in "A configuration
+  scoped action, not a ``Settings`` dataclass") and in "A configuration
   object would have no way to reach the call". ``configure()`` now takes
   exactly such objects. The grounds were that an instance had no way to reach a
   free function; the ``ContextVar`` this ADR established is that way, and ADR
@@ -57,7 +72,7 @@ Decision
 --------
 
 Every setting resolves through one ordered chain, owned by a new
-``dataretrieval.configuration`` module:
+``dataretrieval.settings`` module:
 
 1. An active ``dataretrieval.configure(...)`` block (a ``ContextVar``).
 2. The setting's environment variable.
@@ -74,7 +89,7 @@ Supporting decisions:
   file: container and CI tooling routinely materializes one. The exception is
   ``progress``, where a blank ``API_USGS_PROGRESS`` has always meant "off" --
   so "does blank count as a value?" is a property of the setting
-  (``configuration._BLANK_MEANS_SET``) rather than an extra tier in the chain.
+  (``settings._BLANK_MEANS_SET``) rather than an extra tier in the chain.
 - **The environment ranks above the file.** This follows the established
   precedence used by `pip
   <https://pip.pypa.io/en/stable/topics/configuration/#precedence-override-order>`_
@@ -112,8 +127,8 @@ Supporting decisions:
   execute simultaneously. The name is retained because the context manager is
   already public. ``parallelism`` and ``chunk_parallelism`` were rejected
   because they would conflate this planning hint with ``concurrency``.
-- **Configuration errors are in the error taxonomy.** ``ConfigurationError`` is a
-  ``DataRetrievalError`` *and* a ``ValueError``. Configuration resolves lazily
+- **Settings errors are in the error taxonomy.** ``ConfigurationError`` is a
+  ``DataRetrievalError`` *and* a ``ValueError``. Settings resolves lazily
   on the request path, so a broken file surfaces from inside whichever getter
   runs first; ``except DataRetrievalError`` around a call has to catch it like
   any other failure of that call, while the ``ValueError`` base keeps the
@@ -123,14 +138,14 @@ Supporting decisions:
   splittable query in every process that reads the file. A
   ``[profiles.<name>]`` table is opt-in per run, which is the shape this
   setting wants; the top-level form still works but says so.
-- **``dataretrieval.configuration`` is a lightweight leaf.** It uses only the standard
+- **``dataretrieval.settings`` is a lightweight leaf.** It uses only the standard
   library, the ``tomli`` backport on Python 3.10, and
   ``dataretrieval.exceptions`` -- itself a dependency-free leaf, so this adds
   no weight and cannot cycle. It is read by ``utils``
   (headers), ``ogc.chunking``, ``ogc.retry``, and ``ogc.progress``, so under ADR
   0003 it must import none of them. The public callable is named ``configure``
   rather than ``config`` so it does not shadow the module. It is a scoped
-  action, not a ``Configuration`` dataclass: a value object would imply
+  action, not a ``Settings`` dataclass: a value object would imply
   snapshot, equality, serialization, and representation contracts while
   risking disclosure of the API key through generated helpers.
 
@@ -141,7 +156,7 @@ Supporting decisions:
   ``wateruse`` passes its ``DEFAULT_CONCURRENT_REQUESTS`` of 4 to
   ``configuration.concurrency()`` where the OGC getters take the package default of
   32, and the single-shot adapters pass ``_GATEWAY_STATUSES`` to
-  ``RetryPolicy.from_configuration()`` because WQP and StreamStats report a rejected
+  ``RetryPolicy.from_settings()`` because WQP and StreamStats report a rejected
   query as a 500. A value resolved from the chain always outranks a caller
   default -- a service able to override an explicit setting would make
   ``concurrency=1`` a lie.
@@ -152,7 +167,7 @@ Supporting decisions:
   nothing needs it yet. If something does, the shape is a namespace inside this
   chain -- a ``[wateruse]`` table beside the top-level keys, read as
   ``configuration.concurrency(default, service=...)``. It costs a second dimension in
-  resolution, which ``show_configuration()`` must then render as a matrix rather than
+  resolution, which ``show_settings()`` must then render as a matrix rather than
   a list, and that cost should buy a real requirement before it is paid.
 
 - **A configuration object would have no way to reach the call.** The public
@@ -172,7 +187,7 @@ Consequences
   ``os.environ``, which is what issue #352 asked for.
 - Host scoping is unchanged and unconditional: a key from any source is sent
   only to ``api.waterdata.usgs.gov`` and is stripped on cross-host redirects.
-- ``show_configuration()`` reports the effective value and provenance of each setting
+- ``show_settings()`` reports the effective value and provenance of each setting
   without ever printing the key.
 - Behavior is unchanged when no file exists and no block is active, so
   existing environment-variable users are unaffected.
@@ -189,6 +204,6 @@ Compliance
 asserts the module imports nothing from ``dataretrieval`` other than the
 ``exceptions`` taxonomy leaf, and no third-party package other than the
 ``tomli`` backport.
-``tests/configuration_test.py`` covers the precedence chain, per-setting merging,
+``tests/settings_test.py`` covers the precedence chain, per-setting merging,
 thread and asyncio isolation, host scoping for file-sourced keys, redaction in
-``show_configuration``, and rejection of credential parameters on public getters.
+``show_settings``, and rejection of credential parameters on public getters.

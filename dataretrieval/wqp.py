@@ -11,27 +11,26 @@ See https://waterqualitydata.us/webservices_documentation for the API reference.
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.credentials import refuse_credential_keywords
+from dataretrieval.settings import (
+    AdapterSettings,
     _Redirectable,
     _register,
     _Retrying,
 )
-from dataretrieval.credentials import refuse_credential_keywords
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
 
 __all__ = [
-    "WqpConfiguration",
+    "WqpSettings",
     "get_results",
     "what_sites",
     "what_organizations",
@@ -651,13 +650,13 @@ def _service_base() -> str:
     """The WQP root this call targets: a block's redirect, or the portal's own.
 
     The portal serves the legacy and WQX3 interfaces from one root under
-    different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
+    different paths, so a ``WqpSettings(base_url=...)`` names that root and
     both follow it. Redirecting only the interface a caller happened to use
     first would leave the other pointed at the service they were trying not to
     talk to. Resolved per call, because a ``configure`` block is scoped to a
     ``with`` statement.
     """
-    return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
+    return _settings.base_url(adapter="wqp", default=_WQP_BASE_URL)
 
 
 def wqp_url(service: str) -> str:
@@ -738,7 +737,7 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     query payload, so this is the choke point where a credential-shaped name is
     refused. The predicate is the credentials leaf's, shared with Water Data's
     ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
-    getter now that ``configure(Configuration(api_key=...))`` is the spelling,
+    getter now that ``configure(Settings(api_key=...))`` is the spelling,
     and this is the adapter with the widest passthrough -- ten getters, whose
     filter names the portal rather than this package defines.
     """
@@ -800,14 +799,13 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
         return wqp_url(service)
 
 
-@dataclass(frozen=True)
-class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+class WqpSettings(_Redirectable, _Retrying, AdapterSettings):
     """Settings for Water Quality Portal calls alone.
 
     No fan-out dials: a WQP query is answered by a single request, so a
     concurrency cap could only report a number nothing honours.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
+    Lives here rather than in :mod:`dataretrieval.settings` because
     *which* settings a service reads is the service's own knowledge (ADR
     0011); what each of them means is shared, so the fields come from the
     setting groups declared beside their grammar.
@@ -828,8 +826,8 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
 
     # One request per call, so this service reads the retry dials and a
     # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    # in :mod:`dataretrieval.settings`, beside its grammar.
     adapter: ClassVar[str] = "wqp"
 
 
-_register(WqpConfiguration)
+_register(WqpSettings)

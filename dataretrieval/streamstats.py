@@ -7,15 +7,14 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from typing import Any, ClassVar, cast
 
 import httpx
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval._querying import _get_with_retry
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.settings import (
+    AdapterSettings,
     _Redirectable,
     _register,
     _Retrying,
@@ -23,7 +22,7 @@ from dataretrieval.configuration import (
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 
 __all__ = [
-    "StreamstatsConfiguration",
+    "StreamstatsSettings",
     "Watershed",
     "download_workspace",
     "get_sample_watershed",
@@ -37,11 +36,11 @@ def _service_base() -> str:
     """The StreamStats base this call targets: a block's redirect, or its own.
 
     Both endpoints below hang off this, so a
-    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
+    ``StreamstatsSettings(base_url=...)`` moves the whole service rather
     than the one endpoint a caller happened to reach first. Resolved per call,
     because a ``configure`` block is scoped to a ``with`` statement.
     """
-    return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
+    return _settings.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -242,14 +241,13 @@ class Watershed:
         self._workspaceID = streamstats_json["workspaceID"]
 
 
-@dataclass(frozen=True)
-class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+class StreamstatsSettings(_Redirectable, _Retrying, AdapterSettings):
     """Settings for StreamStats calls alone.
 
     No fan-out dials: a StreamStats query is answered by a single
     request.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
+    Lives here rather than in :mod:`dataretrieval.settings` because
     *which* settings a service reads is the service's own knowledge (ADR
     0011); what each of them means is shared, so the fields come from the
     setting groups declared beside their grammar.
@@ -269,8 +267,8 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
 
     # One request per call, so this service reads the retry dials and a
     # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    # in :mod:`dataretrieval.settings`, beside its grammar.
     adapter: ClassVar[str] = "streamstats"
 
 
-_register(StreamstatsConfiguration)
+_register(StreamstatsSettings)

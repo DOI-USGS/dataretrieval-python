@@ -28,4 +28,5 @@ records sequentially.
    0009-layered-configuration
    0010-adapter-scoped-settings
    0011-configuration-profiles
+   0012-pydantic-settings
    template

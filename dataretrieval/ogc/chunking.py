@@ -26,7 +26,7 @@ the query out into ``n`` parallel chunks. ``n`` drives
 Concurrency, retries, and interruption semantics are documented on
 :mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``
 settings are resolved there, through the chain in
-:mod:`dataretrieval.configuration`.
+:mod:`dataretrieval.settings`.
 
 Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 ``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,
@@ -45,7 +45,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval.transport.fanout import (
     FanOut,
     _active_client,
@@ -180,17 +180,17 @@ def parallel_chunks(n: int) -> Iterator[None]:
     # bound, from the table that owns them, so raising the floor there cannot
     # leave this block accepting a value the chain would then refuse. Spelled
     # with the source label this block is written as, so the message names
-    # ``parallel_chunks(n)`` rather than the ``Configuration`` built below.
+    # ``parallel_chunks(n)`` rather than the ``Settings`` built below.
     # ``ConfigurationError`` is a ``ValueError``, so callers catching that
     # still catch this.
-    _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
-    # Sugar for a package-wide ``Configuration`` rather than a second scope of
-    # its own: two competing ContextVars would let ``show_configuration()`` report a
+    _settings._require("parallel_chunks", n, "parallel_chunks(n)")
+    # Sugar for a package-wide ``Settings`` rather than a second scope of
+    # its own: two competing ContextVars would let ``show_settings()`` report a
     # value the chunker does not use. Sharing one means the innermost block
     # wins, whichever spelling opened it -- and package-wide rather than scoped
     # to one adapter, because this block is a per-call request that must reach
     # whichever adapter the call goes to.
-    with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
+    with _settings.configure(_settings.Settings(parallel_chunks=n)):
         yield
 
 
@@ -266,9 +266,9 @@ def multi_value_chunked(
                 args,
                 build_request,
                 limit,
-                max_chunks=_configuration.parallel_chunks(adapter=adapter),
+                max_chunks=_settings.parallel_chunks(adapter=adapter),
             )
-            retry_policy = RetryPolicy.from_configuration(adapter=adapter)
+            retry_policy = RetryPolicy.from_settings(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the
             # configuration chain; ``1`` is a sequential gather,
             # ``total <= 1`` a one-element gather — no special branch.

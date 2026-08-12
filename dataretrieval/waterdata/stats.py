@@ -290,7 +290,7 @@ def get_data(
     df, response = FanOut(
         [req],
         _fetch,
-        RetryPolicy.from_configuration(adapter="waterdata"),
+        RetryPolicy.from_settings(adapter="waterdata"),
         canonical_url=str(req.url),
         service=service,
         adapter="waterdata",

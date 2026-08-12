@@ -33,9 +33,16 @@ dependencies = [
     # Directly imported by ``waterdata`` (``anyio.from_thread.start_blocking_portal``),
     # so declared here rather than relied on transitively via httpx.
     "anyio>=4.0",
-    # ``dataretrieval.config`` reads a TOML config file. ``tomllib`` is stdlib
-    # from 3.11, so this marker installs the backport only on 3.10 and drops
-    # itself when ``requires-python`` moves to >=3.11.
+    # ``dataretrieval.settings`` declares each adapter's settings as a
+    # ``BaseSettings`` subclass and resolves them through a chain of
+    # ``PydanticBaseSettingsSource`` implementations (ADR 0012). A required
+    # dependency rather than an extra: settings resolve on the request path --
+    # every call reads the API key -- so an optional one would mean shipping a
+    # second, standard-library implementation of the same chain and testing both.
+    "pydantic-settings>=2.6",
+    # ``dataretrieval.settings`` reads a TOML settings file. ``tomllib`` is
+    # stdlib from 3.11, so this marker installs the backport only on 3.10 and
+    # drops itself when ``requires-python`` moves to >=3.11.
     "tomli>=1.1.0; python_version < '3.11'",
 ]
 dynamic = ["version"]

@@ -19,7 +19,7 @@ import pytest
 from pandas import DataFrame
 
 import dataretrieval
-from dataretrieval import configuration, ngwmn
+from dataretrieval import ngwmn, settings
 from dataretrieval.utils import BaseMetadata
 
 # Agency-qualified ids in the multi-agency form NGWMN uses (not all ``USGS-``).
@@ -537,7 +537,7 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
     )
     _mock(httpx_mock, "sites", _SITES)
 
-    with dataretrieval.configure(ngwmn.NgwmnConfiguration(base_url=mirror)):
+    with dataretrieval.configure(ngwmn.NgwmnSettings(base_url=mirror)):
         df, md = ngwmn.get_sites(state="Wisconsin", limit=10)
 
     assert len(df) == 2
@@ -547,8 +547,8 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
     ]
 
     # And Water Data, the other adapter on the real host, was never named by it.
-    with dataretrieval.configure(ngwmn.NgwmnConfiguration(base_url=mirror)):
-        assert configuration.base_url(adapter="waterdata") is None
+    with dataretrieval.configure(ngwmn.NgwmnSettings(base_url=mirror)):
+        assert settings.base_url(adapter="waterdata") is None
 
 
 # --- live upstream monitor ---------------------------------------------------

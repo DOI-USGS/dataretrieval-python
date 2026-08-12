@@ -43,24 +43,23 @@ from __future__ import annotations
 
 import io
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 from typing import Any, ClassVar
 
 import httpx
 import pandas as pd
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.codes.states import to_state
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.settings import (
+    AdapterSettings,
     _Concurrent,
     _Redirectable,
     _register,
     _Retrying,
 )
-from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import default_headers, network_error
 from dataretrieval.transport.links import resolve_next_url
@@ -68,7 +67,7 @@ from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
 
 __all__ = [
-    "NwdcConfiguration",
+    "NwdcSettings",
     "get_wateruse",
     "WATERUSE_URL",
     "MODELS",
@@ -100,7 +99,7 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 #: independently, so a rate-limit episode bursts this number times the retry
 #: count; the NWDC tolerates this level without rate-limit errors (verified by
 #: stress test) and higher has not been tested. Any configured concurrency
-#: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the
+#: overrides it -- see :func:`dataretrieval.settings.concurrency` for why the
 #: general setting outranks a module's default rather than the reverse.
 DEFAULT_CONCURRENT_REQUESTS = 4
 
@@ -138,9 +137,9 @@ def get_wateruse(
     :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are
     concatenated in the order given. That cap resolves through the
     configuration chain, so it can be raised or lowered for this service alone
-    (``configure(NwdcConfiguration(concurrency=2))``, or an ``[nwdc]`` table in
+    (``configure(NwdcSettings(concurrency=2))``, or an ``[nwdc]`` table in
     the config file) as well as package-wide via ``API_USGS_CONCURRENT``; see
-    :doc:`the configuration guide </userguide/configuration>`. A fan-out
+    :doc:`the settings guide </userguide/settings>`. A fan-out
     interrupted by a rate limit or an upstream fault raises a resumable
     :class:`~dataretrieval.interruptions.FanOutInterrupted`, whose
     ``.call.resume()`` re-issues only the locations that did not complete.
@@ -251,11 +250,11 @@ def get_wateruse(
     # Drop params the caller left unset; the service rejects empty values.
     base_params = {k: v for k, v in base_params.items() if v is not None}
 
-    # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
+    # An ``NwdcSettings(base_url=...)`` from an enclosing block, or this
     # service's own endpoint. Resolved once per call -- the block is scoped to
     # a ``with`` statement -- and threaded through every request and the page
     # walk, so a redirected call cannot half-follow the redirect.
-    service_url = _configuration.base_url(adapter="nwdc", default=WATERUSE_URL)
+    service_url = _settings.base_url(adapter="nwdc", default=WATERUSE_URL)
 
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each handled by shared transport
@@ -420,7 +419,7 @@ def _fan_out(
     return FanOut(
         requests,
         fetch,
-        RetryPolicy.from_configuration(adapter="nwdc"),
+        RetryPolicy.from_settings(adapter="nwdc"),
         finalize=finalize,
         client_options={"verify": ssl_check},
         default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
@@ -497,15 +496,14 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
     return body.get("detail") if isinstance(body, dict) else None
 
 
-@dataclass(frozen=True)
-class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration):
+class NwdcSettings(_Concurrent, _Redirectable, _Retrying, AdapterSettings):
     """Settings for NWDC calls alone.
 
     No ``parallel_chunks``: the NWDC is a plain CSV service, so a query
     fans out per location rather than being divided along a URL byte
     budget. There is nothing for the planner to divide more finely.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
+    Lives here rather than in :mod:`dataretrieval.settings` because
     *which* settings a service reads is the service's own knowledge (ADR
     0011); what each of them means is shared, so the fields come from the
     setting groups declared beside their grammar.
@@ -532,4 +530,4 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
     adapter: ClassVar[str] = "nwdc"
 
 
-_register(NwdcConfiguration)
+_register(NwdcSettings)

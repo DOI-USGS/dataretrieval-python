@@ -96,10 +96,12 @@ Public service facades
 Shared components
 ^^^^^^^^^^^^^^^^^
 
-``dataretrieval.configuration``
-    Lightweight configuration leaf: standard library plus the ``tomli``
-    backport on Python 3.10. It resolves scoped overrides, environment
-    variables, a TOML file with optional profiles, and built-in defaults in
+``dataretrieval.settings``
+    Settings leaf, built on ``pydantic-settings`` (ADR 0012): it imports no
+    adapter and nothing first-party but the exceptions taxonomy, so any module
+    may depend on it without an import cycle. It resolves scoped overrides,
+    environment variables, a TOML file with optional profiles, and built-in
+    defaults in
     that order. Service and protocol modules may depend on it; it must not
     depend back on them. Scoped overrides use ``ContextVar`` so concurrent
     threads and asyncio tasks can carry distinct credentials.
@@ -279,15 +281,15 @@ Resource and configuration view
 Every setting resolves per key through an active ``configure()`` block, its
 environment variable when one exists, the adapter's own table and the top-level
 values in ``~/.dataretrieval/config.toml``, then its built-in default.
-``configure()`` takes configuration objects -- a package-wide ``Configuration``
+``configure()`` takes settings profiles -- a package-wide ``Settings``
 and at most one per adapter -- and each adapter's class is defined in the module
-that reads those settings, so ``configuration`` stays a leaf holding only the
-adapter roster. ``show_configuration()`` reports the effective source while
+that reads those settings, so ``settings`` stays a leaf holding only the
+adapter roster. ``show_settings()`` reports the effective source while
 redacting credentials.
 
 The settings themselves -- names, defaults, environment variables, and the
 config-file format -- are catalogued once in the
-:doc:`configuration guide </userguide/configuration>`. What matters
+:doc:`settings guide </userguide/settings>`. What matters
 architecturally is the behavior around them:
 
 ``API_USGS_RETRIES``
@@ -325,8 +327,8 @@ architecturally is the behavior around them:
   ``Retry-After`` values.
 * Progress reporting is best-effort: a reporting failure must never change
   retrieval results.
-* ``dataretrieval.configuration`` is a stdlib-only leaf, so any module may depend on
-  it without an import cycle.
+* ``dataretrieval.settings`` imports no adapter and nothing first-party but the
+  exceptions taxonomy, so any module may depend on it without an import cycle.
 
 ``dataretrieval.transport`` centralizes HTTP timeout, redirect, and
 authentication policy. OGC chunk fan-out and Water Use location

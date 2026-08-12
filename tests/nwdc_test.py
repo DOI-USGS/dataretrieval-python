@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 
 import dataretrieval
-from dataretrieval import configuration, nwdc
+from dataretrieval import nwdc, settings
 from dataretrieval import progress as _progress
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.nwdc import _next_page_url, _resolve_locations, get_wateruse
@@ -534,7 +534,7 @@ def test_a_configured_base_url_redirects_the_request(httpx_mock):
     httpx_mock.add_response(method="GET", url=mirror, text=_CSV_P2)
 
     with dataretrieval.configure(
-        nwdc.NwdcConfiguration(base_url="https://mirror.example/data")
+        nwdc.NwdcSettings(base_url="https://mirror.example/data")
     ):
         df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
 
@@ -549,7 +549,7 @@ def test_next_page_url_drops_the_service_rewrite_when_redirected():
     """The alias list and the rewrite are facts about the NWDC, not about URLs.
 
     Nothing but the NWDC answers for ``water.usgs.gov``, so a call an
-    ``NwdcConfiguration(base_url=...)`` pointed elsewhere gets the general rule
+    ``NwdcSettings(base_url=...)`` pointed elsewhere gets the general rule
     instead: follow a link only back to the host that served the page. Keeping
     the rewrite would send page two of a mirrored query to the USGS -- and
     refusing the mirror's own cursor would throw away page one.
@@ -718,15 +718,15 @@ def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
     quietly ignoring them -- the defect that motivated consolidating the knob.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "7")
-    assert configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
+    assert settings.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
 
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
     assert (
-        configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS)
+        settings.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS)
         == nwdc.DEFAULT_CONCURRENT_REQUESTS
     )
     # The service default is deliberately below the package-wide 32.
-    assert nwdc.DEFAULT_CONCURRENT_REQUESTS < configuration.DEFAULT_CONCURRENCY
+    assert nwdc.DEFAULT_CONCURRENT_REQUESTS < settings.DEFAULT_CONCURRENCY
 
 
 def test_fan_out_reports_progress(httpx_mock, monkeypatch):

@@ -14,7 +14,7 @@ redirect, without also taking on an OGC or transport edge.
 
 from __future__ import annotations
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval.credentials import WATERDATA_BASE_URL
 
 #: Root of the modernized Water Data APIs.
@@ -38,7 +38,7 @@ def redirected(endpoint: str) -> str:
     """Move one endpoint onto the base URL a ``configure`` block set, if any.
 
     Water Data is one adapter serving four families -- OGC, samples,
-    statistics, ratings -- so ``WaterdataConfiguration(base_url=...)`` names the
+    statistics, ratings -- so ``WaterdataSettings(base_url=...)`` names the
     *root* they all hang off, and every constant above is built from
     :data:`BASE_URL` so that swapping that prefix moves all of them together. A
     redirect that reached only the family a caller happened to call first would
@@ -49,7 +49,7 @@ def redirected(endpoint: str) -> str:
     scoped to a ``with`` statement and delivered through a ``ContextVar``: a
     constant computed once could only ever describe the process, not the call.
     """
-    override = _configuration.base_url(adapter="waterdata")
+    override = _settings.base_url(adapter="waterdata")
     if override is None:
         return endpoint
     return override + endpoint.removeprefix(BASE_URL)

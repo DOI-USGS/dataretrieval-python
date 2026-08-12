@@ -142,7 +142,7 @@ def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
     ``stall_timeout`` -- these three services share a retry *shape* but not
     a settings scope.
     """
-    return RetryPolicy.from_configuration(
+    return RetryPolicy.from_settings(
         retryable_statuses=_GATEWAY_STATUSES, adapter=adapter
     )
 

@@ -109,21 +109,28 @@ term. Legacy: the deprecated NWIS getters and the WQP profiles call this a
 **Metadata** — The second half of every getter's return: the request URL, the
 elapsed time, and the response headers. Describes the *retrieval*, not the data.
 
-## Configuration
+## Settings
 
-**Configuration profile** — A named set of settings for one adapter, stored in
-the configuration file or built in code. **Configuration** is the short form.
-A profile is an *input* to resolution, never its result.
+**Settings profile** — A named set of settings for one adapter, stored in the
+settings file or built in code. **Profile** is the short form; the class that
+carries one is `<Adapter>Settings`. A profile is an *input* to resolution,
+never its result.
 
 **Default profile** — The profile an adapter uses when no other is selected:
 the `[<adapter>]` table's own keys. Always in effect. A **named profile**
 (`[<adapter>.bulk]`) is in effect only when a caller selects it, so adding one
 to a file never changes an existing script.
 
-**Effective configuration** — The resolved set of settings a call will use:
-what the chain produces after every profile, variable and default has been
-applied. Distinct from a configuration profile, which is one contribution to
-it. **Configure** is the verb for applying one.
+**Effective settings** — The resolved set of settings a call will use: what the
+chain produces after every profile, variable and default has been applied.
+Distinct from a settings profile, which is one contribution to it.
+**Configure** is the verb for applying one, and keeps that spelling: it is what
+the caller writes, and the settings library has no competing name for it.
+
+**Settings file** — `~/.dataretrieval/config.toml`, or the path in
+`DATARETRIEVAL_CONFIG`. The file keeps the name `config.toml` while the
+vocabulary around it says *settings*: the path is a compatibility surface, and
+`config` is the conventional name for a file on disk.
 
 **Setting** — One named tunable the caller may adjust: the API key, the
 concurrency cap, the retry count, the progress line, the fan-out baseline. A

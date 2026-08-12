@@ -20,7 +20,7 @@ from dataretrieval.waterdata import api
 _EXPECTED_WATERDATA_ALL = [
     "CODE_SERVICES",
     "FILTER_LANG",
-    "WaterdataConfiguration",
+    "WaterdataSettings",
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",

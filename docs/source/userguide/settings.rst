@@ -1,13 +1,13 @@
-.. _configuration:
+.. _settings:
 
 =============
-Configuration
+Settings
 =============
 
 ``dataretrieval`` retrieves from several services, and most of what you would
 want to adjust — a concurrency cap, a retry budget, where requests go — belongs
-to *one* of them. So a **configuration profile** is a named set of settings for
-one adapter, written in code or stored in your configuration file, and a
+to *one* of them. So a **settings profile** is a named set of settings for
+one adapter, written in code or stored in your settings file, and a
 ``configure`` block puts one profile per adapter into effect for the calls
 inside it. The Water Data API key is the exception that proves the rule: it
 authenticates to a gateway rather than to an adapter, so it stays package-wide.
@@ -48,14 +48,14 @@ name and building the third on the spot:
 
    import dataretrieval
    from dataretrieval import ngwmn, waterdata, wqp
-   from dataretrieval.ngwmn import NgwmnConfiguration
-   from dataretrieval.waterdata import WaterdataConfiguration
-   from dataretrieval.wqp import WqpConfiguration
+   from dataretrieval.ngwmn import NgwmnSettings
+   from dataretrieval.waterdata import WaterdataSettings
+   from dataretrieval.wqp import WqpSettings
 
    with dataretrieval.configure(
-       WaterdataConfiguration.load("overnight"),  # from the file, by name
-       NgwmnConfiguration.load("gentle"),         # from the file, by name
-       WqpConfiguration(retries=2),               # built here
+       WaterdataSettings.load("overnight"),  # from the file, by name
+       NgwmnSettings.load("gentle"),         # from the file, by name
+       WqpSettings(retries=2),               # built here
    ):
        flow, _ = waterdata.get_daily(monitoring_location_id=sites, time="P30D")
        levels, _ = ngwmn.get_water_level(monitoring_location_id=wells)
@@ -76,7 +76,7 @@ also read.
 
 Two rules keep a block like that unambiguous. A configuration knows which
 adapter it targets — that is a property of its class — so you never restate it,
-and ``Configuration`` targets none of them, which is what makes it
+and ``Settings`` targets none of them, which is what makes it
 package-wide. And there is at most one configuration per adapter: naming two
 raises rather than picking one, because there would be no defined order between
 them — combine them into one instead.
@@ -142,11 +142,11 @@ Highest precedence first:
 
 1. A configuration passed to an active ``dataretrieval.configure(...)`` block.
 2. A named profile you selected in that block —
-   ``WaterdataConfiguration.load("bulk")``.
+   ``WaterdataSettings.load("bulk")``.
 3. The environment variable for that setting.
-4. The adapter's default profile in the configuration file: the
+4. The adapter's default profile in the settings file: the
    ``[<adapter>]`` table.
-5. The package-wide keys at the top of the configuration file —
+5. The package-wide keys at the top of the settings file —
    ``~/.dataretrieval/config.toml``, or the path in ``DATARETRIEVAL_CONFIG``.
 6. The adapter's own built-in preference, where it has one — NWDC asks for a
    ``concurrency`` of 4, because that is as far as the service is
@@ -247,11 +247,11 @@ you import:
 
 .. code-block:: python
 
-   from dataretrieval.ngwmn import NgwmnConfiguration
-   from dataretrieval.wqp import WqpConfiguration
+   from dataretrieval.ngwmn import NgwmnSettings
+   from dataretrieval.wqp import WqpSettings
 
    with dataretrieval.configure(
-       NgwmnConfiguration(concurrency=4), WqpConfiguration(retries=2)
+       NgwmnSettings(concurrency=4), WqpSettings(retries=2)
    ):
        ...
 
@@ -264,25 +264,25 @@ same source, so ``API_USGS_CONCURRENT`` exported for one run still beats a
 Between ``configure`` blocks that tie-break applies per block: an adapter
 configuration beats a package-wide value set by the *same* block, while
 anything set by a block nested inside it wins over both. So a
-``configure(Configuration(concurrency=1))`` can still throttle a call an
+``configure(Settings(concurrency=1))`` can still throttle a call an
 enclosing block had scoped to one adapter, and the innermost block decides.
 
 Each adapter accepts only the settings it reads, and they are the fields of its
 configuration class — ``concurrency`` and ``parallel_chunks`` are meaningless to
-an adapter that issues a single request, so ``StreamstatsConfiguration`` has no
+an adapter that issues a single request, so ``StreamstatsSettings`` has no
 such field and ``[streamstats] parallel_chunks = 8`` is an error rather than a
 line that quietly does nothing:
 
 ====================================  ======================================  ========================================
-Adapter                               Configuration                           Accepts
+Adapter                               Settings profile                        Accepts
 ====================================  ======================================  ========================================
-``waterdata``                         ``waterdata.WaterdataConfiguration``    ``concurrency``, ``parallel_chunks``,
+``waterdata``                         ``waterdata.WaterdataSettings``         ``concurrency``, ``parallel_chunks``,
                                                                               ``retries``, ``stall_timeout``,
                                                                               ``base_url``
-``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same five
-``nwdc``                              ``nwdc.NwdcConfiguration``              ``concurrency``, ``retries``,
+``ngwmn``                             ``ngwmn.NgwmnSettings``                 the same five
+``nwdc``                              ``nwdc.NwdcSettings``                   ``concurrency``, ``retries``,
                                                                               ``stall_timeout``, ``base_url``
-``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpConfiguration`` and so on      ``retries``, ``stall_timeout``,
+``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpSettings`` and so on           ``retries``, ``stall_timeout``,
                                                                               ``base_url``
 ====================================  ======================================  ========================================
 
@@ -342,9 +342,9 @@ The highest-precedence source, and the one to use when a setting must apply to
 .. code-block:: python
 
    import dataretrieval
-   from dataretrieval import Configuration, waterdata
+   from dataretrieval import Settings, waterdata
 
-   with dataretrieval.configure(Configuration(api_key=secrets["usgs"])):
+   with dataretrieval.configure(Settings(api_key=secrets["usgs"])):
        df, md = waterdata.get_daily(
            monitoring_location_id="USGS-05114000",
            parameter_code="00060",
@@ -353,15 +353,15 @@ The highest-precedence source, and the one to use when a setting must apply to
 
 ``configure`` takes configuration objects positionally, and nothing else. The
 adapter a configuration targets is a property of its class, so you never
-restate it — and ``Configuration`` targets none of them in particular, which is
+restate it — and ``Settings`` targets none of them in particular, which is
 what makes it package-wide.
 
 .. note::
 
    Settings are not keywords on ``configure``. ``configure(api_key=...)`` and
    the per-adapter mappings ``configure(ngwmn={"concurrency": 4})`` were an
-   earlier spelling and are gone; write ``Configuration(api_key=...)`` and
-   ``NgwmnConfiguration(concurrency=4)`` instead. Passing anything that is not
+   earlier spelling and are gone; write ``Settings(api_key=...)`` and
+   ``NgwmnSettings(concurrency=4)`` instead. Passing anything that is not
    a configuration raises and names the replacement, so an old script says what
    to write rather than failing obscurely.
 
@@ -374,7 +374,7 @@ web service or a notebook working with more than one account:
 
    # each thread keeps its own key; no os.environ mutation, no race
    def fetch_for(user):
-       with dataretrieval.configure(Configuration(api_key=vault.read(user.key_path))):
+       with dataretrieval.configure(Settings(api_key=vault.read(user.key_path))):
            return waterdata.get_daily(monitoring_location_id=user.sites)
 
 Blocks nest and merge per setting, so an inner block that tunes one thing
@@ -382,10 +382,10 @@ keeps the rest:
 
 .. code-block:: python
 
-   with dataretrieval.configure(Configuration(api_key=key, concurrency=8)):
+   with dataretrieval.configure(Settings(api_key=key, concurrency=8)):
        ...
        # api_key still applies
-       with dataretrieval.configure(Configuration(concurrency=1)):
+       with dataretrieval.configure(Settings(concurrency=1)):
            ...
 
 Values are validated when the configuration is *constructed*, so a typo raises
@@ -393,7 +393,7 @@ on the line you wrote it on rather than deep inside a later request.
 
 Omitted settings inherit from an outer block or a lower-precedence source.
 Passing ``None`` explicitly suppresses those sources and restores built-in
-behavior for that block. ``Configuration(api_key=None)``, for example, makes an
+behavior for that block. ``Settings(api_key=None)``, for example, makes an
 anonymous call even if ``API_USGS_PAT`` is set.
 
 .. tip::
@@ -406,7 +406,7 @@ anonymous call even if ``API_USGS_PAT`` is set.
 Checking what is in effect
 --------------------------
 
-``show_configuration()`` reports each setting's effective value and where it came
+``show_settings()`` reports each setting's effective value and where it came
 from. It never prints the key itself. The report below is what a file holding a
 key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
 ``[waterdata.bulk]`` profile produces, with ``API_USGS_RETRIES`` exported and
@@ -414,9 +414,9 @@ the ``bulk`` profile selected for the block:
 
 .. code-block:: python
 
-   >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
-   ...     dataretrieval.show_configuration()
-   config file  /home/u/.dataretrieval/config.toml (found)
+   >>> with dataretrieval.configure(WaterdataSettings.load("bulk")):
+   ...     dataretrieval.show_settings()
+   settings file  /home/u/.dataretrieval/config.toml (found)
    api_key          <set>  /home/u/.dataretrieval/config.toml
    concurrency      16     /home/u/.dataretrieval/config.toml
    retries          8      $API_USGS_RETRIES
@@ -433,7 +433,7 @@ the ``bulk`` profile selected for the block:
 
    profiles in the file: [waterdata.bulk]
      A profile applies only where a row above names it; select one in
-     code with <Adapter>Configuration.load("<name>").
+     code with <Adapter>Settings.load("<name>").
 
    not reported: nldi (not imported, so the settings each accepts are unknown here)
 
@@ -457,7 +457,7 @@ than left out, because an omitted service would read as "nothing is configured
 for it", which is a different claim.
 
 It never raises. A malformed file or a value that fails its grammar is reported
-in place — on the ``config file`` line for a whole-file problem, or in that
+in place — on the ``settings file`` line for a whole-file problem, or in that
 setting's own row — because a broken configuration is exactly when you reach
 for this.
 
@@ -482,7 +482,7 @@ Set it per call, which is almost always what you want:
        df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
 or as a baseline in the config file — deliberately written, and visible in
-``show_configuration()``. Put it in a ``[<adapter>.<name>]`` table rather than
+``show_settings()``. Put it in a ``[<adapter>.<name>]`` table rather than
 at the top level: a named profile applies only to runs that select it, while a
 top-level value applies to every query in every process that reads the file,
 which is how a setting added for one bulk pull quietly exhausts an hourly quota
@@ -493,8 +493,8 @@ sub-requests than the configured value, and an input with nothing to split
 stays a single request.
 
 ``parallel_chunks(n)`` is sugar for
-``configure(Configuration(parallel_chunks=n))``: one scoping mechanism, so the
-innermost block wins whichever spelling set it, and ``show_configuration()``
+``configure(Settings(parallel_chunks=n))``: one scoping mechanism, so the
+innermost block wins whichever spelling set it, and ``show_settings()``
 always reports the value the chunker will actually use.
 
 
@@ -510,15 +510,15 @@ a mirror, or a recording proxy — for the duration of a block:
 
    import dataretrieval
    from dataretrieval import waterdata
-   from dataretrieval.waterdata import WaterdataConfiguration
+   from dataretrieval.waterdata import WaterdataSettings
 
    with dataretrieval.configure(
-       WaterdataConfiguration(base_url="https://staging.example/waterdata")
+       WaterdataSettings(base_url="https://staging.example/waterdata")
    ):
        df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
 
 It names one adapter, so nothing else moves: NGWMN is served from the same host
-as Water Data, and a ``WaterdataConfiguration`` still leaves it alone. What the
+as Water Data, and a ``WaterdataSettings`` still leaves it alone. What the
 value replaces is that adapter's own base, and the package appends its usual
 paths to it — for Water Data that is the root all four of its APIs hang off, so
 one value moves the OGC collections, the Samples database, the statistics
@@ -557,12 +557,12 @@ If your credentials live in a secret manager, nothing needs to touch
 
    import dataretrieval
    import boto3
-   from dataretrieval import Configuration, waterdata
+   from dataretrieval import Settings, waterdata
 
    secrets = boto3.client("secretsmanager")
    key = secrets.get_secret_value(SecretId="usgs-pat")["SecretString"]
 
-   with dataretrieval.configure(Configuration(api_key=key)):
+   with dataretrieval.configure(Settings(api_key=key)):
        df, md = waterdata.get_continuous(monitoring_location_id="USGS-05114000")
 
 Wherever the key comes from, it is sent only to ``api.waterdata.usgs.gov`` and
@@ -595,4 +595,4 @@ works everywhere.
 .. note::
 
    ``SSL_CERT_FILE`` is read by OpenSSL, not by ``dataretrieval``, so it does
-   not appear in :func:`~dataretrieval.show_configuration`.
+   not appear in :func:`~dataretrieval.show_settings`.

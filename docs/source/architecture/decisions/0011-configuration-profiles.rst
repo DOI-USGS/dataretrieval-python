@@ -1,10 +1,20 @@
-ADR 0011: Configuration profiles, scoped to one adapter
+ADR 0011: Settings profiles, scoped to one adapter
 ========================================================
 
 Status
 ------
 
-Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings` --
+Accepted, and re-spelled by :doc:`0012-pydantic-settings`. Every decision below
+stands; the classes named in them are pydantic-settings models rather than
+frozen dataclasses, and carry the library's names --
+``<Adapter>Settings`` for ``<Adapter>Configuration``, ``AdapterSettings`` for
+``BaseConfiguration``, ``validate_settings()`` for ``validate()``. Two details
+follow from the move: the "annotations are the schema" argument in decision 5
+is now enforced rather than aspirational, and the ``_UNSET`` sentinel that
+distinguished an omitted setting from an explicit ``None`` is replaced by
+``model_fields_set``.
+
+Supersedes two clauses of :doc:`0010-adapter-scoped-settings` --
 decision 5 (adapter schemas held centrally as ``TypedDict``) and decision 8
 (each adapter a named keyword on ``configure``) -- and three of
 :doc:`0009-layered-configuration`: the global ``[profiles.<name>]`` table; the
@@ -63,9 +73,9 @@ has shipped, so nothing is deprecated.
 adapter, and nothing else::
 
     with dataretrieval.configure(
-            Configuration(api_key=vault.read("usgs/pat")),
-            WaterdataConfiguration.load("bulk"),
-            NgwmnConfiguration(concurrency=4),
+            Settings(api_key=vault.read("usgs/pat")),
+            WaterdataSettings.load("bulk"),
+            NgwmnSettings(concurrency=4),
     ):
         ...
 
@@ -94,7 +104,7 @@ touched.
 **Precedence**, highest first:
 
 1. A configuration instance passed to ``configure()``
-2. A profile selected in code, ``WaterdataConfiguration.load("bulk")``
+2. A profile selected in code, ``WaterdataSettings.load("bulk")``
 3. The setting's environment variable (package-wide settings only)
 4. The adapter's default profile in the file
 5. Package-wide defaults in the file
@@ -125,7 +135,7 @@ library to another host is a supply-chain-shaped hazard; an in-code block
 keeps the redirect where a reader sees it.
 
 **The module is renamed** ``dataretrieval.config`` to
-``dataretrieval.configuration``,
+``dataretrieval.settings``,
 and ADR 0009's rule reserving ``config`` as an abbreviation for the module and
 the file is withdrawn. The path has never been released, so no alias is
 needed.
@@ -171,10 +181,10 @@ Consequences
   construction rather than caught by a fitness test.
 - **A setting's definition moves next to the code that reads it.** Adding a
   Water Data setting no longer edits a service-neutral module.
-- **``configure(api_key=...)`` breaks.** The README, the configuration guide,
+- **``configure(api_key=...)`` breaks.** The README, the settings guide,
   the PR description and ADR 0009's examples all use it and all must change in
   the same commit.
-- **``show_configuration()`` can only resolve the settings an adapter accepts
+- **``show_settings()`` can only resolve the settings an adapter accepts
   once that adapter has been imported.** It names the adapters it could not
   check rather than omitting them silently, which is the honest cost of lazy
   validation. The *profile list* is not import-limited: what a profile is
@@ -182,7 +192,7 @@ Consequences
   defines is listed, imported or not -- withholding one would make the
   section's answer depend on which optional extras happened to be installed.
 - **Two names differ only by case** -- the ``configuration`` module and the
-  ``Configuration`` class. The module stays out of the package's public
+  ``Settings`` class. The module stays out of the package's public
   exports so the confusing import line cannot arise.
 - **Separate quota pools are still not modelled.** Three exist. Nothing in the
   library needs to know yet.
@@ -192,7 +202,7 @@ Consequences
 Compliance
 ----------
 
-Satisfied. In ``tests/configuration_test.py``:
+Satisfied. In ``tests/settings_test.py``:
 
 - ``test_several_named_profiles_are_selected_independently`` -- one block,
   a different profile per adapter.

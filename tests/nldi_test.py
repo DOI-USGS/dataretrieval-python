@@ -468,7 +468,7 @@ def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
             text=body.read(),
         )
 
-    with dataretrieval.configure(nldi.NldiConfiguration(base_url=mirror)):
+    with dataretrieval.configure(nldi.NldiSettings(base_url=mirror)):
         gdf = get_basin(feature_source="WQP", feature_id="USGS-054279485")
 
     assert isinstance(gdf, GeoDataFrame)

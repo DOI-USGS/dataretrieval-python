@@ -71,7 +71,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
             f"Valid options are: {valid_code_services}."
         )
 
-    # ``redirected`` applies a ``WaterdataConfiguration(base_url=...)`` from an
+    # ``redirected`` applies a ``WaterdataSettings(base_url=...)`` from an
     # enclosing block; the Samples database is one of the four families that
     # move together when a caller redirects the adapter.
     url = (

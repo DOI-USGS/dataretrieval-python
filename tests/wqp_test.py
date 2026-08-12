@@ -152,7 +152,7 @@ def test_a_configured_base_url_moves_both_interfaces():
     """
     mirror = "https://mirror.example/wqp"
 
-    with dataretrieval.configure(wqp.WqpConfiguration(base_url=mirror)):
+    with dataretrieval.configure(wqp.WqpSettings(base_url=mirror)):
         with pytest.warns(DeprecationWarning):
             legacy = wqp.wqp_url("Result")
         with pytest.warns(UserWarning):
@@ -264,7 +264,7 @@ def test_credential_shaped_wqp_kwargs_are_rejected(name):
 
     Its ten getters forward whatever the caller names straight into the query
     string, so ``api_key=`` -- the plausible guess now that ``configure()``
-    takes ``Configuration(api_key=...)`` -- would put a secret in a URL that
+    takes ``Settings(api_key=...)`` -- would put a secret in a URL that
     clients, proxies and logs retain. Same predicate and same message as Water
     Data's ``**queryables`` guard, because it is the same mistake.
     """

@@ -441,15 +441,15 @@ def test_bad_retry_environment_raises_a_catchable_error(monkeypatch) -> None:
     """
     monkeypatch.setenv("API_USGS_RETRIES", "off")
     with pytest.raises(DataRetrievalError):
-        retry.RetryPolicy.from_configuration()
+        retry.RetryPolicy.from_settings()
 
     monkeypatch.setenv("API_USGS_RETRIES", "2")
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "none")
     with pytest.raises(ConfigurationError):
-        retry.RetryPolicy.from_configuration()
+        retry.RetryPolicy.from_settings()
 
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "10")
-    assert retry.RetryPolicy.from_configuration().stall_timeout == 10.0
+    assert retry.RetryPolicy.from_settings().stall_timeout == 10.0
     # Still a ValueError, so existing handling of a bad setting keeps working.
     assert issubclass(ConfigurationError, ValueError)
 

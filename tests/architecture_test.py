@@ -163,42 +163,42 @@ def test_runtime_import_graph_is_acyclic() -> None:
         raise AssertionError(f"Runtime import cycle: {cycle}") from exc
 
 
-def test_config_is_a_standard_library_only_leaf() -> None:
-    """Configuration resolution must stay importable from anywhere.
+def test_settings_is_a_first_party_leaf() -> None:
+    """Settings resolution must stay importable from anywhere.
 
-    ``dataretrieval.configuration`` is read by ``utils`` (headers), ``ogc.chunking``
+    ``dataretrieval.settings`` is read by ``utils`` (headers), ``ogc.chunking``
     (concurrency), ``ogc.retry``, and ``ogc.progress``. If it imported any of
-    them -- or any third-party package -- it would create a cycle or make the
-    cheapest module in the package expensive. ``tomli`` is the one allowed
-    third-party import: it is the ``tomllib`` backport, used only on Python
-    3.10, and the ``sys.version_info`` guard means it is not even imported on
-    3.11+.
-
-    ``dataretrieval.exceptions`` is the one allowed first-party import: it is
-    the taxonomy leaf, itself free of first-party and runtime third-party
-    imports (asserted above), so depending on it adds no weight and cannot
-    cycle. ``ConfigurationError`` lives there because configuration resolves on the
-    request path, so a broken config file must be catchable as
+    them it would create a cycle, so ``dataretrieval.exceptions`` is its one
+    allowed first-party import: the taxonomy leaf, itself free of first-party
+    and runtime third-party imports (asserted above), so depending on it adds no
+    weight and cannot cycle. ``ConfigurationError`` lives there because settings
+    resolve on the request path, so a broken settings file must be catchable as
     ``except DataRetrievalError`` like any other failure of that call.
+
+    The *third-party* half of this contract was withdrawn by ADR 0012: the
+    module is built on ``pydantic-settings``, which is a runtime dependency of
+    the package. What the roster below still buys is that the list stays
+    deliberate -- a leaf that quietly grew ``httpx`` or ``pandas`` would make the
+    cheapest module in the package expensive, and every adapter imports this one.
     """
-    imports = _runtime_imports(PACKAGE_ROOT / "configuration.py")
+    imports = _runtime_imports(PACKAGE_ROOT / "settings.py")
     first_party = {
         name
         for name in imports
         if name.startswith("dataretrieval") and name != "dataretrieval.exceptions"
     }
     assert not first_party, (
-        "dataretrieval.configuration may only import dataretrieval.exceptions: "
+        "dataretrieval.settings may only import dataretrieval.exceptions: "
         f"{sorted(first_party)}"
     )
     roots = {module.partition(".")[0] for module in imports}
-    # Static analysis sees both sides of the version guard. Python 3.10's
-    # stdlib inventory does not yet include the unreachable ``tomllib`` branch.
-    allowed = {"dataretrieval", "tomli", "tomllib"}
+    # Static analysis sees both sides of the version guard. Python 3.10's stdlib
+    # inventory does not yet include the unreachable ``tomllib`` branch.
+    allowed = {"dataretrieval", "pydantic", "pydantic_settings", "tomli", "tomllib"}
     third_party = roots - sys.stdlib_module_names - allowed
     assert not third_party, (
-        "dataretrieval.configuration gained third-party dependencies: "
-        f"{sorted(third_party)}"
+        "dataretrieval.settings gained third-party dependencies beyond the "
+        f"settings stack: {sorted(third_party)}"
     )
 
 

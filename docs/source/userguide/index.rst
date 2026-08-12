@@ -13,7 +13,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
-    configuration
+    settings
     errors
     timeconventions
     dataportals

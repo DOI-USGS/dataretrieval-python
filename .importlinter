@@ -36,7 +36,7 @@ layers =
     _wqx
     _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
-    configuration
+    settings
     exceptions
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.

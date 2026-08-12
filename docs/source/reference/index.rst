@@ -7,7 +7,7 @@ API reference
 .. toctree::
     :maxdepth: 1
 
-    config
+    settings
     exceptions
     ngwmn
     nldi

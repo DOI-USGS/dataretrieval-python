@@ -18,29 +18,28 @@ See https://api.waterdata.usgs.gov/ngwmn/ogcapi for the API reference.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval.codes.states import apply_state
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.credentials import WATERDATA_BASE_URL
+from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
+from dataretrieval.settings import (
+    AdapterSettings,
     _Chunked,
     _Concurrent,
     _Redirectable,
     _register,
     _Retrying,
 )
-from dataretrieval.credentials import WATERDATA_BASE_URL
-from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
 
 __all__ = [
-    "NgwmnConfiguration",
+    "NgwmnSettings",
     "get_sites",
     "get_water_level",
     "get_lithology",
@@ -115,11 +114,11 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
-        # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
+        # A ``NgwmnSettings(base_url=...)`` from an enclosing block, or
         # this service's own base. Resolved per call because the block is
         # scoped to a ``with`` statement, and read here because this is the one
         # place the NGWMN base is named.
-        base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
+        base_url=_settings.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
         dialect=NGWMN_DIALECT,
         adapter="ngwmn",
     )
@@ -446,10 +445,7 @@ def get_providers(
     return _get("providers", locals())
 
 
-@dataclass(frozen=True)
-class NgwmnConfiguration(
-    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
-):
+class NgwmnSettings(_Chunked, _Concurrent, _Redirectable, _Retrying, AdapterSettings):
     """Settings for NGWMN calls alone.
 
     NGWMN is a second OGC API on the Water Data host, so its queries
@@ -457,7 +453,7 @@ class NgwmnConfiguration(
     dials. The API key is not among them: one gateway fronts both
     adapters, so one key and one quota pool serve them (ADR 0010).
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
+    Lives here rather than in :mod:`dataretrieval.settings` because
     *which* settings a service reads is the service's own knowledge (ADR
     0011); what each of them means is shared, so the fields come from the
     setting groups declared beside their grammar.
@@ -484,8 +480,8 @@ class NgwmnConfiguration(
     # NGWMN rides the same OGC engine as Water Data, so it reads the same
     # groups: retry dials, a redirectable base, and both fan-out dials. The
     # settings themselves are declared once in
-    # :mod:`dataretrieval.configuration`, beside the grammar that parses them.
+    # :mod:`dataretrieval.settings`, beside the grammar that parses them.
     adapter: ClassVar[str] = "ngwmn"
 
 
-_register(NgwmnConfiguration)
+_register(NgwmnSettings)

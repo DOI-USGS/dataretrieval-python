@@ -10,21 +10,20 @@ See https://api.water.usgs.gov/nldi/linked-data for the API reference.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import Any, ClassVar, Literal, cast
 
-from dataretrieval import configuration as _configuration
+from dataretrieval import settings as _settings
 from dataretrieval._querying import _query_with_retry
-from dataretrieval.configuration import (
-    BaseConfiguration,
+from dataretrieval.settings import (
+    AdapterSettings,
     _Redirectable,
     _register,
     _Retrying,
 )
 
 __all__ = [
-    "NldiConfiguration",
+    "NldiSettings",
     "get_flowlines",
     "get_basin",
     "get_features",
@@ -48,7 +47,7 @@ def _api_base() -> str:
     """The NLDI base this call targets: a block's redirect, or the service's.
 
     Every URL below is built from this rather than from
-    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
+    :data:`NLDI_API_BASE_URL` directly, so a ``NldiSettings(base_url=...)``
     reaches every navigation, basin, and catalog request alike -- a redirect
     that covered only some of them would leave the library asking the real
     service about the mirror's data. Resolved per call, because a ``configure``
@@ -58,7 +57,7 @@ def _api_base() -> str:
     redirect and the service's own base is the accessor's job, not each
     service's.
     """
-    return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
+    return _settings.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
 
 
 def _query_nldi(
@@ -611,18 +610,17 @@ def _validate_feature_source_comid(
         )
 
 
-@dataclass(frozen=True)
-class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+class NldiSettings(_Redirectable, _Retrying, AdapterSettings):
     """Settings for NLDI calls alone.
 
     No fan-out dials: an NLDI query is answered by a single request.
 
     This adapter is imported on demand for the geopandas extra, so this
     class registers itself later than the rest -- which is exactly why
-    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
+    the adapter roster lives in :data:`~dataretrieval.settings.ADAPTERS`
     rather than being derived from what has been imported.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
+    Lives here rather than in :mod:`dataretrieval.settings` because
     *which* settings a service reads is the service's own knowledge (ADR
     0011); what each of them means is shared, so the fields come from the
     setting groups declared beside their grammar.
@@ -643,8 +641,8 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
 
     # One request per call, so this service reads the retry dials and a
     # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    # in :mod:`dataretrieval.settings`, beside its grammar.
     adapter: ClassVar[str] = "nldi"
 
 
-_register(NldiConfiguration)
+_register(NldiSettings)

@@ -229,7 +229,7 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        # ``redirected`` honors a ``WaterdataConfiguration(base_url=...)`` set
+        # ``redirected`` honors a ``WaterdataSettings(base_url=...)`` set
         # by an enclosing ``configure`` block, and is a no-op otherwise. Called
         # here rather than bound once at import because the block is scoped to
         # a ``with`` statement.

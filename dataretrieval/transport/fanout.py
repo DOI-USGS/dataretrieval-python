@@ -66,8 +66,8 @@ import httpx
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
-from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
+from dataretrieval import settings as _settings
 from dataretrieval._ambient import Ambient
 from dataretrieval.combining import (
     _combine_chunk_frames,
@@ -91,7 +91,7 @@ _Chunk = TypeVar("_Chunk")
 _ChunkCo = TypeVar("_ChunkCo", covariant=True)
 
 # The fan-out concurrency cap resolves through
-# :func:`dataretrieval.configuration.concurrency`, which owns the setting's name, its
+# :func:`dataretrieval.settings.concurrency`, which owns the setting's name, its
 # grammar (``1`` sequential, >1 bounded, ``unbounded`` uncapped) and its
 # built-in default. Naming any of those here too would let this module and the
 # chain disagree about what a value means. The concurrency model -- why the cap
@@ -277,7 +277,7 @@ class FanOut(Generic[_Chunk]):
         retry_policy: RetryPolicy = _NO_RETRY,
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
-        default_concurrent: int = _configuration.DEFAULT_CONCURRENCY,
+        default_concurrent: int = _settings.DEFAULT_CONCURRENCY,
         *,
         canonical_url: str | None = None,
         service: str | None = None,
@@ -293,7 +293,7 @@ class FanOut(Generic[_Chunk]):
         # events — see :meth:`resume`.
         self.service = service
         # Which adapter's settings this drive resolves, so a ``[ngwmn]`` table
-        # or an ``NgwmnConfiguration`` reaches only NGWMN calls. Distinct from
+        # or an ``NgwmnSettings`` reaches only NGWMN calls. Distinct from
         # ``service`` above, which is a *display label* for the progress line
         # and is variously a collection name or prose. ``None`` resolves
         # package-wide. See ADR 0010.
@@ -301,7 +301,7 @@ class FanOut(Generic[_Chunk]):
         # This service's preferred cap for when nothing is configured. Resolved
         # at resume time, not here, so a setting that arrives after this call
         # was built still applies. Anything the chain resolves outranks it --
-        # see :func:`dataretrieval.configuration.concurrency` for why a service
+        # see :func:`dataretrieval.settings.concurrency` for why a service
         # preference must not override an explicit setting.
         self.default_concurrent = default_concurrent
         # Extra ``httpx.AsyncClient`` options merged into the shared client this
@@ -514,7 +514,7 @@ class FanOut(Generic[_Chunk]):
             # the documented recovery from QuotaExhausted is to wait and
             # re-issue more gently -- so a ``configure()`` block entered
             # between the interruption and the resume has to win.
-            concurrency = _configuration.concurrency(
+            concurrency = _settings.concurrency(
                 self.default_concurrent, adapter=self.adapter
             )
             with start_blocking_portal() as portal:
