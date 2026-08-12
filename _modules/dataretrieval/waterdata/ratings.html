@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+ge9026ab5a documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g61428b5e1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2dfd532f"></script>
+      <script src="../../../_static/documentation_options.js?v=94c5dad5"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -105,7 +105,7 @@
     <span class="n">default_headers</span> <span class="k">as</span> <span class="n">_default_headers</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">paginate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_paginated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">STAC_URL</span>
 
@@ -324,11 +324,8 @@
 <span class="sd">    STAC ``next`` link is followed until exhausted so a result set larger than</span>
 <span class="sd">    one page isn&#39;t silently truncated.</span>
 
-<span class="sd">    The page walk is :func:`dataretrieval.transport.pagination.paginate` with</span>
-<span class="sd">    STAC strategies, driven as a one-item</span>
-<span class="sd">    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor and</span>
-<span class="sd">    semantics (retry, stall budget, progress line, resumable interruption) as</span>
-<span class="sd">    every other getter. Pages carry features rather than rows, so each page</span>
+<span class="sd">    The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`</span>
+<span class="sd">    with STAC strategies. Pages carry features rather than rows, so each page</span>
 <span class="sd">    frame wraps the raw feature dicts in a single ``feature`` column.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)}</span>
@@ -364,24 +361,14 @@
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">follow_up</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sess</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">cursor</span><span class="p">))</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
-            <span class="n">request</span><span class="p">,</span>
-            <span class="n">parse_response</span><span class="o">=</span><span class="n">parse_response</span><span class="p">,</span>
-            <span class="n">follow_up</span><span class="o">=</span><span class="n">follow_up</span><span class="p">,</span>
-            <span class="c1"># Borrow the executor&#39;s shared client for every page.</span>
-            <span class="n">client</span><span class="o">=</span><span class="n">active_client</span><span class="p">(),</span>
-            <span class="n">raise_for_status</span><span class="o">=</span><span class="n">_raise_for_non_200</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">FanOut</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">run_paginated</span><span class="p">(</span>
         <span class="p">[</span><span class="n">req</span><span class="p">],</span>
-        <span class="n">fetch</span><span class="p">,</span>
-        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">parse_response</span><span class="o">=</span><span class="n">parse_response</span><span class="p">,</span>
+        <span class="n">follow_up</span><span class="o">=</span><span class="n">follow_up</span><span class="p">,</span>
+        <span class="n">raise_for_status</span><span class="o">=</span><span class="n">_raise_for_non_200</span><span class="p">,</span>
         <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
-        <span class="n">canonical_url</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+    <span class="p">)</span>
     <span class="c1"># Every page frame is built with a ``feature`` column, and the combine</span>
     <span class="c1"># helpers preserve it, so the empty case needs no special branch.</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;feature&quot;</span><span class="p">])</span>

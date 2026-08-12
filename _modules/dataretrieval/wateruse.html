@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+ge9026ab5a documentation</title>
+  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+g61428b5e1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2dfd532f"></script>
+      <script src="../../_static/documentation_options.js?v=94c5dad5"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -129,11 +129,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOut</span><span class="p">,</span> <span class="n">active_client</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span><span class="p">,</span> <span class="n">network_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">paginate</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_paginated</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;get_wateruse&quot;</span><span class="p">,</span>
@@ -421,18 +419,12 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch every request (each paginated) over the shared fan-out executor.</span>
 
-<span class="sd">    Each request is paginated by :func:`dataretrieval.transport.pagination.paginate`</span>
-<span class="sd">    with NWDC strategies: parse a CSV page and read its ``Link`` header cursor</span>
-<span class="sd">    (``parse``), follow that cursor (``follow``), and raise the typed error</span>
-<span class="sd">    carrying the NWDC ``detail`` (``raise_for_status``).</span>
+<span class="sd">    This function is only the NWDC-specific half: parse a CSV page and read</span>
+<span class="sd">    its ``Link`` header cursor, follow that cursor, raise the typed error</span>
+<span class="sd">    carrying the NWDC ``detail``, and shape the result.</span>
+<span class="sd">    :func:`~dataretrieval.transport.pagination.run_paginated` owns the rest.</span>
 
-<span class="sd">    Everything else -- bounded concurrency, per-attempt retry, failure</span>
-<span class="sd">    precedence, progress, and resumable interruption -- belongs to</span>
-<span class="sd">    :class:`~dataretrieval.transport.fanout.FanOut`, which Water Data and NGWMN</span>
-<span class="sd">    drive too. This function is now only the NWDC-specific half: what a</span>
-<span class="sd">    chunk is, and how to read one.</span>
-
-<span class="sd">    The plan is the request list itself. ``FanOut`` asks a plan only to be</span>
+<span class="sd">    The plan is the request list itself. The executor asks a plan only to be</span>
 <span class="sd">    sized and iterable, and the NWDC accepts one ``location=`` per request, so</span>
 <span class="sd">    the caller&#39;s locations arrive already separate -- there is nothing to</span>
 <span class="sd">    divide and so nothing for a plan class to hold.</span>
@@ -451,43 +443,21 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_raise_for_status</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">detail_from</span><span class="o">=</span><span class="n">_nwdc_error_detail</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;One location&#39;s full page walk, over the executor&#39;s shared client.</span>
-
-<span class="sd">        ``active_client()`` is the client :meth:`FanOut._run` published for this</span>
-<span class="sd">        run; borrowing it keeps every location&#39;s pages on one connection pool</span>
-<span class="sd">        instead of opening a client per location.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="k">await</span> <span class="n">paginate</span><span class="p">(</span>
-                <span class="n">request</span><span class="p">,</span>
-                <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
-                <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
-                <span class="n">client</span><span class="o">=</span><span class="n">active_client</span><span class="p">(),</span>
-                <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="n">httpx</span><span class="o">.</span><span class="n">TransportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">network_error</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-
     <span class="k">def</span><span class="w"> </span><span class="nf">finalize</span><span class="p">(</span>
         <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">frame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">FanOut</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">run_paginated</span><span class="p">(</span>
         <span class="n">requests</span><span class="p">,</span>
-        <span class="n">fetch</span><span class="p">,</span>
-        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">parse_response</span><span class="o">=</span><span class="n">parse</span><span class="p">,</span>
+        <span class="n">follow_up</span><span class="o">=</span><span class="n">follow</span><span class="p">,</span>
+        <span class="n">raise_for_status</span><span class="o">=</span><span class="n">raise_for_status</span><span class="p">,</span>
         <span class="n">finalize</span><span class="o">=</span><span class="n">finalize</span><span class="p">,</span>
         <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
         <span class="n">default_concurrent</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENT_REQUESTS</span><span class="p">,</span>
-        <span class="c1"># No single URL expresses &quot;all of these locations&quot; -- the service</span>
-        <span class="c1"># has no such request -- so the aggregate reports the first,</span>
-        <span class="c1"># matching what an un-fanned single-location call would show.</span>
-        <span class="n">canonical_url</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">requests</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="k">if</span> <span class="n">requests</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="c1"># Labels the progress line the executor opens for this drive.</span>
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
