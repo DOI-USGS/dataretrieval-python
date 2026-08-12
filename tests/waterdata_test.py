@@ -941,6 +941,33 @@ def test_get_cql_like_wildcard(httpx_mock):
     assert json.loads(httpx_mock.get_requests()[0].content) == cql
 
 
+def test_get_cql_resume_returns_finalized_shape(httpx_mock):
+    """A resumed ``get_cql`` returns the same finished ``(df, BaseMetadata)``
+    shape as an uninterrupted call. The verbatim-CQL path drives the shared
+    executor with the same finalizer as the typed getters, so
+    ``exc.call.resume()`` yields the shaped result, not a raw
+    ``(frame, response)`` pair."""
+    from dataretrieval.interruptions import QuotaExhausted
+    from dataretrieval.utils import BaseMetadata
+
+    cql = {
+        "op": "in",
+        "args": [{"property": "monitoring_location_id"}, ["USGS-05427718"]],
+    }
+    httpx_mock.add_response(
+        method=None, url=_items_url("latest-daily"), status_code=429
+    )
+    _mock_items(httpx_mock, "latest-daily")
+
+    with pytest.raises(QuotaExhausted) as excinfo:
+        get_cql("latest-daily", cql)
+
+    df, md = excinfo.value.call.resume()
+
+    assert isinstance(md, BaseMetadata)
+    assert "latest_daily_id" in df.columns and "id" not in df.columns
+
+
 # --- field measurements ------------------------------------------------------
 
 

@@ -63,5 +63,6 @@ Compliance
 facade identity, and compatibility names. ``tests/architecture_test.py``
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. ``.importlinter`` keeps the
-collection families independent of each other, holds NGWMN to the OGC facade,
-and prevents lateral adapter reach-through.
+collection families independent of each other, holds the facade-only consumers
+(NGWMN and ``waterdata.cql``) to the OGC facade, and prevents lateral adapter
+reach-through.

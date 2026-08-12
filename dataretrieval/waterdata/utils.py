@@ -177,6 +177,7 @@ def get_ogc_data(
     collection: str,
     output_id: str | None = None,
     max_rows: int | None = None,
+    cql_body: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
@@ -200,6 +201,9 @@ def get_ogc_data(
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result.
+    cql_body : str, optional
+        A verbatim CQL2 JSON body to POST instead of building the query from
+        ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
 
     Returns
     -------
@@ -219,6 +223,7 @@ def get_ogc_data(
         base_url=OGC_API_URL,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
+        cql_body=cql_body,
     )
 
 
