@@ -28,7 +28,7 @@ from dataretrieval.transport.http import (
     default_headers as _default_headers,
 )
 from dataretrieval.transport.links import resolve_next_url
-from dataretrieval.transport.pagination import paginate
+from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.transport.retry import RetryPolicy
 from dataretrieval.waterdata.endpoints import STAC_URL
 
@@ -244,11 +244,8 @@ def _search(
     STAC ``next`` link is followed until exhausted so a result set larger than
     one page isn't silently truncated.
 
-    The page walk is :func:`dataretrieval.transport.pagination.paginate` with
-    STAC strategies, driven as a one-item
-    :class:`~dataretrieval.transport.fanout.FanOut` -- the same executor and
-    semantics (retry, stall budget, progress line, resumable interruption) as
-    every other getter. Pages carry features rather than rows, so each page
+    The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`
+    with STAC strategies. Pages carry features rather than rows, so each page
     frame wraps the raw feature dicts in a single ``feature`` column.
     """
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
@@ -284,24 +281,14 @@ def _search(
     async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
         return await sess.get(cursor, headers=_default_headers(cursor))
 
-    async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
-        return await paginate(
-            request,
-            parse_response=parse_response,
-            follow_up=follow_up,
-            # Borrow the executor's shared client for every page.
-            client=active_client(),
-            raise_for_status=_raise_for_non_200,
-        )
-
-    df, _ = FanOut(
+    df, _ = run_paginated(
         [req],
-        fetch,
-        RetryPolicy.from_env(),
+        parse_response=parse_response,
+        follow_up=follow_up,
+        raise_for_status=_raise_for_non_200,
         client_options={"verify": ssl_check},
-        canonical_url=str(req.url),
         service="ratings",
-    ).resume()
+    )
     # Every page frame is built with a ``feature`` column, and the combine
     # helpers preserve it, so the empty case needs no special branch.
     return list(df["feature"])
