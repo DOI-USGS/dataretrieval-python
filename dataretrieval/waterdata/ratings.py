@@ -10,12 +10,15 @@ WDFN announcement at https://waterdata.usgs.gov/blog/wdfn-rating-curves/.
 from __future__ import annotations
 
 import os
+import warnings
 from collections.abc import Iterable
+from datetime import timedelta
 from typing import Any, Literal, get_args
 
 import httpx
 import pandas as pd
 
+from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
@@ -115,10 +118,10 @@ def get_ratings(
     Raises
     ------
     ValueError
-        For an unrecognized ``file_type`` value, an ISO 8601 duration in
-        ``time``, or a matching feature that carries no data asset.
+        For an unrecognized ``file_type`` value or an ISO 8601 duration in
+        ``time``.
     DataRetrievalError
-        The typed subclass for an HTTP error response (see
+        The typed subclass for an HTTP error response during the search (see
         :func:`transport.pagination.paginate`);
         or :class:`~dataretrieval.exceptions.NetworkError` if a request
         can't reach the service in a way retrying cannot fix.
@@ -128,6 +131,19 @@ def get_ratings(
         finishes the interrupted stage (see :doc:`/userguide/errors`); the
         assembled per-feature dict is returned by a fresh ``get_ratings``
         call.
+
+    Warns
+    -----
+    SkippedRatingWarning
+        One feature of the batch failed *deterministically* -- a stale
+        catalog entry (404 on its data asset), a feature with no data asset,
+        a malformed RDB file. That feature is skipped and its id is absent
+        from the returned dict; the rest of the batch is unaffected. A site
+        with no published rating never warns -- it matches no feature in the
+        search, so there is nothing to skip. Transient failures are never
+        skipped (they retry, then raise resumable). To make a skip fatal::
+
+            warnings.filterwarnings("error", category=SkippedRatingWarning)
 
     Examples
     --------
@@ -338,23 +354,54 @@ def _download_all(
     The plan is the feature list itself -- ``FanOut`` asks a plan only to be
     sized and iterable -- so the downloads get bounded concurrency,
     per-attempt retry, the progress line, and the resumable interruption
-    taxonomy in place of the previous serial loop, which had none of them and
-    logged-and-skipped every failure. A deterministic per-feature failure (a
-    missing asset, a malformed RDB) now surfaces typed instead of silently
-    dropping that rating from the result; a transient one is retried and, if
-    retries are exhausted, raised as a resumable interruption.
+    taxonomy in place of the previous serial loop, which had none of them.
+
+    Failure policy -- split by whether retrying could help. A *transient*
+    failure (429 / 5xx / timeout / connection drop) is retried and, if
+    retries run out, raised as a resumable interruption: rate limiting is
+    systematic, so skipping it would silently drop every remaining feature,
+    which was the old serial loop's worst case. A *deterministic* per-feature
+    failure (a stale catalog entry 404ing, a feature with no data asset, a
+    malformed RDB) is that feature's problem, not the batch's: it is skipped
+    under a :class:`~dataretrieval.exceptions.SkippedRatingWarning` naming
+    the feature, visible by default and escalatable to an error for strict
+    all-or-nothing behavior. ``OSError`` writing ``file_path`` propagates --
+    a local disk problem is not a per-feature condition. Raw ``httpx``
+    errors pass through untouched so the executor can classify and retry
+    them.
 
     The public result is a dict keyed by feature id, so the fetch closure
     accumulates it; the executor's combined frame is not the return shape and
-    is discarded.
+    is discarded. A skipped feature returns an inert placeholder pair so the
+    executor marks it complete -- a later ``resume()`` continues past it
+    rather than re-attempting the skip.
     """
     out: dict[str, pd.DataFrame] = {}
     if not features:
         return out
 
     async def fetch(feature: dict[str, Any]) -> tuple[pd.DataFrame, httpx.Response]:
-        df, response = await _fetch_rating(feature, file_path)
-        out[feature["id"]] = df
+        fid = feature.get("id", "<missing id>")
+        try:
+            df, response = await _fetch_rating(feature, file_path)
+        except (DataRetrievalError, LookupError, ValueError) as e:
+            if isinstance(e, DataRetrievalError) and e.retryable:
+                raise  # transient: the executor retries, then raises resumable
+            warnings.warn(
+                f"Skipping rating {fid!r}: {e}",
+                SkippedRatingWarning,
+                stacklevel=2,
+            )
+            href = feature.get("assets", {}).get("data", {}).get("href")
+            # The executor aggregates each completed item's response
+            # (headers / elapsed / url), so the skip must hand back a real,
+            # inert response rather than None. 204: completed, no content.
+            placeholder = httpx.Response(
+                204, request=httpx.Request("GET", href or f"{STAC_URL}/search")
+            )
+            placeholder.elapsed = timedelta(0)
+            return pd.DataFrame(), placeholder
+        out[fid] = df
         return df, response
 
     FanOut(

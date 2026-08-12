@@ -1,10 +1,11 @@
 import re
+import warnings
 from urllib.parse import parse_qs, urlsplit
 
 import pandas as pd
 import pytest
 
-from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter
 
@@ -219,20 +220,96 @@ def test_get_ratings_search_429_is_resumable(httpx_mock):
     assert list(df["feature"])[0]["id"] == "USGS-01104475.exsa.rdb"
 
 
-def test_get_ratings_download_failure_surfaces_typed(httpx_mock):
-    """A failing download surfaces the module's typed error instead of being
-    logged and silently dropped from the result dict."""
+_GOOD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb"
+_BAD_ASSET = "https://api.waterdata.usgs.gov/stac-files/ratings/USGS.99999999.exsa.rdb"
+
+
+def _two_feature_search_response():
+    """One feature whose asset will fail, one that will succeed."""
+    return {
+        "features": [
+            {
+                "id": "USGS-99999999.exsa.rdb",
+                "properties": {"file_type": "exsa"},
+                "assets": {"data": {"href": _BAD_ASSET}},
+            },
+            {
+                "id": "USGS-01104475.exsa.rdb",
+                "properties": {"file_type": "exsa"},
+                "assets": {"data": {"href": _GOOD_ASSET}},
+            },
+        ]
+    }
+
+
+def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
+    """A stale catalog entry (404 on its asset) costs only that feature: the
+    skip is announced with ``SkippedRatingWarning`` naming the feature, and
+    every other rating in the batch is still returned."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
+    )
+    httpx_mock.add_response(method="GET", url=_BAD_ASSET, status_code=404)
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
+
+    with pytest.warns(SkippedRatingWarning, match="USGS-99999999"):
+        out = get_ratings(monitoring_location_id=["USGS-99999999", "USGS-01104475"])
+
+    assert sorted(out) == ["USGS-01104475.exsa.rdb"]
+    assert len(out["USGS-01104475.exsa.rdb"]) == 3
+
+
+def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
+    """A catalog feature carrying no data asset is a per-feature data problem:
+    skipped with a warning, without costing the rest of the batch."""
+    body = _two_feature_search_response()
+    body["features"][0]["assets"] = {}
+
+    httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, json=body)
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
+
+    with pytest.warns(SkippedRatingWarning, match="no data asset"):
+        out = get_ratings(monitoring_location_id=["USGS-99999999", "USGS-01104475"])
+
+    assert sorted(out) == ["USGS-01104475.exsa.rdb"]
+
+
+def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
+    """``filterwarnings("error", ...)`` restores strict all-or-nothing: the
+    escalated skip surfaces as an exception instead of a silent gap."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
+    )
+    httpx_mock.add_response(method="GET", url=_BAD_ASSET, status_code=404)
+    httpx_mock.add_response(
+        method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB, is_optional=True
+    )
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", category=SkippedRatingWarning)
+        with pytest.raises(SkippedRatingWarning):
+            get_ratings(monitoring_location_id=["USGS-99999999", "USGS-01104475"])
+
+
+def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
+    """A rate-limited download must never be skipped -- it is raised as a
+    resumable interruption, and resuming completes the batch. The escalation
+    filter proves no ``SkippedRatingWarning`` fires along the way."""
+    from dataretrieval.interruptions import QuotaExhausted
+
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
     )
-    httpx_mock.add_response(
-        method="GET",
-        url="https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01104475.exsa.rdb",
-        status_code=404,
-    )
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, status_code=429)
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
 
-    with pytest.raises(DataRetrievalError):
-        get_ratings(monitoring_location_id="USGS-01104475")
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", category=SkippedRatingWarning)
+        with pytest.raises(QuotaExhausted) as excinfo:
+            get_ratings(monitoring_location_id="USGS-01104475")
+
+        df, _ = excinfo.value.call.resume()
+    assert len(df) == 3
 
 
 def test_stac_next_link_refuses_another_host(httpx_mock):

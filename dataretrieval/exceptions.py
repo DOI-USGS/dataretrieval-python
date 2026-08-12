@@ -13,7 +13,9 @@ of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
 :class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
-:func:`error_for_status` maps a status to its type.
+:func:`error_for_status` maps a status to its type. The one *warning*
+category lives here too: :class:`SkippedRatingWarning`, a per-feature skip
+inside a rating batch.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
 for type checking. Any module can therefore import it without pulling in pandas
@@ -42,6 +44,7 @@ __all__ = [
     "NetworkError",
     "NoSitesError",
     "ConfigurationError",
+    "SkippedRatingWarning",
     "error_for_status",
     "parse_retry_after",
 ]
@@ -287,6 +290,33 @@ class NoSitesError(DataRetrievalError):
             "No sites/data found using the selection criteria specified in "
             f"url: {self.url}"
         )
+
+
+# --- Skipped work ---------------------------------------------------------
+
+
+class SkippedRatingWarning(UserWarning):
+    """One feature of a rating batch was skipped; the rest were returned.
+
+    Emitted by :func:`dataretrieval.waterdata.get_ratings` when a single
+    feature fails *deterministically* -- a stale catalog entry (404 on its
+    data asset), a feature carrying no data asset, a malformed RDB file. The
+    failed feature's id is absent from the returned dict. Skipping is the
+    right default for this class of failure: retrying would reproduce it, and
+    aborting would discard every other site's rating over one bad catalog
+    entry.
+
+    Transient failures (429 / 5xx / timeouts / connection drops) are never
+    skipped -- they are retried and, if retries run out, raised as a resumable
+    interruption. Rate limiting in particular is systematic, so skipping
+    there would silently drop most of a batch; that silent loss is the
+    failure mode this policy exists to prevent.
+
+    A warning rather than a log line so it is visible by default. To make a
+    skip fatal (strict all-or-nothing behavior)::
+
+        warnings.filterwarnings("error", category=SkippedRatingWarning)
+    """
 
 
 def error_for_status(
