@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0003: Direct dependencies toward stable policy &mdash; dataretrieval 0.1.dev1+gf31b47301 documentation</title>
+  <title>ADR 0003: Direct dependencies toward stable policy &mdash; dataretrieval 0.1.dev1+g0ff534c2c documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e52d37ed"></script>
+      <script src="../../_static/documentation_options.js?v=968d90f6"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -150,7 +150,7 @@ unlike upstream protocols.</p></li>
 <section id="compliance">
 <h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> is the single authority for dependency direction. It declares
-the layer stack, the allowlist of OGC consumers, NGWMN’s facade-only seam, OGC’s
+the layer stack, the allowlist of OGC consumers, the facade-only seam, OGC’s
 independence from legacy utilities, the NWIS quarantine, and collection-family
 independence; <code class="docutils literal notranslate"><span class="pre">lint-imports</span></code> checks all of it against the transitive import
 graph in pre-commit and CI. A boundary that legitimately moves is one edit, in
@@ -164,12 +164,13 @@ forbidden, and full-graph cycle detection. Import Linter’s
 <code class="docutils literal notranslate"><span class="pre">acyclic_siblings</span></code> contract does not detect a cycle between a package facade
 and one of its descendants. A new rule that is purely about module-to-module
 direction belongs in <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code>.</p>
-<p>Named contracts verify the current boundaries: NGWMN’s only OGC dependency is
-the facade, <code class="docutils literal notranslate"><span class="pre">ogc.shaping</span></code> does not depend on <code class="docutils literal notranslate"><span class="pre">ogc.engine</span></code>, Water Use and the
-other non-OGC adapters cannot reach the OGC subsystem at all. The fitness
-functions verify that the runtime graph is acyclic package-wide rather than only
-within <code class="docutils literal notranslate"><span class="pre">ogc</span></code> and <code class="docutils literal notranslate"><span class="pre">transport</span></code>. <code class="docutils literal notranslate"><span class="pre">waterdata.utils</span></code> not bulk re-exporting
-private OGC helpers stays there too, because that claim is about the module’s
+<p>Named contracts verify the current boundaries: the only OGC dependency of
+NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code> is the facade, <code class="docutils literal notranslate"><span class="pre">ogc.shaping</span></code> does not depend on
+<code class="docutils literal notranslate"><span class="pre">ogc.engine</span></code>, Water Use and the other non-OGC adapters cannot reach the OGC
+subsystem at all. The fitness functions verify that the runtime graph is
+acyclic package-wide rather than only within <code class="docutils literal notranslate"><span class="pre">ogc</span></code> and <code class="docutils literal notranslate"><span class="pre">transport</span></code>.
+<code class="docutils literal notranslate"><span class="pre">waterdata.utils</span></code> not bulk re-exporting private OGC helpers stays there too,
+because that claim is about the module’s
 <code class="docutils literal notranslate"><span class="pre">__all__</span></code>.</p>
 <p>The OGC consumer list is an allowlist, so a new service module is refused until
 someone places it deliberately. It should shrink as private seams move. Any

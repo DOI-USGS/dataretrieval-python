@@ -99,7 +99,8 @@ Shared components
 ``dataretrieval.ogc``
     Protocol subsystem for Water Data and NGWMN. A small facade
     (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
-    ``prepare_request_args``, ``get_ogc_data``, and ``fetch_ogc_request``.
+    ``prepare_request_args``, and ``get_ogc_data`` (whose ``cql_body``
+    parameter covers verbatim-CQL2 queries).
     Internally, ``policy`` defines the dialect type, control validation, and
     endpoint constants; ``requests`` owns argument normalization and HTTP
     request construction, taking the target ``base_url`` and ``dialect`` as
