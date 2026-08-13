@@ -207,8 +207,27 @@ def _deal_with_empty(
                 endpoint=collection, req_type="schema", base_url=base_url
             )
             properties = list(schema.get("properties", {}).keys())
-        return pd.DataFrame(columns=properties)
+        return _empty_result(return_list, properties)
     return return_list
+
+
+def _empty_result(template: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Empty result frame shaped like a non-empty one.
+
+    Matches the non-empty path on the three things a caller can observe: the
+    concrete class, ``object`` dtypes (an all-NaN reindex would give
+    ``float64``, breaking ``.str``), and -- under geopandas -- an *active*
+    geometry column with the CRS, without which ``.geometry`` and
+    ``.to_crs()`` raise on a frame that looks geospatial. ``geometry`` is
+    appended when absent because :func:`_arrange_cols` does the same.
+    """
+    empty = pd.DataFrame({name: pd.Series(dtype=object) for name in columns})
+    if not (GEOPANDAS and isinstance(template, gpd.GeoDataFrame)):
+        return empty
+    if "geometry" not in empty.columns:
+        empty["geometry"] = pd.Series(dtype=object)
+    empty["geometry"] = gpd.GeoSeries(empty["geometry"], dtype="geometry")
+    return gpd.GeoDataFrame(empty, geometry="geometry", crs=_CRS)
 
 
 def _arrange_cols(

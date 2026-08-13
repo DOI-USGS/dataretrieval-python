@@ -33,6 +33,7 @@ from dataretrieval.ogc.errors import (
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
+    _deal_with_empty,
     _get_resp_data,
     _to_snake_case,
 )
@@ -603,6 +604,64 @@ def test_handle_nesting_empty_preserves_geopd_type():
     with mock.patch.object(_shaping_module, "gpd", fake_gpd, create=True):
         result = _handle_nesting({"features": []}, geopd=True)
     assert isinstance(result, _Sentinel)
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_empty_result_matches_a_non_empty_one():
+    """An empty result must be usable exactly like a non-empty one.
+
+    A getter used to return a ``GeoDataFrame`` when its filter matched a row
+    and a plain ``DataFrame`` when it matched none. Preserving only the class
+    is not enough: the frame also needs ``object`` dtypes (an all-NaN reindex
+    gives ``float64``, breaking ``.str``) and an *active* geometry column with
+    the CRS, or ``.geometry`` / ``.to_crs()`` raise on something that looks
+    geospatial.
+    """
+    import geopandas as gpd
+
+    out = _deal_with_empty(
+        gpd.GeoDataFrame(),
+        ["monitoring_location_id", "geometry"],
+        "daily",
+        base_url="x",
+    )
+
+    assert isinstance(out, gpd.GeoDataFrame) and out.empty
+    assert out["monitoring_location_id"].dtype == object
+    assert out.geometry is not None
+    assert out.crs == "EPSG:4326"
+    # Usable the way a non-empty result is.
+    out["monitoring_location_id"].str.startswith("USGS")
+    real = gpd.GeoDataFrame(
+        {
+            "monitoring_location_id": ["USGS-1"],
+            "geometry": gpd.points_from_xy([1], [2]),
+        },
+        crs="EPSG:4326",
+    )
+    combined = pd.concat([out, real], ignore_index=True)
+    assert isinstance(combined, gpd.GeoDataFrame) and combined.crs == "EPSG:4326"
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_empty_result_carries_geometry_even_when_properties_omit_it():
+    """``_arrange_cols`` re-appends ``geometry`` on the non-empty path, so an
+    explicit ``properties=`` must not leave the empty result plain."""
+    import geopandas as gpd
+
+    out = _deal_with_empty(
+        gpd.GeoDataFrame(), ["monitoring_location_id"], "daily", base_url="x"
+    )
+    assert isinstance(out, gpd.GeoDataFrame)
+    assert out.crs == "EPSG:4326"
+
+
+def test_empty_result_without_geopandas_stays_plain():
+    """A plain input must not be promoted, and keeps ``object`` dtypes."""
+    out = _deal_with_empty(pd.DataFrame(), ["a", "b"], "daily", base_url="x")
+    assert type(out) is pd.DataFrame
+    assert list(out.columns) == ["a", "b"]
+    assert all(dtype.kind == "O" for dtype in out.dtypes)
 
 
 def test_get_resp_data_empty_preserves_geopd_type():
