@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import Any, TypeVar
+from typing import Any, TypeVar, overload
 
 import httpx
 import pandas as pd
@@ -67,6 +67,19 @@ def paginated_failure_message(pages_collected: int, cause: BaseException) -> str
     )
 
 
+def _combine_frame_pages(
+    pages: list[pd.DataFrame], row_cap: int | None
+) -> pd.DataFrame:
+    """Combine DataFrame pages using the paginator's established behavior."""
+    result = pd.concat(pages, ignore_index=True)
+    return result if row_cap is None else result.head(row_cap)
+
+
+_Page = TypeVar("_Page")
+_Result = TypeVar("_Result")
+
+
+@overload
 async def paginate(
     initial_req: httpx.Request,
     *,
@@ -75,25 +88,52 @@ async def paginate(
     raise_for_status: Callable[[httpx.Response], None],
     client: httpx.AsyncClient | None = None,
     row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
+    combine_pages: None = None,
+) -> tuple[pd.DataFrame, httpx.Response]: ...
+
+
+@overload
+async def paginate(
+    initial_req: httpx.Request,
+    *,
+    parse_response: Callable[[httpx.Response], tuple[_Page, _Cursor | None]],
+    follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
+    raise_for_status: Callable[[httpx.Response], None],
+    combine_pages: Callable[[list[_Page], int | None], _Result],
+    client: httpx.AsyncClient | None = None,
+    row_cap: int | None = None,
+) -> tuple[_Result, httpx.Response]: ...
+
+
+async def paginate(
+    initial_req: httpx.Request,
+    *,
+    parse_response: Callable[[httpx.Response], tuple[Any, Any | None]],
+    follow_up: Callable[[Any, httpx.AsyncClient], Awaitable[httpx.Response]],
+    raise_for_status: Callable[[httpx.Response], None],
+    client: httpx.AsyncClient | None = None,
+    row_cap: int | None = None,
+    combine_pages: Callable[[list[Any], int | None], Any] | None = None,
+) -> tuple[Any, httpx.Response]:
     """Fetch and combine pages until the injected parser returns no cursor.
 
-    The service adapter supplies response parsing, cursor following, and status
-    mapping. This loop owns client lifecycle, repeated-cursor protection,
-    optional row capping, progress updates, failure wrapping, and response
-    metadata aggregation.
+    The service adapter supplies response parsing, cursor following, status
+    mapping, and optionally how its natural page payloads combine. DataFrame
+    pages retain the established concatenation default. This loop owns client
+    lifecycle, repeated-cursor protection, optional row capping, progress
+    updates, failure wrapping, and response metadata aggregation.
     """
     logger.debug("Requesting: %s", initial_req.url)
     reporter = _progress.current()
 
-    def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
+    def report_page(page: httpx.Response, payload: Any) -> None:
         note_progress()  # a walk still delivering pages is not stalled
         if reporter is not None:
             reporter.set_rate_remaining(
                 page.headers.get(_QUOTA_HEADER),
                 limit=page.headers.get("x-ratelimit-limit"),
             )
-            reporter.add_page(rows=len(frame))
+            reporter.add_page(rows=len(payload))
 
     async with _client_for(client) as session:
         response = await session.send(initial_req)
@@ -102,15 +142,15 @@ async def paginate(
         total_elapsed = _safe_elapsed(response)
 
         try:
-            frame, cursor = parse_response(response)
+            payload, cursor = parse_response(response)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Initial response parse failed.")
             raise DataRetrievalError(paginated_failure_message(0, exc)) from exc
 
-        frames = [frame]
-        nrows = len(frame)
+        pages = [payload]
+        nrows = len(payload)
         seen: set[Any] = set()
-        report_page(response, frame)
+        report_page(response, payload)
 
         while (
             cursor is not None
@@ -121,17 +161,17 @@ async def paginate(
             try:
                 response = await follow_up(cursor, session)
                 raise_for_status(response)
-                frame, cursor = parse_response(response)
-                frames.append(frame)
-                nrows += len(frame)
+                payload, cursor = parse_response(response)
+                pages.append(payload)
+                nrows += len(payload)
                 total_elapsed += _safe_elapsed(response)
-                report_page(response, frame)
+                report_page(response, payload)
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.", cursor
                 )
                 raise DataRetrievalError(
-                    paginated_failure_message(len(frames), exc)
+                    paginated_failure_message(len(pages), exc)
                 ) from exc
 
         final_response = _merge_response(
@@ -139,10 +179,8 @@ async def paginate(
             headers_from=response,
             elapsed=total_elapsed,
         )
-        result = pd.concat(frames, ignore_index=True)
-        if row_cap is not None:
-            result = result.head(row_cap)
-        return result, final_response
+        combine = _combine_frame_pages if combine_pages is None else combine_pages
+        return combine(pages, row_cap), final_response
 
 
 def run_paginated(

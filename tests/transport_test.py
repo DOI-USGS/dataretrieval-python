@@ -95,6 +95,51 @@ def test_paginate_stops_on_repeated_cursor_and_respects_row_cap() -> None:
     assert client.get.await_count == 1
 
 
+def test_paginate_combines_adapter_page_payloads() -> None:
+    """An adapter may combine its natural sized page type without transport
+    pretending that payload is a DataFrame.
+    """
+    first = _response(url="https://example.test/page/1")
+    second = _response(url="https://example.test/page/2")
+    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client.send.return_value = first
+    client.get.return_value = second
+
+    def parse(response: httpx.Response) -> tuple[list[int], str | None]:
+        if response is first:
+            return [1, 2], "next"
+        return [3, 4], None
+
+    async def follow(cursor: str, session: httpx.AsyncClient) -> httpx.Response:
+        assert cursor == "next"
+        return await session.get(str(second.url))
+
+    def combine_pages(pages: list[list[int]], row_cap: int | None) -> list[int]:
+        combined = list(itertools.chain.from_iterable(pages))
+        return combined if row_cap is None else combined[:row_cap]
+
+    reporter = mock.Mock()
+    with mock.patch(
+        "dataretrieval.transport.pagination._progress.current",
+        return_value=reporter,
+    ):
+        values, _ = asyncio.run(
+            paginate(
+                httpx.Request("GET", first.url),
+                parse_response=parse,
+                follow_up=follow,
+                raise_for_status=_raise_for_status,
+                client=client,
+                row_cap=3,
+                combine_pages=combine_pages,
+            )
+        )
+
+    assert values == [1, 2, 3]
+    assert reporter.add_page.call_args_list == [mock.call(rows=2), mock.call(rows=2)]
+    assert client.get.await_count == 1
+
+
 def test_retry_sync_retries_transient_then_succeeds(monkeypatch) -> None:
     attempts = 0
     slept: list[float] = []

@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -661,6 +662,45 @@ def test_samples_service_profile_routes_to_its_endpoint(
 # --- daily / continuous ------------------------------------------------------
 
 
+@pytest.mark.parametrize(
+    ("features", "message"),
+    [
+        ({"not": "a list"}, "'features' must be a list"),
+        (["not-a-feature"], "feature at index 0 must be a mapping"),
+    ],
+)
+def test_get_daily_rejects_malformed_feature_pages(httpx_mock, features, message):
+    """Malformed page structure fails with page context, not a pandas error."""
+    _mock_items(
+        httpx_mock,
+        "daily",
+        body={"features": features, "links": []},
+    )
+
+    with pytest.raises(DataRetrievalError, match=message):
+        get_daily(monitoring_location_id="USGS-05427718")
+
+
+def test_get_daily_reports_malformed_later_page(httpx_mock):
+    """Structural failure on page two reports the completed page count."""
+    next_url = f"{_OGC_BASE}/collections/daily/items?cursor=bad-page"
+    first = _fixture("daily")
+    first["features"] = first["features"][:1]
+    first["links"] = [{"rel": "next", "href": next_url}]
+    _mock_items(httpx_mock, "daily", body=first)
+    _mock_items(
+        httpx_mock,
+        "daily",
+        body={"features": ["not-a-feature"], "links": []},
+    )
+
+    with pytest.raises(
+        DataRetrievalError,
+        match=r"after collecting 1 page\(s\).*feature at index 0 must be a mapping",
+    ):
+        get_daily(monitoring_location_id="USGS-05427718")
+
+
 def test_get_daily(httpx_mock):
     """A daily query returns tidy rows with the collection id renamed to
     ``daily_id`` and moved last, dates as ``date`` objects, values numeric."""
@@ -783,6 +823,49 @@ def test_get_daily_empty_no_geometry(httpx_mock):
     assert type(df) is DataFrame
     assert "geometry" not in df.columns
     assert {"monitoring_location_id", "value"}.issubset(df.columns)
+
+
+@pytest.mark.parametrize("body", [{}, {"features": None, "links": []}])
+def test_get_daily_empty_spatial_envelopes(httpx_mock, body):
+    """Missing and null feature lists retain the spatial collection contract."""
+    geopandas = pytest.importorskip("geopandas")
+    httpx_mock.add_response(
+        method="GET",
+        url=_schema_url("daily"),
+        json={
+            "properties": {
+                "id": {},
+                "monitoring_location_id": {},
+                "value": {},
+            }
+        },
+    )
+    _mock_items(httpx_mock, "daily", body=body)
+
+    df, _ = get_daily(monitoring_location_id="USGS-NOT-FOUND")
+
+    assert isinstance(df, geopandas.GeoDataFrame)
+    assert df.empty
+    assert df.crs == "EPSG:4326"
+    assert {"monitoring_location_id", "value", "geometry"}.issubset(df.columns)
+
+
+def test_get_daily_empty_terminal_page_preserves_spatial_result(httpx_mock):
+    """A terminal empty page cannot downgrade the completed spatial chunk."""
+    geopandas = pytest.importorskip("geopandas")
+    next_url = f"{_OGC_BASE}/collections/daily/items?cursor=terminal-empty"
+    first = _fixture("daily")
+    first["features"] = first["features"][:1]
+    first["links"] = [{"rel": "next", "href": next_url}]
+    _mock_items(httpx_mock, "daily", body=first)
+    _mock_items(httpx_mock, "daily", body={"features": [], "links": []})
+
+    df, _ = get_daily(monitoring_location_id="USGS-05427718")
+
+    assert isinstance(df, geopandas.GeoDataFrame)
+    assert len(df) == 1
+    assert df.crs == "EPSG:4326"
+    assert df.geometry.name == "geometry"
 
 
 def test_get_continuous(httpx_mock):

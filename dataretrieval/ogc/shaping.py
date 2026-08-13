@@ -52,10 +52,11 @@ def _empty_feature_frame(
     """Construct an empty feature frame for one request's geometry mode.
 
     ``geopd`` and ``include_geometry`` are selected once before pagination and
-    reused for every page and the final all-empty result. This keeps empty and
-    non-empty pages in the same frame family, so ordinary ``pd.concat`` is
-    sufficient. ``columns`` is supplied only when finalization has fetched the
-    collection schema; page-level empties intentionally remain schema-light.
+    reused when a completed chunk has no features and when the final combined
+    result is empty. This keeps empty and non-empty chunks in the same frame
+    family. ``columns`` is supplied only when finalization has fetched the
+    collection schema; completed-chunk empties intentionally remain
+    schema-light until then.
     """
     result_columns = list(columns or [])
     if include_geometry:
@@ -99,83 +100,38 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     )
 
 
-def _get_resp_data(
-    resp: httpx.Response,
+def _feature_frame(
+    features: list[dict[str, Any]],
     geopd: bool,
     *,
     include_geometry: bool = True,
-    body: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
-    """
-    Extracts and normalizes data from an HTTP response containing GeoJSON features.
+    """Convert one completed chunk's GeoJSON features into a frame.
 
-    Parameters
-    ----------
-    resp : httpx.Response
-        The HTTP response object expected to contain a JSON body
-        with a "features" key.
-    geopd : bool
-        Whether this request's result contract uses an active GeoDataFrame.
-        Selected once before pagination rather than inferred from page content.
-    include_geometry : bool, optional
-        Whether plain-DataFrame results retain raw coordinate lists. False for
-        nonspatial collections and ``skip_geometry=True`` requests.
-    body : dict, optional
-        Pre-parsed JSON body for ``resp``. When provided, skips the
-        ``resp.json()`` call — useful when the caller has already
-        decoded the body for its own use (avoids a second parse pass).
+    The page walk retains feature dictionaries and calls this once after all
+    pages for the chunk have been combined and capped. ``geopd`` and
+    ``include_geometry`` are request-level decisions, so frame family never
+    depends on which page supplied a feature or whether its geometry is null.
 
-    Returns
-    -------
-    gpd.GeoDataFrame or pd.DataFrame
-        A ``GeoDataFrame`` when ``geopd`` is True; otherwise a plain
-        ``DataFrame`` carrying the feature properties plus an ``id``
-        column (always present, possibly all-None) and a ``geometry``
-        column (coordinates list) when at least one feature includes
-        geometry. Returns an empty ``DataFrame`` when no features are
-        returned.
-
-    Notes
-    -----
-    The non-geopandas branch normalizes each feature's ``properties`` object,
+    The plain-DataFrame branch normalizes each feature's ``properties`` object,
     flattening nested dictionaries with an underscore separator, then adds the
-    top-level ``id`` and a ``geometry`` column containing the coordinates. The
-    ``id`` column is always added so the downstream collection-specific rename
-    works even when all IDs are missing; ``geometry`` is added only when
-    coordinates are present. Feature-level envelope fields are deliberately
-    excluded.
+    top-level ``id`` and optional coordinate-list ``geometry`` column. The
+    ``id`` column is always materialized so final shaping can rename it to the
+    collection-specific identifier.
     """
-    if body is None:
-        body = resp.json()
-    # Key the empty-result short-circuit off ``features`` rather than
-    # ``numberReturned``: the main Water Data API reports ``numberReturned``,
-    # but the NGWMN OGC API omits it, so trusting it would discard pages that
-    # actually carry features. An absent/empty ``features`` is also the real
-    # schema-drift shape (a 200 with no features) — treat it as empty rather
-    # than crash with a ``KeyError`` downstream, which ``_paginate`` would
-    # mistake for a transient transport error. The request-level mode gives
-    # this page the same frame family as every non-empty page in the walk.
-    features = body.get("features") or []
     if not features:
         return _empty_feature_frame(geopd, include_geometry=include_geometry)
 
     if not geopd:
         properties = [feature.get("properties") or {} for feature in features]
         df = pd.json_normalize(properties, sep="_")
-        # Always materialize the feature-level ID (possibly all-None) so
-        # ``_arrange_cols`` can perform the documented collection-specific rename.
         df["id"] = [feature.get("id") for feature in features]
         if include_geometry:
             _attach_coordinates(df, features)
         return df
 
-    # A spatial request remains geospatial even when this particular page
-    # carries only null/missing geometries; changing frame family based on page
-    # contents makes pagination concat order-dependent.
     df = _geo_feature_frame(features)
-    # Mirror the plain branch's defensive ``f.get("id")`` so a feature missing
-    # a top-level id yields None rather than a KeyError.
-    df["id"] = [f.get("id") for f in features]
+    df["id"] = [feature.get("id") for feature in features]
     return df[["id"] + [col for col in df.columns if col != "id"]]
 
 
@@ -190,8 +146,8 @@ def _deal_with_empty(
 ) -> pd.DataFrame:
     """Apply the collection schema when an entire result is empty.
 
-    Page-level empties already carry the request's frame family. The complete
-    column list is available only from explicit ``properties`` or the
+    A completed empty chunk already carries the request's frame family. The
+    complete column list is available only from explicit ``properties`` or the
     collection schema, so construct the fully shaped empty once here rather
     than fetching schema during pagination.
     """
@@ -387,7 +343,7 @@ def _finalize_ogc(
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
     rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
-    per-page ``row_cap`` bound in the engine is only an early-stop download
+    chunk page-walk ``row_cap`` in the engine is only an early-stop download
     bound. ``base_url`` is required and captured with the finalizer so resumed
     calls query the same API's schema when their combined result is empty.
     """
