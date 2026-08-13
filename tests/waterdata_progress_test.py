@@ -19,13 +19,14 @@ import pytest
 
 from dataretrieval import progress as _progress
 from dataretrieval.ogc.chunking import ChunkedCall
-from dataretrieval.ogc.engine import _paginate, _walk_pages
+from dataretrieval.ogc.engine import _walk_pages
 from dataretrieval.ogc.planning import ChunkPlan
 from dataretrieval.progress import (
     ProgressReporter,
     current,
     progress_context,
 )
+from dataretrieval.transport.pagination import paginate as _paginate
 
 
 def _run_walk_pages(*, geopd, req, client):
@@ -505,6 +506,7 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
                 req,
                 parse_response=parse_sync,
                 follow_up=follow_up,
+                raise_for_status=lambda _response: None,
                 client=client,
             )
         return df

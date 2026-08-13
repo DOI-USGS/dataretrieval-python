@@ -31,6 +31,8 @@ from typing import Any
 
 import pandas as pd
 
+# Deliberate white-box benchmark: these private imports measure the experiment's
+# conversion boundary; they are not supported adapter extension points.
 from dataretrieval.ogc.engine import _combine_feature_pages
 from dataretrieval.ogc.shaping import _feature_frame
 

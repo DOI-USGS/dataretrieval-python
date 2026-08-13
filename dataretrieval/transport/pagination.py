@@ -7,9 +7,9 @@ it with the shared executor, so an adapter supplies only its strategies.
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Sized
 from contextlib import asynccontextmanager
-from typing import Any, TypeVar, overload
+from typing import Any, TypeVar, cast
 
 import httpx
 import pandas as pd
@@ -75,46 +75,19 @@ def _combine_frame_pages(
     return result if row_cap is None else result.head(row_cap)
 
 
-_Page = TypeVar("_Page")
-_Result = TypeVar("_Result")
+_Page = TypeVar("_Page", bound=Sized)
 
 
-@overload
-async def paginate(
-    initial_req: httpx.Request,
-    *,
-    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
-    follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
-    raise_for_status: Callable[[httpx.Response], None],
-    client: httpx.AsyncClient | None = None,
-    row_cap: int | None = None,
-    combine_pages: None = None,
-) -> tuple[pd.DataFrame, httpx.Response]: ...
-
-
-@overload
 async def paginate(
     initial_req: httpx.Request,
     *,
     parse_response: Callable[[httpx.Response], tuple[_Page, _Cursor | None]],
     follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
     raise_for_status: Callable[[httpx.Response], None],
-    combine_pages: Callable[[list[_Page], int | None], _Result],
     client: httpx.AsyncClient | None = None,
     row_cap: int | None = None,
-) -> tuple[_Result, httpx.Response]: ...
-
-
-async def paginate(
-    initial_req: httpx.Request,
-    *,
-    parse_response: Callable[[httpx.Response], tuple[Any, Any | None]],
-    follow_up: Callable[[Any, httpx.AsyncClient], Awaitable[httpx.Response]],
-    raise_for_status: Callable[[httpx.Response], None],
-    client: httpx.AsyncClient | None = None,
-    row_cap: int | None = None,
-    combine_pages: Callable[[list[Any], int | None], Any] | None = None,
-) -> tuple[Any, httpx.Response]:
+    combine_pages: Callable[[list[_Page], int | None], _Page] | None = None,
+) -> tuple[_Page, httpx.Response]:
     """Fetch and combine pages until the injected parser returns no cursor.
 
     The service adapter supplies response parsing, cursor following, status
@@ -126,7 +99,7 @@ async def paginate(
     logger.debug("Requesting: %s", initial_req.url)
     reporter = _progress.current()
 
-    def report_page(page: httpx.Response, payload: Any) -> None:
+    def report_page(page: httpx.Response, payload: _Page) -> None:
         note_progress()  # a walk still delivering pages is not stalled
         if reporter is not None:
             reporter.set_rate_remaining(
@@ -179,7 +152,11 @@ async def paginate(
             headers_from=response,
             elapsed=total_elapsed,
         )
-        combine = _combine_frame_pages if combine_pages is None else combine_pages
+        combine = (
+            cast("Callable[[list[_Page], int | None], _Page]", _combine_frame_pages)
+            if combine_pages is None
+            else combine_pages
+        )
         return combine(pages, row_cap), final_response
 
 
