@@ -234,6 +234,7 @@ def _accept_legacy_kwargs(
     mapping: Mapping[str, str],
     *,
     detail: str = "",
+    removal: str | None = None,
 ) -> Callable[[Callable[..., _R]], Callable[..., _R]]:
     """Accept deprecated keyword-argument names on the decorated function.
 
@@ -251,7 +252,10 @@ def _accept_legacy_kwargs(
     intentionally relaxed (the wrapper accepts the extra deprecated names),
     so static checkers won't flag legacy call sites.
 
-    ``detail`` appends a sentence to the warning. The default message says only
+    ``removal`` is the published horizon (from
+    :data:`~dataretrieval._deprecation.REMOVALS`); ``None`` reads as "a future
+    release". ``detail`` appends a sentence to the warning. The default
+    message says only
     that the name changed; a rename with a reason worth giving -- a spec that
     names the value differently, a removal date -- passes it here rather than
     hand-rolling the whole shim to carry one sentence.
@@ -277,7 +281,9 @@ def _accept_legacy_kwargs(
                     )
                 warn_deprecated(
                     f"The {old_name!r} argument",
-                    replacement=f"{new_name!r}" + (f" ({detail})" if detail else ""),
+                    replacement=repr(new_name),
+                    removal=removal,
+                    detail=detail,
                     stacklevel=2,
                 )
                 kwargs[new_name] = kwargs.pop(old_name)

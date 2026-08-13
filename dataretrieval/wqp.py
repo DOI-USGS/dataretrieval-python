@@ -751,12 +751,13 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
 
     Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``
     explaining the fallback and *also* suppresses the legacy
-    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise. That
-    warning's message claims setting ``legacy=False`` removes it, which is
-    a lie for endpoints that have no WQX3.0 alternative.
+    :class:`~dataretrieval.exceptions.DataCurrencyWarning` that ``wqp_url``
+    would otherwise raise. That warning's message claims setting
+    ``legacy=False`` removes it, which is a lie for endpoints that have no
+    WQX3.0 alternative.
     """
     with warnings.catch_warnings():
         if not legacy:
             _warn_wqx3_unavailable()
-            warnings.simplefilter("ignore", DeprecationWarning)
+            warnings.simplefilter("ignore", DataCurrencyWarning)
         return wqp_url(service)

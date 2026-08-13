@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
+from dataretrieval._deprecation import REMOVALS
 from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_COLLECTION,
     _accept_legacy_kwargs,
@@ -30,11 +31,11 @@ if TYPE_CHECKING:
 
 @_accept_legacy_kwargs(
     {"service": "collection"},
+    removal=REMOVALS["waterdata.get_cql(service=)"],
     detail=(
         "OGC API - Features names this value the collectionId (17-069r4 "
         "Requirements 18 and 20, /collections/{id}/items), while `service` "
-        "names the API itself (Water Data, NGWMN). `service` will be removed "
-        "on or after 2027-08-09."
+        "names the API itself (Water Data, NGWMN)."
     ),
 )
 def get_cql(
