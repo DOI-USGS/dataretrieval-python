@@ -52,7 +52,7 @@ def _empty_feature_frame(geopd: bool) -> pd.DataFrame:
     single home for this empty-page contract, shared by the feature-frame
     builders that flatten GeoJSON pages.
     """
-    return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+    return gpd.GeoDataFrame(geometry=[], crs=_CRS) if geopd else pd.DataFrame()
 
 
 def _attach_coordinates(df: pd.DataFrame, features: list[dict[str, Any]]) -> None:
@@ -214,20 +214,31 @@ def _deal_with_empty(
 def _empty_result(template: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     """Empty result frame shaped like a non-empty one.
 
-    Matches the non-empty path on the three things a caller can observe: the
-    concrete class, ``object`` dtypes (an all-NaN reindex would give
-    ``float64``, breaking ``.str``), and -- under geopandas -- an *active*
-    geometry column with the CRS, without which ``.geometry`` and
-    ``.to_crs()`` raise on a frame that looks geospatial. ``geometry`` is
-    appended when absent because :func:`_arrange_cols` does the same.
+    Reindex the frame produced by the response path so its concrete class is
+    preserved.  New, empty pandas columns are cast to ``object`` (matching
+    ``DataFrame(columns=...)`` and keeping string accessors usable).  Under
+    geopandas, also mirror :func:`_arrange_cols` by retaining ``geometry`` and
+    making it active with the source CRS, or the API's CRS when the empty page
+    did not carry one.
     """
-    empty = pd.DataFrame({name: pd.Series(dtype=object) for name in columns})
-    if not (GEOPANDAS and isinstance(template, gpd.GeoDataFrame)):
-        return empty
-    if "geometry" not in empty.columns:
-        empty["geometry"] = pd.Series(dtype=object)
-    empty["geometry"] = gpd.GeoSeries(empty["geometry"], dtype="geometry")
-    return gpd.GeoDataFrame(empty, geometry="geometry", crs=_CRS)
+    is_geo = GEOPANDAS and isinstance(template, gpd.GeoDataFrame)
+    result_columns = list(columns)
+    if is_geo and "geometry" not in result_columns:
+        result_columns.append("geometry")
+
+    empty = template.reindex(columns=result_columns)
+    if not is_geo:
+        return empty.astype(object)
+
+    for name in result_columns:
+        if name != "geometry":
+            empty[name] = empty[name].astype(object)
+    empty = empty.set_geometry("geometry")
+    try:
+        source_crs = template.crs
+    except AttributeError:
+        source_crs = None
+    return empty.set_crs(source_crs or _CRS)
 
 
 def _arrange_cols(
