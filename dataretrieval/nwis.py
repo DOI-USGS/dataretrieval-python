@@ -16,7 +16,9 @@ from typing import Any, NoReturn, TypeVar, cast
 import httpx
 import pandas as pd
 
+from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.rdb import read_rdb
 
 from ._querying import query
@@ -51,7 +53,7 @@ _NWIS_RDB_DTYPES = {
 }
 
 
-_NWIS_REMOVAL_DATE = "2027-05-06"
+_NWIS_REMOVAL_DATE = REMOVALS["nwis"]
 _REPLACEMENTS = {
     "get_dv": "`waterdata.get_daily()`",
     "get_iv": "`waterdata.get_continuous()`",
@@ -70,11 +72,10 @@ _deprecation_state = threading.local()
 
 def _warn_deprecated(func_name: str) -> None:
     """Emit a per-function DeprecationWarning pointing at the waterdata replacement."""
-    warnings.warn(
-        f"`nwis.{func_name}` is deprecated and will be removed from "
-        f"`dataretrieval` on or after {_NWIS_REMOVAL_DATE}; "
-        f"use {_REPLACEMENTS[func_name]} instead.",
-        DeprecationWarning,
+    warn_deprecated(
+        f"`nwis.{func_name}`",
+        replacement=_REPLACEMENTS[func_name],
+        removal=_NWIS_REMOVAL_DATE,
         stacklevel=3,
     )
 
@@ -648,12 +649,13 @@ def get_info(
     if seriesCatalogOutput in ["True", "TRUE", "true", True]:
         warnings.warn(
             (
-                "WARNING: Starting in March 2024, the NWIS qw data endpoint is "
+                "Starting in March 2024, the NWIS qw data endpoint is "
                 "retiring and no longer receives updates. For more information, "
                 "refer to https://waterdata.usgs.gov/nwis/qwdata and "
                 "https://doi-usgs.github.io/dataRetrieval/articles/Status.html "
                 "or email CompTools@usgs.gov."
             ),
+            DataCurrencyWarning,
             stacklevel=2,
         )
         # convert bool to string if necessary

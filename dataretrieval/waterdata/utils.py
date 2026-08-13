@@ -17,12 +17,12 @@ this module as a re-export layer.
 from __future__ import annotations
 
 import functools
-import warnings
 from collections.abc import Callable, Mapping
 from typing import TYPE_CHECKING, Any, TypeVar
 
 import pandas as pd
 
+from dataretrieval._deprecation import warn_deprecated
 from dataretrieval.codes.states import apply_state
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
@@ -275,13 +275,9 @@ def _accept_legacy_kwargs(
                         f"{func.__name__}() received both {old_name!r} "
                         f"(deprecated) and {new_name!r}; pass only {new_name!r}."
                     )
-                message = (
-                    f"The {old_name!r} argument is deprecated and will be "
-                    f"removed in a future release; use {new_name!r} instead."
-                )
-                warnings.warn(
-                    f"{message} {detail}" if detail else message,
-                    DeprecationWarning,
+                warn_deprecated(
+                    f"The {old_name!r} argument",
+                    replacement=f"{new_name!r}" + (f" ({detail})" if detail else ""),
                     stacklevel=2,
                 )
                 kwargs[new_name] = kwargs.pop(old_name)

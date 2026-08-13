@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.exceptions import DataCurrencyWarning
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
@@ -732,7 +733,7 @@ def _warn_legacy_use() -> None:
         "information on updated WQX3.0 profiles. Setting `legacy=False` "
         "will remove this warning."
     )
-    warnings.warn(message, DeprecationWarning, stacklevel=2)
+    warnings.warn(message, DataCurrencyWarning, stacklevel=2)
 
 
 def _warn_wqx3_unavailable() -> None:
