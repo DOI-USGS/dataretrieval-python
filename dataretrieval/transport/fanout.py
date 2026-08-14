@@ -320,6 +320,7 @@ class FanOut(Generic[_Chunk]):
         finalize: _Finalize = _passthrough_result,
         client_options: dict[str, Any] | None = None,
         default_concurrent: int = _CONCURRENCY_DEFAULT,
+        connection_multiplier: Callable[[], int] | None = None,
         *,
         canonical_url: str | None = None,
         service: str | None = None,
@@ -338,6 +339,11 @@ class FanOut(Generic[_Chunk]):
         # test's ``monkeypatch.setenv`` still applies. See
         # :func:`_resolve_concurrency` for why the env var outranks it.
         self.default_concurrent = default_concurrent
+        # Some adapters fan out work inside one chunk (OGC offset page waves).
+        # Let the adapter report that width without making generic transport
+        # depend on protocol code. It is resolved for each resume so an updated
+        # environment setting sizes both dimensions consistently.
+        self.connection_multiplier = connection_multiplier
         # Extra ``httpx.AsyncClient`` options merged into the shared client this
         # run opens (``verify`` for the Water Use ``ssl_check`` flag, say). The
         # executor owns client lifecycle, so an adapter with a per-call client
@@ -570,9 +576,9 @@ class FanOut(Generic[_Chunk]):
         The gather dispatches *every* pending chunk at once, but an
         ``asyncio.Semaphore`` caps the number of concurrent fetches at
         ``N = max_concurrent`` — ``None`` lifts the cap, ``N=1`` runs them
-        one at a time. The connection pool is sized to the same ``N``
-        (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)
-        so the in-flight fetches reuse keepalive connections.
+        one at a time. The connection pool is sized to ``N`` times the adapter-declared
+        per-chunk request multiplier, so nested page waves do not queue inside
+        httpx against the pool-acquire timeout.
 
         The semaphore, not the pool, is deliberately the throttle. If the
         pool throttled instead, the excess chunks would queue
@@ -592,8 +598,9 @@ class FanOut(Generic[_Chunk]):
         Parameters
         ----------
         max_concurrent : int or None
-            Maximum chunks in flight (the semaphore value, and the
-            connection-pool size). ``None`` lifts the cap entirely.
+            Maximum chunks in flight (the semaphore value). The connection pool
+            also covers any adapter-declared requests within one chunk.
+            ``None`` lifts the cap entirely.
 
         Returns
         -------
@@ -619,8 +626,14 @@ class FanOut(Generic[_Chunk]):
         # why the gate can't be the pool itself. ``unbounded``
         # (``max_concurrent=None``) is a degenerate cap at the plan total — a
         # semaphore that can never block — so gated is the only code path.
+        multiplier = (
+            self.connection_multiplier()
+            if self.connection_multiplier is not None
+            else 1
+        )
+        pool_size = None if max_concurrent is None else max_concurrent * multiplier
         limits = httpx.Limits(
-            max_connections=max_concurrent, max_keepalive_connections=max_concurrent
+            max_connections=pool_size, max_keepalive_connections=pool_size
         )
         semaphore = asyncio.Semaphore(
             len(self.plan) if max_concurrent is None else max_concurrent

@@ -269,19 +269,19 @@ class Test_error_taxonomy:
             dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
         )
 
-    def test_parallel_chunks_exported_at_top_level_and_waterdata(self):
-        """The ``parallel_chunks`` context manager is reachable both from the top
-        level (``from dataretrieval import parallel_chunks``) and from the
-        user-facing ``dataretrieval.waterdata`` namespace, and both resolve to
-        the single object defined in ``dataretrieval.ogc.chunking``."""
+    def test_parallel_chunks_is_gone(self):
+        """``parallel_chunks`` was removed: page parallelism now comes from the
+        offset walk (:mod:`dataretrieval.transport.offsets`), which overlaps a
+        single request's pages instead of splitting the query into more
+        sub-requests. Nothing should re-export the retired dial."""
         import dataretrieval
         from dataretrieval import waterdata
         from dataretrieval.ogc import chunking
 
-        assert dataretrieval.parallel_chunks is chunking.parallel_chunks
-        assert waterdata.parallel_chunks is chunking.parallel_chunks
-        assert "parallel_chunks" in dataretrieval.__all__
-        assert "parallel_chunks" in waterdata.__all__
+        for module in (dataretrieval, waterdata, chunking):
+            assert not hasattr(module, "parallel_chunks")
+        assert "parallel_chunks" not in dataretrieval.__all__
+        assert "parallel_chunks" not in waterdata.__all__
 
 
 class Test_BaseMetadata:

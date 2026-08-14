@@ -50,10 +50,8 @@ from dataretrieval.ogc import engine as _engine
 from dataretrieval.ogc.chunking import (
     ChunkedCall,
     _chunked_client,
-    _parallel_chunks,
     get_active_client,
     multi_value_chunked,
-    parallel_chunks,
 )
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.interruptions import (
@@ -1148,15 +1146,16 @@ def test_combine_chunk_frames_still_dedupes_overlapping_ids():
 def test_list_axis_chunks_dedupe_repeated_feature_ids():
     """Repeated list values can select the same feature in separate chunks."""
 
-    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    # Force the repeated values into separate chunks through the byte budget;
+    # fitting requests are no longer split merely to manufacture parallelism.
+    @multi_value_chunked(build_request=_fake_build, url_limit=201)
     async def fetch(args):
         return (
             pd.DataFrame({"id": ["feature-1"], "site": [args["sites"][0]]}),
             _quota_response(500),
         )
 
-    with parallel_chunks(2):
-        frame, _ = fetch({"sites": ["A", "A"]})
+    frame, _ = fetch({"sites": ["A", "A"]})
 
     assert frame.to_dict(orient="records") == [{"id": "feature-1", "site": "A"}]
 
@@ -2177,293 +2176,81 @@ def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Parallel chunks: the opt-in dial ``parallel_chunks(n)`` to fan a query out
-# MORE finely than the byte limit alone requires (``ChunkPlan._refine`` + the
-# ``parallel_chunks`` context manager). ``_fake_build``'s base is 200 bytes, so
-# a handful of short atoms sits far under ``url_limit=8000`` — the byte pass
-# passes it through untouched, and any splitting below is the ``n`` cap alone.
-# ``ChunkPlan`` takes the integer cap (``max_chunks``) directly;
-# ``parallel_chunks(n)`` publishes ``n`` onto it. The cap bounds the plan's
-# *total* chunk count (the cartesian product across axes), not each axis
-# independently — see ``test_cap_caps_the_total_across_axes``.
+# The parallel-chunk dial is retired. ChunkPlan now divides only when required
+# by the byte ceiling; page-wave parallelism is selected independently.
 # ---------------------------------------------------------------------------
 
 
-def test_default_preserves_passthrough():
-    """The default ``max_chunks`` (1 = off) must not perturb the existing
-    plan: a multi-value request that fits the byte limit is still the trivial
-    passthrough (no axes, ``total == 1``), byte-for-byte the pre-feature
-    behavior."""
+def test_fitting_request_is_always_a_passthrough():
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
-    plan = ChunkPlan(args, _fake_build, url_limit=8000)  # default max_chunks=1
+    plan = ChunkPlan(args, _fake_build, url_limit=8000)
     assert plan.axes == []
     assert plan.total == 1
     assert list(plan.iter_chunk_args()) == [args]
 
 
-def test_unit_cap_preserves_passthrough():
-    """``max_chunks=1`` means "no extra fan-out", so a fitting multi-value
-    request stays the trivial passthrough (no axes, ``total == 1``,
-    ``iter_chunk_args`` yields the original args verbatim) — identical to the
-    default (off), not a materialized one-chunk-per-axis plan."""
+def test_chunk_plan_rejects_the_retired_max_chunks_kwarg():
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
-    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=1)
-    assert plan.axes == []
-    assert plan.total == 1
-    assert list(plan.iter_chunk_args()) == [args]
+    with pytest.raises(TypeError):
+        ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=8)
 
 
-@pytest.mark.parametrize("bad", [0, -1])
-def test_invalid_cap_raises(bad):
-    """``max_chunks`` is a chunk count, so a value below 1 (``0`` or
-    negative) is a caller bug, not a silent no-op: it raises ``ValueError`` at
-    construction. (The public ``parallel_chunks(n)`` already rejects ``n < 1``;
-    this pins the same guard on direct construction.)"""
-    args = {"monitoring_location_id": ["A", "B", "C", "D"]}
-    with pytest.raises(ValueError, match="max_chunks must be >= 1"):
-        ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=bad)
-
-
-@pytest.mark.parametrize(
-    ("max_chunks", "expected_pieces"),
-    [(1, 1), (2, 2), (8, 8), (16, 10), (32, 10)],
-)
-def test_cap_ramps_then_saturates(max_chunks, expected_pieces):
-    """A single 10-atom axis that fits the byte limit splits into
-    ``min(10, cap)`` pieces: 1 (off), 2, 8, then saturating at 10 (one atom per
-    chunk) once the cap overshoots the atom count. Monotonic and bounded, and
-    whenever it splits the partition is a cover — every atom exactly once. (The
-    cap-1 passthrough has no axis to cover; see the passthrough test.)"""
-    atoms = [f"S{i:02d}" for i in range(10)]
-    plan = ChunkPlan(
-        {"monitoring_location_id": atoms},
-        _fake_build,
-        url_limit=8000,
-        max_chunks=max_chunks,
-    )
-    assert plan.total == expected_pieces
-    if expected_pieces > 1:
-        flattened = [
-            a for chunk in plan.chunks["monitoring_location_id"] for a in chunk
-        ]
-        assert sorted(flattened) == sorted(atoms)
-
-
-def test_cap_bounds_fan_out_for_a_long_axis():
-    """The cap holds fan-out to ``n``: at ``n=32`` a 100-atom axis fans into
-    ``n`` pieces — NOT 100 singletons — so ``parallel_chunks(32)`` on a huge
-    list can't detonate into hundreds of chunks. Every atom is still
-    covered exactly once."""
-    high = 32
-    atoms = [f"X{i:03d}" for i in range(100)]
-    plan = ChunkPlan(
-        {"monitoring_location_id": atoms},
-        _fake_build,
-        url_limit=8000,
-        max_chunks=high,
-    )
-    assert plan.total == high
-    flattened = [a for chunk in plan.chunks["monitoring_location_id"] for a in chunk]
+def test_byte_driven_chunking_survives_the_removal():
+    atoms = ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]
+    args = {"monitoring_location_id": atoms}
+    limit = 250
+    plan = ChunkPlan(args, _fake_build, url_limit=limit)
+    assert plan.total > 1
+    for chunk_args in plan.iter_chunk_args():
+        assert _safe_request_bytes(_fake_build, chunk_args, limit) <= limit
+    flattened = [
+        atom for chunk in plan.chunks["monitoring_location_id"] for atom in chunk
+    ]
     assert sorted(flattened) == sorted(atoms)
 
 
-def test_cap_below_byte_split_does_not_reduce_fan_out():
-    """The cap is purely additive — it can only split further, never coarsen.
-    A request the byte budget already fans into K>2 chunks is untouched by a
-    cap of 2 (below K), so the byte-driven plan is preserved."""
-    # Heavy axis of four 30-char atoms; a limit tight enough that the byte pass
-    # must drive every atom into its own chunk (4 pieces > the cap of 2).
-    args = {"monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]}
-    baseline = ChunkPlan(args, _fake_build, url_limit=250, max_chunks=1)
-    assert baseline.total > 2  # byte pass alone already fanned out past 2
-    refined = ChunkPlan(args, _fake_build, url_limit=250, max_chunks=2)
-    # cap 2 < baseline pieces → refine is a no-op here.
-    assert refined.total == baseline.total
-
-
-def test_cap_never_exceeds_the_byte_budget():
-    """Refining on top of an over-budget request keeps the hard invariant:
-    every chunk still fits ``url_limit`` (splitting only ever shrinks
-    a chunk), and the fan-out is at least what the byte pass required."""
-    args = {"monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]}
-    limit = 310
-    byte_only = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks=1)
-    plan = ChunkPlan(args, _fake_build, url_limit=limit, max_chunks=32)
-    assert plan.total >= byte_only.total
-    for sub in plan.iter_chunk_args():
-        assert _safe_request_bytes(_fake_build, sub, limit) <= limit
-
-
-def test_cap_refines_the_filter_axis():
-    """The dial treats the cql-text ``filter`` axis like any other: an
-    under-budget filter of N top-level OR-clauses is split along that axis
-    into ``min(N, cap)`` pieces."""
-    clauses = [f"p='{i}'" for i in range(8)]
-    args = {"filter": " OR ".join(clauses)}
-    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=4)
-    assert len(plan.chunks["filter"]) == 4  # min(8, 4)
-    assert plan.total == 4
-
-
-def test_cap_caps_the_total_across_axes():
-    """With more than one multi-value axis the cap bounds the *total*
-    chunk count (the cartesian product), not each axis independently —
-    the blast-radius guardrail the dial exists for. Two 6-atom axes at a cap
-    of 4 top out at 4 chunks total, not 4x4=16; growth is distributed
-    round-robin across axes rather than one axis alone climbing to the cap."""
-    args = {
-        "monitoring_location_id": [f"L{i}" for i in range(6)],
-        "parameter_code": [f"{i:05d}" for i in range(6)],
-    }
-    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=4)
-    assert plan.total == 4
-    # Every atom on every axis is still covered exactly once.
-    for key, atoms in (
-        ("monitoring_location_id", args["monitoring_location_id"]),
-        ("parameter_code", args["parameter_code"]),
-    ):
-        flattened = [a for chunk in plan.chunks[key] for a in chunk]
-        assert sorted(flattened) == sorted(atoms)
-
-
-def test_cap_bounds_fan_out_across_many_axes():
-    """The guardrail holds regardless of axis count: three multi-value axes at
-    a cap of 30 fan out to *at most* 30 chunks total — never the
-    ``30 ** 3`` a per-axis cap would allow, and never *over* the cap either.
-    30 is deliberately not evenly reachable by these axes: a single split
-    multiplies the plan by more than one, so the naive ``while total < cap``
-    the first refine used stepped past 30 (to 32). The cap is a hard ceiling —
-    the property neither the single-axis-only cap nor that naive loop
-    guaranteed."""
-    cap = 30
-    # Three chunkable axes (two list axes + the filter OR-axis), each with 10
-    # atoms — under the old per-axis cap this would have been cap**3.
-    args = {
-        "monitoring_location_id": [f"L{i}" for i in range(10)],
-        "parameter_code": [f"{i:05d}" for i in range(10)],
-        "filter": " OR ".join(f"p='{i}'" for i in range(10)),
-    }
-    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=cap)
-    assert 1 < plan.total <= cap  # fanned out, but never past the ceiling
-
-
-@pytest.mark.parametrize(
-    "atoms_per_axis, cap",
-    [
-        (4, 5),  # pre-fix loop overshot 5 -> 6
-        (8, 10),  # pre-fix loop overshot 10 -> 12
-        (10, 7),  # pre-fix loop overshot 7 -> 8
-    ],
-)
-def test_cap_is_a_hard_ceiling_never_overshoots(atoms_per_axis, cap):
-    """The cap is a hard ceiling, not a soft target. With two multi-value axes
-    a single split multiplies the plan by ``(k+1)/k`` for the split axis —
-    adding the product of the *other* axes, not one — so a naive
-    ``while total < cap`` loop steps *past* the cap. These are exactly the
-    (atoms, cap) combos that loop overshot (5->6, 10->12, 7->8). The plan must
-    fan out and cover every atom once, but never exceed the cap, landing below
-    it when no whole split lands on it exactly (two even axes reach 4, not 5)."""
-    args = {
-        "monitoring_location_id": [f"L{i:03d}" for i in range(atoms_per_axis)],
-        "parameter_code": [f"{i:05d}" for i in range(atoms_per_axis)],
-    }
-    plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=cap)
-    assert 1 < plan.total <= cap  # fanned out, but never past the ceiling
-    # Every atom on every axis is still covered exactly once.
-    for key, atoms in args.items():
-        flattened = [a for chunk in plan.chunks[key] for a in chunk]
-        assert sorted(flattened) == sorted(atoms)
-
-
-def test_cap_does_not_mask_unchunkable():
-    """A request with nothing to split that still busts the byte limit must
-    raise ``Unchunkable`` regardless of the cap — the soft pass has no axis to
-    act on and must not swallow the hard failure."""
+def test_unchunkable_still_raised_without_the_dial():
     args = {"monitoring_location_id": "one-huge-scalar"}
     with pytest.raises(Unchunkable):
-        ChunkPlan(args, _fake_build, url_limit=10, max_chunks=32)
+        ChunkPlan(args, _fake_build, url_limit=10)
 
 
-def test_parallel_chunks_publishes_n_on_the_ambient():
-    """The context manager publishes ``n`` on the ambient for the block and
-    restores the previous value on exit — including proper nesting."""
-    assert _parallel_chunks.get() == 1  # default (off, = no extra fan-out)
-    with parallel_chunks(32):
-        assert _parallel_chunks.get() == 32
-        with parallel_chunks(2):
-            assert _parallel_chunks.get() == 2
-        assert _parallel_chunks.get() == 32  # outer restored
-    assert _parallel_chunks.get() == 1  # default (off) outside any block
+def test_page_concurrency_defaults_and_follows_the_env(monkeypatch):
+    monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
+    assert _chunking.page_concurrency() == 32
+
+    monkeypatch.setenv("API_USGS_CONCURRENT", "4")
+    assert _chunking.page_concurrency() == 4
+
+    monkeypatch.setenv("API_USGS_CONCURRENT", "1")
+    assert _chunking.page_concurrency() == 1
 
 
-@pytest.mark.parametrize(
-    "bad",
-    [
-        0,  # not positive
-        -1,  # negative
-        1.5,  # a float, not an int
-        "8",  # a string, even a numeric one
-        "high",  # the old level names are gone
-        None,  # None not accepted
-        True,  # bool is an int subclass but nonsensical here
-        ["8"],  # a list
-    ],
-)
-def test_parallel_chunks_rejects_non_positive_int(bad):
-    """``n`` must be a positive integer; every other shape — zero, negative, a
-    float, a string (including a numeric one and the old level names), ``None``,
-    a ``bool``, a list — raises ``ValueError`` at ``with`` entry, before any
-    request, and leaves the ambient untouched."""
-    with pytest.raises(ValueError, match="must be a positive integer"):
-        with parallel_chunks(bad):
-            pass
-    assert _parallel_chunks.get() == 1  # default (off) — unchanged by a rejected call
+def test_page_concurrency_clamps_unbounded(monkeypatch):
+    monkeypatch.setenv("API_USGS_CONCURRENT", "unbounded")
+    assert _chunking.page_concurrency() == 32
 
 
-def test_parallel_chunks_drives_end_to_end_fan_out():
-    """End-to-end: the same fitting request passes through as a single call by
-    default, but fans into ``n`` chunks inside a ``parallel_chunks(n)``
-    block — and the combined result still recovers every atom exactly once."""
-    sites = [f"S{i:02d}" for i in range(8)]
+def test_connection_pool_covers_chunks_times_pages(monkeypatch, httpx_mock):
+    import dataretrieval.transport.fanout as fanout
+    from dataretrieval.waterdata import get_daily
 
-    calls: list[tuple[str, ...]] = []
+    monkeypatch.setenv("API_USGS_CONCURRENT", "8")
+    captured: dict[str, object] = {}
+    real_open = fanout.open_async_client
 
-    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
-    async def fetch(args):
-        chunk = tuple(args["monitoring_location_id"])
-        calls.append(chunk)
-        return pd.DataFrame({"site": list(chunk)}), _ok_response()
+    def spy(**overrides):
+        captured["limits"] = overrides.get("limits")
+        return real_open(**overrides)
 
-    # Default: comfortably under the byte limit → one passthrough call.
-    df_plain, _ = fetch({"monitoring_location_id": sites})
-    assert len(calls) == 1
-    assert sorted(df_plain["site"]) == sorted(sites)
+    monkeypatch.setattr(fanout, "open_async_client", spy)
+    httpx_mock.add_response(
+        json={"type": "FeatureCollection", "numberReturned": 0, "features": []},
+        headers={"Content-Type": "application/geo+json"},
+    )
 
-    calls.clear()
-    with parallel_chunks(8):
-        df_fine, _ = fetch({"monitoring_location_id": sites})
-    # 8 atoms at n=8 → 8 singleton chunks.
-    assert len(calls) == 8
-    assert all(len(chunk) == 1 for chunk in calls)
-    # Union across chunks recovers the original set, once each.
-    assert sorted(a for chunk in calls for a in chunk) == sorted(sites)
-    assert sorted(df_fine["site"]) == sorted(sites)
+    get_daily(monitoring_location_id="USGS-01646500", limit=10)
 
-
-@pytest.mark.parametrize("n", [1, 2, 3, 8])
-def test_parallel_chunks_supports_arbitrary_n(n):
-    """An arbitrary ``n`` (not only 2/8/32) fans an under-limit request into
-    exactly ``n`` chunks, together covering every site once — including
-    ``n=1``, the explicit no-op that stays a single passthrough call."""
-    sites = [f"S{i:02d}" for i in range(8)]
-    calls: list[int] = []
-
-    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
-    async def fetch(args):
-        calls.append(len(args["monitoring_location_id"]))
-        return pd.DataFrame(), _ok_response()
-
-    with parallel_chunks(n):
-        fetch({"monitoring_location_id": sites})
-    assert len(calls) == n
-    assert sum(calls) == 8
+    limits = captured["limits"]
+    assert isinstance(limits, httpx.Limits)
+    assert limits.max_connections == 8 * _chunking.page_concurrency()

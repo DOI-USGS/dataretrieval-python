@@ -24,7 +24,6 @@ _EXPECTED_WATERDATA_ALL = [
     "PROFILE_LOOKUP",
     "SERVICES",
     "WATERDATA_SERVICES",
-    "parallel_chunks",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

@@ -605,3 +605,261 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
         ServiceInterrupted(completed_chunks=0, total_chunks=1, cause=first).status_code
         is None
     )
+
+
+# ---------------------------------------------------------------------------
+# Offset-parallel pagination (``dataretrieval.transport.offsets``). Cursor
+# paging is sequential by construction -- page N+1's URL is only revealed by
+# page N -- so when a service also honors ``offset`` every page URL is
+# computable up front and the pages can overlap. These tests pin the three
+# things that makes correct: knowing when to stop, discarding a speculative
+# overshoot, and refusing to trust a server that ignores ``offset``.
+# ---------------------------------------------------------------------------
+
+
+def _offset_server(total_rows: int, *, limit: int, ceiling: int | None = None):
+    """A fake paged service backed by ``total_rows`` sequential row ids.
+
+    Returns ``(client, seen)`` where ``seen`` records the offsets requested, in
+    completion order, so a test can assert on the request *count* (the quota
+    cost) as well as the rows.
+    """
+    seen: list[int] = []
+
+    async def send(request: httpx.Request) -> httpx.Response:
+        offset = int(request.url.params["offset"])
+        seen.append(offset)
+        if ceiling is not None and offset > ceiling:
+            return httpx.Response(400, request=request)
+        rows = list(range(offset, min(offset + limit, total_rows)))
+        return httpx.Response(
+            200,
+            json={"rows": rows},
+            request=request,
+            headers={"x-ratelimit-limit": "1000"},
+        )
+
+    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client.send.side_effect = send
+    return client, seen
+
+
+def _parse_rows(response: httpx.Response) -> pd.DataFrame:
+    return pd.DataFrame({"row": response.json()["rows"]})
+
+
+def _walk(client, *, limit: int, width: int, **kwargs):
+    from dataretrieval.transport.offsets import paginate_by_offset
+
+    return asyncio.run(
+        paginate_by_offset(
+            build_page=lambda offset: httpx.Request(
+                "GET", f"https://example.test/items?limit={limit}&offset={offset}"
+            ),
+            parse_page=_parse_rows,
+            raise_for_status=_raise_for_status,
+            client=client,
+            limit=limit,
+            width=width,
+            **kwargs,
+        )
+    )
+
+
+def test_offset_walk_stops_on_a_short_page() -> None:
+    """The normal exit. 25 rows at ``limit=10`` is two full pages and a
+    5-row third: the short page proves the server had no more rows, so the
+    walk ends there -- and its rows are kept, not discarded."""
+    client, seen = _offset_server(25, limit=10)
+    frame, response = _walk(client, limit=10, width=4)
+
+    assert frame["row"].tolist() == list(range(25))
+    # The ramp costs nothing here: waves of 1 then 2 land exactly on the three
+    # pages that exist, so the short page ends the walk with no overshoot at all.
+    assert sorted(seen) == [0, 10, 20]
+    assert response.headers["x-ratelimit-limit"] == "1000"
+
+
+def test_offset_walk_stops_on_an_empty_page_at_an_exact_boundary() -> None:
+    """20 rows at ``limit=10`` ends exactly on a page boundary, so no page is
+    short. The empty page at offset 20 is the only end-of-data signal available,
+    and it must not contribute a row."""
+    client, _ = _offset_server(20, limit=10)
+    frame, _ = _walk(client, limit=10, width=3)
+    assert frame["row"].tolist() == list(range(20))
+
+
+def test_offset_walk_continues_across_waves() -> None:
+    """A result larger than one wave keeps going, and the next wave's offsets
+    continue where the last stopped -- no gap (missing rows) and no overlap
+    (duplicates), which a mis-computed stride would produce."""
+    client, seen = _offset_server(95, limit=10, ceiling=None)
+    frame, _ = _walk(client, limit=10, width=4)
+
+    assert frame["row"].tolist() == list(range(95))
+    # Three waves: offsets 0-30, 40-70, 80-110. Every offset distinct.
+    assert len(seen) == len(set(seen))
+    assert min(seen) == 0
+
+
+def test_offset_walk_honors_the_row_cap() -> None:
+    """``max_rows`` stops the walk once enough rows are held and truncates to
+    exactly the cap, so a preview doesn't page through a huge table."""
+    client, _ = _offset_server(1000, limit=10, ceiling=None)
+    frame, _ = _walk(client, limit=10, width=4, row_cap=25)
+    assert frame["row"].tolist() == list(range(25))
+
+
+def test_offset_walk_hands_off_to_the_tail_walk_at_the_ceiling() -> None:
+    """The offset ceiling is NOT an end-of-data signal. Reaching it must hand
+    off to the sequential continuation -- otherwise a deep pull would silently
+    return a truncated result, the worst outcome available here.
+
+    The seam is the subtle part. The next offset the walk *would* need (30 here)
+    is itself past the ceiling, so it can't seed the continuation either -- that
+    request would earn the same rejection. So the walk rewinds one page: it drops
+    the last page it fetched and re-seeds at 20, the largest offset the service
+    still accepts. One page is re-fetched; no row is missed or duplicated.
+    """
+    client, seen = _offset_server(1000, limit=10, ceiling=None)
+    handoff: dict[str, object] = {}
+
+    async def tail_walk(resume_offset, rows_so_far, session):
+        handoff["resume_offset"] = resume_offset
+        handoff["rows_so_far"] = rows_so_far
+        assert session is client
+        return (
+            pd.DataFrame({"row": list(range(resume_offset, resume_offset + 15))}),
+            httpx.Response(
+                200, request=httpx.Request("GET", "https://example.test/tail")
+            ),
+        )
+
+    frame, _ = _walk(client, limit=10, width=4, max_offset=25, tail_walk=tail_walk)
+
+    # Offsets stop at the ceiling (0, 10, 20 -- 30 > 25 is never requested).
+    assert sorted(seen) == [0, 10, 20]
+    # Re-seeded at an offset the service accepts, and told how many rows are
+    # already held so it can rebase a remaining row cap onto the tail.
+    assert handoff == {"resume_offset": 20, "rows_so_far": 20}
+    # Seamless: rows 0-19 from offsets, 20-34 from the continuation.
+    assert frame["row"].tolist() == list(range(35))
+
+
+def test_offset_walk_warns_and_truncates_without_a_tail_walk(caplog) -> None:
+    """Without a continuation the ceiling result is knowingly partial, so it
+    must say so loudly rather than pass for a complete answer."""
+    client, _ = _offset_server(1000, limit=10, ceiling=None)
+    with caplog.at_level("WARNING"):
+        frame, _ = _walk(client, limit=10, width=4, max_offset=25)
+    assert frame["row"].tolist() == list(range(30))
+    assert "offset ceiling" in caplog.text.lower()
+
+
+def test_offset_walk_refuses_a_server_that_ignores_offset() -> None:
+    """An unrecognized query parameter is conventionally *ignored*, not
+    rejected -- so a service that doesn't implement ``offset`` answers every
+    offset with page 1 and the walk would concatenate the same rows N times and
+    report success. That silent duplication is the design's worst failure mode,
+    so it is detected on the first wave and raises before any rows are
+    returned, leaving the caller free to re-run via cursors."""
+    from dataretrieval.transport.offsets import OffsetUnsupported
+
+    async def send(request: httpx.Request) -> httpx.Response:
+        # Same page regardless of the offset asked for.
+        return httpx.Response(200, json={"rows": list(range(10))}, request=request)
+
+    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client.send.side_effect = send
+
+    with pytest.raises(OffsetUnsupported):
+        _walk(client, limit=10, width=4)
+
+
+def test_offset_walk_accepts_distinct_pages_of_equal_length() -> None:
+    """The ignore-detection compares page *contents*, not just their shape: two
+    full pages of the same length are the normal case and must not be mistaken
+    for a server echoing page 1."""
+    client, _ = _offset_server(40, limit=10)
+    frame, _ = _walk(client, limit=10, width=4)
+    assert frame["row"].tolist() == list(range(40))
+
+
+def test_plan_offsets_clips_to_the_ceiling() -> None:
+    """The planner never proposes an offset the service would reject with a
+    400: it clips to the ceiling, and an empty plan is the caller's signal to
+    hand off rather than to keep asking."""
+    from dataretrieval.transport.offsets import plan_offsets
+
+    assert plan_offsets(limit=10, width=4, start=0, max_offset=None) == [0, 10, 20, 30]
+    assert plan_offsets(limit=10, width=4, start=0, max_offset=25) == [0, 10, 20]
+    assert plan_offsets(limit=10, width=4, start=30, max_offset=25) == []
+
+
+def test_offset_walk_wraps_a_page_failure_with_recovery_guidance() -> None:
+    """A failed page fails the whole walk with the same actionable message the
+    sequential walk produces -- a partial frame silently returned would be
+    indistinguishable from a complete one."""
+
+    async def send(request: httpx.Request) -> httpx.Response:
+        if int(request.url.params["offset"]) == 10:
+            return httpx.Response(500, request=request)
+        return httpx.Response(200, json={"rows": list(range(10))}, request=request)
+
+    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client.send.side_effect = send
+
+    with pytest.raises(DataRetrievalError):
+        _walk(client, limit=10, width=4)
+
+
+def test_offset_walk_cancels_sibling_page_after_failure() -> None:
+    """A retry must not overlap page requests abandoned by the failed attempt."""
+
+    async def scenario() -> None:
+        sibling_started = asyncio.Event()
+        sibling_cancelled = asyncio.Event()
+
+        async def send(request: httpx.Request) -> httpx.Response:
+            offset = int(request.url.params["offset"])
+            if offset == 0:
+                return httpx.Response(
+                    200,
+                    json={"rows": list(range(10))},
+                    request=request,
+                )
+            if offset == 10:
+                await sibling_started.wait()
+                return httpx.Response(500, request=request)
+            if offset == 20:
+                sibling_started.set()
+                try:
+                    await asyncio.Event().wait()
+                except asyncio.CancelledError:
+                    sibling_cancelled.set()
+                    raise
+            raise AssertionError(f"unexpected offset {offset}")
+
+        client = mock.AsyncMock(spec=httpx.AsyncClient)
+        client.send.side_effect = send
+
+        with pytest.raises(DataRetrievalError):
+            await paginate_by_offset(
+                build_page=lambda offset: httpx.Request(
+                    "GET",
+                    f"https://example.test/items?limit=10&offset={offset}",
+                ),
+                parse_page=_parse_rows,
+                raise_for_status=_raise_for_status,
+                client=client,
+                limit=10,
+                width=2,
+            )
+
+        assert sibling_cancelled.is_set(), (
+            "the failed wave returned while a sibling request was still live"
+        )
+
+    from dataretrieval.transport.offsets import paginate_by_offset
+
+    asyncio.run(scenario())

@@ -107,57 +107,52 @@ df, metadata = waterdata.get_continuous(
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
 
-#### Speeding up large downloads with `parallel_chunks`
+#### Large Water Data downloads are paged in parallel automatically
 
-By default the getters split a multi-value request only as far as the server's
-~8 KB URL limit forces — the fewest sub-requests. For a **large, paginated**
-pull, that default is needlessly conservative: every sub-request pages through
-its own results, so dividing the query into more, smaller sub-requests lets
-those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
-into that finer split, fanning it out into `n` sub-requests. The finer split
-pays off only when the result is large enough to span many pages *and* the query
-has a multi-value argument to divide, such as a list of monitoring locations. On
-a small query — or one with nothing to split — it only adds requests, so
-`parallel_chunks` is a deliberate, scoped `with` block, never the default.
+A large result arrives one page at a time. Standard OGC cursor pagination is
+inherently sequential: page *N+1*'s URL is revealed only by page *N*. The Water
+Data API also accepts `offset`, which makes page URLs computable up front
+(`offset = i * limit`). `dataretrieval` therefore overlaps pages automatically;
+there is no context manager to enable.
 
 ```python
 from dataretrieval import waterdata
 
-# All stream gages in Ohio, then 20 years of their daily discharge — large
-# enough to span many pages, so it profits from a finer split.
-sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
-
-with waterdata.parallel_chunks(32):  # fan out into 32 sub-requests
-    df, md = waterdata.get_daily(
-        monitoring_location_id=sites["monitoring_location_id"],
-        parameter_code="00060",  # discharge
-        time="2004-01-01/2023-12-31",
-    )
+# A deep daily-value history can span many pages even for one location.
+df, md = waterdata.get_daily(
+    monitoring_location_id="USGS-01646500",
+    parameter_code="00060",  # discharge
+    time="2004-01-01/2023-12-31",
+    limit=2000,
+)
 ```
 
-`n` is the number of sub-requests to fan the call out into, capped by how many
-values there are to split. Each sub-request costs a request against your hourly
-[rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
-capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
-roughly `2` up to that value.
+At a **fixed `limit`**, this changes timing rather than deliberately splitting
+the query into extra requests. The unknown page count is discovered with
+ramped speculative waves (1, 2, 4, ... requests), so the final wave can probe
+past the end, but total requests remain below twice the pages needed. Reducing
+`limit` creates more pages and therefore spends more hourly quota; the measured
+speedups are not free if you shrink `limit` to obtain them.
 
-Benchmark — a fixed 271-site subset of Ohio stream gages
-(`get_daily`, `parameter_code="00060"`), with a small fixed page size
-(`limit=250`) so every run fetches roughly the same number of pages (isolating
-the effect of parallelism). Each `n` ran against its own cold 1-year time
-window, so no run is served from the server's data-window cache:
+The default `limit` is 50,000 while Water Data accepts offsets only through
+40,000. At that default there is no useful offset fan-out: the unbounded tail is
+walked through standard cursors. Material speedups therefore require an
+explicit paging-friendly `limit` below the offset ceiling, such as the `2000`
+above. `API_USGS_CONCURRENT` (default 32) bounds the page-wave width; set it to
+`1` to use cursor pagination strictly sequentially.
 
-| `n`  | parallelism | pages | wall-clock              | speedup |
-| ---- | ----------- | ----- | ----------------------- | ------- |
-| off  | 1           | ~30   | 9.5 s / 9.1 s (2 runs)  | 1×      |
-| `8`  | 8           | ~32   | 2.2 s / 1.9 s           | ~4.5×   |
-| `32` | 32          | 54    | 1.2 s                   | ~8×     |
+Because `offset` is a Water Data extension rather than part of OGC API -
+Features, the walk is defensive. It verifies that the server honors the
+parameter before trusting rows and falls back to standard cursor pagination if
+not. At the API's 40,000-row offset ceiling it rewinds one page and follows the
+standard `next` links, keeping arbitrarily deep results complete without a gap
+or duplicate seam.
 
-The gain comes from overlapping each sub-request's per-page latency and
-server-side work. The exact multiplier therefore scales with how many pages the
-pull spans: a larger pull (more pages) has more parallelism to exploit. The
-extra sub-requests each cost quota, so reserve a large `n` for pulls you know
-are large.
+The removed `parallel_chunks(n)` API split a fitting multi-value query into more
+chunks, spending extra quota and doing nothing for a single-location query.
+Delete that wrapper when migrating. Byte-driven chunking remains automatic and
+unchanged: queries above the service's ~8 KB request limit are still split for
+correctness.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
@@ -176,8 +171,8 @@ logging.basicConfig(level=logging.DEBUG)
 ### National Ground-Water Monitoring Network (NGWMN)
 
 Access groundwater data aggregated from many state, federal, and local
-agencies. NGWMN uses the same OGC engine as the Water Data API,
-so chunking and pagination behave the same way:
+agencies. NGWMN uses the same OGC engine and byte-driven chunker as Water Data. It
+uses standard cursor pagination unless its API dialect declares offset support:
 
 ```python
 from dataretrieval import ngwmn

@@ -62,11 +62,6 @@ from dataretrieval.interruptions import (
     ServiceInterrupted,
 )
 
-# Parallel-chunks control (a context manager). Defined with the chunker in
-# ``dataretrieval.ogc.chunking``; surfaced here for a stable public path
-# ``from dataretrieval import parallel_chunks``.
-from dataretrieval.ogc.chunking import parallel_chunks
-
 from . import (
     exceptions,
     ngwmn,
@@ -109,7 +104,5 @@ __all__ = [
     "FanOutInterrupted",
     "QuotaExhausted",
     "ServiceInterrupted",
-    # parallel-chunks control (defined in ogc.chunking)
-    "parallel_chunks",
     "__version__",
 ]

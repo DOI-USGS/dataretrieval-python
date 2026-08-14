@@ -8,7 +8,6 @@ See https://api.waterdata.usgs.gov/ for the API reference.
 
 from __future__ import annotations
 
-from dataretrieval.ogc.chunking import parallel_chunks
 from dataretrieval.ogc.filters import FILTER_LANG
 
 # Public API exports
@@ -50,7 +49,6 @@ __all__ = [
     "PROFILE_LOOKUP",
     "SERVICES",
     "WATERDATA_SERVICES",
-    "parallel_chunks",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

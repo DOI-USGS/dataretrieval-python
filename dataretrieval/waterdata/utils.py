@@ -94,6 +94,12 @@ WATERDATA_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("time", "monitoring_location_id"),
+    # The API rejects ``offset > 40000`` with HTTP 400 ``InvalidQuery``
+    # ("offset parameter must be less than or equal to 40000"), so
+    # offset-parallel page fetching can only cover a result's first 40k rows.
+    # Past that the walk hands off to the sequential cursor continuation, which
+    # has no ceiling, so a deep result is still returned in full.
+    max_offset=40_000,
 )
 
 # The Water-Data-specific *extras* on top of the engine's own no-normalize set

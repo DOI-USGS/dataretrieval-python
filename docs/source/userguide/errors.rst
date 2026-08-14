@@ -105,44 +105,49 @@ mid-stream, the work already completed is preserved: catch
 The same loop works for ``wateruse.get_wateruse`` with a list of states,
 counties, or HUCs.
 
-Chunk a large request more finely
-=================================
+Large Water Data pulls are paged in parallel
+==============================================
 
-By default the getters split an over-large request only as much as the
-server's ~8 KB URL limit forces -- the fewest chunks. Because each
-chunk paginates, splitting a large result further costs little or no
-extra quota *as long as each chunk still spans many pages*. (Ten states
-pulled as one request then page nearly as many times as ten per-state requests
-would; a split that leaves each chunk only a page or two adds its partial
-final page.) So if you *know* your pull is large, ask for a finer split with
-``parallel_chunks(n)``: you trade roughly the same pages for more, smaller
-chunks, which gives smoother progress, more even concurrency, and a
-smaller unit of retry/resume. ``parallel_chunks`` is a scoped ``with`` block, so
-an aggressive setting can't leak into unrelated calls and accidentally spend
-quota:
+Water Data can compute page URLs with ``offset``, so pages of a large result are
+fetched in ramped concurrent waves by default. There is no parallel-chunk knob
+to enable: the old ``parallel_chunks(n)`` context manager was removed because
+it split fitting queries into extra requests and could not help a single-site
+query.
+
+At a fixed page ``limit`` the walk overlaps requests it was already going to
+make, apart from bounded probes in the final speculative wave. Reducing
+``limit`` creates more pages and consumes more quota. The default limit is
+50,000, above Water Data's 40,000 offset ceiling, so material speedups require
+an explicit smaller limit; for example:
 
 .. code-block:: python
 
     from dataretrieval import waterdata
 
-    with waterdata.parallel_chunks(32):
-        df, md = waterdata.get_daily(
-            monitoring_location_id=many_sites, parameter_code="00060"
-        )
+    df, md = waterdata.get_daily(
+        monitoring_location_id="USGS-01646500",
+        parameter_code="00060",
+        limit=2000,
+    )
 
-``n`` is a positive integer (e.g. ``2``, ``8``, ``32``) -- the number of
-chunks to fan the call out into; a non-integer or non-positive value
-raises ``ValueError`` at the ``with``. ``n`` caps the *total* chunk count
-across every multi-value argument combined (not per argument), bounded below by
-what the byte limit already forces and above by how many values there are to
-split. Several multi-value arguments therefore can't multiply past it, and
-``n=1`` asks for no extra fan-out. Each chunk costs a request against your
-hourly rate limit. How many run *at once* is capped separately by
-``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds quota without
-adding parallelism -- the useful range is roughly ``2`` up to
-``API_USGS_CONCURRENT``. There is no "off" level: don't enter the block
-unless you already expect a large, multi-page result -- on a query that would
-have fit in a single page, extra chunks only burn quota.
+``API_USGS_CONCURRENT`` (default 32) bounds both chunk fan-out and the page-wave
+width. Set it to ``1`` to use standard cursor pagination sequentially:
+
+.. code-block:: python
+
+    import os
+
+    os.environ["API_USGS_CONCURRENT"] = "1"
+
+``offset`` is a Water Data extension, not part of OGC API - Features. If a
+server ignores it, the client detects identical pages before returning rows and
+re-runs the query through standard ``next`` links. At Water Data's 40,000-row
+offset ceiling, it rewinds one page and cursor-walks the tail so the result has
+neither a gap nor duplicate rows.
+
+Byte-driven chunking is unchanged: a multi-value request above the service's
+~8 KB request limit is still split for correctness. That division is separate
+from page-level parallelism.
 
 The full taxonomy
 =================

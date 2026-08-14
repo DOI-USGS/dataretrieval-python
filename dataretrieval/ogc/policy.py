@@ -60,6 +60,13 @@ class OgcDialect:
         Columns to sort the combined result by, in priority order. Sorting
         is applied only when the first (primary) column is present; any
         later columns also present are added as secondary keys.
+    max_offset : int or None
+        Largest ``offset`` the API accepts, or ``None`` when it rejects
+        ``offset`` entirely (the conservative default — offset-parallel page
+        fetching is only attempted when an API declares a ceiling here).
+        ``offset`` is *not* a standard OGC API - Features parameter: Part 1
+        defines only ``limit`` and the ``next`` link relation, so support is a
+        per-server extension that has to be declared rather than assumed.
     """
 
     cql2_services: frozenset[str] = field(default_factory=frozenset)
@@ -67,6 +74,7 @@ class OgcDialect:
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
+    max_offset: int | None = None
 
 
 # Default dialect: a plain OGC API with no CQL2-only collections and no

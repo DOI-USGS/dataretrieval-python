@@ -95,6 +95,30 @@ def _ogc_query_params(
     return params
 
 
+def with_offset(request: httpx.Request, offset: int) -> httpx.Request:
+    """Rebuild ``request`` with one absolute row ``offset`` applied."""
+    url = request.url.copy_set_param("offset", str(offset))
+    content = request.content if request.method == "POST" else None
+    return httpx.Request(
+        method=request.method,
+        url=url,
+        headers=request.headers,
+        content=content,
+    )
+
+
+def page_limit(request: httpx.Request) -> int | None:
+    """Return the positive page ``limit`` encoded on ``request``, if usable."""
+    raw = request.url.params.get("limit")
+    if raw is None:
+        return None
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None
+
+
 def _partition_request_params(
     params: dict[str, Any], *, use_cql2: bool
 ) -> tuple[dict[str, Any], dict[str, Any]]:

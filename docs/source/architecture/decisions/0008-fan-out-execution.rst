@@ -78,8 +78,9 @@ planning and the OGC call site passes it through; Water Use passes its first
 location's URL, since the service has no request expressing "all of these".
 
 ``dataretrieval.ogc`` keeps chunk planning: the byte budget, the axis
-partitioning, the CQL2 filter split, the ``parallel_chunks`` dial. Those are
-division, and division is protocol-specific.
+partitioning, and the CQL2 filter split. Those are division, and division is
+protocol-specific. Page-level parallelism is transport execution policy and is
+selected separately from chunk planning.
 
 The interruption taxonomy moves to ``dataretrieval.interruptions``, a top-level
 leaf, for the reason ADR 0006 gives for ``combining``, ``progress``, and

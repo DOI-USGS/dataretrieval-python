@@ -8,20 +8,15 @@ for each axis that minimizes total chunks while keeping every
 chunk URL under the budget. Requests that already fit get a
 trivial single-step plan — the executor has one code path either way.
 
-This module owns the OGC-specific half: the byte budget, the
-``parallel_chunks`` dial, and the ``multi_value_chunked`` decorator that
-ties a plan to a fetcher. Driving the resulting chunks to
-completion — bounded concurrency, retry, failure precedence, resume — is
-API-neutral and belongs to
-:class:`dataretrieval.transport.fanout.FanOut`, which this module hands
-its plan to. :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
+This module owns the OGC-specific half: the byte budget and the
+``multi_value_chunked`` decorator that ties a plan to a fetcher. The planner
+splits only as far as the byte limit forces. Parallelism within each chunk is
+the offset page walk's job, which overlaps pages without manufacturing extra
+chunks. Driving chunks to completion — bounded concurrency, retry, failure
+precedence, resume — is API-neutral and belongs to
+:class:`dataretrieval.transport.fanout.FanOut`, which this module hands its plan
+to. :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
 :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally.
-
-Parallel chunks: the planner is conservative by default — it splits only as
-far as the byte limit forces. A caller who knows their result is large can opt
-into a finer split via the ``parallel_chunks(n)`` context manager, which fans
-the query out into ``n`` parallel chunks. ``n`` drives
-:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.
 
 Concurrency, retries, and interruption semantics are documented on
 :mod:`dataretrieval.transport.fanout`; ``API_USGS_CONCURRENT`` and
@@ -37,26 +32,25 @@ Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 from __future__ import annotations
 
 import functools
-from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from collections.abc import Callable
 from typing import Any
 
 import httpx
 import pandas as pd
 
-from dataretrieval._ambient import Ambient
 from dataretrieval.transport.fanout import (
+    _CONCURRENCY_DEFAULT,
     FanOut,
     _active_client,
     _Fetch,
     _Finalize,
     _passthrough_result,
+    _resolve_concurrency,
     active_client,
 )
 from dataretrieval.transport.retry import RetryPolicy
 
 from .planning import ChunkPlan
-from .policy import _require_positive_int
 
 # Compatibility aliases. ``ChunkedCall`` was this module's executor before it
 # moved down to transport as the API-neutral ``FanOut``; ``get_active_client``
@@ -78,116 +72,15 @@ _chunked_client = _active_client
 _OGC_URL_BYTE_LIMIT = 8000
 
 
-# Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte
-# limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a
-# ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for
-# why). The ambient holds ``n`` — the requested cap on the plan's total
-# chunk count; ``1`` (the default, outside any block) means "off — chunk
-# only as much as the byte limit needs, no extra fan-out".
-_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
+def page_concurrency() -> int:
+    """Return the bounded page-wave width for offset pagination.
 
-
-@contextmanager
-def parallel_chunks(n: int) -> Iterator[None]:
+    ``API_USGS_CONCURRENT`` governs both chunk fan-out and page waves. The
+    ``unbounded`` chunk setting is clamped here because a speculative page wave
+    must remain finite.
     """
-    Fan the OGC getters' multi-value requests out into ``n`` parallel chunks.
-
-    By default the Water Data / NGWMN getters chunk a request only as much as
-    the server's ~8 KB URL-byte limit forces — the fewest chunks that
-    fit. That is the safe default, but it can be *needlessly* conservative.
-    Because every chunk paginates, splitting a large result further costs
-    little or no extra quota *as long as each chunk still spans many
-    pages* — rows-per-chunk far exceeding the page size (ten states pulled as
-    one request page nearly as many times as ten per-state requests would).
-    When a split leaves each chunk only a page or two, its partial final
-    page is extra, so finer chunks do add some requests. This context manager
-    lets a caller who *knows* their pull is large ask for that finer split. The
-    trade is roughly the same pages for more, smaller chunks, which gives
-    smoother progress, more even concurrency, and a smaller unit of
-    retry/resume.
-
-    This is a *deliberate* per-call knob rather than an automatic behavior or a
-    process-wide environment variable, because the library can't tell in
-    advance whether a query is large (ten states over a short window might fit
-    in a single page, where extra chunks would only burn quota). Scoping it to
-    a ``with`` block keeps an aggressive setting from leaking into unrelated
-    calls and accidentally spending quota. Outside any block the getters use
-    the conservative default. Only the OGC getters (Water Data, NGWMN) read
-    this; wrapping a legacy NWIS call in the block is a harmless no-op.
-
-    Parameters
-    ----------
-    n : int
-        The number of chunks to fan the whole call out into — a positive
-        integer such as ``2``, ``8``, or ``32``. It caps the plan's *total*
-        chunk count (the cartesian product across every multi-value
-        argument combined, not per argument), so several multi-value arguments
-        cannot multiply past it. The cap is a ceiling, never exceeded: the
-        actual count is bounded below by what the ~8 KB URL limit already
-        forces and above by ``n``. So an ``n`` larger than the input allows
-        simply yields one chunk per value, and with several multi-value
-        arguments the total may land somewhat below ``n`` because splits are
-        whole (the plan can't always divide evenly onto ``n``). ``n=1`` asks
-        for no extra fan-out.
-
-        Each chunk fetches at least one page, so it costs at least one
-        request against your hourly rate limit — a larger ``n`` spends more
-        quota. How many chunks run *at once* is capped separately by
-        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds
-        quota without adding parallelism; the useful range is roughly ``2``
-        up to ``API_USGS_CONCURRENT``.
-
-    Yields
-    ------
-    None
-
-    Raises
-    ------
-    ValueError
-        If ``n`` is not a positive integer — raised on ``with`` entry, before
-        any request is issued, so a bad value fails loudly rather than silently
-        doing nothing.
-
-    Notes
-    -----
-    Fanning out carries the same consequences as the byte-limit chunking the
-    getters already do for oversized requests; opting in just brings them to a
-    request that would otherwise be a single call:
-
-    - ``max_rows``: each chunk paginates up to ``max_rows`` rows
-      independently, then the combined result is sorted and truncated to
-      ``max_rows``. So a call with ``max_rows`` set returns a *different*
-      (though still valid and deterministically sorted) row set inside a
-      ``parallel_chunks`` block than without one. The cap is drawn from the
-      union of the chunks, not a single stream. Don't pair a tight
-      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the
-      rows the un-fanned call would return.
-    - Resumability: a single request either fully succeeds or fully fails,
-      but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
-      raise a resumable :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted`
-      (or ``QuotaExhausted``) carrying the completed chunks. Finish the
-      call with ``exc.call.resume()``.
-    - Cross-chunk de-duplication keys on the feature ``id``; features
-      with no ``id`` can't be deduped, so overlapping filter clauses split
-      across chunks may yield duplicate rows.
-
-    Examples
-    --------
-    >>> from dataretrieval import waterdata
-    >>> with waterdata.parallel_chunks(32):
-    ...     df, md = waterdata.get_daily(
-    ...         monitoring_location_id=many_sites, parameter_code="00060"
-    ...     )  # doctest: +SKIP
-
-    See Also
-    --------
-    ChunkPlan._refine : the planning-side effect of ``n``.
-    """
-    # Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared
-    # rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).
-    _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
-    with _parallel_chunks(n):
-        yield
+    resolved = _resolve_concurrency(_CONCURRENCY_DEFAULT)
+    return _CONCURRENCY_DEFAULT if resolved is None else resolved
 
 
 def multi_value_chunked(
@@ -203,9 +96,9 @@ def multi_value_chunked(
     ``async def fetch(args) -> (df, response)``, and drives it to
     completion via :meth:`ChunkedCall.resume`. The plan splits multi-value
     list params and the cql-text filter so each chunk URL fits the
-    byte limit. An already-fitting request is a one-step plan, unless an
-    active :func:`parallel_chunks` block asks the plan to fan out more
-    finely. See the module docstring for the concurrency model.
+    byte limit. An already-fitting request is a one-step plan. Each chunk
+    then fetches its pages through the strategy selected by the OGC engine.
+    See the module docstring for the concurrency model.
 
     Parameters
     ----------
@@ -251,14 +144,7 @@ def multi_value_chunked(
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
             limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
-            # Read the parallel_chunks dial ``n`` from the ambient set by
-            # ``parallel_chunks`` (1 = off outside any such block; otherwise the
-            # requested total chunk cap). It only affects *planning*, done
-            # here up front, so a later resume — which re-issues the
-            # already-planned chunks — needs no snapshot.
-            plan = ChunkPlan(
-                args, build_request, limit, max_chunks=_parallel_chunks.get()
-            )
+            plan = ChunkPlan(args, build_request, limit)
             retry_policy = RetryPolicy.from_env()
             # The concurrency cap is resolved inside ``resume()`` from
             # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
@@ -272,6 +158,9 @@ def multi_value_chunked(
                 # The collection name, for the progress line the executor
                 # opens. ``get_ogc_data`` puts it in ``args``.
                 service=args.get("collection"),
+                # One chunk can fan out a page wave independently of the chunk
+                # semaphore, so the shared pool must cover both dimensions.
+                connection_multiplier=page_concurrency,
             ).resume()
 
         return wrapper

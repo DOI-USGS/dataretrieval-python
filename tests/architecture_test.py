@@ -38,7 +38,7 @@ PACKAGE_ROOT = Path(__file__).parents[1] / "dataretrieval"
 #: How many request-building names ``ogc.engine`` currently needs. A ceiling
 #: rather than an exact list allows renames and deletions without weakening the
 #: rule that orchestration must not absorb request construction again.
-_MAX_ENGINE_REQUEST_IMPORTS = 5
+_MAX_ENGINE_REQUEST_IMPORTS = 6
 
 
 def _module_name(path: Path) -> str:

@@ -49,10 +49,13 @@ from dataretrieval.ogc.requests import (
     _construct_cql_request,
     _switch_arg_id,
     _switch_properties_id,
+    page_limit,
+    with_offset,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
 from dataretrieval.transport.fanout import FanOut
 from dataretrieval.transport.links import resolve_next_url
+from dataretrieval.transport.offsets import OffsetUnsupported, paginate_by_offset
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
 
@@ -114,6 +117,11 @@ def _next_req_url(
         # deliberately, not a side effect of sharing the check.
         return resolve_next_url(href, resp, service="OGC", error=RuntimeError)
     return None
+
+
+def _ogc_parse_page(resp: httpx.Response, *, geopd: bool) -> pd.DataFrame:
+    """Parse one OGC page for offset pagination, where no cursor is needed."""
+    return _get_resp_data(resp, geopd=geopd)
 
 
 def _ogc_parse_response(
@@ -198,6 +206,82 @@ async def _walk_pages(
     )
 
 
+async def _walk_pages_by_offset(
+    geopd: bool,
+    req: httpx.Request,
+    client: httpx.AsyncClient | None = None,
+    *,
+    width: int,
+    max_offset: int | None,
+    row_cap: int | None = None,
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Fetch computable offset pages concurrently, then cursor-walk the tail."""
+    limit = page_limit(req)
+    if limit is None:
+        return await _walk_pages(
+            geopd=geopd,
+            req=req,
+            client=client,
+            row_cap=row_cap,
+        )
+
+    async def tail_walk(
+        resume_offset: int, rows_so_far: int, session: httpx.AsyncClient
+    ) -> tuple[pd.DataFrame, httpx.Response]:
+        remaining = None if row_cap is None else max(row_cap - rows_so_far, 0)
+        return await _walk_pages(
+            geopd=geopd,
+            req=with_offset(req, resume_offset),
+            client=session,
+            row_cap=remaining,
+        )
+
+    try:
+        return await paginate_by_offset(
+            build_page=functools.partial(with_offset, req),
+            parse_page=functools.partial(_ogc_parse_page, geopd=geopd),
+            raise_for_status=_raise_for_non_200,
+            client=client,
+            limit=limit,
+            width=width,
+            max_offset=max_offset,
+            row_cap=row_cap,
+            tail_walk=tail_walk,
+        )
+    except OffsetUnsupported as exc:
+        logger.warning(
+            "Falling back to sequential pagination: %s This is slower but "
+            "uses only standard OGC API - Features paging.",
+            exc,
+        )
+        return await _walk_pages(
+            geopd=geopd,
+            req=req,
+            client=client,
+            row_cap=row_cap,
+        )
+
+
+async def _walk_request(
+    geopd: bool,
+    req: httpx.Request,
+    *,
+    dialect: OgcDialect,
+    row_cap: int | None = None,
+) -> tuple[pd.DataFrame, httpx.Response]:
+    """Select cursor or offset pagination once for one prepared request."""
+    width = chunking.page_concurrency()
+    if dialect.max_offset is None or width <= 1:
+        return await _walk_pages(geopd=geopd, req=req, row_cap=row_cap)
+    return await _walk_pages_by_offset(
+        geopd,
+        req,
+        width=width,
+        max_offset=dialect.max_offset,
+        row_cap=row_cap,
+    )
+
+
 def get_ogc_data(
     args: dict[str, Any],
     collection: str,
@@ -271,7 +355,7 @@ def get_ogc_data(
     # Enforce a genuine positive integer up front: a float (even ``10.0``) or
     # ``bool`` would pass a bare ``< 1`` check and then crash deep in
     # ``pd.DataFrame.head`` with an opaque ``TypeError`` after HTTP I/O has
-    # already fired. Shared with ``parallel_chunks(n)`` via the helper.
+    # already fired. Validated by the shared OGC count helper.
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
@@ -329,7 +413,12 @@ def get_ogc_data(
         # ``(df, BaseMetadata)`` shape rather than a raw response pair.
         return FanOut(
             [req],
-            functools.partial(_walk_pages, GEOPANDAS, row_cap=max_rows),
+            functools.partial(
+                _walk_request,
+                GEOPANDAS,
+                dialect=dialect,
+                row_cap=max_rows,
+            ),
             RetryPolicy.from_env(),
             finalize,
             canonical_url=str(req.url),
@@ -346,7 +435,10 @@ def get_ogc_data(
         _construct_api_requests, base_url=base_url, dialect=dialect
     )
     fetch = functools.partial(
-        _fetch_once, build_request=build_request, row_cap=max_rows
+        _fetch_once,
+        build_request=build_request,
+        dialect=dialect,
+        row_cap=max_rows,
     )
     run = chunking.multi_value_chunked(build_request=build_request)(fetch)
     # No progress block here: the executor that emits the events owns the line
@@ -358,6 +450,7 @@ async def _fetch_once(
     args: dict[str, Any],
     *,
     build_request: Callable[..., httpx.Request],
+    dialect: OgcDialect,
     row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
@@ -375,4 +468,9 @@ async def _fetch_once(
     synchronously. The return shape is ``(frame, response)``.
     """
     req = build_request(**args)
-    return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
+    return await _walk_request(
+        GEOPANDAS,
+        req,
+        dialect=dialect,
+        row_cap=row_cap,
+    )
