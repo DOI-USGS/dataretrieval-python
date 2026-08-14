@@ -307,6 +307,28 @@ def test_get_sites_skip_geometry(httpx_mock):
     assert _queries(httpx_mock, "sites")[0]["skipGeometry"] == ["true"]
 
 
+def test_get_sites_empty_skip_geometry_is_plain(httpx_mock):
+    """The request's skip-geometry mode also governs an all-empty result."""
+    httpx_mock.add_response(
+        method="GET",
+        url=_schema_re("sites"),
+        json={
+            "properties": {
+                "geometry": {},
+                "monitoring_location_id": {},
+                "state_name": {},
+            }
+        },
+    )
+    _mock(httpx_mock, "sites", _collection([]))
+
+    df, _ = ngwmn.get_sites(monitoring_location_id="USGS-00000000", skip_geometry=True)
+
+    assert type(df) is DataFrame
+    assert "geometry" not in df.columns
+    assert "monitoring_location_id" in df.columns
+
+
 def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
     """The single ``state`` parameter accepts a full name, postal code, or FIPS
     code, and all three are normalized to the full ``state_name`` that the
@@ -338,6 +360,28 @@ def test_get_providers(httpx_mock):
     assert len(df) == 2
     assert {"agency_code", "organization_type", "state"}.issubset(df.columns)
     assert "geometry" not in df.columns
+
+
+def test_get_providers_empty_stays_plain(httpx_mock):
+    """A nonspatial collection stays tabular when its query has no matches."""
+    httpx_mock.add_response(
+        method="GET",
+        url=_schema_re("providers"),
+        json={
+            "properties": {
+                "agency_code": {},
+                "organization_type": {},
+                "state": {},
+            }
+        },
+    )
+    _mock(httpx_mock, "providers", _collection([]))
+
+    df, _ = ngwmn.get_providers(agency_code="NONE")
+
+    assert type(df) is DataFrame
+    assert "geometry" not in df.columns
+    assert {"agency_code", "organization_type", "state"}.issubset(df.columns)
 
 
 def test_get_providers_state_accepts_name_postal_or_fips(httpx_mock):
@@ -515,8 +559,10 @@ def test_empty_result_returns_typed_empty_frame(httpx_mock):
 
     df, _ = ngwmn.get_water_level(monitoring_location_id=_SITE)
 
+    assert type(df) is DataFrame
     assert df.empty
     assert "monitoring_location_id" in df.columns
+    assert "geometry" not in df.columns
 
 
 # --- live upstream monitor ---------------------------------------------------

@@ -105,6 +105,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         service,
         output_id=_NGWMN_OUTPUT_ID,
         base_url=NGWMN_OGC_API_URL,
+        spatial=service == "sites",
         dialect=NGWMN_DIALECT,
     )
 

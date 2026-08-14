@@ -33,6 +33,7 @@ from dataretrieval.ogc.errors import (
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
+    _deal_with_empty,
     _get_resp_data,
     _to_snake_case,
 )
@@ -53,6 +54,8 @@ _finalize_ogc = functools.partial(
     extra_id_cols=_EXTRA_ID_COLS,
     dialect=WATERDATA_DIALECT,
     base_url=OGC_API_URL,
+    geopd=False,
+    include_geometry=True,
 )
 
 _LOGGER_NAME = _utils_module.__name__
@@ -605,6 +608,66 @@ def test_handle_nesting_empty_preserves_geopd_type():
     assert isinstance(result, _Sentinel)
 
 
+def test_empty_result_uses_request_geometry_contract():
+    """All-empty shaping follows the request mode, not the template class."""
+    with_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=True,
+    )
+    without_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "geometry", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=False,
+    )
+
+    assert type(with_geometry) is pd.DataFrame
+    assert list(with_geometry.columns) == ["a", "b", "geometry"]
+    assert all(dtype.kind == "O" for dtype in with_geometry.dtypes)
+    assert list(without_geometry.columns) == ["a", "b"]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_empty_result_matches_a_non_empty_geodataframe():
+    """An empty geospatial result remains usable like a non-empty one."""
+    import geopandas as gpd
+
+    response = _resp_ok([])
+    page = _get_resp_data(response, geopd=True)
+    template = pd.concat([page], ignore_index=True)
+    out = _deal_with_empty(
+        template,
+        ["monitoring_location_id"],
+        "daily",
+        base_url="x",
+        geopd=True,
+        include_geometry=True,
+    )
+
+    assert isinstance(template, gpd.GeoDataFrame)
+    assert isinstance(out, gpd.GeoDataFrame) and out.empty
+    assert out["monitoring_location_id"].dtype == object
+    assert out.geometry is not None
+    assert out.crs == "EPSG:4326"
+    out["monitoring_location_id"].str.startswith("USGS")
+    out.to_crs("EPSG:3857")
+    real = gpd.GeoDataFrame(
+        {
+            "monitoring_location_id": ["USGS-1"],
+            "geometry": gpd.points_from_xy([1], [2]),
+        },
+        crs="EPSG:4326",
+    )
+    combined = pd.concat([out, real], ignore_index=True)
+    assert isinstance(combined, gpd.GeoDataFrame) and combined.crs == "EPSG:4326"
+
+
 def test_get_resp_data_empty_preserves_geopd_type():
     """Same as the stats-side preservation: ``_get_resp_data``'s
     ``numberReturned == 0`` short-circuit must return a
@@ -625,6 +688,27 @@ def test_get_resp_data_empty_preserves_geopd_type():
     with mock.patch.object(_shaping_module, "gpd", fake_gpd, create=True):
         result = _get_resp_data(resp, geopd=True)
     assert isinstance(result, _Sentinel)
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_get_resp_data_keeps_one_geospatial_type_when_geometry_is_missing():
+    """A spatial request cannot change frame family based on page contents."""
+    import geopandas as gpd
+
+    empty = _get_resp_data(_resp_ok([]), geopd=True)
+    missing = _get_resp_data(
+        _resp_ok([{"id": "1", "properties": {"value": 1}}]),
+        geopd=True,
+    )
+
+    assert isinstance(empty, gpd.GeoDataFrame)
+    assert isinstance(missing, gpd.GeoDataFrame)
+    assert missing.geometry.isna().all()
+    for pages in ([empty, missing], [missing, empty]):
+        combined = pd.concat(pages, ignore_index=True)
+        assert isinstance(combined, gpd.GeoDataFrame)
+        assert combined.geometry.name == "geometry"
+        assert combined.crs == "EPSG:4326"
 
 
 def test_get_resp_data_attaches_wgs84_crs():

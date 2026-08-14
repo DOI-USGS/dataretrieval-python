@@ -762,6 +762,29 @@ def test_get_daily_no_geometry(httpx_mock):
     assert _sent(httpx_mock, "daily")[0]["skipGeometry"] == ["true"]
 
 
+def test_get_daily_empty_no_geometry(httpx_mock):
+    """An empty skip-geometry request has the same plain shape as a hit."""
+    httpx_mock.add_response(
+        method="GET",
+        url=_schema_url("daily"),
+        json={
+            "properties": {
+                "geometry": {},
+                "id": {},
+                "monitoring_location_id": {},
+                "value": {},
+            }
+        },
+    )
+    _mock_items(httpx_mock, "daily", body={"features": [], "links": []})
+
+    df, _ = get_daily(monitoring_location_id="USGS-NOT-FOUND", skip_geometry=True)
+
+    assert type(df) is DataFrame
+    assert "geometry" not in df.columns
+    assert {"monitoring_location_id", "value"}.issubset(df.columns)
+
+
 def test_get_continuous(httpx_mock):
     """Continuous observations are timestamped (not date-only), so ``time``
     comes back as a UTC-aware datetime column."""

@@ -178,6 +178,8 @@ def get_ogc_data(
     output_id: str | None = None,
     max_rows: int | None = None,
     cql_body: str | None = None,
+    *,
+    spatial: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
@@ -204,6 +206,9 @@ def get_ogc_data(
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
+    spatial : bool, optional
+        Whether the collection carries feature geometry. Water Data's typed
+        feature collections do; reference tables pass ``False``.
 
     Returns
     -------
@@ -221,6 +226,7 @@ def get_ogc_data(
         output_id,
         max_rows=max_rows,
         base_url=OGC_API_URL,
+        spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
         cql_body=cql_body,
