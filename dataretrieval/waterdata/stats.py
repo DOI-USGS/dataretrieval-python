@@ -58,13 +58,13 @@ def _handle_nesting(
     Notes
     -----
     The non-geopandas branch uses the same schema-aware extraction as
-    :func:`engine._get_resp_data`: it builds the per-feature outer frame
-    directly from each feature's ``properties`` (minus the nested
-    ``data`` field, which is unrolled separately below via the
-    ``record_path`` json_normalize), then adds ``geometry`` only when
-    present. Unlike :func:`engine._get_resp_data`, no top-level ``id``
-    column is added — stats features don't carry one, so this matches the
-    geopandas branch. Skipping the GeoJSON envelope keeps newly-added
+    :func:`~dataretrieval.ogc.shaping._feature_frame`: it builds the
+    per-feature outer frame directly from each feature's ``properties`` (minus
+    the nested ``data`` field, which is unrolled separately below via the
+    ``record_path`` json_normalize), then adds ``geometry`` only when present.
+    Unlike :func:`~dataretrieval.ogc.shaping._feature_frame`, no top-level
+    ``id`` column is added — stats features don't carry one, so this matches
+    the geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
     if body is None:

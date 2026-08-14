@@ -26,11 +26,8 @@ from __future__ import annotations
 
 import functools
 import logging
-from collections.abc import (
-    Awaitable,
-    Callable,
-)
-from typing import TYPE_CHECKING, Any, TypeVar
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 import pandas as pd
@@ -51,7 +48,7 @@ from dataretrieval.ogc.requests import (
     _switch_arg_id,
     _switch_properties_id,
 )
-from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
+from dataretrieval.ogc.shaping import GEOPANDAS, _feature_frame, _finalize_ogc
 from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
@@ -100,7 +97,7 @@ def _next_req_url(
     # rather than ``numberReturned``: the main Water Data API reports
     # ``numberReturned`` but the NGWMN OGC API omits it, so trusting it would
     # refuse to follow a ``next`` link on a page that actually carries
-    # features (mirrors the same guard in :func:`_get_resp_data`).
+    # features (mirrors the same guard in :func:`_ogc_parse_response`).
     if not (body.get("features") or []):
         return None
     for link in body.get("links", []):
@@ -120,92 +117,53 @@ def _next_req_url(
     return None
 
 
-_Cursor = TypeVar("_Cursor")
-
-
-async def _paginate(
-    initial_req: httpx.Request,
-    *,
-    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
-    follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
-    client: httpx.AsyncClient | None = None,
-    raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
-    row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around collection-neutral cursor pagination."""
-    session = client if client is not None else active_client()
-    return await paginate(
-        initial_req,
-        parse_response=parse_response,
-        follow_up=follow_up,
-        client=session,
-        raise_for_status=raise_for_status,
-        row_cap=row_cap,
-    )
-
-
 def _ogc_parse_response(
-    resp: httpx.Response, *, geopd: bool
-) -> tuple[pd.DataFrame, str | None]:
-    """Parse one OGC API page: extract the DataFrame and the next-page URL.
+    resp: httpx.Response,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Parse one OGC page into raw features and its next-page cursor.
 
-    The parse strategy :func:`_walk_pages` hands to
-    :func:`_paginate`. Coerces falsy cursors (empty href, etc.) to
-    ``None`` so the paginate loop's ``while cursor is not None``
-    terminates instead of spinning on a meaningless value.
+    Missing or null ``features`` is the service's empty-page shape. Other
+    container errors are rejected here so a malformed page is reported with
+    pagination context rather than failing later inside pandas or geopandas.
+    Feature members remain schema-tolerant: ``id``, ``properties``, and
+    ``geometry`` are optional and interpreted only during final shaping.
     """
     body = resp.json()
-    return (
-        _get_resp_data(resp, geopd=geopd, body=body),
-        _next_req_url(resp, body=body) or None,
-    )
+    features = body.get("features")
+    if features is None:
+        features = []
+    if not isinstance(features, list):
+        raise ValueError("OGC response 'features' must be a list")
+    for index, feature in enumerate(features):
+        if not isinstance(feature, dict):
+            raise ValueError(f"OGC feature at index {index} must be a mapping")
+    return cast("list[dict[str, Any]]", features), _next_req_url(
+        resp, body=body
+    ) or None
+
+
+def _combine_feature_pages(
+    pages: list[list[dict[str, Any]]], row_cap: int | None
+) -> list[dict[str, Any]]:
+    """Flatten feature pages in arrival order and apply the download cap."""
+    features = [feature for page in pages for feature in page]
+    return features if row_cap is None else features[:row_cap]
 
 
 async def _walk_pages(
-    geopd: bool,
     req: httpx.Request,
     client: httpx.AsyncClient | None = None,
     *,
+    geopd: bool | None = None,
+    include_geometry: bool = True,
     row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
-    """
-    Iterate paginated OGC API responses and aggregate them into one DataFrame.
+    """Aggregate raw OGC pages, then shape one completed chunk.
 
-    Thin wrapper that hands off to :func:`_paginate` with
-    OGC-specific strategies: pages are parsed via :func:`_get_resp_data`
-    (through :func:`_ogc_parse_response`) and the next-page cursor is the
-    URL from the response's ``links`` array (per :func:`_next_req_url`).
-
-    Parameters
-    ----------
-    geopd : bool
-        Whether geopandas is installed (drives geometry handling).
-    req : httpx.Request
-        The initial HTTP request to send.
-    client : httpx.AsyncClient, optional
-        Caller-borrowed client; ``None`` defers client management to
-        :func:`_paginate`.
-    row_cap : int, optional
-        Stop following pages once this many rows have accumulated and
-        truncate to exactly this many. ``None`` (default) walks every page.
-        An early-stop download bound only — the combined-result cap is
-        applied in :func:`~dataretrieval.ogc.shaping._finalize_ogc`.
-
-    Returns
-    -------
-    pd.DataFrame
-        A DataFrame containing the aggregated results from all pages.
-    httpx.Response
-        Aggregated response — initial-request URL (for query identity),
-        final page's headers (so downstream sees current rate-limit
-        state), and cumulative ``elapsed`` summed across pages.
-
-    Raises
-    ------
-    DataRetrievalError
-        See :func:`_paginate`.
-    httpx.HTTPError
-        See :func:`_paginate`.
+    The paginator combines and caps feature lists before the single frame
+    conversion. ``geopd`` is a test override; production derives it from
+    geopandas availability and ``include_geometry``. ``row_cap`` only bounds
+    this chunk's page walk; finalization caps the combined result.
     """
     method = req.method  # ``httpx.Request.method`` is already upper-cased.
     headers = req.headers
@@ -214,12 +172,22 @@ async def _walk_pages(
     async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
         return await sess.request(method, cursor, headers=headers, content=content)
 
-    return await _paginate(
+    features, response = await paginate(
         req,
-        parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
+        parse_response=_ogc_parse_response,
         follow_up=follow_up,
-        client=client,
+        client=client if client is not None else active_client(),
+        raise_for_status=_raise_for_non_200,
         row_cap=row_cap,
+        combine_pages=_combine_feature_pages,
+    )
+    return (
+        _feature_frame(
+            features,
+            geopd=GEOPANDAS and include_geometry if geopd is None else geopd,
+            include_geometry=include_geometry,
+        ),
+        response,
     )
 
 
@@ -229,6 +197,7 @@ def get_ogc_data(
     output_id: str,
     *,
     base_url: str,
+    spatial: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
@@ -266,6 +235,10 @@ def get_ogc_data(
         rejected at send time, surfacing as a NetworkError about an unknown
         service. Requiring it moves that mistake to the call site, where mypy
         catches it.
+    spatial : bool
+        Whether this collection's result contract includes feature geometry.
+        The adapter supplies this semantic fact; ``skip_geometry`` and
+        geopandas availability then select the concrete frame representation.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
@@ -314,6 +287,9 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
+    # Choose one semantic geometry mode for every completed and empty chunk.
+    include_geometry = spatial and not bool(args.get("skip_geometry", False))
+
     # Post-processing is injected into the chunker rather than applied here,
     # so it runs on *every* exit: the normal return AND a later
     # ``exc.call.resume()`` after a ChunkInterrupted (which never re-enters
@@ -328,6 +304,8 @@ def get_ogc_data(
         output_id=output_id,
         convert_type=convert_type,
         collection=collection,
+        geopd=GEOPANDAS and include_geometry,
+        include_geometry=include_geometry,
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
         dialect=dialect,
@@ -354,7 +332,11 @@ def get_ogc_data(
         # ``(df, BaseMetadata)`` shape rather than a raw response pair.
         return FanOut(
             [req],
-            functools.partial(_walk_pages, GEOPANDAS, row_cap=max_rows),
+            functools.partial(
+                _walk_pages,
+                include_geometry=include_geometry,
+                row_cap=max_rows,
+            ),
             RetryPolicy.from_env(),
             finalize,
             canonical_url=str(req.url),
@@ -371,7 +353,10 @@ def get_ogc_data(
         _construct_api_requests, base_url=base_url, dialect=dialect
     )
     fetch = functools.partial(
-        _fetch_once, build_request=build_request, row_cap=max_rows
+        _fetch_once,
+        build_request=build_request,
+        include_geometry=include_geometry,
+        row_cap=max_rows,
     )
     run = chunking.multi_value_chunked(build_request=build_request)(fetch)
     # No progress block here: the executor that emits the events owns the line
@@ -383,6 +368,7 @@ async def _fetch_once(
     args: dict[str, Any],
     *,
     build_request: Callable[..., httpx.Request],
+    include_geometry: bool,
     row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
@@ -400,4 +386,8 @@ async def _fetch_once(
     synchronously. The return shape is ``(frame, response)``.
     """
     req = build_request(**args)
-    return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
+    return await _walk_pages(
+        req=req,
+        include_geometry=include_geometry,
+        row_cap=row_cap,
+    )

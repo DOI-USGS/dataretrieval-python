@@ -164,7 +164,7 @@ def test_long_filter_fans_out_into_multiple_requests():
     expr = _filter_chunking_clauses()
     sent_filters: list[str] = []
 
-    async def fake_walk_pages(*, geopd, req, row_cap=None):
+    async def fake_walk_pages(*, req, geopd=None, include_geometry=True, row_cap=None):
         idx = len(sent_filters)
         sent_filters.append(_query_params(req).get("filter", [None])[0])
         return pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]}), _fake_response()
@@ -231,10 +231,9 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
 
 def test_empty_chunks_do_not_downgrade_geodataframe():
     """A mix of empty and non-empty chunk responses must not
-    downgrade a GeoDataFrame-typed result to a plain DataFrame.
-    ``_get_resp_data`` returns ``pd.DataFrame()`` on empty responses,
-    which would otherwise strip geometry/CRS from the concatenated
-    output."""
+    downgrade a GeoDataFrame-typed result to a plain DataFrame. Fan-out must
+    ignore an empty plain chunk frame when real geospatial chunks are present,
+    preserving geometry and CRS in the combined output."""
     pytest.importorskip("geopandas")
     import geopandas as gpd
     from shapely.geometry import Point

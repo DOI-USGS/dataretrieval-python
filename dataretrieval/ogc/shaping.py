@@ -43,16 +43,34 @@ if not GEOPANDAS:
     )
 
 
-def _empty_feature_frame(geopd: bool) -> pd.DataFrame:
-    """Empty result frame for a page that carries no features.
+def _empty_feature_frame(
+    geopd: bool,
+    columns: list[str] | None = None,
+    *,
+    include_geometry: bool = True,
+) -> pd.DataFrame:
+    """Construct an empty feature frame for one request's geometry mode.
 
-    Returns a ``GeoDataFrame`` when geopandas is available so a downstream
-    ``pd.concat([empty_page, geo_page])`` doesn't downgrade a geopandas
-    user's result to a plain ``DataFrame`` (stripping geometry/CRS). The
-    single home for this empty-page contract, shared by the feature-frame
-    builders that flatten GeoJSON pages.
+    ``geopd`` and ``include_geometry`` are selected once before pagination and
+    reused when a completed chunk has no features and when the final combined
+    result is empty. This keeps empty and non-empty chunks in the same frame
+    family. ``columns`` is supplied only when finalization has fetched the
+    collection schema; completed-chunk empties intentionally remain
+    schema-light until then.
     """
-    return gpd.GeoDataFrame() if geopd else pd.DataFrame()
+    result_columns = list(columns or [])
+    if include_geometry:
+        if "geometry" not in result_columns:
+            result_columns.append("geometry")
+    else:
+        result_columns = [name for name in result_columns if name != "geometry"]
+
+    data = {name: pd.Series(dtype=object) for name in result_columns}
+    if not geopd:
+        return pd.DataFrame(data, columns=result_columns)
+
+    data["geometry"] = gpd.GeoSeries([], crs=_CRS)
+    return gpd.GeoDataFrame(data, columns=result_columns, geometry="geometry", crs=_CRS)
 
 
 def _attach_coordinates(df: pd.DataFrame, features: list[dict[str, Any]]) -> None:
@@ -82,87 +100,39 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     )
 
 
-def _get_resp_data(
-    resp: httpx.Response,
+def _feature_frame(
+    features: list[dict[str, Any]],
     geopd: bool,
     *,
-    body: dict[str, Any] | None = None,
+    include_geometry: bool = True,
 ) -> pd.DataFrame:
-    """
-    Extracts and normalizes data from an HTTP response containing GeoJSON features.
+    """Convert one completed chunk's GeoJSON features into a frame.
 
-    Parameters
-    ----------
-    resp : httpx.Response
-        The HTTP response object expected to contain a JSON body
-        with a "features" key.
-    geopd : bool
-        Indicates whether geopandas is installed and should be used to
-        handle geometries.
-    body : dict, optional
-        Pre-parsed JSON body for ``resp``. When provided, skips the
-        ``resp.json()`` call — useful when the caller has already
-        decoded the body for its own use (avoids a second parse pass).
+    The page walk retains feature dictionaries and calls this once after all
+    pages for the chunk have been combined and capped. ``geopd`` and
+    ``include_geometry`` are request-level decisions, so frame family never
+    depends on which page supplied a feature or whether its geometry is null.
 
-    Returns
-    -------
-    gpd.GeoDataFrame or pd.DataFrame
-        A ``GeoDataFrame`` when ``geopd`` is True; otherwise a plain
-        ``DataFrame`` carrying the feature properties plus an ``id``
-        column (always present, possibly all-None) and a ``geometry``
-        column (coordinates list) when at least one feature includes
-        geometry. Returns an empty ``DataFrame`` when no features are
-        returned.
-
-    Notes
-    -----
-    The non-geopandas branch normalizes each feature's ``properties`` object,
+    The plain-DataFrame branch normalizes each feature's ``properties`` object,
     flattening nested dictionaries with an underscore separator, then adds the
-    top-level ``id`` and a ``geometry`` column containing the coordinates. The
-    ``id`` column is always added so the downstream collection-specific rename
-    works even when all IDs are missing; ``geometry`` is added only when
-    coordinates are present. Feature-level envelope fields are deliberately
-    excluded.
+    top-level ``id`` and optional coordinate-list ``geometry`` column. The
+    ``id`` column is always materialized so final shaping can rename it to the
+    collection-specific identifier.
     """
-    if body is None:
-        body = resp.json()
-    # Key the empty-result short-circuit off ``features`` rather than
-    # ``numberReturned``: the main Water Data API reports ``numberReturned``,
-    # but the NGWMN OGC API omits it, so trusting it would discard pages that
-    # actually carry features. An absent/empty ``features`` is also the real
-    # schema-drift shape (a 200 with no features) — treat it as empty rather
-    # than crash with a ``KeyError`` downstream, which ``_paginate`` would
-    # mistake for a transient transport error. ``_empty_feature_frame``
-    # preserves the GeoDataFrame type on the short-circuit (see its docstring).
-    features = body.get("features") or []
     if not features:
-        return _empty_feature_frame(geopd)
+        return _empty_feature_frame(geopd, include_geometry=include_geometry)
 
     if not geopd:
         properties = [feature.get("properties") or {} for feature in features]
         df = pd.json_normalize(properties, sep="_")
-        # Always materialize the feature-level ID (possibly all-None) so
-        # ``_arrange_cols`` can perform the documented collection-specific rename.
         df["id"] = [feature.get("id") for feature in features]
-        _attach_coordinates(df, features)
+        if include_geometry:
+            _attach_coordinates(df, features)
         return df
 
-    # Organize json into geodataframe and make sure id column comes along.
-    # NGWMN observation collections (water levels, lithology, …) return
-    # features with no ``geometry`` key at all; ``_geo_feature_frame`` absorbs
-    # that, and the all-null check below then yields a plain DataFrame.
     df = _geo_feature_frame(features)
-    # Mirror the non-geopandas branch's defensive ``f.get("id")`` so a feature
-    # missing a top-level ``id`` yields None rather than a KeyError.
-    df["id"] = [f.get("id") for f in features]
-    df = df[["id"] + [col for col in df.columns if col != "id"]]
-
-    # If no geometry present, then return pandas dataframe. A geodataframe
-    # is not needed.
-    if df["geometry"].isnull().all():
-        df = pd.DataFrame(df.drop(columns="geometry"))
-
-    return df
+    df["id"] = [feature.get("id") for feature in features]
+    return df[["id"] + [col for col in df.columns if col != "id"]]
 
 
 def _deal_with_empty(
@@ -171,44 +141,32 @@ def _deal_with_empty(
     collection: str,
     *,
     base_url: str,
+    geopd: bool,
+    include_geometry: bool,
 ) -> pd.DataFrame:
+    """Apply the collection schema when an entire result is empty.
+
+    A completed empty chunk already carries the request's frame family. The
+    complete column list is available only from explicit ``properties`` or the
+    collection schema, so construct the fully shaped empty once here rather
+    than fetching schema during pagination.
     """
-    Handles empty DataFrame results by returning a DataFrame with appropriate columns.
+    if not return_list.empty:
+        return return_list
 
-    If `return_list` is empty, determines the column names to use:
-        - If `properties` is not provided or contains only NaN values,
-          retrieves schema properties from the specified collection.
-        - Otherwise, uses the provided `properties` list as column names.
+    if not properties or all(pd.isna(properties)):
+        from dataretrieval.ogc.schema import _check_ogc_requests
 
-    Parameters
-    ----------
-    return_list : pd.DataFrame
-        The DataFrame to check for emptiness.
-    properties : Optional[List[str]]
-        List of property names to use as columns, or None.
-    collection : str
-        The collection endpoint to query for schema properties if needed.
-    base_url : str
-        OGC API base URL to use for that schema query — the API the empty
-        result came from, not any particular collection.
+        schema, _ = _check_ogc_requests(
+            endpoint=collection, req_type="schema", base_url=base_url
+        )
+        properties = list(schema.get("properties", {}).keys())
 
-    Returns
-    -------
-    pd.DataFrame
-        The original DataFrame if not empty, otherwise an empty
-        DataFrame with the appropriate columns.
-    """
-    if return_list.empty:
-        if not properties or all(pd.isna(properties)):
-            # Schema lookup performs HTTP only for an empty result.
-            from dataretrieval.ogc.schema import _check_ogc_requests
-
-            schema, _ = _check_ogc_requests(
-                endpoint=collection, req_type="schema", base_url=base_url
-            )
-            properties = list(schema.get("properties", {}).keys())
-        return pd.DataFrame(columns=properties)
-    return return_list
+    return _empty_feature_frame(
+        geopd,
+        properties,
+        include_geometry=include_geometry,
+    )
 
 
 def _arrange_cols(
@@ -361,6 +319,8 @@ def _finalize_ogc(
     output_id: str,
     convert_type: bool,
     collection: str,
+    geopd: bool,
+    include_geometry: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
@@ -383,13 +343,20 @@ def _finalize_ogc(
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
     rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call honors the cap too. The
-    per-page ``row_cap`` bound in the engine is only an early-stop download
+    chunk page-walk ``row_cap`` in the engine is only an early-stop download
     bound. ``base_url`` is required and captured with the finalizer so resumed
     calls query the same API's schema when their combined result is empty.
     """
     if dialect is None:
         dialect = DEFAULT_DIALECT
-    frame = _deal_with_empty(frame, properties, collection, base_url=base_url)
+    frame = _deal_with_empty(
+        frame,
+        properties,
+        collection,
+        base_url=base_url,
+        geopd=geopd,
+        include_geometry=include_geometry,
+    )
     # Normalize to PEP-8 snake_case column names *first*, so the dialect's
     # ``time_cols``/``numerical_cols``/``sort_cols`` (all snake_case) match
     # regardless of whether the API returns snake_case (Water Data, where

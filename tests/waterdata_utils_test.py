@@ -33,7 +33,8 @@ from dataretrieval.ogc.errors import (
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
-    _get_resp_data,
+    _deal_with_empty,
+    _feature_frame,
     _to_snake_case,
 )
 from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
@@ -53,6 +54,8 @@ _finalize_ogc = functools.partial(
     extra_id_cols=_EXTRA_ID_COLS,
     dialect=WATERDATA_DIALECT,
     base_url=OGC_API_URL,
+    geopd=False,
+    include_geometry=True,
 )
 
 _LOGGER_NAME = _utils_module.__name__
@@ -357,16 +360,9 @@ def test_walk_pages_wraps_initial_page_parse_error():
     assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
 
-def test_get_resp_data_handles_missing_features_key():
-    """Regression: a 200 with ``numberReturned > 0`` but no
-    ``features`` key (real schema-drift shape) used to crash
-    ``_get_resp_data`` with ``KeyError`` — wrapped downstream by
-    ``_paginate`` as a generic transport error. ``_handle_nesting``
-    was already hardened against this; ``_get_resp_data`` now mirrors
-    that defensiveness and returns an empty frame instead."""
-    resp = mock.Mock()
-    resp.json.return_value = {"numberReturned": 1, "links": []}
-    df = _get_resp_data(resp, geopd=False)
+def test_feature_frame_handles_empty_feature_list():
+    """An empty completed chunk produces a schema-light frame for finalization."""
+    df = _feature_frame([], geopd=False)
     assert df.empty
     assert isinstance(df, pd.DataFrame)
 
@@ -374,7 +370,7 @@ def test_get_resp_data_handles_missing_features_key():
 def test_next_req_url_follows_link_without_number_returned():
     """The NGWMN OGC API omits ``numberReturned`` from its page envelope, so
     ``_next_req_url`` keys the ``next`` link off ``features`` (mirroring
-    ``_get_resp_data``) rather than that count -- otherwise a page that carries
+    ``_feature_frame``) rather than that count -- otherwise a page that carries
     features but no count stops pagination after page 1 and silently truncates
     every multi-page result. A page that carries features still follows its
     ``next`` link even when ``numberReturned`` is absent."""
@@ -605,8 +601,67 @@ def test_handle_nesting_empty_preserves_geopd_type():
     assert isinstance(result, _Sentinel)
 
 
-def test_get_resp_data_empty_preserves_geopd_type():
-    """Same as the stats-side preservation: ``_get_resp_data``'s
+def test_empty_result_uses_request_geometry_contract():
+    """All-empty shaping follows the request mode, not the template class."""
+    with_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=True,
+    )
+    without_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "geometry", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=False,
+    )
+
+    assert type(with_geometry) is pd.DataFrame
+    assert list(with_geometry.columns) == ["a", "b", "geometry"]
+    assert all(dtype.kind == "O" for dtype in with_geometry.dtypes)
+    assert list(without_geometry.columns) == ["a", "b"]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_empty_result_matches_a_non_empty_geodataframe():
+    """An empty geospatial result remains usable like a non-empty one."""
+    import geopandas as gpd
+
+    page = _feature_frame([], geopd=True)
+    template = pd.concat([page], ignore_index=True)
+    out = _deal_with_empty(
+        template,
+        ["monitoring_location_id"],
+        "daily",
+        base_url="x",
+        geopd=True,
+        include_geometry=True,
+    )
+
+    assert isinstance(template, gpd.GeoDataFrame)
+    assert isinstance(out, gpd.GeoDataFrame) and out.empty
+    assert out["monitoring_location_id"].dtype == object
+    assert out.geometry is not None
+    assert out.crs == "EPSG:4326"
+    out["monitoring_location_id"].str.startswith("USGS")
+    out.to_crs("EPSG:3857")
+    real = gpd.GeoDataFrame(
+        {
+            "monitoring_location_id": ["USGS-1"],
+            "geometry": gpd.points_from_xy([1], [2]),
+        },
+        crs="EPSG:4326",
+    )
+    combined = pd.concat([out, real], ignore_index=True)
+    assert isinstance(combined, gpd.GeoDataFrame) and combined.crs == "EPSG:4326"
+
+
+def test_feature_frame_empty_preserves_geopd_type():
+    """Same as the stats-side preservation: ``_feature_frame``'s
     ``numberReturned == 0`` short-circuit must return a
     ``GeoDataFrame`` (not a plain ``DataFrame``) when geopd is True,
     so paginating across a sparse intermediate page doesn't downgrade
@@ -618,33 +673,47 @@ def test_get_resp_data_empty_preserves_geopd_type():
 
     fake_gpd.GeoDataFrame = lambda *a, **kw: _Sentinel()
 
-    resp = mock.MagicMock()
-    resp.json.return_value = {"numberReturned": 0, "features": [], "links": []}
-    # ``_get_resp_data`` resolves ``gpd`` from the shaping namespace -- patch
+    # ``_feature_frame`` resolves ``gpd`` from the shaping namespace -- patch
     # it there, not in ``utils``.
     with mock.patch.object(_shaping_module, "gpd", fake_gpd, create=True):
-        result = _get_resp_data(resp, geopd=True)
+        result = _feature_frame([], geopd=True)
     assert isinstance(result, _Sentinel)
 
 
-def test_get_resp_data_attaches_wgs84_crs():
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_feature_frame_keeps_one_geospatial_type_when_geometry_is_missing():
+    """A spatial request cannot change frame family based on page contents."""
+    import geopandas as gpd
+
+    empty = _feature_frame([], geopd=True)
+    missing = _feature_frame(
+        [{"id": "1", "properties": {"value": 1}}],
+        geopd=True,
+    )
+
+    assert isinstance(empty, gpd.GeoDataFrame)
+    assert isinstance(missing, gpd.GeoDataFrame)
+    assert missing.geometry.isna().all()
+    assert missing.geometry.name == "geometry"
+    assert missing.crs == "EPSG:4326"
+
+
+def test_feature_frame_attaches_wgs84_crs():
     """A geometry-bearing Water Data page should come back tagged as
     EPSG:4326 (the CRS the coordinates are published in), so callers can
     run ``to_crs`` / spatial joins without first patching in a CRS by
     hand. Regression for the ``.crs is None`` reported in issue #342."""
     geopandas = pytest.importorskip("geopandas")
 
-    resp = _resp_ok(
-        [
-            {
-                "type": "Feature",
-                "id": "USGS-01",
-                "geometry": {"type": "Point", "coordinates": [-76.5, 39.2]},
-                "properties": {"monitoring_location_id": "USGS-01"},
-            }
-        ]
-    )
-    df = _get_resp_data(resp, geopd=True)
+    features = [
+        {
+            "type": "Feature",
+            "id": "USGS-01",
+            "geometry": {"type": "Point", "coordinates": [-76.5, 39.2]},
+            "properties": {"monitoring_location_id": "USGS-01"},
+        }
+    ]
+    df = _feature_frame(features, geopd=True)
     assert isinstance(df, geopandas.GeoDataFrame)
     assert df.crs == "EPSG:4326"
 
@@ -688,38 +757,31 @@ def test_handle_nesting_tolerates_missing_features_key():
     assert df.empty
 
 
-def test_get_resp_data_always_materializes_id_column():
-    """``_get_resp_data`` must always materialize the ``id`` column
+def test_feature_frame_always_materializes_id_column():
+    """``_feature_frame`` must always materialize the ``id`` column
     (NaN-filled when no feature carries one) so the downstream
     ``_arrange_cols`` rename to the collection-specific output_id
     (``daily_id``, ``channel_measurements_id``, etc.) isn't a
     silent no-op."""
-    resp = mock.MagicMock()
-    resp.json.return_value = {
-        "numberReturned": 2,
-        "features": [
-            {"properties": {"val": "a"}},  # no top-level id
-            {"properties": {"val": "b"}},  # ditto
-        ],
-    }
-    df = _get_resp_data(resp, geopd=False)
+    features = [
+        {"properties": {"val": "a"}},  # no top-level id
+        {"properties": {"val": "b"}},  # ditto
+    ]
+    df = _feature_frame(features, geopd=False)
     assert "id" in df.columns
     assert df["id"].isna().all()
 
 
-def test_get_resp_data_flattens_nested_properties():
+def test_feature_frame_flattens_nested_properties():
     """Nested GeoJSON properties keep underscore-separated column names."""
-    resp = mock.MagicMock()
-    resp.json.return_value = {
-        "features": [
-            {
-                "id": "feature-1",
-                "properties": {"station": {"code": "A"}, "value": 1},
-            }
-        ]
-    }
+    features = [
+        {
+            "id": "feature-1",
+            "properties": {"station": {"code": "A"}, "value": 1},
+        }
+    ]
 
-    df = _get_resp_data(resp, geopd=False)
+    df = _feature_frame(features, geopd=False)
 
     assert df.to_dict(orient="records") == [
         {"value": 1, "station_code": "A", "id": "feature-1"}

@@ -112,7 +112,11 @@ def get_reference_table(
     if limit is not None:
         query_args["limit"] = limit
     return get_ogc_data(
-        args=query_args, output_id=output_id, collection=collection, max_rows=max_rows
+        args=query_args,
+        output_id=output_id,
+        collection=collection,
+        max_rows=max_rows,
+        spatial=False,
     )
 
 
