@@ -117,7 +117,10 @@ def _next_req_url(
 
 
 def _ogc_parse_response(
-    resp: httpx.Response, *, geopd: bool
+    resp: httpx.Response,
+    *,
+    geopd: bool,
+    include_geometry: bool = True,
 ) -> tuple[pd.DataFrame, str | None]:
     """Parse one OGC API page: extract the DataFrame and the next-page URL.
 
@@ -129,7 +132,12 @@ def _ogc_parse_response(
     """
     body = resp.json()
     return (
-        _get_resp_data(resp, geopd=geopd, body=body),
+        _get_resp_data(
+            resp,
+            geopd=geopd,
+            include_geometry=include_geometry,
+            body=body,
+        ),
         _next_req_url(resp, body=body) or None,
     )
 
@@ -139,6 +147,7 @@ async def _walk_pages(
     req: httpx.Request,
     client: httpx.AsyncClient | None = None,
     *,
+    include_geometry: bool = True,
     row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """
@@ -153,7 +162,10 @@ async def _walk_pages(
     Parameters
     ----------
     geopd : bool
-        Whether geopandas is installed (drives geometry handling).
+        Whether this request's pages use an active GeoDataFrame.
+    include_geometry : bool, optional
+        Whether plain-DataFrame pages retain raw coordinate lists. False for
+        nonspatial collections and requests using ``skip_geometry=True``.
     req : httpx.Request
         The initial HTTP request to send.
     client : httpx.AsyncClient, optional
@@ -190,7 +202,11 @@ async def _walk_pages(
 
     return await paginate(
         req,
-        parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
+        parse_response=functools.partial(
+            _ogc_parse_response,
+            geopd=geopd,
+            include_geometry=include_geometry,
+        ),
         follow_up=follow_up,
         client=client,
         raise_for_status=_raise_for_non_200,
@@ -204,6 +220,7 @@ def get_ogc_data(
     output_id: str,
     *,
     base_url: str,
+    spatial: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
@@ -241,6 +258,10 @@ def get_ogc_data(
         rejected at send time, surfacing as a NetworkError about an unknown
         service. Requiring it moves that mistake to the call site, where mypy
         catches it.
+    spatial : bool
+        Whether this collection's result contract includes feature geometry.
+        The adapter supplies this semantic fact; ``skip_geometry`` and
+        geopandas availability then select the concrete frame representation.
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to push to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
@@ -289,6 +310,12 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
+    # Choose one semantic frame shape for the whole request. Every page and
+    # the all-empty finalizer receive these same values, so frame type never
+    # depends on whether a particular page happens to carry geometry.
+    include_geometry = spatial and not bool(args.get("skip_geometry", False))
+    geopd = GEOPANDAS and include_geometry
+
     # Post-processing is injected into the chunker rather than applied here,
     # so it runs on *every* exit: the normal return AND a later
     # ``exc.call.resume()`` after a ChunkInterrupted (which never re-enters
@@ -303,6 +330,8 @@ def get_ogc_data(
         output_id=output_id,
         convert_type=convert_type,
         collection=collection,
+        geopd=geopd,
+        include_geometry=include_geometry,
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
         dialect=dialect,
@@ -329,7 +358,12 @@ def get_ogc_data(
         # ``(df, BaseMetadata)`` shape rather than a raw response pair.
         return FanOut(
             [req],
-            functools.partial(_walk_pages, GEOPANDAS, row_cap=max_rows),
+            functools.partial(
+                _walk_pages,
+                geopd,
+                include_geometry=include_geometry,
+                row_cap=max_rows,
+            ),
             RetryPolicy.from_env(),
             finalize,
             canonical_url=str(req.url),
@@ -346,7 +380,11 @@ def get_ogc_data(
         _construct_api_requests, base_url=base_url, dialect=dialect
     )
     fetch = functools.partial(
-        _fetch_once, build_request=build_request, row_cap=max_rows
+        _fetch_once,
+        build_request=build_request,
+        geopd=geopd,
+        include_geometry=include_geometry,
+        row_cap=max_rows,
     )
     run = chunking.multi_value_chunked(build_request=build_request)(fetch)
     # No progress block here: the executor that emits the events owns the line
@@ -358,6 +396,8 @@ async def _fetch_once(
     args: dict[str, Any],
     *,
     build_request: Callable[..., httpx.Request],
+    geopd: bool,
+    include_geometry: bool,
     row_cap: int | None = None,
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
@@ -375,4 +415,9 @@ async def _fetch_once(
     synchronously. The return shape is ``(frame, response)``.
     """
     req = build_request(**args)
-    return await _walk_pages(geopd=GEOPANDAS, req=req, row_cap=row_cap)
+    return await _walk_pages(
+        geopd=geopd,
+        req=req,
+        include_geometry=include_geometry,
+        row_cap=row_cap,
+    )

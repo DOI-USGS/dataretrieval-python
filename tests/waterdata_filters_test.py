@@ -164,7 +164,7 @@ def test_long_filter_fans_out_into_multiple_requests():
     expr = _filter_chunking_clauses()
     sent_filters: list[str] = []
 
-    async def fake_walk_pages(*, geopd, req, row_cap=None):
+    async def fake_walk_pages(*, geopd, req, include_geometry=True, row_cap=None):
         idx = len(sent_filters)
         sent_filters.append(_query_params(req).get("filter", [None])[0])
         return pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]}), _fake_response()
