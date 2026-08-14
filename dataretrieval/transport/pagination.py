@@ -42,9 +42,15 @@ _Cursor = TypeVar("_Cursor")
 async def _client_for(
     client: httpx.AsyncClient | None,
 ) -> AsyncIterator[httpx.AsyncClient]:
-    """Borrow a caller client or open a guarded short-lived client."""
-    if client is not None:
-        yield client
+    """Borrow a client: the caller's, else the running drive's, else a new one.
+
+    Preferring the executor's published client over a fresh one keeps every
+    page of every request on one connection pool. Both callers wanted that and
+    each spelled it itself before it moved here.
+    """
+    borrowed = client if client is not None else active_client()
+    if borrowed is not None:
+        yield borrowed
         return
     async with open_async_client() as new:
         yield new
@@ -177,7 +183,7 @@ def run_paginated(
             request,
             parse_response=parse_response,
             follow_up=follow_up,
-            client=client if client is not None else active_client(),
+            client=client,
             raise_for_status=raise_for_status,
         )
 

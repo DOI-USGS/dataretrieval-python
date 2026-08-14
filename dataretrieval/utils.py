@@ -30,7 +30,6 @@ HTTPX_DEFAULTS = _transport_http.HTTPX_DEFAULTS
 USER_AGENT = _transport_http.USER_AGENT
 _default_headers = _transport_http.default_headers
 _get = _transport_http.get
-_network_error = _transport_http.network_error
 # Public functions whose implementation moved to the private query module; this
 # is the path they are documented at.
 query = _querying.query

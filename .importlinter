@@ -33,9 +33,10 @@ layers =
     _ambient | _response_metadata | codes | combining | interruptions | rdb
     credentials
     exceptions
-; The advisory mechanism sits below the taxonomy it reads no names from: it
-; imports nothing first-party, so any layer can warn without reaching sideways.
-    _deprecation
+; Pure advisory and argument-validation mechanisms sit together at the floor:
+; neither imports first-party code, so every layer can use them without
+; reaching sideways or creating an artificial dependency between the two.
+    _deprecation | _validation
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.
 exhaustive = True

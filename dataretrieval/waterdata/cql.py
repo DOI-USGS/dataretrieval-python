@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval._deprecation import REMOVALS
+from dataretrieval._validation import require_one_of
 from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_COLLECTION,
     _accept_legacy_kwargs,
@@ -137,11 +138,7 @@ def get_cql(
         ...     ' "02070010%"]}',
         ... )
     """
-    if collection not in _OUTPUT_ID_BY_COLLECTION:
-        raise ValueError(
-            f"Unknown collection {collection!r}. Valid collections: "
-            f"{sorted(_OUTPUT_ID_BY_COLLECTION)}."
-        )
+    require_one_of(collection, sorted(_OUTPUT_ID_BY_COLLECTION), name="collection")
 
     # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a

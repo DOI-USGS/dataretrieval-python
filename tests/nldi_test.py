@@ -387,7 +387,7 @@ def test_search_flowlines_without_navigation_mode_raises_value_error():
 
 def test_validate_navigation_mode_raises_value_error_for_invalid():
     """Regression: previously raised TypeError; should be ValueError."""
-    with pytest.raises(ValueError, match="Invalid navigation mode"):
+    with pytest.raises(ValueError, match="Invalid navigation_mode"):
         _validate_navigation_mode("XX")
 
 

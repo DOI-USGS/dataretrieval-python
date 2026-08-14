@@ -10,8 +10,7 @@ The public facade exposes only the minimal collection-adapter seam:
 Collection adapters (NGWMN, Water Data's generic wrapper) import from this
 facade rather than reaching into engine internals — every name here is usable
 through the facade alone. Generic execution policy lives in
-:mod:`dataretrieval.transport`; the engine retains compatibility wrappers at
-previous private paths.
+:mod:`dataretrieval.transport`, which the engine now calls directly.
 """
 
 from dataretrieval.ogc.engine import get_ogc_data
