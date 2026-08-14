@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import require_one_of
 from dataretrieval.exceptions import DataCurrencyWarning
 
 from ._querying import _query_with_retry
@@ -192,10 +193,9 @@ def get_results(
         url = wqx3_url("Result")
 
     profile = kwargs.get("dataProfile")
-    if profile is not None and profile not in valid_profiles:
-        raise ValueError(
-            f"dataProfile {profile!r} is not a valid {kind} profile. "
-            f"Valid options are {valid_profiles}."
+    if profile is not None:
+        require_one_of(
+            profile, valid_profiles, name="dataProfile", context=f"{kind} results"
         )
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
@@ -625,10 +625,7 @@ def what_activity_metrics(
 
 def _validate_service(service: str, valid_services: list[str], profile: str) -> None:
     """Validate a service against one WQP profile's supported endpoints."""
-    if service not in valid_services:
-        raise ValueError(
-            f"{profile} service not recognized. Valid options are {valid_services}."
-        )
+    require_one_of(service, valid_services, name="service", context=profile)
 
 
 def wqp_url(service: str) -> str:

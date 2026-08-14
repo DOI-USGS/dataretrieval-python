@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal, get_args
 
 import pandas as pd
 
+from dataretrieval._validation import require_one_of
 from dataretrieval.waterdata.time_series import get_continuous
 
 if TYPE_CHECKING:
@@ -205,8 +206,7 @@ def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
                 f"get_nearest_continuous constructs its own {forbidden!r}; "
                 "do not pass it directly"
             )
-    if on_tie not in _VALID_ON_TIE:
-        raise ValueError(f"on_tie must be one of {_VALID_ON_TIE}; got {on_tie!r}")
+    require_one_of(on_tie, _VALID_ON_TIE, name="on_tie")
 
 
 def _build_window_or_filter(targets: pd.DatetimeIndex, window_td: pd.Timedelta) -> str:

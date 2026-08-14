@@ -14,6 +14,7 @@ from json import JSONDecodeError
 from typing import Any, Literal, cast
 
 from dataretrieval._querying import _query_with_retry
+from dataretrieval._validation import require_one_of
 
 __all__ = [
     "get_flowlines",
@@ -473,11 +474,7 @@ def search(
         raise ValueError("Both lat and long are required")
 
     find = cast("Literal['basin', 'flowlines', 'features']", find.lower())
-    if find not in ("basin", "flowlines", "features"):
-        raise ValueError(
-            f"Invalid value for find: {find} - allowed values are:"
-            f" 'basin', 'flowlines', or 'features'"
-        )
+    require_one_of(find, ("basin", "flowlines", "features"), name="find")
     if lat is not None and find != "features":
         raise ValueError(
             f"Invalid value for find: {find} - lat/long is to get features not {find}"
@@ -559,11 +556,7 @@ def _validate_navigation_mode(navigation_mode: str | None) -> str:
             f"navigation_mode is required; allowed values are {_VALID_NAVIGATION_MODES}"
         )
     normalized = navigation_mode.upper()
-    if normalized not in _VALID_NAVIGATION_MODES:
-        raise ValueError(
-            f"Invalid navigation mode '{navigation_mode}';"
-            f" allowed values are {_VALID_NAVIGATION_MODES}"
-        )
+    require_one_of(normalized, _VALID_NAVIGATION_MODES, name="navigation_mode")
     return normalized
 
 

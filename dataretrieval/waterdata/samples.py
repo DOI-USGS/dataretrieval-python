@@ -20,6 +20,7 @@ import pandas as pd
 
 from dataretrieval._querying import to_str
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import require_one_of
 from dataretrieval._wqx import _attach_datetime_columns
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.transport.http import (
@@ -63,12 +64,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
     md : :obj:`dataretrieval.utils.BaseMetadata`
         Metadata for the query (URL, query time, response headers).
     """
-    valid_code_services = get_args(CODE_SERVICES)
-    if code_service not in valid_code_services:
-        raise ValueError(
-            f"Invalid code service: '{code_service}'. "
-            f"Valid options are: {valid_code_services}."
-        )
+    require_one_of(code_service, get_args(CODE_SERVICES), name="code_service")
 
     url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
 

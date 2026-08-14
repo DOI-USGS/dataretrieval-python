@@ -153,15 +153,16 @@ def test_wqp_url_profiles(builder, service, expected, warning):
 def test_wqp_url_profiles_reject_unknown_service(
     builder, profile, valid_services, warning
 ):
-    """Shared validation preserves profile-specific error text and ordering."""
+    """Shared validation names the offending service and its profile."""
     with pytest.warns(warning):
         with pytest.raises(
             ValueError,
-            match=rf"^{profile} service not recognized\. Valid options are ",
+            match=rf"^Invalid service: 'unknown' for {profile}\. Valid options are: ",
         ) as exc_info:
             builder("unknown")
 
-    assert str(valid_services) in str(exc_info.value)
+    # Every valid service is offered, in declaration order.
+    assert ", ".join(repr(s) for s in valid_services) in str(exc_info.value)
 
 
 # Every WQP ``what_*`` wrapper issues the same query against its own service

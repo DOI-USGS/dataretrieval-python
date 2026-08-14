@@ -1,5 +1,7 @@
 from typing import Literal, get_args
 
+from dataretrieval._validation import require_one_of
+
 __all__ = [
     "CODE_SERVICES",
     "METADATA_COLLECTIONS",
@@ -125,15 +127,10 @@ def _check_profiles(
         "locations_profiles", "activities_profiles",
         "projects_profiles" or "organizations_profiles".
     """
-    valid_services = get_args(SERVICES)
-    if service not in valid_services:
-        raise ValueError(
-            f"Invalid service: '{service}'. Valid options are: {valid_services}."
-        )
-
-    valid_profiles = PROFILE_LOOKUP[service]
-    if profile not in valid_profiles:
-        raise ValueError(
-            f"Invalid profile: '{profile}' for service '{service}'. "
-            f"Valid options are: {valid_profiles}."
-        )
+    require_one_of(service, get_args(SERVICES), name="service")
+    require_one_of(
+        profile,
+        PROFILE_LOOKUP[service],
+        name="profile",
+        context=f"service {service!r}",
+    )

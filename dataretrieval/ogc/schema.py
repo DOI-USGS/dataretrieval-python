@@ -13,6 +13,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import require_one_of
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 from dataretrieval.transport.http import default_headers as _default_headers
@@ -27,8 +28,7 @@ def _check_ogc_requests(
     ``base_url`` names the API to ask; it defaults to the one in scope for the
     current call rather than to any particular collection.
     """
-    if req_type not in ("queryables", "schema"):
-        raise ValueError(f"req_type must be 'queryables' or 'schema', got {req_type!r}")
+    require_one_of(req_type, ("queryables", "schema"), name="req_type")
     url = f"{base_url}/collections/{endpoint}/{req_type}"
     response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
     _raise_for_non_200(response)

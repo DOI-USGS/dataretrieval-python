@@ -332,7 +332,3 @@ def prepare_request_args(
         else:
             args[k] = _normalize_str_iterable(v, k)
     return args
-
-
-# Compatibility alias for existing private imports from ``ogc.engine``.
-_get_args = prepare_request_args

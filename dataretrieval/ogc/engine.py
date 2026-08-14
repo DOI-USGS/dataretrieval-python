@@ -27,10 +27,9 @@ from __future__ import annotations
 import functools
 import logging
 from collections.abc import (
-    Awaitable,
     Callable,
 )
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import pandas as pd
@@ -52,7 +51,7 @@ from dataretrieval.ogc.requests import (
     _switch_properties_id,
 )
 from dataretrieval.ogc.shaping import GEOPANDAS, _finalize_ogc, _get_resp_data
-from dataretrieval.transport.fanout import FanOut, active_client
+from dataretrieval.transport.fanout import FanOut
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import paginate
 from dataretrieval.transport.retry import RetryPolicy
@@ -62,9 +61,6 @@ if TYPE_CHECKING:
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
-
-# Compatibility alias: the old name used internally and in tests.
-_DEFAULT_DIALECT = DEFAULT_DIALECT
 
 
 def _next_req_url(
@@ -120,39 +116,16 @@ def _next_req_url(
     return None
 
 
-_Cursor = TypeVar("_Cursor")
-
-
-async def _paginate(
-    initial_req: httpx.Request,
-    *,
-    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
-    follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
-    client: httpx.AsyncClient | None = None,
-    raise_for_status: Callable[[httpx.Response], None] = _raise_for_non_200,
-    row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
-    """Compatibility wrapper around collection-neutral cursor pagination."""
-    session = client if client is not None else active_client()
-    return await paginate(
-        initial_req,
-        parse_response=parse_response,
-        follow_up=follow_up,
-        client=session,
-        raise_for_status=raise_for_status,
-        row_cap=row_cap,
-    )
-
-
 def _ogc_parse_response(
     resp: httpx.Response, *, geopd: bool
 ) -> tuple[pd.DataFrame, str | None]:
     """Parse one OGC API page: extract the DataFrame and the next-page URL.
 
     The parse strategy :func:`_walk_pages` hands to
-    :func:`_paginate`. Coerces falsy cursors (empty href, etc.) to
-    ``None`` so the paginate loop's ``while cursor is not None``
-    terminates instead of spinning on a meaningless value.
+    :func:`~dataretrieval.transport.pagination.paginate`. Coerces falsy
+    cursors (empty href, etc.) to ``None`` so the paginate loop's
+    ``while cursor is not None`` terminates instead of spinning on a
+    meaningless value.
     """
     body = resp.json()
     return (
@@ -171,7 +144,8 @@ async def _walk_pages(
     """
     Iterate paginated OGC API responses and aggregate them into one DataFrame.
 
-    Thin wrapper that hands off to :func:`_paginate` with
+    Thin wrapper that hands off to
+    :func:`~dataretrieval.transport.pagination.paginate` with
     OGC-specific strategies: pages are parsed via :func:`_get_resp_data`
     (through :func:`_ogc_parse_response`) and the next-page cursor is the
     URL from the response's ``links`` array (per :func:`_next_req_url`).
@@ -184,7 +158,7 @@ async def _walk_pages(
         The initial HTTP request to send.
     client : httpx.AsyncClient, optional
         Caller-borrowed client; ``None`` defers client management to
-        :func:`_paginate`.
+        :func:`~dataretrieval.transport.pagination.paginate`.
     row_cap : int, optional
         Stop following pages once this many rows have accumulated and
         truncate to exactly this many. ``None`` (default) walks every page.
@@ -203,9 +177,9 @@ async def _walk_pages(
     Raises
     ------
     DataRetrievalError
-        See :func:`_paginate`.
+        See :func:`~dataretrieval.transport.pagination.paginate`.
     httpx.HTTPError
-        See :func:`_paginate`.
+        See :func:`~dataretrieval.transport.pagination.paginate`.
     """
     method = req.method  # ``httpx.Request.method`` is already upper-cased.
     headers = req.headers
@@ -214,11 +188,12 @@ async def _walk_pages(
     async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
         return await sess.request(method, cursor, headers=headers, content=content)
 
-    return await _paginate(
+    return await paginate(
         req,
         parse_response=functools.partial(_ogc_parse_response, geopd=geopd),
         follow_up=follow_up,
         client=client,
+        raise_for_status=_raise_for_non_200,
         row_cap=row_cap,
     )
 
@@ -301,7 +276,7 @@ def get_ogc_data(
         _require_positive_int(max_rows, "max_rows")
 
     if dialect is None:
-        dialect = _DEFAULT_DIALECT
+        dialect = DEFAULT_DIALECT
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
