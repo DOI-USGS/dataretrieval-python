@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gb5d01055a documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+ged307b7db documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bac498e5"></script>
+      <script src="../_static/documentation_options.js?v=8cbc60cb"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -53,6 +53,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.exceptions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError"><code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning"><code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError"><code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError.retry_after"><code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retry_after</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError.retryable"><code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retryable</span></code></a></li>
@@ -147,7 +148,9 @@ aren’t a plain status: <a class="reference internal" href="#dataretrieval.exce
 <a class="reference internal" href="#dataretrieval.exceptions.NoSitesError" title="dataretrieval.exceptions.NoSitesError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoSitesError</span></code></a>, and <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a> for an unusable setting.
 <a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a> maps a status to its type. The <em>warning</em> side of the
 taxonomy lives here too: <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a> (specialized by
-<a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>), a per-item skip inside a batched retrieval.</p>
+<a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>) for a per-item skip inside a batched
+retrieval, and <a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning" title="dataretrieval.exceptions.DataCurrencyWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a> for an upstream dataset that has
+stopped being updated.</p>
 <p>This module has no third-party runtime dependencies – <code class="docutils literal notranslate"><span class="pre">httpx</span></code> is imported only
 for type checking. Any module can therefore import it without pulling in pandas
 or httpx, and without risking an import cycle.</p>
@@ -162,6 +165,21 @@ no request was issued.</p>
 it rather than letting a bare <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> escape a request path, and a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> so code that already treats a bad setting as one keeps
 working.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dataretrieval.exceptions.DataCurrencyWarning">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">DataCurrencyWarning</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#DataCurrencyWarning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.DataCurrencyWarning" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></p>
+<p>An upstream dataset is frozen, retired, or no longer updated.</p>
+<p>Distinct from <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>, which promises that a <em>name in this
+package</em> is going away and gives the caller something to migrate to. Here
+the API is fine and there is nothing to migrate: the service’s own data
+has stopped moving, and only the caller can judge whether that matters.</p>
+<p>It is a <code class="docutils literal notranslate"><span class="pre">UserWarning</span></code> for that reason. Emitting it as a
+<code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> meant a downstream project running
+<code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code> – ordinary CI hygiene – could not call
+the affected getters with their default arguments at all.</p>
 </dd></dl>
 
 <dl class="py exception">

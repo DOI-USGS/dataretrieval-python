@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gb5d01055a documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+ged307b7db documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bac498e5"></script>
+      <script src="../../_static/documentation_options.js?v=8cbc60cb"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -92,7 +92,9 @@
 <span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
 <span class="sd">:func:`error_for_status` maps a status to its type. The *warning* side of the</span>
 <span class="sd">taxonomy lives here too: :class:`SkippedItemWarning` (specialized by</span>
-<span class="sd">:class:`SkippedRatingWarning`), a per-item skip inside a batched retrieval.</span>
+<span class="sd">:class:`SkippedRatingWarning`) for a per-item skip inside a batched</span>
+<span class="sd">retrieval, and :class:`DataCurrencyWarning` for an upstream dataset that has</span>
+<span class="sd">stopped being updated.</span>
 
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
 <span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
@@ -121,6 +123,7 @@
     <span class="s2">&quot;NetworkError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;NoSitesError&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ConfigurationError&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DataCurrencyWarning&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SkippedItemWarning&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SkippedRatingWarning&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error_for_status&quot;</span><span class="p">,</span>
@@ -400,6 +403,27 @@
             <span class="s2">&quot;No sites/data found using the selection criteria specified in &quot;</span>
             <span class="sa">f</span><span class="s2">&quot;url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span></div>
+
+
+
+<span class="c1"># --- Upstream data currency -----------------------------------------------</span>
+
+
+<div class="viewcode-block" id="DataCurrencyWarning">
+<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.DataCurrencyWarning">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataCurrencyWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An upstream dataset is frozen, retired, or no longer updated.</span>
+
+<span class="sd">    Distinct from ``DeprecationWarning``, which promises that a *name in this</span>
+<span class="sd">    package* is going away and gives the caller something to migrate to. Here</span>
+<span class="sd">    the API is fine and there is nothing to migrate: the service&#39;s own data</span>
+<span class="sd">    has stopped moving, and only the caller can judge whether that matters.</span>
+
+<span class="sd">    It is a ``UserWarning`` for that reason. Emitting it as a</span>
+<span class="sd">    ``DeprecationWarning`` meant a downstream project running</span>
+<span class="sd">    ``-W error::DeprecationWarning`` -- ordinary CI hygiene -- could not call</span>
+<span class="sd">    the affected getters with their default arguments at all.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 
 
 

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gb5d01055a documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+ged307b7db documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bac498e5"></script>
+      <script src="../../_static/documentation_options.js?v=8cbc60cb"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -93,7 +93,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._deprecation</span><span class="w"> </span><span class="kn">import</span> <span class="n">REMOVALS</span><span class="p">,</span> <span class="n">warn_deprecated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataCurrencyWarning</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_rdb</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">query</span>
@@ -128,7 +130,7 @@
 <span class="p">}</span>
 
 
-<span class="n">_NWIS_REMOVAL_DATE</span> <span class="o">=</span> <span class="s2">&quot;2027-05-06&quot;</span>
+<span class="n">_NWIS_REMOVAL_DATE</span> <span class="o">=</span> <span class="n">REMOVALS</span><span class="p">[</span><span class="s2">&quot;nwis&quot;</span><span class="p">]</span>
 <span class="n">_REPLACEMENTS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;get_dv&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_daily()`&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_iv&quot;</span><span class="p">:</span> <span class="s2">&quot;`waterdata.get_continuous()`&quot;</span><span class="p">,</span>
@@ -149,11 +151,10 @@
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._warn_deprecated">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_deprecated</span><span class="p">(</span><span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Emit a per-function DeprecationWarning pointing at the waterdata replacement.&quot;&quot;&quot;</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;`nwis.</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">` is deprecated and will be removed from &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;`dataretrieval` on or after </span><span class="si">{</span><span class="n">_NWIS_REMOVAL_DATE</span><span class="si">}</span><span class="s2">; &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;use </span><span class="si">{</span><span class="n">_REPLACEMENTS</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span><span class="si">}</span><span class="s2"> instead.&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="n">warn_deprecated</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;`nwis.</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">`&quot;</span><span class="p">,</span>
+        <span class="n">replacement</span><span class="o">=</span><span class="n">_REPLACEMENTS</span><span class="p">[</span><span class="n">func_name</span><span class="p">],</span>
+        <span class="n">removal</span><span class="o">=</span><span class="n">_NWIS_REMOVAL_DATE</span><span class="p">,</span>
         <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="p">)</span></div>
 
@@ -769,12 +770,13 @@
     <span class="k">if</span> <span class="n">seriesCatalogOutput</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="s2">&quot;TRUE&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">]:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="p">(</span>
-                <span class="s2">&quot;WARNING: Starting in March 2024, the NWIS qw data endpoint is &quot;</span>
+                <span class="s2">&quot;Starting in March 2024, the NWIS qw data endpoint is &quot;</span>
                 <span class="s2">&quot;retiring and no longer receives updates. For more information, &quot;</span>
                 <span class="s2">&quot;refer to https://waterdata.usgs.gov/nwis/qwdata and &quot;</span>
                 <span class="s2">&quot;https://doi-usgs.github.io/dataRetrieval/articles/Status.html &quot;</span>
                 <span class="s2">&quot;or email CompTools@usgs.gov.&quot;</span>
             <span class="p">),</span>
+            <span class="n">DataCurrencyWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># convert bool to string if necessary</span>
