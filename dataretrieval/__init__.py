@@ -34,6 +34,7 @@ except PackageNotFoundError:
 
 from dataretrieval.exceptions import (
     ConfigurationError,
+    DataCurrencyWarning,
     DataRetrievalError,
     HTTPError,
     NetworkError,
@@ -90,6 +91,7 @@ __all__ = [
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
     "ConfigurationError",
+    "DataCurrencyWarning",
     "DataRetrievalError",
     "HTTPError",
     "NetworkError",

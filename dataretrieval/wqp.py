@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.exceptions import DataCurrencyWarning
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
@@ -732,7 +733,7 @@ def _warn_legacy_use() -> None:
         "information on updated WQX3.0 profiles. Setting `legacy=False` "
         "will remove this warning."
     )
-    warnings.warn(message, DeprecationWarning, stacklevel=2)
+    warnings.warn(message, DataCurrencyWarning, stacklevel=2)
 
 
 def _warn_wqx3_unavailable() -> None:
@@ -750,12 +751,13 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
 
     Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``
     explaining the fallback and *also* suppresses the legacy
-    ``DeprecationWarning`` that ``wqp_url`` would otherwise raise. That
-    warning's message claims setting ``legacy=False`` removes it, which is
-    a lie for endpoints that have no WQX3.0 alternative.
+    :class:`~dataretrieval.exceptions.DataCurrencyWarning` that ``wqp_url``
+    would otherwise raise. That warning's message claims setting
+    ``legacy=False`` removes it, which is a lie for endpoints that have no
+    WQX3.0 alternative.
     """
     with warnings.catch_warnings():
         if not legacy:
             _warn_wqx3_unavailable()
-            warnings.simplefilter("ignore", DeprecationWarning)
+            warnings.simplefilter("ignore", DataCurrencyWarning)
         return wqp_url(service)
