@@ -666,30 +666,33 @@ class FanOut(Generic[_Chunk]):
                     return_exceptions=True,
                 )
                 failures = [r for r in results if isinstance(r, BaseException)]
-                for exc in failures:
-                    if not isinstance(exc, Exception):
-                        raise exc
-                # Classify first, build once. Every failure has to be
-                # examined -- a non-transient sibling must surface raw -- but
-                # only the first transient is ever raised. Asking
-                # ``wrap_failure`` per failure would snapshot the combined
-                # frame N times (a full concat over every completed
-                # chunk) and discard all but one, which a batch of
-                # chunks failing together makes routine.
-                first_transient: BaseException | None = None
-                for exc in failures:
-                    if _classify_chunk_error(exc) is None:
-                        raise self._normalize_failure(exc)
-                    if first_transient is None:
-                        first_transient = exc
-                if first_transient is not None:
-                    interrupted = self.wrap_failure(first_transient)
-                    if interrupted is None:
-                        # Unreachable: classified as transient just above.
-                        raise self._normalize_failure(first_transient)
-                    raise interrupted from first_transient
+                self._raise_failures(failures)
 
         return self.finalize(*self._combine_raw())
+
+    def _raise_failures(self, failures: list[BaseException]) -> None:
+        """Raise failures according to fan-out's precedence rules."""
+        for exc in failures:
+            if not isinstance(exc, Exception):
+                raise exc
+        # Classify first, build once. Every failure has to be examined -- a
+        # non-transient sibling must surface raw -- but only the first transient
+        # is ever raised. Asking ``wrap_failure`` per failure would snapshot the
+        # combined frame N times (a full concat over every completed chunk) and
+        # discard all but one, which a batch of chunks failing together makes
+        # routine.
+        first_transient: BaseException | None = None
+        for exc in failures:
+            if _classify_chunk_error(exc) is None:
+                raise self._normalize_failure(exc)
+            if first_transient is None:
+                first_transient = exc
+        if first_transient is not None:
+            interrupted = self.wrap_failure(first_transient)
+            if interrupted is None:
+                # Unreachable: classified as transient just above.
+                raise self._normalize_failure(first_transient)
+            raise interrupted from first_transient
 
 
 __all__ = [

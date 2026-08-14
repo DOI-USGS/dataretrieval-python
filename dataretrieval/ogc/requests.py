@@ -17,7 +17,7 @@ from typing import Any
 
 import httpx
 
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_date_params
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.transport.http import default_headers as _default_headers
 
@@ -160,14 +160,7 @@ def _construct_api_requests(
     service_url = _items_url(collection, base_url)
     if dialect is None:
         dialect = DEFAULT_DIALECT
-    for key in _DATE_RANGE_PARAMS:
-        if key in kwargs:
-            kwargs[key] = _format_api_dates(
-                kwargs[key],
-                date=(
-                    collection in dialect.date_only_services and key != "last_modified"
-                ),
-            )
+    _format_date_params(kwargs, date_only=collection in dialect.date_only_services)
     params, post_params = _partition_request_params(
         kwargs, use_cql2=collection in dialect.cql2_services
     )
@@ -292,6 +285,23 @@ def _check_monitoring_location_id(
     return value
 
 
+def _normalize_request_arg(name: str, value: Any, no_normalize: frozenset[str]) -> Any:
+    """Apply the OGC normalization rule for one included getter argument."""
+    if name == "monitoring_location_id":
+        return _check_monitoring_location_id(value)
+    if name == "properties":
+        return _as_str_list(value, name)
+    if (
+        name in no_normalize
+        and isinstance(value, Iterable)
+        and not isinstance(value, str)
+    ):
+        return value.tolist() if hasattr(value, "tolist") else list(value)
+    if isinstance(value, str) or not isinstance(value, Iterable):
+        return value
+    return _normalize_str_iterable(value, name)
+
+
 def prepare_request_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
@@ -318,17 +328,8 @@ def prepare_request_args(
         to_exclude.update(exclude)
 
     args: dict[str, Any] = {}
-    for k, v in local_vars.items():
-        if k in to_exclude or v is None:
+    for name, value in local_vars.items():
+        if name in to_exclude or value is None:
             continue
-        if k == "monitoring_location_id":
-            args[k] = _check_monitoring_location_id(v)
-        elif k == "properties":
-            args[k] = _as_str_list(v, k)
-        elif k in no_normalize and isinstance(v, Iterable) and not isinstance(v, str):
-            args[k] = v.tolist() if hasattr(v, "tolist") else list(v)
-        elif isinstance(v, str) or not isinstance(v, Iterable):
-            args[k] = v
-        else:
-            args[k] = _normalize_str_iterable(v, k)
+        args[name] = _normalize_request_arg(name, value, no_normalize)
     return args
