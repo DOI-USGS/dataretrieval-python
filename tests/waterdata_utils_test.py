@@ -942,6 +942,99 @@ def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
     assert excinfo.value.retry_after == 60.0
 
 
+def test_403_reports_the_services_own_reason():
+    """A 403 envelope must reach the user rather than a canned guess.
+
+    The message was fixed text naming only "query exceeding server limits",
+    and never read the body -- so a revoked ``API_USGS_PAT``, the most common
+    real 403, was reported as a query-size problem.
+    """
+    resp = _make_response(
+        403,
+        '{"code": "Forbidden", "description": "API key revoked"}',
+        reason="Forbidden",
+        content_type="application/json",
+    )
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "API key revoked" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ('{"message": "API key is invalid"}', "403: API key is invalid."),
+        (
+            '{"error": {"code": "API_KEY_INVALID", '
+            '"message": "An invalid api_key was supplied"}}',
+            "403: API_KEY_INVALID. An invalid api_key was supplied.",
+        ),
+        (
+            '{"code": "Forbidden", "description": null, "message": "API key revoked"}',
+            "403: Forbidden. API key revoked.",
+        ),
+        (
+            '{"code": "Forbidden", "description": "", "message": "API key revoked"}',
+            "403: Forbidden. API key revoked.",
+        ),
+    ],
+    ids=(
+        "flat-message",
+        "nested-live-envelope",
+        "null-description",
+        "empty-description",
+    ),
+)
+def test_403_with_a_gateway_json_message_shows_the_message(body, expected):
+    """Gateway JSON errors are rendered deliberately, not as raw JSON."""
+    resp = _make_response(
+        403,
+        body,
+        reason="Forbidden",
+        content_type="application/json",
+    )
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    message = str(excinfo.value)
+    assert message == expected
+    assert "{" not in message
+
+
+def test_403_with_a_non_json_body_shows_it_like_any_other_status():
+    """A WAF 403 is plain text; discarding it was the bug this PR fixes, so
+    403 shares the snippet path rather than having its own."""
+    resp = _make_response(403, "Access Denied: API key revoked", reason="Forbidden")
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "API key revoked" in str(excinfo.value)
+
+
+def test_403_without_an_envelope_names_the_credential_cause():
+    """With no body to quote, both plausible causes are offered."""
+    resp = _make_response(403, "", reason="Forbidden")
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    message = str(excinfo.value)
+    assert "API_USGS_PAT" in message and "server limits" in message
+
+
+def test_error_messages_name_the_url():
+    """Without the URL a failed chunk in a fan-out cannot be traced back to
+    the request that produced it -- the message is all the interruption
+    carries."""
+    request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v0/x")
+    resp = httpx.Response(400, content=b"", request=request)
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "https://api.waterdata.usgs.gov/ogcapi/v0/x" in str(excinfo.value)
+
+
+def test_error_message_survives_a_response_with_no_request():
+    """An error path must not fail while reporting a failure."""
+    with pytest.raises(HTTPError):
+        _raise_for_non_200(_make_response(400, "", reason="Bad Request"))
+
+
 def test_raise_for_non_200_400_raises_http_error():
     """400 raises a fatal ``HTTPError`` (status_code=400) the chunker won't
     resume. It must NOT be a ``TransientError`` so the chunker's classifier

@@ -30,15 +30,15 @@ def _error_body(resp: httpx.Response) -> str:
 
         * **429** — predefined message describing the rate-limit and pointing
           at the API-token path; the response body is not consulted.
-        * **403** — predefined message describing the most common cause
-          (query exceeding server limits); the response body is not
-          consulted.
-        * **other statuses** — attempts ``resp.json()`` and renders
-          ``"<status>: <code>. <description>."`` from the JSON error
-          envelope. If the body is not JSON (e.g. an HTML 502 from a
-          gateway), falls back to ``"<status>: <reason>. <snippet>"`` with
-          the first 200 characters of ``resp.text``; an empty body
-          degrades to ``"<status>: <reason>."``.
+        * **every other status** — a supported JSON error body (the USGS
+          ``code``/``description`` envelope or a gateway ``message``) when
+          present; otherwise ``"<status>: <reason>. <snippet>"`` with the first
+          200 characters of ``resp.text``; an empty body degrades to
+          ``"<status>: <reason>."``, except **403**, which falls back to
+          :data:`_FORBIDDEN_CAUSES` so a credential problem is named.
+
+    :func:`_raise_for_non_200` appends ``" (URL: ...)"`` to whatever this
+    returns.
     """
     status = resp.status_code
     if status == 429:
@@ -46,23 +46,61 @@ def _error_body(resp: httpx.Response) -> str:
             "429: Too many requests made. Please obtain an API token "
             "or try again later."
         )
-    elif status == 403:
-        return (
-            "403: Query request denied. Possible reasons include "
-            "query exceeding server limits."
-        )
+    detail = _json_error_detail(resp)
+    if detail is not None:
+        return f"{status}: {detail}"
+    snippet = (resp.text or "").strip()[:200]
+    reason = resp.reason_phrase or "Error"
+    if snippet:
+        return f"{status}: {reason}. {snippet}"
+    if status == 403:
+        return f"403: {_FORBIDDEN_CAUSES}"
+    return f"{status}: {reason}."
+
+
+#: What a 403 means when the service sends no error envelope. Both causes are
+#: named because the credential one is far more common and was omitted.
+_FORBIDDEN_CAUSES = (
+    "Query request denied. The API key may be missing, expired, or revoked "
+    "(see API_USGS_PAT), or the query may exceed server limits."
+)
+
+
+def _json_error_detail(resp: httpx.Response) -> str | None:
+    """Render a supported JSON error body, or ``None`` for another shape."""
     try:
-        j_txt = resp.json()
+        body = resp.json()
     except ValueError:
-        snippet = (resp.text or "").strip()[:200]
-        reason = resp.reason_phrase or "Error"
-        if snippet:
-            return f"{status}: {reason}. {snippet}"
-        return f"{status}: {reason}."
-    return (
-        f"{status}: {j_txt.get('code', 'Unknown type')}. "
-        f"{j_txt.get('description', 'No description provided')}."
-    )
+        return None
+    if not isinstance(body, dict):
+        return None
+
+    candidate = body.get("error")
+    if not isinstance(candidate, dict):
+        candidate = body
+
+    def clean(value: object | None) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip().rstrip(".")
+        return text or None
+
+    code = clean(candidate.get("code"))
+    detail = clean(candidate.get("description")) or clean(candidate.get("message"))
+    parts = [part for part in (code, detail) if part is not None]
+    return ". ".join(parts) + "." if parts else None
+
+
+def _url_suffix(resp: httpx.Response) -> str:
+    """`` (URL: ...)``, or empty when no request is attached.
+
+    ``httpx`` raises on ``.url`` for a hand-built response; an error path must
+    not fail while reporting a failure.
+    """
+    try:
+        return f" (URL: {resp.url})"
+    except RuntimeError:
+        return ""
 
 
 def _raise_for_non_200(resp: httpx.Response) -> None:
@@ -96,6 +134,6 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
         return
     raise error_for_status(
         status,
-        _error_body(resp),
+        _error_body(resp) + _url_suffix(resp),
         retry_after=_parse_retry_after(resp.headers.get("Retry-After")),
     )
