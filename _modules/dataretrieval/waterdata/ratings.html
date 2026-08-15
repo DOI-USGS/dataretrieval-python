@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -107,7 +107,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_paginated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">STAC_URL</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">ratings_catalog_url</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_ratings&quot;</span><span class="p">]</span>
 
@@ -336,7 +336,7 @@
     <span class="k">if</span> <span class="n">bbox</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">bbox</span><span class="p">))</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ratings_catalog_url</span><span class="p">()</span><span class="si">}</span><span class="s2">/search&quot;</span>
     <span class="n">req</span> <span class="o">=</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_response</span><span class="p">(</span><span class="n">resp</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
@@ -368,6 +368,7 @@
         <span class="n">raise_for_status</span><span class="o">=</span><span class="n">_raise_for_non_200</span><span class="p">,</span>
         <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+        <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;waterdata&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Every page frame is built with a ``feature`` column, and the combine</span>
     <span class="c1"># helpers preserve it, so the empty case needs no special branch.</span>
@@ -472,7 +473,7 @@
             <span class="p">)</span>
             <span class="c1"># 204: completed, no content.</span>
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(),</span> <span class="n">_inert_response</span><span class="p">(</span>
-                <span class="mi">204</span><span class="p">,</span> <span class="n">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STAC_URL</span><span class="si">}</span><span class="s2">/search&quot;</span>
+                <span class="mi">204</span><span class="p">,</span> <span class="n">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ratings_catalog_url</span><span class="p">()</span><span class="si">}</span><span class="s2">/search&quot;</span>
             <span class="p">)</span>
         <span class="n">out</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
         <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">_inert_response</span><span class="p">(</span>
@@ -482,12 +483,13 @@
     <span class="n">FanOut</span><span class="p">(</span>
         <span class="n">features</span><span class="p">,</span>
         <span class="n">fetch</span><span class="p">,</span>
-        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">(),</span>
+        <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;waterdata&quot;</span><span class="p">),</span>
         <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
         <span class="c1"># No single URL expresses &quot;all of these assets&quot; -- the aggregate</span>
         <span class="c1"># reports the first, matching what a single-feature call would show.</span>
         <span class="n">canonical_url</span><span class="o">=</span><span class="n">_asset_href</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
         <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">,</span>
+        <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;waterdata&quot;</span><span class="p">,</span>
     <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">out</span>
 </pre></div>

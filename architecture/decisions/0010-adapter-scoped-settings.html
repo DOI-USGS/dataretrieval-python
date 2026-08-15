@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADR 0011: Configuration profiles, scoped to one adapter" href="0011-configuration-profiles.html" />
+    <link rel="prev" title="ADR 0009: Layered configuration resolution" href="0009-layered-configuration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#service-return-contracts">Service return contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0008-fan-out-execution.html">ADR 0008: Separate fan-out execution from chunk planning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0010: Adapter-scoped settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0010: Adapter-scoped settings</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/0010-adapter-scoped-settings.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-0010-adapter-scoped-settings">
+<h1>ADR 0010: Adapter-scoped settings<a class="headerlink" href="#adr-0010-adapter-scoped-settings" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted, except for two clauses. Supersedes the “One flat set of setting
+names” and “Per-service overrides are deferred” clauses of
+<a class="reference internal" href="0009-layered-configuration.html"><span class="doc">ADR 0009: Layered configuration resolution</span></a>; the rest of ADR 0009 stands, subject to what
+ADR 0011 supersedes there.</p>
+<p><a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> supersedes decisions 5 and 8 below –
+adapter schemas held centrally as <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>, and each adapter a named
+keyword on <code class="docutils literal notranslate"><span class="pre">configure()</span></code>. Each adapter now declares a <code class="docutils literal notranslate"><span class="pre">BaseConfiguration</span></code>
+subclass in the module that <em>reads</em> those settings, and <code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes
+instances of them positionally, which is what removes the adapter roster from
+the call site. The spelling shown in decision 1 goes with decision 8. Decisions
+2, 3, 4, 6 and 7 stand: the tiers, source-major precedence, package-wide
+environment variables, the host-scoped key, and the adapter names.</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>ADR 0009 resolved every setting through one flat namespace, on the premise that
+“a setting means the same thing to every service; services differ in the value
+they want, not the vocabulary.” Surveying the seven APIs this package retrieves
+from shows the premise is false. The settings themselves differ:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Adapter</p></th>
+<th class="head"><p>Host / path</p></th>
+<th class="head"><p>Fan-out</p></th>
+<th class="head"><p>Retryable statuses</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">ssl_check</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">waterdata</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov/ogcapi</span></code></p></td>
+<td><p>yes (OGC chunking)</p></td>
+<td><p>all 5xx + 429</p></td>
+<td><p>yes, on 3 of its getters</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ngwmn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov/ngwmn/ogcapi</span></code></p></td>
+<td><p>yes (OGC chunking)</p></td>
+<td><p>all 5xx + 429</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nwdc</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov/nwaa-data</span></code></p></td>
+<td><p>yes (fan-out)</p></td>
+<td><p>all 5xx + 429</p></td>
+<td><p>yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">nldi</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov/nldi/linked-data</span></code></p></td>
+<td><p>no</p></td>
+<td><p>gateway only</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wqp</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">www.waterqualitydata.us</span></code></p></td>
+<td><p>no</p></td>
+<td><p>gateway only</p></td>
+<td><p>yes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">streamstats</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">streamstats.usgs.gov</span></code></p></td>
+<td><p>no</p></td>
+<td><p>gateway only</p></td>
+<td><p>no</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nwis</span></code> (deprecated, not an adapter key)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">waterservices.usgs.gov</span></code></p></td>
+<td><p>no</p></td>
+<td><p>fixed, no retry</p></td>
+<td><p>yes</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code> and <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> are meaningless for the four
+single-shot adapters – there is nothing to fan out. <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> applies to
+four adapters (<code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">nwis</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>) and is currently a
+per-call keyword outside the chain entirely; it reaches <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>,
+verified by spying on the client. A flat namespace accepts
+<code class="docutils literal notranslate"><span class="pre">configure(streamstats={&quot;parallel_chunks&quot;:</span> <span class="pre">8})</span></code> without complaint, which is
+the typo class ADR 0009 exists to catch.</p>
+<p>The credential is a separate axis, and measurement settled it. Probing the live
+APIs with and without a key:</p>
+<ul class="simple">
+<li><p>NGWMN and Water Data are served from the <em>same host</em>
+(<code class="docutils literal notranslate"><span class="pre">ngwmn.py</span></code> derives its base URL from <code class="docutils literal notranslate"><span class="pre">credentials.WATERDATA_BASE_URL</span></code>).</p></li>
+<li><p>Both return <code class="docutils literal notranslate"><span class="pre">200</span></code> with no key, and both return <code class="docutils literal notranslate"><span class="pre">x-ratelimit-limit:</span> <span class="pre">1000</span></code>
+with one.</p></li>
+<li><p>Alternating authenticated calls decrement a <em>single</em> counter
+(997, 996, 996, 994, 993, 992), so the two adapters share one quota pool.</p></li>
+<li><p>Water Data’s OpenAPI declares <code class="docutils literal notranslate"><span class="pre">ApiKeyHeader</span></code>/<code class="docutils literal notranslate"><span class="pre">ApiKeyQuery</span></code>; NGWMN’s
+declares no security scheme at all across 34 paths – yet the gateway meters
+it regardless. Every response carries <code class="docutils literal notranslate"><span class="pre">via:</span> <span class="pre">...</span> <span class="pre">api-umbrella</span></code>.</p></li>
+</ul>
+<p>The key is therefore a credential of the <strong>gateway fronting the host</strong>, not of
+either adapter. It cannot meaningfully vary per adapter: two keys against one
+quota pool is not a state the gateway can be in.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p>Settings are scoped to the <strong>adapter</strong>, not the service, and not the host.</p>
+<ol class="arabic">
+<li><p><strong>The configuration file gains one table per adapter</strong>, beside the existing
+top-level keys:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">concurrency</span> <span class="o">=</span> <span class="mi">16</span>          <span class="c1"># every adapter</span>
+
+<span class="p">[</span><span class="n">ngwmn</span><span class="p">]</span>
+<span class="n">concurrency</span> <span class="o">=</span> <span class="mi">4</span>           <span class="c1"># this adapter only</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes the same shape, so one block configures several
+adapters at once:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">ngwmn</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                             <span class="n">wqp</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The file table stands; the <code class="docutils literal notranslate"><span class="pre">configure()</span></code> spelling above is superseded
+by <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> along with decision 8. One block
+still configures several adapters at once, now as
+<code class="docutils literal notranslate"><span class="pre">configure(NgwmnConfiguration(concurrency=4),</span>
+<span class="pre">WqpConfiguration(retries=2))</span></code>.</p>
+</div>
+</li>
+<li><p><strong>The top-level tier survives.</strong> An adapter table <em>overrides</em> it per key; it
+does not replace it. Every setting still has a package-wide spelling, and
+the shipped <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> variables are package-wide by construction.
+<code class="docutils literal notranslate"><span class="pre">retries</span></code> and <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code> are additionally adapter-scopable, because
+a service that answers slowly or refuses often warrants its own budget
+without changing anyone else’s. <code class="docutils literal notranslate"><span class="pre">progress</span></code> is not: it describes the
+caller’s terminal, and there is one progress line per call, so scoping it
+per adapter could only produce a contradiction.</p></li>
+<li><p><strong>Precedence stays source-major.</strong> Resolution walks block, then environment,
+then file, as ADR 0009 defines; <em>within</em> each source an adapter-scoped value
+outranks a top-level one. The environment therefore still outranks the file,
+so a stale adapter table cannot quietly beat a variable exported for one run.</p></li>
+<li><p><strong>Adapter-scoped settings get no environment variables.</strong> Every entry in
+<code class="docutils literal notranslate"><span class="pre">ENV_VARS</span></code> stays package-wide, for the reason <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> already
+has none: an exported variable is inherited by every subprocess and
+invisible at the call site. Six adapters times four settings would be a
+namespace nobody could hold in mind.</p></li>
+<li><p><strong>Each adapter’s schema is a</strong> <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>. Its <code class="docutils literal notranslate"><span class="pre">__annotations__</span></code> <em>are</em>
+the schema – there is no second table to maintain, <code class="docutils literal notranslate"><span class="pre">mypy</span> <span class="pre">--strict</span></code> checks
+literal dicts at call sites, and the file path validates against the same
+annotations. A key an adapter does not accept raises <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code>
+at block entry, the way an unknown profile already does.</p>
+<p><em>Superseded by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>. The schema is now a
+frozen dataclass owned by the adapter, for the same “the annotations are the
+schema” reason – what changed is where it lives. A <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> had to be
+declared centrally to annotate a central keyword, which put a Water Data
+setting’s definition in a module that knows nothing about Water Data.</p>
+</li>
+<li><p><strong>The API key stays host-scoped and is not an adapter setting.</strong>
+<code class="docutils literal notranslate"><span class="pre">credentials</span></code> keeps sole ownership of which host honors the key. There is
+no <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span> <span class="pre">api_key</span></code>.</p></li>
+<li><p><strong>Adapters are keyed by their service’s name</strong>, matching the module:
+<code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">ngwmn</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>.
+The deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> is deliberately absent: its calls pin
+<code class="docutils literal notranslate"><span class="pre">max_retries=0</span></code>, so a <code class="docutils literal notranslate"><span class="pre">[nwis]</span></code> table could only be reported as live and
+then ignored – the failure this decision exists to prevent.</p></li>
+<li><p><strong>Each adapter is a named, typed parameter on</strong> <code class="docutils literal notranslate"><span class="pre">configure()</span></code>, annotated
+with its own <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>, so a type checker rejects a setting the adapter
+does not read before the code runs. A <code class="docutils literal notranslate"><span class="pre">**unknown</span></code> catch-all remains, and
+exists to turn a misspelled <em>setting</em> into a message naming the settings –
+<code class="docutils literal notranslate"><span class="pre">configure(concurrancy=8)</span></code> would otherwise be a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+<p><em>Superseded by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>. <code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes
+configuration objects positionally instead, so the adapter is named by the
+class rather than by a keyword. The type checking survives – a setting an
+adapter does not read is not a field of its class – and the catch-all is
+no longer needed for a misspelling, because
+<code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration(concurrancy=8)</span></code> is already a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> naming
+the keyword that does not exist. What the change buys is that <code class="docutils literal notranslate"><span class="pre">configure()</span></code>
+no longer enumerates the adapters at all: that enumeration was the roster
+this ADR left spelled in four places.</p>
+</li>
+</ol>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul>
+<li><p><strong>A caller can be gentle with one adapter without throttling the rest</strong> –
+the requirement ADR 0009 deferred. Because NGWMN and Water Data share a quota
+pool, throttling NGWMN now measurably preserves quota for Water Data.</p></li>
+<li><p><strong>The schema stops being a separate mechanism.</strong> Choosing <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> over
+a hand-maintained table removes the failure mode where a new adapter setting
+is added and the validation table is not, and over a dataclass per adapter it
+keeps the payload a plain mapping, so the file and block paths share one
+validator and <code class="docutils literal notranslate"><span class="pre">configuration</span></code> grows no runtime classes. <em>Superseded with
+decision 5</em>: the classes exist, and live with their adapters rather than in
+the leaf.</p></li>
+<li><p><strong>A configuration object is still refused, but on narrower grounds than ADR
+0009 stated.</strong> That ADR rejected an object because it had no way to <em>reach</em>
+the call. A per-adapter payload type does not have that problem – the
+<code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> remains the delivery mechanism and the type is only the
+payload’s shape. <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> is chosen over a dataclass for the reason
+above, not because an object could not be delivered.</p>
+<p><em>Withdrawn by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>, which took the remaining
+step. Narrowing the objection to a payload-shape preference is what left it
+open, and a dataclass turned out to buy the thing a mapping could not: an
+instance knows which adapter it targets, so the caller stops naming one and
+the roster stops being duplicated.</p>
+</li>
+<li><p><strong>``show_configuration()`` grows a second section, not a matrix.</strong> It prints
+the top-level tier as today, then only those adapter overrides actually set.
+A seven-by-eight grid of mostly-inherited values would bury the answer to
+“what will this call use”.</p></li>
+<li><p><strong>The shared quota pool is not modelled.</strong> <code class="docutils literal notranslate"><span class="pre">[waterdata]</span></code> and <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code>
+read as independent dials but draw on one 1000/hour allowance. A host or
+gateway tier would express it; that is deferred until someone is confused by
+it, since the pool is a property of the credential, which is already
+host-scoped.</p></li>
+<li><p><strong>``stall_timeout`` joins the chain.</strong> <code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code> was read
+directly from <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>, so it could not be set by a block or the file
+and never appeared in <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> – a gap in ADR 0009’s own
+claim that every setting resolves through one chain. It is package-wide by
+default and adapter-scopable. <code class="docutils literal notranslate"><span class="pre">dataretrieval/transport/env.py</span></code> existed only
+to parse it and is deleted, so <code class="docutils literal notranslate"><span class="pre">configuration</span></code> is now the only module in
+the package that reads <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> for a setting.</p></li>
+<li><p><strong>``ssl_check`` stays a per-call argument and does not become a setting.</strong>
+It is a defaulted keyword on 23 shipped getters across four adapters –
+<code class="docutils literal notranslate"><span class="pre">wqp</span></code> (9), <code class="docutils literal notranslate"><span class="pre">nwis</span></code> (10), <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> (3) and <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> (1) – and it does
+reach <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>. It was added in 2023 to what were then the only
+modules; the OGC getters arrived later and never adopted it, so its
+distribution records the package’s history rather than a boundary.</p>
+<p>Three reasons not to promote it. It disables certificate verification, so as
+a per-call keyword it is a visible, scoped decision, while a config-file key
+or environment variable would make a security downgrade process-wide and
+invisible at the call site – the opposite of the direction this chain
+narrows everything else. It does not respect adapter boundaries: within
+<code class="docutils literal notranslate"><span class="pre">waterdata</span></code> it applies only to the getters that bypass the OGC engine, so
+<code class="docutils literal notranslate"><span class="pre">[waterdata]</span> <span class="pre">ssl_check</span></code> would be honored by three getters and silently
+ignored by the rest, exactly the shape this ADR refuses elsewhere. And the
+need it serves is already met better: the legitimate case is a
+TLS-intercepting corporate proxy, and <code class="docutils literal notranslate"><span class="pre">httpx</span></code> natively honors
+<code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">SSL_CERT_DIR</span></code> on both its sync and async clients –
+so that mechanism already covers <em>every</em> getter, including the OGC ones that
+have no <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code>, and it trusts the corporate CA rather than trusting
+nothing. The <code class="docutils literal notranslate"><span class="pre">bool</span></code> type cannot even carry a CA bundle path, which is the
+value a caller actually wants.</p>
+<p>The configuration guide documents <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> for that case. Whether
+<code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> should be deprecated outright is a public-API question left to
+its own change.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/configuration_test.py</span></code> covers adapter-table resolution, top-level
+inheritance per setting, source-major precedence (the environment still
+outranks an adapter table), an adapter block outranking a package-wide one,
+and rejection of a setting an adapter does not read – from both the file and
+<code class="docutils literal notranslate"><span class="pre">configure()</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_api_key_is_never_adapter_scoped</span></code> asserts no adapter configuration
+accepts <code class="docutils literal notranslate"><span class="pre">api_key</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_adapter_roster_names_real_modules_that_register_themselves</span></code> imports
+every name in the roster, so a renamed adapter cannot leave a configuration
+pointing at nothing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lint-imports</span></code> continues to place <code class="docutils literal notranslate"><span class="pre">configuration</span></code> between <code class="docutils literal notranslate"><span class="pre">credentials</span></code>
+and <code class="docutils literal notranslate"><span class="pre">exceptions</span></code>.</p></li>
+</ul>
+<p>The two entries covering decision 8’s <code class="docutils literal notranslate"><span class="pre">**adapters</span></code> catch-all
+(<code class="docutils literal notranslate"><span class="pre">test_a_misspelled_setting_is_not_taken_for_an_adapter</span></code>) and the central
+<code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> registry (<code class="docutils literal notranslate"><span class="pre">test_adapter_schema_names_a_real_module</span></code>) went with
+the clauses ADR 0011 superseded; the checks they stood for are named above in
+their current form.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Supersedes two clauses of <a class="reference internal" href="0009-layered-configuration.html"><span class="doc">ADR 0009: Layered configuration resolution</span></a>; the chain, the
+<code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> delivery, and the leaf constraint are unchanged.</p></li>
+<li><p>Live-API measurements behind the credential decision were taken 2026-08-11
+against <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and <code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov</span></code>.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> module is renamed <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> under separate cover; the service
+names itself “National Water Availability Assessment Data Companion” and
+serves ten models, only five of which are water use.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0009-layered-configuration.html" class="btn btn-neutral float-left" title="ADR 0009: Layered configuration resolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="0011-configuration-profiles.html" class="btn btn-neutral float-right" title="ADR 0011: Configuration profiles, scoped to one adapter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

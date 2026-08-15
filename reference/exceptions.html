@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="dataretrieval.ngwmn" href="ngwmn.html" />
-    <link rel="prev" title="API reference" href="index.html" /> 
+    <link rel="prev" title="dataretrieval.configuration" href="config.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html">dataretrieval.configuration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.exceptions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError"><code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning"><code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a></li>
@@ -100,7 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wateruse.html">dataretrieval.wateruse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwdc.html">dataretrieval.nwdc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
 </ul>
 </li>
@@ -146,11 +147,14 @@ of which <a class="reference internal" href="#dataretrieval.exceptions.Transient
 aren’t a plain status: <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a> (with <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a> /
 <a class="reference internal" href="#dataretrieval.exceptions.Unchunkable" title="dataretrieval.exceptions.Unchunkable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unchunkable</span></code></a>), <a class="reference internal" href="#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> (a failed connection, per above),
 <a class="reference internal" href="#dataretrieval.exceptions.NoSitesError" title="dataretrieval.exceptions.NoSitesError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoSitesError</span></code></a>, and <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a> for an unusable setting.
-<a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a> maps a status to its type. The <em>warning</em> side of the
-taxonomy lives here too: <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a> (specialized by
-<a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>) for a per-item skip inside a batched
-retrieval, and <a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning" title="dataretrieval.exceptions.DataCurrencyWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a> for an upstream dataset that has
-stopped being updated.</p>
+<a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a> maps a status to its type. <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> is
+the one member that is not a request failure at all: it reports an unusable
+setting or config file, raised from wherever a setting is first resolved –
+which, because resolution is lazy, is inside whichever getter runs first. The
+<em>warning</em> side of the taxonomy lives here too: <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a>
+(specialized by <a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>) for a per-item skip inside a
+batched retrieval, and <a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning" title="dataretrieval.exceptions.DataCurrencyWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a> for an upstream dataset
+that has stopped being updated.</p>
 <p>This module has no third-party runtime dependencies – <code class="docutils literal notranslate"><span class="pre">httpx</span></code> is imported only
 for type checking. Any module can therefore import it without pulling in pandas
 or httpx, and without risking an import cycle.</p>
@@ -158,13 +162,17 @@ or httpx, and without risking an import cycle.</p>
 <dt class="sig sig-object py" id="dataretrieval.exceptions.ConfigurationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#ConfigurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.ConfigurationError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
-<p>A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> setting holds a value that can’t be used.</p>
-<p>The setting may be an environment variable or a policy field; either way,
-no request was issued.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> setting holds a value that can’t be used, so no
+request was issued – an environment variable, a policy field, a malformed
+<code class="docutils literal notranslate"><span class="pre">config.toml</span></code>, or a profile the file does not define.</p>
 <p>It is a <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> so <code class="docutils literal notranslate"><span class="pre">except</span></code> around a retrieval catches
-it rather than letting a bare <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> escape a request path, and a
-<code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> so code that already treats a bad setting as one keeps
-working.</p>
+it rather than letting a bare <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> escape a request path. That
+matters because settings resolve lazily, on the request path: a broken
+config file surfaces from inside whichever getter runs first, and belongs in
+the same handler as any other failure of that call. It is <em>also</em> a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code>, so code that already treats a bad setting as one keeps
+working whether the value came from the environment, a file, or a
+<code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.configure()</span></code> block.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -186,7 +194,14 @@ the affected getters with their default arguments at all.</p>
 <dt class="sig sig-object py" id="dataretrieval.exceptions.DataRetrievalError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">DataRetrievalError</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#DataRetrievalError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.DataRetrievalError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>Base class for every failed-request error in <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>.</p>
+<p>Base class for every <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> error.</p>
+<p>Almost every member is a failed request, and the read-anywhere fields below
+describe one. The exception is <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a>, which reports a
+configuration the library cannot use; it appears here because configuration
+is resolved lazily on the request path, so it surfaces from inside a getter
+and one <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">DataRetrievalError</span></code> should cover it too. It carries no
+status and is not retryable, so the branching idiom below routes it to the
+final <code class="docutils literal notranslate"><span class="pre">raise</span></code>.</p>
 <p>Catch it to handle any USGS or EPA service failure uniformly, and branch on
 the read-anywhere fields below without needing the concrete subclass:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
@@ -641,7 +656,7 @@ still-pending work.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-left" title="dataretrieval.configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ngwmn.html" class="btn btn-neutral float-right" title="dataretrieval.ngwmn" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

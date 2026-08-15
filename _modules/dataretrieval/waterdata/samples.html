@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -109,6 +109,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">get</span> <span class="k">as</span> <span class="n">_get</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.endpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">samples_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.types</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CODE_SERVICES</span><span class="p">,</span>
     <span class="n">PROFILES</span><span class="p">,</span>
@@ -116,7 +117,6 @@
     <span class="n">_check_profiles</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SAMPLES_URL</span><span class="p">,</span>
     <span class="n">_accept_legacy_kwargs</span><span class="p">,</span>
     <span class="n">_get_args</span><span class="p">,</span>
 <span class="p">)</span>
@@ -145,7 +145,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">code_service</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">CODE_SERVICES</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;code_service&quot;</span><span class="p">)</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/codeservice/</span><span class="si">{</span><span class="n">code_service</span><span class="si">}</span><span class="s2">?mimeType=application%2Fjson&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">samples_url</span><span class="p">()</span><span class="si">}</span><span class="s2">/codeservice/</span><span class="si">{</span><span class="n">code_service</span><span class="si">}</span><span class="s2">?mimeType=application%2Fjson&quot;</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_default_headers</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
 
@@ -444,7 +444,7 @@
     <span class="k">if</span> <span class="s2">&quot;boundingBox&quot;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
         <span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;boundingBox&quot;</span><span class="p">])</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">samples_url</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_get_samples_csv</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -509,7 +509,7 @@
             <span class="sa">f</span><span class="s2">&quot;request, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SAMPLES_URL</span><span class="si">}</span><span class="s2">/summary/</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">,</span><span class="w"> </span><span class="n">safe</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">samples_url</span><span class="p">()</span><span class="si">}</span><span class="s2">/summary/</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="p">,</span><span class="w"> </span><span class="n">safe</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mimeType&quot;</span><span class="p">:</span> <span class="s2">&quot;text/csv&quot;</span><span class="p">}</span>
 
     <span class="n">df</span><span class="p">,</span> <span class="n">response</span> <span class="o">=</span> <span class="n">_get_samples_csv</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span>

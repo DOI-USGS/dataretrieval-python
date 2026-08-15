@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -51,8 +51,19 @@
 <li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config.html">dataretrieval.configuration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.ngwmn</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__delattr__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__delattr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__eq__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__eq__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__hash__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__hash__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__init__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__repr__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__repr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.__setattr__"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.__setattr__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.ngwmn.NgwmnConfiguration.adapter"><code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration.adapter</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.ngwmn.get_lithology"><code class="docutils literal notranslate"><span class="pre">get_lithology()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.ngwmn.get_providers"><code class="docutils literal notranslate"><span class="pre">get_providers()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.ngwmn.get_sites"><code class="docutils literal notranslate"><span class="pre">get_sites()</span></code></a></li>
@@ -65,7 +76,7 @@
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wateruse.html">dataretrieval.wateruse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwdc.html">dataretrieval.nwdc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
 </ul>
 </li>
@@ -110,6 +121,81 @@ behave exactly as they do for the main Water Data getters.</p>
 from many agencies, so <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> values use other agency
 prefixes besides <code class="docutils literal notranslate"><span class="pre">USGS-</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">MBMG-702934</span></code>, <code class="docutils literal notranslate"><span class="pre">AKDNR-535134236016630</span></code>).</p>
 <p>See <a class="reference external" href="https://api.waterdata.usgs.gov/ngwmn/ogcapi">https://api.waterdata.usgs.gov/ngwmn/ogcapi</a> for the API reference.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.ngwmn.</span></span><span class="sig-name descname"><span class="pre">NgwmnConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stall_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/ngwmn.html#NgwmnConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration" title="Link to this definition"></a></dt>
+<dd><p>Settings for NGWMN calls alone.</p>
+<p>NGWMN is a second OGC API on the Water Data host, so its queries
+divide along the same URL byte budget and take the same two fan-out
+dials. The API key is not among them: one gateway fronts both
+adapters, so one key and one quota pool serve them (ADR 0010).</p>
+<p>Lives here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a> because
+<em>which</em> settings a service reads is the service’s own knowledge (ADR
+0011); what each of them means is shared, so the fields come from the
+setting groups declared beside their grammar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>retries</strong> (<em>int</em><em>, </em><em>optional</em>) – Retries attempted after a transient failure; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables retrying.</p></li>
+<li><p><strong>stall_timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds a call may go without receiving any data before retrying
+stops.</p></li>
+<li><p><strong>base_url</strong> (<em>str</em><em>, </em><em>optional</em>) – OGC API base to send NGWMN requests to, instead of the service’s
+own (<code class="docutils literal notranslate"><span class="pre">NGWMN_OGC_API_URL</span></code>). Code only: the file and the
+environment refuse it. The API key is scoped to the host that
+honors it, so a redirected call carries no key.</p></li>
+<li><p><strong>concurrency</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Cap on simultaneous sub-requests, or <code class="docutils literal notranslate"><span class="pre">&quot;unbounded&quot;</span></code>.</p></li>
+<li><p><strong>parallel_chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Baseline fan-out for multi-value queries. Each sub-request spends
+rate-limit quota, so raise it only for pulls you know are large.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__delattr__">
+<span class="sig-name descname"><span class="pre">__delattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__delattr__" title="Link to this definition"></a></dt>
+<dd><p>Implement delattr(self, name).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__eq__" title="Link to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__hash__" title="Link to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stall_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__repr__" title="Link to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.__setattr__">
+<span class="sig-name descname"><span class="pre">__setattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.__setattr__" title="Link to this definition"></a></dt>
+<dd><p>Implement setattr(self, name, value).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.ngwmn.NgwmnConfiguration.adapter">
+<span class="sig-name descname"><span class="pre">adapter</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ngwmn'</span></span><a class="headerlink" href="#dataretrieval.ngwmn.NgwmnConfiguration.adapter" title="Link to this definition"></a></dt>
+<dd><p>The adapter this configuration targets, by the name of the module a
+caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
+which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
+property of the class, which is what stops the caller restating it at
+every call site and stops the roster being spelled twice.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.ngwmn.get_lithology">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.ngwmn.</span></span><span class="sig-name descname"><span class="pre">get_lithology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_obs_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pd.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/ngwmn.html#get_lithology"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.ngwmn.get_lithology" title="Link to this definition"></a></dt>

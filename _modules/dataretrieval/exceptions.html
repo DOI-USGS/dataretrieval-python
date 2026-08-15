@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,11 +90,14 @@
 <span class="sd">aren&#39;t a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
 <span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
-<span class="sd">:func:`error_for_status` maps a status to its type. The *warning* side of the</span>
-<span class="sd">taxonomy lives here too: :class:`SkippedItemWarning` (specialized by</span>
-<span class="sd">:class:`SkippedRatingWarning`) for a per-item skip inside a batched</span>
-<span class="sd">retrieval, and :class:`DataCurrencyWarning` for an upstream dataset that has</span>
-<span class="sd">stopped being updated.</span>
+<span class="sd">:func:`error_for_status` maps a status to its type. ``ConfigurationError`` is</span>
+<span class="sd">the one member that is not a request failure at all: it reports an unusable</span>
+<span class="sd">setting or config file, raised from wherever a setting is first resolved --</span>
+<span class="sd">which, because resolution is lazy, is inside whichever getter runs first. The</span>
+<span class="sd">*warning* side of the taxonomy lives here too: :class:`SkippedItemWarning`</span>
+<span class="sd">(specialized by :class:`SkippedRatingWarning`) for a per-item skip inside a</span>
+<span class="sd">batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset</span>
+<span class="sd">that has stopped being updated.</span>
 
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
 <span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
@@ -134,7 +137,15 @@
 <div class="viewcode-block" id="DataRetrievalError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataRetrievalError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for every failed-request error in ``dataretrieval``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for every ``dataretrieval`` error.</span>
+
+<span class="sd">    Almost every member is a failed request, and the read-anywhere fields below</span>
+<span class="sd">    describe one. The exception is :class:`ConfigurationError`, which reports a</span>
+<span class="sd">    configuration the library cannot use; it appears here because configuration</span>
+<span class="sd">    is resolved lazily on the request path, so it surfaces from inside a getter</span>
+<span class="sd">    and one ``except DataRetrievalError`` should cover it too. It carries no</span>
+<span class="sd">    status and is not retryable, so the branching idiom below routes it to the</span>
+<span class="sd">    final ``raise``.</span>
 
 <span class="sd">    Catch it to handle any USGS or EPA service failure uniformly, and branch on</span>
 <span class="sd">    the read-anywhere fields below without needing the concrete subclass::</span>
@@ -369,15 +380,18 @@
 <div class="viewcode-block" id="ConfigurationError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.ConfigurationError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting holds a value that can&#39;t be used.</span>
-
-<span class="sd">    The setting may be an environment variable or a policy field; either way,</span>
-<span class="sd">    no request was issued.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting holds a value that can&#39;t be used, so no</span>
+<span class="sd">    request was issued -- an environment variable, a policy field, a malformed</span>
+<span class="sd">    ``config.toml``, or a profile the file does not define.</span>
 
 <span class="sd">    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches</span>
-<span class="sd">    it rather than letting a bare ``ValueError`` escape a request path, and a</span>
-<span class="sd">    :class:`ValueError` so code that already treats a bad setting as one keeps</span>
-<span class="sd">    working.</span>
+<span class="sd">    it rather than letting a bare ``ValueError`` escape a request path. That</span>
+<span class="sd">    matters because settings resolve lazily, on the request path: a broken</span>
+<span class="sd">    config file surfaces from inside whichever getter runs first, and belongs in</span>
+<span class="sd">    the same handler as any other failure of that call. It is *also* a</span>
+<span class="sd">    :class:`ValueError`, so code that already treats a bad setting as one keeps</span>
+<span class="sd">    working whether the value came from the environment, a file, or a</span>
+<span class="sd">    :func:`dataretrieval.configure` block.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 
 

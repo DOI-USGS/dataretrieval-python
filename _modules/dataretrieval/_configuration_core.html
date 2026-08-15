@@ -1,0 +1,1542 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval._configuration_core</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval._configuration_core</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Private model, grammar, and file foundation for configuration.</span>
+
+<span class="sd">The public interface and runtime precedence engine live in</span>
+<span class="sd">``dataretrieval.configuration``.  This lower module keeps the mutually</span>
+<span class="sd">dependent configuration classes, setting grammar, TOML interpretation,</span>
+<span class="sd">and file caches together so the public facade can stay small without</span>
+<span class="sd">introducing callback seams or import cycles.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Integral</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._ambient</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationError</span>
+
+<span class="c1">#: Settings only an adapter can carry, because they name one service. No</span>
+<span class="c1">#: package-wide value could mean anything for them: there is no one base URL.</span>
+<span class="c1">#:</span>
+<span class="c1">#: The package-wide roster is :data:`SETTINGS`, declared below the class it is</span>
+<span class="c1">#: derived from.</span>
+<span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;base_url&quot;</span><span class="p">,)</span>
+
+<span class="c1">#: Environment variable backing a setting (precedence step 2).</span>
+<span class="c1">#:</span>
+<span class="c1">#: Not every setting has one. ``parallel_chunks`` is deliberately absent: it</span>
+<span class="c1">#: fans a query into more sub-requests, each of which spends rate-limit quota,</span>
+<span class="c1">#: and ``dataretrieval.parallel_chunks`` documents why that must stay a</span>
+<span class="c1">#: deliberate choice rather than a process-wide default. An environment</span>
+<span class="c1">#: variable is the wrong shape for it -- exported once in a shell profile,</span>
+<span class="c1">#: inherited by every subprocess, invisible at the call site. A config-file</span>
+<span class="c1">#: entry is written deliberately and shows up in :func:`show_configuration`, so the</span>
+<span class="c1">#: file and :func:`configure` block are the only sources for it.</span>
+<span class="n">ENV_VARS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;api_key&quot;</span><span class="p">:</span> <span class="s2">&quot;API_USGS_PAT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="s2">&quot;API_USGS_CONCURRENT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="s2">&quot;API_USGS_RETRIES&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;progress&quot;</span><span class="p">:</span> <span class="s2">&quot;API_USGS_PROGRESS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stall_timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;API_USGS_STALL_TIMEOUT&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1">#: Variables the environment is *refused* for, by setting. Named rather than</span>
+<span class="c1">#: simply left out of :data:`ENV_VARS`, because leaving them out only makes the</span>
+<span class="c1">#: environment silent: a caller who exports ``API_USGS_BASE_URL`` -- the</span>
+<span class="c1">#: spelling every other setting&#39;s variable predicts -- has redirected nothing</span>
+<span class="c1">#: and would learn that from the traffic rather than from us. The file refuses</span>
+<span class="c1">#: the same key in the same words (:func:`_accepted_keys`), for the reason ADR</span>
+<span class="c1">#: 0011 gives: a redirect a shell profile or a config file can set is one no</span>
+<span class="c1">#: reader of the script can see.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Derived from :data:`ADAPTER_ONLY_SETTINGS` rather than written out beside it,</span>
+<span class="c1">#: because the two would be spelling one fact -- &quot;this setting is code-only&quot; --</span>
+<span class="c1">#: in two tables with nothing keeping them in step. A second adapter-only</span>
+<span class="c1">#: setting added to the roster alone would be refused by the file (which reads</span>
+<span class="c1">#: that roster) and *silently ignored* from the environment, which is exactly</span>
+<span class="c1">#: the defect this table exists to prevent. The predicted spelling is the one</span>
+<span class="c1">#: the comment above names, so deriving it changes nothing today.</span>
+<span class="n">_REFUSED_ENV_VARS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;API_USGS_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span>
+<span class="p">}</span>
+
+<span class="c1">#: Environment variable holding an explicit path to the configuration file.</span>
+<span class="n">CONFIG_PATH_ENV</span> <span class="o">=</span> <span class="s2">&quot;DATARETRIEVAL_CONFIG&quot;</span>
+
+<span class="c1">#: Source label for a setting no source supplied.</span>
+<span class="n">_BUILT_IN</span> <span class="o">=</span> <span class="s2">&quot;built-in default&quot;</span>
+
+<span class="c1">#: The table ADR 0011 retired. Named here only so a file written against the</span>
+<span class="c1">#: earlier design gets an error that says what to write instead, rather than the</span>
+<span class="c1">#: generic &quot;unknown table&quot; that would send the reader looking for a typo.</span>
+<span class="n">_RETIRED_PROFILES_TABLE</span> <span class="o">=</span> <span class="s2">&quot;profiles&quot;</span>
+
+<span class="c1">#: Label for the file&#39;s top-level table, where keys are the defaults.</span>
+<span class="n">_TOP_LEVEL</span> <span class="o">=</span> <span class="s2">&quot;top level&quot;</span>
+
+<span class="c1">#: Settings that warn when written at the top level of the file, and what to</span>
+<span class="c1">#: say. Declared as data, beside the other per-setting policies -- ``ENV_VARS``,</span>
+<span class="c1">#: ``_REFUSED_ENV_VARS``, ``_BLANK_MEANS_SET``, ``_VALIDATORS``, ``_DISPLAYS`` --</span>
+<span class="c1">#: so &quot;what is special about ``parallel_chunks``?&quot; is answerable from this block</span>
+<span class="c1">#: rather than from a condition buried in a validation loop, and so a second</span>
+<span class="c1">#: quota-spending setting is a row here rather than an edit to shared code.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Top level only: a value in a ``[&lt;adapter&gt;.&lt;name&gt;]`` table is opt-in per run,</span>
+<span class="c1">#: which is the shape a setting that spends quota wants.</span>
+<span class="n">_WARN_AT_TOP_LEVEL</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;parallel_chunks&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;&#39;parallel_chunks&#39; at </span><span class="si">{</span><span class="n">_TOP_LEVEL</span><span class="si">}</span><span class="s2"> applies to every query in every &quot;</span>
+        <span class="s2">&quot;process and spends rate-limit quota. Prefer a [&lt;adapter&gt;.&lt;name&gt;] &quot;</span>
+        <span class="s2">&quot;table selected per run, or the dataretrieval.parallel_chunks(n) &quot;</span>
+        <span class="s2">&quot;block for a single call.&quot;</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1"># Built-in defaults (precedence step 4). ``concurrency`` and ``retries`` keep the</span>
+<span class="c1"># values the environment-only implementation used, so behavior is unchanged for</span>
+<span class="c1"># anyone who configures nothing.</span>
+<span class="n">DEFAULT_CONCURRENCY</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">DEFAULT_RETRIES</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">DEFAULT_PARALLEL_CHUNKS</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">DEFAULT_STALL_TIMEOUT</span> <span class="o">=</span> <span class="mf">60.0</span>
+<span class="n">CONCURRENCY_UNBOUNDED</span> <span class="o">=</span> <span class="s2">&quot;unbounded&quot;</span>
+
+
+<span class="c1"># Values that turn the progress line off. Blank counts: ``API_USGS_PROGRESS=``</span>
+<span class="c1"># has always meant &quot;off&quot;, not &quot;unset&quot; -- unlike the numeric knobs, where blank</span>
+<span class="c1"># falls through to the default.</span>
+<span class="n">_PROGRESS_FALSEY</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">})</span>
+
+<span class="c1"># Settings for which a *blank* environment variable is a value rather than an</span>
+<span class="c1"># absence. ``API_USGS_PROGRESS=`` has always meant &quot;off&quot;. For every other</span>
+<span class="c1"># setting a blank variable is what container and CI tooling produces when it</span>
+<span class="c1"># has nothing to pass (``docker run -e API_USGS_PAT``, a workflow secret that</span>
+<span class="c1"># is absent on a fork), so treating it as configured would let it shadow the</span>
+<span class="c1"># config file and silently drop the user&#39;s API key. Keeping this a property of</span>
+<span class="c1"># the setting -- rather than a second, lower visit to the environment -- keeps</span>
+<span class="c1"># the chain at the three tiers the docstring and ADR 0009 describe.</span>
+<span class="n">_BLANK_MEANS_SET</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;progress&quot;</span><span class="p">})</span>
+
+<span class="c1"># Warnings about the config file report the file, not a call site: settings are</span>
+<span class="c1"># resolved lazily from wherever a getter first needs one, so the user frame is</span>
+<span class="c1"># a different depth every time and no fixed ``stacklevel`` can name it. Pointing</span>
+<span class="c1"># at this module consistently at least makes the warnings filterable by module,</span>
+<span class="c1"># and every message names the offending path and setting.</span>
+<span class="n">_WARN_STACKLEVEL</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">_PROGRESS_TRUTHY</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">})</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Unset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sentinel that distinguishes an omitted override from explicit ``None``.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;not set&gt;&quot;</span>
+
+
+<span class="c1"># Typed as Any so public annotations describe accepted caller values without</span>
+<span class="c1"># exposing this private implementation detail in generated signatures. It is</span>
+<span class="c1"># also every configuration field&#39;s default, which is what makes &quot;left unset&quot;</span>
+<span class="c1"># distinguishable from an explicit ``None`` meaning &quot;suppress lower sources&quot;.</span>
+<span class="n">_UNSET</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_Unset</span><span class="p">()</span>
+<span class="n">_SettingValue</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+
+<span class="c1"># Overrides from the innermost active ``configure`` block, as raw strings so that</span>
+<span class="c1"># every source shares one parser and one set of error messages.</span>
+<span class="c1"># A package-wide override is keyed by the setting&#39;s name; an adapter-scoped one</span>
+<span class="c1"># by ``(adapter, name)``. One flat mapping rather than a nested one so that</span>
+<span class="c1"># nesting, per-key inheritance, and restore-on-exit keep falling out of a</span>
+<span class="c1"># single merge, whichever scope a block sets.</span>
+<span class="n">_ScopeKey</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="c1"># One frame per ``configure`` block, stacked outermost-first. Frames rather than</span>
+<span class="c1"># a merged mapping are what makes &quot;the innermost block wins&quot; true across *both*</span>
+<span class="c1"># scopes: an adapter-scoped value outranks a package-wide one only within the</span>
+<span class="c1"># same frame. Merged, an outer ``configure(WaterdataConfiguration(...))`` would</span>
+<span class="c1"># beat an inner ``configure(Configuration(concurrency=1))`` -- inverting</span>
+<span class="c1"># nesting, and silently discarding the per-call ``parallel_chunks(n)`` block.</span>
+<span class="c1">#</span>
+<span class="c1"># Each entry pairs the raw value with the label naming where it came from, the</span>
+<span class="c1"># same shape the file tier returns (:func:`_adapter_file_settings`). The label</span>
+<span class="c1"># is built while the configuration object is still in hand, because that is the</span>
+<span class="c1"># only place the *profile* is known: a value from</span>
+<span class="c1"># ``WaterdataConfiguration.load(&quot;bulk&quot;)`` and one from</span>
+<span class="c1"># ``WaterdataConfiguration(...)`` are indistinguishable by the time they reach</span>
+<span class="c1"># the frame, so a label rebuilt at resolution time could only ever say</span>
+<span class="c1"># &quot;some block&quot;, never which profile.</span>
+<span class="n">_Frame</span> <span class="o">=</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">_ScopeKey</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">_SettingValue</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
+<span class="n">_scope</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_Frame</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;dataretrieval_configuration&quot;</span><span class="p">,</span> <span class="p">())</span>
+
+<span class="c1"># Resolved config-file path, memoized on the raw ``DATARETRIEVAL_CONFIG``</span>
+<span class="c1"># value (see :func:`config_path`). The guard names its own kind so the memo</span>
+<span class="c1"># never has to infer which branch built it.</span>
+<span class="n">_PathGuard</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span>
+<span class="n">_path_cache</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">_PathGuard</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># Parsed configuration file, keyed by file identity, change metadata, and raw</span>
+<span class="c1"># content. POSIX ctime makes metadata hits reliable; Windows ctime is creation</span>
+<span class="c1"># time, so cache hits there compare content before reusing the parsed result.</span>
+<span class="n">_FileStamp</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+<span class="n">_file_cache</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">_FileStamp</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">_ParsedFile</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># Validated ``[&lt;adapter&gt;]`` tables, keyed by adapter name and memoized on the</span>
+<span class="c1"># parsed file&#39;s identity, because an adapter table is validated only once that</span>
+<span class="c1"># adapter is actually used.</span>
+<span class="n">_adapter_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">_ParsedFile</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="c1"># Paths already warned about for loose permissions, so the warning fires once.</span>
+<span class="n">_permission_warned</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_ParsedFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A parsed configuration file: package-wide keys plus per-adapter tables.</span>
+
+<span class="sd">    ``exists`` distinguishes &quot;the file is there and defines nothing&quot; from &quot;there</span>
+<span class="sd">    is no file&quot;, which decides which of the two messages a caller selecting a</span>
+<span class="sd">    profile gets (see :func:`_named_profile`).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="c1">#: Raw, *unvalidated* ``[&lt;adapter&gt;]`` tables, keyed by adapter name. Each</span>
+    <span class="c1">#: holds that adapter&#39;s default-profile keys and, as sub-tables, its named</span>
+    <span class="c1">#: profiles. Left unvalidated because a bad value in ``[nldi]`` must not</span>
+    <span class="c1">#: fail a Water Data call that never reads it.</span>
+    <span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">exists</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="c1">#: Stand-in for &quot;no configuration file&quot;, which is the common case. Shared</span>
+<span class="c1">#: rather than rebuilt per read so that callers can memoize on the parsed</span>
+<span class="c1">#: file&#39;s identity; nothing mutates a ``_ParsedFile``.</span>
+<span class="n">_NO_FILE</span> <span class="o">=</span> <span class="n">_ParsedFile</span><span class="p">()</span>
+
+
+<span class="c1"># --- configuration profiles ----------------------------------------------</span>
+<span class="c1">#</span>
+<span class="c1"># A setting means the same thing wherever it applies, but it does not apply</span>
+<span class="c1"># everywhere (ADR 0010). Each adapter declares the settings it accepts as the</span>
+<span class="c1"># fields of a ``BaseConfiguration`` subclass, defined *in the adapter&#39;s own</span>
+<span class="c1"># module* so a setting&#39;s definition sits with the code that reads it -- adding</span>
+<span class="c1"># a Water Data setting no longer edits a service-neutral file (ADR 0011). The</span>
+<span class="c1"># *which* is the adapter&#39;s own knowledge; the setting itself is drawn from the</span>
+<span class="c1"># shared groups below, so ``retries`` is declared once rather than six times.</span>
+<span class="c1">#</span>
+<span class="c1"># Two settings are deliberately absent from every adapter:</span>
+<span class="c1">#</span>
+<span class="c1"># ``api_key``     belongs to the gateway fronting a host, not to an adapter.</span>
+<span class="c1">#                 Water Data and NGWMN are two adapters on one host sharing</span>
+<span class="c1">#                 one key and one quota pool -- measured, see ADR 0010 -- so</span>
+<span class="c1">#                 a per-adapter key would model a distinction that does not</span>
+<span class="c1">#                 exist. ``credentials`` keeps sole ownership of it.</span>
+<span class="c1"># ``progress``    describes the caller&#39;s terminal, not a service. There is one</span>
+<span class="c1">#                 progress line per call, so scoping it per adapter could only</span>
+<span class="c1">#                 produce a contradiction.</span>
+
+<span class="c1">#: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is</span>
+<span class="c1">#: typed as a ``WaterdataConfiguration`` rather than the base. ``typing.Self``</span>
+<span class="c1">#: would say this in one word and arrives in 3.11; the floor is 3.10.</span>
+<span class="n">_C</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;_C&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;BaseConfiguration&quot;</span><span class="p">)</span>
+
+
+<span class="c1">#: Memoized :meth:`BaseConfiguration.settings` results, keyed on the class.</span>
+<span class="c1">#: A hand-rolled dict rather than ``functools.cache`` only because typeshed&#39;s</span>
+<span class="c1">#: wrapper takes ``Hashable`` and mypy does not accept a class for that</span>
+<span class="c1">#: protocol, and this package carries no ``type: ignore``.</span>
+<span class="n">_settings_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">BaseConfiguration</span><span class="p">],</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_settings_of</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConfiguration</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The setting names a configuration class accepts, computed once.</span>
+
+<span class="sd">    A class constant in everything but spelling: the fields cannot change after</span>
+<span class="sd">    the class is created, and every adapter-scoped read asks for it -- through</span>
+<span class="sd">    :func:`_accepts`, before the frame walk and before the file, so the cost is</span>
+<span class="sd">    paid even when a ``configure`` block answers. Rebuilding the frozenset per</span>
+<span class="sd">    read measured as a fifth of an adapter-scoped resolution: two generator</span>
+<span class="sd">    passes over :func:`~dataclasses.fields` to rebuild six strings that cannot</span>
+<span class="sd">    have changed.</span>
+
+<span class="sd">    Keyed on the *class* rather than on the adapter name because tests replace a</span>
+<span class="sd">    registry entry to stand in for an unimported adapter; a name-keyed memo</span>
+<span class="sd">    would serve them the schema of the class they replaced.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_settings_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cached</span> <span class="o">=</span> <span class="n">_settings_cache</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cached</span>
+
+
+<div class="viewcode-block" id="BaseConfiguration">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseConfiguration</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A named set of settings for one adapter -- a *configuration profile*.</span>
+
+<span class="sd">    Subclasses declare the settings their adapter reads as fields, and set</span>
+<span class="sd">    :attr:`adapter` to that adapter&#39;s module name. Every field is optional, so</span>
+<span class="sd">    an empty configuration is legal and one can be built up conditionally.</span>
+
+<span class="sd">    Frozen, because a configuration is a value: two with the same settings are</span>
+<span class="sd">    interchangeable, and one already handed to :func:`configure` must not</span>
+<span class="sd">    change under the block that entered it.</span>
+
+<span class="sd">    Values are checked when the configuration is *constructed*, so a typo</span>
+<span class="sd">    raises where it was written rather than at a later ``with`` statement or,</span>
+<span class="sd">    worse, inside a request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#: The adapter this configuration targets, by the name of the module a</span>
+    <span class="c1">#: caller imports. ``None`` on the package-wide :class:`Configuration`,</span>
+    <span class="c1">#: which every adapter reads. A ``ClassVar``, not a field: the adapter is a</span>
+    <span class="c1">#: property of the class, which is what stops the caller restating it at</span>
+    <span class="c1">#: every call site and stops the roster being spelled twice.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#: The named profile these settings were read from, or ``None`` for a</span>
+    <span class="c1">#: configuration written in code. Provenance rather than a setting: it</span>
+    <span class="c1">#: records *where the values came from*, which is what lets</span>
+    <span class="c1">#: :func:`show_configuration` name the profile that supplied each value</span>
+    <span class="c1">#: instead of reporting every block alike.</span>
+    <span class="c1">#:</span>
+    <span class="c1">#: A ``ClassVar`` shadowed per instance by :meth:`load`, so it is neither a</span>
+    <span class="c1">#: field nor part of equality -- two configurations carrying the same</span>
+    <span class="c1">#: settings stay interchangeable however each was spelled, which is what</span>
+    <span class="c1">#: &quot;a configuration is a value&quot; means.</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># ``None`` is not a value to check: it means &quot;suppress the</span>
+                <span class="c1"># lower sources&quot;, which every setting accepts.</span>
+                <span class="n">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">optional</span><span class="o">=</span><span class="s2">&quot;, or None&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BaseConfiguration.validate">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration.validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check rules that span more than one setting.</span>
+
+<span class="sd">        Does nothing by default. Per-setting grammar lives in this module&#39;s</span>
+<span class="sd">        parsers and is shared with the file and the environment, so a value</span>
+<span class="sd">        means the same thing whichever source wrote it; override this only for</span>
+<span class="sd">        a rule no single setting can express.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="BaseConfiguration.settings">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration.settings">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The setting names this configuration accepts.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_settings_of</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseConfiguration.values">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration.values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The settings actually supplied, omitting those left unset.</span>
+
+<span class="sd">        An omitted setting inherits from an outer block or a lower source; an</span>
+<span class="sd">        explicit ``None`` suppresses them. Distinguishing the two is the whole</span>
+<span class="sd">        job of the ``_UNSET`` default, so it is done here rather than by every</span>
+<span class="sd">        reader.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_UNSET</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="BaseConfiguration.load">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration.load">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_C</span><span class="p">],</span> <span class="n">profile</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_C</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a named profile for this adapter from the configuration file.</span>
+
+<span class="sd">        ``[&lt;adapter&gt;.&lt;profile&gt;]``. Only the keys that table names are carried,</span>
+<span class="sd">        so the profile still inherits the adapter&#39;s default profile and the</span>
+<span class="sd">        package-wide keys per setting from the tiers below.</span>
+
+<span class="sd">        Selecting a profile the file does not define raises: a name a caller</span>
+<span class="sd">        just typed is a typo worth reporting, not a silent fall-through to</span>
+<span class="sd">        settings they did not ask for.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        profile : str</span>
+<span class="sd">            The name after the adapter, so ``[waterdata.bulk]`` is ``&quot;bulk&quot;``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BaseConfiguration</span>
+<span class="sd">            An instance of the class it was called on, remembering the profile</span>
+<span class="sd">            it was read from so :func:`show_configuration` can name it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">adapter</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">adapter</span>
+        <span class="k">if</span> <span class="n">adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.load() names a profile for one adapter, and &quot;</span>
+                <span class="s2">&quot;the package-wide configuration has none. Put shared keys at &quot;</span>
+                <span class="s2">&quot;the top level of the file.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">loaded</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">_named_profile</span><span class="p">(</span><span class="n">adapter</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">settings</span><span class="p">()))</span>
+        <span class="c1"># The class is frozen, so the provenance goes on the same way the</span>
+        <span class="c1"># dataclass sets its own fields. It is deliberately not one of them:</span>
+        <span class="c1"># the profile name is where these values came from, not one of the</span>
+        <span class="c1"># values, and :meth:`settings` is built from the fields.</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="n">loaded</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loaded</span></div>
+
+
+<div class="viewcode-block" id="BaseConfiguration._source">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration._source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;How one of this configuration&#39;s settings is named in an error.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">= in </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">()&quot;</span></div>
+
+
+<div class="viewcode-block" id="BaseConfiguration._provenance">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration._provenance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;How :func:`show_configuration` reports a value this supplied.</span>
+
+<span class="sd">        The profile is named in the file&#39;s own spelling -- ``[waterdata.bulk]``</span>
+<span class="sd">        -- so the report answers &quot;which profile set this?&quot; rather than only</span>
+<span class="sd">        &quot;a block did&quot;, and the answer is greppable in the file that holds it.</span>
+<span class="sd">        A configuration written in code has no profile, so it names its adapter</span>
+<span class="sd">        alone; the package-wide one narrows to nothing and names neither.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;configure() block&quot;</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scope</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scope</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">profile</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;configure() block [</span><span class="si">{</span><span class="n">scope</span><span class="si">}</span><span class="s2">]&quot;</span></div>
+</div>
+
+
+
+<span class="c1"># --- shared setting groups -----------------------------------------------</span>
+<span class="c1">#</span>
+<span class="c1"># Which settings an adapter accepts is the adapter&#39;s own knowledge, and it says</span>
+<span class="c1"># so by naming the groups below. What a setting *is* -- its type, its default,</span>
+<span class="c1"># the fact that ``None`` suppresses the tiers under it -- is not: that is this</span>
+<span class="c1"># module&#39;s, and it already was, since :func:`_coerce_typed` keys the type check</span>
+<span class="c1"># by setting *name* and :data:`_VALIDATORS` holds the grammar. Spelling</span>
+<span class="c1"># ``retries: int | None = _UNSET`` in six adapter modules therefore bought</span>
+<span class="c1"># nothing and cost a guarantee: the annotations are decorative, so an adapter</span>
+<span class="c1"># that drifted to ``retries: str | None`` would type-check clean under</span>
+<span class="c1"># ``mypy --strict`` and fail only when a value reached the chain.</span>
+<span class="c1">#</span>
+<span class="c1"># So each group declares one shared setting once, and an adapter composes the</span>
+<span class="c1"># groups it reads::</span>
+<span class="c1">#</span>
+<span class="c1">#     class NgwmnConfiguration(</span>
+<span class="c1">#         _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration</span>
+<span class="c1">#     ):</span>
+<span class="c1">#         adapter: ClassVar[str] = &quot;ngwmn&quot;</span>
+<span class="c1">#</span>
+<span class="c1"># Widening a shared setting&#39;s accepted type, or adding one, is now one edit</span>
+<span class="c1"># rather than six. Each adapter still documents the settings it takes in its own</span>
+<span class="c1"># ``Parameters`` section, because that is the signature a caller writes and</span>
+<span class="c1"># ``base_url`` means something different for every service.</span>
+<span class="c1">#</span>
+<span class="c1"># Plain mixins rather than ``BaseConfiguration`` subclasses: a group is not a</span>
+<span class="c1"># configuration -- it has no adapter and cannot be passed to :func:`configure`</span>
+<span class="c1"># -- and keeping them off that branch of the tree leaves one linear base for the</span>
+<span class="c1"># behavior. Frozen because a dataclass may not mix frozen and non-frozen bases.</span>
+<span class="c1"># Fields are collected in reverse MRO order, so an adapter composing all four</span>
+<span class="c1"># reads ``retries, stall_timeout, base_url, concurrency, parallel_chunks``.</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Retrying</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Every adapter&#39;s retry dials: transient retries and the stall bound.&quot;&quot;&quot;</span>
+
+    <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">stall_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Redirectable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An adapter whose requests can be pointed at another base URL.&quot;&quot;&quot;</span>
+
+    <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Concurrent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An adapter that issues more than one request per call.&quot;&quot;&quot;</span>
+
+    <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Chunked</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An adapter whose queries divide into sub-requests the caller can fan.&quot;&quot;&quot;</span>
+
+    <span class="n">parallel_chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+
+
+<div class="viewcode-block" id="Configuration">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.Configuration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Configuration</span><span class="p">(</span><span class="n">BaseConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings that apply to every adapter.</span>
+
+<span class="sd">    The package-wide profile: ``adapter`` stays ``None``, so nothing narrows</span>
+<span class="sd">    and every adapter reads what this sets unless its own configuration, or a</span>
+<span class="sd">    block nested inside, overrides that setting.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    api_key : str, optional</span>
+<span class="sd">        Water Data API key, sent as ``X-Api-Key`` and only ever to</span>
+<span class="sd">        ``api.waterdata.usgs.gov``. Prefer reading it from a secret store, the</span>
+<span class="sd">        environment, or the configuration file over writing a literal into a</span>
+<span class="sd">        script. Pass ``None`` to make a call without an ambient key.</span>
+<span class="sd">    concurrency : int or str, optional</span>
+<span class="sd">        Cap on simultaneous sub-requests: a positive integer, or</span>
+<span class="sd">        ``&quot;unbounded&quot;`` to disable the cap.</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    progress : bool or str, optional</span>
+<span class="sd">        Whether to draw the progress line. ``None`` leaves the automatic</span>
+<span class="sd">        behavior (on for a TTY or Jupyter kernel, off otherwise).</span>
+<span class="sd">    parallel_chunks : int, optional</span>
+<span class="sd">        Default optional fan-out for multi-value queries. It limits extra</span>
+<span class="sd">        refinement, but URL-byte safety may already require more sub-requests.</span>
+<span class="sd">        Sets the baseline that :func:`dataretrieval.parallel_chunks` overrides</span>
+<span class="sd">        per call. Each sub-request spends rate-limit quota, so raise it only</span>
+<span class="sd">        for pulls you know are large.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving *any* data before retrying</span>
+<span class="sd">        stops and the failure surfaces. Bounds the wall-clock cost of a dead</span>
+<span class="sd">        connection, which ``retries`` does not -- it counts attempts, not</span>
+<span class="sd">        seconds. Progress resets the clock; ``0`` disables the bound.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        with dataretrieval.configure(Configuration(api_key=vault.read(&quot;usgs&quot;))):</span>
+<span class="sd">            df, md = waterdata.get_daily(monitoring_location_id=&quot;USGS-05114000&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Spelled out rather than composed from the groups above, because this</span>
+    <span class="c1"># order is also the order :func:`show_configuration` reports the settings</span>
+    <span class="c1"># in -- :data:`SETTINGS` is derived from it just below -- and composing</span>
+    <span class="c1"># would hand that reader-facing sequence to MRO linearization. The two</span>
+    <span class="c1"># adapter-only fields the groups carry are absent by construction here:</span>
+    <span class="c1"># there is no package-wide base URL.</span>
+    <span class="n">api_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">parallel_chunks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+    <span class="n">stall_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span></div>
+
+
+
+<span class="c1">#: The package-wide settings, in the order :func:`show_configuration` reports</span>
+<span class="c1">#: them -- the fields of :class:`Configuration`, derived rather than restated.</span>
+<span class="c1">#: An adapter may accept a subset of them plus :data:`ADAPTER_ONLY_SETTINGS`.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Derived because the two copies had nothing holding them together, in the one</span>
+<span class="c1">#: module whose job is to stop rosters being duplicated: a field added to the</span>
+<span class="c1">#: class and forgotten here would work from :func:`configure` and be silently</span>
+<span class="c1">#: dropped from the file -- :func:`_accepted_keys` would call it an unknown</span>
+<span class="c1">#: setting -- and never appear in the report. Which is the &quot;a schema no call</span>
+<span class="c1">#: site can reach&quot; failure ADR 0011 makes impossible by construction. This is</span>
+<span class="c1">#: what the adapter side already does (:func:`settings_for`); only the</span>
+<span class="c1">#: package-wide side was hand-maintained.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Declared here, below the class, for the obvious reason: it cannot be derived</span>
+<span class="c1">#: before the class exists. Every reader is a call-time lookup or a ``def``</span>
+<span class="c1">#: default evaluated further down the module.</span>
+<span class="n">SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">Configuration</span><span class="p">))</span>
+
+<span class="c1">#: Every setting name this module knows a grammar for.</span>
+<span class="n">_ALL_SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">SETTINGS</span> <span class="o">+</span> <span class="n">ADAPTER_ONLY_SETTINGS</span>
+
+
+<span class="c1">#: The adapters that may be configured, by the name of the module a caller</span>
+<span class="c1">#: imports. Names only, because this module is a standard-library-only leaf</span>
+<span class="c1">#: every adapter may import and so cannot import them back.</span>
+<span class="c1">#:</span>
+<span class="c1">#: Holding the names here rather than deriving them from the registry below is</span>
+<span class="c1">#: what lets a ``[nldi]`` table stay valid in a file: NLDI is imported on demand</span>
+<span class="c1">#: for the geopandas extra, so a roster built from imports would reject a</span>
+<span class="c1">#: perfectly good table until something happened to import that module, and the</span>
+<span class="c1">#: verdict would vary by what a caller had touched.</span>
+<span class="n">ADAPTERS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;waterdata&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ngwmn&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nwdc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;wqp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nldi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;streamstats&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1">#: Configuration classes that have registered themselves, keyed by adapter.</span>
+<span class="c1">#: Populated at adapter import, and consulted only to validate a table&#39;s</span>
+<span class="c1">#: *keys* -- which happens the first time that adapter resolves a setting, by</span>
+<span class="c1">#: which point it is necessarily imported.</span>
+<span class="n">_REGISTRY</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConfiguration</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">BaseConfiguration</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Record an adapter&#39;s configuration class. Called at adapter import.</span>
+
+<span class="sd">    The roster in :data:`ADAPTERS` and the class are the two halves of one</span>
+<span class="sd">    declaration, and this is where they are checked to agree: a class naming an</span>
+<span class="sd">    adapter the roster does not list would be a configuration no file table and</span>
+<span class="sd">    no report could ever reach.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">adapter</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">adapter</span>
+    <span class="k">if</span> <span class="n">adapter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">adapter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ADAPTERS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.adapter is </span><span class="si">{</span><span class="n">adapter</span><span class="si">!r}</span><span class="s2">, which is not one of &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ADAPTERS</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">_REGISTRY</span><span class="p">[</span><span class="n">adapter</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+
+
+<div class="viewcode-block" id="settings_for">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.settings_for">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">settings_for</span><span class="p">(</span><span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The settings *adapter* accepts, or ``None`` if it has not been imported.</span>
+
+<span class="sd">    ``None`` is not an error and callers must not treat it as one: a file may</span>
+<span class="sd">    name an adapter this process has never loaded, and rejecting that would</span>
+<span class="sd">    make a configuration file conditionally valid depending on which optional</span>
+<span class="sd">    extras happened to be installed. It means &quot;cannot validate these keys yet&quot;,</span>
+<span class="sd">    and the adapter cannot be misreading a setting it has not loaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="n">_REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">cls</span><span class="o">.</span><span class="n">settings</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_env_source_label</span><span class="p">(</span><span class="n">env_var</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;How a value read from ``env_var`` is reported as a source.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_toml_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The TOML parser, imported on first use.</span>
+
+<span class="sd">    ``import dataretrieval`` imports this module, but the parser is reachable</span>
+<span class="sd">    only once a configuration file actually exists -- the minority case.</span>
+<span class="sd">    Importing it eagerly costs every caller ~4 ms of ``tomllib`` regex</span>
+<span class="sd">    compilation for a file most of them do not have.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tomllib</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover - exercised only on Python 3.10</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">tomli</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tomllib</span>
+    <span class="k">return</span> <span class="n">tomllib</span>
+
+
+<div class="viewcode-block" id="config_path">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.config_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">config_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Path to the configuration file, honoring ``DATARETRIEVAL_CONFIG``.</span>
+
+<span class="sd">    Memoized on the raw ``DATARETRIEVAL_CONFIG`` value, because this sits on</span>
+<span class="sd">    the per-request path via :func:`api_key` and building the default costs</span>
+<span class="sd">    more than the ``stat`` it leads to (``Path.home()`` alone dominates the</span>
+<span class="sd">    whole resolution). Returning a stable object also lets :func:`_load_file`</span>
+<span class="sd">    check its cache by identity instead of re-normalizing a fresh ``Path``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pathlib.Path</span>
+<span class="sd">        The explicit path from ``DATARETRIEVAL_CONFIG`` if set, otherwise</span>
+<span class="sd">        ``~/.dataretrieval/config.toml``. The file need not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_path_cache</span>
+    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CONFIG_PATH_ENV</span><span class="p">)</span>
+
+    <span class="c1"># Probe the memo before doing any work: this runs once per request via</span>
+    <span class="c1"># ``api_key()``, so the hit path should be a dict lookup and a compare.</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_path_cache</span>
+    <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">override</span><span class="p">:</span>
+        <span class="n">cached_guard</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cached</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="c1"># The memo is only valid while whatever the path was *derived from* is</span>
+        <span class="c1"># unchanged, so each branch records its own guard. A relative override</span>
+        <span class="c1"># is anchored to the working directory (a later ``os.chdir`` in a</span>
+        <span class="c1"># per-job notebook or scheduler must not keep reading the previous</span>
+        <span class="c1"># job&#39;s file); the default branch is anchored to ``$HOME``. An absolute</span>
+        <span class="c1"># override depends on neither and guards with ``None``. ``stat(&quot;.&quot;)``</span>
+        <span class="c1"># identifies the directory ~17x cheaper than ``getcwd()``, which</span>
+        <span class="c1"># reifies the whole path string.</span>
+        <span class="k">if</span> <span class="n">cached_guard</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cached_guard</span> <span class="o">==</span> <span class="n">_path_guard</span><span class="p">(</span><span class="n">cached_guard</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="n">path</span>
+
+    <span class="n">expanded</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">override</span> <span class="ow">and</span> <span class="n">override</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">guard</span><span class="p">:</span> <span class="n">_PathGuard</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">expanded</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">_default_home_path</span><span class="p">()</span>
+        <span class="n">guard</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;home&quot;</span><span class="p">,</span> <span class="n">_home_id</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">expanded</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">expanded</span>
+        <span class="n">guard</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">guard</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">,</span> <span class="n">_cwd_id</span><span class="p">())</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">_resolve_against_cwd</span><span class="p">(</span><span class="n">expanded</span><span class="p">)</span>
+    <span class="n">_path_cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">override</span><span class="p">,</span> <span class="n">guard</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_home_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The default ``~/.dataretrieval/config.toml``, or an unusable path.</span>
+
+<span class="sd">    ``Path.home()`` raises ``RuntimeError`` where no home can be resolved at all</span>
+<span class="sd">    -- a rootless container running as an arbitrary UID with no passwd entry and</span>
+<span class="sd">    no ``HOME``. That is not a misconfiguration to report: such a deployment</span>
+<span class="sd">    simply has no config file, and before settings were layered it worked fine</span>
+<span class="sd">    on the environment alone. So the unexpanded ``~/...`` form is returned</span>
+<span class="sd">    instead: it does not exist, which keeps the whole file layer inert rather</span>
+<span class="sd">    than failing every request from inside the header builder, and it still</span>
+<span class="sd">    reads correctly in :func:`show_configuration` output.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">home</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;.dataretrieval&quot;</span> <span class="o">/</span> <span class="s2">&quot;config.toml&quot;</span>
+    <span class="k">return</span> <span class="n">home</span> <span class="o">/</span> <span class="s2">&quot;.dataretrieval&quot;</span> <span class="o">/</span> <span class="s2">&quot;config.toml&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_against_cwd</span><span class="p">(</span><span class="n">relative</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a relative override, or report a working directory that is gone.</span>
+
+<span class="sd">    A scratch-dir job that removes its own cwd cannot resolve a relative</span>
+<span class="sd">    ``DATARETRIEVAL_CONFIG`` at all. That surfaces as a :class:`ConfigurationError`</span>
+<span class="sd">    rather than a bare ``OSError`` escaping onto the request path -- the</span>
+<span class="sd">    taxonomy contract the rest of this module keeps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="n">relative</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;cannot resolve the relative </span><span class="si">{</span><span class="n">CONFIG_PATH_ENV</span><span class="si">}</span><span class="s2"> path </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">relative</span><span class="p">)</span><span class="si">!r}</span><span class="s2">: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the working directory is unavailable (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_path_guard</span><span class="p">(</span><span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_PathGuard</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Re-read the guard of the given kind: ``&quot;cwd&quot;`` or ``&quot;home&quot;``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">_cwd_id</span><span class="p">()</span> <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;cwd&quot;</span> <span class="k">else</span> <span class="n">_home_id</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cwd_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Identify the working directory without building its path string.</span>
+
+<span class="sd">    Only identifies the directory; :func:`_resolve_against_cwd` is what turns a</span>
+<span class="sd">    missing cwd into a :class:`ConfigurationError`. Both are needed, because ``stat``</span>
+<span class="sd">    on a *deleted* working directory still succeeds -- the process holds the</span>
+<span class="sd">    open handle -- while resolving its path does not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;cannot resolve the relative </span><span class="si">{</span><span class="n">CONFIG_PATH_ENV</span><span class="si">}</span><span class="s2"> path: the working &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;directory is unavailable (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_dev</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_ino</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_home_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The home directory as the environment reports it.</span>
+
+<span class="sd">    A plain environment read, not ``Path.home()``: this is on the per-request</span>
+<span class="sd">    path and only needs to detect a *change* (a test or notebook that</span>
+<span class="sd">    reassigns the home variable after the first resolution), not to resolve</span>
+<span class="sd">    the path.</span>
+
+<span class="sd">    Which variable that is differs by platform, and the memo has to agree with</span>
+<span class="sd">    the resolver or it watches the wrong thing. ``posixpath.expanduser`` reads</span>
+<span class="sd">    ``HOME``; ``ntpath.expanduser`` reads ``USERPROFILE`` (then</span>
+<span class="sd">    ``HOMEDRIVE``/``HOMEPATH``) and ignores ``HOME`` outright. Preferring</span>
+<span class="sd">    ``HOME`` everywhere means that on Windows -- where Git Bash and MSYS do set</span>
+<span class="sd">    it -- the memo invalidates on a variable that cannot move the path, and</span>
+<span class="sd">    misses the ``USERPROFILE`` change that can.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;USERPROFILE&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HOMEDRIVE&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HOMEPATH&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+
+<span class="c1"># --- value grammar -------------------------------------------------------</span>
+<span class="c1">#</span>
+<span class="c1"># One parser drives each setting&#39;s grammar, so a value means the same thing and</span>
+<span class="c1"># reports the same way whichever source wrote it. Source-level adapters retain</span>
+<span class="c1"># TOML types and reject Python API type errors before producing raw strings.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a type error without rendering a possibly secret value.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">).&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_string</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;a string&quot;</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_progress</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;a bool or recognized string&quot;</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_concurrency</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;an integer or &#39;unbounded&#39;&quot;</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="n">CONCURRENCY_UNBOUNDED</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be an integer or &#39;unbounded&#39;.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># Seconds, so a fractional value is meaningful -- unlike the counts, which</span>
+    <span class="c1"># are whole by nature.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;a number of seconds&quot;</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_count</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Integral</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">&quot;an integer&quot;</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="c1">#: Each setting&#39;s source-level type policy -- one row per setting, like</span>
+<span class="c1">#: :data:`_VALIDATORS` holds its grammar. A roster with the completeness guard</span>
+<span class="c1">#: below rather than an if/elif chain with an implicit integer fallback, so a</span>
+<span class="c1">#: new setting must declare its type here or fail at import -- not silently</span>
+<span class="c1">#: parse as an integer from the typed surfaces while the untyped environment</span>
+<span class="c1">#: accepts it. (Integers are matched as :class:`numbers.Integral` -- a numpy</span>
+<span class="c1">#: or pandas integer is a legitimate count from Python, and ``tomllib`` only</span>
+<span class="c1">#: ever yields ``int``, so the wider check cannot change a TOML outcome.)</span>
+<span class="n">_TYPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;api_key&quot;</span><span class="p">:</span> <span class="n">_coerce_string</span><span class="p">,</span>
+    <span class="s2">&quot;base_url&quot;</span><span class="p">:</span> <span class="n">_coerce_string</span><span class="p">,</span>
+    <span class="s2">&quot;progress&quot;</span><span class="p">:</span> <span class="n">_coerce_progress</span><span class="p">,</span>
+    <span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="n">_coerce_concurrency</span><span class="p">,</span>
+    <span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="n">_coerce_count</span><span class="p">,</span>
+    <span class="s2">&quot;parallel_chunks&quot;</span><span class="p">:</span> <span class="n">_coerce_count</span><span class="p">,</span>
+    <span class="s2">&quot;stall_timeout&quot;</span><span class="p">:</span> <span class="n">_coerce_seconds</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">_TYPES</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">_ALL_SETTINGS</span><span class="p">):</span>  <span class="c1"># pragma: no cover - guards a coding error</span>
+    <span class="c1"># Not an ``assert``: ``python -O`` strips those, and an unlisted setting</span>
+    <span class="c1"># would otherwise change meaning by omission.</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="s2">&quot;every setting needs a type policy in _TYPES; &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;missing=</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">_ALL_SETTINGS</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">_TYPES</span><span class="p">))</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;extra=</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">_TYPES</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">set</span><span class="p">(</span><span class="n">_ALL_SETTINGS</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type-check one source-level value and render it as a raw string.</span>
+
+<span class="sd">    Shared by the two *typed* surfaces -- a configuration&#39;s fields and TOML</span>
+<span class="sd">    scalars -- so a value accepted from one is accepted from the other and a</span>
+<span class="sd">    tightened rule cannot land on only half of them. (The environment is not</span>
+<span class="sd">    typed: it delivers strings, which go straight to :func:`_validate_raw`.)</span>
+
+<span class="sd">    ``optional`` is the only thing that differs between them: the Python</span>
+<span class="sd">    surface accepts ``None`` and says so in its messages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_TYPES</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type-check, render and grammar-check one typed value.&quot;&quot;&quot;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="n">optional</span><span class="p">)</span>
+    <span class="n">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">raw</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_int</span><span class="p">(</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">default</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">minimum</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">examples</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a bounded integer setting; blank falls through to *default*.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw : str</span>
+<span class="sd">        The value as written, from whichever source supplied it.</span>
+<span class="sd">    source : str</span>
+<span class="sd">        Human-readable origin, used as the subject of any error message.</span>
+<span class="sd">    default : int</span>
+<span class="sd">        Returned for a blank value, matching the environment-variable</span>
+<span class="sd">        behavior this replaced.</span>
+<span class="sd">    minimum : int</span>
+<span class="sd">        Smallest accepted value.</span>
+<span class="sd">    examples : str, optional</span>
+<span class="sd">        Illustrative values appended to the message (e.g. ``&quot;2, 8, 32&quot;``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">default</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;an integer &gt;= </span><span class="si">{</span><span class="n">minimum</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;, e.g. </span><span class="si">{</span><span class="n">examples</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">examples</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">).&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">if</span> <span class="n">parsed</span> <span class="o">&lt;</span> <span class="n">minimum</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parsed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_seconds</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a non-negative duration in seconds; blank falls through.</span>
+
+<span class="sd">    Seconds rather than a count, so fractional values are accepted. ``0``</span>
+<span class="sd">    disables the bound it guards, which is why the floor is zero rather than</span>
+<span class="sd">    one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DEFAULT_STALL_TIMEOUT</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="s2">&quot;a finite, non-negative number of seconds&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">).&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="c1"># ``inf`` and ``nan`` both parse as floats and both defeat the bound they</span>
+    <span class="c1"># are meant to set: ``inf`` makes every wait allowed, and ``nan`` compares</span>
+    <span class="c1"># false against every threshold. TOML has literal ``inf``/``nan``, so this</span>
+    <span class="c1"># is reachable from the file as well as from Python.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span> <span class="ow">or</span> <span class="n">parsed</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parsed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_concurrency</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a concurrency cap: a positive int, or ``unbounded`` -&gt; ``None``.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">CONCURRENCY_UNBOUNDED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_parse_int</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENCY</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2"> Use &#39;</span><span class="si">{</span><span class="n">CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">&#39; to disable the cap.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_base_url</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a service base URL: an absolute ``http``/``https`` origin.</span>
+
+<span class="sd">    Only the scheme is checked, and deliberately so. This module cannot know</span>
+<span class="sd">    what a given service&#39;s paths look like, but it can refuse the shapes that</span>
+<span class="sd">    are never a base URL and would fail far from here -- a bare hostname that</span>
+<span class="sd">    ``httpx`` would reject, or a ``file://`` that is not a service at all.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;http://&quot;</span><span class="p">,</span> <span class="s2">&quot;https://&quot;</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be an absolute http:// or https:// URL (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">).&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a progress toggle, optionally preserving legacy env truthiness.&quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must not be blank.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_PROGRESS_FALSEY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_PROGRESS_TRUTHY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">strict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_PROGRESS_TRUTHY</span> <span class="o">|</span> <span class="n">_PROGRESS_FALSEY</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">).&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Each integer setting&#39;s grammar, named once. The accessor and the eager</span>
+<span class="c1"># block/TOML validator below both spell the parser this way, so a change to a</span>
+<span class="c1"># bound (say ``minimum``) cannot leave a ``configure()`` block validating</span>
+<span class="c1"># against different rules than the value it later resolves.</span>
+<span class="n">_parse_retries</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_parse_int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_RETRIES</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">_parse_parallel_chunks</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+    <span class="n">_parse_int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_PARALLEL_CHUNKS</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">examples</span><span class="o">=</span><span class="s2">&quot;2, 8, 32&quot;</span>
+<span class="p">)</span>
+
+<span class="c1">#: Per-setting validators used for eager configuration and TOML validation.</span>
+<span class="n">_VALIDATORS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;concurrency&quot;</span><span class="p">:</span> <span class="n">_parse_concurrency</span><span class="p">,</span>
+    <span class="s2">&quot;retries&quot;</span><span class="p">:</span> <span class="n">_parse_retries</span><span class="p">,</span>
+    <span class="s2">&quot;progress&quot;</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">_parse_progress</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="s2">&quot;parallel_chunks&quot;</span><span class="p">:</span> <span class="n">_parse_parallel_chunks</span><span class="p">,</span>
+    <span class="s2">&quot;stall_timeout&quot;</span><span class="p">:</span> <span class="n">_parse_seconds</span><span class="p">,</span>
+    <span class="s2">&quot;base_url&quot;</span><span class="p">:</span> <span class="n">_parse_base_url</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a setting&#39;s grammar validator when it has one.&quot;&quot;&quot;</span>
+    <span class="n">validate</span> <span class="o">=</span> <span class="n">_VALIDATORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">validate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">validate</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_named_profiles</span><span class="p">(</span><span class="n">parsed</span><span class="p">:</span> <span class="n">_ParsedFile</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The named profiles the file defines for *adapter*, by name.</span>
+
+<span class="sd">    A sub-table of an adapter&#39;s table is a named profile: ``[waterdata.bulk]``</span>
+<span class="sd">    parses as a sub-table of ``[waterdata]``, and everything else in that table</span>
+<span class="sd">    is a setting of the adapter&#39;s default profile. The two readers of that rule</span>
+<span class="sd">    -- selecting a profile and reporting which ones exist -- share this one</span>
+<span class="sd">    definition so they cannot come to disagree about what a profile is.</span>
+
+<span class="sd">    Tables are returned raw, since an adapter this process has not imported has</span>
+<span class="sd">    no vocabulary to check them against. That is enough to *name* a profile,</span>
+<span class="sd">    which is all the report needs; reading one still goes through</span>
+<span class="sd">    :func:`_named_profile`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">table</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">parsed</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adapter</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_named_profile</span><span class="p">(</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">profile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">allowed</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The ``[&lt;adapter&gt;.&lt;profile&gt;]`` table, checked against *allowed*.</span>
+
+<span class="sd">    Returns the TOML scalars as written rather than raw strings, because the</span>
+<span class="sd">    caller is :meth:`BaseConfiguration.load`, which feeds them straight back</span>
+<span class="sd">    into the configuration&#39;s own typed fields. Values are still checked here,</span>
+<span class="sd">    with a source that names the file and the table: a grammar error found on</span>
+<span class="sd">    the way *out* of the file should say which line to fix, not merely which</span>
+<span class="sd">    field of which class ended up holding it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span><span class="p">,</span> <span class="n">parsed</span> <span class="o">=</span> <span class="n">_current_file</span><span class="p">()</span>
+    <span class="n">named</span> <span class="o">=</span> <span class="n">_named_profiles</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">profile</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">named</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parsed</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;profile </span><span class="si">{</span><span class="n">profile</span><span class="si">!r}</span><span class="s2"> cannot be selected for </span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">: there &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;is no configuration file at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">defined</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">named</span><span class="p">))</span> <span class="ow">or</span> <span class="s2">&quot;none&quot;</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: no [</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">] table. Profiles defined for &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">defined</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">]&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">named</span><span class="p">[</span><span class="n">profile</span><span class="p">]</span>
+
+    <span class="c1"># A profile is one flat set of settings for one adapter, so a table inside</span>
+    <span class="c1"># one is a shape the grammar has no reading for -- most likely a file</span>
+    <span class="c1"># migrated from the retired ``[profiles.bulk.ngwmn]``, where a profile did</span>
+    <span class="c1"># carry per-service detail. Dropping it silently would leave the author</span>
+    <span class="c1"># believing they had tuned something. Checked here rather than at parse</span>
+    <span class="c1"># time for the same reason keys are: a malformed profile for one adapter</span>
+    <span class="c1"># must not fail another adapter&#39;s call.</span>
+    <span class="n">nested</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">nested</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> contains a table, [</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">profile</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">nested</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">]. &quot;</span>
+            <span class="s2">&quot;A profile names settings for one adapter and nothing else; to &quot;</span>
+            <span class="s2">&quot;configure two adapters for one run, give each its own profile and &quot;</span>
+            <span class="s2">&quot;select both in the same configure() block.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">value</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">_raw</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_checked_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_current_file</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">_ParsedFile</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The config file as currently loaded: its path and its parsed form.</span>
+
+<span class="sd">    One helper so the two always travel together. They are a single fact, and</span>
+<span class="sd">    handing the top-level tier a different ``_ParsedFile`` than the adapter</span>
+<span class="sd">    tier saw in the same resolution is exactly the drift that made an</span>
+<span class="sd">    adapter-scoped read load the file twice.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">config_path</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">path</span><span class="p">,</span> <span class="n">_load_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_adapter_file_settings</span><span class="p">(</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">parsed</span><span class="p">:</span> <span class="n">_ParsedFile</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The ``[&lt;adapter&gt;]`` table&#39;s own keys -- its default profile.</span>
+
+<span class="sd">    Layers *above* the file&#39;s top-level keys rather than being merged into</span>
+<span class="sd">    them: within the file tier an adapter&#39;s own value outranks the package-wide</span>
+<span class="sd">    one. The table&#39;s sub-tables are its named profiles, which are inert until a</span>
+<span class="sd">    caller selects one, so they are skipped here (see :func:`_accepted_keys`).</span>
+
+<span class="sd">    Validated on first use, not at parse time, so a bad value in ``[nldi]``</span>
+<span class="sd">    cannot fail a Water Data call -- the blast-radius rule ADR 0010 set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">table</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">global</span> <span class="n">_adapter_cache</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_adapter_cache</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="n">parsed</span> <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">]&quot;</span>
+    <span class="c1"># An adapter this process has not imported declares no vocabulary, so its</span>
+    <span class="c1"># table is checked against the package-wide settings alone: refusing a key</span>
+    <span class="c1"># for want of a schema would make the file&#39;s validity depend on which</span>
+    <span class="c1"># optional extras happened to be installed.</span>
+    <span class="n">accepted</span> <span class="o">=</span> <span class="n">settings_for</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+    <span class="n">validated</span> <span class="o">=</span> <span class="n">_scalars</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">SETTINGS</span> <span class="k">if</span> <span class="n">accepted</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">accepted</span><span class="p">)</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">validated</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="p">)</span>
+    <span class="n">_adapter_cache</span><span class="p">[</span><span class="n">adapter</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ParsedFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the configuration file at *path*, caching until it changes on disk.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_file_cache</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="c1"># No file is the normal case: continue to the built-in default. One</span>
+        <span class="c1"># shared empty instance rather than a fresh one per read -- nothing</span>
+        <span class="c1"># mutates a ``_ParsedFile``, and returning the same object each time is</span>
+        <span class="c1"># what lets callers memoize on its identity.</span>
+        <span class="k">return</span> <span class="n">_NO_FILE</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not access </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISDIR</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;configuration path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is a directory, not a file.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Only a regular file is parsed. Anything else readable -- a character</span>
+    <span class="c1"># device, a FIFO -- is treated as *empty* configuration without being</span>
+    <span class="c1"># opened, which is what ``DATARETRIEVAL_CONFIG=/dev/null`` asks for and the</span>
+    <span class="c1"># only coherent answer for a stream: settings are re-resolved on every</span>
+    <span class="c1"># request, so a FIFO would hand its contents to the first getter and</span>
+    <span class="c1"># nothing to the rest, making the API key vanish mid-run. (It would also</span>
+    <span class="c1"># block on open until a writer appeared.)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISREG</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_ParsedFile</span><span class="p">(</span><span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># POSIX ``st_ctime_ns`` advances on any inode change, so the metadata stamp</span>
+    <span class="c1"># catches even a rewrite that restores the original mtime (``cp -p``, rsync</span>
+    <span class="c1"># ``--times``, an editor that preserves timestamps). Windows ctime is</span>
+    <span class="c1"># *creation* time, so there the stamp cannot see that class of edit and the</span>
+    <span class="c1"># content compare below is the only correct check -- worth the re-read,</span>
+    <span class="c1"># since serving a stale API key is the alternative.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Dropping this gate (or dropping ctime from the stamp so Windows can use</span>
+    <span class="c1"># it) has been proposed repeatedly on the grounds that the re-read is</span>
+    <span class="c1"># wasteful. It is, but it is also the only thing standing between a</span>
+    <span class="c1"># timestamp-preserving write and a stale credential; a ctime-less stamp is</span>
+    <span class="c1"># identical across exactly that edit. ``test_file_edit_is_picked_up``</span>
+    <span class="c1"># pins the behavior. Please do not &quot;optimize&quot; it without a Windows-safe</span>
+    <span class="c1"># change detector.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Measured, so the next reviewer does not have to re-derive it: forcing the</span>
+    <span class="c1"># Windows branch costs 27 us per settings read against 5 us with the stamp</span>
+    <span class="c1"># (5 syscalls instead of 1; a 64-byte file and a 6.5 kB one measure the</span>
+    <span class="c1"># same, since the content compare still spares the TOML parse). At the 8</span>
+    <span class="c1"># reads a one-chunk query performs that is ~175 us against a 100-500 ms</span>
+    <span class="c1"># round trip -- 0.04%, and the alternative is serving a stale key.</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_file_cache</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;nt&quot;</span>
+        <span class="ow">and</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="n">path</span>
+        <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">_file_stamp</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">cached</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">handle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">opened_st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fstat</span><span class="p">(</span><span class="n">handle</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not read </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+    <span class="k">if</span> <span class="n">cached</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">cached</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">content</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">cached</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tomllib</span> <span class="o">=</span> <span class="n">_toml_parser</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is not valid UTF-8: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">except</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">TOMLDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is not valid TOML: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">_interpret</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="n">_warn_on_loose_permissions</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">opened_st</span><span class="p">,</span> <span class="n">parsed</span><span class="p">)</span>
+    <span class="n">_file_cache</span> <span class="o">=</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">_file_stamp</span><span class="p">(</span><span class="n">opened_st</span><span class="p">),</span> <span class="n">content</span><span class="p">,</span> <span class="n">parsed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parsed</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_file_stamp</span><span class="p">(</span><span class="n">st</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat_result</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_FileStamp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Metadata that changes with file replacement, content, or permissions.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_dev</span><span class="p">,</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_ino</span><span class="p">,</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="p">,</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_mtime_ns</span><span class="p">,</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">st_ctime_ns</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_interpret</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_ParsedFile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate a parsed TOML document into package-wide keys plus adapter tables.</span>
+
+<span class="sd">    Only the top-level table is validated here, because it always applies. An</span>
+<span class="sd">    adapter&#39;s table is kept raw and validated when that adapter first resolves a</span>
+<span class="sd">    setting: a bad value in ``[nldi]`` must not fail a Water Data call, the same</span>
+<span class="sd">    blast-radius rule :func:`~dataretrieval.utils._default_headers` follows for</span>
+<span class="sd">    the key itself. It is also what lets an adapter&#39;s vocabulary live in the</span>
+<span class="sd">    adapter, which this module cannot import.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">top</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ADAPTERS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] must be a table of settings for the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> adapter.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">adapters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">_RETIRED_PROFILES_TABLE</span><span class="p">:</span>
+            <span class="c1"># A file written against the earlier design, where one profile</span>
+            <span class="c1"># switched every service at once. The generic message below would</span>
+            <span class="c1"># send its author hunting for a typo in a table that is spelled</span>
+            <span class="c1"># exactly as the old docs said, so name the replacement instead.</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: [</span><span class="si">{</span><span class="n">_RETIRED_PROFILES_TABLE</span><span class="si">}</span><span class="s2">] is no longer read. A &quot;</span>
+                <span class="s2">&quot;profile now belongs to one adapter: write [&lt;adapter&gt;.&lt;name&gt;] &quot;</span>
+                <span class="s1">&#39;and select it with &lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;).&#39;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: unknown table [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">]. Per-adapter tables are &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">]&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">ADAPTERS</span><span class="p">)</span><span class="si">}</span><span class="s2">; a named profile &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;goes under one of them, as [&lt;adapter&gt;.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">]; top-level keys &quot;</span>
+                <span class="s2">&quot;are the package-wide defaults.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">top</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">_ParsedFile</span><span class="p">(</span><span class="n">_scalars</span><span class="p">(</span><span class="n">top</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">_TOP_LEVEL</span><span class="p">),</span> <span class="n">adapters</span><span class="p">,</span> <span class="n">exists</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_accepted_keys</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">allowed</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter one table down to the settings it is allowed to name.</span>
+
+<span class="sd">    The key policy for every table in the file, in one place, so the default</span>
+<span class="sd">    profile and a named profile cannot come to disagree about what is a typo.</span>
+<span class="sd">    An unrecognized name warns rather than raising, so a file written for a</span>
+<span class="sd">    newer release still works; a name this release *does* know but that table</span>
+<span class="sd">    cannot use raises, because that one can never become meaningful.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># A named profile -- ``[waterdata.bulk]`` parses as a sub-table of</span>
+            <span class="c1"># ``[waterdata]``. Inert until a caller selects it, so it is</span>
+            <span class="c1"># neither a setting here nor an error. Only an adapter&#39;s table can</span>
+            <span class="c1"># reach this: the top level rejects unknown tables when it parses,</span>
+            <span class="c1"># and :func:`_named_profile` refuses a table inside a profile, so a</span>
+            <span class="c1"># sub-table here is always a profile rather than deeper nesting.</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span>
+            <span class="c1"># Rejected from the file wherever it appears. A file that silently</span>
+            <span class="c1"># redirects a data-retrieval library to another host is a</span>
+            <span class="c1"># supply-chain-shaped hazard; an in-code block keeps the redirect</span>
+            <span class="c1"># where a reader of the script sees it (ADR 0011).</span>
+            <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> may only be set in code, in a &quot;</span>
+                <span class="s2">&quot;configure() block, never from a file.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">SETTINGS</span><span class="p">:</span>
+                <span class="c1"># A real setting, in a table that does not read it. Unlike an</span>
+                <span class="c1"># unrecognized name -- which may simply belong to a newer</span>
+                <span class="c1"># release -- this cannot become meaningful later, and silently</span>
+                <span class="c1"># ignoring it would leave a caller believing they had tuned</span>
+                <span class="c1"># something. See ADR 0010.</span>
+                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is not a setting that table &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;accepts. It accepts: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed</span><span class="p">))</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: unknown setting </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> (ignored). &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Known settings: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SETTINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="n">_WARN_STACKLEVEL</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_checked_table</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">allowed</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check one table of the file, in both the forms its two readers need.</span>
+
+<span class="sd">    Every table in the file comes through here: the top-level keys, an</span>
+<span class="sd">    adapter&#39;s default profile, and a named profile. They differ only in what</span>
+<span class="sd">    they do with the result -- the chain wants raw strings, a profile being</span>
+<span class="sd">    loaded wants the TOML scalars to hand back to a configuration&#39;s own typed</span>
+<span class="sd">    fields -- so both are returned and each reader takes its half. Written once</span>
+<span class="sd">    because the checks are the interesting part and they must not diverge: a</span>
+<span class="sd">    per-table policy added for one kind of table would otherwise skip the</span>
+<span class="sd">    other, silently.</span>
+
+<span class="sd">    ``tomllib`` returns typed scalars (``concurrency = 32`` is an ``int``,</span>
+<span class="sd">    ``concurrency = &quot;unbounded&quot;`` a ``str``), so types are checked here before</span>
+<span class="sd">    values pass through the same grammar used by the other sources.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict[str, tuple[Any, str]]</span>
+<span class="sd">        Each accepted setting&#39;s value as written, and as a raw string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">checked</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_accepted_keys</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="n">_TOP_LEVEL</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_WARN_AT_TOP_LEVEL</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">_WARN_AT_TOP_LEVEL</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="n">_WARN_STACKLEVEL</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="n">_validate_raw</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="n">checked</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">checked</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_scalars</span><span class="p">(</span>
+    <span class="n">table</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">allowed</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">SETTINGS</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One table&#39;s recognized settings, as the raw strings the chain resolves.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">raw</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">_value</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_checked_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_holds_api_key</span><span class="p">(</span><span class="n">parsed</span><span class="p">:</span> <span class="n">_ParsedFile</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether the file names an API key anywhere, including inert tables.</span>
+
+<span class="sd">    Inert tables count because the question is what the *file* contains, not</span>
+<span class="sd">    what this run resolves: a key sitting in a profile nobody selected is just</span>
+<span class="sd">    as readable to another user on the machine.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;api_key&quot;</span> <span class="ow">in</span> <span class="n">parsed</span><span class="o">.</span><span class="n">base</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="s2">&quot;api_key&quot;</span> <span class="ow">in</span> <span class="n">table</span>
+        <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span> <span class="ow">in</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">parsed</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_on_loose_permissions</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">st</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">stat_result</span><span class="p">,</span> <span class="n">parsed</span><span class="p">:</span> <span class="n">_ParsedFile</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Warn once if a file holding an API key is readable by other users.</span>
+
+<span class="sd">    Follows the ``~/.ssh`` and ``.netrc`` convention, but warns rather than</span>
+<span class="sd">    refusing -- shared filesystems on HPC clusters have their own conventions,</span>
+<span class="sd">    and refusing to read would strand those users.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;posix&quot;</span> <span class="ow">or</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">_permission_warned</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_holds_api_key</span><span class="p">(</span><span class="n">parsed</span><span class="p">):</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IMODE</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mo">0o077</span><span class="p">:</span>
+        <span class="n">_permission_warned</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> contains an API key and is readable by other users. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Restrict it with: chmod 600 </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="n">_WARN_STACKLEVEL</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reset_file_cache</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop the parsed-file cache. For tests that rewrite the file in place.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_file_cache</span><span class="p">,</span> <span class="n">_path_cache</span>
+    <span class="n">_file_cache</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_path_cache</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_adapter_cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">_permission_warned</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

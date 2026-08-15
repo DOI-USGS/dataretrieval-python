@@ -1,0 +1,501 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dataretrieval.exceptions" href="exceptions.html" />
+    <link rel="prev" title="API reference" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration._provenance"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration._provenance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration._source"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration._source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.adapter"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.adapter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.load"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.profile"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.profile</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.settings"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.settings()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.validate"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.validate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.values"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.values()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.config_path"><code class="docutils literal notranslate"><span class="pre">config_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.configure"><code class="docutils literal notranslate"><span class="pre">configure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.settings_for"><code class="docutils literal notranslate"><span class="pre">settings_for()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.show_configuration"><code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nwdc.html">dataretrieval.nwdc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wqp.html">dataretrieval.wqp</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API reference</a></li>
+      <li class="breadcrumb-item active">dataretrieval.configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="dataretrieval-configuration">
+<span id="config"></span><h1>dataretrieval.configuration<a class="headerlink" href="#dataretrieval-configuration" title="Link to this heading"></a></h1>
+<p>Layered configuration: a <code class="docutils literal notranslate"><span class="pre">dataretrieval.configure(...)</span></code> block holding one
+configuration per adapter, then the <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> environment variables, then
+the adapter’s table and the package-wide keys in
+<code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, then built-in defaults. A
+<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table is a named profile, selected in code with
+<code class="docutils literal notranslate"><span class="pre">&lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;)</span></code>. See the
+<a class="reference internal" href="../userguide/configuration.html"><span class="doc">configuration guide</span></a> for the settings and
+worked examples.</p>
+<p id="module-dataretrieval.configuration">Layered configuration resolution for <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>.</p>
+<p>Every tunable setting – the Water Data API key, the fan-out concurrency cap,
+the retry count, and the progress line – resolves through one ordered chain so
+a caller never has to mutate <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> to configure a single call.</p>
+<p>Sources, highest precedence first:</p>
+<ol class="arabic simple">
+<li><p>A configuration passed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a> – delivered through a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ContextVar</span></code>, so a setting applies to the current thread
+or asyncio task and cannot leak into another one.</p></li>
+<li><p>The environment variable for that setting (<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code>,
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>, <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>, <code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code>).</p></li>
+<li><p>The configuration file (TOML): <code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, or the path
+in <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>. Top-level keys are the package-wide defaults; a
+<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table is that adapter’s <em>default profile</em>, always in effect;
+a <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table is a <em>named profile</em>, inert until a caller
+selects it with <code class="docutils literal notranslate"><span class="pre">&lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;)</span></code>.</p></li>
+<li><p>The built-in default.</p></li>
+</ol>
+<p>Those are the four <em>sources</em>, which is the decomposition this module is built
+around – one branch each in <code class="xref py py-func docutils literal notranslate"><span class="pre">_resolve()</span></code>. ADR 0011 states the same order
+as seven rungs by splitting three of them into the scopes inside: source 1 into
+a configuration instance and a selected profile, which cannot disagree because
+both name one adapter and two configurations for one adapter raise; source 3
+into the <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table above the top-level keys; and source 4 into an
+adapter’s own built-in preference above the package default. That last scope is
+invisible here because this module never supplies it – it arrives as the
+<code class="docutils literal notranslate"><span class="pre">default</span></code> a read site like <code class="xref py py-func docutils literal notranslate"><span class="pre">concurrency()</span></code> passes for its own service.</p>
+<p>Precedence applies <strong>per setting</strong>, not per source: an environment that sets only
+<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> fully in effect. Putting
+the environment above the file follows common deployment conventions and keeps
+the original environment-variable interface authoritative (see ADR 0009) – with
+one exception ADR 0011 carves out: a profile named <em>in code</em> is a more
+deliberate act than a variable inherited from a shell, and a profile reaches the
+chain by being passed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a>, which is above the environment.</p>
+<p>A caller configures by passing configuration objects, at most one per adapter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs/pat&quot;</span><span class="p">)),</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">),</span>
+    <span class="n">NgwmnConfiguration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Settings are scoped <strong>per adapter</strong> (ADR 0010): a <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> table in the file,
+or an <code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration</span></code>, applies to NGWMN calls and no others, so one block
+can be gentle with one service while leaving the rest alone. Precedence stays
+<em>source-major</em>: the chain still walks block, then environment, then file, and an
+adapter-scoped value outranks a package-wide one only <em>within</em> the same source.
+So a variable exported for one run still beats a stale adapter table. Within the
+block source that tie-break applies per block: an adapter configuration outranks
+a package-wide value set by the same <code class="docutils literal notranslate"><span class="pre">configure</span></code> call, while a value set by a
+block nested inside it wins over both, so the innermost block still decides.</p>
+<p>Which settings an adapter accepts is its own vocabulary – <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> means
+nothing to an adapter that issues one request – so each adapter declares them
+on its own <a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval.configuration.BaseConfiguration"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a> subclass, defined in the module that
+<em>reads</em> them. The API key is not among them: it belongs to the gateway fronting
+a host, which Water Data and NGWMN share.</p>
+<p>This module is a leaf: it imports only the standard library plus the Python 3.10
+<code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport, so any module can depend on it without an import cycle or
+pulling in httpx or pandas. That is also why it holds the adapter <em>names</em> but
+never imports an adapter – see <code class="xref py py-data docutils literal notranslate"><span class="pre">ADAPTERS</span></code>. It centralizes each setting’s
+parser while retaining legacy environment behavior and stricter validation for
+the new Python/TOML surfaces.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">BaseConfiguration</span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A named set of settings for one adapter – a <em>configuration profile</em>.</p>
+<p>Subclasses declare the settings their adapter reads as fields, and set
+<a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.adapter" title="dataretrieval.configuration.BaseConfiguration.adapter"><code class="xref py py-attr docutils literal notranslate"><span class="pre">adapter</span></code></a> to that adapter’s module name. Every field is optional, so
+an empty configuration is legal and one can be built up conditionally.</p>
+<p>Frozen, because a configuration is a value: two with the same settings are
+interchangeable, and one already handed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a> must not
+change under the block that entered it.</p>
+<p>Values are checked when the configuration is <em>constructed</em>, so a typo
+raises where it was written rather than at a later <code class="docutils literal notranslate"><span class="pre">with</span></code> statement or,
+worse, inside a request.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._provenance">
+<span class="sig-name descname"><span class="pre">_provenance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._provenance" title="Link to this definition"></a></dt>
+<dd><p>How <a class="reference internal" href="#dataretrieval.configuration.show_configuration" title="dataretrieval.configuration.show_configuration"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_configuration()</span></code></a> reports a value this supplied.</p>
+<p>The profile is named in the file’s own spelling – <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code>
+– so the report answers “which profile set this?” rather than only
+“a block did”, and the answer is greppable in the file that holds it.
+A configuration written in code has no profile, so it names its adapter
+alone; the package-wide one narrows to nothing and names neither.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._source">
+<span class="sig-name descname"><span class="pre">_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._source" title="Link to this definition"></a></dt>
+<dd><p>How one of this configuration’s settings is named in an error.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.adapter">
+<span class="sig-name descname"><span class="pre">adapter</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.adapter" title="Link to this definition"></a></dt>
+<dd><p>The adapter this configuration targets, by the name of the module a
+caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <a class="reference internal" href="#dataretrieval.configuration.Configuration" title="dataretrieval.configuration.Configuration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></a>,
+which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
+property of the class, which is what stops the caller restating it at
+every call site and stops the roster being spelled twice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.load">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_C</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.load" title="Link to this definition"></a></dt>
+<dd><p>Read a named profile for this adapter from the configuration file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;profile&gt;]</span></code>. Only the keys that table names are carried,
+so the profile still inherits the adapter’s default profile and the
+package-wide keys per setting from the tiers below.</p>
+<p>Selecting a profile the file does not define raises: a name a caller
+just typed is a typo worth reporting, not a silent fall-through to
+settings they did not ask for.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>profile</strong> (<em>str</em>) – The name after the adapter, so <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;bulk&quot;</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the class it was called on, remembering the profile
+it was read from so <a class="reference internal" href="#dataretrieval.configuration.show_configuration" title="dataretrieval.configuration.show_configuration"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_configuration()</span></code></a> can name it.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval.configuration.BaseConfiguration">BaseConfiguration</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.profile">
+<span class="sig-name descname"><span class="pre">profile</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.profile" title="Link to this definition"></a></dt>
+<dd><p>The named profile these settings were read from, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for a
+configuration written in code. Provenance rather than a setting: it
+records <em>where the values came from</em>, which is what lets
+<a class="reference internal" href="#dataretrieval.configuration.show_configuration" title="dataretrieval.configuration.show_configuration"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_configuration()</span></code></a> name the profile that supplied each value
+instead of reporting every block alike.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code> shadowed per instance by <a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.load" title="dataretrieval.configuration.BaseConfiguration.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load()</span></code></a>, so it is neither a
+field nor part of equality – two configurations carrying the same
+settings stay interchangeable however each was spelled, which is what
+“a configuration is a value” means.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.settings">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">settings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">frozenset</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration.settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.settings" title="Link to this definition"></a></dt>
+<dd><p>The setting names this configuration accepts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.validate" title="Link to this definition"></a></dt>
+<dd><p>Check rules that span more than one setting.</p>
+<p>Does nothing by default. Per-setting grammar lives in this module’s
+parsers and is shared with the file and the environment, so a value
+means the same thing whichever source wrote it; override this only for
+a rule no single setting can express.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration.values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration.values" title="Link to this definition"></a></dt>
+<dd><p>The settings actually supplied, omitting those left unset.</p>
+<p>An omitted setting inherits from an outer block or a lower source; an
+explicit <code class="docutils literal notranslate"><span class="pre">None</span></code> suppresses them. Distinguishing the two is the whole
+job of the <code class="docutils literal notranslate"><span class="pre">_UNSET</span></code> default, so it is done here rather than by every
+reader.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dataretrieval.configuration.Configuration">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">Configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stall_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#Configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.Configuration" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval._configuration_core.BaseConfiguration"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a></p>
+<p>Settings that apply to every adapter.</p>
+<p>The package-wide profile: <code class="docutils literal notranslate"><span class="pre">adapter</span></code> stays <code class="docutils literal notranslate"><span class="pre">None</span></code>, so nothing narrows
+and every adapter reads what this sets unless its own configuration, or a
+block nested inside, overrides that setting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api_key</strong> (<em>str</em><em>, </em><em>optional</em>) – Water Data API key, sent as <code class="docutils literal notranslate"><span class="pre">X-Api-Key</span></code> and only ever to
+<code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code>. Prefer reading it from a secret store, the
+environment, or the configuration file over writing a literal into a
+script. Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> to make a call without an ambient key.</p></li>
+<li><p><strong>concurrency</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Cap on simultaneous sub-requests: a positive integer, or
+<code class="docutils literal notranslate"><span class="pre">&quot;unbounded&quot;</span></code> to disable the cap.</p></li>
+<li><p><strong>retries</strong> (<em>int</em><em>, </em><em>optional</em>) – Retries attempted after a transient failure; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables retrying.</p></li>
+<li><p><strong>progress</strong> (<em>bool</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Whether to draw the progress line. <code class="docutils literal notranslate"><span class="pre">None</span></code> leaves the automatic
+behavior (on for a TTY or Jupyter kernel, off otherwise).</p></li>
+<li><p><strong>parallel_chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Default optional fan-out for multi-value queries. It limits extra
+refinement, but URL-byte safety may already require more sub-requests.
+Sets the baseline that <code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.parallel_chunks()</span></code> overrides
+per call. Each sub-request spends rate-limit quota, so raise it only
+for pulls you know are large.</p></li>
+<li><p><strong>stall_timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds a call may go without receiving <em>any</em> data before retrying
+stops and the failure surfaces. Bounds the wall-clock cost of a dead
+connection, which <code class="docutils literal notranslate"><span class="pre">retries</span></code> does not – it counts attempts, not
+seconds. Progress resets the clock; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs&quot;</span><span class="p">))):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.configuration.config_path">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">config_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#config_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.config_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the configuration file, honoring <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>.</p>
+<p>Memoized on the raw <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code> value, because this sits on
+the per-request path via <code class="xref py py-func docutils literal notranslate"><span class="pre">api_key()</span></code> and building the default costs
+more than the <code class="docutils literal notranslate"><span class="pre">stat</span></code> it leads to (<code class="docutils literal notranslate"><span class="pre">Path.home()</span></code> alone dominates the
+whole resolution). Returning a stable object also lets <code class="xref py py-func docutils literal notranslate"><span class="pre">_load_file()</span></code>
+check its cache by identity instead of re-normalizing a fresh <code class="docutils literal notranslate"><span class="pre">Path</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The explicit path from <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code> if set, otherwise
+<code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>. The file need not exist.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.configuration.configure">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">configurations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval._configuration_core.BaseConfiguration"><span class="pre">BaseConfiguration</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/configuration.html#configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.configure" title="Link to this definition"></a></dt>
+<dd><p>Apply configuration profiles for the duration of a <code class="docutils literal notranslate"><span class="pre">with</span></code> block.</p>
+<p>The highest-precedence source. Takes configuration objects positionally, at
+most one per adapter, and nothing else:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">&quot;usgs&quot;</span><span class="p">]),</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">),</span>
+    <span class="n">NgwmnConfiguration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+<span class="p">):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The adapter a configuration targets is a property of its class, so the
+caller never restates it – which is what keeps the adapter roster from
+being spelled once per call site. Naming two configurations for one adapter
+raises: they are the one pairing with no defined order between them.</p>
+<p>Because the block is delivered through a <code class="xref py py-class docutils literal notranslate"><span class="pre">ContextVar</span></code>,
+a value set here applies to the current thread and to asyncio tasks started
+inside the block, and cannot leak into another thread, task, or unrelated
+call the way <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> does – which is what makes it safe for a server
+or notebook handling several users’ credentials at once.</p>
+<p>Blocks nest and merge per setting: an inner block that sets only
+<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> keeps the outer block’s <code class="docutils literal notranslate"><span class="pre">api_key</span></code>, and an adapter
+configuration in an outer block loses to a package-wide value set by a
+block nested inside it, so the innermost block always decides.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*configurations</strong> (<a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval.configuration.BaseConfiguration"><em>BaseConfiguration</em></a>) – A package-wide <a class="reference internal" href="#dataretrieval.configuration.Configuration" title="dataretrieval.configuration.Configuration"><code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code></a> and/or one configuration per
+adapter, in any order. Each adapter’s class lives in that adapter’s
+module – <code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration</span></code> in <a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>,
+<code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration</span></code> in <a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>, and so on.</p>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>None</em></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><strong>ConfigurationError</strong></a> – If an argument is not a configuration, or two of them target the same
+    adapter. Raised on entry, before any request. A bad <em>value</em> raises
+    earlier still, where the configuration was constructed.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># credentials from a secret store, no environment mutation</span>
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs/pat&quot;</span><span class="p">))</span>
+<span class="p">):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+
+<span class="c1"># a big overnight pull, from a [waterdata.bulk] table in the file</span>
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">)):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">many_sites</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#dataretrieval.configuration.show_configuration" title="dataretrieval.configuration.show_configuration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_configuration</span></code></a></dt><dd><p>Report the effective configuration and where it came from.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.configuration.settings_for">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">settings_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adapter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">frozenset</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#settings_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.settings_for" title="Link to this definition"></a></dt>
+<dd><p>The settings <em>adapter</em> accepts, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if it has not been imported.</p>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> is not an error and callers must not treat it as one: a file may
+name an adapter this process has never loaded, and rejecting that would
+make a configuration file conditionally valid depending on which optional
+extras happened to be installed. It means “cannot validate these keys yet”,
+and the adapter cannot be misreading a setting it has not loaded.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.configuration.show_configuration">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">show_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TextIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/configuration.html#show_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.show_configuration" title="Link to this definition"></a></dt>
+<dd><p>Print the effective configuration and the source of each setting.</p>
+<p>A debugging aid for “why is this using my old key?”. Every value is
+reported with the source that supplied it, named exactly: which variable,
+which table of the file, and – when a caller selected one – which
+profile. The API key is never printed, only whether one is set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stream</strong> (<em>file-like</em><em>, </em><em>optional</em>) – Where to write. Defaults to <code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>The sample below is generated by running this function, not written by
+hand; <code class="docutils literal notranslate"><span class="pre">test_show_configuration_sample_output_is_current</span></code> re-runs it and
+fails if the two drift apart.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; with dataretrieval.configure(WaterdataConfiguration.load(&quot;bulk&quot;)):
+...     dataretrieval.show_configuration()
+config file  /home/u/.dataretrieval/config.toml (found)
+api_key          &lt;set&gt;  /home/u/.dataretrieval/config.toml
+concurrency      16     /home/u/.dataretrieval/config.toml
+retries          8      $API_USGS_RETRIES
+progress         auto   built-in default
+parallel_chunks  1      built-in default
+stall_timeout    60s    built-in default
+
+A built-in default is package-wide. An adapter may prefer its own for
+its own calls; a value from any source above overrides both.
+
+adapter overrides
+  waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+  ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
+
+profiles in the file: [waterdata.bulk]
+  A profile applies only where a row above names it; select one in
+  code with &lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;).
+
+not reported: nldi (not imported, so the settings each accepts are unknown here)
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exceptions.html" class="btn btn-neutral float-right" title="dataretrieval.exceptions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

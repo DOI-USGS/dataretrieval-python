@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR 0009: Layered configuration resolution &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADR 0010: Adapter-scoped settings" href="0010-adapter-scoped-settings.html" />
+    <link rel="prev" title="ADR 0008: Separate fan-out execution from chunk planning" href="0008-fan-out-execution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#service-return-contracts">Service return contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0008-fan-out-execution.html">ADR 0008: Separate fan-out execution from chunk planning</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0009: Layered configuration resolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0009: Layered configuration resolution</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/0009-layered-configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-0009-layered-configuration-resolution">
+<h1>ADR 0009: Layered configuration resolution<a class="headerlink" href="#adr-0009-layered-configuration-resolution" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted, with clauses superseded twice.</p>
+<p><a class="reference internal" href="0010-adapter-scoped-settings.html"><span class="doc">ADR 0010: Adapter-scoped settings</span></a> supersedes “One flat set of setting names”
+and “Per-service overrides are deferred” below, having found the premise of the
+first – that every service accepts the same settings – to be false.</p>
+<p><a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> supersedes three more:</p>
+<ul class="simple">
+<li><p><strong>The</strong> <code class="docutils literal notranslate"><span class="pre">[profiles.&lt;name&gt;]</span></code> <strong>table</strong> in step 3 of the chain, and the
+recommendation in “<code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> at the top level of the file warns” to
+put the setting in one. A profile is now named under the adapter it
+configures (<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code>); the global table and
+<code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_PROFILE</span></code> are retired, since a table that switched every
+service at once could not carry per-service detail.</p></li>
+<li><p><strong>“The environment ranks above the file”</strong>, inverted for – and only for – a
+profile selected in code. Everything the caller did not name in code still
+follows the rule as written here.</p></li>
+<li><p><strong>The refusal of a configuration object</strong>, stated in the leaf clause (“a
+scoped action, not a <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> dataclass”) and in “A configuration
+object would have no way to reach the call”. <code class="docutils literal notranslate"><span class="pre">configure()</span></code> now takes
+exactly such objects. The grounds were that an instance had no way to reach a
+free function; the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> this ADR established is that way, and ADR
+0010 had already narrowed the objection to a payload-shape preference.</p></li>
+</ul>
+<p>The chain itself, the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> delivery, host-scoped credentials, and the
+leaf constraint stand.</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>Settings reached the library through one mechanism: process-global environment
+variables (<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code>, <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>, <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>,
+<code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code>), each with its own hand-rolled parser at its point of
+use. Nothing could report the effective configuration, and the grammars were
+free to drift apart.</p>
+<p>That mechanism cannot express a per-call credential. An application holding
+keys in a secret store, a notebook pulling for two accounts, or a server
+handling concurrent users must assign to <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> — which is
+process-global, so it races across threads and tasks (issue #352).</p>
+<p>The obvious fix, an <code class="docutils literal notranslate"><span class="pre">api_key=</span></code> parameter on the public getters, is unsafe
+here. Every Water Data getter ends in <code class="docutils literal notranslate"><span class="pre">_get_args(locals())</span></code> with a
+<code class="docutils literal notranslate"><span class="pre">**queryables</span></code> catch-all that forwards unrecognized keywords to the API as
+query parameters. A credential parameter missed in one of ~20 signatures would
+be serialized into a URL. The maintainers also object to an <code class="docutils literal notranslate"><span class="pre">api_key=</span></code>
+parameter on the separate ground that it invites keys pasted into shared
+scripts.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p>Every setting resolves through one ordered chain, owned by a new
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code> module:</p>
+<ol class="arabic simple">
+<li><p>An active <code class="docutils literal notranslate"><span class="pre">dataretrieval.configure(...)</span></code> block (a <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code>).</p></li>
+<li><p>The setting’s environment variable.</p></li>
+<li><p>The configuration file: <code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, or the path in
+<code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>. Top-level keys are the defaults; a
+<code class="docutils literal notranslate"><span class="pre">[profiles.&lt;name&gt;]</span></code> table layers over them per setting when selected.</p></li>
+<li><p>The built-in default.</p></li>
+</ol>
+<p>Supporting decisions:</p>
+<ul class="simple">
+<li><p><strong>Precedence is per setting, not per source.</strong> An environment that sets only
+<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> in effect. A
+<em>blank</em> environment variable does not count as set, so it cannot shadow the
+file: container and CI tooling routinely materializes one. The exception is
+<code class="docutils literal notranslate"><span class="pre">progress</span></code>, where a blank <code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code> has always meant “off” –
+so “does blank count as a value?” is a property of the setting
+(<code class="docutils literal notranslate"><span class="pre">configuration._BLANK_MEANS_SET</span></code>) rather than an extra tier in the chain.</p></li>
+<li><p><strong>The environment ranks above the file.</strong> This follows the established
+precedence used by <a class="reference external" href="https://pip.pypa.io/en/stable/topics/configuration/#precedence-override-order">pip</a>
+and <a class="reference external" href="https://docs.aws.amazon.com/sdkref/latest/guide/settings-reference.html#precedenceOfSettings">AWS</a>,
+supports deployment-time overrides without editing mounted files, and keeps
+the pre-existing <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> interface authoritative.</p></li>
+<li><p><strong>Omitted and explicitly cleared values differ.</strong> An omitted
+<code class="docutils literal notranslate"><span class="pre">configure()</span></code> argument inherits from lower sources. Explicit <code class="docutils literal notranslate"><span class="pre">None</span></code> is a
+scoped reset to built-in behavior, so a server can guarantee an anonymous
+call rather than accidentally falling through to its process credential.</p></li>
+<li><p><strong>No public getter grows a credential parameter.</strong> <code class="docutils literal notranslate"><span class="pre">configure</span></code> is the only
+programmatic path, and a fitness function asserts no getter accepts
+<code class="docutils literal notranslate"><span class="pre">api_key</span></code> / <code class="docutils literal notranslate"><span class="pre">session</span></code> / <code class="docutils literal notranslate"><span class="pre">token</span></code>. The generic <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> path also
+rejects those names before request construction so they cannot enter a URL.</p></li>
+<li><p><strong>The module owns each setting’s parser.</strong> <code class="docutils literal notranslate"><span class="pre">unbounded</span></code>, bounds, and
+rejection messages live in one place. <code class="docutils literal notranslate"><span class="pre">tomllib</span></code> returns typed scalars, so
+the file and Python API validate source-level types before normalized values
+pass through the shared parsers. Legacy environment-only forms, including a
+blank numeric value and arbitrary non-empty progress value, remain compatible
+without making the new surfaces equally permissive.</p></li>
+<li><p><strong>TOML, read with</strong> <code class="docutils literal notranslate"><span class="pre">tomllib</span></code>. Stdlib from Python 3.11; the <code class="docutils literal notranslate"><span class="pre">tomli</span></code>
+backport is a marker-scoped dependency that disappears when
+<code class="docutils literal notranslate"><span class="pre">requires-python</span></code> moves to <code class="docutils literal notranslate"><span class="pre">&gt;=3.11</span></code>. YAML was rejected because PyYAML is
+a dependency at every Python version and the settings are flat.</p></li>
+<li><p><strong>Not every setting gets an environment variable.</strong> <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>
+spends rate-limit quota, and ADR-adjacent documentation on
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.parallel_chunks</span></code> argues it must stay a deliberate choice.
+It does not add a new exported process-global knob; the file and <code class="docutils literal notranslate"><span class="pre">configure</span></code>
+block are its only sources, with a scoped block as the recommended use.</p></li>
+<li><p><strong>Names distinguish execution capacity from planning granularity.</strong>
+<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> is the noun for the maximum in-flight subrequests and maps to
+the established <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> variable. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> asks
+the planner for optional extra chunks; it does not promise that many requests
+execute simultaneously. The name is retained because the context manager is
+already public. <code class="docutils literal notranslate"><span class="pre">parallelism</span></code> and <code class="docutils literal notranslate"><span class="pre">chunk_parallelism</span></code> were rejected
+because they would conflate this planning hint with <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>.</p></li>
+<li><p><strong>Configuration errors are in the error taxonomy.</strong> <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> is a
+<code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> <em>and</em> a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Configuration resolves lazily
+on the request path, so a broken file surfaces from inside whichever getter
+runs first; <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">DataRetrievalError</span></code> around a call has to catch it like
+any other failure of that call, while the <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> base keeps the
+handlers that predate the file layer working.</p></li>
+<li><p><strong>``parallel_chunks`` at the top level of the file warns.</strong> It is the one
+setting that spends rate-limit quota, so a value left there applies to every
+splittable query in every process that reads the file. A
+<code class="docutils literal notranslate"><span class="pre">[profiles.&lt;name&gt;]</span></code> table is opt-in per run, which is the shape this
+setting wants; the top-level form still works but says so.</p></li>
+<li><p><strong>``dataretrieval.configuration`` is a lightweight leaf.</strong> It uses only the standard
+library, the <code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport on Python 3.10, and
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code> – itself a dependency-free leaf, so this adds
+no weight and cannot cycle. It is read by <code class="docutils literal notranslate"><span class="pre">utils</span></code>
+(headers), <code class="docutils literal notranslate"><span class="pre">ogc.chunking</span></code>, <code class="docutils literal notranslate"><span class="pre">ogc.retry</span></code>, and <code class="docutils literal notranslate"><span class="pre">ogc.progress</span></code>, so under ADR
+0003 it must import none of them. The public callable is named <code class="docutils literal notranslate"><span class="pre">configure</span></code>
+rather than <code class="docutils literal notranslate"><span class="pre">config</span></code> so it does not shadow the module. It is a scoped
+action, not a <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> dataclass: a value object would imply
+snapshot, equality, serialization, and representation contracts while
+risking disclosure of the API key through generated helpers.</p></li>
+<li><p><strong>One flat set of setting names, shared by every service.</strong> <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>
+means the same thing to every adapter, so the chain resolves one name rather
+than one per service. Services differ in the <em>value</em> they want, not the
+vocabulary, and that difference is expressed as a caller-supplied default:
+<code class="docutils literal notranslate"><span class="pre">wateruse</span></code> passes its <code class="docutils literal notranslate"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></code> of 4 to
+<code class="docutils literal notranslate"><span class="pre">configuration.concurrency()</span></code> where the OGC getters take the package default of
+32, and the single-shot adapters pass <code class="docutils literal notranslate"><span class="pre">_GATEWAY_STATUSES</span></code> to
+<code class="docutils literal notranslate"><span class="pre">RetryPolicy.from_configuration()</span></code> because WQP and StreamStats report a rejected
+query as a 500. A value resolved from the chain always outranks a caller
+default – a service able to override an explicit setting would make
+<code class="docutils literal notranslate"><span class="pre">concurrency=1</span></code> a lie.</p></li>
+<li><p><strong>Per-service overrides are deferred, not refused.</strong> One <code class="docutils literal notranslate"><span class="pre">configure()</span></code>
+block cannot currently ask for a gentler Water Use than Water Data. Every
+known service difference is a default, which the caller already supplies, so
+nothing needs it yet. If something does, the shape is a namespace inside this
+chain – a <code class="docutils literal notranslate"><span class="pre">[wateruse]</span></code> table beside the top-level keys, read as
+<code class="docutils literal notranslate"><span class="pre">configuration.concurrency(default,</span> <span class="pre">service=...)</span></code>. It costs a second dimension in
+resolution, which <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> must then render as a matrix rather than
+a list, and that cost should buy a real requirement before it is paid.</p></li>
+<li><p><strong>A configuration object would have no way to reach the call.</strong> The public
+surface is free functions – <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily(...)</span></code>, not a client with
+methods. An instance would therefore arrive either as a parameter on every
+getter, which is the threading the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> exists to remove and which
+the <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> catch-all makes unsafe, or through a module-level
+global, which restores the cross-thread and cross-task leakage this ADR
+exists to end. A library entered through a constructed client can hold
+settings on that client; one entered through free functions cannot, and the
+scoped block follows from that.</p></li>
+</ul>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A credential can be supplied per thread or per task without touching
+<code class="docutils literal notranslate"><span class="pre">os.environ</span></code>, which is what issue #352 asked for.</p></li>
+<li><p>Host scoping is unchanged and unconditional: a key from any source is sent
+only to <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and is stripped on cross-host redirects.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> reports the effective value and provenance of each setting
+without ever printing the key.</p></li>
+<li><p>Behavior is unchanged when no file exists and no block is active, so
+existing environment-variable users are unaffected.</p></li>
+<li><p>A configuration file becomes a supported artifact whose format is now a
+compatibility surface.</p></li>
+<li><p>The Python floor and the file format are coupled: raising
+<code class="docutils literal notranslate"><span class="pre">requires-python</span></code> to <code class="docutils literal notranslate"><span class="pre">&gt;=3.11</span></code> drops the <code class="docutils literal notranslate"><span class="pre">tomli</span></code> dependency with no
+other change.</p></li>
+</ul>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py::test_config_is_a_standard_library_only_leaf</span></code>
+asserts the module imports nothing from <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> other than the
+<code class="docutils literal notranslate"><span class="pre">exceptions</span></code> taxonomy leaf, and no third-party package other than the
+<code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport.
+<code class="docutils literal notranslate"><span class="pre">tests/configuration_test.py</span></code> covers the precedence chain, per-setting merging,
+thread and asyncio isolation, host scoping for file-sourced keys, redaction in
+<code class="docutils literal notranslate"><span class="pre">show_configuration</span></code>, and rejection of credential parameters on public getters.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0008-fan-out-execution.html" class="btn btn-neutral float-left" title="ADR 0008: Separate fan-out execution from chunk planning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="0010-adapter-scoped-settings.html" class="btn btn-neutral float-right" title="ADR 0010: Adapter-scoped settings" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

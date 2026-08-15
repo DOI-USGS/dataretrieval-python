@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wateruse &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -65,7 +65,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">dataretrieval.wateruse</li>
+      <li class="breadcrumb-item active">dataretrieval.nwdc</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -74,7 +74,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for dataretrieval.wateruse</h1><div class="highlight"><pre>
+  <h1>Source code for dataretrieval.nwdc</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Retrieve USGS water-use data from the NWDC web service.</span>
 
 <span class="sd">The National Water Availability Assessment Data Companion (NWDC) web services</span>
@@ -103,10 +103,10 @@
 <span class="sd">--------</span>
 <span class="sd">.. code-block:: python</span>
 
-<span class="sd">    from dataretrieval import wateruse</span>
+<span class="sd">    from dataretrieval import nwdc</span>
 
 <span class="sd">    # Monthly public-supply withdrawals for Rhode Island, 2020 onward.</span>
-<span class="sd">    df, md = wateruse.get_wateruse(</span>
+<span class="sd">    df, md = nwdc.get_wateruse(</span>
 <span class="sd">        model=&quot;wu-public-supply-wd&quot;,</span>
 <span class="sd">        variable=[&quot;pswdtot&quot;, &quot;pswdgw&quot;, &quot;pswdsw&quot;],</span>
 <span class="sd">        state=&quot;RI&quot;,</span>
@@ -120,20 +120,30 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_status</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Concurrent</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_headers</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.links</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_next_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_paginated</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;NwdcConfiguration&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_wateruse&quot;</span><span class="p">,</span>
     <span class="s2">&quot;WATERUSE_URL&quot;</span><span class="p">,</span>
     <span class="s2">&quot;MODELS&quot;</span><span class="p">,</span>
@@ -160,14 +170,13 @@
 <span class="c1">#: Temporal resolutions: monthly, annual calendar year, annual water year.</span>
 <span class="n">TIME_RESOLUTIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;monthly&quot;</span><span class="p">,</span> <span class="s2">&quot;annualcy&quot;</span><span class="p">,</span> <span class="s2">&quot;annualwy&quot;</span><span class="p">)</span>
 
-<span class="c1">#: This service&#39;s preferred in-flight cap when ``API_USGS_CONCURRENT`` is</span>
-<span class="c1">#: unset. Lower than the package default of 32 because every location retries</span>
+<span class="c1">#: This service&#39;s preferred in-flight cap when nothing is configured. Lower</span>
+<span class="c1">#: than the package default of 32 because every location retries</span>
 <span class="c1">#: independently, so a rate-limit episode bursts this number times the retry</span>
 <span class="c1">#: count; the NWDC tolerates this level without rate-limit errors (verified by</span>
-<span class="c1">#: stress test) and higher has not been tested. Setting ``API_USGS_CONCURRENT``</span>
-<span class="c1">#: overrides it -- see :func:`dataretrieval.transport.fanout._resolve_concurrency`</span>
-<span class="c1">#: for why the general setting outranks a module&#39;s default rather than the</span>
-<span class="c1">#: reverse.</span>
+<span class="c1">#: stress test) and higher has not been tested. Any configured concurrency</span>
+<span class="c1">#: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the</span>
+<span class="c1">#: general setting outranks a module&#39;s default rather than the reverse.</span>
 <span class="n">DEFAULT_CONCURRENT_REQUESTS</span> <span class="o">=</span> <span class="mi">4</span>
 
 <span class="c1"># Page responses carry the HUC12 identifier in this column; it must stay a</span>
@@ -176,7 +185,7 @@
 
 
 <div class="viewcode-block" id="get_wateruse">
-<a class="viewcode-back" href="../../reference/wateruse.html#dataretrieval.wateruse.get_wateruse">[docs]</a>
+<a class="viewcode-back" href="../../reference/nwdc.html#dataretrieval.nwdc.get_wateruse">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_wateruse</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -201,11 +210,15 @@
 <span class="sd">    them into one frame.</span>
 
 <span class="sd">    Each selector also accepts a list of values. The NWDC queries one area per</span>
-<span class="sd">    request, so a list is fanned out into one request per value — up to</span>
-<span class="sd">    ``API_USGS_CONCURRENT`` in parallel, defaulting to</span>
+<span class="sd">    request, so a list is fanned out into one request per value — up to the</span>
+<span class="sd">    effective ``concurrency`` setting in parallel, defaulting to</span>
 <span class="sd">    :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are</span>
-<span class="sd">    concatenated in the order given. A fan-out interrupted by a rate limit or an</span>
-<span class="sd">    upstream fault raises a resumable</span>
+<span class="sd">    concatenated in the order given. That cap resolves through the</span>
+<span class="sd">    configuration chain, so it can be raised or lowered for this service alone</span>
+<span class="sd">    (``configure(NwdcConfiguration(concurrency=2))``, or an ``[nwdc]`` table in</span>
+<span class="sd">    the config file) as well as package-wide via ``API_USGS_CONCURRENT``; see</span>
+<span class="sd">    :doc:`the configuration guide &lt;/userguide/configuration&gt;`. A fan-out</span>
+<span class="sd">    interrupted by a rate limit or an upstream fault raises a resumable</span>
 <span class="sd">    :class:`~dataretrieval.interruptions.FanOutInterrupted`, whose</span>
 <span class="sd">    ``.call.resume()`` re-issues only the locations that did not complete.</span>
 
@@ -289,8 +302,8 @@
 <span class="sd">    .. doctest::</span>
 <span class="sd">        :skipif: True  # network</span>
 
-<span class="sd">        &gt;&gt;&gt; from dataretrieval import wateruse</span>
-<span class="sd">        &gt;&gt;&gt; df, md = wateruse.get_wateruse(</span>
+<span class="sd">        &gt;&gt;&gt; from dataretrieval import nwdc</span>
+<span class="sd">        &gt;&gt;&gt; df, md = nwdc.get_wateruse(</span>
 <span class="sd">        ...     model=&quot;wu-public-supply-wd&quot;,</span>
 <span class="sd">        ...     variable=[&quot;pswdtot&quot;, &quot;pswdgw&quot;, &quot;pswdsw&quot;],</span>
 <span class="sd">        ...     state=&quot;RI&quot;,</span>
@@ -315,20 +328,26 @@
     <span class="c1"># Drop params the caller left unset; the service rejects empty values.</span>
     <span class="n">base_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">base_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
 
+    <span class="c1"># An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this</span>
+    <span class="c1"># service&#39;s own endpoint. Resolved once per call -- the block is scoped to</span>
+    <span class="c1"># a ``with`` statement -- and threaded through every request and the page</span>
+    <span class="c1"># walk, so a redirected call cannot half-follow the redirect.</span>
+    <span class="n">service_url</span> <span class="o">=</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nwdc&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">)</span>
+
     <span class="c1"># The NWDC queries one location per request, so fan a multi-value selector</span>
     <span class="c1"># out into one request per location, each handled by shared transport</span>
     <span class="c1"># pagination, and concatenate the results.</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="n">default_headers</span><span class="p">(</span><span class="n">WATERUSE_URL</span><span class="p">)</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">default_headers</span><span class="p">(</span><span class="n">service_url</span><span class="p">)</span>
     <span class="n">requests</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
             <span class="s2">&quot;GET&quot;</span><span class="p">,</span>
-            <span class="n">WATERUSE_URL</span><span class="p">,</span>
+            <span class="n">service_url</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">base_params</span><span class="p">,</span> <span class="s2">&quot;location&quot;</span><span class="p">:</span> <span class="n">location</span><span class="p">},</span>
             <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">location</span> <span class="ow">in</span> <span class="n">_resolve_locations</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">county</span><span class="p">,</span> <span class="n">huc</span><span class="p">)</span>
     <span class="p">]</span>
-    <span class="k">return</span> <span class="n">_fan_out</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_fan_out</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">ssl_check</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">(</span><span class="n">service_url</span><span class="p">)</span><span class="o">.</span><span class="n">host</span><span class="p">)</span></div>
 
 
 
@@ -415,7 +434,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fan_out</span><span class="p">(</span>
-    <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">requests</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span>
+    <span class="n">headers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">ssl_check</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_WATERUSE_HOST</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch every request (each paginated) over the shared fan-out executor.</span>
 
@@ -435,7 +458,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">),</span> <span class="n">_next_page_url</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">),</span> <span class="n">_next_page_url</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">follow</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sess</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
@@ -456,7 +479,8 @@
         <span class="n">finalize</span><span class="o">=</span><span class="n">finalize</span><span class="p">,</span>
         <span class="n">client_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">ssl_check</span><span class="p">},</span>
         <span class="n">default_concurrent</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENT_REQUESTS</span><span class="p">,</span>
-        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;wateruse&quot;</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;nwdc&quot;</span><span class="p">,</span>
+        <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nwdc&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -473,7 +497,9 @@
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_next_page_url</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_next_page_url</span><span class="p">(</span>
+    <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_WATERUSE_HOST</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the absolute URL of the next page, or None if this is the last.</span>
 
 <span class="sd">    Reads the standard ``Link: &lt;...&gt;; rel=&quot;next&quot;`` header (parsed by httpx into</span>
@@ -485,10 +511,19 @@
 <span class="sd">    cursor that still points somewhere else after that is refused -- following</span>
 <span class="sd">    it would send Water Use requests, and any credentials on them, to a host the</span>
 <span class="sd">    caller never asked for.</span>
+
+<span class="sd">    ``host`` is the host this call is actually talking to, which is not the</span>
+<span class="sd">    NWDC&#39;s when a ``configure`` block redirected the adapter. The alias list and</span>
+<span class="sd">    the rewrite are facts about *this* service -- nothing else answers for</span>
+<span class="sd">    ``water.usgs.gov`` -- so a redirected call gets the general rule instead:</span>
+<span class="sd">    follow a link only back to the host that served the page. Applying the</span>
+<span class="sd">    NWDC&#39;s rewrite there would send page two of a mirrored query to the USGS.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">_WATERUSE_HOST</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resolve_next_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;Water Use&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">resolve_next_url</span><span class="p">(</span>
         <span class="n">url</span><span class="p">,</span>
         <span class="n">response</span><span class="p">,</span>
@@ -510,6 +545,47 @@
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">body</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;detail&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="NwdcConfiguration">
+<a class="viewcode-back" href="../../reference/nwdc.html#dataretrieval.nwdc.NwdcConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NwdcConfiguration</span><span class="p">(</span><span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for NWDC calls alone.</span>
+
+<span class="sd">    No ``parallel_chunks``: the NWDC is a plain CSV service, so a query</span>
+<span class="sd">    fans out per location rather than being divided along a URL byte</span>
+<span class="sd">    budget. There is nothing for the planner to divide more finely.</span>
+
+<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
+<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
+<span class="sd">    setting groups declared beside their grammar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying</span>
+<span class="sd">        stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        Endpoint to send NWDC requests to, instead of the service&#39;s own</span>
+<span class="sd">        (``WATERUSE_URL``). A ``rel=&quot;next&quot;`` cursor is then followed only</span>
+<span class="sd">        back to that host, since the service&#39;s own host aliases mean</span>
+<span class="sd">        nothing there. Code only: the file and the environment refuse it.</span>
+<span class="sd">    concurrency : int or str, optional</span>
+<span class="sd">        Cap on simultaneous sub-requests, or ``&quot;unbounded&quot;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># One request per location, fanned out but never chunked, so this service</span>
+    <span class="c1"># reads the retry dials, a redirectable base and ``concurrency`` -- but not</span>
+    <span class="c1"># ``parallel_chunks``, which divides a query it never divides.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nwdc&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">NwdcConfiguration</span><span class="p">)</span>
 </pre></div>
 
            </div>

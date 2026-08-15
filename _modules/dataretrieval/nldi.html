@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,13 +87,22 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">json</span><span class="w"> </span><span class="kn">import</span> <span class="n">JSONDecodeError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">cast</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;NldiConfiguration&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_flowlines&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_basin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_features&quot;</span><span class="p">,</span>
@@ -113,6 +122,23 @@
 <span class="n">_VALID_NAVIGATION_MODES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span> <span class="s2">&quot;DM&quot;</span><span class="p">,</span> <span class="s2">&quot;UT&quot;</span><span class="p">,</span> <span class="s2">&quot;DD&quot;</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_api_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The NLDI base this call targets: a block&#39;s redirect, or the service&#39;s.</span>
+
+<span class="sd">    Every URL below is built from this rather than from</span>
+<span class="sd">    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``</span>
+<span class="sd">    reaches every navigation, basin, and catalog request alike -- a redirect</span>
+<span class="sd">    that covered only some of them would leave the library asking the real</span>
+<span class="sd">    service about the mirror&#39;s data. Resolved per call, because a ``configure``</span>
+<span class="sd">    block is scoped to a ``with`` statement rather than to the process.</span>
+
+<span class="sd">    Six call sites, which is what this seam is for; choosing between the</span>
+<span class="sd">    redirect and the service&#39;s own base is the accessor&#39;s job, not each</span>
+<span class="sd">    service&#39;s.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nldi&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NLDI_API_BASE_URL</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_query_nldi</span><span class="p">(</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
@@ -120,7 +146,7 @@
     <span class="c1"># A helper function to query the NLDI API. ``query()`` already raises a</span>
     <span class="c1"># typed ``DataRetrievalError`` for any HTTP error response, so a returned</span>
     <span class="c1"># response is a success that we only need to parse.</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">query_params</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nldi&quot;</span><span class="p">)</span>
     <span class="n">response_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">response_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
@@ -268,7 +294,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">feature_id</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_id is required&quot;</span><span class="p">)</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/basin&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/basin&quot;</span>
     <span class="n">simplified_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">simplified</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">split_catchment_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">split_catchment</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">query_params</span> <span class="o">=</span> <span class="p">{</span>
@@ -382,7 +408,7 @@
 <span class="sd">    string keeps its documented parameter order.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
 
 
@@ -413,7 +439,7 @@
                 <span class="s2">&quot;Provide only one origin type - feature_source and feature_id cannot&quot;</span>
                 <span class="s2">&quot; be provided with lat or long&quot;</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/comid/position&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;POINT(</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/comid/position&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;POINT(</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">}</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -427,7 +453,7 @@
         <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">navigation_mode</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
     <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
@@ -474,7 +500,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># validate the data source</span>
     <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="p">{}))</span>
     <span class="n">gdf</span> <span class="o">=</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gdf</span></div>
@@ -622,7 +648,7 @@
 
     <span class="c1"># get the available data/feature sources - if not already cached</span>
     <span class="k">if</span> <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">NLDI_API_BASE_URL</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">available_data_sources</span> <span class="o">=</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="p">{})</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">available_data_sources</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
             <span class="nb">isinstance</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;source&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span>
@@ -668,6 +694,48 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">&quot;Specify one origin type - comid or feature_source is required&quot;</span>
         <span class="p">)</span>
+
+
+<div class="viewcode-block" id="NldiConfiguration">
+<a class="viewcode-back" href="../../reference/nldi.html#dataretrieval.nldi.NldiConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NldiConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for NLDI calls alone.</span>
+
+<span class="sd">    No fan-out dials: an NLDI query is answered by a single request.</span>
+
+<span class="sd">    This adapter is imported on demand for the geopandas extra, so this</span>
+<span class="sd">    class registers itself later than the rest -- which is exactly why</span>
+<span class="sd">    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`</span>
+<span class="sd">    rather than being derived from what has been imported.</span>
+
+<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
+<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
+<span class="sd">    setting groups declared beside their grammar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying</span>
+<span class="sd">        stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        Linked-data base to send NLDI requests to, instead of the</span>
+<span class="sd">        service&#39;s own (``NLDI_API_BASE_URL``). Every navigation, basin</span>
+<span class="sd">        and catalog request is built on it. Code only: the file and the</span>
+<span class="sd">        environment refuse it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># One request per call, so this service reads the retry dials and a</span>
+    <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
+    <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nldi&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">NldiConfiguration</span><span class="p">)</span>
 </pre></div>
 
            </div>

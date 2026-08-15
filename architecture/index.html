@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -171,7 +171,7 @@ them through Water Data utilities.</p>
 configures with an NGWMN-specific base URL, output identifiers, state
 translation, and <code class="xref py py-class docutils literal notranslate"><span class="pre">OgcDialect</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wateruse</span></code></dt><dd><p>NWDC Water Use facade. Builds CSV requests, follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers, and
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwdc</span></code></dt><dd><p>NWDC Water Use facade. Builds CSV requests, follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers, and
 uses service-neutral transport for bounded fan-out, retry, pagination, response
 aggregation, and synchronous dispatch. It does not depend on OGC modules.</p>
 </dd>
@@ -186,6 +186,13 @@ policy. Their return types intentionally reflect their upstream data models.</p>
 <section id="shared-components">
 <h3>Shared components<a class="headerlink" href="#shared-components" title="Link to this heading"></a></h3>
 <dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></dt><dd><p>Lightweight configuration leaf: standard library plus the <code class="docutils literal notranslate"><span class="pre">tomli</span></code>
+backport on Python 3.10. It resolves scoped overrides, environment
+variables, a TOML file with optional profiles, and built-in defaults in
+that order. Service and protocol modules may depend on it; it must not
+depend back on them. Scoped overrides use <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> so concurrent
+threads and asyncio tasks can carry distinct credentials.</p>
+</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code></dt><dd><p>Protocol subsystem for Water Data and NGWMN. A small facade
 (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>) exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>,
 <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>, and <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code> (whose <code class="docutils literal notranslate"><span class="pre">cql_body</span></code>
@@ -244,7 +251,7 @@ depend on this legacy module; by default, do not add new service-specific
 behavior there.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code></dt><dd><p>The one-shot HTTP query path the single-request adapters (<code class="docutils literal notranslate"><span class="pre">nwis</span></code>,
-<code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>, <code class="docutils literal notranslate"><span class="pre">wateruse</span></code>) use: compose the URL, send
+<code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>) use: compose the URL, send
 it, map the status, retry a transient. It left <code class="docutils literal notranslate"><span class="pre">utils</span></code> because the two
 halves shared only a filename – this one depends on <code class="docutils literal notranslate"><span class="pre">exceptions</span></code> and
 <code class="docutils literal notranslate"><span class="pre">transport</span></code>, the shaping half on <code class="docutils literal notranslate"><span class="pre">codes</span></code> and pandas, and no caller
@@ -344,17 +351,19 @@ used by Water Use because the NWDC accepts only one location per request.</p>
 </section>
 <section id="resource-and-configuration-view">
 <h2>Resource and configuration view<a class="headerlink" href="#resource-and-configuration-view" title="Link to this heading"></a></h2>
+<p>Every setting resolves per key through an active <code class="docutils literal notranslate"><span class="pre">configure()</span></code> block, its
+environment variable when one exists, the adapter’s own table and the top-level
+values in <code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, then its built-in default.
+<code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes configuration objects – a package-wide <code class="docutils literal notranslate"><span class="pre">Configuration</span></code>
+and at most one per adapter – and each adapter’s class is defined in the module
+that reads those settings, so <code class="docutils literal notranslate"><span class="pre">configuration</span></code> stays a leaf holding only the
+adapter roster. <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> reports the effective source while
+redacting credentials.</p>
+<p>The settings themselves – names, defaults, environment variables, and the
+config-file format – are catalogued once in the
+<a class="reference internal" href="../userguide/configuration.html"><span class="doc">configuration guide</span></a>. What matters
+architecturally is the behavior around them:</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code></dt><dd><p>Optional USGS API token. It is attached only to requests for
-<code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code>. Shared synchronous and asynchronous clients
-re-check every redirected request and strip the token before following a
-link to any other host, including external rating assets.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code></dt><dd><p>Fan-out concurrency cap; defaults to 32 for OGC and 4 for Water Use when
-unset. An explicit value applies to every service, <code class="docutils literal notranslate"><span class="pre">1</span></code> is sequential, and
-<code class="docutils literal notranslate"><span class="pre">unbounded</span></code> removes the explicit cap. A semaphore, not pool waiting, is
-the execution throttle.</p>
-</dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of retries after the first attempt on supported active request paths;
 defaults to four. Backoff is exponential with full jitter and honors bounded
 <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values. Only failures a later attempt could survive are
@@ -379,6 +388,20 @@ attempts’ worth.</p>
 retrieval results.</p>
 </dd>
 </dl>
+<ul class="simple">
+<li><p>The API token is attached only to requests for <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code>.
+Shared synchronous and asynchronous clients re-check every redirected request
+and strip the token before following a link to any other host, including
+external rating assets.</p></li>
+<li><p>A semaphore, not connection-pool waiting, is the execution throttle for
+sub-request concurrency.</p></li>
+<li><p>Retry backoff is exponential with full jitter and honors bounded
+<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values.</p></li>
+<li><p>Progress reporting is best-effort: a reporting failure must never change
+retrieval results.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code> is a stdlib-only leaf, so any module may depend on
+it without an import cycle.</p></li>
+</ul>
 <p><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code> centralizes HTTP timeout, redirect, and
 authentication policy. OGC chunk fan-out and Water Use location
 fan-out retain separate explicit concurrency caps because their upstream costs

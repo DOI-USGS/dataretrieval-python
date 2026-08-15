@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -84,16 +84,41 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_get_with_retry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPX_DEFAULTS</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;download_workspace&quot;</span><span class="p">,</span> <span class="s2">&quot;get_sample_watershed&quot;</span><span class="p">,</span> <span class="s2">&quot;get_watershed&quot;</span><span class="p">,</span> <span class="s2">&quot;Watershed&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;StreamstatsConfiguration&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Watershed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;download_workspace&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_sample_watershed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_watershed&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 <span class="n">STREAMSTATS_URL</span> <span class="o">=</span> <span class="s2">&quot;https://streamstats.usgs.gov/streamstatsservices&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_service_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The StreamStats base this call targets: a block&#39;s redirect, or its own.</span>
+
+<span class="sd">    Both endpoints below hang off this, so a</span>
+<span class="sd">    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather</span>
+<span class="sd">    than the one endpoint a caller happened to reach first. Resolved per call,</span>
+<span class="sd">    because a ``configure`` block is scoped to a ``with`` statement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;streamstats&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">STREAMSTATS_URL</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="download_workspace">
@@ -118,9 +143,9 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;workspaceID&quot;</span><span class="p">:</span> <span class="n">workspaceID</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="nb">format</span><span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STREAMSTATS_URL</span><span class="si">}</span><span class="s2">/download&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/download&quot;</span>
 
-    <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;streamstats&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">r</span></div>
 
     <span class="c1"># data = r.raw.read()</span>
@@ -227,9 +252,9 @@
         <span class="s2">&quot;includefeatures&quot;</span><span class="p">:</span> <span class="n">includefeatures</span><span class="p">,</span>
         <span class="s2">&quot;simplify&quot;</span><span class="p">:</span> <span class="n">simplify</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">STREAMSTATS_URL</span><span class="si">}</span><span class="s2">/watershed.geojson&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/watershed.geojson&quot;</span>
 
-    <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">_get_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;streamstats&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">r</span>
@@ -313,6 +338,43 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_workspaceID</span> <span class="o">=</span> <span class="n">streamstats_json</span><span class="p">[</span><span class="s2">&quot;workspaceID&quot;</span><span class="p">]</span></div>
 </div>
 
+
+
+<div class="viewcode-block" id="StreamstatsConfiguration">
+<a class="viewcode-back" href="../../reference/streamstats.html#dataretrieval.streamstats.StreamstatsConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StreamstatsConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for StreamStats calls alone.</span>
+
+<span class="sd">    No fan-out dials: a StreamStats query is answered by a single</span>
+<span class="sd">    request.</span>
+
+<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
+<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
+<span class="sd">    setting groups declared beside their grammar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying</span>
+<span class="sd">        stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        Services base to send StreamStats requests to, instead of its own</span>
+<span class="sd">        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:</span>
+<span class="sd">        the file and the environment refuse it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># One request per call, so this service reads the retry dials and a</span>
+    <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
+    <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;streamstats&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">StreamstatsConfiguration</span><span class="p">)</span>
 </pre></div>
 
            </div>

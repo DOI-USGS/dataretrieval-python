@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dataretrieval.waterdata.configuration &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">dataretrieval.waterdata.configuration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for dataretrieval.waterdata.configuration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The settings the Water Data adapter reads -- its configuration profile.</span>
+
+<span class="sd">A file of its own because :mod:`dataretrieval.waterdata` is a package rather</span>
+<span class="sd">than a single module; every other adapter declares its class in the module a</span>
+<span class="sd">caller imports. Either way the point is the same: a setting&#39;s definition sits</span>
+<span class="sd">with the code that reads it, so adding one no longer edits a service-neutral</span>
+<span class="sd">file (ADR 0011).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Chunked</span><span class="p">,</span>
+    <span class="n">_Concurrent</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;WaterdataConfiguration&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="WaterdataConfiguration">
+<a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.WaterdataConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WaterdataConfiguration</span><span class="p">(</span>
+    <span class="n">_Chunked</span><span class="p">,</span> <span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for Water Data calls alone.</span>
+
+<span class="sd">    Pass one to :func:`dataretrieval.configure` to narrow a setting to this</span>
+<span class="sd">    service, leaving every other adapter on whatever the tiers below it</span>
+<span class="sd">    resolve::</span>
+
+<span class="sd">        with dataretrieval.configure(WaterdataConfiguration(concurrency=8)):</span>
+<span class="sd">            df, md = waterdata.get_daily(monitoring_location_id=sites)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        Root to send Water Data requests to, instead of the service&#39;s own. The</span>
+<span class="sd">        package appends its own paths, so one value moves all four families</span>
+<span class="sd">        together -- ``/ogcapi/v0``, ``/samples-data``, ``/statistics/v0`` and</span>
+<span class="sd">        ``/stac/v0``. Code only: the file and the environment refuse it. The</span>
+<span class="sd">        API key is scoped to the host that honors it, so a redirected call</span>
+<span class="sd">        carries no key.</span>
+<span class="sd">    concurrency : int or str, optional</span>
+<span class="sd">        Cap on simultaneous sub-requests, or ``&quot;unbounded&quot;``.</span>
+<span class="sd">    parallel_chunks : int, optional</span>
+<span class="sd">        Baseline fan-out for multi-value queries. Each sub-request spends</span>
+<span class="sd">        rate-limit quota, so raise it only for pulls you know are large.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># The settings this service reads, named by the groups they come from:</span>
+    <span class="c1"># every adapter&#39;s retry dials, a redirectable base, and -- because Water</span>
+    <span class="c1"># Data queries divide along a URL byte budget and are executed concurrently</span>
+    <span class="c1"># -- both fan-out dials. Each group declares the setting itself once, in</span>
+    <span class="c1"># :mod:`dataretrieval.configuration`, which is also where its grammar and</span>
+    <span class="c1"># its coercion live.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;waterdata&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

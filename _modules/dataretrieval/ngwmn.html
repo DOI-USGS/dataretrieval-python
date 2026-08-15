@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,11 +95,21 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.codes.states</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Chunked</span><span class="p">,</span>
+    <span class="n">_Concurrent</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">WATERDATA_BASE_URL</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc</span><span class="w"> </span><span class="kn">import</span> <span class="n">OgcDialect</span><span class="p">,</span> <span class="n">get_ogc_data</span><span class="p">,</span> <span class="n">prepare_request_args</span>
 
@@ -107,6 +117,7 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;NgwmnConfiguration&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_sites&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_water_level&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_lithology&quot;</span><span class="p">,</span>
@@ -181,9 +192,14 @@
         <span class="n">args</span><span class="p">,</span>
         <span class="n">service</span><span class="p">,</span>
         <span class="n">output_id</span><span class="o">=</span><span class="n">_NGWMN_OUTPUT_ID</span><span class="p">,</span>
-        <span class="n">base_url</span><span class="o">=</span><span class="n">NGWMN_OGC_API_URL</span><span class="p">,</span>
+        <span class="c1"># A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or</span>
+        <span class="c1"># this service&#39;s own base. Resolved per call because the block is</span>
+        <span class="c1"># scoped to a ``with`` statement, and read here because this is the one</span>
+        <span class="c1"># place the NGWMN base is named.</span>
+        <span class="n">base_url</span><span class="o">=</span><span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;ngwmn&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NGWMN_OGC_API_URL</span><span class="p">),</span>
         <span class="n">spatial</span><span class="o">=</span><span class="n">service</span> <span class="o">==</span> <span class="s2">&quot;sites&quot;</span><span class="p">,</span>
         <span class="n">dialect</span><span class="o">=</span><span class="n">NGWMN_DIALECT</span><span class="p">,</span>
+        <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;ngwmn&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -521,6 +537,54 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_get</span><span class="p">(</span><span class="s2">&quot;providers&quot;</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span></div>
 
+
+
+<div class="viewcode-block" id="NgwmnConfiguration">
+<a class="viewcode-back" href="../../reference/ngwmn.html#dataretrieval.ngwmn.NgwmnConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NgwmnConfiguration</span><span class="p">(</span>
+    <span class="n">_Chunked</span><span class="p">,</span> <span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for NGWMN calls alone.</span>
+
+<span class="sd">    NGWMN is a second OGC API on the Water Data host, so its queries</span>
+<span class="sd">    divide along the same URL byte budget and take the same two fan-out</span>
+<span class="sd">    dials. The API key is not among them: one gateway fronts both</span>
+<span class="sd">    adapters, so one key and one quota pool serve them (ADR 0010).</span>
+
+<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
+<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
+<span class="sd">    setting groups declared beside their grammar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying</span>
+<span class="sd">        stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        OGC API base to send NGWMN requests to, instead of the service&#39;s</span>
+<span class="sd">        own (``NGWMN_OGC_API_URL``). Code only: the file and the</span>
+<span class="sd">        environment refuse it. The API key is scoped to the host that</span>
+<span class="sd">        honors it, so a redirected call carries no key.</span>
+<span class="sd">    concurrency : int or str, optional</span>
+<span class="sd">        Cap on simultaneous sub-requests, or ``&quot;unbounded&quot;``.</span>
+<span class="sd">    parallel_chunks : int, optional</span>
+<span class="sd">        Baseline fan-out for multi-value queries. Each sub-request spends</span>
+<span class="sd">        rate-limit quota, so raise it only for pulls you know are large.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># NGWMN rides the same OGC engine as Water Data, so it reads the same</span>
+    <span class="c1"># groups: retry dials, a redirectable base, and both fan-out dials. The</span>
+    <span class="c1"># settings themselves are declared once in</span>
+    <span class="c1"># :mod:`dataretrieval.configuration`, beside the grammar that parses them.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ngwmn&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">NgwmnConfiguration</span><span class="p">)</span>
 </pre></div>
 
            </div>

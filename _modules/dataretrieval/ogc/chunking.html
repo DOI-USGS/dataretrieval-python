@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -101,8 +101,9 @@
 <span class="sd">:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.</span>
 
 <span class="sd">Concurrency, retries, and interruption semantics are documented on</span>
-<span class="sd">:mod:`dataretrieval.transport.fanout`; ``API_USGS_CONCURRENT`` and</span>
-<span class="sd">``API_USGS_RETRIES`` are read there.</span>
+<span class="sd">:mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``</span>
+<span class="sd">settings are resolved there, through the chain in</span>
+<span class="sd">:mod:`dataretrieval.configuration`.</span>
 
 <span class="sd">Dedup: list-axis chunks don&#39;t overlap; filter-axis chunks can, so</span>
 <span class="sd">``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,</span>
@@ -121,7 +122,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._ambient</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ambient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.fanout</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">FanOut</span><span class="p">,</span>
     <span class="n">_active_client</span><span class="p">,</span>
@@ -133,7 +134,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.transport.retry</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryPolicy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.policy</span><span class="w"> </span><span class="kn">import</span> <span class="n">_require_positive_int</span>
 
 <span class="c1"># Compatibility aliases. ``ChunkedCall`` was this module&#39;s executor before it</span>
 <span class="c1"># moved down to transport as the API-neutral ``FanOut``; ``get_active_client``</span>
@@ -153,15 +153,6 @@
 <span class="c1"># resolves this module-level default at call time when ``url_limit`` is None,</span>
 <span class="c1"># so a test can ``monkeypatch.setattr`` it on this module.</span>
 <span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="o">=</span> <span class="mi">8000</span>
-
-
-<span class="c1"># Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte</span>
-<span class="c1"># limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a</span>
-<span class="c1"># ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for</span>
-<span class="c1"># why). The ambient holds ``n`` — the requested cap on the plan&#39;s total</span>
-<span class="c1"># chunk count; ``1`` (the default, outside any block) means &quot;off — chunk</span>
-<span class="c1"># only as much as the byte limit needs, no extra fan-out&quot;.</span>
-<span class="n">_parallel_chunks</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;ogc_parallel_chunks&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="parallel_chunks">
@@ -212,9 +203,9 @@
 <span class="sd">        Each chunk fetches at least one page, so it costs at least one</span>
 <span class="sd">        request against your hourly rate limit — a larger ``n`` spends more</span>
 <span class="sd">        quota. How many chunks run *at once* is capped separately by</span>
-<span class="sd">        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds</span>
-<span class="sd">        quota without adding parallelism; the useful range is roughly ``2``</span>
-<span class="sd">        up to ``API_USGS_CONCURRENT``.</span>
+<span class="sd">        the ``concurrency`` setting (default 32), so an ``n`` beyond that</span>
+<span class="sd">        adds quota without adding parallelism; the useful range is roughly</span>
+<span class="sd">        ``2`` up to the effective ``concurrency``.</span>
 
 <span class="sd">    Yields</span>
 <span class="sd">    ------</span>
@@ -262,10 +253,23 @@
 <span class="sd">    --------</span>
 <span class="sd">    ChunkPlan._refine : the planning-side effect of ``n``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared</span>
-    <span class="c1"># rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).</span>
-    <span class="n">_require_positive_int</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="s2">&quot;parallel_chunks(n)&quot;</span><span class="p">,</span> <span class="n">examples</span><span class="o">=</span><span class="s2">&quot;2, 8, 32&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">_parallel_chunks</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="c1"># Fail loudly on a bad ``n`` at ``with`` entry, before any request -- and</span>
+    <span class="c1"># fail by the *setting&#39;s* grammar, not a second one written here. ``n`` is</span>
+    <span class="c1"># ``parallel_chunks``: the same bool/Integral rejection and the same lower</span>
+    <span class="c1"># bound, from the table that owns them, so raising the floor there cannot</span>
+    <span class="c1"># leave this block accepting a value the chain would then refuse. Spelled</span>
+    <span class="c1"># with the source label this block is written as, so the message names</span>
+    <span class="c1"># ``parallel_chunks(n)`` rather than the ``Configuration`` built below.</span>
+    <span class="c1"># ``ConfigurationError`` is a ``ValueError``, so callers catching that</span>
+    <span class="c1"># still catch this.</span>
+    <span class="n">_configuration</span><span class="o">.</span><span class="n">_validated_raw</span><span class="p">(</span><span class="s2">&quot;parallel_chunks&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="s2">&quot;parallel_chunks(n)&quot;</span><span class="p">)</span>
+    <span class="c1"># Sugar for a package-wide ``Configuration`` rather than a second scope of</span>
+    <span class="c1"># its own: two competing ContextVars would let ``show_configuration()`` report a</span>
+    <span class="c1"># value the chunker does not use. Sharing one means the innermost block</span>
+    <span class="c1"># wins, whichever spelling opened it -- and package-wide rather than scoped</span>
+    <span class="c1"># to one adapter, because this block is a per-call request that must reach</span>
+    <span class="c1"># whichever adapter the call goes to.</span>
+    <span class="k">with</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">_configuration</span><span class="o">.</span><span class="n">Configuration</span><span class="p">(</span><span class="n">parallel_chunks</span><span class="o">=</span><span class="n">n</span><span class="p">)):</span>
         <span class="k">yield</span></div>
 
 
@@ -274,6 +278,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">build_request</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Request</span><span class="p">],</span>
     <span class="n">url_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorate an async fetcher to transparently chunk over-budget requests.</span>
@@ -331,17 +336,21 @@
             <span class="n">finalize</span><span class="p">:</span> <span class="n">_Finalize</span> <span class="o">=</span> <span class="n">_passthrough_result</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="n">limit</span> <span class="o">=</span> <span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="k">if</span> <span class="n">url_limit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">url_limit</span>
-            <span class="c1"># Read the parallel_chunks dial ``n`` from the ambient set by</span>
-            <span class="c1"># ``parallel_chunks`` (1 = off outside any such block; otherwise the</span>
-            <span class="c1"># requested total chunk cap). It only affects *planning*, done</span>
-            <span class="c1"># here up front, so a later resume — which re-issues the</span>
-            <span class="c1"># already-planned chunks — needs no snapshot.</span>
+            <span class="c1"># Resolve the parallel_chunks dial ``n`` through the configuration</span>
+            <span class="c1"># chain (1 = off unless a ``parallel_chunks``/``configure`` block or</span>
+            <span class="c1"># the config file raised it; otherwise the requested total chunk</span>
+            <span class="c1"># cap). It only affects *planning*, done here up front, so a later</span>
+            <span class="c1"># resume — which re-issues the already-planned chunks — reuses this</span>
+            <span class="c1"># plan rather than resolving again.</span>
             <span class="n">plan</span> <span class="o">=</span> <span class="n">ChunkPlan</span><span class="p">(</span>
-                <span class="n">args</span><span class="p">,</span> <span class="n">build_request</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">max_chunks</span><span class="o">=</span><span class="n">_parallel_chunks</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">args</span><span class="p">,</span>
+                <span class="n">build_request</span><span class="p">,</span>
+                <span class="n">limit</span><span class="p">,</span>
+                <span class="n">max_chunks</span><span class="o">=</span><span class="n">_configuration</span><span class="o">.</span><span class="n">parallel_chunks</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">),</span>
             <span class="p">)</span>
-            <span class="n">retry_policy</span> <span class="o">=</span> <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_env</span><span class="p">()</span>
-            <span class="c1"># The concurrency cap is resolved inside ``resume()`` from</span>
-            <span class="c1"># ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,</span>
+            <span class="n">retry_policy</span> <span class="o">=</span> <span class="n">RetryPolicy</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">)</span>
+            <span class="c1"># The concurrency cap is resolved inside ``resume()`` through the</span>
+            <span class="c1"># configuration chain; ``1`` is a sequential gather,</span>
             <span class="c1"># ``total &lt;= 1`` a one-element gather — no special branch.</span>
             <span class="k">return</span> <span class="n">ChunkedCall</span><span class="p">(</span>
                 <span class="n">plan</span><span class="p">,</span>
@@ -352,6 +361,7 @@
                 <span class="c1"># The collection name, for the progress line the executor</span>
                 <span class="c1"># opens. ``get_ogc_data`` puts it in ``args``.</span>
                 <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collection&quot;</span><span class="p">),</span>
+                <span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">,</span>
             <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">wrapper</span>

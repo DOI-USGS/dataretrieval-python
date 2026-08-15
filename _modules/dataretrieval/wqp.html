@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gc32427893 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4cbea269"></script>
+      <script src="../../_static/documentation_options.js?v=a32a80f0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,19 +88,29 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseConfiguration</span><span class="p">,</span>
+    <span class="n">_Redirectable</span><span class="p">,</span>
+    <span class="n">_register</span><span class="p">,</span>
+    <span class="n">_Retrying</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">refuse_credential_keywords</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataCurrencyWarning</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._wqx</span><span class="w"> </span><span class="kn">import</span> <span class="n">_attach_datetime_columns</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;WqpConfiguration&quot;</span><span class="p">,</span>
     <span class="s2">&quot;get_results&quot;</span><span class="p">,</span>
     <span class="s2">&quot;what_sites&quot;</span><span class="p">,</span>
     <span class="s2">&quot;what_organizations&quot;</span><span class="p">,</span>
@@ -120,6 +130,11 @@
     <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
 
+
+<span class="c1">#: Root the Water Quality Portal serves both its interfaces from. Private</span>
+<span class="c1">#: because the two builders below are the documented way to name a WQP URL;</span>
+<span class="c1">#: this is only the piece they share, and the piece a redirect replaces.</span>
+<span class="n">_WQP_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us&quot;</span>
 
 <span class="n">result_profiles_wqx3</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;basicPhysChem&quot;</span><span class="p">,</span> <span class="s2">&quot;fullPhysChem&quot;</span><span class="p">,</span> <span class="s2">&quot;narrow&quot;</span><span class="p">]</span>
 <span class="n">result_profiles_legacy</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biological&quot;</span><span class="p">,</span> <span class="s2">&quot;narrowResult&quot;</span><span class="p">,</span> <span class="s2">&quot;resultPhysChem&quot;</span><span class="p">]</span>
@@ -279,7 +294,9 @@
     <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dataProfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fullPhysChem&quot;</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span>
+    <span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -310,7 +327,7 @@
         <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span>
     <span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -732,15 +749,27 @@
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">valid_services</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_service_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The WQP root this call targets: a block&#39;s redirect, or the portal&#39;s own.</span>
+
+<span class="sd">    The portal serves the legacy and WQX3 interfaces from one root under</span>
+<span class="sd">    different paths, so a ``WqpConfiguration(base_url=...)`` names that root and</span>
+<span class="sd">    both follow it. Redirecting only the interface a caller happened to use</span>
+<span class="sd">    first would leave the other pointed at the service they were trying not to</span>
+<span class="sd">    talk to. Resolved per call, because a ``configure`` block is scoped to a</span>
+<span class="sd">    ``with`` statement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">_WQP_BASE_URL</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="wqp_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.&quot;&quot;&quot;</span>
 
-    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us/data/&quot;</span>
     <span class="n">_warn_legacy_use</span><span class="p">()</span>
     <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_legacy</span><span class="p">,</span> <span class="s2">&quot;Legacy&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}{</span><span class="n">service</span><span class="si">}</span><span class="s2">/Search?&quot;</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/data/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/Search?&quot;</span></div>
 
 
 
@@ -749,10 +778,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given WQX 3.0 service.&quot;&quot;&quot;</span>
 
-    <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us/wqx3/&quot;</span>
     <span class="n">_warn_wqx3_use</span><span class="p">()</span>
     <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_wqx3</span><span class="p">,</span> <span class="s2">&quot;WQX3.0&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}{</span><span class="n">service</span><span class="si">}</span><span class="s2">/search?&quot;</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/wqx3/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/search?&quot;</span></div>
 
 
 
@@ -818,7 +846,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check kwargs for unsupported parameters.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check kwargs for unsupported parameters.</span>
+
+<span class="sd">    Every WQP getter&#39;s ``**kwargs`` funnels through here on its way to the</span>
+<span class="sd">    query payload, so this is the choke point where a credential-shaped name is</span>
+<span class="sd">    refused. The predicate is the credentials leaf&#39;s, shared with Water Data&#39;s</span>
+<span class="sd">    ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any</span>
+<span class="sd">    getter now that ``configure(Configuration(api_key=...))`` is the spelling,</span>
+<span class="sd">    and this is the adapter with the widest passthrough -- ten getters, whose</span>
+<span class="sd">    filter names the portal rather than this package defines.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">refuse_credential_keywords</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
     <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mimeType&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;GeoJSON not yet supported. Set &#39;mimeType=csv&#39;.&quot;</span><span class="p">)</span>
@@ -874,6 +913,44 @@
             <span class="n">_warn_wqx3_unavailable</span><span class="p">()</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">DataCurrencyWarning</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="WqpConfiguration">
+<a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WqpConfiguration">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WqpConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for Water Quality Portal calls alone.</span>
+
+<span class="sd">    No fan-out dials: a WQP query is answered by a single request, so a</span>
+<span class="sd">    concurrency cap could only report a number nothing honours.</span>
+
+<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
+<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
+<span class="sd">    setting groups declared beside their grammar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    retries : int, optional</span>
+<span class="sd">        Retries attempted after a transient failure; ``0`` disables retrying.</span>
+<span class="sd">    stall_timeout : float, optional</span>
+<span class="sd">        Seconds a call may go without receiving any data before retrying</span>
+<span class="sd">        stops.</span>
+<span class="sd">    base_url : str, optional</span>
+<span class="sd">        Root to send WQP requests to, instead of the portal&#39;s own. Both</span>
+<span class="sd">        interfaces hang off it, so one value moves the legacy ``/data/``</span>
+<span class="sd">        and the WQX3 ``/wqx3/`` paths together. Code only: the file and</span>
+<span class="sd">        the environment refuse it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># One request per call, so this service reads the retry dials and a</span>
+    <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
+    <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;wqp&quot;</span></div>
+
+
+
+<span class="n">_register</span><span class="p">(</span><span class="n">WqpConfiguration</span><span class="p">)</span>
 </pre></div>
 
            </div>

@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Handling errors" href="errors.html" />
+    <link rel="prev" title="User Guide" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#contents">Contents</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#one-block-several-services">One block, several services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#settings">Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#where-settings-come-from">Where settings come from</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#an-environment-variable">An environment variable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-configuration-file">A configuration file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-configure-block">A <code class="docutils literal notranslate"><span class="pre">configure</span></code> block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#checking-what-is-in-effect">Checking what is in effect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#why-parallel-chunks-has-no-environment-variable">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pointing-an-adapter-at-another-host">Pointing an adapter at another host</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keeping-a-key-out-of-your-environment-entirely">Keeping a key out of your environment entirely</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#behind-a-tls-intercepting-proxy">Behind a TLS-intercepting proxy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="errors.html">Handling errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="timeconventions.html">Datetime Information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dataportals.html">Data Portals</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">User Guide</a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/userguide/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> retrieves from several services, and most of what you would
+want to adjust — a concurrency cap, a retry budget, where requests go — belongs
+to <em>one</em> of them. So a <strong>configuration profile</strong> is a named set of settings for
+one adapter, written in code or stored in your configuration file, and a
+<code class="docutils literal notranslate"><span class="pre">configure</span></code> block puts one profile per adapter into effect for the calls
+inside it. The Water Data API key is the exception that proves the rule: it
+authenticates to a gateway rather than to an adapter, so it stays package-wide.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#one-block-several-services" id="id2">One block, several services</a></p></li>
+<li><p><a class="reference internal" href="#settings" id="id3">Settings</a></p></li>
+<li><p><a class="reference internal" href="#where-settings-come-from" id="id4">Where settings come from</a></p></li>
+<li><p><a class="reference internal" href="#an-environment-variable" id="id5">An environment variable</a></p></li>
+<li><p><a class="reference internal" href="#a-configuration-file" id="id6">A configuration file</a></p></li>
+<li><p><a class="reference internal" href="#a-configure-block" id="id7">A <code class="docutils literal notranslate"><span class="pre">configure</span></code> block</a></p></li>
+<li><p><a class="reference internal" href="#checking-what-is-in-effect" id="id8">Checking what is in effect</a></p></li>
+<li><p><a class="reference internal" href="#why-parallel-chunks-has-no-environment-variable" id="id9">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a></p></li>
+<li><p><a class="reference internal" href="#pointing-an-adapter-at-another-host" id="id10">Pointing an adapter at another host</a></p></li>
+<li><p><a class="reference internal" href="#keeping-a-key-out-of-your-environment-entirely" id="id11">Keeping a key out of your environment entirely</a></p></li>
+<li><p><a class="reference internal" href="#behind-a-tls-intercepting-proxy" id="id12">Behind a TLS-intercepting proxy</a></p></li>
+</ul>
+</nav>
+<section id="one-block-several-services">
+<span id="configuration-one-block"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">One block, several services</a><a class="headerlink" href="#one-block-several-services" title="Link to this heading"></a></h2>
+<p>This is the case the mechanism exists for. Say the file holds what you would
+write once and keep — the key, a retry budget, and Water Data’s everyday
+concurrency — plus two named profiles for the shapes you only sometimes want:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span><span class="w">   </span><span class="c1"># package-wide: every adapter that reads it</span>
+<span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span>
+
+<span class="k">[waterdata]</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">                </span><span class="c1"># waterdata&#39;s default profile: always active</span>
+
+<span class="k">[waterdata.overnight]</span><span class="w">           </span><span class="c1"># a named profile: only when selected</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unbounded&quot;</span>
+<span class="n">parallel_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
+
+<span class="k">[ngwmn.gentle]</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+</pre></div>
+</div>
+<p>Then one block configures three services, taking two of them from the file by
+name and building the third on the spot:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">ngwmn</span><span class="p">,</span> <span class="n">waterdata</span><span class="p">,</span> <span class="n">wqp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ngwmn</span><span class="w"> </span><span class="kn">import</span> <span class="n">NgwmnConfiguration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="kn">import</span> <span class="n">WaterdataConfiguration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.wqp</span><span class="w"> </span><span class="kn">import</span> <span class="n">WqpConfiguration</span>
+
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;overnight&quot;</span><span class="p">),</span>  <span class="c1"># from the file, by name</span>
+    <span class="n">NgwmnConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;gentle&quot;</span><span class="p">),</span>         <span class="c1"># from the file, by name</span>
+    <span class="n">WqpConfiguration</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>               <span class="c1"># built here</span>
+<span class="p">):</span>
+    <span class="n">flow</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P30D&quot;</span><span class="p">)</span>
+    <span class="n">levels</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">wells</span><span class="p">)</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Inside the block Water Data runs unbounded and asks the planner for eight
+chunks, NGWMN runs two requests at a time, and WQP retries twice. Everything a
+configuration does <em>not</em> name still comes from below it, per setting: Water
+Data and NGWMN both retry six times and both send the <code class="docutils literal notranslate"><span class="pre">api_key</span></code>, written once
+at the top of the file, because a configuration contributes what it names and
+inherits the rest. Only WQP named <code class="docutils literal notranslate"><span class="pre">retries</span></code>, so only WQP departs from the
+file’s six.</p>
+<p>Outside the block nothing has changed, and putting those two profiles in the
+file changed nothing on its own — a named profile is inert until a caller
+selects it, which is what makes one safe to add to a file other people’s jobs
+also read.</p>
+<p>Two rules keep a block like that unambiguous. A configuration knows which
+adapter it targets — that is a property of its class — so you never restate it,
+and <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> targets none of them, which is what makes it
+package-wide. And there is at most one configuration per adapter: naming two
+raises rather than picking one, because there would be no defined order between
+them — combine them into one instead.</p>
+</section>
+<section id="settings">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Settings</a><a class="headerlink" href="#settings" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 12.0%" />
+<col style="width: 26.0%" />
+<col style="width: 44.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Setting</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Environment variable</p></th>
+<th class="head"><p>What it does</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">api_key</span></code></p></td>
+<td><p>none</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code></p></td>
+<td><p>Water Data API key. Raises your hourly request quota substantially;
+<a class="reference external" href="https://api.waterdata.usgs.gov/signup/">register for one</a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">32</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code></p></td>
+<td><p>Cap on sub-requests in flight at once for a chunked query. A positive
+integer, <code class="docutils literal notranslate"><span class="pre">1</span></code> to run them one at a time, or <code class="docutils literal notranslate"><span class="pre">&quot;unbounded&quot;</span></code> to remove
+the cap. Does not change how many requests are made, only how many run
+simultaneously.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">retries</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">4</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></p></td>
+<td><p>Retries after a transient failure (429, 5xx, timeout). <code class="docutils literal notranslate"><span class="pre">0</span></code> disables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">progress</span></code></p></td>
+<td><p>auto</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code></p></td>
+<td><p>Whether to draw the status line. Auto means on for a terminal or
+Jupyter kernel, off for redirected output and CI.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p><em>(none — see below)</em></p></td>
+<td><p>Default fan-out for multi-value queries. <code class="docutils literal notranslate"><span class="pre">1</span></code> means split only as far
+as the URL byte limit forces.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">60</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></p></td>
+<td><p>Seconds a call may go without receiving <em>any</em> data before retrying
+stops and the failure surfaces. Bounds the wall-clock cost of a dead
+connection, which <code class="docutils literal notranslate"><span class="pre">retries</span></code> alone does not — it counts attempts, not
+seconds. Progress resets the clock; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
+<td><p>the service’s own</p></td>
+<td><p><em>(none — code only)</em></p></td>
+<td><p>Where to send one service’s requests. Per adapter, and settable only in
+a <code class="docutils literal notranslate"><span class="pre">configure</span></code> block: a file that silently redirected the library to
+another host would be a supply-chain hazard. See
+<a class="reference internal" href="#configuration-redirect"><span class="std std-ref">Pointing an adapter at another host</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="where-settings-come-from">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Where settings come from</a><a class="headerlink" href="#where-settings-come-from" title="Link to this heading"></a></h2>
+<p>Highest precedence first:</p>
+<ol class="arabic simple">
+<li><p>A configuration passed to an active <code class="docutils literal notranslate"><span class="pre">dataretrieval.configure(...)</span></code> block.</p></li>
+<li><p>A named profile you selected in that block —
+<code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration.load(&quot;bulk&quot;)</span></code>.</p></li>
+<li><p>The environment variable for that setting.</p></li>
+<li><p>The adapter’s default profile in the configuration file: the
+<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table.</p></li>
+<li><p>The package-wide keys at the top of the configuration file —
+<code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, or the path in <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>.</p></li>
+<li><p>The adapter’s own built-in preference, where it has one — NWDC asks for a
+<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> of 4, because that is as far as the service is
+stress-tested. It is a default, not a cap: anything you set above outranks
+it.</p></li>
+<li><p>The package built-in default, which for <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> is 32.</p></li>
+</ol>
+<p>The top two rungs both name a single adapter, and naming two configurations
+for one adapter raises, so they cannot disagree inside one block. Between
+nested blocks the innermost decides, as it does for everything else.</p>
+<p>Precedence applies <strong>per setting</strong>. An environment that sets only
+<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> fully in effect —
+sources are merged, not replaced.</p>
+<p>A variable that is <em>set but empty</em> (<code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">API_USGS_PAT=</span></code>, or a CI secret
+that resolves to nothing) does not count as configured, so an empty variable
+your tooling happened to create cannot silently discard the key in your config
+file. The one exception is <code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code>, where blank has always meant
+“off” and so is treated as a real value.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The environment ranks above the file, matching common deployment tools and
+preserving the existing <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> variables as authoritative runtime
+overrides. The reasoning is in <a class="reference internal" href="../architecture/decisions/0009-layered-configuration.html"><span class="doc">ADR 0009</span></a>.</p>
+<p>The one exception is rung 2 above rung 3 — a profile you name in code. That
+is a more deliberate act than a variable inherited from whatever started
+your process, and having it lose to that variable is the kind of thing you
+would file a bug about. The inversion covers what the profile names and
+nothing else: every setting you did <em>not</em> name still follows the
+environment-above-file rule, in the same block. See <a class="reference internal" href="../architecture/decisions/0011-configuration-profiles.html"><span class="doc">ADR 0011</span></a>.</p>
+</div>
+</section>
+<section id="an-environment-variable">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">An environment variable</a><a class="headerlink" href="#an-environment-variable" title="Link to this heading"></a></h2>
+<p>Still fully supported, and the simplest option for a single key on one
+machine:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">API_USGS_PAT</span><span class="o">=</span><span class="s2">&quot;your_api_key_here&quot;</span>
+</pre></div>
+</div>
+<p>This is also the mechanism the <a class="reference external" href="https://github.com/DOI-USGS/dataRetrieval">R dataRetrieval package</a> uses, under the same variable
+name, so one export serves both.</p>
+</section>
+<section id="a-configuration-file">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">A configuration file</a><a class="headerlink" href="#a-configuration-file" title="Link to this heading"></a></h2>
+<p>Better when you would rather not have a credential in your shell environment,
+where it is inherited by every process you start. Create
+<code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span>
+</pre></div>
+</div>
+<p>Restrict it so other users on the machine cannot read it — <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
+warns once if a file containing a key is group- or world-readable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>~/.dataretrieval/config.toml
+</pre></div>
+</div>
+<p>Any setting can go in the file:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span>
+<span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
+</pre></div>
+</div>
+<p>Point <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code> at a different path to override the location —
+useful for a container or a job scheduler that mounts secrets elsewhere.</p>
+<section id="per-adapter-settings">
+<h3>Per-adapter settings<a class="headerlink" href="#per-adapter-settings" title="Link to this heading"></a></h3>
+<p>To tune one service and leave the rest alone, name the adapter — the same name
+you import:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">          </span><span class="c1"># every adapter</span>
+
+<span class="k">[ngwmn]</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w">           </span><span class="c1"># NGWMN only</span>
+
+<span class="k">[wqp]</span>
+<span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ngwmn</span><span class="w"> </span><span class="kn">import</span> <span class="n">NgwmnConfiguration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.wqp</span><span class="w"> </span><span class="kn">import</span> <span class="n">WqpConfiguration</span>
+
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">NgwmnConfiguration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">WqpConfiguration</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>An adapter table <em>overrides</em> the top-level one per setting, so <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code>
+above still inherits <code class="docutils literal notranslate"><span class="pre">retries</span></code> and the <code class="docutils literal notranslate"><span class="pre">api_key</span></code>. Precedence is unchanged
+otherwise: an adapter-scoped value outranks a package-wide one only within the
+same source, so <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> exported for one run still beats a
+<code class="docutils literal notranslate"><span class="pre">[ngwmn]</span> <span class="pre">concurrency</span></code> in the file.</p>
+<p>Between <code class="docutils literal notranslate"><span class="pre">configure</span></code> blocks that tie-break applies per block: an adapter
+configuration beats a package-wide value set by the <em>same</em> block, while
+anything set by a block nested inside it wins over both. So a
+<code class="docutils literal notranslate"><span class="pre">configure(Configuration(concurrency=1))</span></code> can still throttle a call an
+enclosing block had scoped to one adapter, and the innermost block decides.</p>
+<p>Each adapter accepts only the settings it reads, and they are the fields of its
+configuration class — <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> and <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> are meaningless to
+an adapter that issues a single request, so <code class="docutils literal notranslate"><span class="pre">StreamstatsConfiguration</span></code> has no
+such field and <code class="docutils literal notranslate"><span class="pre">[streamstats]</span> <span class="pre">parallel_chunks</span> <span class="pre">=</span> <span class="pre">8</span></code> is an error rather than a
+line that quietly does nothing:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Adapter</p></th>
+<th class="head"><p>Configuration</p></th>
+<th class="head"><p>Accepts</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">waterdata</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">waterdata.WaterdataConfiguration</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>,
+<code class="docutils literal notranslate"><span class="pre">retries</span></code>, <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code>,
+<code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ngwmn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ngwmn.NgwmnConfiguration</span></code></p></td>
+<td><p>the same five</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nwdc</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">nwdc.NwdcConfiguration</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code>, <code class="docutils literal notranslate"><span class="pre">retries</span></code>,
+<code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">wqp.WqpConfiguration</span></code> and so on</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">retries</span></code>, <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code>,
+<code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>Each class lives in the module whose code reads those settings, so a setting’s
+definition sits next to its use rather than in a service-neutral file.</p>
+<p><code class="docutils literal notranslate"><span class="pre">api_key</span></code> is deliberately not per-adapter. It authenticates to the <em>gateway</em>
+in front of a host, and Water Data and NGWMN are served from the same host —
+one key, one hourly quota shared between them — so a per-adapter key would
+describe a distinction the service does not have. <code class="docutils literal notranslate"><span class="pre">progress</span></code> is likewise
+package-wide: there is one progress line per call.</p>
+</section>
+<section id="named-profiles">
+<h3>Named profiles<a class="headerlink" href="#named-profiles" title="Link to this heading"></a></h3>
+<p>An adapter can hold more than one shape at a time. The <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table is
+that adapter’s <strong>default profile</strong> — always in effect, as above — while a
+<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table is a <strong>named profile</strong>, inert until you select it:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[waterdata]</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">          </span><span class="c1"># the default profile: always in effect</span>
+
+<span class="k">[waterdata.bulk-pull]</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unbounded&quot;</span><span class="w"> </span><span class="c1"># only when selected</span>
+<span class="n">parallel_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
+</pre></div>
+</div>
+<p>So one file can hold an overnight bulk shape beside a polite daytime one, and
+name as many of each as an adapter has uses for.</p>
+<p>A named profile states only what differs: everything it does not name still
+comes from the adapter’s default profile, the package-wide keys, and the tiers
+below — per setting.</p>
+<p><code class="docutils literal notranslate"><span class="pre">load</span></code> reads the table and hands you a configuration object, so a name the
+file does not define raises there and then, listing the names it does define —
+a profile you just typed is more likely a typo than a request to fall through
+to settings you did not ask for. What comes back is inert until you pass it to
+<code class="docutils literal notranslate"><span class="pre">configure</span></code>; that is what puts a selected profile above the environment,
+since selecting one is something your code did.</p>
+<p>A profile holds settings and nothing else: <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk-pull.ngwmn]</span></code> is
+not a Water Data profile carrying NGWMN detail, and selecting it says so rather
+than quietly ignoring the nested table. Two adapters means two profiles,
+selected in the same block, as in <a class="reference internal" href="#configuration-one-block"><span class="std std-ref">the example above</span></a>.</p>
+</section>
+</section>
+<section id="a-configure-block">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">A <code class="docutils literal notranslate"><span class="pre">configure</span></code> block</a><a class="headerlink" href="#a-configure-block" title="Link to this heading"></a></h2>
+<p>The highest-precedence source, and the one to use when a setting must apply to
+<em>this</em> call and no other:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">waterdata</span>
+
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">&quot;usgs&quot;</span><span class="p">])):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">configure</span></code> takes configuration objects positionally, and nothing else. The
+adapter a configuration targets is a property of its class, so you never
+restate it — and <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> targets none of them in particular, which is
+what makes it package-wide.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Settings are not keywords on <code class="docutils literal notranslate"><span class="pre">configure</span></code>. <code class="docutils literal notranslate"><span class="pre">configure(api_key=...)</span></code> and
+the per-adapter mappings <code class="docutils literal notranslate"><span class="pre">configure(ngwmn={&quot;concurrency&quot;:</span> <span class="pre">4})</span></code> were an
+earlier spelling and are gone; write <code class="docutils literal notranslate"><span class="pre">Configuration(api_key=...)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration(concurrency=4)</span></code> instead. Passing anything that is not
+a configuration raises and names the replacement, so an old script says what
+to write rather than failing obscurely.</p>
+</div>
+<p>Because it is backed by a <code class="xref py py-class docutils literal notranslate"><span class="pre">ContextVar</span></code>, the value applies
+to the current thread and to asyncio tasks started inside the block, and
+cannot leak into another thread or task. That is what makes it usable from a
+web service or a notebook working with more than one account:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># each thread keeps its own key; no os.environ mutation, no race</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_for</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">key_path</span><span class="p">))):</span>
+        <span class="k">return</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">sites</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Blocks nest and merge per setting, so an inner block that tunes one thing
+keeps the rest:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="mi">8</span><span class="p">)):</span>
+    <span class="o">...</span>
+    <span class="c1"># api_key still applies</span>
+    <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>Values are validated when the configuration is <em>constructed</em>, so a typo raises
+on the line you wrote it on rather than deep inside a later request.</p>
+<p>Omitted settings inherit from an outer block or a lower-precedence source.
+Passing <code class="docutils literal notranslate"><span class="pre">None</span></code> explicitly suppresses those sources and restores built-in
+behavior for that block. <code class="docutils literal notranslate"><span class="pre">Configuration(api_key=None)</span></code>, for example, makes an
+anonymous call even if <code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> is set.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Prefer reading the key from a secret store, environment, or config file
+over writing a literal into a script — a literal is what ends up committed
+or pasted into a shared notebook.</p>
+</div>
+</section>
+<section id="checking-what-is-in-effect">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Checking what is in effect</a><a class="headerlink" href="#checking-what-is-in-effect" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> reports each setting’s effective value and where it came
+from. It never prints the key itself. The report below is what a file holding a
+key, a package-wide <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>, an <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> table and a
+<code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code> profile produces, with <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code> exported and
+the <code class="docutils literal notranslate"><span class="pre">bulk</span></code> profile selected for the block:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">)):</span>
+<span class="gp">... </span>    <span class="n">dataretrieval</span><span class="o">.</span><span class="n">show_configuration</span><span class="p">()</span>
+<span class="go">config file  /home/u/.dataretrieval/config.toml (found)</span>
+<span class="go">api_key          &lt;set&gt;  /home/u/.dataretrieval/config.toml</span>
+<span class="go">concurrency      16     /home/u/.dataretrieval/config.toml</span>
+<span class="go">retries          8      $API_USGS_RETRIES</span>
+<span class="go">progress         auto   built-in default</span>
+<span class="go">parallel_chunks  1      built-in default</span>
+<span class="go">stall_timeout    60s    built-in default</span>
+
+<span class="go">A built-in default is package-wide. An adapter may prefer its own for</span>
+<span class="go">its own calls; a value from any source above overrides both.</span>
+
+<span class="go">adapter overrides</span>
+<span class="go">  waterdata  parallel_chunks  8  configure() block [waterdata.bulk]</span>
+<span class="go">  ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]</span>
+
+<span class="go">profiles in the file: [waterdata.bulk]</span>
+<span class="go">  A profile applies only where a row above names it; select one in</span>
+<span class="go">  code with &lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;).</span>
+
+<span class="go">not reported: nldi (not imported, so the settings each accepts are unknown here)</span>
+</pre></div>
+</div>
+<p>Each line names the exact source, including which table inside the file, which
+is usually enough to answer “why is it still using my old key?”. A value that
+came from a profile names the profile — <code class="docutils literal notranslate"><span class="pre">configure()</span> <span class="pre">block</span>
+<span class="pre">[waterdata.bulk]</span></code>, not merely “a block” — so a report taken from inside a
+<code class="docutils literal notranslate"><span class="pre">with</span></code> block says which selection produced it. Only settings actually
+overridden for an adapter get a row in the second section; everything else is
+inherited from the rows above it.</p>
+<p>The profile section lists what the <em>file</em> defines, whether or not this run
+selected any of it. A named profile does nothing until a caller selects it, so
+seeing <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code> there while no row above mentions it is the answer
+to “I added a profile and nothing changed”.</p>
+<p>The last line is the honest cost of validating an adapter’s settings lazily:
+<code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> cannot say what <code class="docutils literal notranslate"><span class="pre">nldi</span></code> accepts until something imports it,
+so it says that rather than quietly omitting the service. It is named rather
+than left out, because an omitted service would read as “nothing is configured
+for it”, which is a different claim.</p>
+<p>It never raises. A malformed file or a value that fails its grammar is reported
+in place — on the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code> line for a whole-file problem, or in that
+setting’s own row — because a broken configuration is exactly when you reach
+for this.</p>
+</section>
+<section id="why-parallel-chunks-has-no-environment-variable">
+<h2><a class="toc-backref" href="#id9" role="doc-backlink">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a><a class="headerlink" href="#why-parallel-chunks-has-no-environment-variable" title="Link to this heading"></a></h2>
+<p>Every other setting can be set from the environment. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>
+cannot, on purpose.</p>
+<p>Raising it splits a query into more sub-requests, and <em>each sub-request spends
+rate-limit quota</em>. Whether that is a good trade depends on the size of the
+query — which the library cannot know in advance. The setting therefore does
+not add another process-global environment knob that could be exported once
+and inherited by every subprocess.</p>
+<p>Set it per call, which is almost always what you want:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">parallel_chunks</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">many_sites</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or as a baseline in the config file — deliberately written, and visible in
+<code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code>. Put it in a <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table rather than
+at the top level: a named profile applies only to runs that select it, while a
+top-level value applies to every query in every process that reads the file,
+which is how a setting added for one bulk pull quietly exhausts an hourly quota
+months later. <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> warns if it finds one at the top level.</p>
+<p>The value limits optional refinement only. URL-byte safety can require more
+sub-requests than the configured value, and an input with nothing to split
+stays a single request.</p>
+<p><code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> is sugar for
+<code class="docutils literal notranslate"><span class="pre">configure(Configuration(parallel_chunks=n))</span></code>: one scoping mechanism, so the
+innermost block wins whichever spelling set it, and <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code>
+always reports the value the chunker will actually use.</p>
+</section>
+<section id="pointing-an-adapter-at-another-host">
+<span id="configuration-redirect"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Pointing an adapter at another host</a><a class="headerlink" href="#pointing-an-adapter-at-another-host" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">base_url</span></code> sends one adapter’s requests somewhere else — a staging instance,
+a mirror, or a recording proxy — for the duration of a block:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="kn">import</span> <span class="n">WaterdataConfiguration</span>
+
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">WaterdataConfiguration</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;https://staging.example/waterdata&quot;</span><span class="p">)</span>
+<span class="p">):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It names one adapter, so nothing else moves: NGWMN is served from the same host
+as Water Data, and a <code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration</span></code> still leaves it alone. What the
+value replaces is that adapter’s own base, and the package appends its usual
+paths to it — for Water Data that is the root all four of its APIs hang off, so
+one value moves the OGC collections, the Samples database, the statistics
+service and the STAC catalog together.</p>
+<p><strong>Code only.</strong> The configuration file and the environment both refuse it. A
+<code class="docutils literal notranslate"><span class="pre">base_url</span></code> key anywhere in the file, and an exported <code class="docutils literal notranslate"><span class="pre">API_USGS_BASE_URL</span></code>,
+each raise a <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> saying the setting <em>may only be set in
+code, in a configure() block</em> and naming the configuration to pass it on
+instead.</p>
+<p>A file or a shell export that silently redirected a data-retrieval library to
+another host would be a supply-chain hazard: nothing at the call site would
+show it, and a script that reads correctly would be talking to someone else’s
+service. A <code class="docutils literal notranslate"><span class="pre">with</span></code> block keeps the redirect where a reader of the script sees
+it. The refusal is loud rather than silent for the same reason — a variable
+that was quietly ignored would leave you believing you had redirected
+something.</p>
+<p><strong>The API key does not follow.</strong> It is scoped to the one host that honors it
+(<a class="reference internal" href="#configuration-secret-store"><span class="std std-ref">below</span></a>), so a redirected call goes out
+without it. That is deliberate: the host you redirected to is not the host you
+gave a credential to. If the mirror needs its own credential, it needs its own
+mechanism.</p>
+</section>
+<section id="keeping-a-key-out-of-your-environment-entirely">
+<span id="configuration-secret-store"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Keeping a key out of your environment entirely</a><a class="headerlink" href="#keeping-a-key-out-of-your-environment-entirely" title="Link to this heading"></a></h2>
+<p>If your credentials live in a secret manager, nothing needs to touch
+<code class="docutils literal notranslate"><span class="pre">os.environ</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">waterdata</span>
+
+<span class="n">secrets</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;secretsmanager&quot;</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(</span><span class="n">SecretId</span><span class="o">=</span><span class="s2">&quot;usgs-pat&quot;</span><span class="p">)[</span><span class="s2">&quot;SecretString&quot;</span><span class="p">]</span>
+
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">key</span><span class="p">)):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Wherever the key comes from, it is sent only to <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and
+is stripped from any cross-host redirect, so it cannot leak to another host.</p>
+</section>
+<section id="behind-a-tls-intercepting-proxy">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Behind a TLS-intercepting proxy</a><a class="headerlink" href="#behind-a-tls-intercepting-proxy" title="Link to this heading"></a></h2>
+<p>On a corporate network that re-signs HTTPS traffic, requests fail with a
+certificate-verification error. Point the standard OpenSSL variables at your
+organization’s CA bundle:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SSL_CERT_FILE</span><span class="o">=</span>/path/to/corporate-ca.pem
+<span class="c1"># or, for a directory of hashed certificates:</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SSL_CERT_DIR</span><span class="o">=</span>/etc/ssl/certs
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">httpx</span></code> honors these natively, so they apply to <strong>every</strong> getter in the
+package — including the OGC collection getters (<code class="docutils literal notranslate"><span class="pre">get_daily</span></code>,
+<code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>, and the rest), which take no SSL parameter of their own.</p>
+<p>Prefer this to <code class="docutils literal notranslate"><span class="pre">ssl_check=False</span></code>. That argument exists on some of the older
+getters and switches certificate verification <em>off</em> rather than trusting your
+CA, so it accepts any certificate a network path offers — and it is not
+available on the OGC getters at all. A CA bundle keeps verification on and
+works everywhere.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> is read by OpenSSL, not by <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>, so it does
+not appear in <code class="xref py py-func docutils literal notranslate"><span class="pre">show_configuration()</span></code>.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="errors.html" class="btn btn-neutral float-right" title="Handling errors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
