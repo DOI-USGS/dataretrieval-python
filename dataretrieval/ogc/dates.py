@@ -164,3 +164,14 @@ def _format_api_dates(
             return None
         formatted.append(one)
     return "/".join(formatted)
+
+
+def _format_date_params(
+    params: dict[str, str | Sequence[str | None] | None], *, date_only: bool
+) -> None:
+    """Format every date-shaped OGC parameter in ``params`` in place."""
+    for key in _DATE_RANGE_PARAMS:
+        if key in params:
+            params[key] = _format_api_dates(
+                params[key], date=date_only and key != "last_modified"
+            )

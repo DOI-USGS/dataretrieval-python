@@ -255,6 +255,26 @@ def _split_at(chunks: list[list[str]], idx: int) -> None:
     chunks[idx : idx + 1] = [chunk[:mid], chunk[mid:]]
 
 
+def _largest_splittable_chunk(
+    axes: list[_Axis],
+    chunks: dict[str, list[list[str]]],
+    *,
+    total: int,
+    max_chunks: int,
+) -> tuple[_Axis, int] | None:
+    """Select the largest chunk whose axis can split within the cap."""
+    candidate: tuple[_Axis, int] | None = None
+    candidate_size = -1
+    for axis in axes:
+        axis_chunks = chunks[axis.arg_key]
+        if total + total // len(axis_chunks) > max_chunks:
+            continue
+        for idx, chunk in enumerate(axis_chunks):
+            if len(chunk) > 1 and len(chunk) > candidate_size:
+                candidate, candidate_size = (axis, idx), len(chunk)
+    return candidate
+
+
 class ChunkPlan:
     """
     Strategy for issuing one user-level request as URL-fitting chunks.
@@ -506,17 +526,12 @@ class ChunkPlan:
             # work across chunks rather than fitting a byte budget. A
             # chunk of size 1 can't be split further. Stable input order breaks
             # ties by axis order, then lowest index within an axis.
-            candidate: tuple[_Axis, int] | None = None
-            candidate_size = -1
-            for axis in self.axes:
-                axis_chunks = self.chunks[axis.arg_key]
-                if total + total // len(axis_chunks) > max_chunks:
-                    continue  # any split of this axis would overshoot the cap
-                for idx, chunk in enumerate(axis_chunks):
-                    if len(chunk) <= 1:
-                        continue
-                    if len(chunk) > candidate_size:
-                        candidate, candidate_size = (axis, idx), len(chunk)
+            candidate = _largest_splittable_chunk(
+                self.axes,
+                self.chunks,
+                total=total,
+                max_chunks=max_chunks,
+            )
             if candidate is None:
                 # Every axis is saturated at one atom per chunk or would
                 # overshoot the cap; stop below it rather than exceed it.

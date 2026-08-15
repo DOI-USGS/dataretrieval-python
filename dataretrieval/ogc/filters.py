@@ -90,6 +90,17 @@ def _resume_after_or(expr: str, i: int) -> int | None:
     return _skip_space(expr, after_word)
 
 
+def _advance_structure(
+    ch: str, in_quote: str | None, depth: int
+) -> tuple[str | None, int]:
+    """Advance quote and parenthesis state by one CQL character."""
+    if in_quote is not None:
+        return (None if ch == in_quote else in_quote), depth
+    if ch in ("'", '"'):
+        return ch, depth
+    return None, depth + {"(": 1, ")": -1}.get(ch, 0)
+
+
 def _split_top_level_or(expr: str) -> list[str]:
     """Split ``expr`` at each top-level ``OR``, respecting quotes and parens.
 
@@ -102,27 +113,18 @@ def _split_top_level_or(expr: str) -> list[str]:
     depth = 0
     in_quote: str | None = None
     i = 0
-    n = len(expr)
-    while i < n:
+    while i < len(expr):
         ch = expr[i]
-        if in_quote is not None:
-            if ch == in_quote:
-                in_quote = None
-        elif ch in ("'", '"'):
-            in_quote = ch
-        elif ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-        elif depth == 0 and ch.isspace():
+        if in_quote is None and depth == 0 and ch.isspace():
             resume = _resume_after_or(expr, i + 1)
             if resume is not None:
                 parts.append(expr[last:i].strip())
                 last = i = resume
                 continue
+        in_quote, depth = _advance_structure(ch, in_quote, depth)
         i += 1
     parts.append(expr[last:].strip())
-    return [p for p in parts if p]
+    return [part for part in parts if part]
 
 
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
