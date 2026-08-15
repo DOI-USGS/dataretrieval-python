@@ -80,7 +80,7 @@ Public service facades
     configures with an NGWMN-specific base URL, output identifiers, state
     translation, and :class:`OgcDialect`.
 
-``dataretrieval.wateruse``
+``dataretrieval.nwdc``
     NWDC Water Use facade. Builds CSV requests, follows ``Link`` headers, and
     uses service-neutral transport for bounded fan-out, retry, pagination, response
     aggregation, and synchronous dispatch. It does not depend on OGC modules.
@@ -95,6 +95,14 @@ Public service facades
 
 Shared components
 ^^^^^^^^^^^^^^^^^
+
+``dataretrieval.configuration``
+    Lightweight configuration leaf: standard library plus the ``tomli``
+    backport on Python 3.10. It resolves scoped overrides, environment
+    variables, a TOML file with optional profiles, and built-in defaults in
+    that order. Service and protocol modules may depend on it; it must not
+    depend back on them. Scoped overrides use ``ContextVar`` so concurrent
+    threads and asyncio tasks can carry distinct credentials.
 
 ``dataretrieval.ogc``
     Protocol subsystem for Water Data and NGWMN. A small facade
@@ -162,7 +170,7 @@ Shared components
 
 ``dataretrieval._querying``
     The one-shot HTTP query path the single-request adapters (``nwis``,
-    ``wqp``, ``nldi``, ``streamstats``, ``wateruse``) use: compose the URL, send
+    ``wqp``, ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
     it, map the status, retry a transient. It left ``utils`` because the two
     halves shared only a filename -- this one depends on ``exceptions`` and
     ``transport``, the shaping half on ``codes`` and pandas, and no caller
@@ -269,17 +277,19 @@ used by Water Use because the NWDC accepts only one location per request.
 Resource and configuration view
 -------------------------------
 
-``API_USGS_PAT``
-    Optional USGS API token. It is attached only to requests for
-    ``api.waterdata.usgs.gov``. Shared synchronous and asynchronous clients
-    re-check every redirected request and strip the token before following a
-    link to any other host, including external rating assets.
+Every setting resolves per key through an active ``configure()`` block, its
+environment variable when one exists, the adapter's own table and the top-level
+values in ``~/.dataretrieval/config.toml``, then its built-in default.
+``configure()`` takes configuration objects -- a package-wide ``Configuration``
+and at most one per adapter -- and each adapter's class is defined in the module
+that reads those settings, so ``configuration`` stays a leaf holding only the
+adapter roster. ``show_configuration()`` reports the effective source while
+redacting credentials.
 
-``API_USGS_CONCURRENT``
-    Fan-out concurrency cap; defaults to 32 for OGC and 4 for Water Use when
-    unset. An explicit value applies to every service, ``1`` is sequential, and
-    ``unbounded`` removes the explicit cap. A semaphore, not pool waiting, is
-    the execution throttle.
+The settings themselves -- names, defaults, environment variables, and the
+config-file format -- are catalogued once in the
+:doc:`configuration guide </userguide/configuration>`. What matters
+architecturally is the behavior around them:
 
 ``API_USGS_RETRIES``
     Number of retries after the first attempt on supported active request paths;
@@ -306,6 +316,18 @@ Resource and configuration view
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
     retrieval results.
+* The API token is attached only to requests for ``api.waterdata.usgs.gov``.
+  Shared synchronous and asynchronous clients re-check every redirected request
+  and strip the token before following a link to any other host, including
+  external rating assets.
+* A semaphore, not connection-pool waiting, is the execution throttle for
+  sub-request concurrency.
+* Retry backoff is exponential with full jitter and honors bounded
+  ``Retry-After`` values.
+* Progress reporting is best-effort: a reporting failure must never change
+  retrieval results.
+* ``dataretrieval.configuration`` is a stdlib-only leaf, so any module may depend on
+  it without an import cycle.
 
 ``dataretrieval.transport`` centralizes HTTP timeout, redirect, and
 authentication policy. OGC chunk fan-out and Water Use location

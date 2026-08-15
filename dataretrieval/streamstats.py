@@ -7,16 +7,41 @@
 from __future__ import annotations
 
 import json
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any, ClassVar, cast
 
 import httpx
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _get_with_retry
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
 from dataretrieval.transport.http import HTTPX_DEFAULTS
 
-__all__ = ["download_workspace", "get_sample_watershed", "get_watershed", "Watershed"]
+__all__ = [
+    "StreamstatsConfiguration",
+    "Watershed",
+    "download_workspace",
+    "get_sample_watershed",
+    "get_watershed",
+]
 
 STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
+
+
+def _service_base() -> str:
+    """The StreamStats base this call targets: a block's redirect, or its own.
+
+    Both endpoints below hang off this, so a
+    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
+    than the one endpoint a caller happened to reach first. Resolved per call,
+    because a ``configure`` block is scoped to a ``with`` statement.
+    """
+    return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -39,9 +64,9 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
     """
     payload = {"workspaceID": workspaceID, "format": format}
-    url = f"{STREAMSTATS_URL}/download"
+    url = f"{_service_base()}/download"
 
-    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
     return r
     # data = r.raw.read()
 
@@ -142,9 +167,9 @@ def get_watershed(
         "includefeatures": includefeatures,
         "simplify": simplify,
     }
-    url = f"{STREAMSTATS_URL}/watershed.geojson"
+    url = f"{_service_base()}/watershed.geojson"
 
-    r = _get_with_retry(url, params=payload, **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
 
     if format == "geojson":
         return r
@@ -215,3 +240,37 @@ class Watershed:
         self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
         self.parameters = streamstats_json["parameters"]
         self._workspaceID = streamstats_json["workspaceID"]
+
+
+@dataclass(frozen=True)
+class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+    """Settings for StreamStats calls alone.
+
+    No fan-out dials: a StreamStats query is answered by a single
+    request.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Services base to send StreamStats requests to, instead of its own
+        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:
+        the file and the environment refuse it.
+    """
+
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    adapter: ClassVar[str] = "streamstats"
+
+
+_register(StreamstatsConfiguration)

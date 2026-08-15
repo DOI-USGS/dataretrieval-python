@@ -24,12 +24,22 @@ import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
 from dataretrieval.codes.states import apply_state
+from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
-# Endpoint constants live in one place for the whole collection; they are re-bound
-# here because ``waterdata.utils.OGC_API_URL`` is a documented path.
-from dataretrieval.waterdata.endpoints import BASE_URL, OGC_API_URL, SAMPLES_URL
+# Default endpoint constants remain at their documented compatibility paths.
+# Production retrieval resolves scoped destinations through ``ogc_api_url``.
+from dataretrieval.waterdata.endpoints import (
+    _DEFAULT_BASE_URL,
+    _DEFAULT_OGC_API_URL,
+    _DEFAULT_SAMPLES_URL,
+    ogc_api_url,
+)
+
+BASE_URL = _DEFAULT_BASE_URL
+OGC_API_URL = _DEFAULT_OGC_API_URL
+SAMPLES_URL = _DEFAULT_SAMPLES_URL
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -130,7 +140,14 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     popped, so this is a no-op on getters without the passthrough and idempotent
     if called twice.
     """
-    local_vars.update(local_vars.pop("queryables", {}))
+    queryables = local_vars.pop("queryables", {})
+    # A credential-shaped name would go out in the query string, which is the
+    # one thing this passthrough must not forward. The predicate lives in the
+    # credentials leaf rather than here: what motivates it -- ``api_key=`` being
+    # a plausible guess now that ``configure()`` takes it -- is package-wide,
+    # and WQP's ``**kwargs`` search filters read the same list.
+    refuse_credential_keywords(queryables)
+    local_vars.update(queryables)
     return local_vars
 
 
@@ -225,11 +242,19 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        base_url=OGC_API_URL,
+        # Endpoint acquisition resolves the active ContextVar at request time;
+        # the documented ``OGC_API_URL`` constant remains the default-value
+        # compatibility path rather than a production request destination.
+        base_url=ogc_api_url(),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
         cql_body=cql_body,
+        # Which settings table these calls read. Declared here, in the one
+        # wrapper every Water Data getter goes through, rather than derived
+        # from ``base_url``: NGWMN is served from the same host, so a URL
+        # cannot tell the two adapters apart (ADR 0010).
+        adapter="waterdata",
     )
 
 

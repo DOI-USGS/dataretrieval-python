@@ -33,6 +33,7 @@ from .api import (
     get_stats_por,
     get_time_series_metadata,
 )
+from .configuration import WaterdataConfiguration
 from .nearest import get_nearest_continuous
 from .ratings import get_ratings
 from .types import (
@@ -46,6 +47,7 @@ from .types import (
 __all__ = [
     "CODE_SERVICES",
     "FILTER_LANG",
+    "WaterdataConfiguration",
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",

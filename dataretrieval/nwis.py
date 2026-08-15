@@ -736,16 +736,16 @@ def get_pmcodes(**kwargs: Any) -> NoReturn:
 
 
 def get_water_use(**kwargs: Any) -> NoReturn:
-    """Defunct: use ``dataretrieval.wateruse.get_wateruse`` instead.
+    """Defunct: use ``dataretrieval.nwdc.get_wateruse`` instead.
 
     The legacy NWIS water-use service has been retired. Modeled water-use
     estimates are now served by the National Water Availability Assessment Data
     Companion (NWDC); retrieve them with
-    :func:`dataretrieval.wateruse.get_wateruse`.
+    :func:`dataretrieval.nwdc.get_wateruse`.
     """
     raise NameError(
         "`nwis.get_water_use` is defunct; use "
-        "`dataretrieval.wateruse.get_wateruse` instead."
+        "`dataretrieval.nwdc.get_wateruse` instead."
     )
 
 

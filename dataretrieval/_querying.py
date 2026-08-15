@@ -2,7 +2,7 @@
 
 "Compose a USGS query URL, send it, map the status, retry a transient" -- the
 half of the old ``utils`` module that talks to the network, as used by ``nwis``,
-``wqp``, ``nldi``, ``streamstats`` and ``wateruse``. Its other half (pandas
+``wqp``, ``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
 column munging) shared nothing with this but a filename: no caller wanted both,
 and the two have disjoint dependencies -- this one needs ``exceptions`` and
 ``transport``, that one needs ``codes`` and pandas.
@@ -102,7 +102,7 @@ def _raise_for_status(
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response.
 
     A success status returns ``None``. Shared by the legacy :func:`query` path
-    (and ``streamstats`` / ``wateruse``). Delegates the status-to-type mapping to
+    (and ``streamstats`` / ``nwdc``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
     remediation as the client-side over-long-URL case below, rather than a bare
@@ -131,14 +131,20 @@ def _raise_for_status(
     )
 
 
-def _single_request_policy() -> RetryPolicy:
+def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
     """Retry policy for the one-shot adapters (WQP, NLDI, StreamStats).
 
     These services answer a rejected query with a 500, so only the gateway
     statuses are worth re-sending; the Water Data chunker keeps the broader
     default, where a 5xx is an upstream hiccup worth riding out.
+
+    ``adapter`` names which settings table supplies ``retries`` and
+    ``stall_timeout`` -- these three services share a retry *shape* but not
+    a settings scope.
     """
-    return RetryPolicy.from_env(retryable_statuses=_GATEWAY_STATUSES)
+    return RetryPolicy.from_configuration(
+        retryable_statuses=_GATEWAY_STATUSES, adapter=adapter
+    )
 
 
 def _get_with_retry(
@@ -146,6 +152,7 @@ def _get_with_retry(
     *,
     detail_from: Callable[[httpx.Response], str | None] | None = None,
     retry_policy: RetryPolicy | None = None,
+    adapter: str | None = None,
     **kwargs: Any,
 ) -> httpx.Response:
     """GET with status mapping and bounded retry on typed transients."""
@@ -158,7 +165,7 @@ def _get_with_retry(
     try:
         return retry_sync(
             attempt,
-            _single_request_policy() if retry_policy is None else retry_policy,
+            _single_request_policy(adapter) if retry_policy is None else retry_policy,
         )
     except httpx.InvalidURL as exc:
         raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
@@ -171,6 +178,7 @@ def _query_with_retry(
     ssl_check: bool = True,
     *,
     retry_policy: RetryPolicy | None = None,
+    adapter: str | None = None,
 ) -> httpx.Response:
     """Send an active-service query with bounded transient retry by default."""
 
@@ -188,6 +196,7 @@ def _query_with_retry(
         headers=user_agent,
         verify=ssl_check,
         retry_policy=retry_policy,
+        adapter=adapter,
         **HTTPX_DEFAULTS,
     )
 

@@ -11,11 +11,20 @@ Access each service through its submodule::
     df, meta = nwis.get_dv(sites="05427718")
 
 Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
-``wateruse`` (NWDC water-use data), ``nldi``, ``streamstats``, and the
+``nwdc`` (National Water Availability Assessment Data Companion, incl.
+water use), ``nldi``, ``streamstats``, and the
 deprecated ``nwis``.
 
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
+
+Settings -- the Water Data API key, fan-out concurrency, retries, the progress
+line -- resolve through :mod:`dataretrieval.configuration`: a
+``with dataretrieval.configure(Configuration(...))`` block, then the
+``API_USGS_*`` environment variables, then ``~/.dataretrieval/config.toml``.
+A setting for one service goes on that adapter's own configuration, such as
+``waterdata.WaterdataConfiguration``. ``dataretrieval.show_configuration()``
+reports what is in effect and where each value came from.
 
 A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
 (the taxonomy lives in ``dataretrieval.exceptions``); connection-level failures
@@ -32,6 +41,15 @@ try:
 except PackageNotFoundError:
     __version__ = "version-unknown"
 
+# Layered configuration: a ``with configure(...)`` block, the environment, then
+# the config file. The canonical home is ``dataretrieval.configuration``;
+# the callable is named ``configure`` so it doesn't shadow that module.
+#
+# The module itself is deliberately absent from ``__all__`` below: it and the
+# ``Configuration`` class differ only by case, and keeping the module out of the
+# package's exports means ``from dataretrieval import configuration,
+# Configuration`` never arises (ADR 0011).
+from dataretrieval.configuration import Configuration, configure, show_configuration
 from dataretrieval.exceptions import (
     ConfigurationError,
     DataCurrencyWarning,
@@ -70,27 +88,31 @@ from dataretrieval.ogc.chunking import parallel_chunks
 from . import (
     exceptions,
     ngwmn,
+    nwdc,
     nwis,
     streamstats,
     utils,
     waterdata,
-    wateruse,
     wqp,
 )
 
 __all__ = [
+    # layered configuration (canonical home: ``dataretrieval.configuration``)
+    "Configuration",
+    "configure",
+    "show_configuration",
+    "ConfigurationError",
     # service modules
     "ngwmn",
+    "nwdc",
     "nwis",
     "streamstats",
     "utils",
     "waterdata",
-    "wateruse",
     "wqp",
     # error taxonomy (canonical home: ``dataretrieval.exceptions``), re-exported
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
-    "ConfigurationError",
     "DataCurrencyWarning",
     "DataRetrievalError",
     "HTTPError",

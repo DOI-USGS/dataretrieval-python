@@ -18,7 +18,8 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 from pandas import DataFrame
 
-from dataretrieval import ngwmn
+import dataretrieval
+from dataretrieval import configuration, ngwmn
 from dataretrieval.utils import BaseMetadata
 
 # Agency-qualified ids in the multi-agency form NGWMN uses (not all ``USGS-``).
@@ -563,6 +564,37 @@ def test_empty_result_returns_typed_empty_frame(httpx_mock):
     assert df.empty
     assert "monitoring_location_id" in df.columns
     assert "geometry" not in df.columns
+
+
+def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
+    """Two adapters share this host, and a redirect must still name only one.
+
+    NGWMN and Water Data are served from ``api.waterdata.usgs.gov``, so a URL
+    cannot tell them apart -- which is why the settings table an OGC call reads
+    is declared by the adapter rather than derived from its base. Redirecting
+    NGWMN therefore has to leave Water Data where it was, and the Water Data
+    mock here is never requested: the assertion is on the whole request list.
+    """
+    mirror = "https://mirror.example/ngwmn"
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(rf"^{re.escape(mirror)}/collections/sites/items"),
+        json=_SITES,
+    )
+    _mock(httpx_mock, "sites", _SITES)
+
+    with dataretrieval.configure(ngwmn.NgwmnConfiguration(base_url=mirror)):
+        df, md = ngwmn.get_sites(state="Wisconsin", limit=10)
+
+    assert len(df) == 2
+    assert str(md.url).startswith(f"{mirror}/collections/sites/items")
+    assert [urlsplit(str(r.url)).netloc for r in httpx_mock.get_requests()] == [
+        "mirror.example"
+    ]
+
+    # And Water Data, the other adapter on the real host, was never named by it.
+    with dataretrieval.configure(ngwmn.NgwmnConfiguration(base_url=mirror)):
+        assert configuration.base_url(adapter="waterdata") is None
 
 
 # --- live upstream monitor ---------------------------------------------------

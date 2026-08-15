@@ -14,6 +14,7 @@ from typing import Any, TypeVar
 import httpx
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
 from dataretrieval.combining import (
     _QUOTA_HEADER,
@@ -24,7 +25,6 @@ from dataretrieval.exceptions import DataRetrievalError, RateLimited
 
 # One-way: ``fanout`` does not import this module, so this edge cannot cycle.
 from dataretrieval.transport.fanout import (
-    _CONCURRENCY_DEFAULT,
     FanOut,
     _Finalize,
     _passthrough_result,
@@ -161,8 +161,9 @@ def run_paginated(
     finalize: _Finalize = _passthrough_result,
     client: httpx.AsyncClient | None = None,
     client_options: dict[str, Any] | None = None,
-    default_concurrent: int = _CONCURRENCY_DEFAULT,
+    default_concurrent: int = _configuration.DEFAULT_CONCURRENCY,
     canonical_url: str | None = None,
+    adapter: str | None = None,
 ) -> tuple[pd.DataFrame, Any]:
     """Drive one full page walk per request through the shared executor.
 
@@ -175,7 +176,9 @@ def run_paginated(
 
     Raw transport errors need no mapping in the strategies: the executor
     retries them and normalizes a deterministic one into the typed
-    :class:`~dataretrieval.exceptions.NetworkError`.
+    :class:`~dataretrieval.exceptions.NetworkError`. ``adapter`` names the
+    adapter for the settings chain, so a ``[waterdata] retries = 2`` table
+    scopes to that adapter alone.
     """
 
     async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
@@ -192,10 +195,11 @@ def run_paginated(
     return FanOut(
         requests,
         fetch,
-        RetryPolicy.from_env(),
+        RetryPolicy.from_configuration(adapter=adapter),
         finalize=finalize,
         client_options=client_options,
         default_concurrent=default_concurrent,
         canonical_url=canonical_url,
         service=service,
+        adapter=adapter,
     ).resume()

@@ -32,6 +32,7 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.http import (
     get as _get,
 )
+from dataretrieval.waterdata.endpoints import samples_url
 from dataretrieval.waterdata.types import (
     CODE_SERVICES,
     PROFILES,
@@ -39,7 +40,6 @@ from dataretrieval.waterdata.types import (
     _check_profiles,
 )
 from dataretrieval.waterdata.utils import (
-    SAMPLES_URL,
     _accept_legacy_kwargs,
     _get_args,
 )
@@ -66,7 +66,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     require_one_of(code_service, get_args(CODE_SERVICES), name="code_service")
 
-    url = f"{SAMPLES_URL}/codeservice/{code_service}?mimeType=application%2Fjson"
+    url = f"{samples_url()}/codeservice/{code_service}?mimeType=application%2Fjson"
 
     response = _get(url, headers=_default_headers(url), **HTTPX_DEFAULTS)
 
@@ -362,7 +362,7 @@ def get_samples(
     if "boundingBox" in params:
         params["boundingBox"] = to_str(params["boundingBox"])
 
-    url = f"{SAMPLES_URL}/{service}/{profile}"
+    url = f"{samples_url()}/{service}/{profile}"
 
     df, response = _get_samples_csv(url, params, ssl_check)
     df = _attach_datetime_columns(df)
@@ -424,7 +424,7 @@ def get_samples_summary(
             f"request, got {type(monitoring_location_id).__name__}."
         )
 
-    url = f"{SAMPLES_URL}/summary/{quote(monitoring_location_id, safe='')}"
+    url = f"{samples_url()}/summary/{quote(monitoring_location_id, safe='')}"
     params = {"mimeType": "text/csv"}
 
     df, response = _get_samples_csv(url, params, ssl_check)

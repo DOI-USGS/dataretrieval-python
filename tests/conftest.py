@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import pytest
 
+from dataretrieval import configuration
+
 
 def pytest_collection_modifyitems(config, items):
     """Apply relaxed ``pytest-httpx`` strict-mode settings to every test
@@ -34,7 +36,7 @@ def non_mocked_hosts() -> list[str]:
 
 
 @pytest.fixture(autouse=True)
-def _pin_chunker_env(monkeypatch):
+def _pin_chunker_env(monkeypatch, tmp_path):
     """Pin every test to one connection, no retries, and no stall budget.
 
     Production defaults ``API_USGS_CONCURRENT`` to 32,
@@ -56,3 +58,9 @@ def _pin_chunker_env(monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     monkeypatch.setenv("API_USGS_RETRIES", "0")
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "0")
+    # Point DATARETRIEVAL_CONFIG at a path that does not exist, so a developer's
+    # real ~/.dataretrieval/config.toml -- which may hold an API key or a raised
+    # concurrency -- can never influence a test run. Config tests opt in by
+    # pointing the variable at a file they wrote.
+    monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
+    configuration._reset_file_cache()

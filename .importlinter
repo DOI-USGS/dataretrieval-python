@@ -21,7 +21,11 @@ type = layers
 containers =
     dataretrieval
 layers =
-    ngwmn | nldi | nwis | streamstats | waterdata | wateruse | wqp
+; The deprecated ``wateruse`` alias re-exports ``nwdc``, so it sits above the
+; adapters rather than beside them. A compatibility facade may depend on the
+; adapter it forwards to; nothing may depend on the facade.
+    wateruse
+    ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
     ogc
     utils
     _querying
@@ -30,18 +34,31 @@ layers =
 ; Response-format conventions sit above the pure leaves because they read the
 ; code tables, and below every adapter that shapes a response with them.
     _wqx
-    _ambient | _response_metadata | codes | combining | interruptions | rdb
+    _response_metadata | codes | combining | interruptions | rdb
     credentials
+    configuration
+    _configuration_core
     exceptions
-; Pure advisory and argument-validation mechanisms sit together at the floor:
-; neither imports first-party code, so every layer can use them without
-; reaching sideways or creating an artificial dependency between the two.
-    _deprecation | _validation
+; Pure dependency-free mechanisms sit together at the floor: none imports
+; first-party code, so every layer can use them without reaching sideways or
+; creating artificial dependencies among them.
+    _ambient | _deprecation | _validation
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.
 exhaustive = True
 exhaustive_ignores =
     _version
+
+[importlinter:contract:configuration-core]
+name = Only the configuration facade may import its private core
+; Keep the extracted foundation private: adapters and other package modules
+; continue to depend on dataretrieval.configuration, preserving all existing
+; import paths and preventing parallel configuration interfaces.
+type = protected
+protected_modules =
+    dataretrieval._configuration_core
+allowed_importers =
+    dataretrieval.configuration
 
 [importlinter:contract:ogc-consumers]
 name = Only NGWMN and Water Data consume the OGC subsystem (ADR 0003)
@@ -123,6 +140,7 @@ source_modules =
     dataretrieval.streamstats
     dataretrieval.transport
     dataretrieval.utils
+    dataretrieval.nwdc
     dataretrieval.waterdata
     dataretrieval.wateruse
     dataretrieval.wqp

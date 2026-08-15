@@ -44,6 +44,7 @@ from dataretrieval.waterdata.utils import (
     _EXTRA_ID_COLS,
     OGC_API_URL,
     WATERDATA_DIALECT,
+    _flatten_queryables,
     _get_args,
 )
 
@@ -1323,3 +1324,24 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
     ):
         _utils_module.get_ogc_data({"state": "WI"}, "monitoring-locations")
     assert captured["args"] == {"state": "WI"}
+
+
+@pytest.mark.parametrize(
+    "name", ["x_api_key", "x-api-key", "api_token", "access_token", "pat", "auth"]
+)
+def test_credential_shaped_queryables_are_rejected(name):
+    """The denylist matches spellings, not just a few exact names.
+
+    ``x_api_key`` is the tempting one -- it mirrors the ``X-Api-Key`` header
+    the README documents -- and an exact-match list let it through into the
+    query string.
+    """
+    with pytest.raises(TypeError, match="Credentials cannot be passed"):
+        _flatten_queryables({"queryables": {name: "SECRET"}})
+
+
+@pytest.mark.parametrize(
+    "name", ["state_name", "site_type_code", "monitoring_location_id", "qualifier"]
+)
+def test_real_queryables_still_pass_through(name):
+    assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}

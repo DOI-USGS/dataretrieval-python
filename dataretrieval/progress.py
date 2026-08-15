@@ -26,12 +26,12 @@ Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clea
 
 from __future__ import annotations
 
-import os
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TextIO
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._ambient import Ambient
 from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
 
@@ -83,9 +83,12 @@ def _enabled_default(stream: TextIO) -> bool:
     a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
     logs, and CI.
     """
-    override = os.getenv("API_USGS_PROGRESS")
+    # config owns the grammar, so this is already a bool: the same value means
+    # the same thing whether it came from a configure() block, the environment,
+    # or the file. Re-parsing here is what let those three disagree.
+    override = _configuration.progress()
     if override is not None:
-        return override.strip().lower() not in {"", "0", "false", "no", "off"}
+        return override
     if _in_jupyter_kernel():
         return True
     return hasattr(stream, "isatty") and stream.isatty()

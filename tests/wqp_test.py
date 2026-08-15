@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 from pandas import DataFrame
 
+import dataretrieval
 import dataretrieval.wqp as wqp
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.wqp import (
@@ -143,6 +144,30 @@ def test_wqp_url_profiles(builder, service, expected, warning):
         assert builder(service) == expected
 
 
+def test_a_configured_base_url_moves_both_interfaces():
+    """One root, both paths: the portal serves legacy and WQX3 from one host.
+
+    Redirecting only the interface a caller happened to use first would leave
+    the other pointed at the service they were redirecting away from, which is
+    the failure a redirect exists to prevent.
+    """
+    mirror = "https://mirror.example/wqp"
+
+    with dataretrieval.configure(wqp.WqpConfiguration(base_url=mirror)):
+        with pytest.warns(DataCurrencyWarning):
+            legacy = wqp.wqp_url("Result")
+        with pytest.warns(UserWarning):
+            wqx3 = wqp.wqx3_url("Result")
+
+    assert legacy == f"{mirror}/data/Result/Search?"
+    assert wqx3 == f"{mirror}/wqx3/Result/search?"
+
+    # Outside the block, the portal's own root again -- the redirect is scoped
+    # to the ``with`` statement, not latched at import.
+    with pytest.warns(DataCurrencyWarning):
+        assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
+
+
 @pytest.mark.parametrize(
     ("builder", "profile", "valid_services", "warning"),
     [
@@ -231,6 +256,30 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+
+
+@pytest.mark.parametrize(
+    "name", ["api_key", "x_api_key", "access_token", "password", "pat", "auth"]
+)
+def test_credential_shaped_wqp_kwargs_are_rejected(name):
+    """WQP has the widest ``**kwargs`` passthrough in the package.
+
+    Its ten getters forward whatever the caller names straight into the query
+    string, so ``api_key=`` -- the plausible guess now that ``configure()``
+    takes ``Configuration(api_key=...)`` -- would put a secret in a URL that
+    clients, proxies and logs retain. Same predicate and same message as Water
+    Data's ``**queryables`` guard, because it is the same mistake.
+    """
+    with pytest.raises(TypeError, match="Credentials cannot be passed"):
+        _check_kwargs({name: "SECRET"})
+
+
+@pytest.mark.parametrize(
+    "name", ["siteid", "characteristicName", "statecode", "providers", "pCode"]
+)
+def test_real_wqp_filters_still_pass_through(name):
+    """The denylist must not claim names the portal owns."""
+    assert _check_kwargs({name: "v"})[name] == "v"
 
 
 def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):

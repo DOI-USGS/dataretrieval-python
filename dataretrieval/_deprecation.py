@@ -26,6 +26,7 @@ import warnings
 REMOVALS: dict[str, str] = {
     "nwis": "2027-05-06",
     "waterdata.get_cql(service=)": "2027-08-09",
+    "wateruse": "2027-08-11",
 }
 
 
