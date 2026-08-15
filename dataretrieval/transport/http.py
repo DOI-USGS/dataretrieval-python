@@ -48,16 +48,26 @@ HTTPX_DEFAULTS: dict[str, Any] = {
 
 
 def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
-    """Build standard headers, scoping the API key to its authorized host."""
+    """Build standard headers, scoping the API key to its authorized host.
+
+    The host is checked *before* the key is resolved, and the key is resolved
+    only for the authorized host. Order matters now that settings come from a
+    layered chain: resolution reads the config file and can raise
+    :class:`~dataretrieval.exceptions.ConfigurationError` for a malformed file or
+    a profile it no longer defines. Resolving first would let a Water Data
+    configuration problem break a legacy NWIS, WQP, or NGWMN call that would
+    never have received the key.
+    """
     headers = {
         "Accept-Encoding": "compress, gzip",
         "Accept": "application/json",
         "User-Agent": USER_AGENT,
         "lang": "en-US",
     }
-    token = api_key()
-    if token and accepts_api_key(target_url):
-        headers["X-Api-Key"] = token
+    if accepts_api_key(target_url):
+        token = api_key()
+        if token:
+            headers["X-Api-Key"] = token
     return headers
 
 

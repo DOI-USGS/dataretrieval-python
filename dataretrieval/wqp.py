@@ -11,19 +11,29 @@ See https://waterqualitydata.us/webservices_documentation for the API reference.
 from __future__ import annotations
 
 import warnings
+from dataclasses import dataclass
 from io import StringIO
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
+from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.exceptions import DataCurrencyWarning
 
 from ._querying import _query_with_retry
 from ._wqx import _attach_datetime_columns
 
 __all__ = [
+    "WqpConfiguration",
     "get_results",
     "what_sites",
     "what_organizations",
@@ -43,6 +53,11 @@ if TYPE_CHECKING:
     import httpx
     from pandas import DataFrame
 
+
+#: Root the Water Quality Portal serves both its interfaces from. Private
+#: because the two builders below are the documented way to name a WQP URL;
+#: this is only the piece they share, and the piece a redirect replaces.
+_WQP_BASE_URL = "https://www.waterqualitydata.us"
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
 result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
@@ -200,7 +215,9 @@ def get_results(
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
-    response = _query_with_retry(url, kwargs, delimiter=";", ssl_check=ssl_check)
+    response = _query_with_retry(
+        url, kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+    )
 
     df = _read_wqp_csv(response.text)
     df = _attach_datetime_columns(df)
@@ -230,7 +247,7 @@ def _what(
         url = _legacy_only_url(service, legacy=legacy)
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=";", ssl_check=ssl_check
+        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
     return df, WQP_Metadata(response, **kwargs)
@@ -628,22 +645,33 @@ def _validate_service(service: str, valid_services: list[str], profile: str) -> 
     require_one_of(service, valid_services, name="service", context=profile)
 
 
+def _service_base() -> str:
+    """The WQP root this call targets: a block's redirect, or the portal's own.
+
+    The portal serves the legacy and WQX3 interfaces from one root under
+    different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
+    both follow it. Redirecting only the interface a caller happened to use
+    first would leave the other pointed at the service they were trying not to
+    talk to. Resolved per call, because a ``configure`` block is scoped to a
+    ``with`` statement.
+    """
+    return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
+
+
 def wqp_url(service: str) -> str:
     """Construct the WQP URL for a given service."""
 
-    base_url = "https://www.waterqualitydata.us/data/"
     _warn_legacy_use()
     _validate_service(service, services_legacy, "Legacy")
-    return f"{base_url}{service}/Search?"
+    return f"{_service_base()}/data/{service}/Search?"
 
 
 def wqx3_url(service: str) -> str:
     """Construct the WQP URL for a given WQX 3.0 service."""
 
-    base_url = "https://www.waterqualitydata.us/wqx3/"
     _warn_wqx3_use()
     _validate_service(service, services_wqx3, "WQX3.0")
-    return f"{base_url}{service}/search?"
+    return f"{_service_base()}/wqx3/{service}/search?"
 
 
 class WQP_Metadata(BaseMetadata):
@@ -702,7 +730,18 @@ class WQP_Metadata(BaseMetadata):
 
 
 def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
-    """Check kwargs for unsupported parameters."""
+    """Check kwargs for unsupported parameters.
+
+    Every WQP getter's ``**kwargs`` funnels through here on its way to the
+    query payload, so this is the choke point where a credential-shaped name is
+    refused. The predicate is the credentials leaf's, shared with Water Data's
+    ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
+    getter now that ``configure(Configuration(api_key=...))`` is the spelling,
+    and this is the adapter with the widest passthrough -- ten getters, whose
+    filter names the portal rather than this package defines.
+    """
+    refuse_credential_keywords(kwargs)
+
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
         raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
@@ -758,3 +797,38 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
             _warn_wqx3_unavailable()
             warnings.simplefilter("ignore", DataCurrencyWarning)
         return wqp_url(service)
+
+
+@dataclass(frozen=True)
+class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+    """Settings for Water Quality Portal calls alone.
+
+    No fan-out dials: a WQP query is answered by a single request, so a
+    concurrency cap could only report a number nothing honours.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Root to send WQP requests to, instead of the portal's own. Both
+        interfaces hang off it, so one value moves the legacy ``/data/``
+        and the WQX3 ``/wqx3/`` paths together. Code only: the file and
+        the environment refuse it.
+    """
+
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    adapter: ClassVar[str] = "wqp"
+
+
+_register(WqpConfiguration)

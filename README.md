@@ -42,15 +42,56 @@ pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
 
 Access USGS water-monitoring data.
 
-**Important:** We strongly encourage you to obtain an API key for higher
-rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/)
-and set it as an environment variable:
+**Important:** Users are strongly encouraged to obtain an API key for higher
+rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/),
+then supply it in whichever of these ways suits you. They are listed from
+highest to lowest precedence, so an explicit block or deployment environment
+can override a file without editing it:
 
 ```python
-import os
+# 1. a configure() block - for one call, an interactive prompt, or when
+#    different threads/tasks need different credentials.
+from getpass import getpass
 
-os.environ["API_USGS_PAT"] = "your_api_key_here"
+import dataretrieval
+from dataretrieval import Configuration, waterdata
+
+with dataretrieval.configure(Configuration(api_key=getpass("USGS API key: "))):
+    df, metadata = waterdata.get_daily(monitoring_location_id="USGS-01646500")
 ```
+
+```bash
+# 2. an environment variable (the R dataRetrieval package uses the same
+#    variable, so one export serves both)
+export API_USGS_PAT="your_api_key_here"
+```
+
+```toml
+# 3. ~/.dataretrieval/config.toml - keeps the key out of your shell
+#    environment, where every process you start inherits it.
+#    Restrict it afterwards:  chmod 600 ~/.dataretrieval/config.toml
+api_key = "your_api_key_here"
+```
+
+`dataretrieval.show_configuration()` reports what is in effect and where each setting
+came from, without printing the key. Concurrency, retries, and the progress
+line are configured the same way, and can be narrowed to one service: a
+`configure()` block takes at most one configuration per adapter, each either
+built in code or loaded by name from a profile in the file.
+
+```python
+from dataretrieval.ngwmn import NgwmnConfiguration
+from dataretrieval.waterdata import WaterdataConfiguration
+
+with dataretrieval.configure(
+    WaterdataConfiguration.load("overnight"),  # a profile in config.toml
+    NgwmnConfiguration(concurrency=2),  # built here
+):
+    ...
+```
+
+See the
+[configuration guide](https://doi-usgs.github.io/dataretrieval-python/userguide/configuration.html).
 
 The following example retrieves daily streamflow data for a specific
 monitoring location. The `/` in the `time` argument separates the start and
@@ -127,7 +168,7 @@ from dataretrieval import waterdata
 # enough to span many pages, so it profits from a finer split.
 sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
-with waterdata.parallel_chunks(32):  # fan out into 32 sub-requests
+with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
     df, md = waterdata.get_daily(
         monitoring_location_id=sites["monitoring_location_id"],
         parameter_code="00060",  # discharge
@@ -147,11 +188,11 @@ Benchmark — a fixed 271-site subset of Ohio stream gages
 the effect of parallelism). Each `n` ran against its own cold 1-year time
 window, so no run is served from the server's data-window cache:
 
-| `n`  | parallelism | pages | wall-clock              | speedup |
-| ---- | ----------- | ----- | ----------------------- | ------- |
-| off  | 1           | ~30   | 9.5 s / 9.1 s (2 runs)  | 1×      |
-| `8`  | 8           | ~32   | 2.2 s / 1.9 s           | ~4.5×   |
-| `32` | 32          | 54    | 1.2 s                   | ~8×     |
+| `n`  | optional fan-out | pages | wall-clock             | speedup |
+| ---- | ---------------- | ----- | ---------------------- | ------- |
+| off  | 1                | ~30   | 9.5 s / 9.1 s (2 runs) | 1×      |
+| `8`  | 8                | ~32   | 2.2 s / 1.9 s          | ~4.5×   |
+| `32` | 32               | 54    | 1.2 s                  | ~8×     |
 
 The gain comes from overlapping each sub-request's per-page latency and
 server-side work. The exact multiplier therefore scales with how many pages the
@@ -252,11 +293,11 @@ Retrieve modeled water-use estimates from the National Water Availability
 Assessment Data Companion:
 
 ```python
-from dataretrieval import wateruse
+from dataretrieval import nwdc
 
 # Monthly public-supply withdrawals for Rhode Island, split into
 # groundwater and surface-water sources (returns a DataFrame and metadata).
-df, metadata = wateruse.get_wateruse(
+df, metadata = nwdc.get_wateruse(
     model="wu-public-supply-wd",
     variable=["pswdtot", "pswdgw", "pswdsw"],
     state="RI",  # name/postal/FIPS; pass a list to fan out over several areas
@@ -312,7 +353,7 @@ print(statewide.head())
 - `get_features`: Find monitoring sites, dams, and other features along the network
 - `get_features_by_data_source`: Features from a specific data source
 
-### Water Use (NWDC) — `dataretrieval.wateruse`
+### NWDC (National Water Availability Assessment Data Companion) — `dataretrieval.nwdc`
 - `get_wateruse`: Modeled water-use estimates — public-supply, irrigation, and thermoelectric withdrawals and consumptive use — on a national 12-digit hydrologic-unit (HUC12) grid, summarizable to counties, states, or coarser hydrologic units
 
 ## More Examples

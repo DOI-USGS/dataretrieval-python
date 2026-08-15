@@ -30,7 +30,7 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.endpoints import STAC_URL
+from dataretrieval.waterdata.endpoints import ratings_catalog_url
 
 __all__ = ["get_ratings"]
 
@@ -256,7 +256,7 @@ def _search(
     if bbox is not None:
         query_params["bbox"] = ",".join(map(str, bbox))
 
-    url = f"{STAC_URL}/search"
+    url = f"{ratings_catalog_url()}/search"
     req = httpx.Request("GET", url, params=query_params, headers=_default_headers(url))
 
     def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
@@ -288,6 +288,7 @@ def _search(
         raise_for_status=_raise_for_non_200,
         client_options={"verify": ssl_check},
         service="ratings",
+        adapter="waterdata",
     )
     # Every page frame is built with a ``feature`` column, and the combine
     # helpers preserve it, so the empty case needs no special branch.
@@ -392,7 +393,7 @@ def _download_all(
             )
             # 204: completed, no content.
             return pd.DataFrame(), _inert_response(
-                204, _asset_href(feature) or f"{STAC_URL}/search"
+                204, _asset_href(feature) or f"{ratings_catalog_url()}/search"
             )
         out[fid] = df
         return df, _inert_response(
@@ -402,11 +403,12 @@ def _download_all(
     FanOut(
         features,
         fetch,
-        RetryPolicy.from_env(),
+        RetryPolicy.from_configuration(adapter="waterdata"),
         client_options={"verify": ssl_check},
         # No single URL expresses "all of these assets" -- the aggregate
         # reports the first, matching what a single-feature call would show.
         canonical_url=_asset_href(features[0]),
         service="ratings",
+        adapter="waterdata",
     ).resume()
     return out

@@ -24,8 +24,9 @@ the query out into ``n`` parallel chunks. ``n`` drives
 :meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.
 
 Concurrency, retries, and interruption semantics are documented on
-:mod:`dataretrieval.transport.fanout`; ``API_USGS_CONCURRENT`` and
-``API_USGS_RETRIES`` are read there.
+:mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``
+settings are resolved there, through the chain in
+:mod:`dataretrieval.configuration`.
 
 Dedup: list-axis chunks don't overlap; filter-axis chunks can, so
 ``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,
@@ -44,7 +45,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval._ambient import Ambient
+from dataretrieval import configuration as _configuration
 from dataretrieval.transport.fanout import (
     FanOut,
     _active_client,
@@ -56,7 +57,6 @@ from dataretrieval.transport.fanout import (
 from dataretrieval.transport.retry import RetryPolicy
 
 from .planning import ChunkPlan
-from .policy import _require_positive_int
 
 # Compatibility aliases. ``ChunkedCall`` was this module's executor before it
 # moved down to transport as the API-neutral ``FanOut``; ``get_active_client``
@@ -76,15 +76,6 @@ _chunked_client = _active_client
 # resolves this module-level default at call time when ``url_limit`` is None,
 # so a test can ``monkeypatch.setattr`` it on this module.
 _OGC_URL_BYTE_LIMIT = 8000
-
-
-# Parallel-chunks dial: opt-in to fan a query out *more finely* than the byte
-# limit alone requires. Scoped to a ``with parallel_chunks(...):`` block (a
-# ContextVar), deliberately NOT an env var (see :func:`parallel_chunks` for
-# why). The ambient holds ``n`` — the requested cap on the plan's total
-# chunk count; ``1`` (the default, outside any block) means "off — chunk
-# only as much as the byte limit needs, no extra fan-out".
-_parallel_chunks: Ambient[int] = Ambient("ogc_parallel_chunks", 1)
 
 
 @contextmanager
@@ -133,9 +124,9 @@ def parallel_chunks(n: int) -> Iterator[None]:
         Each chunk fetches at least one page, so it costs at least one
         request against your hourly rate limit — a larger ``n`` spends more
         quota. How many chunks run *at once* is capped separately by
-        ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds
-        quota without adding parallelism; the useful range is roughly ``2``
-        up to ``API_USGS_CONCURRENT``.
+        the ``concurrency`` setting (default 32), so an ``n`` beyond that
+        adds quota without adding parallelism; the useful range is roughly
+        ``2`` up to the effective ``concurrency``.
 
     Yields
     ------
@@ -183,10 +174,23 @@ def parallel_chunks(n: int) -> Iterator[None]:
     --------
     ChunkPlan._refine : the planning-side effect of ``n``.
     """
-    # Fail loudly on a bad ``n`` at ``with`` entry, before any request. Shared
-    # rules with ``max_rows`` via the helper (accepts numpy ints, rejects bool).
-    _require_positive_int(n, "parallel_chunks(n)", examples="2, 8, 32")
-    with _parallel_chunks(n):
+    # Fail loudly on a bad ``n`` at ``with`` entry, before any request -- and
+    # fail by the *setting's* grammar, not a second one written here. ``n`` is
+    # ``parallel_chunks``: the same bool/Integral rejection and the same lower
+    # bound, from the table that owns them, so raising the floor there cannot
+    # leave this block accepting a value the chain would then refuse. Spelled
+    # with the source label this block is written as, so the message names
+    # ``parallel_chunks(n)`` rather than the ``Configuration`` built below.
+    # ``ConfigurationError`` is a ``ValueError``, so callers catching that
+    # still catch this.
+    _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
+    # Sugar for a package-wide ``Configuration`` rather than a second scope of
+    # its own: two competing ContextVars would let ``show_configuration()`` report a
+    # value the chunker does not use. Sharing one means the innermost block
+    # wins, whichever spelling opened it -- and package-wide rather than scoped
+    # to one adapter, because this block is a per-call request that must reach
+    # whichever adapter the call goes to.
+    with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
         yield
 
 
@@ -194,6 +198,7 @@ def multi_value_chunked(
     *,
     build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
+    adapter: str | None = None,
 ) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
     """
     Decorate an async fetcher to transparently chunk over-budget requests.
@@ -251,17 +256,21 @@ def multi_value_chunked(
             finalize: _Finalize = _passthrough_result,
         ) -> tuple[pd.DataFrame, Any]:
             limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
-            # Read the parallel_chunks dial ``n`` from the ambient set by
-            # ``parallel_chunks`` (1 = off outside any such block; otherwise the
-            # requested total chunk cap). It only affects *planning*, done
-            # here up front, so a later resume — which re-issues the
-            # already-planned chunks — needs no snapshot.
+            # Resolve the parallel_chunks dial ``n`` through the configuration
+            # chain (1 = off unless a ``parallel_chunks``/``configure`` block or
+            # the config file raised it; otherwise the requested total chunk
+            # cap). It only affects *planning*, done here up front, so a later
+            # resume — which re-issues the already-planned chunks — reuses this
+            # plan rather than resolving again.
             plan = ChunkPlan(
-                args, build_request, limit, max_chunks=_parallel_chunks.get()
+                args,
+                build_request,
+                limit,
+                max_chunks=_configuration.parallel_chunks(adapter=adapter),
             )
-            retry_policy = RetryPolicy.from_env()
-            # The concurrency cap is resolved inside ``resume()`` from
-            # ``API_USGS_CONCURRENT``; ``1`` is a sequential gather,
+            retry_policy = RetryPolicy.from_configuration(adapter=adapter)
+            # The concurrency cap is resolved inside ``resume()`` through the
+            # configuration chain; ``1`` is a sequential gather,
             # ``total <= 1`` a one-element gather — no special branch.
             return ChunkedCall(
                 plan,
@@ -272,6 +281,7 @@ def multi_value_chunked(
                 # The collection name, for the progress line the executor
                 # opens. ``get_ogc_data`` puts it in ``args``.
                 service=args.get("collection"),
+                adapter=adapter,
             ).resume()
 
         return wrapper

@@ -178,6 +178,47 @@ def test_runtime_import_graph_is_acyclic() -> None:
         raise AssertionError(f"Runtime import cycle: {cycle}") from exc
 
 
+def test_config_is_a_standard_library_only_leaf() -> None:
+    """The two-module configuration subsystem must stay cheap and cycle-safe.
+
+    ``dataretrieval.configuration`` remains the public runtime interface and may
+    depend on its private foundation, ``dataretrieval._configuration_core``.
+    The core may depend only on the package's dependency-free leaves,
+    ``dataretrieval._ambient`` and ``dataretrieval.exceptions``. Neither module
+    may reach adapters or runtime third-party packages. ``tomli`` remains the
+    one third-party exception: it is the ``tomllib`` backport used on Python
+    3.10.
+    """
+    subsystem = {
+        PACKAGE_ROOT / "configuration.py": {
+            "dataretrieval._configuration_core",
+            "dataretrieval.exceptions",
+        },
+        PACKAGE_ROOT / "_configuration_core.py": {
+            "dataretrieval._ambient",
+            "dataretrieval.exceptions",
+        },
+    }
+    for path, allowed_first_party in subsystem.items():
+        imports = _runtime_imports(path)
+        first_party = {name for name in imports if name.startswith("dataretrieval")}
+        unexpected_first_party = first_party - allowed_first_party
+        assert not unexpected_first_party, (
+            f"{_module_name(path)} crossed the configuration subsystem boundary: "
+            f"{sorted(unexpected_first_party)}"
+        )
+
+        roots = {module.partition(".")[0] for module in imports}
+        # Static analysis sees both sides of the version guard. Python 3.10's
+        # stdlib inventory does not yet include the unreachable ``tomllib`` branch.
+        allowed_roots = {"dataretrieval", "tomli", "tomllib"}
+        third_party = roots - sys.stdlib_module_names - allowed_roots
+        assert not third_party, (
+            f"{_module_name(path)} gained third-party dependencies: "
+            f"{sorted(third_party)}"
+        )
+
+
 def test_engine_request_import_surface_does_not_grow() -> None:
     """Engine imports only request names it uses and may not grow a new hub.
 
@@ -366,11 +407,11 @@ def test_credential_policy_has_one_definition() -> None:
 
 def _waterdata_family_paths() -> tuple[str, ...]:
     """Read the collection-family inventory from its dependency contract."""
-    config = configparser.ConfigParser()
-    config.read(PACKAGE_ROOT.parent / ".importlinter")
+    parser = configparser.ConfigParser()
+    parser.read(PACKAGE_ROOT.parent / ".importlinter")
     return tuple(
         module.removeprefix("dataretrieval.").replace(".", "/") + ".py"
-        for module in config["importlinter:contract:waterdata-families"][
+        for module in parser["importlinter:contract:waterdata-families"][
             "modules"
         ].split()
     )
@@ -386,7 +427,7 @@ _EXPLICIT_EXPORT_MODULES = (
     "ngwmn.py",
     "nldi.py",
     "streamstats.py",
-    "wateruse.py",
+    "nwdc.py",
     "wqp.py",
     "waterdata/nearest.py",
     "waterdata/ratings.py",
@@ -515,7 +556,7 @@ def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
     )
 
 
-def test_wateruse_does_not_reimplement_fan_out_orchestration() -> None:
+def test_nwdc_does_not_reimplement_fan_out_orchestration() -> None:
     """Water Use must drive its locations through the shared fan-out executor.
 
     It previously ran its own ``asyncio.gather`` with a private semaphore and a
@@ -524,7 +565,7 @@ def test_wateruse_does_not_reimplement_fan_out_orchestration() -> None:
     resume, progress, and the shared concurrency setting. Assert the duplication
     cannot quietly return.
     """
-    source = (PACKAGE_ROOT / "wateruse.py").read_text(encoding="utf-8")
+    source = (PACKAGE_ROOT / "nwdc.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
     offenders = {
         f"{node.value.id}.{node.attr}"

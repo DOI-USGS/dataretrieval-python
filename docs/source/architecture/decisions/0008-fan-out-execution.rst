@@ -130,8 +130,8 @@ Consequences
 Compliance
 ----------
 
-``tests/architecture_test.py`` asserts three things. That ``wateruse``
-contains no ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
+``tests/architecture_test.py`` asserts three things. That ``nwdc``
+(named ``wateruse`` when this decision was taken) contains no ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
 duplication cannot return. That both plan types are sized and *repeatably*
 iterable -- resume keys completed work by position, so a generator mistaken for
 a collection would re-issue the wrong chunks. And that an interruption

@@ -1,10 +1,11 @@
-"""Offline tests for :mod:`dataretrieval.wateruse`.
+"""Offline tests for :mod:`dataretrieval.nwdc`.
 
 All HTTP is mocked with ``pytest-httpx``; no live calls (per AGENTS.md).
 """
 
 import re
 import socket
+import warnings
 from urllib.parse import parse_qs, urlsplit
 
 import httpx
@@ -12,11 +13,12 @@ import pandas as pd
 import pytest
 
 import dataretrieval
+from dataretrieval import configuration, nwdc
 from dataretrieval import progress as _progress
-from dataretrieval import wateruse
+from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.nwdc import _next_page_url, _resolve_locations, get_wateruse
 from dataretrieval.transport import fanout as _fanout
 from dataretrieval.utils import BaseMetadata
-from dataretrieval.wateruse import _next_page_url, _resolve_locations, get_wateruse
 
 # Match the NWDC endpoint regardless of query string, so assertions can drill
 # into the captured params without coupling registration to param order.
@@ -514,9 +516,70 @@ def test_next_page_url_strips_credentials_from_the_cursor():
     assert sent["auth"] is None
 
 
+def test_a_configured_base_url_redirects_the_request(httpx_mock):
+    """The whole call moves, page walk included, or the redirect is a half-truth.
+
+    The page-two mock is served from the mirror and its cursor names the mirror:
+    if either the request or the ``rel="next"`` walk had stayed on the NWDC's
+    host, one of them would go unmocked and this would fail rather than quietly
+    talk to the service the block redirected away from.
+    """
+    mirror = re.compile(r"^https://mirror\.example/data")
+    httpx_mock.add_response(
+        method="GET",
+        url=mirror,
+        text=_CSV_P1,
+        headers={"link": '<https://mirror.example/data?skip=2>; rel="next"'},
+    )
+    httpx_mock.add_response(method="GET", url=mirror, text=_CSV_P2)
+
+    with dataretrieval.configure(
+        nwdc.NwdcConfiguration(base_url="https://mirror.example/data")
+    ):
+        df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
+
+    assert len(df) == 3
+    assert [urlsplit(str(r.url)).netloc for r in httpx_mock.get_requests()] == [
+        "mirror.example",
+        "mirror.example",
+    ]
+
+
+def test_next_page_url_drops_the_service_rewrite_when_redirected():
+    """The alias list and the rewrite are facts about the NWDC, not about URLs.
+
+    Nothing but the NWDC answers for ``water.usgs.gov``, so a call an
+    ``NwdcConfiguration(base_url=...)`` pointed elsewhere gets the general rule
+    instead: follow a link only back to the host that served the page. Keeping
+    the rewrite would send page two of a mirrored query to the USGS -- and
+    refusing the mirror's own cursor would throw away page one.
+    """
+    mirrored = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<https://mirror.example/data?skip=600>; rel="next"'},
+        request=httpx.Request("GET", "https://mirror.example/data"),
+    )
+
+    assert _next_page_url(mirrored, host="mirror.example") == (
+        "https://mirror.example/data?skip=600"
+    )
+
+    # A cursor back to the real service is now the cross-host case, refused for
+    # the same reason a foreign link is refused on an ordinary call.
+    strayed = httpx.Response(
+        200,
+        text="",
+        headers={"link": '<https://api.water.usgs.gov/nwaa-data/data>; rel="next"'},
+        request=httpx.Request("GET", "https://mirror.example/data"),
+    )
+    with pytest.raises(DataRetrievalError, match="cross-host"):
+        _next_page_url(strayed, host="mirror.example")
+
+
 def test_module_exposes_catalog_constants():
-    assert "wu-public-supply-wd" in wateruse.MODELS
-    assert set(wateruse.TIME_RESOLUTIONS) == {"monthly", "annualcy", "annualwy"}
+    assert "wu-public-supply-wd" in nwdc.MODELS
+    assert set(nwdc.TIME_RESOLUTIONS) == {"monthly", "annualcy", "annualwy"}
 
 
 def test_initial_transient_is_retried(httpx_mock, monkeypatch):
@@ -584,12 +647,12 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
     monkeypatch.setattr(_fanout, "open_async_client", open_mock_client)
 
     requests = [
-        httpx.Request("GET", wateruse.WATERUSE_URL, params={"location": location})
+        httpx.Request("GET", nwdc.WATERUSE_URL, params={"location": location})
         for location in ("stateCd:AA", "stateCd:BB")
     ]
 
     with pytest.raises(dataretrieval.DataRetrievalError, match="Invalid model"):
-        wateruse._fan_out(requests, {}, True)
+        nwdc._fan_out(requests, {}, True)
     assert pages["n"] == 2, "the sibling finished its walk rather than being abandoned"
 
 
@@ -655,15 +718,15 @@ def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
     quietly ignoring them -- the defect that motivated consolidating the knob.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "7")
-    assert _fanout._resolve_concurrency(wateruse.DEFAULT_CONCURRENT_REQUESTS) == 7
+    assert configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
 
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
     assert (
-        _fanout._resolve_concurrency(wateruse.DEFAULT_CONCURRENT_REQUESTS)
-        == wateruse.DEFAULT_CONCURRENT_REQUESTS
+        configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS)
+        == nwdc.DEFAULT_CONCURRENT_REQUESTS
     )
     # The service default is deliberately below the package-wide 32.
-    assert wateruse.DEFAULT_CONCURRENT_REQUESTS < _fanout._CONCURRENCY_DEFAULT
+    assert nwdc.DEFAULT_CONCURRENT_REQUESTS < configuration.DEFAULT_CONCURRENCY
 
 
 def test_fan_out_reports_progress(httpx_mock, monkeypatch):
@@ -831,3 +894,78 @@ def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
     assert excinfo.value.call is not None
     assert excinfo.value.completed_chunks == 1
     assert excinfo.value.total_chunks == 2
+
+
+# ---------------------------------------------------------------------------
+# Deprecated ``wateruse`` alias
+# ---------------------------------------------------------------------------
+
+
+def _reimport_wateruse():
+    """Import the alias fresh, so its module-level warning fires again."""
+    import importlib
+    import sys
+
+    sys.modules.pop("dataretrieval.wateruse", None)
+    return importlib.import_module("dataretrieval.wateruse")
+
+
+def test_wateruse_alias_warns_and_names_the_replacement():
+    """Importing the old name is deprecated, dated, and points at ``nwdc``."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        _reimport_wateruse()
+
+    deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+    assert len(deprecations) == 1, [str(w.message) for w in caught]
+    message = str(deprecations[0].message)
+    assert "`dataretrieval.wateruse` is deprecated" in message
+    assert "`dataretrieval.nwdc`" in message
+    # Dated removal, per the convention nwis follows.
+    from dataretrieval.wateruse import NWDC_RENAME_REMOVAL_DATE
+
+    assert NWDC_RENAME_REMOVAL_DATE in message
+
+
+def test_wateruse_alias_re_exports_the_same_objects():
+    """The alias forwards, it does not copy: identity must survive it.
+
+    A caller monkeypatching through one spelling and asserting through the
+    other would otherwise see two different objects.
+    """
+    alias = _reimport_wateruse()
+
+    assert alias.get_wateruse is nwdc.get_wateruse
+    assert alias.MODELS is nwdc.MODELS
+    assert alias.TIME_RESOLUTIONS is nwdc.TIME_RESOLUTIONS
+    assert alias.DEFAULT_CONCURRENT_REQUESTS == nwdc.DEFAULT_CONCURRENT_REQUESTS
+    assert alias.__all__ == nwdc.__all__
+
+
+def test_importing_dataretrieval_does_not_warn():
+    """``import dataretrieval`` must stay silent.
+
+    The package imports ``nwdc`` directly; only code naming ``wateruse``
+    itself should see the warning. If ``__init__`` ever imports the alias,
+    every user of the library gets a DeprecationWarning they cannot act on.
+
+    Runs in a subprocess: a fresh interpreter is the only honest way to test
+    an import side effect, and clearing ``sys.modules`` in-process would hand
+    every later test a second copy of the package.
+    """
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-W",
+            "error::DeprecationWarning",
+            "-c",
+            "import dataretrieval",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
