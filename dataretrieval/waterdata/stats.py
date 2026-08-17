@@ -67,37 +67,11 @@ def _handle_nesting(
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
-    if body is None:
+    features = _extract_features(body, geopd)
+    if features is None:
         return _empty_feature_frame(geopd)
 
-    # An empty (or missing) features list — a real mid-pagination
-    # shape — would otherwise crash the downstream merge with
-    # ``KeyError: 'monitoring_location_id'`` because neither df nor
-    # dat would carry the merge key. ``_empty_feature_frame`` bails out
-    # with a geo-typed empty frame so a later ``pd.concat`` with non-empty
-    # geo pages doesn't downgrade to a plain DataFrame and strip geometry/CRS.
-    features = body.get("features") or []
-    if not features:
-        return _empty_feature_frame(geopd)
-
-    # The geopd-missing warning is emitted once at import (see engine module);
-    # doing it here would log per page.
-    if not geopd:
-        outer_props = [
-            {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
-            for f in features
-        ]
-        df = pd.json_normalize(outer_props, sep=".")
-        df.columns = df.columns.str.split(".").str[-1]
-        # Stats features don't carry a top-level ``id`` field — the
-        # geopandas branch (``GeoDataFrame.from_features``) doesn't
-        # surface one either, so the non-geopd branch stays
-        # consistent by NOT adding an id column.
-        _attach_coordinates(df, features)
-    else:
-        # Stats features may omit ``geometry`` entirely; ``_geo_feature_frame``
-        # is the shared home for that upstream-schema workaround.
-        df = _geo_feature_frame(features).drop(columns=["data"], errors="ignore")
+    df = _build_outer_frame(features, geopd)
 
     # Unnest json features, properties, data, and values while retaining necessary
     # metadata to merge with main dataframe.
@@ -116,6 +90,45 @@ def _handle_nesting(
     dat.columns = dat.columns.str.split(".").str[-1]
 
     return df.merge(dat, on="monitoring_location_id", how="left")
+
+
+def _extract_features(
+    body: dict[str, Any] | None, geopd: bool
+) -> list[dict[str, Any]] | None:
+    """Return the features list from a response body, or None for empty/missing.
+
+    Returns ``None`` when the body or features list is empty/falsy, signalling
+    the caller to return an empty frame.
+    """
+    if body is None:
+        return None
+    features = body.get("features") or []
+    return features if features else None
+
+
+def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFrame:
+    """Build the outer (per-monitoring-location) frame from GeoJSON features.
+
+    The geopd-missing warning is emitted once at import (see engine module);
+    doing it here would log per page.
+    """
+    if not geopd:
+        outer_props = [
+            {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
+            for f in features
+        ]
+        df = pd.json_normalize(outer_props, sep=".")
+        df.columns = df.columns.str.split(".").str[-1]
+        # Stats features don't carry a top-level ``id`` field — the
+        # geopandas branch (``GeoDataFrame.from_features``) doesn't
+        # surface one either, so the non-geopd branch stays
+        # consistent by NOT adding an id column.
+        _attach_coordinates(df, features)
+        return df
+
+    # Stats features may omit ``geometry`` entirely; ``_geo_feature_frame``
+    # is the shared home for that upstream-schema workaround.
+    return _geo_feature_frame(features).drop(columns=["data"], errors="ignore")
 
 
 def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
