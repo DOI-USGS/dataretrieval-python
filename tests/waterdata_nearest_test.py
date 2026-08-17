@@ -9,6 +9,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
+from dataretrieval.interruptions import QuotaExhausted, ServiceInterrupted
 from dataretrieval.waterdata.nearest import get_nearest_continuous
 
 
@@ -330,3 +331,87 @@ def test_missing_time_column_raises_helpful_error(patch_get_continuous):
             monitoring_location_id="USGS-02238500",
             properties=["value", "monitoring_location_id"],
         )
+
+
+def test_interruption_preserves_nearest_shape_for_partial_and_resumed_rows(
+    patch_get_continuous,
+):
+    """Partial and resumed results keep the outer getter's return shape."""
+    targets = pd.to_datetime(["2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"], utc=True)
+    raw = _fake_df(
+        [
+            {"time": "2024-01-01T00:03:00Z", "value": 8.1},
+            {"time": "2024-01-02T00:03:00Z", "value": 8.2},
+        ]
+    )
+    response = mock.Mock()
+    metadata = mock.Mock()
+
+    class FakeCall:
+        partial_frame = raw
+        partial_response = response
+
+        def resume(self):
+            return raw, metadata
+
+    patch_get_continuous.side_effect = QuotaExhausted(
+        completed_chunks=1, total_chunks=2, call=FakeCall()
+    )
+
+    with pytest.raises(QuotaExhausted) as excinfo:
+        get_nearest_continuous(
+            targets,
+            monitoring_location_id="USGS-02238500",
+            window="PT1H",
+        )
+
+    interrupted = excinfo.value
+    assert list(interrupted.partial_frame["target_time"]) == list(targets)
+    assert list(interrupted.call.partial_frame["target_time"]) == list(targets)
+    assert interrupted.partial_response is response
+
+    resumed, resumed_metadata = interrupted.call.resume()
+
+    assert list(resumed["target_time"]) == list(targets)
+    assert list(resumed["value"]) == [8.1, 8.2]
+    assert resumed_metadata is metadata
+
+
+def test_nearest_shape_survives_repeated_resume_interruptions(patch_get_continuous):
+    """A resume that is interrupted again returns another outer-shaped call."""
+    target = pd.to_datetime(["2024-01-01T00:00:00Z"], utc=True)
+    raw = _fake_df([{"time": "2024-01-01T00:03:00Z", "value": 8.1}])
+    metadata = mock.Mock()
+
+    class FakeCall:
+        partial_frame = raw
+        partial_response = mock.Mock()
+        attempts = 0
+
+        def resume(self):
+            self.attempts += 1
+            if self.attempts == 1:
+                raise ServiceInterrupted(completed_chunks=1, total_chunks=2, call=self)
+            return raw, metadata
+
+    call = FakeCall()
+    patch_get_continuous.side_effect = QuotaExhausted(
+        completed_chunks=1, total_chunks=2, call=call
+    )
+
+    with pytest.raises(QuotaExhausted) as first:
+        get_nearest_continuous(
+            target,
+            monitoring_location_id="USGS-02238500",
+            window="PT1H",
+        )
+    with pytest.raises(ServiceInterrupted) as second:
+        first.value.call.resume()
+
+    assert list(second.value.partial_frame["target_time"]) == list(target)
+    assert list(second.value.call.partial_frame["target_time"]) == list(target)
+
+    resumed, resumed_metadata = second.value.call.resume()
+
+    assert list(resumed["target_time"]) == list(target)
+    assert resumed_metadata is metadata

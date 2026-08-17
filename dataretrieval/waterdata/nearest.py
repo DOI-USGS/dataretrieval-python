@@ -6,11 +6,13 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, Literal, get_args
+from typing import TYPE_CHECKING, Any, Literal, Protocol, cast, get_args
 
+import httpx
 import pandas as pd
 
 from dataretrieval._validation import require_one_of
+from dataretrieval.interruptions import FanOutInterrupted
 from dataretrieval.waterdata.time_series import get_continuous
 
 if TYPE_CHECKING:
@@ -21,6 +23,95 @@ __all__ = ["get_nearest_continuous"]
 
 OnTie = Literal["first", "last", "mean"]
 _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
+
+
+class _ResumableCall(Protocol):
+    """Structural subset of a fan-out call needed by the outer decorator."""
+
+    @property
+    def partial_frame(self) -> pd.DataFrame: ...
+
+    @property
+    def partial_response(self) -> httpx.Response | None: ...
+
+    def resume(self) -> tuple[pd.DataFrame, BaseMetadata]: ...
+
+
+class _MutableInterruption(Protocol):
+    """Writable call slot exposed by fan-out interruption instances."""
+
+    call: _ResumableCall | None
+
+
+class _NearestCall:
+    """Preserve nearest-result semantics around an interrupted inner call."""
+
+    def __init__(
+        self,
+        inner: _ResumableCall,
+        targets: pd.DatetimeIndex,
+        window_td: pd.Timedelta,
+        on_tie: OnTie,
+    ) -> None:
+        self._inner = inner
+        self._targets = targets
+        self._window_td = window_td
+        self._on_tie = on_tie
+
+    @property
+    def partial_frame(self) -> pd.DataFrame:
+        """Return the live partial rows in the outer getter's shape."""
+        return _select_nearest_partial(
+            self._inner.partial_frame,
+            self._targets,
+            self._window_td,
+            self._on_tie,
+        )
+
+    @property
+    def partial_response(self) -> httpx.Response | None:
+        """Pass through the inner call's live aggregate response."""
+        return self._inner.partial_response
+
+    def resume(self) -> tuple[pd.DataFrame, BaseMetadata]:
+        """Resume inner work and apply the outer getter's selection."""
+        try:
+            frame, metadata = self._inner.resume()
+        except FanOutInterrupted as exc:
+            _shape_interruption(exc, self._targets, self._window_td, self._on_tie)
+            raise
+        return (
+            _select_nearest_rows(frame, self._targets, self._window_td, self._on_tie),
+            metadata,
+        )
+
+
+def _shape_interruption(
+    exc: FanOutInterrupted,
+    targets: pd.DatetimeIndex,
+    window_td: pd.Timedelta,
+    on_tie: OnTie,
+) -> None:
+    """Decorate one inner interruption with the outer getter's semantics."""
+    exc.partial_frame = _select_nearest_partial(
+        exc.partial_frame, targets, window_td, on_tie
+    )
+    if exc.call is not None:
+        cast("_MutableInterruption", exc).call = _NearestCall(
+            exc.call, targets, window_td, on_tie
+        )
+
+
+def _select_nearest_partial(
+    frame: pd.DataFrame,
+    targets: pd.DatetimeIndex,
+    window_td: pd.Timedelta,
+    on_tie: OnTie,
+) -> pd.DataFrame:
+    """Select partial rows, including the no-completed-chunks empty shape."""
+    if frame.empty and "time" not in frame.columns:
+        return _empty_nearest_result(frame)
+    return _select_nearest_rows(frame, targets, window_td, on_tie)
 
 
 def get_nearest_continuous(
@@ -98,6 +189,13 @@ def get_nearest_continuous(
     md : :class:`~dataretrieval.utils.BaseMetadata`
         Metadata from the underlying ``get_continuous`` call.
 
+    Raises
+    ------
+    FanOutInterrupted
+        If the underlying fan-out is interrupted. ``partial_frame`` and
+        ``call.partial_frame`` contain nearest-selected rows with
+        ``target_time``; ``call.resume()`` returns that same public shape.
+
     Notes
     -----
     *Window sizing and ties.* When ``window`` is exactly half the service
@@ -152,20 +250,34 @@ def get_nearest_continuous(
         raise ValueError("targets must contain at least one timestamp")
 
     filter_expr = _build_window_or_filter(target_index, window_td)
-    df, md = get_continuous(
-        monitoring_location_id=monitoring_location_id,
-        parameter_code=parameter_code,
-        filter=filter_expr,
-        filter_lang="cql-text",
-        **kwargs,
-    )
+    try:
+        df, md = get_continuous(
+            monitoring_location_id=monitoring_location_id,
+            parameter_code=parameter_code,
+            filter=filter_expr,
+            filter_lang="cql-text",
+            **kwargs,
+        )
+    except FanOutInterrupted as exc:
+        _shape_interruption(exc, target_index, window_td, on_tie)
+        raise
+    return _select_nearest_rows(df, target_index, window_td, on_tie), md
+
+
+def _select_nearest_rows(
+    df: pd.DataFrame,
+    targets: pd.DatetimeIndex,
+    window_td: pd.Timedelta,
+    on_tie: OnTie,
+) -> pd.DataFrame:
+    """Apply the public nearest-per-target shape to continuous rows."""
     if "time" not in df.columns:
         raise ValueError(
             "get_nearest_continuous requires a 'time' column in the response; "
             "if a `properties` kwarg was passed, include 'time' in it"
         )
     if df.empty:
-        return _empty_nearest_result(df), md
+        return _empty_nearest_result(df)
 
     df = df.assign(time=pd.to_datetime(df["time"], utc=True))
     site_groups = (
@@ -177,12 +289,12 @@ def get_nearest_continuous(
     selected = [
         row
         for _, site_df in site_groups
-        for target in target_index
+        for target in targets
         if (row := _pick_nearest_row(site_df, target, window_td, on_tie)) is not None
     ]
     if not selected:
-        return _empty_nearest_result(df), md
-    return pd.DataFrame(selected).reset_index(drop=True), md
+        return _empty_nearest_result(df)
+    return pd.DataFrame(selected).reset_index(drop=True)
 
 
 def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
