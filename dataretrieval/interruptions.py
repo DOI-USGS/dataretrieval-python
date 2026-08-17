@@ -130,26 +130,13 @@ class FanOutInterrupted(DataRetrievalError):
         retry_after: float | None = None,
         cause: BaseException | None = None,
     ) -> None:
-        message = self._MESSAGE_TEMPLATE.format(
-            completed_chunks=completed_chunks, total_chunks=total_chunks
-        )
-        if cause is not None:
-            cause_msg = str(cause) or type(cause).__name__
-            message = f"{message} Cause: {type(cause).__name__}: {cause_msg}"
+        message = self._format_message(completed_chunks, total_chunks, cause)
         super().__init__(message)
         self.completed_chunks = completed_chunks
         self.total_chunks = total_chunks
         self.call = call
         self.retry_after = retry_after
-        self.status_code = getattr(type(self), "_DEFAULT_STATUS", None)
-        if self.status_code is None and cause is not None:
-            # The status is usually a few frames down: a typed error raised
-            # ``from`` the httpx failure that carried it.
-            for current in _walk_causes(cause):
-                status = getattr(current, "status_code", None)
-                if status is not None:
-                    self.status_code = status
-                    break
+        self.status_code = self._resolve_status_code(cause)
         # Snapshot partial state at raise time so the exception stays a stable
         # record of the failure moment: ``exc.partial_frame`` /
         # ``.partial_response`` do NOT advance on a later ``call.resume()``
@@ -164,6 +151,34 @@ class FanOutInterrupted(DataRetrievalError):
         else:
             self.partial_frame = call.partial_frame.copy()
             self.partial_response = call.partial_response
+
+    def _format_message(
+        self,
+        completed_chunks: int,
+        total_chunks: int,
+        cause: BaseException | None,
+    ) -> str:
+        """Build the exception message from the template, appending cause info."""
+        message = self._MESSAGE_TEMPLATE.format(
+            completed_chunks=completed_chunks, total_chunks=total_chunks
+        )
+        if cause is not None:
+            cause_msg = str(cause) or type(cause).__name__
+            message = f"{message} Cause: {type(cause).__name__}: {cause_msg}"
+        return message
+
+    def _resolve_status_code(self, cause: BaseException | None) -> int | None:
+        """Resolve the HTTP status code from the class default or cause chain."""
+        status: int | None = getattr(type(self), "_DEFAULT_STATUS", None)
+        if status is not None or cause is None:
+            return status
+        # The status is usually a few frames down: a typed error raised
+        # ``from`` the httpx failure that carried it.
+        for current in _walk_causes(cause):
+            found: int | None = getattr(current, "status_code", None)
+            if found is not None:
+                return found
+        return None
 
     def __getstate__(self) -> dict[str, Any]:
         # Drop the live FanOut before pickling: its ``.fetch`` is an
