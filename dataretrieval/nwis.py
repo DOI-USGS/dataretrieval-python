@@ -127,6 +127,18 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
         raise
 
 
+def _localize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
+    """Localize a naive datetime index (or multi-index level) to UTC."""
+    if hasattr(df.index, "levels"):
+        # Multi-index: localize the datetime level (level 1)
+        if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
+            df = df.tz_localize("UTC", level=1)
+    else:
+        if hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
+            df = df.tz_localize("UTC")
+    return df
+
+
 def format_response(
     df: pd.DataFrame, service: str | None = None, **kwargs: Any
 ) -> pd.DataFrame:
@@ -162,22 +174,15 @@ def format_response(
         geoms = gpd.points_from_xy(df.dec_long_va.values, df.dec_lat_va.values)
         df = gpd.GeoDataFrame(df, geometry=geoms, crs=_CRS)
 
-    # check for multiple sites:
     if "datetime" not in df.columns:
-        # XXX: consider making site_no index
         return df
 
-    elif len(df["site_no"].unique()) > 1 and mi:
-        # setup multi-index
+    if len(df["site_no"].unique()) > 1 and mi:
         df.set_index(["site_no", "datetime"], inplace=True)
-        if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
-            df = df.tz_localize("UTC", level=1)
-
     else:
         df.set_index(["datetime"], inplace=True)
-        if hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
-            df = df.tz_localize("UTC")
 
+    df = _localize_datetime_index(df)
     return df.sort_index()
 
 
