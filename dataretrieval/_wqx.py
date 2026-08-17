@@ -48,6 +48,48 @@ def _build_utc_datetime(
     )
 
 
+def _find_datetime_triplets(
+    df: pd.DataFrame,
+) -> tuple[dict[str, pd.Series], str | None]:
+    """Detect Date/Time/TimeZone column triplets and build UTC datetime columns.
+
+    Returns a mapping of new column names to UTC Series, and the name of the
+    first detected ``*Date`` column (for fallback sorting).
+    """
+    columns = set(df.columns)
+    new_columns: dict[str, pd.Series] = {}
+    first_date_col: str | None = None
+
+    for col in df.columns:
+        if not col.endswith("Date"):
+            continue
+        if first_date_col is None:
+            first_date_col = col
+        prefix = col.removesuffix("Date")
+        target = prefix + "DateTime"
+        if target in columns or target in new_columns:
+            continue
+        for time_suffix, tz_suffix in _TIME_TZ_SUFFIXES:
+            time_col = prefix + time_suffix
+            tz_col = prefix + tz_suffix
+            if time_col in columns and tz_col in columns:
+                new_columns[target] = _build_utc_datetime(
+                    df[col], df[time_col], df[tz_col]
+                )
+                break
+
+    return new_columns, first_date_col
+
+
+def _resolve_sort_key(df: pd.DataFrame, first_date_col: str | None) -> str | None:
+    """Pick the canonical sort column from the resulting DataFrame."""
+    if "Activity_StartDateTime" in df.columns:
+        return "Activity_StartDateTime"
+    if "ActivityStartDateTime" in df.columns:
+        return "ActivityStartDateTime"
+    return first_date_col
+
+
 def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Append a UTC ``<prefix>DateTime`` column per Date/Time/TimeZone triplet.
 
@@ -82,37 +124,14 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
         and rows sorted by the activity-start datetime (if any date column
         was detected).
     """
-    columns = set(df.columns)
-    new_columns = {}
-    first_date_col = None
-    for col in df.columns:
-        if not col.endswith("Date"):
-            continue
-        if first_date_col is None:
-            first_date_col = col
-        prefix = col.removesuffix("Date")
-        target = prefix + "DateTime"
-        if target in columns or target in new_columns:
-            continue
-        for time_suffix, tz_suffix in _TIME_TZ_SUFFIXES:
-            time_col = prefix + time_suffix
-            tz_col = prefix + tz_suffix
-            if time_col in columns and tz_col in columns:
-                new_columns[target] = _build_utc_datetime(
-                    df[col], df[time_col], df[tz_col]
-                )
-                break
+    new_columns, first_date_col = _find_datetime_triplets(df)
+
     if new_columns:
         # Concat in one shot — per-column assignment on a wide CSV-derived
         # frame triggers pandas' fragmentation PerformanceWarning.
         df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
-    sort_key: str | None
-    if "Activity_StartDateTime" in df.columns:
-        sort_key = "Activity_StartDateTime"
-    elif "ActivityStartDateTime" in df.columns:
-        sort_key = "ActivityStartDateTime"
-    else:
-        sort_key = first_date_col
+
+    sort_key = _resolve_sort_key(df, first_date_col)
     if sort_key is not None:
         df = df.sort_values(by=sort_key, ignore_index=True)
     return df
