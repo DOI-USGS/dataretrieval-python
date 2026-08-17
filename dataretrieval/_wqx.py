@@ -70,13 +70,10 @@ def _find_datetime_triplets(
     """
     columns = set(df.columns)
     new_columns: dict[str, pd.Series] = {}
-    first_date_col: str | None = None
+    date_cols = [c for c in df.columns if c.endswith("Date")]
+    first_date_col: str | None = next(iter(date_cols), None)
 
-    for col in df.columns:
-        if not col.endswith("Date"):
-            continue
-        if first_date_col is None:
-            first_date_col = col
+    for col in date_cols:
         prefix = col.removesuffix("Date")
         target = prefix + "DateTime"
         if target in columns or target in new_columns:
