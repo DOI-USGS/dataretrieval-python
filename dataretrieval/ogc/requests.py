@@ -292,6 +292,27 @@ def _check_monitoring_location_id(
     return value
 
 
+def _normalize_arg(
+    key: str,
+    value: Any,
+    no_normalize: frozenset[str],
+) -> Any:
+    """Normalize a single request argument value based on its key."""
+    if key == "monitoring_location_id":
+        return _check_monitoring_location_id(value)
+    if key == "properties":
+        return _as_str_list(value, key)
+    if (
+        key in no_normalize
+        and isinstance(value, Iterable)
+        and not isinstance(value, str)
+    ):
+        return value.tolist() if hasattr(value, "tolist") else list(value)
+    if isinstance(value, str) or not isinstance(value, Iterable):
+        return value
+    return _normalize_str_iterable(value, key)
+
+
 def prepare_request_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
@@ -310,9 +331,6 @@ def prepare_request_args(
     by forgetting to union them back in.
     """
     no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
-    # Both spellings: this drops the caller's collection selector out of the
-    # query string, and public getters still name that local ``service``
-    # (waterdata.get_samples) or ``service=`` during the get_cql deprecation.
     to_exclude = {"collection", "service", "output_id"}
     if exclude:
         to_exclude.update(exclude)
@@ -321,14 +339,5 @@ def prepare_request_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        if k == "monitoring_location_id":
-            args[k] = _check_monitoring_location_id(v)
-        elif k == "properties":
-            args[k] = _as_str_list(v, k)
-        elif k in no_normalize and isinstance(v, Iterable) and not isinstance(v, str):
-            args[k] = v.tolist() if hasattr(v, "tolist") else list(v)
-        elif isinstance(v, str) or not isinstance(v, Iterable):
-            args[k] = v
-        else:
-            args[k] = _normalize_str_iterable(v, k)
+        args[k] = _normalize_arg(k, v, no_normalize)
     return args
