@@ -639,25 +639,53 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
         tier answered (one of the constants above) -- ``None`` with
         ``_BUILT_IN`` / ``_DEFAULT`` when nothing configured it.
     """
-    # An adapter name nobody recognizes is a typo in *our* source, and its
-    # failure mode is silence: ``_accepts`` would wave every setting through,
-    # the file would hold no table under that name, and the read would fall
-    # through to the package-wide value -- so a ``[waterdata]`` table, or a
-    # ``WaterdataConfiguration``, would be ignored with nothing raised
-    # anywhere. Checked here rather than left to the fitness test that greps
-    # for ``adapter="<name>"``, which can only see that the string occurs.
+    _check_adapter_known(adapter)
+    _check_env_not_refused(name)
+
+    # ``None`` unless this adapter actually reads this setting, so a setting
+    # outside its vocabulary resolves package-wide rather than looking for a
+    # scope it could never have been written into.
+    scoped: str | None = (
+        adapter if adapter is not None and _accepts(adapter, name) else None
+    )
+
+    from_block = _resolve_from_block(name, scoped)
+    if from_block is not None:
+        return from_block
+
+    from_env = _resolve_from_env(name)
+    if from_env is not None:
+        return from_env
+
+    return _resolve_from_file(name, scoped)
+
+
+def _check_adapter_known(adapter: str | None) -> None:
+    """Raise if *adapter* is not in the configurable adapter roster.
+
+    An adapter name nobody recognizes is a typo in *our* source, and its
+    failure mode is silence: ``_accepts`` would wave every setting through,
+    the file would hold no table under that name, and the read would fall
+    through to the package-wide value -- so a ``[waterdata]`` table, or a
+    ``WaterdataConfiguration``, would be ignored with nothing raised anywhere.
+    """
     if adapter is not None and adapter not in ADAPTERS:
         raise ConfigurationError(
             f"{adapter!r} is not a configurable adapter. The adapters are "
             f"{', '.join(ADAPTERS)}."
         )
 
-    # Refused before anything is consulted, not at the environment's turn in
-    # the chain. The file refuses ``base_url`` whether or not a block also set
-    # one -- it raises while the file is read -- and the two surfaces are one
-    # rule, so a variable that cannot work must not be silently outranked by a
-    # block that happens to work. Unsetting it is the only fix, and the message
-    # says so.
+
+def _check_env_not_refused(name: str) -> None:
+    """Raise if an environment variable is set for a code-only setting.
+
+    Refused before anything is consulted, not at the environment's turn in
+    the chain. The file refuses ``base_url`` whether or not a block also set
+    one -- it raises while the file is read -- and the two surfaces are one
+    rule, so a variable that cannot work must not be silently outranked by a
+    block that happens to work. Unsetting it is the only fix, and the message
+    says so.
+    """
     refused = _REFUSED_ENV_VARS.get(name)
     if refused is not None and refused in os.environ:
         raise ConfigurationError(
@@ -667,37 +695,48 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
             f"WaterdataConfiguration({name}=...)."
         )
 
-    # ``None`` unless this adapter actually reads this setting, so a setting
-    # outside its vocabulary resolves package-wide rather than looking for a
-    # scope it could never have been written into.
-    scoped: str | None = (
-        adapter if adapter is not None and _accepts(adapter, name) else None
-    )
 
-    # Innermost block first: a value set by a nested block wins over both
-    # scopes of an enclosing one. Within one block the adapter-scoped value is
-    # the more specific of the two, so it is asked first. Each entry already
-    # carries its own label, which is what keeps the profile a value came from
-    # reportable (:data:`_Frame`).
+def _resolve_from_block(
+    name: str, scoped: str | None
+) -> tuple[str | None, str, str] | None:
+    """Walk the scope stack for the first block that sets *name*.
+
+    Innermost block first: a value set by a nested block wins over both
+    scopes of an enclosing one. Within one block the adapter-scoped value is
+    the more specific of the two, so it is asked first.
+    """
     for frame in reversed(_scope.get()):
         if scoped is not None and (scoped, name) in frame:
             return (*frame[(scoped, name)], _BLOCK)
         if name in frame:
             return (*frame[name], _BLOCK)
+    return None
 
-    # No per-adapter environment variables: seven adapters times four settings
-    # is a namespace nobody can hold in mind, and an exported variable is
-    # invisible at the call site. See ADR 0010.
+
+def _resolve_from_env(name: str) -> tuple[str | None, str, str] | None:
+    """Check whether an environment variable supplies the setting.
+
+    No per-adapter environment variables: seven adapters times four settings
+    is a namespace nobody can hold in mind, and an exported variable is
+    invisible at the call site. See ADR 0010.
+    """
     env = ENV_VARS.get(name)
-    if env is not None:
-        raw = os.environ.get(env)
-        if raw is not None and (raw.strip() or name in _BLANK_MEANS_SET):
-            return raw, _env_source_label(env), _ENV
+    if env is None:
+        return None
+    raw = os.environ.get(env)
+    if raw is not None and (raw.strip() or name in _BLANK_MEANS_SET):
+        return raw, _env_source_label(env), _ENV
+    return None
 
-    # One load serves both file tiers. Reading the file twice -- once for the
-    # adapter table, once for the top level -- cost a second stat on every
-    # adapter-scoped resolution, and the common case (no table for this
-    # adapter) is the one that paid it.
+
+def _resolve_from_file(name: str, scoped: str | None) -> tuple[str | None, str, str]:
+    """Fall through to the configuration file, then the built-in default.
+
+    One load serves both file tiers. Reading the file twice -- once for the
+    adapter table, once for the top level -- cost a second stat on every
+    adapter-scoped resolution, and the common case (no table for this adapter)
+    is the one that paid it.
+    """
     path, parsed = _current_file()
 
     if scoped is not None:
