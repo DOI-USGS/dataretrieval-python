@@ -400,37 +400,59 @@ def _show_adapter_overrides(
     against, so it is skipped here and named by
     :func:`_show_unimported_adapters` instead.
     """
+    overrides = _collect_adapter_overrides(cell, package_wide)
+    if not overrides:
+        return
+    print("\nadapter overrides", file=out)
+    a_width = max(len(a) for a, _n, _v, _s in overrides)
+    n_width = max(len(n) for _a, n, _v, _s in overrides)
+    v_width = max(len(v) for _a, _n, v, _s in overrides)
+    for adapter, name, value, source in overrides:
+        print(
+            f"  {adapter:<{a_width}}  {name:<{n_width}}  {value:<{v_width}}  {source}",
+            file=out,
+        )
+
+
+def _collect_adapter_overrides(
+    cell: Callable[[Callable[[], object]], str],
+    package_wide: Mapping[str, str],
+) -> list[tuple[str, str, str, str]]:
+    """Gather adapter-scoped settings that differ from the package-wide rows.
+
+    Separated from :func:`_show_adapter_overrides` so the collection logic --
+    which carries the nesting -- is not interleaved with the formatting logic.
+    """
     overrides: list[tuple[str, str, str, str]] = []
     for adapter in ADAPTERS:
         accepted = settings_for(adapter)
         if accepted is None:
             continue
-        for name in _ALL_SETTINGS:
-            if name not in accepted:
-                continue
-            scoped = cell(partial(_source_label, name, adapter))
-            # ``package_wide`` is what the rows above already resolved. Asking
-            # again would repeat the work once per adapter *and* consume the
-            # shared error-dedupe state, so a broken config's message could be
-            # collapsed here before the row that needs it prints. An
-            # adapter-only setting has no row above, and no package-wide value
-            # it could inherit, so its baseline is the built-in default.
-            if scoped == package_wide.get(name, _BUILT_IN):
-                continue  # inherited from the package-wide tier
-            value = cell(partial(_DISPLAYS[name], adapter))
-            overrides.append((adapter, name, value, scoped))
+        _collect_overrides_for_adapter(adapter, accepted, cell, package_wide, overrides)
+    return overrides
 
-    if overrides:
-        print("\nadapter overrides", file=out)
-        a_width = max(len(a) for a, _n, _v, _s in overrides)
-        n_width = max(len(n) for _a, n, _v, _s in overrides)
-        v_width = max(len(v) for _a, _n, v, _s in overrides)
-        for adapter, name, value, source in overrides:
-            print(
-                f"  {adapter:<{a_width}}  {name:<{n_width}}  "
-                f"{value:<{v_width}}  {source}",
-                file=out,
-            )
+
+def _collect_overrides_for_adapter(
+    adapter: str,
+    accepted: frozenset[str],
+    cell: Callable[[Callable[[], object]], str],
+    package_wide: Mapping[str, str],
+    overrides: list[tuple[str, str, str, str]],
+) -> None:
+    """Append any overridden settings for one adapter to *overrides*.
+
+    ``package_wide`` is what the rows above already resolved. An adapter-only
+    setting has no row above, and no package-wide value it could inherit, so
+    its baseline is the built-in default.
+    """
+    for name in _ALL_SETTINGS:
+        if name not in accepted:
+            continue
+        scoped = cell(partial(_source_label, name, adapter))
+        if scoped == package_wide.get(name, _BUILT_IN):
+            continue  # inherited from the package-wide tier
+        value = cell(partial(_DISPLAYS[name], adapter))
+        overrides.append((adapter, name, value, scoped))
 
 
 def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
