@@ -428,6 +428,36 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     return gdf
 
 
+def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[str, Any]:
+    """Handle ``find='basin'`` for :func:`search`."""
+    if feature_source is None or feature_id is None:
+        raise ValueError("feature_source and feature_id are required to find a basin")
+    return get_basin(feature_source=feature_source, feature_id=feature_id, as_json=True)
+
+
+def _search_flowlines(
+    navigation_mode: str | None,
+    distance: int,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+) -> dict[str, Any]:
+    """Handle ``find='flowlines'`` for :func:`search`."""
+    if navigation_mode is None:
+        raise ValueError(
+            "navigation_mode is required for find='flowlines';"
+            f" allowed values are {_VALID_NAVIGATION_MODES}"
+        )
+    return get_flowlines(
+        navigation_mode=navigation_mode,
+        distance=distance,
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        as_json=True,
+    )
+
+
 def search(
     feature_source: str | None = None,
     feature_id: str | None = None,
@@ -525,29 +555,14 @@ def search(
         return get_features(lat=lat, long=long, as_json=True)
 
     if find == "basin":
-        if feature_source is None or feature_id is None:
-            raise ValueError(
-                "feature_source and feature_id are required to find a basin"
-            )
-        return get_basin(
-            feature_source=feature_source, feature_id=feature_id, as_json=True
-        )
+        return _search_basin(feature_source, feature_id)
 
     if find == "flowlines":
-        if navigation_mode is None:
-            raise ValueError(
-                "navigation_mode is required for find='flowlines';"
-                f" allowed values are {_VALID_NAVIGATION_MODES}"
-            )
-        return get_flowlines(
-            navigation_mode=navigation_mode,
-            distance=distance,
-            feature_source=feature_source,
-            feature_id=feature_id,
-            comid=comid,
-            as_json=True,
+        return _search_flowlines(
+            navigation_mode, distance, feature_source, feature_id, comid
         )
-    # here find == 'features'
+
+    # find == 'features'
     return get_features(
         data_source=data_source,
         navigation_mode=navigation_mode,
