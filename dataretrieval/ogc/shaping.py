@@ -255,31 +255,26 @@ def _arrange_cols(
     # Rename id column to output_id
     df = df.rename(columns={"id": output_id})
 
-    if properties and not all(pd.isna(properties)):
-        # Don't alias the caller's list — we mutate below.
-        local_properties = list(properties)
-        if "geometry" in df.columns and "geometry" not in local_properties:
-            local_properties.append("geometry")
-        # 'id' is a valid collection column, but expose it under the
-        # collection-specific output_id name instead.
-        if "id" in local_properties:
-            local_properties[local_properties.index("id")] = output_id
-        df = df.loc[:, [col for col in local_properties if col in df.columns]]
+    # --- No explicit properties: move meaningless extra-id cols to end ---
+    if not properties or all(pd.isna(properties)):
+        extra_id_col = set(df.columns).intersection(extra_id_cols)
+        if extra_id_col:
+            id_col_order = [
+                col for col in df.columns if col not in extra_id_col
+            ] + list(extra_id_col)
+            df = df.loc[:, id_col_order]
+        return df
 
-    # Move meaningless-to-user, extra id columns to the end
-    # of the dataframe, if they exist
-    extra_id_col = set(df.columns).intersection(extra_id_cols)
-
-    # If the arbitrary id column is returned (either due to properties
-    # being none or NaN), then move it to the end of the dataframe, but
-    # if part of properties, keep in requested order
-    if extra_id_col and (properties is None or all(pd.isna(properties))):
-        id_col_order = [col for col in df.columns if col not in extra_id_col] + list(
-            extra_id_col
-        )
-        df = df.loc[:, id_col_order]
-
-    return df
+    # --- Explicit properties: select and reorder columns per the list ---
+    # Don't alias the caller's list — we mutate below.
+    local_properties = list(properties)
+    if "geometry" in df.columns and "geometry" not in local_properties:
+        local_properties.append("geometry")
+    # 'id' is a valid collection column, but expose it under the
+    # collection-specific output_id name instead.
+    if "id" in local_properties:
+        local_properties[local_properties.index("id")] = output_id
+    return df.loc[:, [col for col in local_properties if col in df.columns]]
 
 
 def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
