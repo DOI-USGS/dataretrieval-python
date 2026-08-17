@@ -1113,16 +1113,9 @@ def _adapter_file_settings(
 def _load_file(path: Path) -> _ParsedFile:
     """Parse the configuration file at *path*, caching until it changes on disk."""
     global _file_cache
-    try:
-        st = path.stat()
-    except FileNotFoundError:
-        # No file is the normal case: continue to the built-in default. One
-        # shared empty instance rather than a fresh one per read -- nothing
-        # mutates a ``_ParsedFile``, and returning the same object each time is
-        # what lets callers memoize on its identity.
+    st = _stat_config_file(path)
+    if st is None:
         return _NO_FILE
-    except OSError as exc:
-        raise ConfigurationError(f"could not access {path}: {exc}") from exc
 
     if stat.S_ISDIR(st.st_mode):
         raise ConfigurationError(
@@ -1134,62 +1127,71 @@ def _load_file(path: Path) -> _ParsedFile:
     # opened, which is what ``DATARETRIEVAL_CONFIG=/dev/null`` asks for and the
     # only coherent answer for a stream: settings are re-resolved on every
     # request, so a FIFO would hand its contents to the first getter and
-    # nothing to the rest, making the API key vanish mid-run. (It would also
-    # block on open until a writer appeared.)
+    # nothing to the rest, making the API key vanish mid-run.
     if not stat.S_ISREG(st.st_mode):
         return _ParsedFile(exists=True)
 
-    # POSIX ``st_ctime_ns`` advances on any inode change, so the metadata stamp
-    # catches even a rewrite that restores the original mtime (``cp -p``, rsync
-    # ``--times``, an editor that preserves timestamps). Windows ctime is
-    # *creation* time, so there the stamp cannot see that class of edit and the
-    # content compare below is the only correct check -- worth the re-read,
-    # since serving a stale API key is the alternative.
-    #
-    # Dropping this gate (or dropping ctime from the stamp so Windows can use
-    # it) has been proposed repeatedly on the grounds that the re-read is
-    # wasteful. It is, but it is also the only thing standing between a
-    # timestamp-preserving write and a stale credential; a ctime-less stamp is
-    # identical across exactly that edit. ``test_file_edit_is_picked_up``
-    # pins the behavior. Please do not "optimize" it without a Windows-safe
-    # change detector.
-    #
-    # Measured, so the next reviewer does not have to re-derive it: forcing the
-    # Windows branch costs 27 us per settings read against 5 us with the stamp
-    # (5 syscalls instead of 1; a 64-byte file and a 6.5 kB one measure the
-    # same, since the content compare still spares the TOML parse). At the 8
-    # reads a one-chunk query performs that is ~175 us against a 100-500 ms
-    # round trip -- 0.04%, and the alternative is serving a stale key.
+    if _file_cache_valid_by_metadata(path, st):
+        return _file_cache[3]  # type: ignore[index]
+
+    content, opened_st = _read_file_content(path)
+    parsed = _parse_or_reuse_cache(path, content)
+    _warn_on_loose_permissions(path, opened_st, parsed)
+    _file_cache = (path, _file_stamp(opened_st), content, parsed)
+    return parsed
+
+
+def _stat_config_file(path: Path) -> os.stat_result | None:
+    """Stat the config file, returning ``None`` if it does not exist."""
+    try:
+        return path.stat()
+    except FileNotFoundError:
+        return None
+    except OSError as exc:
+        raise ConfigurationError(f"could not access {path}: {exc}") from exc
+
+
+def _file_cache_valid_by_metadata(path: Path, st: os.stat_result) -> bool:
+    """Check whether the metadata-based cache is still valid.
+
+    POSIX ``st_ctime_ns`` advances on any inode change, so the metadata stamp
+    catches even a rewrite that restores the original mtime. Windows ctime is
+    *creation* time, so there the stamp cannot see that class of edit and the
+    content compare in :func:`_parse_or_reuse_cache` is the only correct check.
+    """
     cached = _file_cache
-    if (
+    return (
         os.name != "nt"
         and cached is not None
         and cached[0] is path
         and cached[1] == _file_stamp(st)
-    ):
-        return cached[3]
+    )
 
+
+def _read_file_content(path: Path) -> tuple[bytes, os.stat_result]:
+    """Read the file content and return it with the stat of the opened handle."""
     try:
         with path.open("rb") as handle:
             content = handle.read()
             opened_st = os.fstat(handle.fileno())
     except OSError as exc:
         raise ConfigurationError(f"could not read {path}: {exc}") from exc
+    return content, opened_st
 
+
+def _parse_or_reuse_cache(path: Path, content: bytes) -> _ParsedFile:
+    """Parse the TOML content, reusing the cache if content is unchanged."""
+    cached = _file_cache
     if cached is not None and cached[0] is path and cached[2] == content:
-        parsed = cached[3]
-    else:
-        tomllib = _toml_parser()
-        try:
-            data = tomllib.loads(content.decode("utf-8"))
-        except UnicodeDecodeError as exc:
-            raise ConfigurationError(f"{path} is not valid UTF-8: {exc}") from exc
-        except tomllib.TOMLDecodeError as exc:
-            raise ConfigurationError(f"{path} is not valid TOML: {exc}") from exc
-        parsed = _interpret(data, path)
-    _warn_on_loose_permissions(path, opened_st, parsed)
-    _file_cache = (path, _file_stamp(opened_st), content, parsed)
-    return parsed
+        return cached[3]
+    tomllib = _toml_parser()
+    try:
+        data = tomllib.loads(content.decode("utf-8"))
+    except UnicodeDecodeError as exc:
+        raise ConfigurationError(f"{path} is not valid UTF-8: {exc}") from exc
+    except tomllib.TOMLDecodeError as exc:
+        raise ConfigurationError(f"{path} is not valid TOML: {exc}") from exc
+    return _interpret(data, path)
 
 
 def _file_stamp(st: os.stat_result) -> _FileStamp:
