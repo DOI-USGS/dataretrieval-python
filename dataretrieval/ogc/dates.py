@@ -76,6 +76,27 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
     return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _coerce_to_list(
+    datetime_input: str | Sequence[str | None] | None,
+) -> list[str | None]:
+    """Normalize datetime input to a list, raising on invalid shapes."""
+    if datetime_input is None:
+        return [None]
+    if isinstance(datetime_input, str):
+        return [datetime_input]
+    if isinstance(datetime_input, Mapping):
+        raise TypeError(
+            f"date input must be a string or sequence of strings, "
+            f"not {type(datetime_input).__name__}."
+        )
+    return list(datetime_input)
+
+
+def _is_passthrough(single: str) -> bool:
+    """True when a single-element input should be returned as-is."""
+    return bool(_DURATION_RE.match(single) or "/" in single)
+
+
 def _format_api_dates(
     datetime_input: str | Sequence[str | None] | None, date: bool = False
 ) -> str | None:
@@ -128,37 +149,21 @@ def _format_api_dates(
     if datetime_input is None:
         return None
 
-    # Convert single string to list for uniform processing
-    if isinstance(datetime_input, str):
-        datetime_input = [datetime_input]
-    elif isinstance(datetime_input, Mapping):
-        # `list(mapping)` returns keys, which silently accepts the wrong shape.
-        raise TypeError(
-            f"date input must be a string or sequence of strings, "
-            f"not {type(datetime_input).__name__}."
-        )
-    elif not isinstance(datetime_input, (list, tuple)):
-        # Materialize any other iterable (pandas.Series, numpy.ndarray,
-        # generator, ...) so the len()/subscript operations below work.
-        datetime_input = list(datetime_input)
+    items = _coerce_to_list(datetime_input)
 
-    # Check for null or all NA and return None
-    if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
+    if all(pd.isna(dt) or dt == "" or dt is None for dt in items):
         return None
 
-    if len(datetime_input) > 2:
+    if len(items) > 2:
         raise ValueError("datetime_input should only include 1-2 values")
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
-    # strings untouched.
-    if len(datetime_input) == 1 and isinstance(datetime_input[0], str):
-        single = datetime_input[0]
-        if _DURATION_RE.match(single) or "/" in single:
-            return single
+    if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
+        return items[0]
 
     # Format each element; any element that fails to parse invalidates the range.
     formatted: list[str] = []
-    for dt in datetime_input:
+    for dt in items:
         one = _format_one(dt, date=date)
         if one is None:
             return None
