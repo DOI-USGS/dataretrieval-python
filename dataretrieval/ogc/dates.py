@@ -97,6 +97,11 @@ def _is_passthrough(single: str) -> bool:
     return bool(_DURATION_RE.match(single) or "/" in single)
 
 
+def _all_blank(items: list[str | None]) -> bool:
+    """True when every element is None, NaN, or the empty string."""
+    return all(pd.isna(dt) or dt == "" or dt is None for dt in items)
+
+
 def _format_api_dates(
     datetime_input: str | Sequence[str | None] | None, date: bool = False
 ) -> str | None:
@@ -151,7 +156,7 @@ def _format_api_dates(
 
     items = _coerce_to_list(datetime_input)
 
-    if all(pd.isna(dt) or dt == "" or dt is None for dt in items):
+    if _all_blank(items):
         return None
 
     if len(items) > 2:
