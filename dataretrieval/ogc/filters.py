@@ -136,6 +136,51 @@ def _split_top_level_or(expr: str) -> list[str]:
     return [p for p in parts if p]
 
 
+def _numeric_pitfall_error(field: str, offense: str) -> ValueError:
+    """Build the error for an unquoted numeric comparison."""
+    return ValueError(
+        f"Filter uses an unquoted numeric comparison against {field!r} "
+        f"(``{offense}``). Every queryable on the Water Data API is "
+        f"typed as a string, so the server rejects unquoted numeric "
+        f"literals with HTTP 500; even quoting the literal gives a "
+        f"lexicographic comparison (``value > '10'`` matches "
+        f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
+        f"because the real codes are ``'00060'``-shaped). For a true "
+        f"numeric filter, fetch a wider result and reduce in pandas."
+    )
+
+
+def _check_compare(masked: str) -> None:
+    """Raise on a bare ``field op number`` or ``number op field`` pattern."""
+    compare = _NUMERIC_COMPARE_RE.search(masked)
+    if not compare:
+        return
+    field = compare.group("field1") or compare.group("field2")
+    op = compare.group("op1") or compare.group("op2")
+    num = compare.group("num1") or compare.group("num2")
+    raise _numeric_pitfall_error(field, f"{field} {op} {num}")
+
+
+def _check_in_membership(masked: str) -> None:
+    """Raise on a ``field [NOT] IN (…numeric…)`` pattern."""
+    membership = _IN_NUMERIC_RE.search(masked)
+    if not membership:
+        return
+    field = membership.group("field")
+    op = "NOT IN" if membership.group("negated") else "IN"
+    raise _numeric_pitfall_error(field, f"{field} {op} (…)")
+
+
+def _check_between(masked: str) -> None:
+    """Raise on a ``field [NOT] BETWEEN … AND …`` pattern with numerics."""
+    between = _BETWEEN_NUMERIC_RE.search(masked)
+    if not between:
+        return
+    field = between.group("field")
+    op = "NOT BETWEEN" if between.group("negated") else "BETWEEN"
+    raise _numeric_pitfall_error(field, f"{field} {op} …")
+
+
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     """Raise if the filter pairs a field with an unquoted numeric literal.
 
@@ -156,37 +201,9 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     masked = (
         _QUOTED_STR_RE.sub("''", filter_expr) if "'" in filter_expr else filter_expr
     )
-
-    def fail(field: str, offense: str) -> None:
-        raise ValueError(
-            f"Filter uses an unquoted numeric comparison against {field!r} "
-            f"(``{offense}``). Every queryable on the Water Data API is "
-            f"typed as a string, so the server rejects unquoted numeric "
-            f"literals with HTTP 500; even quoting the literal gives a "
-            f"lexicographic comparison (``value > '10'`` matches "
-            f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
-            f"because the real codes are ``'00060'``-shaped). For a true "
-            f"numeric filter, fetch a wider result and reduce in pandas."
-        )
-
-    compare = _NUMERIC_COMPARE_RE.search(masked)
-    if compare:
-        field = compare.group("field1") or compare.group("field2")
-        op = compare.group("op1") or compare.group("op2")
-        num = compare.group("num1") or compare.group("num2")
-        fail(field, f"{field} {op} {num}")
-
-    membership = _IN_NUMERIC_RE.search(masked)
-    if membership:
-        field = membership.group("field")
-        op = "NOT IN" if membership.group("negated") else "IN"
-        fail(field, f"{field} {op} (…)")
-
-    between = _BETWEEN_NUMERIC_RE.search(masked)
-    if between:
-        field = between.group("field")
-        op = "NOT BETWEEN" if between.group("negated") else "BETWEEN"
-        fail(field, f"{field} {op} …")
+    _check_compare(masked)
+    _check_in_membership(masked)
+    _check_between(masked)
 
 
 def _is_chunkable(filter_expr: Any, filter_lang: Any) -> bool:
