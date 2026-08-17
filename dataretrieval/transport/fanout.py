@@ -525,6 +525,71 @@ class FanOut(Generic[_Chunk]):
                     portal.call(functools.partial(self._run, concurrency)),
                 )
 
+    def _handle_gather_failures(
+        self, results: list[tuple[pd.DataFrame, httpx.Response] | BaseException]
+    ) -> None:
+        """Apply failure-precedence rules to gather results.
+
+        Failure precedence, in order:
+
+        1. Cancellation / interrupt signals (``CancelledError``,
+           ``KeyboardInterrupt``, ``SystemExit`` — non-``Exception``)
+           propagate unmodified; wrapping them as a transient would swallow
+           the user's stop signal.
+        2. A non-transient failure (a real bug — unrecognized by
+           ``wrap_failure``) surfaces raw, so it isn't masked behind a
+           resumable handle for a transient sibling that landed later.
+        3. Only when every failure is a recognized transient do we raise
+           the first as a resumable ``FanOutInterrupted``.
+
+        Raises
+        ------
+        FanOutInterrupted
+            When all failures are recognized transients.
+        BaseException
+            Non-``Exception`` signals or non-transient failures.
+        """
+        failures = [r for r in results if isinstance(r, BaseException)]
+        if not failures:
+            return
+        self._propagate_signals(failures)
+        first_transient = self._find_first_transient(failures)
+        self._raise_transient(first_transient)
+
+    def _propagate_signals(self, failures: list[BaseException]) -> None:
+        """Re-raise non-Exception signals (CancelledError, KeyboardInterrupt)."""
+        for exc in failures:
+            if not isinstance(exc, Exception):
+                raise exc
+
+    def _find_first_transient(self, failures: list[BaseException]) -> BaseException:
+        """Return the first transient failure, raising non-transients immediately.
+
+        Every failure is examined — a non-transient sibling must surface raw
+        — but only the first transient is returned. Asking ``wrap_failure``
+        per failure would snapshot the combined frame N times (a full concat
+        over every completed chunk) and discard all but one, which a batch
+        of chunks failing together makes routine.
+        """
+        first_transient: BaseException | None = None
+        for exc in failures:
+            if _classify_chunk_error(exc) is None:
+                raise self._normalize_failure(exc)
+            if first_transient is None:
+                first_transient = exc
+        # At least one failure exists (caller guarantees non-empty list) and
+        # all passed the transient check, so first_transient is set.
+        assert first_transient is not None  # noqa: S101
+        return first_transient
+
+    def _raise_transient(self, first_transient: BaseException) -> None:
+        """Wrap and raise the first transient failure as a FanOutInterrupted."""
+        interrupted = self.wrap_failure(first_transient)
+        if interrupted is None:
+            # Unreachable: classified as transient by _find_first_transient.
+            raise self._normalize_failure(first_transient)
+        raise interrupted from first_transient
+
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """
         Gather every pending chunk over one shared
@@ -623,44 +688,11 @@ class FanOut(Generic[_Chunk]):
                 # semaphore (held by ``_retry`` per attempt) is the only throttle.
                 # ``return_exceptions`` keeps completed pairs after a sibling
                 # fails, so partial state stays recoverable via :meth:`resume`.
-                # Failure precedence, in order:
-                #   1. Cancellation / interrupt signals (CancelledError,
-                #      KeyboardInterrupt, SystemExit — non-Exception) propagate
-                #      unmodified; wrapping them as a transient would swallow
-                #      the user's stop signal.
-                #   2. A non-transient failure (a real bug — unrecognized by
-                #      ``wrap_failure``) surfaces raw, so it isn't masked behind
-                #      a resumable handle for a transient sibling that landed
-                #      later.
-                #   3. Only when every failure is a recognized transient do we
-                #      raise the first as a resumable ``FanOutInterrupted``.
                 results = await asyncio.gather(
                     *(track(index, item) for index, item in self._pending()),
                     return_exceptions=True,
                 )
-                failures = [r for r in results if isinstance(r, BaseException)]
-                for exc in failures:
-                    if not isinstance(exc, Exception):
-                        raise exc
-                # Classify first, build once. Every failure has to be
-                # examined -- a non-transient sibling must surface raw -- but
-                # only the first transient is ever raised. Asking
-                # ``wrap_failure`` per failure would snapshot the combined
-                # frame N times (a full concat over every completed
-                # chunk) and discard all but one, which a batch of
-                # chunks failing together makes routine.
-                first_transient: BaseException | None = None
-                for exc in failures:
-                    if _classify_chunk_error(exc) is None:
-                        raise self._normalize_failure(exc)
-                    if first_transient is None:
-                        first_transient = exc
-                if first_transient is not None:
-                    interrupted = self.wrap_failure(first_transient)
-                    if interrupted is None:
-                        # Unreachable: classified as transient just above.
-                        raise self._normalize_failure(first_transient)
-                    raise interrupted from first_transient
+                self._handle_gather_failures(results)
 
         return self.finalize(*self._combine_raw())
 
