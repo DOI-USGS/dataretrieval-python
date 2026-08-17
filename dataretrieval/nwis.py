@@ -133,9 +133,8 @@ def _localize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
         # Multi-index: localize the datetime level (level 1)
         if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
             df = df.tz_localize("UTC", level=1)
-    else:
-        if hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
-            df = df.tz_localize("UTC")
+    elif hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
+        df = df.tz_localize("UTC")
     return df
 
 

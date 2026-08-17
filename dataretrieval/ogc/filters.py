@@ -20,6 +20,7 @@ can be union'd.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from typing import Any, Literal
 
 FILTER_LANG = Literal["cql-text", "cql-json"]
@@ -90,23 +91,37 @@ def _resume_after_or(expr: str, i: int) -> int | None:
     return _skip_space(expr, after_word)
 
 
-def _advance_char(ch: str, depth: int, in_quote: str | None) -> tuple[int, str | None]:
-    """Update parser state for a single character (depth and quote tracking).
+def _skip_quoted(expr: str, i: int) -> int:
+    """Index just past the quoted span opening at ``i``.
 
-    Returns the updated ``(depth, in_quote)`` pair without the OR-split logic,
-    keeping the state machine's character handling flat.
+    An unterminated quote swallows the rest of the expression. A doubled
+    ``''`` escape reads as close-then-reopen, which nets to the same state.
     """
-    if in_quote is not None:
-        if ch == in_quote:
-            return depth, None
-        return depth, in_quote
-    if ch in ("'", '"'):
-        return depth, ch
-    if ch == "(":
-        return depth + 1, None
-    if ch == ")":
-        return depth - 1, None
-    return depth, None
+    close = expr.find(expr[i], i + 1)
+    return len(expr) if close == -1 else close + 1
+
+
+def _iter_top_level_spaces(expr: str) -> Iterator[int]:
+    """Yield the indices of whitespace outside quotes and parens.
+
+    Owns the depth/quote state so callers only see split candidates; quoted
+    spans are skipped wholesale.
+    """
+    depth = 0
+    i = 0
+    n = len(expr)
+    while i < n:
+        ch = expr[i]
+        if ch in ("'", '"'):
+            i = _skip_quoted(expr, i)
+            continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif depth == 0 and ch.isspace():
+            yield i
+        i += 1
 
 
 def _split_top_level_or(expr: str) -> list[str]:
@@ -118,20 +133,13 @@ def _split_top_level_or(expr: str) -> list[str]:
     """
     parts: list[str] = []
     last = 0
-    depth = 0
-    in_quote: str | None = None
-    i = 0
-    n = len(expr)
-    while i < n:
-        ch = expr[i]
-        depth, in_quote = _advance_char(ch, depth, in_quote)
-        if in_quote is None and depth == 0 and ch.isspace():
-            resume = _resume_after_or(expr, i + 1)
-            if resume is not None:
-                parts.append(expr[last:i].strip())
-                last = i = resume
-                continue
-        i += 1
+    for i in _iter_top_level_spaces(expr):
+        if i < last:
+            continue  # inside an already-consumed OR separator
+        resume = _resume_after_or(expr, i + 1)
+        if resume is not None:
+            parts.append(expr[last:i].strip())
+            last = resume
     parts.append(expr[last:].strip())
     return [p for p in parts if p]
 

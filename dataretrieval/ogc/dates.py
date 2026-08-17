@@ -59,9 +59,14 @@ def _parse_datetime(value: str) -> datetime | None:
     return None
 
 
+def _is_blank(dt: str | None) -> bool:
+    """True for a None, NaN, or empty-string element."""
+    return dt is None or bool(pd.isna(dt)) or dt == ""
+
+
 def _format_one(dt: str | None, *, date: bool) -> str | None:
     """Format a single datetime element for inclusion in the API time arg."""
-    if pd.isna(dt) or dt == "" or dt is None:
+    if dt is None or _is_blank(dt):
         return ".."
     parsed = _parse_datetime(dt)
     if parsed is None:
@@ -77,11 +82,9 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
 
 
 def _coerce_to_list(
-    datetime_input: str | Sequence[str | None] | None,
+    datetime_input: str | Sequence[str | None],
 ) -> list[str | None]:
     """Normalize datetime input to a list, raising on invalid shapes."""
-    if datetime_input is None:
-        return [None]
     if isinstance(datetime_input, str):
         return [datetime_input]
     if isinstance(datetime_input, Mapping):
@@ -99,7 +102,7 @@ def _is_passthrough(single: str) -> bool:
 
 def _all_blank(items: list[str | None]) -> bool:
     """True when every element is None, NaN, or the empty string."""
-    return all(pd.isna(dt) or dt == "" or dt is None for dt in items)
+    return all(_is_blank(dt) for dt in items)
 
 
 def _format_api_dates(

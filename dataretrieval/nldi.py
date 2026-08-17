@@ -327,8 +327,6 @@ def _navigation_request(
 
 
 def _validate_lat_long_origin(
-    lat: float | None,
-    long: float | None,
     comid: int | None,
     feature_source: str | None,
     feature_id: str | None,
@@ -362,7 +360,7 @@ def _get_features_request(
         raise ValueError("Both lat and long are required")
 
     if lat is not None:
-        _validate_lat_long_origin(lat, long, comid, feature_source, feature_id)
+        _validate_lat_long_origin(comid, feature_source, feature_id)
         return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
     if (comid is not None or data_source is not None) and navigation_mode is None:
@@ -436,6 +434,7 @@ def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[st
 
 
 def _search_flowlines(
+    *,
     navigation_mode: str | None,
     distance: int,
     feature_source: str | None,
@@ -559,7 +558,11 @@ def search(
 
     if find == "flowlines":
         return _search_flowlines(
-            navigation_mode, distance, feature_source, feature_id, comid
+            navigation_mode=navigation_mode,
+            distance=distance,
+            feature_source=feature_source,
+            feature_id=feature_id,
+            comid=comid,
         )
 
     # find == 'features'

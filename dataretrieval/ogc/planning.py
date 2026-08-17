@@ -100,7 +100,7 @@ def _try_build(
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
     ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes`
-    and :meth:`ChunkPlan._probe_initial_request` need exactly this
+    and :class:`ChunkPlan`'s initial-request probe need exactly this
     "build-or-None" step, so it lives here once.
 
     Parameters
@@ -154,6 +154,34 @@ def _safe_request_bytes(
     """
     req = _try_build(build_request, args)
     return _request_bytes(req) if req is not None else url_limit + 1
+
+
+def _check_unchunkable_request(
+    args: dict[str, Any],
+    build_request: Callable[..., httpx.Request],
+    url_limit: int,
+) -> None:
+    """Enforce the byte budget on a request with no chunkable axis.
+
+    Passthrough when the single request fits or when the filter is in a
+    language the chunker doesn't manage (cql-json) — the server, not us,
+    judges that one. Raises
+    :class:`~dataretrieval.exceptions.Unchunkable` when the request is
+    over budget and has nothing to split.
+    """
+    if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
+        return
+    filter_expr = args.get("filter")
+    if filter_expr is not None and not _is_chunkable(
+        filter_expr, args.get("filter_lang")
+    ):
+        return
+    raise Unchunkable(
+        f"Request exceeds {url_limit} bytes (URL + body) and has no "
+        f"chunkable multi-value argument to split (e.g. a single large "
+        f"CQL `IN` clause, or one oversized value). Narrow the query, "
+        f"simplify the filter, or split the call manually."
+    )
 
 
 @dataclass(frozen=True)
@@ -381,14 +409,16 @@ class ChunkPlan:
 
         axes = _extract_axes(args)
         if not axes:
-            self._handle_no_axes(args, build_request, url_limit)
+            _check_unchunkable_request(args, build_request, url_limit)
             return
 
-        initial_request, fits = self._probe_initial_request(
-            args, build_request, url_limit
-        )
+        # When the un-chunked URL builds, preserve it as ``canonical_url`` so
+        # ``BaseMetadata.url`` echoes the user's original query verbatim.
+        initial_request = _try_build(build_request, args)
+        fits = False
         if initial_request is not None:
             self.canonical_url = str(initial_request.url)
+            fits = _request_bytes(initial_request) <= url_limit
 
         if fits and max_chunks <= 1:
             return
@@ -402,49 +432,6 @@ class ChunkPlan:
         if self.canonical_url is None:
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
-
-    def _handle_no_axes(
-        self,
-        args: dict[str, Any],
-        build_request: Callable[..., httpx.Request],
-        url_limit: int,
-    ) -> None:
-        """Handle the case where no chunkable axes exist.
-
-        Passthrough when the single request fits or when the filter is in a
-        language the chunker doesn't manage (cql-json). Raises
-        :class:`~dataretrieval.exceptions.Unchunkable` when the request is
-        over budget and has nothing to split.
-        """
-        if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
-            return
-        filter_expr = args.get("filter")
-        if filter_expr is not None and not _is_chunkable(
-            filter_expr, args.get("filter_lang")
-        ):
-            return
-        raise Unchunkable(
-            f"Request exceeds {url_limit} bytes (URL + body) and has no "
-            f"chunkable multi-value argument to split (e.g. a single large "
-            f"CQL `IN` clause, or one oversized value). Narrow the query, "
-            f"simplify the filter, or split the call manually."
-        )
-
-    @staticmethod
-    def _probe_initial_request(
-        args: dict[str, Any],
-        build_request: Callable[..., httpx.Request],
-        url_limit: int,
-    ) -> tuple[httpx.Request | None, bool]:
-        """Try to construct the un-chunked request and measure it.
-
-        Returns ``(request, fits)`` where ``request`` is ``None`` when
-        construction raised ``httpx.InvalidURL`` (URL > 64 KB).
-        """
-        initial_request = _try_build(build_request, args)
-        if initial_request is None:
-            return None, False
-        return initial_request, _request_bytes(initial_request) <= url_limit
 
     def _plan(
         self,
@@ -490,12 +477,11 @@ class ChunkPlan:
         biggest_idx = -1
         biggest_size = -1
         for axis in self.axes:
-            for idx, chunk in enumerate(self.chunks[axis.arg_key]):
-                if len(chunk) <= 1:
-                    continue
-                size = axis.chunk_bytes(chunk)
-                if size > biggest_size:
-                    biggest_axis, biggest_idx, biggest_size = axis, idx, size
+            idx, size = self._largest_chunk_in(
+                self.chunks[axis.arg_key], key=axis.chunk_bytes
+            )
+            if size > biggest_size:
+                biggest_axis, biggest_idx, biggest_size = axis, idx, size
         return biggest_axis, biggest_idx
 
     def _refine(self, max_chunks: int) -> None:
@@ -540,17 +526,24 @@ class ChunkPlan:
             _split_at(self.chunks[axis.arg_key], idx)
 
     @staticmethod
-    def _largest_chunk_in(axis_chunks: list[list[str]]) -> tuple[int, int]:
-        """Return ``(index, atom_count)`` of the largest splittable chunk.
+    def _largest_chunk_in(
+        axis_chunks: list[list[str]],
+        key: Callable[[list[str]], int] = len,
+    ) -> tuple[int, int]:
+        """Return ``(index, key(chunk))`` of the largest splittable chunk.
 
-        A chunk is splittable when it has more than one atom.  Returns
-        ``(-1, -1)`` when no chunk qualifies.
+        A chunk is splittable when it has more than one atom; *key* ranks the
+        qualifying chunks (atom count by default, URL bytes for the byte
+        pass). Returns ``(-1, -1)`` when no chunk qualifies.
         """
         best_idx = -1
         best_size = -1
         for idx, chunk in enumerate(axis_chunks):
-            if len(chunk) > 1 and len(chunk) > best_size:
-                best_idx, best_size = idx, len(chunk)
+            if len(chunk) <= 1:
+                continue
+            size = key(chunk)
+            if size > best_size:
+                best_idx, best_size = idx, size
         return best_idx, best_size
 
     def _best_refine_candidate(

@@ -243,7 +243,7 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
         _check_is_configuration(configuration)
         _check_no_duplicate_adapter(configuration.adapter, seen)
         seen.add(configuration.adapter)
-        _add_configuration_overrides(configuration, overrides)
+        overrides.update(_configuration_overrides(configuration))
     return overrides
 
 
@@ -268,13 +268,13 @@ def _check_no_duplicate_adapter(adapter: str | None, seen: set[str | None]) -> N
         )
 
 
-def _add_configuration_overrides(
+def _configuration_overrides(
     configuration: BaseConfiguration,
-    overrides: dict[_ScopeKey, tuple[_SettingValue, str]],
-) -> None:
+) -> dict[_ScopeKey, tuple[_SettingValue, str]]:
     """Render one configuration's values into raw-string overrides."""
     adapter = configuration.adapter
     label = configuration._provenance()
+    overrides: dict[_ScopeKey, tuple[_SettingValue, str]] = {}
     for name, value in configuration.values().items():
         key: _ScopeKey = name if adapter is None else (adapter, name)
         raw = (
@@ -283,6 +283,7 @@ def _add_configuration_overrides(
             else _coerce_typed(name, value, configuration._source(name))
         )
         overrides[key] = (raw, label)
+    return overrides
 
 
 def show_configuration(*, stream: TextIO | None = None) -> None:
@@ -357,24 +358,28 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
 class _ErrorDeduplicatingCell:
     """Render a value, deduplicating consecutive configuration errors.
 
-    This function exists to explain a configuration, and the configurations
+    The report exists to explain a configuration, and the configurations
     most in need of explaining are the broken ones -- an unparseable file, a
-    value that fails its grammar, a profile that no longer exists. Each
-    distinct failure is printed once, in the first place it shows up; a repeat
-    is collapsed, so one bad file does not bury the rows that did resolve
-    under ten copies of the same message.
+    value that fails its grammar, a profile that no longer exists. Nothing
+    here raises: each distinct failure is printed once, in the first place
+    it shows up; a repeat is collapsed, so one bad file does not bury the
+    rows that did resolve under ten copies of the same message.
     """
 
     def __init__(self) -> None:
-        self.reported: str | None = None
+        self._reported: str | None = None
+
+    def mark_reported(self, exc: ConfigurationError) -> None:
+        """Record that *exc* was already printed, so a repeat collapses."""
+        self._reported = str(exc)
 
     def __call__(self, render: Callable[[], object]) -> str:
         try:
             value = render()
         except ConfigurationError as exc:
-            if str(exc) == self.reported:
+            if str(exc) == self._reported:
                 return "<unreadable>"
-            self.reported = str(exc)
+            self._reported = str(exc)
             return f"<error: {exc}>"
         return "" if value is None else str(value)
 
@@ -393,7 +398,7 @@ def _show_file_status(
         _, parsed = _current_file()
         status = "found" if path.exists() else "not found"
     except ConfigurationError as exc:
-        cell.reported = str(exc)
+        cell.mark_reported(exc)
         status = f"ERROR: {exc}"
     print(f"config file  {path} ({status})", file=out)
     return parsed
@@ -464,23 +469,23 @@ def _collect_adapter_overrides(
         accepted = settings_for(adapter)
         if accepted is None:
             continue
-        _collect_overrides_for_adapter(adapter, accepted, cell, package_wide, overrides)
+        overrides.extend(_overrides_for_adapter(adapter, accepted, cell, package_wide))
     return overrides
 
 
-def _collect_overrides_for_adapter(
+def _overrides_for_adapter(
     adapter: str,
     accepted: frozenset[str],
     cell: Callable[[Callable[[], object]], str],
     package_wide: Mapping[str, str],
-    overrides: list[tuple[str, str, str, str]],
-) -> None:
-    """Append any overridden settings for one adapter to *overrides*.
+) -> list[tuple[str, str, str, str]]:
+    """The overridden settings for one adapter.
 
     ``package_wide`` is what the rows above already resolved. An adapter-only
     setting has no row above, and no package-wide value it could inherit, so
     its baseline is the built-in default.
     """
+    overrides: list[tuple[str, str, str, str]] = []
     for name in _ALL_SETTINGS:
         if name not in accepted:
             continue
@@ -489,6 +494,7 @@ def _collect_overrides_for_adapter(
             continue  # inherited from the package-wide tier
         value = cell(partial(_DISPLAYS[name], adapter))
         overrides.append((adapter, name, value, scoped))
+    return overrides
 
 
 def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
@@ -727,7 +733,7 @@ def _check_adapter_known(adapter: str | None) -> None:
     through to the package-wide value -- so a ``[waterdata]`` table, or a
     ``WaterdataConfiguration``, would be ignored with nothing raised anywhere.
     """
-    if adapter not in (*ADAPTERS, None):
+    if adapter is not None and adapter not in ADAPTERS:
         raise ConfigurationError(
             f"{adapter!r} is not a configurable adapter. The adapters are "
             f"{', '.join(ADAPTERS)}."
