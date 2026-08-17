@@ -240,31 +240,49 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
     overrides: dict[_ScopeKey, tuple[_SettingValue, str]] = {}
     seen: set[str | None] = set()
     for configuration in configurations:
-        if not isinstance(configuration, BaseConfiguration):
-            raise ConfigurationError(
-                "configure() takes configuration objects, not "
-                f"{type(configuration).__name__}. Package-wide settings go on "
-                "Configuration(...); a setting for one service goes on that "
-                "adapter's configuration, e.g. WaterdataConfiguration(...)."
-            )
-        adapter = configuration.adapter
-        if adapter in seen:
-            where = f"the {adapter} adapter" if adapter else "the package-wide settings"
-            raise ConfigurationError(
-                f"configure() got two configurations for {where}. Precedence "
-                "between them would be undefined, so combine them into one."
-            )
-        seen.add(adapter)
-        label = configuration._provenance()
-        for name, value in configuration.values().items():
-            key: _ScopeKey = name if adapter is None else (adapter, name)
-            raw = (
-                None
-                if value is None
-                else _coerce_typed(name, value, configuration._source(name))
-            )
-            overrides[key] = (raw, label)
+        _check_is_configuration(configuration)
+        _check_no_duplicate_adapter(configuration.adapter, seen)
+        seen.add(configuration.adapter)
+        _add_configuration_overrides(configuration, overrides)
     return overrides
+
+
+def _check_is_configuration(configuration: object) -> None:
+    """Raise if an argument to configure() is not a BaseConfiguration."""
+    if not isinstance(configuration, BaseConfiguration):
+        raise ConfigurationError(
+            "configure() takes configuration objects, not "
+            f"{type(configuration).__name__}. Package-wide settings go on "
+            "Configuration(...); a setting for one service goes on that "
+            "adapter's configuration, e.g. WaterdataConfiguration(...)."
+        )
+
+
+def _check_no_duplicate_adapter(adapter: str | None, seen: set[str | None]) -> None:
+    """Raise if two configurations target the same adapter."""
+    if adapter in seen:
+        where = f"the {adapter} adapter" if adapter else "the package-wide settings"
+        raise ConfigurationError(
+            f"configure() got two configurations for {where}. Precedence "
+            "between them would be undefined, so combine them into one."
+        )
+
+
+def _add_configuration_overrides(
+    configuration: BaseConfiguration,
+    overrides: dict[_ScopeKey, tuple[_SettingValue, str]],
+) -> None:
+    """Render one configuration's values into raw-string overrides."""
+    adapter = configuration.adapter
+    label = configuration._provenance()
+    for name, value in configuration.values().items():
+        key: _ScopeKey = name if adapter is None else (adapter, name)
+        raw = (
+            None
+            if value is None
+            else _coerce_typed(name, value, configuration._source(name))
+        )
+        overrides[key] = (raw, label)
 
 
 def show_configuration(*, stream: TextIO | None = None) -> None:
