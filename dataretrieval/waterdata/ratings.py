@@ -174,18 +174,8 @@ def get_ratings(
     """
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     file_types = _as_list(file_type)
-    invalid = [ft for ft in file_types if ft not in _VALID_FILE_TYPES]
-    if invalid:
-        raise ValueError(
-            f"Invalid file_type {invalid!r}; "
-            f"valid options are {list(_VALID_FILE_TYPES)}."
-        )
-
-    if time is not None and any(_DURATION_RE.match(str(v)) for v in _as_list(time)):
-        raise ValueError(
-            "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
-            "for the rating-curve service. Provide a date or interval instead."
-        )
+    _validate_file_types(file_types)
+    _validate_time_no_duration(time)
     time_str = _format_api_dates(time) if time is not None else None
 
     # Mirror R: pin file_type server-side only when one type is requested.
@@ -197,10 +187,7 @@ def get_ratings(
     if not download_and_parse:
         return features
 
-    requested = set(file_types)
-    matching = [
-        f for f in features if f.get("properties", {}).get("file_type") in requested
-    ]
+    matching = _filter_features_by_type(features, file_types)
 
     if file_path is not None:
         os.makedirs(file_path, exist_ok=True)
@@ -211,6 +198,37 @@ def get_ratings(
 def _as_list(x: str | Iterable[str]) -> list[str]:
     """Normalize a string or iterable-of-strings to a list."""
     return [x] if isinstance(x, str) else list(x)
+
+
+def _validate_file_types(file_types: list[str]) -> None:
+    """Raise ValueError for any unrecognized file type."""
+    invalid = [ft for ft in file_types if ft not in _VALID_FILE_TYPES]
+    if invalid:
+        raise ValueError(
+            f"Invalid file_type {invalid!r}; "
+            f"valid options are {list(_VALID_FILE_TYPES)}."
+        )
+
+
+def _validate_time_no_duration(time: str | list[str] | None) -> None:
+    """Raise ValueError if ``time`` contains an ISO 8601 duration."""
+    if time is None:
+        return
+    if any(_DURATION_RE.match(str(v)) for v in _as_list(time)):
+        raise ValueError(
+            "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
+            "for the rating-curve service. Provide a date or interval instead."
+        )
+
+
+def _filter_features_by_type(
+    features: list[dict[str, Any]], file_types: list[str]
+) -> list[dict[str, Any]]:
+    """Return only features whose file_type matches the requested types."""
+    requested = set(file_types)
+    return [
+        f for f in features if f.get("properties", {}).get("file_type") in requested
+    ]
 
 
 def _build_filter(
