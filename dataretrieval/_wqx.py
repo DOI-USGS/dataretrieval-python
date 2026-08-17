@@ -60,20 +60,17 @@ def _build_triplet_datetime(
     return None
 
 
-def _find_datetime_triplets(
-    df: pd.DataFrame,
-) -> tuple[dict[str, pd.Series], str | None]:
+def _find_datetime_triplets(df: pd.DataFrame) -> dict[str, pd.Series]:
     """Detect Date/Time/TimeZone column triplets and build UTC datetime columns.
 
-    Returns a mapping of new column names to UTC Series, and the name of the
-    first detected ``*Date`` column (for fallback sorting).
+    Returns a mapping of new column names to UTC Series.
     """
     columns = set(df.columns)
     new_columns: dict[str, pd.Series] = {}
-    date_cols = [c for c in df.columns if c.endswith("Date")]
-    first_date_col: str | None = next(iter(date_cols), None)
 
-    for col in date_cols:
+    for col in df.columns:
+        if not col.endswith("Date"):
+            continue
         prefix = col.removesuffix("Date")
         target = prefix + "DateTime"
         if target in columns or target in new_columns:
@@ -82,16 +79,16 @@ def _find_datetime_triplets(
         if utc_series is not None:
             new_columns[target] = utc_series
 
-    return new_columns, first_date_col
+    return new_columns
 
 
-def _resolve_sort_key(df: pd.DataFrame, first_date_col: str | None) -> str | None:
-    """Pick the canonical sort column from the resulting DataFrame."""
+def _resolve_sort_key(df: pd.DataFrame) -> str | None:
+    """Pick the canonical sort column, falling back to the first ``*Date``."""
     if "Activity_StartDateTime" in df.columns:
         return "Activity_StartDateTime"
     if "ActivityStartDateTime" in df.columns:
         return "ActivityStartDateTime"
-    return first_date_col
+    return next((c for c in df.columns if c.endswith("Date")), None)
 
 
 def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -128,14 +125,16 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
         and rows sorted by the activity-start datetime (if any date column
         was detected).
     """
-    new_columns, first_date_col = _find_datetime_triplets(df)
+    new_columns = _find_datetime_triplets(df)
 
     if new_columns:
         # Concat in one shot — per-column assignment on a wide CSV-derived
         # frame triggers pandas' fragmentation PerformanceWarning.
         df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
 
-    sort_key = _resolve_sort_key(df, first_date_col)
+    # The appended columns end in "DateTime", so the first "*Date" column is
+    # the same before and after the concat.
+    sort_key = _resolve_sort_key(df)
     if sort_key is not None:
         df = df.sort_values(by=sort_key, ignore_index=True)
     return df

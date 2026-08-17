@@ -56,15 +56,11 @@ def _empty_feature_frame(
     non-empty pages in the same frame family, so ordinary ``pd.concat`` is
     sufficient. ``columns`` is supplied only when finalization has fetched the
     collection schema; page-level empties intentionally remain schema-light.
-
-    Geometry is always placed last in the column list (after any caller-
-    supplied columns), matching the convention that spatial columns trail
-    attribute columns.
     """
-    # Strip geometry from the caller list; it will be re-appended at the end
-    # only when the request includes geometry, guaranteeing geometry-last order.
-    result_columns = [c for c in (columns or []) if c != "geometry"]
-    if include_geometry:
+    result_columns = list(columns or [])
+    if not include_geometry:
+        result_columns = [name for name in result_columns if name != "geometry"]
+    elif "geometry" not in result_columns:
         result_columns.append("geometry")
 
     data = {name: pd.Series(dtype=object) for name in result_columns}

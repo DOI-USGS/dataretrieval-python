@@ -67,7 +67,7 @@ def _handle_nesting(
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
-    features = _extract_features(body, geopd)
+    features = _extract_features(body)
     if features is None:
         return _empty_feature_frame(geopd)
 
@@ -92,18 +92,17 @@ def _handle_nesting(
     return df.merge(dat, on="monitoring_location_id", how="left")
 
 
-def _extract_features(
-    body: dict[str, Any] | None, geopd: bool
-) -> list[dict[str, Any]] | None:
+def _extract_features(body: dict[str, Any] | None) -> list[dict[str, Any]] | None:
     """Return the features list from a response body, or None for empty/missing.
 
-    Returns ``None`` when the body or features list is empty/falsy, signalling
-    the caller to return an empty frame.
+    ``None`` signals the caller to return an empty frame. An empty (or
+    missing) features list — a real mid-pagination shape — would otherwise
+    crash the downstream merge with ``KeyError: 'monitoring_location_id'``
+    because neither frame would carry the merge key.
     """
     if body is None:
         return None
-    features = body.get("features") or []
-    return features if features else None
+    return body.get("features") or None
 
 
 def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFrame:

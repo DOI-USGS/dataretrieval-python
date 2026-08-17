@@ -542,6 +542,11 @@ class FanOut(Generic[_Chunk]):
         3. Only when every failure is a recognized transient do we raise
            the first as a resumable ``FanOutInterrupted``.
 
+        ``wrap_failure`` is asked only for the one failure that is raised.
+        Asking it per failure would snapshot the combined frame N times (a
+        full concat over every completed chunk) and discard all but one,
+        which a batch of chunks failing together makes routine.
+
         Raises
         ------
         FanOutInterrupted
@@ -550,43 +555,18 @@ class FanOut(Generic[_Chunk]):
             Non-``Exception`` signals or non-transient failures.
         """
         failures = [r for r in results if isinstance(r, BaseException)]
-        if not failures:
-            return
-        self._propagate_signals(failures)
-        first_transient = self._find_first_transient(failures)
-        self._raise_transient(first_transient)
-
-    def _propagate_signals(self, failures: list[BaseException]) -> None:
-        """Re-raise non-Exception signals (CancelledError, KeyboardInterrupt)."""
         for exc in failures:
             if not isinstance(exc, Exception):
                 raise exc
-
-    def _find_first_transient(self, failures: list[BaseException]) -> BaseException:
-        """Return the first transient failure, raising non-transients immediately.
-
-        Every failure is examined — a non-transient sibling must surface raw
-        — but only the first transient is returned. Asking ``wrap_failure``
-        per failure would snapshot the combined frame N times (a full concat
-        over every completed chunk) and discard all but one, which a batch
-        of chunks failing together makes routine.
-        """
-        first_transient: BaseException | None = None
         for exc in failures:
             if _classify_chunk_error(exc) is None:
                 raise self._normalize_failure(exc)
-            if first_transient is None:
-                first_transient = exc
-        # At least one failure exists (caller guarantees non-empty list) and
-        # all passed the transient check, so first_transient is set.
-        assert first_transient is not None  # noqa: S101
-        return first_transient
-
-    def _raise_transient(self, first_transient: BaseException) -> None:
-        """Wrap and raise the first transient failure as a FanOutInterrupted."""
+        if not failures:
+            return
+        first_transient = failures[0]
         interrupted = self.wrap_failure(first_transient)
         if interrupted is None:
-            # Unreachable: classified as transient by _find_first_transient.
+            # Unreachable: classified as transient just above.
             raise self._normalize_failure(first_transient)
         raise interrupted from first_transient
 

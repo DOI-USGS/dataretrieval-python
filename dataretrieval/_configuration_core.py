@@ -1131,8 +1131,9 @@ def _load_file(path: Path) -> _ParsedFile:
     if not stat.S_ISREG(st.st_mode):
         return _ParsedFile(exists=True)
 
-    if _file_cache_valid_by_metadata(path, st):
-        return _file_cache[3]  # type: ignore[index]
+    cached_parse = _cached_parse_by_metadata(path, st)
+    if cached_parse is not None:
+        return cached_parse
 
     content, opened_st = _read_file_content(path)
     parsed = _parse_or_reuse_cache(path, content)
@@ -1151,21 +1152,26 @@ def _stat_config_file(path: Path) -> os.stat_result | None:
         raise ConfigurationError(f"could not access {path}: {exc}") from exc
 
 
-def _file_cache_valid_by_metadata(path: Path, st: os.stat_result) -> bool:
-    """Check whether the metadata-based cache is still valid.
+def _cached_parse_by_metadata(path: Path, st: os.stat_result) -> _ParsedFile | None:
+    """The cached parse when the metadata stamp still matches, else ``None``.
 
     POSIX ``st_ctime_ns`` advances on any inode change, so the metadata stamp
     catches even a rewrite that restores the original mtime. Windows ctime is
     *creation* time, so there the stamp cannot see that class of edit and the
-    content compare in :func:`_parse_or_reuse_cache` is the only correct check.
+    content compare in :func:`_parse_or_reuse_cache` is the only correct check
+    -- the re-read it forces is deliberate, and ``test_file_edit_is_picked_up``
+    pins it. Do not drop the ctime gate (or extend the stamp to Windows)
+    without a Windows-safe change detector.
     """
     cached = _file_cache
-    return (
+    if (
         os.name != "nt"
         and cached is not None
         and cached[0] is path
         and cached[1] == _file_stamp(st)
-    )
+    ):
+        return cached[3]
+    return None
 
 
 def _read_file_content(path: Path) -> tuple[bytes, os.stat_result]:
