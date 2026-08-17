@@ -727,7 +727,7 @@ def _check_adapter_known(adapter: str | None) -> None:
     through to the package-wide value -- so a ``[waterdata]`` table, or a
     ``WaterdataConfiguration``, would be ignored with nothing raised anywhere.
     """
-    if adapter is not None and adapter not in ADAPTERS:
+    if adapter not in (*ADAPTERS, None):
         raise ConfigurationError(
             f"{adapter!r} is not a configurable adapter. The adapters are "
             f"{', '.join(ADAPTERS)}."
