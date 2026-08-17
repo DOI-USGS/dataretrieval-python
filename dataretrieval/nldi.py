@@ -326,6 +326,25 @@ def _navigation_request(
     return url, {"distance": str(distance)}
 
 
+def _validate_lat_long_origin(
+    lat: float | None,
+    long: float | None,
+    comid: int | None,
+    feature_source: str | None,
+    feature_id: str | None,
+) -> None:
+    """Raise if lat/long is combined with another origin type."""
+    if comid is not None:
+        raise ValueError(
+            "Provide only one origin type - comid cannot be provided with lat or long"
+        )
+    if feature_source is not None or feature_id is not None:
+        raise ValueError(
+            "Provide only one origin type - feature_source and feature_id cannot"
+            " be provided with lat or long"
+        )
+
+
 def _get_features_request(
     *,
     data_source: str | None,
@@ -343,16 +362,7 @@ def _get_features_request(
         raise ValueError("Both lat and long are required")
 
     if lat is not None:
-        if comid is not None:
-            raise ValueError(
-                "Provide only one origin type - comid cannot be provided"
-                " with lat or long"
-            )
-        if feature_source is not None or feature_id is not None:
-            raise ValueError(
-                "Provide only one origin type - feature_source and feature_id cannot"
-                " be provided with lat or long"
-            )
+        _validate_lat_long_origin(lat, long, comid, feature_source, feature_id)
         return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
     if (comid is not None or data_source is not None) and navigation_mode is None:
