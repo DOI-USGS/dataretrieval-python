@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Protocol, cast, get_args
 
 import httpx
@@ -43,30 +44,36 @@ class _MutableInterruption(Protocol):
     call: _ResumableCall | None
 
 
+@dataclass(frozen=True, slots=True)
+class _NearestSelector:
+    """Immutable policy for selecting nearest rows from continuous data."""
+
+    targets: pd.DatetimeIndex
+    window: pd.Timedelta
+    on_tie: OnTie
+
+    def select(self, frame: pd.DataFrame) -> pd.DataFrame:
+        """Apply the public nearest-per-target shape to continuous rows."""
+        return _select_nearest_rows(frame, self.targets, self.window, self.on_tie)
+
+    def select_partial(self, frame: pd.DataFrame) -> pd.DataFrame:
+        """Select partial rows, including the no-completed-chunks shape."""
+        if frame.empty and "time" not in frame.columns:
+            return _empty_nearest_result(frame)
+        return self.select(frame)
+
+
 class _NearestCall:
     """Preserve nearest-result semantics around an interrupted inner call."""
 
-    def __init__(
-        self,
-        inner: _ResumableCall,
-        targets: pd.DatetimeIndex,
-        window_td: pd.Timedelta,
-        on_tie: OnTie,
-    ) -> None:
+    def __init__(self, inner: _ResumableCall, selector: _NearestSelector) -> None:
         self._inner = inner
-        self._targets = targets
-        self._window_td = window_td
-        self._on_tie = on_tie
+        self._selector = selector
 
     @property
     def partial_frame(self) -> pd.DataFrame:
         """Return the live partial rows in the outer getter's shape."""
-        return _select_nearest_partial(
-            self._inner.partial_frame,
-            self._targets,
-            self._window_td,
-            self._on_tie,
-        )
+        return self._selector.select_partial(self._inner.partial_frame)
 
     @property
     def partial_response(self) -> httpx.Response | None:
@@ -78,40 +85,19 @@ class _NearestCall:
         try:
             frame, metadata = self._inner.resume()
         except FanOutInterrupted as exc:
-            _shape_interruption(exc, self._targets, self._window_td, self._on_tie)
+            _shape_interruption(exc, self._selector)
             raise
-        return (
-            _select_nearest_rows(frame, self._targets, self._window_td, self._on_tie),
-            metadata,
-        )
+        return self._selector.select(frame), metadata
 
 
 def _shape_interruption(
     exc: FanOutInterrupted,
-    targets: pd.DatetimeIndex,
-    window_td: pd.Timedelta,
-    on_tie: OnTie,
+    selector: _NearestSelector,
 ) -> None:
     """Decorate one inner interruption with the outer getter's semantics."""
-    exc.partial_frame = _select_nearest_partial(
-        exc.partial_frame, targets, window_td, on_tie
-    )
+    exc.partial_frame = selector.select_partial(exc.partial_frame)
     if exc.call is not None:
-        cast("_MutableInterruption", exc).call = _NearestCall(
-            exc.call, targets, window_td, on_tie
-        )
-
-
-def _select_nearest_partial(
-    frame: pd.DataFrame,
-    targets: pd.DatetimeIndex,
-    window_td: pd.Timedelta,
-    on_tie: OnTie,
-) -> pd.DataFrame:
-    """Select partial rows, including the no-completed-chunks empty shape."""
-    if frame.empty and "time" not in frame.columns:
-        return _empty_nearest_result(frame)
-    return _select_nearest_rows(frame, targets, window_td, on_tie)
+        cast("_MutableInterruption", exc).call = _NearestCall(exc.call, selector)
 
 
 def get_nearest_continuous(
@@ -249,6 +235,7 @@ def get_nearest_continuous(
     if len(target_index) == 0:
         raise ValueError("targets must contain at least one timestamp")
 
+    selector = _NearestSelector(target_index, window_td, on_tie)
     filter_expr = _build_window_or_filter(target_index, window_td)
     try:
         df, md = get_continuous(
@@ -259,9 +246,9 @@ def get_nearest_continuous(
             **kwargs,
         )
     except FanOutInterrupted as exc:
-        _shape_interruption(exc, target_index, window_td, on_tie)
+        _shape_interruption(exc, selector)
         raise
-    return _select_nearest_rows(df, target_index, window_td, on_tie), md
+    return selector.select(df), md
 
 
 def _select_nearest_rows(
