@@ -47,7 +47,7 @@ include = ["dataretrieval*"]
 dataretrieval = ["py.typed"]
 
 [tool.complexipy]
-max-complexity-allowed = 25
+max-complexity-allowed = 10
 failed = true
 
 [project.optional-dependencies]
