@@ -1005,6 +1005,73 @@ def get_record(
         raise TypeError(f"{service} service not yet implemented")
 
 
+def _site_block_boundaries(site_list: list[str]) -> list[int]:
+    """Return indices where the site number changes, bookended by 0 and len.
+
+    For example, given ``['A', 'A', 'B']`` returns ``[0, 2, 3]``.
+    """
+    boundaries = [0]
+    boundaries.extend(
+        i + 1
+        for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:], strict=False))
+        if a != b
+    )
+    boundaries.append(len(site_list))
+    return boundaries
+
+
+def _build_column_name(param_cd: str, method: str, option: str | None) -> str:
+    """Derive the DataFrame column name for a parameter record."""
+    col_name = param_cd
+    if method:
+        col_name = f"{col_name}_{method.strip('[]()').lower()}"
+    if option:
+        col_name = f"{col_name}_{option}"
+    return col_name
+
+
+def _parse_parameter_record(
+    record_json: list[dict[str, Any]], col_name: str
+) -> pd.DataFrame:
+    """Parse a single parameter's value list into a renamed DataFrame."""
+    record_df = pd.DataFrame(record_json)
+    record_df["value"] = pd.to_numeric(record_df["value"], errors="coerce")
+    record_df["qualifiers"] = (
+        record_df["qualifiers"].astype(str).str.strip("[]").str.replace("'", "")
+    )
+    record_df.rename(
+        columns={
+            "value": col_name,
+            "dateTime": "datetime",
+            "qualifiers": col_name + "_cd",
+        },
+        inplace=True,
+    )
+    return record_df
+
+
+def _parse_site_block(site_block: list[dict[str, Any]]) -> pd.DataFrame:
+    """Parse all timeseries in one site's block into a single DataFrame."""
+    site_no = site_block[0]["sourceInfo"]["siteCode"][0]["value"]
+    site_df = pd.DataFrame(columns=["datetime"])
+
+    for timeseries in site_block:
+        param_cd = timeseries["variable"]["variableCode"][0]["value"]
+        option = timeseries["variable"]["options"]["option"][0].get("value")
+
+        for parameter in timeseries["values"]:
+            method = parameter["method"][0]["methodDescription"]
+            col_name = _build_column_name(param_cd, method, option)
+            record_json = parameter["value"]
+            if not record_json:
+                continue
+            record_df = _parse_parameter_record(record_json, col_name)
+            site_df = site_df.merge(record_df, how="outer", on="datetime")
+
+    site_df["site_no"] = site_no
+    return site_df
+
+
 def _read_json(json: dict[str, Any]) -> pd.DataFrame:
     """Read a NWIS Water Services formatted JSON into a ``pandas.DataFrame``.
 
@@ -1019,77 +1086,16 @@ def _read_json(json: dict[str, Any]) -> pd.DataFrame:
         Time series data from the NWIS JSON.
 
     """
+    time_series = json["value"]["timeSeries"]
+    site_list = [ts["sourceInfo"]["siteCode"][0]["value"] for ts in time_series]
+    boundaries = _site_block_boundaries(site_list)
+
     all_site_dfs = []
-
-    site_list = [
-        ts["sourceInfo"]["siteCode"][0]["value"] for ts in json["value"]["timeSeries"]
-    ]
-
-    # create a list of indexes for each change in site no
-    # for example, [0, 21, 22] would be the first and last indices
-    index_list = [0]
-    index_list.extend(
-        [
-            i + 1
-            for i, (a, b) in enumerate(zip(site_list[:-1], site_list[1:], strict=False))
-            if a != b
-        ]
-    )
-    index_list.append(len(site_list))
-
-    for start, end in zip(index_list[:-1], index_list[1:], strict=False):
-        # grab a block containing timeseries 0:21,
-        # which are all from the same site
-        site_block = json["value"]["timeSeries"][start:end]
+    for start, end in zip(boundaries[:-1], boundaries[1:], strict=False):
+        site_block = time_series[start:end]
         if not site_block:
             continue
-
-        site_no = site_block[0]["sourceInfo"]["siteCode"][0]["value"]
-        site_df = pd.DataFrame(columns=["datetime"])
-
-        for timeseries in site_block:
-            param_cd = timeseries["variable"]["variableCode"][0]["value"]
-            # check whether min, max, mean record XXX
-            option = timeseries["variable"]["options"]["option"][0].get("value")
-
-            for parameter in timeseries["values"]:
-                col_name = param_cd
-                method = parameter["method"][0]["methodDescription"]
-
-                if method:
-                    method = method.strip("[]()").lower()
-                    col_name = f"{col_name}_{method}"
-
-                if option:
-                    col_name = f"{col_name}_{option}"
-
-                record_json = parameter["value"]
-
-                if not record_json:
-                    continue
-
-                record_df = pd.DataFrame(record_json)
-                record_df["value"] = pd.to_numeric(record_df["value"], errors="coerce")
-                record_df["qualifiers"] = (
-                    record_df["qualifiers"]
-                    .astype(str)
-                    .str.strip("[]")
-                    .str.replace("'", "")
-                )
-
-                record_df.rename(
-                    columns={
-                        "value": col_name,
-                        "dateTime": "datetime",
-                        "qualifiers": col_name + "_cd",
-                    },
-                    inplace=True,
-                )
-
-                site_df = site_df.merge(record_df, how="outer", on="datetime")
-
-        site_df["site_no"] = site_no
-        all_site_dfs.append(site_df)
+        all_site_dfs.append(_parse_site_block(site_block))
 
     if not all_site_dfs:
         return pd.DataFrame(columns=["site_no", "datetime"])
