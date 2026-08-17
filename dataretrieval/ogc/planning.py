@@ -494,33 +494,50 @@ class ChunkPlan:
             total = self.total
             if total >= max_chunks:
                 return
-            # Largest splittable chunk among the axes whose split still fits the
-            # cap. Splitting any chunk of an axis with ``k`` chunks turns that
-            # ``k`` into ``k+1``, so it adds ``total // k`` chunks (the
-            # product of the other axes) regardless of which chunk. Hence the
-            # budget test is per axis, not per chunk. Skipping an over-budget
-            # axis makes ``max_chunks`` a true ceiling. The ranking key is atom
-            # count (``len``), not URL bytes like ``_plan`` — this pass balances
-            # work across chunks rather than fitting a byte budget. A
-            # chunk of size 1 can't be split further. Stable input order breaks
-            # ties by axis order, then lowest index within an axis.
-            candidate: tuple[_Axis, int] | None = None
-            candidate_size = -1
-            for axis in self.axes:
-                axis_chunks = self.chunks[axis.arg_key]
-                if total + total // len(axis_chunks) > max_chunks:
-                    continue  # any split of this axis would overshoot the cap
-                for idx, chunk in enumerate(axis_chunks):
-                    if len(chunk) <= 1:
-                        continue
-                    if len(chunk) > candidate_size:
-                        candidate, candidate_size = (axis, idx), len(chunk)
+            candidate = self._best_refine_candidate(total, max_chunks)
             if candidate is None:
-                # Every axis is saturated at one atom per chunk or would
-                # overshoot the cap; stop below it rather than exceed it.
                 return
             axis, idx = candidate
             _split_at(self.chunks[axis.arg_key], idx)
+
+    @staticmethod
+    def _largest_chunk_in(axis_chunks: list[list[str]]) -> tuple[int, int]:
+        """Return ``(index, atom_count)`` of the largest splittable chunk.
+
+        A chunk is splittable when it has more than one atom.  Returns
+        ``(-1, -1)`` when no chunk qualifies.
+        """
+        best_idx = -1
+        best_size = -1
+        for idx, chunk in enumerate(axis_chunks):
+            if len(chunk) > 1 and len(chunk) > best_size:
+                best_idx, best_size = idx, len(chunk)
+        return best_idx, best_size
+
+    def _best_refine_candidate(
+        self, total: int, max_chunks: int
+    ) -> tuple[_Axis, int] | None:
+        """Find the best chunk to split during the refine pass.
+
+        Returns the largest splittable chunk (by atom count) among axes whose
+        split stays within the ``max_chunks`` cap, or ``None`` when no
+        in-budget split remains. Splitting any chunk of an axis with ``k``
+        chunks adds ``total // k`` chunks (the product of the other axes),
+        so the budget test is per axis rather than per chunk. The ranking key
+        is atom count (not URL bytes like ``_plan``) because this pass
+        balances work across chunks rather than fitting a byte budget.
+        Stable input order breaks ties by axis order, then lowest index.
+        """
+        candidate: tuple[_Axis, int] | None = None
+        candidate_size = -1
+        for axis in self.axes:
+            axis_chunks = self.chunks[axis.arg_key]
+            if total + total // len(axis_chunks) > max_chunks:
+                continue  # any split of this axis would overshoot the cap
+            axis_best, axis_best_size = self._largest_chunk_in(axis_chunks)
+            if axis_best_size > candidate_size:
+                candidate, candidate_size = (axis, axis_best), axis_best_size
+        return candidate
 
     def _worst_case_args(self) -> dict[str, Any]:
         """
