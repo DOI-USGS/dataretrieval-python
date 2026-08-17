@@ -90,6 +90,25 @@ def _resume_after_or(expr: str, i: int) -> int | None:
     return _skip_space(expr, after_word)
 
 
+def _advance_char(ch: str, depth: int, in_quote: str | None) -> tuple[int, str | None]:
+    """Update parser state for a single character (depth and quote tracking).
+
+    Returns the updated ``(depth, in_quote)`` pair without the OR-split logic,
+    keeping the state machine's character handling flat.
+    """
+    if in_quote is not None:
+        if ch == in_quote:
+            return depth, None
+        return depth, in_quote
+    if ch in ("'", '"'):
+        return depth, ch
+    if ch == "(":
+        return depth + 1, None
+    if ch == ")":
+        return depth - 1, None
+    return depth, None
+
+
 def _split_top_level_or(expr: str) -> list[str]:
     """Split ``expr`` at each top-level ``OR``, respecting quotes and parens.
 
@@ -105,16 +124,8 @@ def _split_top_level_or(expr: str) -> list[str]:
     n = len(expr)
     while i < n:
         ch = expr[i]
-        if in_quote is not None:
-            if ch == in_quote:
-                in_quote = None
-        elif ch in ("'", '"'):
-            in_quote = ch
-        elif ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-        elif depth == 0 and ch.isspace():
+        depth, in_quote = _advance_char(ch, depth, in_quote)
+        if in_quote is None and depth == 0 and ch.isspace():
             resume = _resume_after_or(expr, i + 1)
             if resume is not None:
                 parts.append(expr[last:i].strip())
