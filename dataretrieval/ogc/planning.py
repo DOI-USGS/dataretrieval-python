@@ -330,12 +330,6 @@ class ChunkPlan:
         max_chunks: int = 1,
     ) -> None:
         if max_chunks < 1:
-            # ``max_chunks`` is a chunk *count*: the minimum is ``1``
-            # (the ambient default outside any ``parallel_chunks`` block),
-            # which means "off — no extra fan-out". ``0`` or negative is a
-            # meaningless count and can only be a caller bug, so fail loudly
-            # rather than silently no-op. The public ``parallel_chunks(n)``
-            # already rejects ``n < 1``; this guards direct construction.
             raise ValueError(
                 f"max_chunks must be >= 1 (1 disables fan-out); got {max_chunks!r}."
             )
@@ -347,75 +341,71 @@ class ChunkPlan:
 
         axes = _extract_axes(args)
         if not axes:
-            # No chunkable axis: nothing to split, and ``parallel_chunks`` has
-            # nothing to act on either. If the single request fits, run it
-            # verbatim (the common passthrough). ``_safe_request_bytes`` treats
-            # an un-constructable URL (httpx.InvalidURL, > 64 KB) as over budget.
-            if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
-                return
-            # Over budget. A filter the chunker doesn't manage — cql-json — is
-            # passed through unchanged (chunking applies only to cql-text); the
-            # server, not us, judges it. Otherwise this is an in-domain shape we
-            # would normally chunk but can't: a single large CQL ``IN`` clause
-            # with no top-level ``OR``, or one oversized value. Raise an
-            # actionable error instead of shipping it for an opaque HTTP 414.
-            filter_expr = args.get("filter")
-            if filter_expr is not None and not _is_chunkable(
-                filter_expr, args.get("filter_lang")
-            ):
-                return
-            raise Unchunkable(
-                f"Request exceeds {url_limit} bytes (URL + body) and has no "
-                f"chunkable multi-value argument to split (e.g. a single large "
-                f"CQL `IN` clause, or one oversized value). Narrow the query, "
-                f"simplify the filter, or split the call manually."
-            )
+            self._handle_no_axes(args, build_request, url_limit)
+            return
 
-        # Constructing the initial request can itself trip
-        # ``httpx.InvalidURL`` (URL > 64 KB) — that's the canonical
-        # "needs chunking" signal, so swallow it and proceed to plan.
-        # When the unchunked URL does build, preserve it as ``canonical_url``
-        # so ``BaseMetadata.url`` echoes the user's original query verbatim.
-        # Only fall back to a worst-case chunk URL when the URL itself
-        # can't be constructed.
-        try:
-            initial_request = build_request(**args)
-        except httpx.InvalidURL:
-            initial_request = None
-
-        fits = False
+        initial_request, fits = self._probe_initial_request(
+            args, build_request, url_limit
+        )
         if initial_request is not None:
             self.canonical_url = str(initial_request.url)
-            fits = _request_bytes(initial_request) <= url_limit
 
-        # A request that already fits and hasn't opted into finer chunking is
-        # the common passthrough: leave ``axes``/``chunks`` empty so
-        # ``total == 1`` and ``iter_chunk_args`` yields the original args
-        # verbatim. ``max_chunks == 1`` (off / no extra fan-out) means
-        # "don't split", so it takes this path; only ``max_chunks >= 2`` asks
-        # for extra fan-out and sets the axes up to be refined below.
         if fits and max_chunks <= 1:
             return
 
         self.axes = axes
         self.chunks = {axis.arg_key: [list(axis.atoms)] for axis in axes}
         if not fits:
-            # Hard pass: greedy-halve until every worst-case chunk fits
-            # the byte budget (may raise ``Unchunkable``).
             self._plan(build_request, url_limit)
-        # Soft pass: optionally split further than the byte budget requires.
-        # Purely additive — never re-raises, and the byte budget stays
-        # satisfied; a no-op at ``max_chunks == 1``.
         self._refine(max_chunks)
 
         if self.canonical_url is None:
-            # Original URL was un-constructable (httpx.InvalidURL); fall
-            # back to the worst-case chunk URL so
-            # ``BaseMetadata.url`` still surfaces something
-            # informative. If even that overflows, leave canonical_url
-            # as None (set above) and let the response's own URL stand.
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
+
+    def _handle_no_axes(
+        self,
+        args: dict[str, Any],
+        build_request: Callable[..., httpx.Request],
+        url_limit: int,
+    ) -> None:
+        """Handle the case where no chunkable axes exist.
+
+        Passthrough when the single request fits or when the filter is in a
+        language the chunker doesn't manage (cql-json). Raises
+        :class:`~dataretrieval.exceptions.Unchunkable` when the request is
+        over budget and has nothing to split.
+        """
+        if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
+            return
+        filter_expr = args.get("filter")
+        if filter_expr is not None and not _is_chunkable(
+            filter_expr, args.get("filter_lang")
+        ):
+            return
+        raise Unchunkable(
+            f"Request exceeds {url_limit} bytes (URL + body) and has no "
+            f"chunkable multi-value argument to split (e.g. a single large "
+            f"CQL `IN` clause, or one oversized value). Narrow the query, "
+            f"simplify the filter, or split the call manually."
+        )
+
+    @staticmethod
+    def _probe_initial_request(
+        args: dict[str, Any],
+        build_request: Callable[..., httpx.Request],
+        url_limit: int,
+    ) -> tuple[httpx.Request | None, bool]:
+        """Try to construct the un-chunked request and measure it.
+
+        Returns ``(request, fits)`` where ``request`` is ``None`` when
+        construction raised ``httpx.InvalidURL`` (URL > 64 KB).
+        """
+        try:
+            initial_request = build_request(**args)
+        except httpx.InvalidURL:
+            return None, False
+        return initial_request, _request_bytes(initial_request) <= url_limit
 
     def _plan(
         self,
