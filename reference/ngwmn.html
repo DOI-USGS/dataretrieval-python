@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -222,7 +222,7 @@ location, with depth intervals and controlled lithology concepts.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_lithology</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;AKDNR-535134236016630&quot;</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"AKDNR-535134236016630"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -256,11 +256,11 @@ returns no records for this collection.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_providers</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;WI&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_providers</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">"WI"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># a full name (or FIPS code) works too</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_providers</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">organization_type</span><span class="o">=</span><span class="s2">&quot;NWIS&quot;</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s2">&quot;Wisconsin&quot;</span>
+<span class="gp">... </span>    <span class="n">organization_type</span><span class="o">=</span><span class="s2">"NWIS"</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s2">"Wisconsin"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -323,12 +323,12 @@ filter sites.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># All NGWMN sites in Wisconsin</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># state accepts a full name, postal code (&quot;WI&quot;), or FIPS (&quot;55&quot;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_sites</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># state accepts a full name, postal code ("WI"), or FIPS ("55")</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_sites</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">"Wisconsin"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Specific sites, geometry omitted</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_sites</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-423114090161101&quot;</span><span class="p">,</span> <span class="s2">&quot;MBMG-702934&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">"USGS-423114090161101"</span><span class="p">,</span> <span class="s2">"MBMG-702934"</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
@@ -367,19 +367,19 @@ range (ISO-8601 dates/datetimes); <code class="docutils literal notranslate"><sp
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-272838082142201&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">site</span> <span class="o">=</span> <span class="s2">"USGS-272838082142201"</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Restrict to a date range</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-01-01&quot;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="p">[</span><span class="s2">"2022-01-01"</span><span class="p">,</span> <span class="s2">"2024-01-01"</span><span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Multiple sites across agencies</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-272838082142201&quot;</span><span class="p">,</span> <span class="s2">&quot;MBMG-702934&quot;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">"USGS-272838082142201"</span><span class="p">,</span> <span class="s2">"MBMG-702934"</span><span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -413,7 +413,7 @@ diameters.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">ngwmn</span><span class="o">.</span><span class="n">get_well_construction</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-272838082142201&quot;</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-272838082142201"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -65,11 +65,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata.site_info"><code class="docutils literal notranslate"><span class="pre">NWIS_Metadata.site_info</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._build_column_name"><code class="docutils literal notranslate"><span class="pre">_build_column_name()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._deprecated"><code class="docutils literal notranslate"><span class="pre">_deprecated()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._get_json_values"><code class="docutils literal notranslate"><span class="pre">_get_json_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._localize_datetime_index"><code class="docutils literal notranslate"><span class="pre">_localize_datetime_index()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_json_or_raise"><code class="docutils literal notranslate"><span class="pre">_parse_json_or_raise()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_parameter_record"><code class="docutils literal notranslate"><span class="pre">_parse_parameter_record()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_site_block"><code class="docutils literal notranslate"><span class="pre">_parse_site_block()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_json"><code class="docutils literal notranslate"><span class="pre">_read_json()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_rdb"><code class="docutils literal notranslate"><span class="pre">_read_rdb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._site_block_boundaries"><code class="docutils literal notranslate"><span class="pre">_site_block_boundaries()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._warn_deprecated"><code class="docutils literal notranslate"><span class="pre">_warn_deprecated()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.format_response"><code class="docutils literal notranslate"><span class="pre">format_response()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_discharge_measurements"><code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code></a></li>
@@ -213,6 +218,12 @@ plain attribute.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._build_column_name">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_build_column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_cd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_build_column_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._build_column_name" title="Link to this definition"></a></dt>
+<dd><p>Derive the DataFrame column name for a parameter record.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._deprecated">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_deprecated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">F</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_deprecated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._deprecated" title="Link to this definition"></a></dt>
 <dd><p>Mark an nwis function as deprecated.</p>
@@ -232,9 +243,27 @@ sees it.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._localize_datetime_index">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_localize_datetime_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_localize_datetime_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._localize_datetime_index" title="Link to this definition"></a></dt>
+<dd><p>Localize a naive datetime index (or multi-index level) to UTC.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._parse_json_or_raise">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_parse_json_or_raise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Response</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_parse_json_or_raise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._parse_json_or_raise" title="Link to this definition"></a></dt>
 <dd><p>Parse a JSON NWIS response, raising a helpful error on HTML responses.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._parse_parameter_record">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_parse_parameter_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_parse_parameter_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._parse_parameter_record" title="Link to this definition"></a></dt>
+<dd><p>Parse a single parameter’s value list into a renamed DataFrame.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._parse_site_block">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_parse_site_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_parse_site_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._parse_site_block" title="Link to this definition"></a></dt>
+<dd><p>Parse all timeseries in one site’s block into a single DataFrame.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -261,6 +290,13 @@ sees it.</p>
 <p>Thin wrapper around <code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.rdb.read_rdb()</span></code> that adds the
 NWIS column-dtype hints and runs <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a> (datetime
 index, multi-site MultiIndex, optional GeoDataFrame).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._site_block_boundaries">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_site_block_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_site_block_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._site_block_boundaries" title="Link to this definition"></a></dt>
+<dd><p>Return indices where the site number changes, bookended by 0 and len.</p>
+<p>For example, given <code class="docutils literal notranslate"><span class="pre">['A',</span> <span class="pre">'A',</span> <span class="pre">'B']</span></code> returns <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2,</span> <span class="pre">3]</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -331,12 +367,12 @@ Default is True.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01491000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01491000&quot;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;1990-01-01&quot;</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"01491000"</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="s2">"1980-01-01"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"1990-01-01"</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for sites in Hawaii</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_discharge_peaks</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;1980-01-01&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;1980-01-02&quot;</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;HI&quot;</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">"1980-01-01"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"1980-01-02"</span><span class="p">,</span> <span class="n">stateCd</span><span class="o">=</span><span class="s2">"HI"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -376,14 +412,14 @@ single-index dataframe. Default is True.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get mean statistic daily values for site 04085427</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;04085427&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2012-01-01&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2012-06-30&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statCd</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"04085427"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">"2012-01-01"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s2">"2012-06-30"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statCd</span><span class="o">=</span><span class="s2">"00003"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the latest daily values for site 01646500</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01646500&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_dv</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01646500"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -464,10 +500,10 @@ end dates for a site’s daily mean streamflow.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site information for a single site</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"05114000"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site information for multiple sites</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span> <span class="s2">&quot;09423350&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="p">[</span><span class="s2">"05114000"</span><span class="p">,</span> <span class="s2">"09423350"</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -507,10 +543,10 @@ Default is True.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get instantaneous discharge data for site 05114000</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_iv</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">&quot;2013-11-03&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;2013-11-03&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"05114000"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="s2">"2013-11-03"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="s2">"2013-11-03"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">parameterCd</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -554,7 +590,7 @@ parameter site_no is supplied, it overwrites the site parameter.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the rating table for USGS streamgage 01594440</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s2">&quot;01594440&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_ratings</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="s2">"01594440"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -604,26 +640,26 @@ one row per time. Default is True.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest instantaneous data from site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;iv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01585200"</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"iv"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get latest daily mean data from site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;dv&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01585200"</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"dv"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get site description for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01585200"</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"site"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get discharge peaks for site 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;peaks&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01585200"</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"peaks"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get rating table for USGS streamgage 01585200</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01585200&quot;</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;ratings&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"01585200"</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"ratings"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get annual statistics for USGS station 01646500</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01646500&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">&quot;stat&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statReportType</span><span class="o">=</span><span class="s2">&quot;annual&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statYearType</span><span class="o">=</span><span class="s2">&quot;water&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"01646500"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">service</span><span class="o">=</span><span class="s2">"stat"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statReportType</span><span class="o">=</span><span class="s2">"annual"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statYearType</span><span class="o">=</span><span class="s2">"water"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -661,12 +697,12 @@ one row per time. Default is True.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get annual water statistics for a site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01646500&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">&quot;annual&quot;</span><span class="p">,</span> <span class="n">statYearType</span><span class="o">=</span><span class="s2">&quot;water&quot;</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"01646500"</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">"annual"</span><span class="p">,</span> <span class="n">statYearType</span><span class="o">=</span><span class="s2">"water"</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get monthly statistics for a site</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">&quot;01646500&quot;</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">&quot;monthly&quot;</span>
+<span class="gp">... </span>    <span class="n">sites</span><span class="o">=</span><span class="s2">"01646500"</span><span class="p">,</span> <span class="n">statReportType</span><span class="o">=</span><span class="s2">"monthly"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -779,11 +815,11 @@ duration format (e.g. ‘P1D’ for one day, ‘P1Y’ for one year).</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># get information about a single site</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">&quot;05114000&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="s2">"05114000"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># get information about sites with phosphorus in Ohio</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nwis</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">stateCd</span><span class="o">=</span><span class="s2">&quot;OH&quot;</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">&quot;00665&quot;</span>
+<span class="gp">... </span>    <span class="n">stateCd</span><span class="o">=</span><span class="s2">"OH"</span><span class="p">,</span> <span class="n">parameterCd</span><span class="o">=</span><span class="s2">"00665"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

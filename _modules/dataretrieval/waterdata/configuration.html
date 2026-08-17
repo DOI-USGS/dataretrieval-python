@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.configuration &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.waterdata.configuration &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,14 +75,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.waterdata.configuration</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The settings the Water Data adapter reads -- its configuration profile.</span>
+<span></span><span class="sd">"""The settings the Water Data adapter reads -- its configuration profile.</span>
 
 <span class="sd">A file of its own because :mod:`dataretrieval.waterdata` is a package rather</span>
 <span class="sd">than a single module; every other adapter declares its class in the module a</span>
-<span class="sd">caller imports. Either way the point is the same: a setting&#39;s definition sits</span>
+<span class="sd">caller imports. Either way the point is the same: a setting's definition sits</span>
 <span class="sd">with the code that reads it, so adding one no longer edits a service-neutral</span>
 <span class="sd">file (ADR 0011).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -98,7 +98,7 @@
     <span class="n">_Retrying</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;WaterdataConfiguration&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"WaterdataConfiguration"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="WaterdataConfiguration">
@@ -107,7 +107,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">WaterdataConfiguration</span><span class="p">(</span>
     <span class="n">_Chunked</span><span class="p">,</span> <span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for Water Data calls alone.</span>
+<span class="w">    </span><span class="sd">"""Settings for Water Data calls alone.</span>
 
 <span class="sd">    Pass one to :func:`dataretrieval.configure` to narrow a setting to this</span>
 <span class="sd">    service, leaving every other adapter on whatever the tiers below it</span>
@@ -123,26 +123,26 @@
 <span class="sd">    stall_timeout : float, optional</span>
 <span class="sd">        Seconds a call may go without receiving any data before retrying stops.</span>
 <span class="sd">    base_url : str, optional</span>
-<span class="sd">        Root to send Water Data requests to, instead of the service&#39;s own. The</span>
+<span class="sd">        Root to send Water Data requests to, instead of the service's own. The</span>
 <span class="sd">        package appends its own paths, so one value moves all four families</span>
 <span class="sd">        together -- ``/ogcapi/v0``, ``/samples-data``, ``/statistics/v0`` and</span>
 <span class="sd">        ``/stac/v0``. Code only: the file and the environment refuse it. The</span>
 <span class="sd">        API key is scoped to the host that honors it, so a redirected call</span>
 <span class="sd">        carries no key.</span>
 <span class="sd">    concurrency : int or str, optional</span>
-<span class="sd">        Cap on simultaneous sub-requests, or ``&quot;unbounded&quot;``.</span>
+<span class="sd">        Cap on simultaneous sub-requests, or ``"unbounded"``.</span>
 <span class="sd">    parallel_chunks : int, optional</span>
 <span class="sd">        Baseline fan-out for multi-value queries. Each sub-request spends</span>
 <span class="sd">        rate-limit quota, so raise it only for pulls you know are large.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># The settings this service reads, named by the groups they come from:</span>
-    <span class="c1"># every adapter&#39;s retry dials, a redirectable base, and -- because Water</span>
+    <span class="c1"># every adapter's retry dials, a redirectable base, and -- because Water</span>
     <span class="c1"># Data queries divide along a URL byte budget and are executed concurrently</span>
     <span class="c1"># -- both fan-out dials. Each group declares the setting itself once, in</span>
     <span class="c1"># :mod:`dataretrieval.configuration`, which is also where its grammar and</span>
     <span class="c1"># its coercion live.</span>
-    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;waterdata&quot;</span></div>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"waterdata"</span></div>
 
 
 

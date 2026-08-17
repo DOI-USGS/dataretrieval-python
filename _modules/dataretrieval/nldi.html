@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.nldi</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Retrieve hydrologic network features from the Network Linked Data Index (NLDI).</span>
+<span></span><span class="sd">"""Retrieve hydrologic network features from the Network Linked Data Index (NLDI).</span>
 
 <span class="sd">The getters below navigate the hydrologic network from an origin -- a feature</span>
 <span class="sd">source and id, a ``comid``, or a lat/long point -- and return flowlines, basins,</span>
@@ -83,7 +83,7 @@
 <span class="sd">``as_json=True``. This module requires geopandas.</span>
 
 <span class="sd">See https://api.water.usgs.gov/nldi/linked-data for the API reference.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -102,41 +102,41 @@
 <span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;NldiConfiguration&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_flowlines&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_basin&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_features&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_features_by_data_source&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;search&quot;</span><span class="p">,</span>
+    <span class="s2">"NldiConfiguration"</span><span class="p">,</span>
+    <span class="s2">"get_flowlines"</span><span class="p">,</span>
+    <span class="s2">"get_basin"</span><span class="p">,</span>
+    <span class="s2">"get_features"</span><span class="p">,</span>
+    <span class="s2">"get_features_by_data_source"</span><span class="p">,</span>
+    <span class="s2">"search"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Install geopandas to use the NLDI module.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"Install geopandas to use the NLDI module."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
 
-<span class="n">NLDI_API_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.water.usgs.gov/nldi/linked-data&quot;</span>
+<span class="n">NLDI_API_BASE_URL</span> <span class="o">=</span> <span class="s2">"https://api.water.usgs.gov/nldi/linked-data"</span>
 <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">_CRS</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
-<span class="n">_VALID_NAVIGATION_MODES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;UM&quot;</span><span class="p">,</span> <span class="s2">&quot;DM&quot;</span><span class="p">,</span> <span class="s2">&quot;UT&quot;</span><span class="p">,</span> <span class="s2">&quot;DD&quot;</span><span class="p">)</span>
+<span class="n">_CRS</span> <span class="o">=</span> <span class="s2">"EPSG:4326"</span>
+<span class="n">_VALID_NAVIGATION_MODES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"UM"</span><span class="p">,</span> <span class="s2">"DM"</span><span class="p">,</span> <span class="s2">"UT"</span><span class="p">,</span> <span class="s2">"DD"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_api_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The NLDI base this call targets: a block&#39;s redirect, or the service&#39;s.</span>
+<span class="w">    </span><span class="sd">"""The NLDI base this call targets: a block's redirect, or the service's.</span>
 
 <span class="sd">    Every URL below is built from this rather than from</span>
 <span class="sd">    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``</span>
 <span class="sd">    reaches every navigation, basin, and catalog request alike -- a redirect</span>
 <span class="sd">    that covered only some of them would leave the library asking the real</span>
-<span class="sd">    service about the mirror&#39;s data. Resolved per call, because a ``configure``</span>
+<span class="sd">    service about the mirror's data. Resolved per call, because a ``configure``</span>
 <span class="sd">    block is scoped to a ``with`` statement rather than to the process.</span>
 
 <span class="sd">    Six call sites, which is what this seam is for; choosing between the</span>
-<span class="sd">    redirect and the service&#39;s own base is the accessor&#39;s job, not each</span>
-<span class="sd">    service&#39;s.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nldi&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NLDI_API_BASE_URL</span><span class="p">)</span>
+<span class="sd">    redirect and the service's own base is the accessor's job, not each</span>
+<span class="sd">    service's.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"nldi"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NLDI_API_BASE_URL</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_query_nldi</span><span class="p">(</span>
@@ -146,7 +146,7 @@
     <span class="c1"># A helper function to query the NLDI API. ``query()`` already raises a</span>
     <span class="c1"># typed ``DataRetrievalError`` for any HTTP error response, so a returned</span>
     <span class="c1"># response is a success that we only need to parse.</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;nldi&quot;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"nldi"</span><span class="p">)</span>
     <span class="n">response_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">response_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
@@ -158,15 +158,15 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.</span>
+<span class="w">    </span><span class="sd">"""Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.</span>
 
 <span class="sd">    NLDI can legitimately return no features (e.g. a feature with nothing</span>
 <span class="sd">    upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response</span>
 <span class="sd">    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases</span>
-<span class="sd">    (there&#39;s no geometry column to attach the CRS to), so return an empty</span>
+<span class="sd">    (there's no geometry column to attach the CRS to), so return an empty</span>
 <span class="sd">    GeoDataFrame with the correct CRS instead of crashing.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">features</span> <span class="o">=</span> <span class="n">feature_collection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;features&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_collection</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="sd">    """</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">feature_collection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"features"</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_collection</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[],</span> <span class="n">crs</span><span class="o">=</span><span class="n">_CRS</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="o">.</span><span class="n">from_features</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">_CRS</span><span class="p">)</span>
@@ -175,8 +175,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_query_features</span><span class="p">(</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame.&quot;&quot;&quot;</span>
-    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame."""</span>
+    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"dict[str, Any]"</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">feature_collection</span> <span class="k">if</span> <span class="n">as_json</span> <span class="k">else</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
 
 
@@ -192,14 +192,14 @@
     <span class="n">trim_start</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the flowlines for a navigation, either by comid or by feature source.</span>
+<span class="w">    </span><span class="sd">"""Get the flowlines for a navigation, either by comid or by feature source.</span>
 
 <span class="sd">    Flowlines are returned in WGS84 lat/long coordinates as a GeoDataFrame</span>
 <span class="sd">    containing a polyline geometry.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    navigation_mode: string, navigation mode, allowed values are &#39;UM&#39;, &#39;DM&#39;, &#39;UT&#39;, &#39;DD&#39;</span>
+<span class="sd">    navigation_mode: string, navigation mode, allowed values are 'UM', 'DM', 'UT', 'DD'</span>
 <span class="sd">    distance: int, distance in kilometers, default is 5</span>
 <span class="sd">    feature_source: string, optional, name of the feature source,</span>
 <span class="sd">                    required if comid is not provided</span>
@@ -223,15 +223,15 @@
 <span class="sd">        &gt;&gt;&gt; # Get flowlines for a feature source: WQP and</span>
 <span class="sd">        &gt;&gt;&gt; # feature id: USGS-01031500 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_flowlines(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;,</span>
-<span class="sd">        ...     feature_id=&quot;USGS-01031500&quot;,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
+<span class="sd">        ...     feature_source="WQP",</span>
+<span class="sd">        ...     feature_id="USGS-01031500",</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Get flowlines for comid: 13294314 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_flowlines(</span>
-<span class="sd">        ...     comid=13294314, navigation_mode=&quot;UM&quot;</span>
+<span class="sd">        ...     comid=13294314, navigation_mode="UM"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
     <span class="n">_validate_feature_source_comid</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">,</span> <span class="n">comid</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">feature_source</span><span class="p">:</span>
@@ -242,11 +242,11 @@
         <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
         <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
         <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
-        <span class="n">tail</span><span class="o">=</span><span class="s2">&quot;flowlines&quot;</span><span class="p">,</span>
+        <span class="n">tail</span><span class="o">=</span><span class="s2">"flowlines"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;trimStart&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">trim_start</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">query_params</span><span class="p">[</span><span class="s2">"trimStart"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">trim_start</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">stop_comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;stopComid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
+        <span class="n">query_params</span><span class="p">[</span><span class="s2">"stopComid"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">_query_features</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">as_json</span><span class="p">)</span></div>
 
@@ -261,7 +261,7 @@
     <span class="n">split_catchment</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the aggregated basin for the specified feature.</span>
+<span class="w">    </span><span class="sd">"""Get the aggregated basin for the specified feature.</span>
 
 <span class="sd">    The basin is returned in WGS84 lat/lon as a GeoDataFrame or as JSON,</span>
 <span class="sd">    containing a polygon geometry.</span>
@@ -286,20 +286,20 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get basin for a feature source: WQP and feature id: USGS-01031500</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_basin(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;, feature_id=&quot;USGS-01031500&quot;</span>
+<span class="sd">        ...     feature_source="WQP", feature_id="USGS-01031500"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># validate the feature source</span>
     <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">feature_id</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_id is required&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_id is required"</span><span class="p">)</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/basin&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/basin"</span>
     <span class="n">simplified_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">simplified</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">split_catchment_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">split_catchment</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">query_params</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;simplified&quot;</span><span class="p">:</span> <span class="n">simplified_str</span><span class="p">,</span>
-        <span class="s2">&quot;splitCatchment&quot;</span><span class="p">:</span> <span class="n">split_catchment_str</span><span class="p">,</span>
+        <span class="s2">"simplified"</span><span class="p">:</span> <span class="n">simplified_str</span><span class="p">,</span>
+        <span class="s2">"splitCatchment"</span><span class="p">:</span> <span class="n">split_catchment_str</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">_query_features</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">as_json</span><span class="p">)</span></div>
 
@@ -319,7 +319,7 @@
     <span class="n">stop_comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">as_json</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all features along a navigation, either by comid or by feature source.</span>
+<span class="w">    </span><span class="sd">"""Get all features along a navigation, either by comid or by feature source.</span>
 
 <span class="sd">    Features are returned as points in WGS84 lat/long coordinates - a</span>
 <span class="sd">    GeoDataFrame containing a point geometry.</span>
@@ -330,7 +330,7 @@
 <span class="sd">                    required if comid is not provided</span>
 <span class="sd">    feature_id: string, optional, identifier of the feature,</span>
 <span class="sd">                required if comid is not provided</span>
-<span class="sd">    navigation_mode: string, navigation mode, allowed values are &#39;UM&#39;, &#39;DM&#39;, &#39;UT&#39;, &#39;DD&#39;</span>
+<span class="sd">    navigation_mode: string, navigation mode, allowed values are 'UM', 'DM', 'UT', 'DD'</span>
 <span class="sd">    data_source: string, data source</span>
 <span class="sd">    distance: int, distance in kilometers, default is 50</span>
 <span class="sd">    comid: integer, optional, comid, required if feature source is not provided</span>
@@ -352,28 +352,28 @@
 <span class="sd">        &gt;&gt;&gt; # Get registered features for a feature source: WQP,</span>
 <span class="sd">        &gt;&gt;&gt; # feature id: USGS-01031500</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;, feature_id=&quot;USGS-01031500&quot;</span>
+<span class="sd">        ...     feature_source="WQP", feature_id="USGS-01031500"</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Get features for a feature source: WQP, feature id: USGS-01031500,</span>
 <span class="sd">        &gt;&gt;&gt; # and data source: nwissite in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;,</span>
-<span class="sd">        ...     feature_id=&quot;USGS-01031500&quot;,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
-<span class="sd">        ...     data_source=&quot;nwissite&quot;,</span>
+<span class="sd">        ...     feature_source="WQP",</span>
+<span class="sd">        ...     feature_id="USGS-01031500",</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
+<span class="sd">        ...     data_source="nwissite",</span>
 <span class="sd">        ...     distance=50,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Get features for a comid: 13294314, and data source: nwissite</span>
 <span class="sd">        &gt;&gt;&gt; # in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features(</span>
 <span class="sd">        ...     comid=13294314,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
-<span class="sd">        ...     data_source=&quot;nwissite&quot;,</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
+<span class="sd">        ...     data_source="nwissite",</span>
 <span class="sd">        ...     distance=50,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Get features for a latitude: 43.073051 and longitude: -89.401230</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features(lat=43.073051, long=-89.401230)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_get_features_request</span><span class="p">(</span>
         <span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
@@ -400,16 +400,33 @@
     <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">tail</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;URL and query params for an NLDI navigation from a validated origin.</span>
+<span class="w">    </span><span class="sd">"""URL and query params for an NLDI navigation from a validated origin.</span>
 
 <span class="sd">    The single home for the navigation path grammar — ``{origin}/navigation/</span>
 <span class="sd">    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific</span>
 <span class="sd">    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query</span>
 <span class="sd">    string keeps its documented parameter order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
+<span class="sd">    """</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="p">{</span><span class="s2">"distance"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_lat_long_origin</span><span class="p">(</span>
+    <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise if lat/long is combined with another origin type."""</span>
+    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"Provide only one origin type - comid cannot be provided with lat or long"</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"Provide only one origin type - feature_source and feature_id cannot"</span>
+            <span class="s2">" be provided with lat or long"</span>
+        <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_features_request</span><span class="p">(</span>
@@ -424,26 +441,17 @@
     <span class="n">long</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">stop_comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate a feature origin and build its NLDI request parameters.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Validate a feature origin and build its NLDI request parameters."""</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both lat and long are required&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both lat and long are required"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Provide only one origin type - comid cannot be provided&quot;</span>
-                <span class="s2">&quot; with lat or long&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Provide only one origin type - feature_source and feature_id cannot&quot;</span>
-                <span class="s2">&quot; be provided with lat or long&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/comid/position&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;POINT(</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">}</span>
+        <span class="n">_validate_lat_long_origin</span><span class="p">(</span><span class="n">comid</span><span class="p">,</span> <span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/comid/position"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"coords"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"POINT(</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;navigation_mode is required if comid or data_source is provided&quot;</span>
+            <span class="s2">"navigation_mode is required if comid or data_source is provided"</span>
         <span class="p">)</span>
 
     <span class="n">_validate_feature_source_comid</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">,</span> <span class="n">comid</span><span class="p">)</span>
@@ -453,7 +461,7 @@
         <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">navigation_mode</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
     <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
@@ -462,19 +470,19 @@
         <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
         <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
         <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
-        <span class="n">tail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">tail</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">stop_comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">query_params</span><span class="p">[</span><span class="s2">&quot;stopComid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
+        <span class="n">query_params</span><span class="p">[</span><span class="s2">"stopComid"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span>
 
 
 <span class="c1"># TODO: This function can cause a timeout error for some data sources</span>
-<span class="c1">#  - maybe we shouldn&#39;t provide this function?</span>
+<span class="c1">#  - maybe we shouldn't provide this function?</span>
 <div class="viewcode-block" id="get_features_by_data_source">
 <a class="viewcode-back" href="../../reference/nldi.html#dataretrieval.nldi.get_features_by_data_source">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_features_by_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all features for the specified data source.</span>
+<span class="w">    </span><span class="sd">"""Get all features for the specified data source.</span>
 
 <span class="sd">    Features are returned as points in WGS84 lat/long coordinates as a</span>
 <span class="sd">    GeoDataFrame containing a point geometry.</span>
@@ -492,19 +500,50 @@
 <span class="sd">    --------</span>
 <span class="sd">    .. doctest::</span>
 
-<span class="sd">        &gt;&gt;&gt; # &quot;nwissite&quot; returns every NWIS site nationwide, so this example is</span>
+<span class="sd">        &gt;&gt;&gt; # "nwissite" returns every NWIS site nationwide, so this example is</span>
 <span class="sd">        &gt;&gt;&gt; # skipped in the doctest build to avoid the (very large) download.</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features_by_data_source(  # doctest: +SKIP</span>
-<span class="sd">        ...     data_source=&quot;nwissite&quot;</span>
+<span class="sd">        ...     data_source="nwissite"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># validate the data source</span>
     <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;dict[str, Any]&quot;</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="p">{}))</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"dict[str, Any]"</span><span class="p">,</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="p">{}))</span>
     <span class="n">gdf</span> <span class="o">=</span> <span class="n">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gdf</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_search_basin</span><span class="p">(</span><span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Handle ``find='basin'`` for :func:`search`."""</span>
+    <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_source and feature_id are required to find a basin"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_basin</span><span class="p">(</span><span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span> <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_search_flowlines</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Handle ``find='flowlines'`` for :func:`search`."""</span>
+    <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"navigation_mode is required for find='flowlines';"</span>
+            <span class="sa">f</span><span class="s2">" allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_flowlines</span><span class="p">(</span>
+        <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
+        <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
+        <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
+        <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
+        <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
+        <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="search">
@@ -514,22 +553,22 @@
     <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">find</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;basin&quot;</span><span class="p">,</span> <span class="s2">&quot;flowlines&quot;</span><span class="p">,</span> <span class="s2">&quot;features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;features&quot;</span><span class="p">,</span>
+    <span class="n">find</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"basin"</span><span class="p">,</span> <span class="s2">"flowlines"</span><span class="p">,</span> <span class="s2">"features"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"features"</span><span class="p">,</span>
     <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">long</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search NLDI for the specified feature and return the results as a dict.</span>
+<span class="w">    </span><span class="sd">"""Search NLDI for the specified feature and return the results as a dict.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    feature_source: string, name of the feature source</span>
 <span class="sd">    feature_id: string, identifier of the feature</span>
 <span class="sd">    navigation_mode: string, optional, navigation mode,</span>
-<span class="sd">                     allowed values are &#39;UM&#39;, &#39;DM&#39;, &#39;UT&#39;, &#39;DD&#39;</span>
+<span class="sd">                     allowed values are 'UM', 'DM', 'UT', 'DD'</span>
 <span class="sd">    data_source: string, optional, data source</span>
-<span class="sd">    find: string, search for &#39;basin&#39;, &#39;flowlines&#39;, or &#39;features&#39;, default is &#39;features&#39;</span>
+<span class="sd">    find: string, search for 'basin', 'flowlines', or 'features', default is 'features'</span>
 <span class="sd">    comid: int, optional, comid, default is None</span>
 <span class="sd">    lat: float, optional, latitude, default is None</span>
 <span class="sd">    long: float, optional, longitude, default is None</span>
@@ -546,89 +585,78 @@
 <span class="sd">        &gt;&gt;&gt; # Search for aggregated basin for feature source: WQP</span>
 <span class="sd">        &gt;&gt;&gt; # and feature id: USGS-01031500</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;, feature_id=&quot;USGS-01031500&quot;, find=&quot;basin&quot;</span>
+<span class="sd">        ...     feature_source="WQP", feature_id="USGS-01031500", find="basin"</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Search for flowlines for feature source: WQP and</span>
 <span class="sd">        &gt;&gt;&gt; # feature id: USGS-01031500 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;,</span>
-<span class="sd">        ...     feature_id=&quot;USGS-01031500&quot;,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
-<span class="sd">        ...     find=&quot;flowlines&quot;,</span>
+<span class="sd">        ...     feature_source="WQP",</span>
+<span class="sd">        ...     feature_id="USGS-01031500",</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
+<span class="sd">        ...     find="flowlines",</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Get registered features for a feature source: WQP,</span>
 <span class="sd">        &gt;&gt;&gt; # feature id: USGS-01031500</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;, feature_id=&quot;USGS-01031500&quot;</span>
+<span class="sd">        ...     feature_source="WQP", feature_id="USGS-01031500"</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Search for features for feature source: WQP, feature id: USGS-01031500,</span>
 <span class="sd">        &gt;&gt;&gt; # and data source: census2020-nhdpv2 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
-<span class="sd">        ...     feature_source=&quot;WQP&quot;,</span>
-<span class="sd">        ...     feature_id=&quot;USGS-01031500&quot;,</span>
-<span class="sd">        ...     data_source=&quot;census2020-nhdpv2&quot;,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
-<span class="sd">        ...     find=&quot;features&quot;,</span>
+<span class="sd">        ...     feature_source="WQP",</span>
+<span class="sd">        ...     feature_id="USGS-01031500",</span>
+<span class="sd">        ...     data_source="census2020-nhdpv2",</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
+<span class="sd">        ...     find="features",</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Search for features for comid: 13294314,</span>
 <span class="sd">        &gt;&gt;&gt; # and data source: census2020-nhdpv2 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
 <span class="sd">        ...     comid=13294314,</span>
-<span class="sd">        ...     data_source=&quot;census2020-nhdpv2&quot;,</span>
-<span class="sd">        ...     navigation_mode=&quot;UM&quot;,</span>
+<span class="sd">        ...     data_source="census2020-nhdpv2",</span>
+<span class="sd">        ...     navigation_mode="UM",</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Search for flowlines for comid: 13294314 in the upstream main</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
-<span class="sd">        ...     comid=13294314, navigation_mode=&quot;UM&quot;, find=&quot;flowlines&quot;</span>
+<span class="sd">        ...     comid=13294314, navigation_mode="UM", find="flowlines"</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; # Search for features for latitude: 43.073051 and longitude: -89.401230</span>
 <span class="sd">        &gt;&gt;&gt; search_results = dataretrieval.nldi.search(</span>
 <span class="sd">        ...     lat=43.073051, long=-89.401230</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both lat and long are required&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both lat and long are required"</span><span class="p">)</span>
 
-    <span class="n">find</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;Literal[&#39;basin&#39;, &#39;flowlines&#39;, &#39;features&#39;]&quot;</span><span class="p">,</span> <span class="n">find</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
-    <span class="n">require_one_of</span><span class="p">(</span><span class="n">find</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;basin&quot;</span><span class="p">,</span> <span class="s2">&quot;flowlines&quot;</span><span class="p">,</span> <span class="s2">&quot;features&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;find&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">!=</span> <span class="s2">&quot;features&quot;</span><span class="p">:</span>
+    <span class="n">find</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"Literal['basin', 'flowlines', 'features']"</span><span class="p">,</span> <span class="n">find</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">find</span><span class="p">,</span> <span class="p">(</span><span class="s2">"basin"</span><span class="p">,</span> <span class="s2">"flowlines"</span><span class="p">,</span> <span class="s2">"features"</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"find"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">!=</span> <span class="s2">"features"</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Invalid value for find: </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2"> - lat/long is to get features not </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Invalid value for find: </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2"> - lat/long is to get features not </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">&quot;basin&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">"basin"</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Invalid value for find: basin - comid is to get features&quot;</span>
-            <span class="s2">&quot; or flowlines not basin&quot;</span>
+            <span class="s2">"Invalid value for find: basin - comid is to get features"</span>
+            <span class="s2">" or flowlines not basin"</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_features</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="n">long</span><span class="p">,</span> <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">&quot;basin&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;feature_source and feature_id are required to find a basin&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">get_basin</span><span class="p">(</span>
-            <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span> <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span>
-        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">"basin"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_search_basin</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">&quot;flowlines&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;navigation_mode is required for find=&#39;flowlines&#39;;&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">get_flowlines</span><span class="p">(</span>
+    <span class="k">if</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">"flowlines"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_search_flowlines</span><span class="p">(</span>
             <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
             <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
             <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
             <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
             <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
-            <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="c1"># here find == &#39;features&#39;</span>
+
+    <span class="c1"># find == 'features'</span>
     <span class="k">return</span> <span class="n">get_features</span><span class="p">(</span>
         <span class="n">data_source</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
         <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
@@ -648,22 +676,22 @@
 
     <span class="c1"># get the available data/feature sources - if not already cached</span>
     <span class="k">if</span> <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/"</span>
         <span class="n">available_data_sources</span> <span class="o">=</span> <span class="n">_query_nldi</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="p">{})</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">available_data_sources</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
-            <span class="nb">isinstance</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;source&quot;</span> <span class="ow">in</span> <span class="n">ds</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"source"</span> <span class="ow">in</span> <span class="n">ds</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span>
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;NLDI data-source catalog returned an unexpected shape; &quot;</span>
-                <span class="s2">&quot;expected a list of {&#39;source&#39;: ..., ...} objects, got: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">available_data_sources</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="s2">"NLDI data-source catalog returned an unexpected shape; "</span>
+                <span class="s2">"expected a list of {'source': ..., ...} objects, got: "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">available_data_sources</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
-        <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">ds</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span><span class="p">]</span>
+        <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">ds</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="n">data_source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_AVAILABLE_DATA_SOURCES</span><span class="p">:</span>
         <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Invalid data source &#39;</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot; Available data sources are: </span><span class="si">{</span><span class="n">_AVAILABLE_DATA_SOURCES</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"Invalid data source '</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">'."</span>
+            <span class="sa">f</span><span class="s2">" Available data sources are: </span><span class="si">{</span><span class="n">_AVAILABLE_DATA_SOURCES</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
 
@@ -671,10 +699,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;navigation_mode is required; allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"navigation_mode is required; allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">normalized</span> <span class="o">=</span> <span class="n">navigation_mode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-    <span class="n">require_one_of</span><span class="p">(</span><span class="n">normalized</span><span class="p">,</span> <span class="n">_VALID_NAVIGATION_MODES</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;navigation_mode&quot;</span><span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">normalized</span><span class="p">,</span> <span class="n">_VALID_NAVIGATION_MODES</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"navigation_mode"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">normalized</span>
 
 
@@ -682,17 +710,17 @@
     <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_id is required if feature_source is provided&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_id is required if feature_source is provided"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;feature_source is required if feature_id is provided&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_source is required if feature_id is provided"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Specify only one origin type - comid and feature_source&quot;</span>
-            <span class="s2">&quot; cannot be provided together&quot;</span>
+            <span class="s2">"Specify only one origin type - comid and feature_source"</span>
+            <span class="s2">" cannot be provided together"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Specify one origin type - comid or feature_source is required&quot;</span>
+            <span class="s2">"Specify one origin type - comid or feature_source is required"</span>
         <span class="p">)</span>
 
 
@@ -700,7 +728,7 @@
 <a class="viewcode-back" href="../../reference/nldi.html#dataretrieval.nldi.NldiConfiguration">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NldiConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for NLDI calls alone.</span>
+<span class="w">    </span><span class="sd">"""Settings for NLDI calls alone.</span>
 
 <span class="sd">    No fan-out dials: an NLDI query is answered by a single request.</span>
 
@@ -710,7 +738,7 @@
 <span class="sd">    rather than being derived from what has been imported.</span>
 
 <span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
-<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    *which* settings a service reads is the service's own knowledge (ADR</span>
 <span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
 <span class="sd">    setting groups declared beside their grammar.</span>
 
@@ -723,15 +751,15 @@
 <span class="sd">        stops.</span>
 <span class="sd">    base_url : str, optional</span>
 <span class="sd">        Linked-data base to send NLDI requests to, instead of the</span>
-<span class="sd">        service&#39;s own (``NLDI_API_BASE_URL``). Every navigation, basin</span>
+<span class="sd">        service's own (``NLDI_API_BASE_URL``). Every navigation, basin</span>
 <span class="sd">        and catalog request is built on it. Code only: the file and the</span>
 <span class="sd">        environment refuse it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># One request per call, so this service reads the retry dials and a</span>
     <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
     <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
-    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nldi&quot;</span></div>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"nldi"</span></div>
 
 
 

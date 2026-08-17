@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,17 +75,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval._response_metadata</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The metadata object every getter returns alongside its DataFrame.</span>
+<span></span><span class="sd">"""The metadata object every getter returns alongside its DataFrame.</span>
 
 <span class="sd">A dependency-free leaf on purpose. This class is the second half of the</span>
 <span class="sd">``(DataFrame, metadata)`` return contract, so nearly every service module needs</span>
 <span class="sd">it -- and while it lived in :mod:`dataretrieval.utils` beside the legacy query</span>
-<span class="sd">machinery, needing it meant inheriting that module&#39;s whole HTTP stack</span>
+<span class="sd">machinery, needing it meant inheriting that module's whole HTTP stack</span>
 <span class="sd">(transport, credentials, error policy) transitively. Here it costs its</span>
 <span class="sd">consumers nothing but ``httpx``.</span>
 
 <span class="sd">``dataretrieval.utils.BaseMetadata`` remains the public import.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -95,7 +95,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">BaseMetadata</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for metadata.</span>
+<span class="w">    </span><span class="sd">"""Base class for metadata.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -106,19 +106,19 @@
 <span class="sd">    header: httpx.Headers</span>
 <span class="sd">        Response headers.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="BaseMetadata.__init__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a standard set of metadata informed by the response.</span>
+<span class="w">        </span><span class="sd">"""Generate a standard set of metadata informed by the response.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        response: ``httpx.Response``</span>
 <span class="sd">            Response object from the ``httpx`` module.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="c1"># Coerce httpx.URL -&gt; str: BaseMetadata.url has always been str.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
@@ -139,19 +139,19 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">&quot;site_info must be implemented by BaseMetadata children&quot;</span>
+            <span class="s2">"site_info must be implemented by BaseMetadata children"</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="BaseMetadata.__repr__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(url=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">)"</span></div>
 
 
 
 <span class="c1"># Pickles created after this class moved must remain readable by releases where</span>
 <span class="c1"># its public import path was only ``dataretrieval.utils.BaseMetadata``.</span>
-<span class="n">BaseMetadata</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="s2">&quot;dataretrieval.utils&quot;</span>
+<span class="n">BaseMetadata</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="s2">"dataretrieval.utils"</span>
 </pre></div>
 
            </div>

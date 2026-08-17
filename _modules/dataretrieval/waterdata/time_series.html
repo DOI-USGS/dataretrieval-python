@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.waterdata.time_series</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Getters for observations that form a time series.</span>
+<span></span><span class="sd">"""Getters for observations that form a time series.</span>
 
 <span class="sd">Daily and continuous values, their most-recent counterparts, and the</span>
 <span class="sd">period-of-record statistics computed over them. What unites them is shape: a</span>
@@ -84,7 +84,7 @@
 <span class="sd">Metadata *about* these series -- what a location measures, over what period --</span>
 <span class="sd">lives in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what</span>
 <span class="sd">exists before asking for the observations.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -129,7 +129,7 @@
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get daily values: one value per monitoring location, parameter, and day.</span>
+<span class="w">    </span><span class="sd">"""Get daily values: one value per monitoring location, parameter, and day.</span>
 
 <span class="sd">    Throughout much of the history of the USGS, the primary water data available</span>
 <span class="sd">    was daily data collected manually at the monitoring location once each day.</span>
@@ -147,7 +147,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
@@ -175,11 +175,11 @@
 <span class="sd">        time and time_series_id fields; each time series has only a single</span>
 <span class="sd">        observation at a given time.</span>
 <span class="sd">    approval_status : string or iterable of strings, optional</span>
-<span class="sd">        The approval status of each record: either &quot;Approved&quot;, meaning</span>
+<span class="sd">        The approval status of each record: either "Approved", meaning</span>
 <span class="sd">        processing review has been completed and the data are approved for</span>
-<span class="sd">        publication, or &quot;Provisional&quot;, meaning the data are subject to revision.</span>
+<span class="sd">        publication, or "Provisional", meaning the data are subject to revision.</span>
 <span class="sd">        Some of the data you obtain from this U.S. Geological Survey database</span>
-<span class="sd">        may not have received Director&#39;s approval. Any such data values are</span>
+<span class="sd">        may not have received Director's approval. Any such data values are</span>
 <span class="sd">        qualified as provisional and are subject to revision. Provisional data</span>
 <span class="sd">        are released on the condition that neither the USGS nor the United</span>
 <span class="sd">        States Government may be held liable for any damages resulting from</span>
@@ -204,17 +204,17 @@
 <span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        If True, the response omits the geometry of each feature and the</span>
 <span class="sd">        returned object is a data frame with no spatial information. The USGS</span>
-<span class="sd">        Water Data APIs use camelCase &quot;skipGeometry&quot; in CQL2 queries.</span>
+<span class="sd">        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.</span>
 <span class="sd">    time : string, optional</span>
 <span class="sd">        The date an observation represents. You can query this field using</span>
 <span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
@@ -225,12 +225,12 @@
 <span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    bbox : list of numbers, optional</span>
 <span class="sd">        Only features whose geometry intersects the bounding box are selected.</span>
@@ -285,52 +285,52 @@
 <span class="sd">        &gt;&gt;&gt; # Get daily flow data from a single site</span>
 <span class="sd">        &gt;&gt;&gt; # over a yearlong period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     time=&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">        &gt;&gt;&gt; # Quick &quot;show me the last week&quot; idiom (ISO 8601 duration)</span>
+<span class="sd">        &gt;&gt;&gt; # Quick "show me the last week" idiom (ISO 8601 duration)</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     time=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     time="P7D",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get approved daily flow data from multiple sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;],</span>
-<span class="sd">        ...     approval_status=&quot;Approved&quot;,</span>
-<span class="sd">        ...     time=&quot;2024-01-01/..&quot;,</span>
+<span class="sd">        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"],</span>
+<span class="sd">        ...     approval_status="Approved",</span>
+<span class="sd">        ...     time="2024-01-01/..",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Pull only rows whose underlying record was refreshed in the</span>
 <span class="sd">        &gt;&gt;&gt; # last 7 days — handy for incremental ETL polling</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     last_modified="P7D",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Chain queries: pull all stream sites in a state, then their</span>
 <span class="sd">        &gt;&gt;&gt; # daily discharge for the last week. The site list can be hundreds</span>
 <span class="sd">        &gt;&gt;&gt; # of values long — the request is transparently chunked across</span>
-<span class="sd">        &gt;&gt;&gt; # multiple chunks so the URL stays under the server&#39;s byte</span>
+<span class="sd">        &gt;&gt;&gt; # multiple chunks so the URL stays under the server's byte</span>
 <span class="sd">        &gt;&gt;&gt; # limit. Combined output looks like a single query.</span>
 <span class="sd">        &gt;&gt;&gt; sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(</span>
-<span class="sd">        ...     state=&quot;Ohio&quot;,</span>
-<span class="sd">        ...     site_type=&quot;Stream&quot;,</span>
+<span class="sd">        ...     state="Ohio",</span>
+<span class="sd">        ...     site_type="Stream",</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
-<span class="sd">        ...     monitoring_location_id=sites_df[&quot;monitoring_location_id&quot;].tolist(),</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     time=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id=sites_df["monitoring_location_id"].tolist(),</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     time="P7D",</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;daily&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="s2">"daily"</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_rows"</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
@@ -358,11 +358,11 @@
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get continuous sensor observations, typically at a 15-minute interval.</span>
+<span class="w">    </span><span class="sd">"""Get continuous sensor observations, typically at a 15-minute interval.</span>
 
 <span class="sd">    This is an early version of the continuous endpoint that is feature-complete</span>
 <span class="sd">    and is being made available for limited use. Geometries are not included</span>
-<span class="sd">    with the continuous endpoint. If the &quot;time&quot; input is left blank, the service</span>
+<span class="sd">    with the continuous endpoint. If the "time" input is left blank, the service</span>
 <span class="sd">    returns the most recent year of measurements. Users may request no more than</span>
 <span class="sd">    three years of data with each function call.</span>
 
@@ -372,7 +372,7 @@
 <span class="sd">    collection. Delivery may be delayed where the monitoring location cannot</span>
 <span class="sd">    transmit data automatically. Continuous data are described by parameter name</span>
 <span class="sd">    and parameter code (pcode). These data might also be referred to as</span>
-<span class="sd">    &quot;instantaneous values&quot; or &quot;IV&quot;.</span>
+<span class="sd">    "instantaneous values" or "IV".</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -380,7 +380,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
@@ -410,11 +410,11 @@
 <span class="sd">        time and time_series_id fields; each time series has only a single</span>
 <span class="sd">        observation at a given time.</span>
 <span class="sd">    approval_status : string or iterable of strings, optional</span>
-<span class="sd">        The approval status of each record: either &quot;Approved&quot;, meaning</span>
+<span class="sd">        The approval status of each record: either "Approved", meaning</span>
 <span class="sd">        processing review has been completed and the data are approved for</span>
-<span class="sd">        publication, or &quot;Provisional&quot;, meaning the data are subject to revision.</span>
+<span class="sd">        publication, or "Provisional", meaning the data are subject to revision.</span>
 <span class="sd">        Some of the data you obtain from this U.S. Geological Survey database</span>
-<span class="sd">        may not have received Director&#39;s approval. Any such data values are</span>
+<span class="sd">        may not have received Director's approval. Any such data values are</span>
 <span class="sd">        qualified as provisional and are subject to revision. Provisional data</span>
 <span class="sd">        are released on the condition that neither the USGS nor the United</span>
 <span class="sd">        States Government may be held liable for any damages resulting from</span>
@@ -439,12 +439,12 @@
 <span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    time : string, optional</span>
 <span class="sd">        The date an observation represents. You can query this field using</span>
@@ -456,12 +456,12 @@
 <span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
@@ -508,30 +508,30 @@
 <span class="sd">        &gt;&gt;&gt; # Get instantaneous gage height data from a</span>
 <span class="sd">        &gt;&gt;&gt; # single site from a single year</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00065&quot;,</span>
-<span class="sd">        ...     time=&quot;2021-01-01T00:00:00Z/2022-01-01T00:00:00Z&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00065",</span>
+<span class="sd">        ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Pull several disjoint time windows in one call via a CQL</span>
 <span class="sd">        &gt;&gt;&gt; # ``filter``. See ``dataretrieval.ogc.filters`` for the</span>
 <span class="sd">        &gt;&gt;&gt; # full grammar, auto-chunking, and pitfalls.</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
 <span class="sd">        ...     filter=(</span>
-<span class="sd">        ...         &quot;(time &gt;= &#39;2023-06-01T12:00:00Z&#39; &quot;</span>
-<span class="sd">        ...         &quot;AND time &lt;= &#39;2023-06-01T13:00:00Z&#39;) &quot;</span>
-<span class="sd">        ...         &quot;OR (time &gt;= &#39;2023-06-15T12:00:00Z&#39; &quot;</span>
-<span class="sd">        ...         &quot;AND time &lt;= &#39;2023-06-15T13:00:00Z&#39;)&quot;</span>
+<span class="sd">        ...         "(time &gt;= '2023-06-01T12:00:00Z' "</span>
+<span class="sd">        ...         "AND time &lt;= '2023-06-01T13:00:00Z') "</span>
+<span class="sd">        ...         "OR (time &gt;= '2023-06-15T12:00:00Z' "</span>
+<span class="sd">        ...         "AND time &lt;= '2023-06-15T13:00:00Z')"</span>
 <span class="sd">        ...     ),</span>
-<span class="sd">        ...     filter_lang=&quot;cql-text&quot;,</span>
+<span class="sd">        ...     filter_lang="cql-text",</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="s2">"continuous"</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_rows"</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
@@ -561,7 +561,7 @@
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get only the most recent observation of each continuous time series.</span>
+<span class="w">    </span><span class="sd">"""Get only the most recent observation of each continuous time series.</span>
 
 <span class="sd">    Use this for a current-conditions view; use :func:`get_continuous` for a</span>
 <span class="sd">    history.</span>
@@ -572,8 +572,8 @@
 <span class="sd">    automatically via telemetry and be available on WDFN within minutes of</span>
 <span class="sd">    collection. Delivery may be delayed where the monitoring location cannot</span>
 <span class="sd">    transmit data automatically. Continuous data are described by parameter name</span>
-<span class="sd">    and parameter code. These data might also be referred to as &quot;instantaneous</span>
-<span class="sd">    values&quot; or &quot;IV&quot;.</span>
+<span class="sd">    and parameter code. These data might also be referred to as "instantaneous</span>
+<span class="sd">    values" or "IV".</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -581,7 +581,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
@@ -609,11 +609,11 @@
 <span class="sd">        time and time_series_id fields; each time series has only a single</span>
 <span class="sd">        observation at a given time.</span>
 <span class="sd">    approval_status : string or iterable of strings, optional</span>
-<span class="sd">        The approval status of each record: either &quot;Approved&quot;, meaning</span>
+<span class="sd">        The approval status of each record: either "Approved", meaning</span>
 <span class="sd">        processing review has been completed and the data are approved for</span>
-<span class="sd">        publication, or &quot;Provisional&quot;, meaning the data are subject to revision.</span>
+<span class="sd">        publication, or "Provisional", meaning the data are subject to revision.</span>
 <span class="sd">        Some of the data you obtain from this U.S. Geological Survey database</span>
-<span class="sd">        may not have received Director&#39;s approval. Any such data values are</span>
+<span class="sd">        may not have received Director's approval. Any such data values are</span>
 <span class="sd">        qualified as provisional and are subject to revision. Provisional data</span>
 <span class="sd">        are released on the condition that neither the USGS nor the United</span>
 <span class="sd">        States Government may be held liable for any damages resulting from</span>
@@ -638,17 +638,17 @@
 <span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        If True, the response omits the geometry of each feature and the</span>
 <span class="sd">        returned object is a data frame with no spatial information. The USGS</span>
-<span class="sd">        Water Data APIs use camelCase &quot;skipGeometry&quot; in CQL2 queries.</span>
+<span class="sd">        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.</span>
 <span class="sd">    time : string, optional</span>
 <span class="sd">        The date an observation represents. You can query this field using</span>
 <span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
@@ -659,12 +659,12 @@
 <span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    bbox : list of numbers, optional</span>
 <span class="sd">        Only features whose geometry intersects the bounding box are selected.</span>
@@ -718,34 +718,34 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get latest flow data from a single site</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;, parameter_code=&quot;00060&quot;</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500", parameter_code="00060"</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Restrict to the last 7 days; sites with no observation in that</span>
 <span class="sd">        &gt;&gt;&gt; # window are dropped instead of returned with stale values</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     time=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     time="P7D",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Pull only rows whose underlying record was refreshed in the</span>
 <span class="sd">        &gt;&gt;&gt; # last 7 days, across multiple sites and parameters</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=[&quot;USGS-451605097071701&quot;, &quot;USGS-14181500&quot;],</span>
-<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;72019&quot;],</span>
-<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id=["USGS-451605097071701", "USGS-14181500"],</span>
+<span class="sd">        ...     parameter_code=["00060", "72019"],</span>
+<span class="sd">        ...     last_modified="P7D",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get latest continuous measurements for multiple sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_continuous(</span>
-<span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;]</span>
+<span class="sd">        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;latest-continuous&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="s2">"latest-continuous"</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_rows"</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
@@ -775,7 +775,7 @@
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get only the most recent daily value of each time series.</span>
+<span class="w">    </span><span class="sd">"""Get only the most recent daily value of each time series.</span>
 
 <span class="sd">    Use this for a current-conditions view; use :func:`get_daily` for a</span>
 <span class="sd">    history.</span>
@@ -797,7 +797,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
@@ -825,11 +825,11 @@
 <span class="sd">        time and time_series_id fields; each time series has only a single</span>
 <span class="sd">        observation at a given time.</span>
 <span class="sd">    approval_status : string or iterable of strings, optional</span>
-<span class="sd">        The approval status of each record: either &quot;Approved&quot;, meaning</span>
+<span class="sd">        The approval status of each record: either "Approved", meaning</span>
 <span class="sd">        processing review has been completed and the data are approved for</span>
-<span class="sd">        publication, or &quot;Provisional&quot;, meaning the data are subject to revision.</span>
+<span class="sd">        publication, or "Provisional", meaning the data are subject to revision.</span>
 <span class="sd">        Some of the data you obtain from this U.S. Geological Survey database</span>
-<span class="sd">        may not have received Director&#39;s approval. Any such data values are</span>
+<span class="sd">        may not have received Director's approval. Any such data values are</span>
 <span class="sd">        qualified as provisional and are subject to revision. Provisional data</span>
 <span class="sd">        are released on the condition that neither the USGS nor the United</span>
 <span class="sd">        States Government may be held liable for any damages resulting from</span>
@@ -854,17 +854,17 @@
 <span class="sd">        intersects the requested value are selected.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    skip_geometry : boolean, optional</span>
 <span class="sd">        If True, the response omits the geometry of each feature and the</span>
 <span class="sd">        returned object is a data frame with no spatial information. The USGS</span>
-<span class="sd">        Water Data APIs use camelCase &quot;skipGeometry&quot; in CQL2 queries.</span>
+<span class="sd">        Water Data APIs use camelCase "skipGeometry" in CQL2 queries.</span>
 <span class="sd">    time : string, optional</span>
 <span class="sd">        The date an observation represents. You can query this field using</span>
 <span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
@@ -875,12 +875,12 @@
 <span class="sd">        determine the extent.</span>
 <span class="sd">        Examples:</span>
 
-<span class="sd">            * A date-time: &quot;2018-02-12T23:20:50Z&quot;</span>
-<span class="sd">            * A bounded interval: &quot;2018-02-12T00:00:00Z/2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Half-bounded intervals: &quot;2018-02-12T00:00:00Z/..&quot; or</span>
-<span class="sd">                &quot;../2018-03-18T12:31:12Z&quot;</span>
-<span class="sd">            * Duration objects: &quot;P1M&quot; for data from the past month or</span>
-<span class="sd">                &quot;PT36H&quot; for the last 36 hours</span>
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
 
 <span class="sd">    bbox : list of numbers, optional</span>
 <span class="sd">        Only features whose geometry intersects the bounding box are selected.</span>
@@ -934,33 +934,33 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get most recent daily flow data from a single site</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;, parameter_code=&quot;00060&quot;</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500", parameter_code="00060"</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Restrict to rows whose underlying record was refreshed in the</span>
 <span class="sd">        &gt;&gt;&gt; # last 7 days</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     last_modified=&quot;P7D&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     last_modified="P7D",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Multi-site, multi-parameter — discharge and water temperature</span>
 <span class="sd">        &gt;&gt;&gt; # at two sites in a single round-trip</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
-<span class="sd">        ...     monitoring_location_id=[&quot;USGS-01491000&quot;, &quot;USGS-01645000&quot;],</span>
-<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;00010&quot;],</span>
+<span class="sd">        ...     monitoring_location_id=["USGS-01491000", "USGS-01645000"],</span>
+<span class="sd">        ...     parameter_code=["00060", "00010"],</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get most recent daily measurements for two sites</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_latest_daily(</span>
-<span class="sd">        ...     monitoring_location_id=[&quot;USGS-05114000&quot;, &quot;USGS-09423350&quot;]</span>
+<span class="sd">        ...     monitoring_location_id=["USGS-05114000", "USGS-09423350"]</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">collection</span> <span class="o">=</span> <span class="s2">&quot;latest-daily&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">collection</span> <span class="o">=</span> <span class="s2">"latest-daily"</span>
 
     <span class="c1"># Build argument dictionary, omitting None values</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_rows&quot;</span><span class="p">})</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_rows"</span><span class="p">})</span>
 
     <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
 
@@ -986,9 +986,9 @@
     <span class="n">normal_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get day-of-year and month-of-year statistics over the historical record.</span>
+<span class="w">    </span><span class="sd">"""Get day-of-year and month-of-year statistics over the historical record.</span>
 
-<span class="sd">    Answers &quot;how does today compare to a normal day here?&quot; -- minimum, maximum,</span>
+<span class="sd">    Answers "how does today compare to a normal day here?" -- minimum, maximum,</span>
 <span class="sd">    mean, median, and percentiles computed per day of year and month of year</span>
 <span class="sd">    (the ``observationNormals`` endpoint). For more on how these statistics are</span>
 <span class="sd">    calculated, see the Statistics documentation page:</span>
@@ -1007,18 +1007,18 @@
 <span class="sd">        Desired statistical computation method. Available values are:</span>
 <span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
 <span class="sd">    country_code: string, optional</span>
-<span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">        Country query parameter. API defaults to "US".</span>
 <span class="sd">    state: string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
-<span class="sd">        (&quot;Wisconsin&quot;), a two-letter postal code (&quot;WI&quot;), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code (&quot;55&quot;).</span>
+<span class="sd">        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code ("55").</span>
 <span class="sd">    state_code: string, optional</span>
-<span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
-<span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
+<span class="sd">        State query parameter. Takes the format "US:XX", where XX is</span>
+<span class="sd">        the two-digit state code. API defaults to "US:42" (Pennsylvania).</span>
 <span class="sd">    county_code: string, optional</span>
-<span class="sd">        County query parameter. Takes the format &quot;US:XX:YYY&quot;, where XX is</span>
+<span class="sd">        County query parameter. Takes the format "US:XX:YYY", where XX is</span>
 <span class="sd">        the two-digit state code and YYY is the three-digit county code.</span>
-<span class="sd">        API defaults to &quot;US:42:103&quot; (Pennsylvania, Pike County).</span>
+<span class="sd">        API defaults to "US:42:103" (Pennsylvania, Pike County).</span>
 <span class="sd">    start_date: string or datetime, optional</span>
 <span class="sd">        Start day for the query in the month-day format (MM-DD).</span>
 <span class="sd">    end_date: string or datetime, optional</span>
@@ -1027,7 +1027,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    page_size : int, optional</span>
 <span class="sd">        The number of results to return per page, where one result represents a</span>
@@ -1038,7 +1038,7 @@
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>
 <span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
-<span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
+<span class="sd">        Example: "GW" (Groundwater site)</span>
 <span class="sd">    site_type_name: string, optional</span>
 <span class="sd">        Site type name query parameter.</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
@@ -1048,24 +1048,24 @@
 <span class="sd">    normal_type : string, optional</span>
 <span class="sd">        Filter the returned normals to a single period. If unspecified</span>
 <span class="sd">        (default), all matching data are returned. Available values:</span>
-<span class="sd">        &quot;DOY&quot; (day-of-year) and &quot;MOY&quot; (month-of-year).</span>
+<span class="sd">        "DOY" (day-of-year) and "MOY" (month-of-year).</span>
 <span class="sd">    expand_percentiles : boolean</span>
 <span class="sd">        Whether to expand percentile lists into one row per percentile.</span>
 <span class="sd">        By default, the service returns percentile data for a given day of year</span>
 <span class="sd">        or month of year as lists of string values and percentile thresholds, in</span>
-<span class="sd">        the &quot;values&quot; and &quot;percentiles&quot; columns respectively. When</span>
+<span class="sd">        the "values" and "percentiles" columns respectively. When</span>
 <span class="sd">        `expand_percentiles` is True (default), each value and percentile</span>
 <span class="sd">        threshold specific to a computation id becomes its own row in the</span>
-<span class="sd">        dataframe: the value is reported in a &quot;value&quot; column and the</span>
-<span class="sd">        corresponding percentile in a &quot;percentile&quot; column, and the &quot;values&quot; and</span>
-<span class="sd">        &quot;percentiles&quot; columns are removed. Missing percentile values, expressed</span>
-<span class="sd">        as &#39;nan&#39; in the list of string values, are removed from the dataframe to</span>
-<span class="sd">        save space. Setting `expand_percentiles` to False retains the &quot;values&quot;</span>
-<span class="sd">        and &quot;percentiles&quot; columns produced by the service. Including both</span>
-<span class="sd">        &#39;percentiles&#39; and one or more other statistics (&#39;median&#39;, &#39;minimum&#39;,</span>
-<span class="sd">        &#39;maximum&#39;, or &#39;arithmetic_mean&#39;) in the `computation_type` argument</span>
-<span class="sd">        returns both the &quot;values&quot; column, containing the list of percentile</span>
-<span class="sd">        threshold values, and a &quot;value&quot; column, containing the singular summary</span>
+<span class="sd">        dataframe: the value is reported in a "value" column and the</span>
+<span class="sd">        corresponding percentile in a "percentile" column, and the "values" and</span>
+<span class="sd">        "percentiles" columns are removed. Missing percentile values, expressed</span>
+<span class="sd">        as 'nan' in the list of string values, are removed from the dataframe to</span>
+<span class="sd">        save space. Setting `expand_percentiles` to False retains the "values"</span>
+<span class="sd">        and "percentiles" columns produced by the service. Including both</span>
+<span class="sd">        'percentiles' and one or more other statistics ('median', 'minimum',</span>
+<span class="sd">        'maximum', or 'arithmetic_mean') in the `computation_type` argument</span>
+<span class="sd">        returns both the "values" column, containing the list of percentile</span>
+<span class="sd">        threshold values, and a "value" column, containing the singular summary</span>
 <span class="sd">        value for the other statistics.</span>
 
 <span class="sd">    Returns</span>
@@ -1082,29 +1082,29 @@
 <span class="sd">        &gt;&gt;&gt; # Get daily, monthly, and annual percentiles for streamflow at</span>
 <span class="sd">        &gt;&gt;&gt; # a monitoring location of interest</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_por(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     computation_type=&quot;percentile&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-05114000",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     computation_type="percentile",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get all daily and monthly statistics for the month of January</span>
 <span class="sd">        &gt;&gt;&gt; # over the entire period of record for streamflow and gage height</span>
 <span class="sd">        &gt;&gt;&gt; # at a monitoring location of interest</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_por(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
-<span class="sd">        ...     parameter_code=[&quot;00060&quot;, &quot;00065&quot;],</span>
-<span class="sd">        ...     start_date=&quot;01-01&quot;,</span>
-<span class="sd">        ...     end_date=&quot;01-31&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-05114000",</span>
+<span class="sd">        ...     parameter_code=["00060", "00065"],</span>
+<span class="sd">        ...     start_date="01-01",</span>
+<span class="sd">        ...     end_date="01-31",</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
-        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;fips_us&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_code&quot;</span><span class="p">),</span>
-        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">},</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">"fips_us"</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">"state_code"</span><span class="p">),</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"expand_percentiles"</span><span class="p">},</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
-        <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationNormals&quot;</span><span class="p">,</span> <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">service</span><span class="o">=</span><span class="s2">"observationNormals"</span><span class="p">,</span> <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span>
     <span class="p">)</span></div>
 
 
@@ -1129,9 +1129,9 @@
     <span class="n">interval_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">expand_percentiles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get statistics summarizing whole months and years of the record.</span>
+<span class="w">    </span><span class="sd">"""Get statistics summarizing whole months and years of the record.</span>
 
-<span class="sd">    Answers &quot;how did this month or year compare to others?&quot; -- minimum, maximum,</span>
+<span class="sd">    Answers "how did this month or year compare to others?" -- minimum, maximum,</span>
 <span class="sd">    mean, median, and percentiles per month-year and per water or calendar year</span>
 <span class="sd">    (the ``observationIntervals`` endpoint). For more on how these statistics are</span>
 <span class="sd">    calculated, see the Statistics documentation page:</span>
@@ -1150,18 +1150,18 @@
 <span class="sd">        Desired statistical computation method. Available values are:</span>
 <span class="sd">        arithmetic_mean, maximum, median, minimum, percentile.</span>
 <span class="sd">    country_code: string, optional</span>
-<span class="sd">        Country query parameter. API defaults to &quot;US&quot;.</span>
+<span class="sd">        Country query parameter. API defaults to "US".</span>
 <span class="sd">    state: string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
-<span class="sd">        (&quot;Wisconsin&quot;), a two-letter postal code (&quot;WI&quot;), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code (&quot;55&quot;).</span>
+<span class="sd">        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit</span>
+<span class="sd">        ANSI/FIPS code ("55").</span>
 <span class="sd">    state_code: string, optional</span>
-<span class="sd">        State query parameter. Takes the format &quot;US:XX&quot;, where XX is</span>
-<span class="sd">        the two-digit state code. API defaults to &quot;US:42&quot; (Pennsylvania).</span>
+<span class="sd">        State query parameter. Takes the format "US:XX", where XX is</span>
+<span class="sd">        the two-digit state code. API defaults to "US:42" (Pennsylvania).</span>
 <span class="sd">    county_code: string, optional</span>
-<span class="sd">        County query parameter. Takes the format &quot;US:XX:YYY&quot;, where XX is</span>
+<span class="sd">        County query parameter. Takes the format "US:XX:YYY", where XX is</span>
 <span class="sd">        the two-digit state code and YYY is the three-digit county code.</span>
-<span class="sd">        API defaults to &quot;US:42:103&quot; (Pennsylvania, Pike County).</span>
+<span class="sd">        API defaults to "US:42:103" (Pennsylvania, Pike County).</span>
 <span class="sd">    start_date: string or datetime, optional</span>
 <span class="sd">        Start date for the query in the year-month-day format</span>
 <span class="sd">        (YYYY-MM-DD).</span>
@@ -1172,7 +1172,7 @@
 <span class="sd">        A unique identifier representing a single monitoring location,</span>
 <span class="sd">        corresponding to the id field in the monitoring-locations endpoint. IDs</span>
 <span class="sd">        combine the agency code of the agency responsible for the monitoring</span>
-<span class="sd">        location (e.g. USGS) with the location&#39;s ID number (e.g. 02238500),</span>
+<span class="sd">        location (e.g. USGS) with the location's ID number (e.g. 02238500),</span>
 <span class="sd">        separated by a hyphen (e.g. USGS-02238500).</span>
 <span class="sd">    page_size : int, optional</span>
 <span class="sd">        The number of results to return per page, where one result represents a</span>
@@ -1183,12 +1183,12 @@
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>
 <span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
-<span class="sd">        Example: &quot;GW&quot; (Groundwater site)</span>
+<span class="sd">        Example: "GW" (Groundwater site)</span>
 <span class="sd">    site_type_name: string, optional</span>
 <span class="sd">        Site type name query parameter. A list of valid site type names is</span>
 <span class="sd">        available at</span>
 <span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
-<span class="sd">        Example: &quot;Well&quot;</span>
+<span class="sd">        Example: "Well"</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>
 <span class="sd">        measure. A complete list of parameter codes and associated groupings is</span>
@@ -1196,24 +1196,24 @@
 <span class="sd">    interval_type : string or iterable of strings, optional</span>
 <span class="sd">        Filter the returned intervals to one or more periods. If unspecified</span>
 <span class="sd">        (default), all matching data are returned. Available values:</span>
-<span class="sd">        &quot;M&quot; (month), &quot;CY&quot; (calendar year), and &quot;WY&quot; (water year).</span>
+<span class="sd">        "M" (month), "CY" (calendar year), and "WY" (water year).</span>
 <span class="sd">    expand_percentiles : boolean</span>
 <span class="sd">        Whether to expand percentile lists into one row per percentile.</span>
 <span class="sd">        By default, the service returns percentile data for a given day of year</span>
 <span class="sd">        or month of year as lists of string values and percentile thresholds, in</span>
-<span class="sd">        the &quot;values&quot; and &quot;percentiles&quot; columns respectively. When</span>
+<span class="sd">        the "values" and "percentiles" columns respectively. When</span>
 <span class="sd">        `expand_percentiles` is True (default), each value and percentile</span>
 <span class="sd">        threshold specific to a computation id becomes its own row in the</span>
-<span class="sd">        dataframe: the value is reported in a &quot;value&quot; column and the</span>
-<span class="sd">        corresponding percentile in a &quot;percentile&quot; column, and the &quot;values&quot; and</span>
-<span class="sd">        &quot;percentiles&quot; columns are removed. Missing percentile values, expressed</span>
-<span class="sd">        as &#39;nan&#39; in the list of string values, are removed from the dataframe to</span>
-<span class="sd">        save space. Setting `expand_percentiles` to False retains the &quot;values&quot;</span>
-<span class="sd">        and &quot;percentiles&quot; columns produced by the service. Including both</span>
-<span class="sd">        &#39;percentiles&#39; and one or more other statistics (&#39;median&#39;, &#39;minimum&#39;,</span>
-<span class="sd">        &#39;maximum&#39;, or &#39;arithmetic_mean&#39;) in the `computation_type` argument</span>
-<span class="sd">        returns both the &quot;values&quot; column, containing the list of percentile</span>
-<span class="sd">        threshold values, and a &quot;value&quot; column, containing the singular summary</span>
+<span class="sd">        dataframe: the value is reported in a "value" column and the</span>
+<span class="sd">        corresponding percentile in a "percentile" column, and the "values" and</span>
+<span class="sd">        "percentiles" columns are removed. Missing percentile values, expressed</span>
+<span class="sd">        as 'nan' in the list of string values, are removed from the dataframe to</span>
+<span class="sd">        save space. Setting `expand_percentiles` to False retains the "values"</span>
+<span class="sd">        and "percentiles" columns produced by the service. Including both</span>
+<span class="sd">        'percentiles' and one or more other statistics ('median', 'minimum',</span>
+<span class="sd">        'maximum', or 'arithmetic_mean') in the `computation_type` argument</span>
+<span class="sd">        returns both the "values" column, containing the list of percentile</span>
+<span class="sd">        threshold values, and a "value" column, containing the singular summary</span>
 <span class="sd">        value for the other statistics.</span>
 
 <span class="sd">    Returns</span>
@@ -1230,43 +1230,43 @@
 <span class="sd">        &gt;&gt;&gt; # Get monthly and yearly medians for streamflow at streams in Rhode Island</span>
 <span class="sd">        &gt;&gt;&gt; # from calendar year 2024.</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_date_range(</span>
-<span class="sd">        ...     state=&quot;RI&quot;,  # Rhode Island (postal code, name, or FIPS all work)</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     site_type_code=&quot;ST&quot;,</span>
-<span class="sd">        ...     start_date=&quot;2024-01-01&quot;,</span>
-<span class="sd">        ...     end_date=&quot;2024-12-31&quot;,</span>
-<span class="sd">        ...     computation_type=&quot;median&quot;,</span>
+<span class="sd">        ...     state="RI",  # Rhode Island (postal code, name, or FIPS all work)</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     site_type_code="ST",</span>
+<span class="sd">        ...     start_date="2024-01-01",</span>
+<span class="sd">        ...     end_date="2024-12-31",</span>
+<span class="sd">        ...     computation_type="median",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get monthly and yearly minimum and maximums for gage height at</span>
 <span class="sd">        &gt;&gt;&gt; # a monitoring location of interest</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_stats_date_range(</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-05114000&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00065&quot;,</span>
-<span class="sd">        ...     computation_type=[&quot;minimum&quot;, &quot;maximum&quot;],</span>
+<span class="sd">        ...     monitoring_location_id="USGS-05114000",</span>
+<span class="sd">        ...     parameter_code="00065",</span>
+<span class="sd">        ...     computation_type=["minimum", "maximum"],</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Build argument dictionary, omitting None values</span>
     <span class="n">params</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
-        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">&quot;fips_us&quot;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">&quot;state_code&quot;</span><span class="p">),</span>
-        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;expand_percentiles&quot;</span><span class="p">},</span>
+        <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">"fips_us"</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">"state_code"</span><span class="p">),</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"expand_percentiles"</span><span class="p">},</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
         <span class="n">args</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
-        <span class="n">service</span><span class="o">=</span><span class="s2">&quot;observationIntervals&quot;</span><span class="p">,</span>
+        <span class="n">service</span><span class="o">=</span><span class="s2">"observationIntervals"</span><span class="p">,</span>
         <span class="n">expand_percentiles</span><span class="o">=</span><span class="n">expand_percentiles</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;get_daily&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_continuous&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_latest_continuous&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_latest_daily&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_stats_por&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_stats_date_range&quot;</span><span class="p">,</span>
+    <span class="s2">"get_daily"</span><span class="p">,</span>
+    <span class="s2">"get_continuous"</span><span class="p">,</span>
+    <span class="s2">"get_latest_continuous"</span><span class="p">,</span>
+    <span class="s2">"get_latest_daily"</span><span class="p">,</span>
+    <span class="s2">"get_stats_por"</span><span class="p">,</span>
+    <span class="s2">"get_stats_date_range"</span><span class="p">,</span>
 <span class="p">]</span>
 </pre></div>
 

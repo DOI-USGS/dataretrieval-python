@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -357,7 +357,7 @@ skipping there would silently drop most of a batch; that silent loss is
 the failure mode this policy exists to prevent.</p>
 <p>A warning rather than a log line so it is visible by default. To make
 any skip fatal (strict all-or-nothing behavior):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">SkippedItemWarning</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">SkippedItemWarning</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Getters emit a subclass naming their surface (e.g.
@@ -616,6 +616,18 @@ intact — only the still-pending chunks are re-issued.</p>
             <span class="n">exc</span> <span class="o">=</span> <span class="n">next_exc</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted._format_message">
+<span class="sig-name descname"><span class="pre">_format_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">completed_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#FanOutInterrupted._format_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.FanOutInterrupted._format_message" title="Link to this definition"></a></dt>
+<dd><p>Build the exception message from the template, appending cause info.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted._resolve_status_code">
+<span class="sig-name descname"><span class="pre">_resolve_status_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#FanOutInterrupted._resolve_status_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.FanOutInterrupted._resolve_status_code" title="Link to this definition"></a></dt>
+<dd><p>Resolve the HTTP status code from the class default or cause chain.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.retryable">
 <span class="sig-name descname"><span class="pre">retryable</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.retryable" title="Link to this definition"></a></dt>

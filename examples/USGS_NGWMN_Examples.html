@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National Ground-Water Monitoring Network (NGWMN) &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>National Ground-Water Monitoring Network (NGWMN) &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -147,8 +147,8 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">providers</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_providers</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;WI&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">providers</span><span class="p">)</span><span class="si">}</span><span class="s2"> providers in WI&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">providers</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_providers</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">"WI"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">providers</span><span class="p">)</span><span class="si">}</span><span class="s2"> providers in WI"</span><span class="p">)</span>
 <span class="n">providers</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -258,9 +258,9 @@ Retrieving: providers · 1 page · 37 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_sites</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> NGWMN sites in Wisconsin&quot;</span><span class="p">)</span>
-<span class="n">sites</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;national_aquifer_description&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_sites</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">"Wisconsin"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> NGWMN sites in Wisconsin"</span><span class="p">)</span>
+<span class="n">sites</span><span class="p">[[</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="s2">"monitoring_location_name"</span><span class="p">,</span> <span class="s2">"national_aquifer_description"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -354,19 +354,19 @@ Retrieving: sites · 1 page · 175 rows
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-272838082142201&quot;</span>
+<span class="n">site</span> <span class="o">=</span> <span class="s2">"USGS-272838082142201"</span>
 <span class="n">wl</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">wl</span><span class="p">)</span><span class="si">}</span><span class="s2"> water-level observations at </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">wl</span><span class="p">)</span><span class="si">}</span><span class="s2"> water-level observations at </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">wl</span><span class="p">[</span><span class="s2">&quot;sample_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">&quot;sample_time&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">wl</span> <span class="o">=</span> <span class="n">wl</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample_time&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;sample_time&quot;</span><span class="p">)</span>
-<span class="n">depth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">&quot;water_depth_below_land_surface_ft&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span>
+<span class="n">wl</span><span class="p">[</span><span class="s2">"sample_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">"sample_time"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">wl</span> <span class="o">=</span> <span class="n">wl</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"sample_time"</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"sample_time"</span><span class="p">)</span>
+<span class="n">depth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">"water_depth_below_land_surface_ft"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">&quot;sample_time&quot;</span><span class="p">],</span> <span class="n">depth</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">wl</span><span class="p">[</span><span class="s2">"sample_time"</span><span class="p">],</span> <span class="n">depth</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>  <span class="c1"># depth increases downward</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Depth to water (ft below land surface)&quot;</span><span class="p">,</span>
-       <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;NGWMN water levels </span><span class="se">\u2014</span><span class="s2"> </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"Date"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"Depth to water (ft below land surface)"</span><span class="p">,</span>
+       <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"NGWMN water levels </span><span class="se">\u2014</span><span class="s2"> </span><span class="si">{</span><span class="n">site</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -401,14 +401,14 @@ Retrieving: waterLevelObs · 1 page · 16,065 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">windowed</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2022-01-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-01-01&quot;</span><span class="p">]</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="p">[</span><span class="s2">"2022-01-01"</span><span class="p">,</span> <span class="s2">"2024-01-01"</span><span class="p">]</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">windowed</span><span class="p">)</span><span class="si">}</span><span class="s2"> observations in 2022</span><span class="se">\u2013</span><span class="s2">2024&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">windowed</span><span class="p">)</span><span class="si">}</span><span class="s2"> observations in 2022</span><span class="se">\u2013</span><span class="s2">2024"</span><span class="p">)</span>
 
 <span class="n">multi</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-272838082142201&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-404159100494601&quot;</span><span class="p">]</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">"USGS-272838082142201"</span><span class="p">,</span> <span class="s2">"USGS-404159100494601"</span><span class="p">]</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">multi</span><span class="p">[</span><span class="s1">&#39;monitoring_location_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2"> sites, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">multi</span><span class="p">)</span><span class="si">}</span><span class="s2"> observations&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">multi</span><span class="p">[</span><span class="s1">'monitoring_location_id'</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span><span class="si">}</span><span class="s2"> sites, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">multi</span><span class="p">)</span><span class="si">}</span><span class="s2"> observations"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -454,7 +454,7 @@ No API key detected — register for higher rate limits at https://api.waterdata
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">construction</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_well_construction</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-<span class="n">construction</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_obs_number&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;material&quot;</span><span class="p">,</span> <span class="s2">&quot;depth_from&quot;</span><span class="p">,</span> <span class="s2">&quot;depth_to&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">construction</span><span class="p">[[</span><span class="s2">"monitoring_location_obs_number"</span><span class="p">,</span> <span class="s2">"type"</span><span class="p">,</span> <span class="s2">"material"</span><span class="p">,</span> <span class="s2">"depth_from"</span><span class="p">,</span> <span class="s2">"depth_to"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -521,8 +521,8 @@ Retrieving: constructionObs · 1 page · 2 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lithology</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_lithology</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;AKDNR-535134236016630&quot;</span><span class="p">)</span>
-<span class="n">lithology</span><span class="p">[[</span><span class="s2">&quot;lithology_depth_from&quot;</span><span class="p">,</span> <span class="s2">&quot;lithology_depth_to&quot;</span><span class="p">,</span> <span class="s2">&quot;lithology_description&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lithology</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_lithology</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"AKDNR-535134236016630"</span><span class="p">)</span>
+<span class="n">lithology</span><span class="p">[[</span><span class="s2">"lithology_depth_from"</span><span class="p">,</span> <span class="s2">"lithology_depth_to"</span><span class="p">,</span> <span class="s2">"lithology_description"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>

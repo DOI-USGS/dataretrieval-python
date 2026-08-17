@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>Retrieving site information &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -99,11 +99,11 @@ site type, drainage area, hydrologic unit, and so on.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05427718&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05427718"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;site_type&quot;</span><span class="p">,</span> <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span> <span class="s2">&quot;hydrologic_unit_code&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">info</span><span class="p">[[</span><span class="s2">"monitoring_location_name"</span><span class="p">,</span> <span class="s2">"site_type"</span><span class="p">,</span> <span class="s2">"drainage_area"</span><span class="p">,</span> <span class="s2">"hydrologic_unit_code"</span><span class="p">]]</span><span class="o">.</span><span class="n">T</span>
 <span class="go">                                                    0</span>
 <span class="go">monitoring_location_name  YAHARA RIVER AT WINDSOR, WI</span>
 <span class="go">site_type                                      Stream</span>
@@ -116,14 +116,14 @@ catalog that the legacy <code class="docutils literal notranslate"><span class="
 <code class="docutils literal notranslate"><span class="pre">get_time_series_metadata</span></code>. Each row is one time series; the <code class="docutils literal notranslate"><span class="pre">begin</span></code> and
 <code class="docutils literal notranslate"><span class="pre">end</span></code> columns give its period of record.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">series</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05427718&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05427718"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">series</span><span class="p">)</span>  <span class="c1"># number of available time series</span>
 <span class="go">22</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">series</span><span class="p">[[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;computation_period_identifier&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">series</span><span class="p">[[</span><span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"parameter_name"</span><span class="p">,</span> <span class="s2">"computation_period_identifier"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 <span class="go">  parameter_code        parameter_name computation_period_identifier</span>
 <span class="go">0          00045         Precipitation                        Points</span>
 <span class="go">1          91060  Orthophosphate, diss                         Daily</span>

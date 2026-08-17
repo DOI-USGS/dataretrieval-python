@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,12 +75,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.ogc.chunking</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;URL-byte chunk planning and dispatch for the OGC getters.</span>
+<span></span><span class="sd">"""URL-byte chunk planning and dispatch for the OGC getters.</span>
 
 <span class="sd">An OGC query has several chunkable axes: every multi-value list</span>
 <span class="sd">parameter (sites, parameter codes, …) plus the cql-text ``filter``,</span>
 <span class="sd">which splits along its top-level OR clauses. Any of them can fan the</span>
-<span class="sd">URL past the server&#39;s ~8 KB byte limit. ``ChunkPlan`` picks a fan-out</span>
+<span class="sd">URL past the server's ~8 KB byte limit. ``ChunkPlan`` picks a fan-out</span>
 <span class="sd">for each axis that minimizes total chunks while keeping every</span>
 <span class="sd">chunk URL under the budget. Requests that already fit get a</span>
 <span class="sd">trivial single-step plan — the executor has one code path either way.</span>
@@ -105,12 +105,12 @@
 <span class="sd">settings are resolved there, through the chain in</span>
 <span class="sd">:mod:`dataretrieval.configuration`.</span>
 
-<span class="sd">Dedup: list-axis chunks don&#39;t overlap; filter-axis chunks can, so</span>
+<span class="sd">Dedup: list-axis chunks don't overlap; filter-axis chunks can, so</span>
 <span class="sd">``_combine_chunk_frames`` dedupes by feature ``id``. ``properties``,</span>
 <span class="sd">``bbox``, date intervals, ``limit``, ``skip_geometry``, and</span>
 <span class="sd">``filter``/``filter_lang`` themselves are never sliced as list axes</span>
 <span class="sd">(the filter is partitioned along its top-level OR axis instead).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -135,7 +135,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
 
-<span class="c1"># Compatibility aliases. ``ChunkedCall`` was this module&#39;s executor before it</span>
+<span class="c1"># Compatibility aliases. ``ChunkedCall`` was this module's executor before it</span>
 <span class="c1"># moved down to transport as the API-neutral ``FanOut``; ``get_active_client``</span>
 <span class="c1"># and ``_chunked_client`` named its shared per-call client. Only the</span>
 <span class="c1"># chunking/progress test modules still use these names, and the rename is not</span>
@@ -148,7 +148,7 @@
 <span class="n">_chunked_client</span> <span class="o">=</span> <span class="n">_active_client</span>
 
 <span class="c1"># Empirically the API replies HTTP 414 above ~8200 bytes of full URL —</span>
-<span class="c1"># matches nginx&#39;s default ``large_client_header_buffers`` of 8 KB. 8000</span>
+<span class="c1"># matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000</span>
 <span class="c1"># leaves ~200 bytes for request-line framing and proxy variance. The decorator</span>
 <span class="c1"># resolves this module-level default at call time when ``url_limit`` is None,</span>
 <span class="c1"># so a test can ``monkeypatch.setattr`` it on this module.</span>
@@ -159,11 +159,11 @@
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.parallel_chunks">[docs]</a>
 <span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">parallel_chunks</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fan the OGC getters&#39; multi-value requests out into ``n`` parallel chunks.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Fan the OGC getters' multi-value requests out into ``n`` parallel chunks.</span>
 
 <span class="sd">    By default the Water Data / NGWMN getters chunk a request only as much as</span>
-<span class="sd">    the server&#39;s ~8 KB URL-byte limit forces — the fewest chunks that</span>
+<span class="sd">    the server's ~8 KB URL-byte limit forces — the fewest chunks that</span>
 <span class="sd">    fit. That is the safe default, but it can be *needlessly* conservative.</span>
 <span class="sd">    Because every chunk paginates, splitting a large result further costs</span>
 <span class="sd">    little or no extra quota *as long as each chunk still spans many</span>
@@ -177,7 +177,7 @@
 <span class="sd">    retry/resume.</span>
 
 <span class="sd">    This is a *deliberate* per-call knob rather than an automatic behavior or a</span>
-<span class="sd">    process-wide environment variable, because the library can&#39;t tell in</span>
+<span class="sd">    process-wide environment variable, because the library can't tell in</span>
 <span class="sd">    advance whether a query is large (ten states over a short window might fit</span>
 <span class="sd">    in a single page, where extra chunks would only burn quota). Scoping it to</span>
 <span class="sd">    a ``with`` block keeps an aggressive setting from leaking into unrelated</span>
@@ -189,7 +189,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
 <span class="sd">        The number of chunks to fan the whole call out into — a positive</span>
-<span class="sd">        integer such as ``2``, ``8``, or ``32``. It caps the plan&#39;s *total*</span>
+<span class="sd">        integer such as ``2``, ``8``, or ``32``. It caps the plan's *total*</span>
 <span class="sd">        chunk count (the cartesian product across every multi-value</span>
 <span class="sd">        argument combined, not per argument), so several multi-value arguments</span>
 <span class="sd">        cannot multiply past it. The cap is a ceiling, never exceeded: the</span>
@@ -197,7 +197,7 @@
 <span class="sd">        forces and above by ``n``. So an ``n`` larger than the input allows</span>
 <span class="sd">        simply yields one chunk per value, and with several multi-value</span>
 <span class="sd">        arguments the total may land somewhat below ``n`` because splits are</span>
-<span class="sd">        whole (the plan can&#39;t always divide evenly onto ``n``). ``n=1`` asks</span>
+<span class="sd">        whole (the plan can't always divide evenly onto ``n``). ``n=1`` asks</span>
 <span class="sd">        for no extra fan-out.</span>
 
 <span class="sd">        Each chunk fetches at least one page, so it costs at least one</span>
@@ -229,7 +229,7 @@
 <span class="sd">      ``max_rows``. So a call with ``max_rows`` set returns a *different*</span>
 <span class="sd">      (though still valid and deterministically sorted) row set inside a</span>
 <span class="sd">      ``parallel_chunks`` block than without one. The cap is drawn from the</span>
-<span class="sd">      union of the chunks, not a single stream. Don&#39;t pair a tight</span>
+<span class="sd">      union of the chunks, not a single stream. Don't pair a tight</span>
 <span class="sd">      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the</span>
 <span class="sd">      rows the un-fanned call would return.</span>
 <span class="sd">    - Resumability: a single request either fully succeeds or fully fails,</span>
@@ -238,7 +238,7 @@
 <span class="sd">      (or ``QuotaExhausted``) carrying the completed chunks. Finish the</span>
 <span class="sd">      call with ``exc.call.resume()``.</span>
 <span class="sd">    - Cross-chunk de-duplication keys on the feature ``id``; features</span>
-<span class="sd">      with no ``id`` can&#39;t be deduped, so overlapping filter clauses split</span>
+<span class="sd">      with no ``id`` can't be deduped, so overlapping filter clauses split</span>
 <span class="sd">      across chunks may yield duplicate rows.</span>
 
 <span class="sd">    Examples</span>
@@ -246,15 +246,15 @@
 <span class="sd">    &gt;&gt;&gt; from dataretrieval import waterdata</span>
 <span class="sd">    &gt;&gt;&gt; with waterdata.parallel_chunks(32):</span>
 <span class="sd">    ...     df, md = waterdata.get_daily(</span>
-<span class="sd">    ...         monitoring_location_id=many_sites, parameter_code=&quot;00060&quot;</span>
+<span class="sd">    ...         monitoring_location_id=many_sites, parameter_code="00060"</span>
 <span class="sd">    ...     )  # doctest: +SKIP</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    ChunkPlan._refine : the planning-side effect of ``n``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Fail loudly on a bad ``n`` at ``with`` entry, before any request -- and</span>
-    <span class="c1"># fail by the *setting&#39;s* grammar, not a second one written here. ``n`` is</span>
+    <span class="c1"># fail by the *setting's* grammar, not a second one written here. ``n`` is</span>
     <span class="c1"># ``parallel_chunks``: the same bool/Integral rejection and the same lower</span>
     <span class="c1"># bound, from the table that owns them, so raising the floor there cannot</span>
     <span class="c1"># leave this block accepting a value the chain would then refuse. Spelled</span>
@@ -262,7 +262,7 @@
     <span class="c1"># ``parallel_chunks(n)`` rather than the ``Configuration`` built below.</span>
     <span class="c1"># ``ConfigurationError`` is a ``ValueError``, so callers catching that</span>
     <span class="c1"># still catch this.</span>
-    <span class="n">_configuration</span><span class="o">.</span><span class="n">_validated_raw</span><span class="p">(</span><span class="s2">&quot;parallel_chunks&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="s2">&quot;parallel_chunks(n)&quot;</span><span class="p">)</span>
+    <span class="n">_configuration</span><span class="o">.</span><span class="n">_validated_raw</span><span class="p">(</span><span class="s2">"parallel_chunks"</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="s2">"parallel_chunks(n)"</span><span class="p">)</span>
     <span class="c1"># Sugar for a package-wide ``Configuration`` rather than a second scope of</span>
     <span class="c1"># its own: two competing ContextVars would let ``show_configuration()`` report a</span>
     <span class="c1"># value the chunker does not use. Sharing one means the innermost block</span>
@@ -280,7 +280,7 @@
     <span class="n">url_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decorate an async fetcher to transparently chunk over-budget requests.</span>
 
 <span class="sd">    Returns a callable that builds a :class:`ChunkPlan` from ``args``,</span>
@@ -324,7 +324,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    ChunkPlan : Planning shape (axes, partitioning, passthrough).</span>
 <span class="sd">    ChunkedCall : Per-chunk execution and resume semantics.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span>
         <span class="n">fetch</span><span class="p">:</span> <span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
@@ -360,7 +360,7 @@
                 <span class="n">canonical_url</span><span class="o">=</span><span class="n">plan</span><span class="o">.</span><span class="n">canonical_url</span><span class="p">,</span>
                 <span class="c1"># The collection name, for the progress line the executor</span>
                 <span class="c1"># opens. ``get_ogc_data`` puts it in ``args``.</span>
-                <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;collection&quot;</span><span class="p">),</span>
+                <span class="n">service</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"collection"</span><span class="p">),</span>
                 <span class="n">adapter</span><span class="o">=</span><span class="n">adapter</span><span class="p">,</span>
             <span class="p">)</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
 

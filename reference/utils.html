@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -130,7 +130,7 @@ resolving.</p>
 value needs a single declaration instead of a <code class="docutils literal notranslate"><span class="pre">var</span></code> + setter-function pair.
 Read the current value with <a class="reference internal" href="#dataretrieval.utils.Ambient.get" title="dataretrieval.utils.Ambient.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get()</span></code></a>; set it for a <code class="docutils literal notranslate"><span class="pre">with</span></code> block by
 calling the instance. The previous value is restored on exit:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">_base_url</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">&quot;ogc_base_url&quot;</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">_base_url</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">"ogc_base_url"</span><span class="p">,</span> <span class="n">DEFAULT</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">_base_url</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
     <span class="n">_base_url</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>  <span class="c1"># -&gt; other</span>
 </pre></div>
@@ -298,11 +298,11 @@ string. Default value is a comma.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_str</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-<span class="go">&#39;1,a,2&#39;</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_str</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">'1,a,2'</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_str</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">)</span>
-<span class="go">&#39;0+10+42&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataretrieval</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_str</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">"+"</span><span class="p">)</span>
+<span class="go">'0+10+42'</span>
 </pre></div>
 </div>
 </dd></dl>

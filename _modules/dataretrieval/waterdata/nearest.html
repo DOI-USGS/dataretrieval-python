@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,10 +75,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.waterdata.nearest</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;``get_nearest_continuous``: nearest-timestamp convenience on top of</span>
+<span></span><span class="sd">"""``get_nearest_continuous``: nearest-timestamp convenience on top of</span>
 <span class="sd">``get_continuous``. Built on the CQL ``filter`` passthrough; only</span>
 <span class="sd">``get_nearest_continuous`` is public — everything else is package-private.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -96,15 +96,15 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_nearest_continuous&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"get_nearest_continuous"</span><span class="p">]</span>
 
 
-<span class="n">OnTie</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;first&quot;</span><span class="p">,</span> <span class="s2">&quot;last&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]</span>
+<span class="n">OnTie</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"first"</span><span class="p">,</span> <span class="s2">"last"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">]</span>
 <span class="n">_VALID_ON_TIE</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OnTie</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">OnTie</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ResumableCall</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural subset of a fan-out call needed by the outer decorator.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Structural subset of a fan-out call needed by the outer decorator."""</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">partial_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span> <span class="o">...</span>
@@ -116,32 +116,32 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_MutableInterruption</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writable call slot exposed by fan-out interruption instances.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Writable call slot exposed by fan-out interruption instances."""</span>
 
     <span class="n">call</span><span class="p">:</span> <span class="n">_ResumableCall</span> <span class="o">|</span> <span class="kc">None</span>
 
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">_NearestSelector</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Immutable policy for selecting nearest rows from continuous data.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Immutable policy for selecting nearest rows from continuous data."""</span>
 
     <span class="n">targets</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span>
     <span class="n">window</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span>
     <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the public nearest-per-target shape to continuous rows.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Apply the public nearest-per-target shape to continuous rows."""</span>
         <span class="k">return</span> <span class="n">_select_nearest_rows</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_tie</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">select_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select partial rows, including the no-completed-chunks shape.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Select partial rows, including the no-completed-chunks shape."""</span>
+        <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">"time"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">frame</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_empty_nearest_result</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_NearestCall</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Preserve nearest-result semantics around an interrupted inner call.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Preserve nearest-result semantics around an interrupted inner call."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inner</span><span class="p">:</span> <span class="n">_ResumableCall</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">_NearestSelector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span> <span class="o">=</span> <span class="n">inner</span>
@@ -149,16 +149,16 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">partial_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the live partial rows in the outer getter&#39;s shape.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the live partial rows in the outer getter's shape."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_selector</span><span class="o">.</span><span class="n">select_partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">partial_frame</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">partial_response</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pass through the inner call&#39;s live aggregate response.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Pass through the inner call's live aggregate response."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">partial_response</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resume inner work and apply the outer getter&#39;s selection.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resume inner work and apply the outer getter's selection."""</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">frame</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inner</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">FanOutInterrupted</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
@@ -171,10 +171,10 @@
     <span class="n">exc</span><span class="p">:</span> <span class="n">FanOutInterrupted</span><span class="p">,</span>
     <span class="n">selector</span><span class="p">:</span> <span class="n">_NearestSelector</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorate one inner interruption with the outer getter&#39;s semantics.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Decorate one inner interruption with the outer getter's semantics."""</span>
     <span class="n">exc</span><span class="o">.</span><span class="n">partial_frame</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">select_partial</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">partial_frame</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">call</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cast</span><span class="p">(</span><span class="s2">&quot;_MutableInterruption&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">_NearestCall</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span>
+        <span class="n">cast</span><span class="p">(</span><span class="s2">"_MutableInterruption"</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">_NearestCall</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">call</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_nearest_continuous">
@@ -184,11 +184,11 @@
     <span class="n">monitoring_location_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parameter_code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">window</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">=</span> <span class="s2">&quot;PT7M30S&quot;</span><span class="p">,</span>
-    <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span> <span class="o">=</span> <span class="s2">&quot;first&quot;</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">=</span> <span class="s2">"PT7M30S"</span><span class="p">,</span>
+    <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span> <span class="o">=</span> <span class="s2">"first"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the nearest continuous observation to each target timestamp.</span>
+<span class="w">    </span><span class="sd">"""Return the nearest continuous observation to each target timestamp.</span>
 
 <span class="sd">    Builds one bracketed ``(time &gt;= t-window AND time &lt;= t+window)`` clause</span>
 <span class="sd">    per target, joins them as a top-level CQL ``OR`` filter, and lets</span>
@@ -198,8 +198,8 @@
 
 <span class="sd">    The USGS continuous endpoint matches ``time`` parameters exactly rather</span>
 <span class="sd">    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;</span>
-<span class="sd">    this function is the single-round-trip way to ask &quot;what reading is</span>
-<span class="sd">    nearest this timestamp?&quot; for many timestamps at once.</span>
+<span class="sd">    this function is the single-round-trip way to ask "what reading is</span>
+<span class="sd">    nearest this timestamp?" for many timestamps at once.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -211,30 +211,30 @@
 <span class="sd">        Forwarded to ``get_continuous``.</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        Forwarded to ``get_continuous``.</span>
-<span class="sd">    window : string or ``pandas.Timedelta``, default ``&quot;PT7M30S&quot;``</span>
+<span class="sd">    window : string or ``pandas.Timedelta``, default ``"PT7M30S"``</span>
 <span class="sd">        Half-window around each target, as an ISO 8601 duration</span>
-<span class="sd">        (``&quot;PT7M30S&quot;``, ``&quot;PT15M&quot;``, ``&quot;PT1H&quot;``, etc.). Also accepts</span>
+<span class="sd">        (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.). Also accepts</span>
 <span class="sd">        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``</span>
-<span class="sd">        (``&quot;00:07:30&quot;``), pandas shorthand (``&quot;7min30s&quot;``,</span>
-<span class="sd">        ``&quot;450s&quot;``), or a ``pd.Timedelta`` directly. See the</span>
+<span class="sd">        (``"00:07:30"``), pandas shorthand (``"7min30s"``,</span>
+<span class="sd">        ``"450s"``), or a ``pd.Timedelta`` directly. See the</span>
 <span class="sd">        `pandas.Timedelta docs</span>
 <span class="sd">        &lt;https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html&gt;`_</span>
 <span class="sd">        for the full grammar.</span>
 
-<span class="sd">        Must be small enough that every target&#39;s window captures</span>
+<span class="sd">        Must be small enough that every target's window captures</span>
 <span class="sd">        roughly one observation at the service cadence. The default</span>
 <span class="sd">        matches a 15-minute continuous gage; widen (e.g.</span>
-<span class="sd">        ``&quot;PT15M&quot;``) for irregular cadences or resilience to data</span>
+<span class="sd">        ``"PT15M"``) for irregular cadences or resilience to data</span>
 <span class="sd">        gaps.</span>
-<span class="sd">    on_tie : {&quot;first&quot;, &quot;last&quot;, &quot;mean&quot;}, default ``&quot;first&quot;``</span>
+<span class="sd">    on_tie : {"first", "last", "mean"}, default ``"first"``</span>
 <span class="sd">        How to resolve ties when two observations are exactly equidistant</span>
 <span class="sd">        from a target (which happens when the target falls at the midpoint</span>
 <span class="sd">        between grid points — e.g. target ``10:22:30`` for a 15-minute</span>
 <span class="sd">        gage).</span>
 
-<span class="sd">        - ``&quot;first&quot;``: keep the earlier observation.</span>
-<span class="sd">        - ``&quot;last&quot;``:  keep the later observation.</span>
-<span class="sd">        - ``&quot;mean&quot;``:  average numeric columns; set the ``time`` column to</span>
+<span class="sd">        - ``"first"``: keep the earlier observation.</span>
+<span class="sd">        - ``"last"``:  keep the later observation.</span>
+<span class="sd">        - ``"mean"``:  average numeric columns; set the ``time`` column to</span>
 <span class="sd">          the target, since no real observation exists at the midpoint.</span>
 
 <span class="sd">    **kwargs</span>
@@ -264,14 +264,14 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    *Window sizing and ties.* When ``window`` is exactly half the service</span>
-<span class="sd">    cadence, most targets&#39; windows contain a single observation and</span>
+<span class="sd">    cadence, most targets' windows contain a single observation and</span>
 <span class="sd">    ``on_tie`` is moot. Ties arise only when a target sits exactly at the</span>
 <span class="sd">    midpoint between two grid observations — rare in practice but possible.</span>
 <span class="sd">    Setting ``window`` to a full cadence (or larger) guarantees at least one</span>
 <span class="sd">    observation per target in steady state at the cost of more bytes per</span>
 <span class="sd">    response.</span>
 
-<span class="sd">    *Why windowed CQL rather than sort+limit.* The API&#39;s advertised</span>
+<span class="sd">    *Why windowed CQL rather than sort+limit.* The API's advertised</span>
 <span class="sd">    ``sortby`` parameter would make this a one-liner per target (``filter``</span>
 <span class="sd">    by ``time &lt;= t`` and ``limit 1``), but it is per-query — you would need</span>
 <span class="sd">    one HTTP round-trip per target. The CQL ``OR``-chain approach folds</span>
@@ -287,32 +287,32 @@
 <span class="sd">        &gt;&gt;&gt; # Pair three off-grid timestamps with nearby observations</span>
 <span class="sd">        &gt;&gt;&gt; targets = pd.to_datetime(</span>
 <span class="sd">        ...     [</span>
-<span class="sd">        ...         &quot;2023-06-15T10:30:31Z&quot;,</span>
-<span class="sd">        ...         &quot;2023-06-15T14:07:12Z&quot;,</span>
-<span class="sd">        ...         &quot;2023-06-16T03:45:19Z&quot;,</span>
+<span class="sd">        ...         "2023-06-15T10:30:31Z",</span>
+<span class="sd">        ...         "2023-06-15T14:07:12Z",</span>
+<span class="sd">        ...         "2023-06-16T03:45:19Z",</span>
 <span class="sd">        ...     ]</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_nearest_continuous(</span>
 <span class="sd">        ...     targets,</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Widen the window for an irregular-cadence gage</span>
 <span class="sd">        &gt;&gt;&gt; df, md = waterdata.get_nearest_continuous(</span>
 <span class="sd">        ...     targets,</span>
-<span class="sd">        ...     monitoring_location_id=&quot;USGS-02238500&quot;,</span>
-<span class="sd">        ...     parameter_code=&quot;00060&quot;,</span>
-<span class="sd">        ...     window=&quot;PT30M&quot;,</span>
-<span class="sd">        ...     on_tie=&quot;mean&quot;,</span>
+<span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
+<span class="sd">        ...     parameter_code="00060",</span>
+<span class="sd">        ...     window="PT30M",</span>
+<span class="sd">        ...     on_tie="mean",</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
     <span class="n">target_index</span> <span class="o">=</span> <span class="n">_coerce_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
     <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;targets must contain at least one timestamp&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"targets must contain at least one timestamp"</span><span class="p">)</span>
 
     <span class="n">selector</span> <span class="o">=</span> <span class="n">_NearestSelector</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
     <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
@@ -321,7 +321,7 @@
             <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">monitoring_location_id</span><span class="p">,</span>
             <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span>
             <span class="nb">filter</span><span class="o">=</span><span class="n">filter_expr</span><span class="p">,</span>
-            <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+            <span class="n">filter_lang</span><span class="o">=</span><span class="s2">"cql-text"</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="n">FanOutInterrupted</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
@@ -337,19 +337,19 @@
     <span class="n">window_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
     <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply the public nearest-per-target shape to continuous rows.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;time&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Apply the public nearest-per-target shape to continuous rows."""</span>
+    <span class="k">if</span> <span class="s2">"time"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;get_nearest_continuous requires a &#39;time&#39; column in the response; &quot;</span>
-            <span class="s2">&quot;if a `properties` kwarg was passed, include &#39;time&#39; in it&quot;</span>
+            <span class="s2">"get_nearest_continuous requires a 'time' column in the response; "</span>
+            <span class="s2">"if a `properties` kwarg was passed, include 'time' in it"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_empty_nearest_result</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
     <span class="n">site_groups</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;monitoring_location_id&quot;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"monitoring_location_id"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
         <span class="k">else</span> <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="p">)]</span>
     <span class="p">)</span>
 
@@ -365,12 +365,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Accept anything ``pandas.to_datetime`` consumes, including a single value.</span>
+<span class="w">    </span><span class="sd">"""Accept anything ``pandas.to_datetime`` consumes, including a single value.</span>
 
 <span class="sd">    A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a</span>
 <span class="sd">    one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)</span>
 <span class="sd">    is wrapped directly so its elements are preserved.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">parsed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_scalar</span><span class="p">(</span><span class="n">parsed</span><span class="p">):</span>
         <span class="n">parsed</span> <span class="o">=</span> <span class="p">[</span><span class="n">parsed</span><span class="p">]</span>
@@ -378,28 +378,28 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reject kwargs the helper owns; validate ``on_tie``.&quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;filter&quot;</span><span class="p">,</span> <span class="s2">&quot;filter_lang&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reject kwargs the helper owns; validate ``on_tie``."""</span>
+    <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"filter_lang"</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;get_nearest_continuous constructs its own </span><span class="si">{</span><span class="n">forbidden</span><span class="si">!r}</span><span class="s2">; &quot;</span>
-                <span class="s2">&quot;do not pass it directly&quot;</span>
+                <span class="sa">f</span><span class="s2">"get_nearest_continuous constructs its own </span><span class="si">{</span><span class="n">forbidden</span><span class="si">!r}</span><span class="s2">; "</span>
+                <span class="s2">"do not pass it directly"</span>
             <span class="p">)</span>
-    <span class="n">require_one_of</span><span class="p">(</span><span class="n">on_tie</span><span class="p">,</span> <span class="n">_VALID_ON_TIE</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;on_tie&quot;</span><span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">on_tie</span><span class="p">,</span> <span class="n">_VALID_ON_TIE</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"on_tie"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_window_or_filter</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span> <span class="n">window_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the CQL OR-chain of ``time &gt;= ... AND time &lt;= ...`` windows.</span>
+<span class="w">    </span><span class="sd">"""Build the CQL OR-chain of ``time &gt;= ... AND time &lt;= ...`` windows.</span>
 
 <span class="sd">    ``get_continuous`` auto-chunks the result if the full URL would</span>
-<span class="sd">    exceed the server&#39;s length limit, so this is always safe to build</span>
+<span class="sd">    exceed the server's length limit, so this is always safe to build</span>
 <span class="sd">    as one string even for many targets.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ"</span>
     <span class="n">lowers</span> <span class="o">=</span> <span class="p">(</span><span class="n">targets</span> <span class="o">-</span> <span class="n">window_td</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
     <span class="n">uppers</span> <span class="o">=</span> <span class="p">(</span><span class="n">targets</span> <span class="o">+</span> <span class="n">window_td</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;(time &gt;= &#39;</span><span class="si">{</span><span class="n">lo</span><span class="si">}</span><span class="s2">&#39; AND time &lt;= &#39;</span><span class="si">{</span><span class="n">up</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+    <span class="k">return</span> <span class="s2">" OR "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"(time &gt;= '</span><span class="si">{</span><span class="n">lo</span><span class="si">}</span><span class="s2">' AND time &lt;= '</span><span class="si">{</span><span class="n">up</span><span class="si">}</span><span class="s2">')"</span>
         <span class="k">for</span> <span class="n">lo</span><span class="p">,</span> <span class="n">up</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lowers</span><span class="p">,</span> <span class="n">uppers</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="p">)</span>
 
@@ -410,39 +410,39 @@
     <span class="n">window_td</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">,</span>
     <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the single row within ``window_td`` of ``target``, or ``None``.</span>
+<span class="w">    </span><span class="sd">"""Return the single row within ``window_td`` of ``target``, or ``None``.</span>
 
 <span class="sd">    Resolves ties (two rows equidistant from ``target``) per ``on_tie``.</span>
 <span class="sd">    The returned row carries a ``target_time`` column identifying which</span>
 <span class="sd">    target it was selected for.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">in_window</span> <span class="o">=</span> <span class="n">site_df</span><span class="p">[</span>
-        <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">target</span> <span class="o">-</span> <span class="n">window_td</span><span class="p">)</span>
-        <span class="o">&amp;</span> <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">target</span> <span class="o">+</span> <span class="n">window_td</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">target</span> <span class="o">-</span> <span class="n">window_td</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">site_df</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">target</span> <span class="o">+</span> <span class="n">window_td</span><span class="p">)</span>
     <span class="p">]</span>
     <span class="k">if</span> <span class="n">in_window</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">deltas</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_window</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-    <span class="n">candidates</span> <span class="o">=</span> <span class="n">in_window</span><span class="p">[</span><span class="n">deltas</span> <span class="o">==</span> <span class="n">deltas</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+    <span class="n">deltas</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_window</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="n">in_window</span><span class="p">[</span><span class="n">deltas</span> <span class="o">==</span> <span class="n">deltas</span><span class="o">.</span><span class="n">min</span><span class="p">()]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">&quot;first&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">"first"</span><span class="p">:</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">&quot;last&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">on_tie</span> <span class="o">==</span> <span class="s2">"last"</span><span class="p">:</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>  <span class="c1"># &quot;mean&quot; — average numeric cols, set time to the target.</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># "mean" — average numeric cols, set time to the target.</span>
         <span class="n">row</span> <span class="o">=</span> <span class="n">candidates</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">candidates</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s2">&quot;number&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">candidates</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s2">"number"</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">candidates</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
 
-    <span class="n">row</span><span class="p">[</span><span class="s2">&quot;target_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="n">row</span><span class="p">[</span><span class="s2">"target_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span>
     <span class="k">return</span> <span class="n">row</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_empty_nearest_result</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Empty frame matching ``template``&#39;s columns plus a ``target_time``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Empty frame matching ``template``'s columns plus a ``target_time``."""</span>
     <span class="n">base</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">base</span><span class="p">[</span><span class="s2">&quot;target_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;datetime64[ns, UTC]&quot;</span><span class="p">)</span>
+    <span class="n">base</span><span class="p">[</span><span class="s2">"target_time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">"datetime64[ns, UTC]"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">base</span>
 </pre></div>
 

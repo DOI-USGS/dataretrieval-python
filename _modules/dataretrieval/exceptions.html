@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.exceptions</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Exception taxonomy for ``dataretrieval``.</span>
+<span></span><span class="sd">"""Exception taxonomy for ``dataretrieval``.</span>
 
 <span class="sd">Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,</span>
 <span class="sd">``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request</span>
@@ -87,7 +87,7 @@
 
 <span class="sd">Most failures are an :class:`HTTPError` carrying the response ``.status_code``,</span>
 <span class="sd">of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest</span>
-<span class="sd">aren&#39;t a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
+<span class="sd">aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
 <span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
 <span class="sd">:func:`error_for_status` maps a status to its type. ``ConfigurationError`` is</span>
@@ -102,7 +102,7 @@
 <span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
 <span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
 <span class="sd">or httpx, and without risking an import cycle.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -115,29 +115,29 @@
     <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;DataRetrievalError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;HTTPError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;TransientError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;RateLimited&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ServiceUnavailable&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;RequestTooLarge&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;URLTooLong&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Unchunkable&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;NetworkError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;NoSitesError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ConfigurationError&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;DataCurrencyWarning&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SkippedItemWarning&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;SkippedRatingWarning&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;error_for_status&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;parse_retry_after&quot;</span><span class="p">,</span>
+    <span class="s2">"DataRetrievalError"</span><span class="p">,</span>
+    <span class="s2">"HTTPError"</span><span class="p">,</span>
+    <span class="s2">"TransientError"</span><span class="p">,</span>
+    <span class="s2">"RateLimited"</span><span class="p">,</span>
+    <span class="s2">"ServiceUnavailable"</span><span class="p">,</span>
+    <span class="s2">"RequestTooLarge"</span><span class="p">,</span>
+    <span class="s2">"URLTooLong"</span><span class="p">,</span>
+    <span class="s2">"Unchunkable"</span><span class="p">,</span>
+    <span class="s2">"NetworkError"</span><span class="p">,</span>
+    <span class="s2">"NoSitesError"</span><span class="p">,</span>
+    <span class="s2">"ConfigurationError"</span><span class="p">,</span>
+    <span class="s2">"DataCurrencyWarning"</span><span class="p">,</span>
+    <span class="s2">"SkippedItemWarning"</span><span class="p">,</span>
+    <span class="s2">"SkippedRatingWarning"</span><span class="p">,</span>
+    <span class="s2">"error_for_status"</span><span class="p">,</span>
+    <span class="s2">"parse_retry_after"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="DataRetrievalError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataRetrievalError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for every ``dataretrieval`` error.</span>
+<span class="w">    </span><span class="sd">"""Base class for every ``dataretrieval`` error.</span>
 
 <span class="sd">    Almost every member is a failed request, and the read-anywhere fields below</span>
 <span class="sd">    describe one. The exception is :class:`ConfigurationError`, which reports a</span>
@@ -164,7 +164,7 @@
 <span class="sd">    Connection-level failures (timeouts, DNS) remain subclasses of this base:</span>
 <span class="sd">    :class:`NetworkError` when deterministic, or a resumable</span>
 <span class="sd">    ``ServiceInterrupted`` when recoverable fan-out retries are exhausted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1">#: HTTP status that triggered the error, or ``None`` for errors without one</span>
     <span class="c1">#: (connection failure, too-long URL, no data). Set by :class:`HTTPError`.</span>
@@ -179,7 +179,7 @@
 
     <span class="c1"># These errors get pickled back across process boundaries (a lithops /</span>
     <span class="c1"># multiprocessing worker returns whatever it raises). Default ``BaseException``</span>
-    <span class="c1"># pickling rebuilds via ``cls(*args)``, which these subclasses can&#39;t survive --</span>
+    <span class="c1"># pickling rebuilds via ``cls(*args)``, which these subclasses can't survive --</span>
     <span class="c1"># keyword-only constructor fields, and ``ChunkInterrupted`` builds its message</span>
     <span class="c1"># internally. So reconstruct via ``__new__`` + the standard getstate/setstate</span>
     <span class="c1"># protocol, bypassing ``__init__``; a subclass drops unpicklable state by</span>
@@ -188,20 +188,20 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">_new_error</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">())</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"args"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">state</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;args&quot;</span><span class="p">,</span> <span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"args"</span><span class="p">,</span> <span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_new_error</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DataRetrievalError</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DataRetrievalError</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a blank :class:`DataRetrievalError` for unpickling.</span>
+<span class="w">    </span><span class="sd">"""Build a blank :class:`DataRetrievalError` for unpickling.</span>
 
 <span class="sd">    Bypasses ``__init__``; pickle then calls ``__setstate__`` to restore state.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
 
@@ -211,12 +211,12 @@
 <div class="viewcode-block" id="HTTPError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.HTTPError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HTTPError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The service returned an error HTTP status.</span>
+<span class="w">    </span><span class="sd">"""The service returned an error HTTP status.</span>
 
 <span class="sd">    The numeric status is on :attr:`status_code`; branch on it, e.g.</span>
 <span class="sd">    ``except HTTPError as e: ... if e.status_code == 404``. :class:`TransientError`</span>
 <span class="sd">    (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one</span>
-<span class="sd">    exception to &quot;a status is an ``HTTPError``&quot; is a request the service rejects</span>
+<span class="sd">    exception to "a status is an ``HTTPError``" is a request the service rejects</span>
 <span class="sd">    as too long: it surfaces as :class:`URLTooLong` (a :class:`RequestTooLarge`),</span>
 <span class="sd">    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain of</span>
 <span class="sd">    spanning every failure. See :func:`error_for_status` for the full mapping.</span>
@@ -227,7 +227,7 @@
 <span class="sd">        Human-readable error message.</span>
 <span class="sd">    status_code : int</span>
 <span class="sd">        The HTTP status the service returned.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">status_code</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -238,7 +238,7 @@
 <div class="viewcode-block" id="TransientError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.TransientError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TransientError</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A 429 or 5xx the server may serve on a later try.</span>
+<span class="w">    </span><span class="sd">"""A 429 or 5xx the server may serve on a later try.</span>
 
 <span class="sd">    :class:`RateLimited` covers 429 and :class:`ServiceUnavailable` covers 5xx.</span>
 
@@ -252,13 +252,13 @@
 <span class="sd">    message : str</span>
 <span class="sd">        Human-readable error message.</span>
 <span class="sd">    status_code : int, optional</span>
-<span class="sd">        The HTTP status the service returned. Defaults to the leaf&#39;s canonical</span>
+<span class="sd">        The HTTP status the service returned. Defaults to the leaf's canonical</span>
 <span class="sd">        code (429 / 503) when omitted; :func:`error_for_status` always passes the</span>
 <span class="sd">        real status.</span>
 <span class="sd">    retry_after : float, optional</span>
 <span class="sd">        Seconds to wait before retrying, parsed from the ``Retry-After`` response</span>
 <span class="sd">        header; ``None`` when the header is absent or unparseable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -276,11 +276,11 @@
         <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">status_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_DEFAULT_STATUS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_DEFAULT_STATUS"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">status_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> requires status_code &quot;</span>
-                <span class="s2">&quot;(only the RateLimited / ServiceUnavailable leaves default it)&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> requires status_code "</span>
+                <span class="s2">"(only the RateLimited / ServiceUnavailable leaves default it)"</span>
             <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="n">status_code</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">retry_after</span> <span class="o">=</span> <span class="n">retry_after</span></div>
@@ -290,7 +290,7 @@
 <div class="viewcode-block" id="RateLimited">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.RateLimited">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RateLimited</span><span class="p">(</span><span class="n">TransientError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A request was rejected with HTTP 429 (too many requests).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A request was rejected with HTTP 429 (too many requests)."""</span>
 
     <span class="n">_DEFAULT_STATUS</span> <span class="o">=</span> <span class="mi">429</span></div>
 
@@ -299,58 +299,58 @@
 <div class="viewcode-block" id="ServiceUnavailable">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.ServiceUnavailable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ServiceUnavailable</span><span class="p">(</span><span class="n">TransientError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A request was rejected with a server error (HTTP 5xx).</span>
+<span class="w">    </span><span class="sd">"""A request was rejected with a server error (HTTP 5xx).</span>
 
 <span class="sd">    Raised by both the legacy ``query`` path and the Water Data path, so a 5xx</span>
 <span class="sd">    surfaces as one type whichever subsystem issued the request. ``.status_code``</span>
 <span class="sd">    holds the actual 5xx; it falls back to 503 only on a bare hand-construction.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_DEFAULT_STATUS</span> <span class="o">=</span> <span class="mi">503</span></div>
 
 
 
-<span class="c1"># --- Request can&#39;t fit (not necessarily an HTTP status) ------------------</span>
+<span class="c1"># --- Request can't fit (not necessarily an HTTP status) ------------------</span>
 
 
 <div class="viewcode-block" id="RequestTooLarge">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.RequestTooLarge">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RequestTooLarge</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The request is too large for the service to satisfy.</span>
+<span class="w">    </span><span class="sd">"""The request is too large for the service to satisfy.</span>
 
 <span class="sd">    Base for the two ways that happens; catch it to handle either:</span>
 <span class="sd">    :class:`URLTooLong` (a single request rejected for length) and</span>
 <span class="sd">    :class:`Unchunkable` (a Water Data call the chunker could not split small</span>
 <span class="sd">    enough to fit).</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
 <div class="viewcode-block" id="URLTooLong">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.URLTooLong">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">URLTooLong</span><span class="p">(</span><span class="n">RequestTooLarge</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A single request URL was too long for the service.</span>
+<span class="w">    </span><span class="sd">"""A single request URL was too long for the service.</span>
 
 <span class="sd">    Raised on the legacy ``query`` path (which sends one un-chunked request),</span>
 <span class="sd">    whether the URL is rejected client-side before sending or by the server</span>
 <span class="sd">    (see :func:`error_for_status`). Remediation: query fewer sites, or split the</span>
 <span class="sd">    call manually.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
 <div class="viewcode-block" id="Unchunkable">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.Unchunkable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Unchunkable</span><span class="p">(</span><span class="n">RequestTooLarge</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;No chunking plan fits the URL byte limit.</span>
+<span class="w">    </span><span class="sd">"""No chunking plan fits the URL byte limit.</span>
 
 <span class="sd">    Raised by the Water Data chunker when even the smallest reducible plan</span>
 <span class="sd">    (every list axis at one atom per chunk, the filter at one clause per</span>
-<span class="sd">    chunk) still exceeds the server&#39;s byte limit. Unlike</span>
+<span class="sd">    chunk) still exceeds the server's byte limit. Unlike</span>
 <span class="sd">    :class:`URLTooLong`, then, automatic splitting has already been tried and</span>
 <span class="sd">    exhausted. Shrink the input lists, simplify the filter, or split the call</span>
 <span class="sd">    manually.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
@@ -360,7 +360,7 @@
 <div class="viewcode-block" id="NetworkError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.NetworkError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NetworkError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The request never completed a round-trip to the service.</span>
+<span class="w">    </span><span class="sd">"""The request never completed a round-trip to the service.</span>
 
 <span class="sd">    A DNS failure, refused connection, or timeout stopped it, so no HTTP</span>
 <span class="sd">    response arrived to classify.</span>
@@ -368,7 +368,7 @@
 <span class="sd">    Wraps the underlying ``httpx`` transport exception, preserved on</span>
 <span class="sd">    ``__cause__``. Worth retrying (:attr:`~DataRetrievalError.retryable` is</span>
 <span class="sd">    ``True``), but carries no ``.status_code`` because no response came back.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
 
@@ -380,7 +380,7 @@
 <div class="viewcode-block" id="ConfigurationError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.ConfigurationError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConfigurationError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A ``dataretrieval`` setting holds a value that can&#39;t be used, so no</span>
+<span class="w">    </span><span class="sd">"""A ``dataretrieval`` setting holds a value that can't be used, so no</span>
 <span class="sd">    request was issued -- an environment variable, a policy field, a malformed</span>
 <span class="sd">    ``config.toml``, or a profile the file does not define.</span>
 
@@ -392,7 +392,7 @@
 <span class="sd">    :class:`ValueError`, so code that already treats a bad setting as one keeps</span>
 <span class="sd">    working whether the value came from the environment, a file, or a</span>
 <span class="sd">    :func:`dataretrieval.configure` block.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
@@ -402,20 +402,20 @@
 <div class="viewcode-block" id="NoSitesError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.NoSitesError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NoSitesError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A request succeeded (HTTP 200) but matched no sites/data.</span>
+<span class="w">    </span><span class="sd">"""A request succeeded (HTTP 200) but matched no sites/data.</span>
 
 <span class="sd">    A no-data result is normally **not** an error: the modern getters</span>
 <span class="sd">    (``waterdata``, ``wqp``, ``nldi``) return an empty ``DataFrame``. Only the</span>
 <span class="sd">    deprecated ``nwis`` (waterservices) path still raises this.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="s2">&quot;No sites/data found using the selection criteria specified in &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="s2">"No sites/data found using the selection criteria specified in "</span>
+            <span class="sa">f</span><span class="s2">"url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span></div>
 
 
@@ -426,18 +426,18 @@
 <div class="viewcode-block" id="DataCurrencyWarning">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.DataCurrencyWarning">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataCurrencyWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An upstream dataset is frozen, retired, or no longer updated.</span>
+<span class="w">    </span><span class="sd">"""An upstream dataset is frozen, retired, or no longer updated.</span>
 
 <span class="sd">    Distinct from ``DeprecationWarning``, which promises that a *name in this</span>
 <span class="sd">    package* is going away and gives the caller something to migrate to. Here</span>
-<span class="sd">    the API is fine and there is nothing to migrate: the service&#39;s own data</span>
+<span class="sd">    the API is fine and there is nothing to migrate: the service's own data</span>
 <span class="sd">    has stopped moving, and only the caller can judge whether that matters.</span>
 
 <span class="sd">    It is a ``UserWarning`` for that reason. Emitting it as a</span>
 <span class="sd">    ``DeprecationWarning`` meant a downstream project running</span>
 <span class="sd">    ``-W error::DeprecationWarning`` -- ordinary CI hygiene -- could not call</span>
 <span class="sd">    the affected getters with their default arguments at all.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
@@ -447,12 +447,12 @@
 <div class="viewcode-block" id="SkippedItemWarning">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.SkippedItemWarning">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SkippedItemWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;One item of a batched retrieval was skipped; the rest were returned.</span>
+<span class="w">    </span><span class="sd">"""One item of a batched retrieval was skipped; the rest were returned.</span>
 
 <span class="sd">    The policy for batch getters whose items are independent documents: an</span>
 <span class="sd">    item that fails *deterministically* -- so retrying would reproduce the</span>
 <span class="sd">    failure -- is dropped from the result under a warning naming it, because</span>
-<span class="sd">    aborting would discard every other item&#39;s data over one bad entry.</span>
+<span class="sd">    aborting would discard every other item's data over one bad entry.</span>
 <span class="sd">    Transient failures (429 / 5xx / timeouts / connection drops) are never</span>
 <span class="sd">    skipped -- they are retried and, if retries run out, raised as a</span>
 <span class="sd">    resumable interruption. Rate limiting in particular is systematic, so</span>
@@ -462,26 +462,26 @@
 <span class="sd">    A warning rather than a log line so it is visible by default. To make</span>
 <span class="sd">    any skip fatal (strict all-or-nothing behavior)::</span>
 
-<span class="sd">        warnings.filterwarnings(&quot;error&quot;, category=SkippedItemWarning)</span>
+<span class="sd">        warnings.filterwarnings("error", category=SkippedItemWarning)</span>
 
 <span class="sd">    Getters emit a subclass naming their surface (e.g.</span>
 <span class="sd">    :class:`SkippedRatingWarning`), so a filter can also target one getter.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
 <div class="viewcode-block" id="SkippedRatingWarning">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.SkippedRatingWarning">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SkippedRatingWarning</span><span class="p">(</span><span class="n">SkippedItemWarning</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A rating feature was skipped by</span>
+<span class="w">    </span><span class="sd">"""A rating feature was skipped by</span>
 <span class="sd">    :func:`dataretrieval.waterdata.get_ratings`.</span>
 
 <span class="sd">    Emitted when a single STAC feature fails deterministically -- a stale</span>
 <span class="sd">    catalog entry (404 on its data asset), a feature carrying no data asset,</span>
-<span class="sd">    a malformed RDB file. The failed feature&#39;s id is absent from the returned</span>
+<span class="sd">    a malformed RDB file. The failed feature's id is absent from the returned</span>
 <span class="sd">    dict. See :class:`SkippedItemWarning` for the policy and how to escalate</span>
 <span class="sd">    a skip to an error.</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<span class="sd">    """</span></div>
 
 
 
@@ -490,14 +490,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">error_for_status</span><span class="p">(</span>
     <span class="n">status</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataRetrievalError</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the typed :class:`DataRetrievalError` for an HTTP error *status*.</span>
+<span class="w">    </span><span class="sd">"""Return the typed :class:`DataRetrievalError` for an HTTP error *status*.</span>
 
 <span class="sd">    The one status-to-type mapping every request path shares (the legacy</span>
 <span class="sd">    ``query`` path, ``waterdata``, ``streamstats``), so a given status</span>
 <span class="sd">    becomes the same type everywhere:</span>
 
 <span class="sd">    * **413, 414** -&gt; :class:`URLTooLong` (a :class:`RequestTooLarge`) -- the</span>
-<span class="sd">      &quot;too long&quot; semantic is more actionable than a bare status, and it matches</span>
+<span class="sd">      "too long" semantic is more actionable than a bare status, and it matches</span>
 <span class="sd">      the client-side over-long-URL case</span>
 <span class="sd">    * **429** -&gt; :class:`RateLimited`</span>
 <span class="sd">    * **5xx** -&gt; :class:`ServiceUnavailable`</span>
@@ -507,10 +507,10 @@
 <span class="sd">    transient (:class:`TransientError`) types. *status* must be an error status</span>
 <span class="sd">    (``&gt;= 400``) -- classifying a success or redirect is a usage error and raises</span>
 <span class="sd">    :class:`ValueError`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">status</span> <span class="o">&lt;</span> <span class="mi">400</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;error_for_status expects an HTTP error status (&gt;= 400), got </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"error_for_status expects an HTTP error status (&gt;= 400), got </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">413</span><span class="p">,</span> <span class="mi">414</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">URLTooLong</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -525,12 +525,12 @@
 <div class="viewcode-block" id="parse_retry_after">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.parse_retry_after">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_retry_after</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.</span>
+<span class="w">    </span><span class="sd">"""Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.</span>
 
 <span class="sd">    Both header forms mean the same thing and are treated the same way: the</span>
 <span class="sd">    seconds are returned as given, however large. A value past what a caller will</span>
 <span class="sd">    wait out inline stops the retry and surfaces a transient carrying the hint on</span>
-<span class="sd">    ``.retry_after``, so a long wait becomes the caller&#39;s decision (and, for a</span>
+<span class="sd">    ``.retry_after``, so a long wait becomes the caller's decision (and, for a</span>
 <span class="sd">    chunked call, a resumable interruption) instead of being ignored.</span>
 
 <span class="sd">    An over-long hint is honored rather than discarded. Dropping it would make</span>
@@ -541,14 +541,14 @@
 <span class="sd">    already asking for room.</span>
 
 <span class="sd">    A date that has *already* passed yields no hint at all rather than ``0.0``.</span>
-<span class="sd">    Read literally it says &quot;retry now&quot;, but the likelier reading is that our</span>
-<span class="sd">    clock runs ahead of the server&#39;s -- and acting on it would re-send almost</span>
+<span class="sd">    Read literally it says "retry now", but the likelier reading is that our</span>
+<span class="sd">    clock runs ahead of the server's -- and acting on it would re-send almost</span>
 <span class="sd">    immediately against a service that just asked for a pause. Falling back to</span>
 <span class="sd">    our own bounded backoff is right under either reading. (Delta-seconds is</span>
 <span class="sd">    clock-independent, so a literal ``Retry-After: 0`` is still honored as the</span>
 <span class="sd">    instruction it is, floored by</span>
-<span class="sd">    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`&#39;s jitter.)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s jitter.)</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>

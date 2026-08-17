@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.wqp</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Download data from the Water Quality Portal (https://waterqualitydata.us).</span>
+<span></span><span class="sd">"""Download data from the Water Quality Portal (https://waterqualitydata.us).</span>
 
 <span class="sd">See https://waterqualitydata.us/webservices_documentation for the API reference.</span>
 
@@ -83,7 +83,7 @@
 
 <span class="sd">    - implement other services like Organization, Activity, etc.</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -110,19 +110,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">._wqx</span><span class="w"> </span><span class="kn">import</span> <span class="n">_attach_datetime_columns</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;WqpConfiguration&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;get_results&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_sites&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_organizations&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_projects&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_activities&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_detection_limits&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_habitat_metrics&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_project_weights&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;what_activity_metrics&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;wqp_url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;wqx3_url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;WQP_Metadata&quot;</span><span class="p">,</span>
+    <span class="s2">"WqpConfiguration"</span><span class="p">,</span>
+    <span class="s2">"get_results"</span><span class="p">,</span>
+    <span class="s2">"what_sites"</span><span class="p">,</span>
+    <span class="s2">"what_organizations"</span><span class="p">,</span>
+    <span class="s2">"what_projects"</span><span class="p">,</span>
+    <span class="s2">"what_activities"</span><span class="p">,</span>
+    <span class="s2">"what_detection_limits"</span><span class="p">,</span>
+    <span class="s2">"what_habitat_metrics"</span><span class="p">,</span>
+    <span class="s2">"what_project_weights"</span><span class="p">,</span>
+    <span class="s2">"what_activity_metrics"</span><span class="p">,</span>
+    <span class="s2">"wqp_url"</span><span class="p">,</span>
+    <span class="s2">"wqx3_url"</span><span class="p">,</span>
+    <span class="s2">"WQP_Metadata"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -134,51 +134,51 @@
 <span class="c1">#: Root the Water Quality Portal serves both its interfaces from. Private</span>
 <span class="c1">#: because the two builders below are the documented way to name a WQP URL;</span>
 <span class="c1">#: this is only the piece they share, and the piece a redirect replaces.</span>
-<span class="n">_WQP_BASE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://www.waterqualitydata.us&quot;</span>
+<span class="n">_WQP_BASE_URL</span> <span class="o">=</span> <span class="s2">"https://www.waterqualitydata.us"</span>
 
-<span class="n">result_profiles_wqx3</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;basicPhysChem&quot;</span><span class="p">,</span> <span class="s2">&quot;fullPhysChem&quot;</span><span class="p">,</span> <span class="s2">&quot;narrow&quot;</span><span class="p">]</span>
-<span class="n">result_profiles_legacy</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biological&quot;</span><span class="p">,</span> <span class="s2">&quot;narrowResult&quot;</span><span class="p">,</span> <span class="s2">&quot;resultPhysChem&quot;</span><span class="p">]</span>
-<span class="n">activity_profiles_legacy</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;activityAll&quot;</span><span class="p">]</span>
-<span class="n">services_wqx3</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Activity&quot;</span><span class="p">,</span> <span class="s2">&quot;Result&quot;</span><span class="p">,</span> <span class="s2">&quot;Station&quot;</span><span class="p">]</span>
+<span class="n">result_profiles_wqx3</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"basicPhysChem"</span><span class="p">,</span> <span class="s2">"fullPhysChem"</span><span class="p">,</span> <span class="s2">"narrow"</span><span class="p">]</span>
+<span class="n">result_profiles_legacy</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"biological"</span><span class="p">,</span> <span class="s2">"narrowResult"</span><span class="p">,</span> <span class="s2">"resultPhysChem"</span><span class="p">]</span>
+<span class="n">activity_profiles_legacy</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"activityAll"</span><span class="p">]</span>
+<span class="n">services_wqx3</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Activity"</span><span class="p">,</span> <span class="s2">"Result"</span><span class="p">,</span> <span class="s2">"Station"</span><span class="p">]</span>
 <span class="n">services_legacy</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;Activity&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ActivityMetric&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;BiologicalMetric&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Organization&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Project&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ProjectMonitoringLocationWeighting&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Result&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ResultDetectionQuantitationLimit&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Station&quot;</span><span class="p">,</span>
+    <span class="s2">"Activity"</span><span class="p">,</span>
+    <span class="s2">"ActivityMetric"</span><span class="p">,</span>
+    <span class="s2">"BiologicalMetric"</span><span class="p">,</span>
+    <span class="s2">"Organization"</span><span class="p">,</span>
+    <span class="s2">"Project"</span><span class="p">,</span>
+    <span class="s2">"ProjectMonitoringLocationWeighting"</span><span class="p">,</span>
+    <span class="s2">"Result"</span><span class="p">,</span>
+    <span class="s2">"ResultDetectionQuantitationLimit"</span><span class="p">,</span>
+    <span class="s2">"Station"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_code_column</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Report whether a WQP column name denotes a code or identifier.</span>
+<span class="w">    </span><span class="sd">"""Report whether a WQP column name denotes a code or identifier.</span>
 
 <span class="sd">    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that</span>
 <span class="sd">    are significant and must be preserved as ``str``. A name qualifies if it</span>
-<span class="sd">    ends with &quot;code&quot; or contains &quot;identifier&quot;, &quot;huc&quot;, or &quot;fips&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    ends with "code" or contains "identifier", "huc", or "fips".</span>
+<span class="sd">    """</span>
     <span class="n">lname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">lname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
-        <span class="n">token</span> <span class="ow">in</span> <span class="n">lname</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;huc&quot;</span><span class="p">,</span> <span class="s2">&quot;fips&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"code"</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">token</span> <span class="ow">in</span> <span class="n">lname</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identifier"</span><span class="p">,</span> <span class="s2">"huc"</span><span class="p">,</span> <span class="s2">"fips"</span><span class="p">)</span>
     <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_wqp_csv</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a WQP CSV, forcing code/identifier columns to ``str``.</span>
+<span class="w">    </span><span class="sd">"""Read a WQP CSV, forcing code/identifier columns to ``str``.</span>
 
 <span class="sd">    WQP returns codes with significant leading zeros — HUCs, parameter codes</span>
 <span class="sd">    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those</span>
-<span class="sd">    as int/float and silently drops the zeros (``&quot;00060&quot;`` -&gt; ``60``, HUC8</span>
-<span class="sd">    ``&quot;07090002&quot;`` -&gt; ``7090002``). Read the header first, then re-read with</span>
+<span class="sd">    as int/float and silently drops the zeros (``"00060"`` -&gt; ``60``, HUC8</span>
+<span class="sd">    ``"07090002"`` -&gt; ``7090002``). Read the header first, then re-read with</span>
 <span class="sd">    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the</span>
 <span class="sd">    zeros survive.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+<span class="sd">    """</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
     <span class="n">str_cols</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span> <span class="k">if</span> <span class="n">_is_code_column</span><span class="p">(</span><span class="n">col</span><span class="p">)}</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_cols</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_cols</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_results">
@@ -188,7 +188,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Query the WQP for results.</span>
+<span class="w">    </span><span class="sd">"""Query the WQP for results.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -206,15 +206,15 @@
 <span class="sd">        Return the legacy WQX data profile. Default is True.</span>
 <span class="sd">    dataProfile : string, optional</span>
 <span class="sd">        Data fields returned by the query.</span>
-<span class="sd">        WQX3.0 profiles include &#39;fullPhysChem&#39;, &#39;narrow&#39;, and &#39;basicPhysChem&#39;.</span>
-<span class="sd">        Legacy profiles include &#39;resultPhysChem&#39;, &#39;biological&#39;, and</span>
-<span class="sd">        &#39;narrowResult&#39;. For WQX3.0 queries (``legacy=False``), defaults to</span>
-<span class="sd">        &#39;fullPhysChem&#39;; legacy queries have no default profile.</span>
+<span class="sd">        WQX3.0 profiles include 'fullPhysChem', 'narrow', and 'basicPhysChem'.</span>
+<span class="sd">        Legacy profiles include 'resultPhysChem', 'biological', and</span>
+<span class="sd">        'narrowResult'. For WQX3.0 queries (``legacy=False``), defaults to</span>
+<span class="sd">        'fullPhysChem'; legacy queries have no default profile.</span>
 <span class="sd">    siteid : string</span>
 <span class="sd">        Monitoring location identifier: an agency code, a hyphen, and an</span>
-<span class="sd">        identification number (Example: &quot;USGS-05586100&quot;).</span>
+<span class="sd">        identification number (Example: "USGS-05586100").</span>
 <span class="sd">    statecode : string</span>
-<span class="sd">        US state FIPS code (Example: Illinois is &quot;US:17&quot;).</span>
+<span class="sd">        US state FIPS code (Example: Illinois is "US:17").</span>
 <span class="sd">    countycode : string</span>
 <span class="sd">        US county FIPS code.</span>
 <span class="sd">    huc : string</span>
@@ -232,15 +232,15 @@
 <span class="sd">        NWIS only.</span>
 <span class="sd">    startDateLo : string</span>
 <span class="sd">        Date of the earliest desired data-collection activity,</span>
-<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;.</span>
+<span class="sd">        expressed as 'MM-DD-YYYY'.</span>
 <span class="sd">    startDateHi : string</span>
 <span class="sd">        Date of the last desired data-collection activity,</span>
-<span class="sd">        expressed as &#39;MM-DD-YYYY&#39;.</span>
+<span class="sd">        expressed as 'MM-DD-YYYY'.</span>
 <span class="sd">    characteristicName : string</span>
 <span class="sd">        One or more case-sensitive characteristic names, separated by</span>
 <span class="sd">        semicolons (https://www.waterqualitydata.us/public_srsnames/).</span>
 <span class="sd">    mimeType : string</span>
-<span class="sd">        Output format. Only &#39;csv&#39; is supported at this time.</span>
+<span class="sd">        Output format. Only 'csv' is supported at this time.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -262,40 +262,40 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get results within a radial distance of a point</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(</span>
-<span class="sd">        ...     lat=&quot;44.2&quot;, long=&quot;-88.9&quot;, within=&quot;0.5&quot;</span>
+<span class="sd">        ...     lat="44.2", long="-88.9", within="0.5"</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get results within a bounding box</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(bBox=&quot;-92.8,44.2,-88.9,46.0&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(bBox="-92.8,44.2,-88.9,46.0")</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get results using a new WQX3.0 profile</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.get_results(</span>
-<span class="sd">        ...     legacy=False, siteid=&quot;UTAHDWQ_WQX-4993795&quot;, dataProfile=&quot;narrow&quot;</span>
+<span class="sd">        ...     legacy=False, siteid="UTAHDWQ_WQX-4993795", dataProfile="narrow"</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">result_profiles_legacy</span>
-        <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;legacy&quot;</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="s2">&quot;Result&quot;</span><span class="p">)</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="s2">"legacy"</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="s2">"Result"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">result_profiles_wqx3</span>
-        <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;WQX3.0&quot;</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="s2">&quot;Result&quot;</span><span class="p">)</span>
+        <span class="n">kind</span> <span class="o">=</span> <span class="s2">"WQX3.0"</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="s2">"Result"</span><span class="p">)</span>
 
-    <span class="n">profile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataProfile&quot;</span><span class="p">)</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dataProfile"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">profile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">require_one_of</span><span class="p">(</span>
-            <span class="n">profile</span><span class="p">,</span> <span class="n">valid_profiles</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;dataProfile&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> results&quot;</span>
+            <span class="n">profile</span><span class="p">,</span> <span class="n">valid_profiles</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"dataProfile"</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> results"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">legacy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">profile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dataProfile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fullPhysChem&quot;</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"dataProfile"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"fullPhysChem"</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">";"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
     <span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -311,14 +311,14 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared implementation for the ``what_*`` metadata search functions.</span>
+<span class="w">    </span><span class="sd">"""Shared implementation for the ``what_*`` metadata search functions.</span>
 
-<span class="sd">    ``service`` is the WQP service name (e.g. ``&quot;Station&quot;``). Services with a</span>
+<span class="sd">    ``service`` is the WQP service name (e.g. ``"Station"``). Services with a</span>
 <span class="sd">    WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`</span>
 <span class="sd">    when ``legacy=False`` and :func:`wqp_url` otherwise. Legacy-only services</span>
 <span class="sd">    route through :func:`_legacy_only_url`, which warns and falls back to the</span>
 <span class="sd">    legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services_wqx3</span><span class="p">:</span>
@@ -327,7 +327,7 @@
         <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">";"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
     <span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -340,7 +340,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for sites within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for sites within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -374,12 +374,12 @@
 
 <span class="sd">        &gt;&gt;&gt; # Get sites within a radial distance of a point</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_sites(</span>
-<span class="sd">        ...     lat=&quot;44.2&quot;, long=&quot;-88.9&quot;, within=&quot;2.5&quot;</span>
+<span class="sd">        ...     lat="44.2", long="-88.9", within="2.5"</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Station&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"Station"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -390,7 +390,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for organizations within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for organizations within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -423,9 +423,9 @@
 <span class="sd">        &gt;&gt;&gt; # Get all organizations in the WQP</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_organizations()</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Organization&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"Organization"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -436,7 +436,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for projects within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for projects within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -467,11 +467,11 @@
 <span class="sd">    .. code::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get projects within a HUC region</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_projects(huc=&quot;19&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_projects(huc="19")</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Project&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"Project"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -482,7 +482,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activities within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for activities within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -515,22 +515,22 @@
 <span class="sd">        &gt;&gt;&gt; # Get activities within Washington D.C.</span>
 <span class="sd">        &gt;&gt;&gt; # during a specific time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_activities(</span>
-<span class="sd">        ...     statecode=&quot;US:11&quot;,</span>
-<span class="sd">        ...     startDateLo=&quot;12-30-2019&quot;,</span>
-<span class="sd">        ...     startDateHi=&quot;01-01-2020&quot;,</span>
+<span class="sd">        ...     statecode="US:11",</span>
+<span class="sd">        ...     startDateLo="12-30-2019",</span>
+<span class="sd">        ...     startDateHi="01-01-2020",</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get activities within Washington D.C.</span>
 <span class="sd">        &gt;&gt;&gt; # using the WQX3.0 profile during a specific time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_activities(</span>
 <span class="sd">        ...     legacy=False,</span>
-<span class="sd">        ...     statecode=&quot;US:11&quot;,</span>
-<span class="sd">        ...     startDateLo=&quot;12-30-2019&quot;,</span>
-<span class="sd">        ...     startDateHi=&quot;01-01-2020&quot;,</span>
+<span class="sd">        ...     statecode="US:11",</span>
+<span class="sd">        ...     startDateLo="12-30-2019",</span>
+<span class="sd">        ...     startDateHi="01-01-2020",</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;Activity&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"Activity"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -541,7 +541,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for result detection limits within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for result detection limits within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -574,16 +574,16 @@
 <span class="sd">        &gt;&gt;&gt; # Get detection limits for Nitrite measurements in Rhode Island</span>
 <span class="sd">        &gt;&gt;&gt; # between specific dates</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_detection_limits(</span>
-<span class="sd">        ...     statecode=&quot;US:44&quot;,</span>
-<span class="sd">        ...     characteristicName=&quot;Nitrite&quot;,</span>
-<span class="sd">        ...     startDateLo=&quot;01-01-2021&quot;,</span>
-<span class="sd">        ...     startDateHi=&quot;02-20-2021&quot;,</span>
+<span class="sd">        ...     statecode="US:44",</span>
+<span class="sd">        ...     characteristicName="Nitrite",</span>
+<span class="sd">        ...     startDateLo="01-01-2021",</span>
+<span class="sd">        ...     startDateHi="02-20-2021",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="n">_what</span><span class="p">(</span>
-        <span class="s2">&quot;ResultDetectionQuantitationLimit&quot;</span><span class="p">,</span>
+        <span class="s2">"ResultDetectionQuantitationLimit"</span><span class="p">,</span>
         <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
         <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -598,7 +598,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for habitat metrics within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for habitat metrics within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -629,11 +629,11 @@
 <span class="sd">    .. code::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Get habitat metrics for a state (Rhode Island in this case)</span>
-<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_habitat_metrics(statecode=&quot;US:44&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_habitat_metrics(statecode="US:44")</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;BiologicalMetric&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"BiologicalMetric"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
@@ -644,7 +644,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for project weights within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for project weights within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -677,15 +677,15 @@
 <span class="sd">        &gt;&gt;&gt; # Get project weights for a state (North Dakota in this case)</span>
 <span class="sd">        &gt;&gt;&gt; # within a set time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_project_weights(</span>
-<span class="sd">        ...     statecode=&quot;US:38&quot;,</span>
-<span class="sd">        ...     startDateLo=&quot;01-01-2006&quot;,</span>
-<span class="sd">        ...     startDateHi=&quot;01-01-2009&quot;,</span>
+<span class="sd">        ...     statecode="US:38",</span>
+<span class="sd">        ...     startDateLo="01-01-2006",</span>
+<span class="sd">        ...     startDateHi="01-01-2009",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">return</span> <span class="n">_what</span><span class="p">(</span>
-        <span class="s2">&quot;ProjectMonitoringLocationWeighting&quot;</span><span class="p">,</span>
+        <span class="s2">"ProjectMonitoringLocationWeighting"</span><span class="p">,</span>
         <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span>
         <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -700,7 +700,7 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search WQP for activity metrics within a region with specific data.</span>
+<span class="w">    </span><span class="sd">"""Search WQP for activity metrics within a region with specific data.</span>
 
 <span class="sd">    Any WQP API parameter can be passed as a keyword argument to this function.</span>
 <span class="sd">    More information about the API can be found at:</span>
@@ -733,24 +733,24 @@
 <span class="sd">        &gt;&gt;&gt; # Get activity metrics for a state (North Dakota in this case)</span>
 <span class="sd">        &gt;&gt;&gt; # within a set time period</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.wqp.what_activity_metrics(</span>
-<span class="sd">        ...     statecode=&quot;US:38&quot;,</span>
-<span class="sd">        ...     startDateLo=&quot;07-01-2006&quot;,</span>
-<span class="sd">        ...     startDateHi=&quot;12-01-2006&quot;,</span>
+<span class="sd">        ...     statecode="US:38",</span>
+<span class="sd">        ...     startDateLo="07-01-2006",</span>
+<span class="sd">        ...     startDateHi="12-01-2006",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">&quot;ActivityMetric&quot;</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_what</span><span class="p">(</span><span class="s2">"ActivityMetric"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">valid_services</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">profile</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate a service against one WQP profile&#39;s supported endpoints.&quot;&quot;&quot;</span>
-    <span class="n">require_one_of</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">valid_services</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;service&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Validate a service against one WQP profile's supported endpoints."""</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">valid_services</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"service"</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_service_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The WQP root this call targets: a block&#39;s redirect, or the portal&#39;s own.</span>
+<span class="w">    </span><span class="sd">"""The WQP root this call targets: a block's redirect, or the portal's own.</span>
 
 <span class="sd">    The portal serves the legacy and WQX3 interfaces from one root under</span>
 <span class="sd">    different paths, so a ``WqpConfiguration(base_url=...)`` names that root and</span>
@@ -758,36 +758,36 @@
 <span class="sd">    first would leave the other pointed at the service they were trying not to</span>
 <span class="sd">    talk to. Resolved per call, because a ``configure`` block is scoped to a</span>
 <span class="sd">    ``with`` statement.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">&quot;wqp&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">_WQP_BASE_URL</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">_WQP_BASE_URL</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="wqp_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqp_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given service.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Construct the WQP URL for a given service."""</span>
 
     <span class="n">_warn_legacy_use</span><span class="p">()</span>
-    <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_legacy</span><span class="p">,</span> <span class="s2">&quot;Legacy&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/data/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/Search?&quot;</span></div>
+    <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_legacy</span><span class="p">,</span> <span class="s2">"Legacy"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/data/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/Search?"</span></div>
 
 
 
 <div class="viewcode-block" id="wqx3_url">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.wqx3_url">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct the WQP URL for a given WQX 3.0 service.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Construct the WQP URL for a given WQX 3.0 service."""</span>
 
     <span class="n">_warn_wqx3_use</span><span class="p">()</span>
-    <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_wqx3</span><span class="p">,</span> <span class="s2">&quot;WQX3.0&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/wqx3/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/search?&quot;</span></div>
+    <span class="n">_validate_service</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">services_wqx3</span><span class="p">,</span> <span class="s2">"WQX3.0"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_service_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/wqx3/</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">/search?"</span></div>
 
 
 
 <div class="viewcode-block" id="WQP_Metadata">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">WQP_Metadata</span><span class="p">(</span><span class="n">BaseMetadata</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Metadata class for WQP service, derived from BaseMetadata.</span>
+<span class="w">    </span><span class="sd">"""Metadata class for WQP service, derived from BaseMetadata.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -801,12 +801,12 @@
 <span class="sd">        WQP does not return comments.</span>
 <span class="sd">    site_info : tuple[pd.DataFrame, WQP_Metadata] | None</span>
 <span class="sd">        Site information (via ``what_sites``) if the query included a ``siteid``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="WQP_Metadata.__init__">
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WQP_Metadata.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the standard metadata set, plus WQP-specific metadata.</span>
+<span class="w">        </span><span class="sd">"""Generate the standard metadata set, plus WQP-specific metadata.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -816,7 +816,7 @@
 <span class="sd">        parameters : dict</span>
 <span class="sd">            Unpacked dictionary of the parameters supplied in the request.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
@@ -825,11 +825,11 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Site information for the query.</span>
+<span class="w">        </span><span class="sd">"""Site information for the query.</span>
 
 <span class="sd">        Populated (via :func:`dataretrieval.wqp.what_sites`) when the query</span>
 <span class="sd">        included a ``siteid`` (the WQP site identifier, e.g.</span>
-<span class="sd">        ``&quot;USGS-05586100&quot;``); ``None`` otherwise.</span>
+<span class="sd">        ``"USGS-05586100"``); ``None`` otherwise.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -837,8 +837,8 @@
 <span class="sd">            Site data returned by ``wqp.what_sites``.</span>
 <span class="sd">        md : :obj:`dataretrieval.wqp.WQP_Metadata`</span>
 <span class="sd">            A WQP_Metadata object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">siteid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;siteid&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">siteid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"siteid"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">siteid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">what_sites</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="n">siteid</span><span class="p">)</span></div>
@@ -846,44 +846,44 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check kwargs for unsupported parameters.</span>
+<span class="w">    </span><span class="sd">"""Check kwargs for unsupported parameters.</span>
 
-<span class="sd">    Every WQP getter&#39;s ``**kwargs`` funnels through here on its way to the</span>
+<span class="sd">    Every WQP getter's ``**kwargs`` funnels through here on its way to the</span>
 <span class="sd">    query payload, so this is the choke point where a credential-shaped name is</span>
-<span class="sd">    refused. The predicate is the credentials leaf&#39;s, shared with Water Data&#39;s</span>
+<span class="sd">    refused. The predicate is the credentials leaf's, shared with Water Data's</span>
 <span class="sd">    ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any</span>
 <span class="sd">    getter now that ``configure(Configuration(api_key=...))`` is the spelling,</span>
 <span class="sd">    and this is the adapter with the widest passthrough -- ten getters, whose</span>
 <span class="sd">    filter names the portal rather than this package defines.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">refuse_credential_keywords</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mimeType&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">&quot;geojson&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;GeoJSON not yet supported. Set &#39;mimeType=csv&#39;.&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">mimetype</span> <span class="o">!=</span> <span class="s2">&quot;csv&quot;</span> <span class="ow">and</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid mimeType. Set &#39;mimeType=csv&#39;.&quot;</span><span class="p">)</span>
+    <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mimeType"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">"geojson"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"GeoJSON not yet supported. Set 'mimeType=csv'."</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mimetype</span> <span class="o">!=</span> <span class="s2">"csv"</span> <span class="ow">and</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid mimeType. Set 'mimeType=csv'."</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mimeType&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;csv&quot;</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"mimeType"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"csv"</span>
 
     <span class="k">return</span> <span class="n">kwargs</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;Support for the WQX3.0 profiles is experimental. &quot;</span>
-        <span class="s2">&quot;Queries may be slow or fail intermittently.&quot;</span>
+        <span class="s2">"Support for the WQX3.0 profiles is experimental. "</span>
+        <span class="s2">"Queries may be slow or fail intermittently."</span>
     <span class="p">)</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_legacy_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;This function call will return the legacy WQX format, &quot;</span>
-        <span class="s2">&quot;which means USGS data have not been updated since March 2024. &quot;</span>
-        <span class="s2">&quot;Please review the dataretrieval-python documentation for more &quot;</span>
-        <span class="s2">&quot;information on updated WQX3.0 profiles. Setting `legacy=False` &quot;</span>
-        <span class="s2">&quot;will remove this warning.&quot;</span>
+        <span class="s2">"This function call will return the legacy WQX format, "</span>
+        <span class="s2">"which means USGS data have not been updated since March 2024. "</span>
+        <span class="s2">"Please review the dataretrieval-python documentation for more "</span>
+        <span class="s2">"information on updated WQX3.0 profiles. Setting `legacy=False` "</span>
+        <span class="s2">"will remove this warning."</span>
     <span class="p">)</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">DataCurrencyWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
@@ -892,26 +892,26 @@
     <span class="c1"># stacklevel=4: warn -&gt; _warn_wqx3_unavailable -&gt; _legacy_only_url -&gt; _what</span>
     <span class="c1"># -&gt; what_*, so the warning is attributed to the public ``what_*`` call.</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">&quot;WQX3.0 profile not available, returning legacy profile.&quot;</span><span class="p">,</span>
+        <span class="s2">"WQX3.0 profile not available, returning legacy profile."</span><span class="p">,</span>
         <span class="ne">UserWarning</span><span class="p">,</span>
         <span class="n">stacklevel</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;URL builder for WQP services that have no WQX3.0 equivalent.</span>
+<span class="w">    </span><span class="sd">"""URL builder for WQP services that have no WQX3.0 equivalent.</span>
 
 <span class="sd">    Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``</span>
 <span class="sd">    explaining the fallback and *also* suppresses the legacy</span>
 <span class="sd">    :class:`~dataretrieval.exceptions.DataCurrencyWarning` that ``wqp_url``</span>
-<span class="sd">    would otherwise raise. That warning&#39;s message claims setting</span>
+<span class="sd">    would otherwise raise. That warning's message claims setting</span>
 <span class="sd">    ``legacy=False`` removes it, which is a lie for endpoints that have no</span>
 <span class="sd">    WQX3.0 alternative.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">legacy</span><span class="p">:</span>
             <span class="n">_warn_wqx3_unavailable</span><span class="p">()</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">DataCurrencyWarning</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">DataCurrencyWarning</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
 
 
@@ -919,13 +919,13 @@
 <a class="viewcode-back" href="../../reference/wqp.html#dataretrieval.wqp.WqpConfiguration">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WqpConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Settings for Water Quality Portal calls alone.</span>
+<span class="w">    </span><span class="sd">"""Settings for Water Quality Portal calls alone.</span>
 
 <span class="sd">    No fan-out dials: a WQP query is answered by a single request, so a</span>
 <span class="sd">    concurrency cap could only report a number nothing honours.</span>
 
 <span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
-<span class="sd">    *which* settings a service reads is the service&#39;s own knowledge (ADR</span>
+<span class="sd">    *which* settings a service reads is the service's own knowledge (ADR</span>
 <span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
 <span class="sd">    setting groups declared beside their grammar.</span>
 
@@ -937,16 +937,16 @@
 <span class="sd">        Seconds a call may go without receiving any data before retrying</span>
 <span class="sd">        stops.</span>
 <span class="sd">    base_url : str, optional</span>
-<span class="sd">        Root to send WQP requests to, instead of the portal&#39;s own. Both</span>
+<span class="sd">        Root to send WQP requests to, instead of the portal's own. Both</span>
 <span class="sd">        interfaces hang off it, so one value moves the legacy ``/data/``</span>
 <span class="sd">        and the WQX3 ``/wqx3/`` paths together. Code only: the file and</span>
 <span class="sd">        the environment refuse it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># One request per call, so this service reads the retry dials and a</span>
     <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
     <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
-    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;wqp&quot;</span></div>
+    <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"wqp"</span></div>
 
 
 

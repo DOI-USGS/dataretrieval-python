@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -164,7 +164,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
 <span class="o">%</span><span class="k">matplotlib</span> inline
-<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"figure.figsize"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -187,15 +187,15 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ask for just a few columns instead of the full ~40-column record.</span>
 <span class="n">sites_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
     <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;site_type&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span>
+        <span class="s2">"monitoring_location_id"</span><span class="p">,</span>
+        <span class="s2">"site_type"</span><span class="p">,</span>
+        <span class="s2">"drainage_area"</span><span class="p">,</span>
+        <span class="s2">"monitoring_location_name"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
-<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span>
+<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -281,10 +281,10 @@ Retrieving: monitoring-locations · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sites_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns returned&quot;</span><span class="p">)</span>
-<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sites_info</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns returned"</span><span class="p">)</span>
+<span class="n">sites_info</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 </div>
 </div>
@@ -513,11 +513,11 @@ Retrieving: monitoring-locations · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites_wi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">,</span>
-    <span class="n">site_type</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">,</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">"Wisconsin"</span><span class="p">,</span>
+    <span class="n">site_type</span><span class="o">=</span><span class="s2">"Stream"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites_wi</span><span class="p">)</span><span class="si">}</span><span class="s2"> Wisconsin stream sites&quot;</span><span class="p">)</span>
-<span class="n">sites_wi</span><span class="p">[[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites_wi</span><span class="p">)</span><span class="si">}</span><span class="s2"> Wisconsin stream sites"</span><span class="p">)</span>
+<span class="n">sites_wi</span><span class="p">[[</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="s2">"monitoring_location_name"</span><span class="p">,</span> <span class="s2">"geometry"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -606,9 +606,9 @@ Retrieving: monitoring-locations · 1 page · 2,815 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">sites_wi</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;USGS stream monitoring locations in Wisconsin&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Latitude&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"USGS stream monitoring locations in Wisconsin"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Longitude"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Latitude"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -629,10 +629,10 @@ Retrieving: monitoring-locations · 1 page · 2,815 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ts_available</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_combined_metadata</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">"00060"</span><span class="p">,</span> <span class="s2">"00010"</span><span class="p">],</span>
 <span class="p">)</span>
-<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;statistic_id&quot;</span><span class="p">,</span> <span class="s2">&quot;begin&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;last_modified&quot;</span><span class="p">]</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"parameter_name"</span><span class="p">,</span> <span class="s2">"statistic_id"</span><span class="p">,</span> <span class="s2">"begin"</span><span class="p">,</span> <span class="s2">"end"</span><span class="p">,</span> <span class="s2">"last_modified"</span><span class="p">]</span>
 <span class="n">ts_available</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -698,48 +698,48 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <td>Temperature, water</td>
       <td>00011</td>
       <td>2023-04-20 22:30:00+00:00</td>
-      <td>2026-08-16 11:30:00+00:00</td>
-      <td>2026-08-16 07:36:08.678598+00:00</td>
+      <td>2026-08-17 12:30:00+00:00</td>
+      <td>2026-08-17 08:36:37.987948+00:00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>Temperature, water</td>
       <td>00002</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-08-14 04:00:00+00:00</td>
-      <td>2026-08-16 05:36:09.195782+00:00</td>
+      <td>2026-08-15 04:00:00+00:00</td>
+      <td>2026-08-17 05:36:12.523290+00:00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>Discharge</td>
       <td>00003</td>
       <td>1948-01-01 05:00:00+00:00</td>
-      <td>2026-08-14 04:00:00+00:00</td>
-      <td>2026-08-16 05:28:48.036788+00:00</td>
+      <td>2026-08-16 04:00:00+00:00</td>
+      <td>2026-08-17 05:29:01.531699+00:00</td>
     </tr>
     <tr>
       <th>5</th>
       <td>Temperature, water</td>
       <td>00001</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-08-14 04:00:00+00:00</td>
-      <td>2026-08-16 05:36:09.245553+00:00</td>
+      <td>2026-08-15 04:00:00+00:00</td>
+      <td>2026-08-17 05:36:12.336186+00:00</td>
     </tr>
     <tr>
       <th>6</th>
       <td>Temperature, water</td>
       <td>00003</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-08-14 04:00:00+00:00</td>
-      <td>2026-08-16 05:36:08.824615+00:00</td>
+      <td>2026-08-15 04:00:00+00:00</td>
+      <td>2026-08-17 05:36:09.282777+00:00</td>
     </tr>
     <tr>
       <th>7</th>
       <td>Discharge</td>
       <td>00011</td>
       <td>1990-10-01 09:08:09+00:00</td>
-      <td>2026-08-16 11:15:00+00:00</td>
-      <td>2026-08-16 07:28:15.781406+00:00</td>
+      <td>2026-08-17 11:15:00+00:00</td>
+      <td>2026-08-17 07:29:28.242543+00:00</td>
     </tr>
     <tr>
       <th>8</th>
@@ -778,8 +778,8 @@ No API key detected — register for higher rate limits at https://api.waterdata
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pcode_info</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_reference_table</span><span class="p">(</span>
-    <span class="n">collection</span><span class="o">=</span><span class="s2">&quot;parameter-codes&quot;</span><span class="p">,</span>
-    <span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;00660&quot;</span><span class="p">},</span>
+    <span class="n">collection</span><span class="o">=</span><span class="s2">"parameter-codes"</span><span class="p">,</span>
+    <span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"00660"</span><span class="p">},</span>
 <span class="p">)</span>
 <span class="n">pcode_info</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
@@ -885,12 +885,12 @@ Retrieving: parameter-codes · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">daily_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>
-    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">&quot;00003&quot;</span><span class="p">,</span>
-    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-09-30&quot;</span><span class="p">],</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">"00060"</span><span class="p">,</span> <span class="s2">"00010"</span><span class="p">],</span>
+    <span class="n">statistic_id</span><span class="o">=</span><span class="s2">"00003"</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">"2023-10-01"</span><span class="p">,</span> <span class="s2">"2024-09-30"</span><span class="p">],</span>
 <span class="p">)</span>
-<span class="n">daily_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">daily_data</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="s2">"approval_status"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -976,14 +976,14 @@ Retrieving: daily · 1 page · 730 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">"parameter_code"</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">pcode</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-    <span class="n">sub</span> <span class="o">=</span> <span class="n">daily_data</span><span class="p">[</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">pcode</span><span class="p">]</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="n">daily_data</span><span class="p">[</span><span class="n">daily_data</span><span class="p">[</span><span class="s2">"parameter_code"</span><span class="p">]</span> <span class="o">==</span> <span class="n">pcode</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">"value"</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">pcode</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Daily values at USGS-01491000 (water year 2024)&quot;</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Daily values at USGS-01491000 (water year 2024)"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -1006,11 +1006,11 @@ Retrieving: daily · 1 page · 730 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-09-01/2024-09-03&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">"2024-09-01/2024-09-03"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="s2">"approval_status"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1101,12 +1101,12 @@ Retrieving: continuous · 1 page · 193 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">field_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_field_measurements</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;USGS-451605097071701&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;USGS-263819081585801&quot;</span><span class="p">,</span>
+        <span class="s2">"USGS-451605097071701"</span><span class="p">,</span>
+        <span class="s2">"USGS-263819081585801"</span><span class="p">,</span>
     <span class="p">],</span>
-    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-09-30&quot;</span><span class="p">],</span>
+    <span class="n">time</span><span class="o">=</span><span class="p">[</span><span class="s2">"2023-10-01"</span><span class="p">,</span> <span class="s2">"2024-09-30"</span><span class="p">],</span>
 <span class="p">)</span>
-<span class="n">field_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">field_data</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1192,10 +1192,10 @@ Retrieving: field-measurements · 1 page · 42 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">field_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">):</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Field measurements&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">field_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"monitoring_location_id"</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sub</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">sub</span><span class="p">[</span><span class="s2">"value"</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">site</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"value"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Field measurements"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">autofmt_xdate</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -1217,8 +1217,8 @@ Retrieving: field-measurements · 1 page · 42 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">channel</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02238500&quot;</span><span class="p">)</span>
-<span class="n">channel</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_width&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_area&quot;</span><span class="p">,</span> <span class="s2">&quot;channel_velocity&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">channel</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_channel</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-02238500"</span><span class="p">)</span>
+<span class="n">channel</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"channel_width"</span><span class="p">,</span> <span class="s2">"channel_area"</span><span class="p">,</span> <span class="s2">"channel_velocity"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1308,10 +1308,10 @@ Retrieving: channel-measurements · 1 page · 474 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_uv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_continuous</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;unit_of_measure&quot;</span><span class="p">]</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="s2">"approval_status"</span><span class="p">,</span> <span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"unit_of_measure"</span><span class="p">]</span>
 <span class="n">latest_uv</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
 </div>
@@ -1353,11 +1353,11 @@ Retrieving: latest-continuous · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-08-17 00:15:00+00:00</td>
+      <td>2026-08-17 18:15:00+00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>9.75</td>
+      <td>12.0</td>
     </tr>
     <tr>
       <th>approval_status</th>
@@ -1380,8 +1380,8 @@ Retrieving: latest-continuous · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">latest_dv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_latest_daily</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01491000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01491000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">latest_dv</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
 </pre></div>
@@ -1424,11 +1424,11 @@ Retrieving: latest-daily · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-08-15 00:00:00</td>
+      <td>2026-08-16 00:00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>8.46</td>
+      <td>9.68</td>
     </tr>
     <tr>
       <th>approval_status</th>
@@ -1456,12 +1456,12 @@ Retrieving: latest-daily · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">huc_sites</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;hydrologic_unit_code LIKE &#39;02070010%&#39;&quot;</span><span class="p">,</span>
-    <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+    <span class="nb">filter</span><span class="o">=</span><span class="s2">"hydrologic_unit_code LIKE '02070010%'"</span><span class="p">,</span>
+    <span class="n">filter_lang</span><span class="o">=</span><span class="s2">"cql-text"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">huc_sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> sites in HUC 02070010&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">huc_sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> sites in HUC 02070010"</span><span class="p">)</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">huc_sites</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">markersize</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Sites within HUC 02070010&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Sites within HUC 02070010"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1498,11 +1498,11 @@ Retrieving: monitoring-locations · 1 page · 2,354 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-        <span class="nb">filter</span><span class="o">=</span><span class="s2">&quot;drainage_area &gt; 1000&quot;</span><span class="p">,</span>
-        <span class="n">filter_lang</span><span class="o">=</span><span class="s2">&quot;cql-text&quot;</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="s2">"drainage_area &gt; 1000"</span><span class="p">,</span>
+        <span class="n">filter_lang</span><span class="o">=</span><span class="s2">"cql-text"</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)[:</span><span class="mi">120</span><span class="p">],</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">"-&gt;"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)[:</span><span class="mi">120</span><span class="p">],</span> <span class="s2">"..."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1520,18 +1520,18 @@ ValueError -&gt; Filter uses an unquoted numeric comparison against &#39;drainag
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sites</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">state_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Wisconsin&quot;</span><span class="p">,</span> <span class="s2">&quot;Minnesota&quot;</span><span class="p">],</span>
-    <span class="n">site_type</span><span class="o">=</span><span class="s2">&quot;Stream&quot;</span><span class="p">,</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="p">[</span><span class="s2">"Wisconsin"</span><span class="p">,</span> <span class="s2">"Minnesota"</span><span class="p">],</span>
+    <span class="n">site_type</span><span class="o">=</span><span class="s2">"Stream"</span><span class="p">,</span>
     <span class="n">properties</span><span class="o">=</span><span class="p">[</span>
-        <span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;monitoring_location_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;state_name&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;drainage_area&quot;</span><span class="p">,</span>
+        <span class="s2">"monitoring_location_id"</span><span class="p">,</span>
+        <span class="s2">"monitoring_location_name"</span><span class="p">,</span>
+        <span class="s2">"state_name"</span><span class="p">,</span>
+        <span class="s2">"drainage_area"</span><span class="p">,</span>
     <span class="p">],</span>
 <span class="p">)</span>
-<span class="n">big</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">sites</span><span class="p">[</span><span class="s2">&quot;drainage_area&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;coerce&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">big</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> WI/MN stream sites drain &gt; 1000 sq mi&quot;</span><span class="p">)</span>
-<span class="n">big</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="n">big</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">sites</span><span class="p">[</span><span class="s2">"drainage_area"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">big</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="si">}</span><span class="s2"> WI/MN stream sites drain &gt; 1000 sq mi"</span><span class="p">)</span>
+<span class="n">big</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">"geometry"</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1647,17 +1647,17 @@ Retrieving: monitoring-locations · 1 page · 5,415 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-02238500&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site</span> <span class="o">=</span> <span class="s2">"USGS-02238500"</span>
 <span class="n">renamed</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;country_name&quot;</span><span class="p">],</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="s2">"state_name"</span><span class="p">,</span> <span class="s2">"country_name"</span><span class="p">],</span>
 <span class="p">)</span>
 <span class="n">raw_id</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;state_name&quot;</span><span class="p">,</span> <span class="s2">&quot;country_name&quot;</span><span class="p">],</span>
+    <span class="n">properties</span><span class="o">=</span><span class="p">[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"state_name"</span><span class="p">,</span> <span class="s2">"country_name"</span><span class="p">],</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;renamed:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;raw id :&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">raw_id</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"renamed:"</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">renamed</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">"geometry"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"raw id :"</span><span class="p">,</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">raw_id</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">"geometry"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>

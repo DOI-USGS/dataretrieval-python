@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,7 +133,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g6924c61b0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g996b7a4af)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.14.2)
@@ -175,16 +175,16 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the parameters needed to retrieve data</span>
-<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-02319394&quot;</span>
-<span class="n">parameter_code</span> <span class="o">=</span> <span class="s2">&quot;00060&quot;</span>  <span class="c1"># Discharge</span>
+<span class="n">site</span> <span class="o">=</span> <span class="s2">"USGS-02319394"</span>
+<span class="n">parameter_code</span> <span class="o">=</span> <span class="s2">"00060"</span>  <span class="c1"># Discharge</span>
 
 <span class="c1"># Retrieve the statistics (monthly, calendar-year, and water-year means)</span>
 <span class="n">x1</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
     <span class="n">parameter_code</span><span class="o">=</span><span class="n">parameter_code</span><span class="p">,</span>
-    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">"arithmetic_mean"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; statistic values.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Retrieved "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">" statistic values."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -569,16 +569,16 @@ dtype: object
 <span class="c1"># The statistics services return a GeoDataFrame carrying a site-point geometry,</span>
 <span class="c1"># and report numeric values as strings, so we coerce ``value`` to float.</span>
 <span class="n">annual</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
-    <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;interval_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;calendar_year&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+    <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"interval_type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"calendar_year"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"start_date"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">]</span>
 <span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">annual</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">&quot;start_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<span class="n">annual</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-<span class="n">annual</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)</span>
+<span class="n">annual</span><span class="p">[</span><span class="s2">"year"</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">"start_date"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">annual</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">=</span> <span class="n">annual</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">annual</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"year"</span><span class="p">)</span>
 
-<span class="n">ax</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">FormatStrFormatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Year&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Annual mean discharge (cfs)&quot;</span><span class="p">)</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">annual</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">"year"</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">"value"</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">FormatStrFormatter</span><span class="p">(</span><span class="s2">"</span><span class="si">%d</span><span class="s2">"</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Year"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Annual mean discharge (cfs)"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -603,7 +603,7 @@ Text(0, 0.5, &#39;Annual mean discharge (cfs)&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data was: &quot;</span> <span class="o">+</span> <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"The query URL used to retrieve the data was: "</span> <span class="o">+</span> <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -626,9 +626,9 @@ The query URL used to retrieve the data was: https://api.waterdata.usgs.gov/stat
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x2</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_date_range</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;USGS-02319394&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-02171500&quot;</span><span class="p">],</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00010&quot;</span><span class="p">,</span> <span class="s2">&quot;00060&quot;</span><span class="p">],</span>
-    <span class="n">computation_type</span><span class="o">=</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="p">[</span><span class="s2">"USGS-02319394"</span><span class="p">,</span> <span class="s2">"USGS-02171500"</span><span class="p">],</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">"00010"</span><span class="p">,</span> <span class="s2">"00060"</span><span class="p">],</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="s2">"arithmetic_mean"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -954,9 +954,9 @@ Retrieving: observationIntervals · 1 page · 2,114 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_stats_por</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-02171500&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;arithmetic_mean&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">],</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-02171500"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+    <span class="n">computation_type</span><span class="o">=</span><span class="p">[</span><span class="s2">"arithmetic_mean"</span><span class="p">,</span> <span class="s2">"median"</span><span class="p">],</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">x3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Peak Streamflow Examples &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>USGS dataretrieval Python Package Peak Streamflow Examples &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,7 +128,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g6924c61b0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g996b7a4af)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.14.2)
@@ -167,11 +167,11 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">,</span> <span class="s2">&quot;USGS-040851325&quot;</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">site_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"USGS-01594440"</span><span class="p">,</span> <span class="s2">"USGS-040851325"</span><span class="p">]</span>
 <span class="n">peak_data</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site_ids</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Retrieved &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; peak values.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Retrieved "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">" peak values."</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1373,7 +1373,7 @@ dtype: object
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data was: &quot;</span> <span class="o">+</span> <span class="n">peak_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"The query URL used to retrieve the data was: "</span> <span class="o">+</span> <span class="n">peak_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1390,8 +1390,8 @@ The query URL used to retrieve the data was: https://api.waterdata.usgs.gov/ogca
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_params</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-01594440&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">all_params</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_params</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-01594440"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">all_params</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"parameter_code"</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -1422,8 +1422,8 @@ Length: 2, dtype: str
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station</span> <span class="o">=</span> <span class="s2">&quot;USGS-06011000&quot;</span>
-<span class="n">data3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">station</span> <span class="o">=</span> <span class="s2">"USGS-06011000"</span>
+<span class="n">data3</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -2041,8 +2041,8 @@ Retrieving: peaks · 1 page · 29 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data4</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">station</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;1953-01-01/1960-01-01&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">"1953-01-01/1960-01-01"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data4</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>

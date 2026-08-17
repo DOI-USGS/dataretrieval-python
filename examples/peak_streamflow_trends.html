@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>National trends in peak annual streamflow &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -131,9 +131,9 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># download annual peaks (discharge, parameter 00060) from a single site</span>
 <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-03339000&quot;</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;1970-01-01/..&quot;</span><span class="p">,</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-03339000"</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">"1970-01-01/.."</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
@@ -299,20 +299,20 @@ Retrieving: peaks · 1 page · 56 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">peak_trend_regression</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
     <span class="c1"># convert peak dates to days since the first peak for the regression</span>
-    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
-    <span class="n">peak_d</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_date</span> <span class="o">-</span> <span class="n">peak_date</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">)</span>
+    <span class="n">peak_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])</span>
+    <span class="n">peak_d</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_date</span> <span class="o">-</span> <span class="n">peak_date</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">timedelta64</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"D"</span><span class="p">)</span>
 
     <span class="c1"># normalize the peak discharge values</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 
     <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">_r_value</span><span class="p">,</span> <span class="n">p_value</span><span class="p">,</span> <span class="n">std_error</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">linregress</span><span class="p">(</span><span class="n">peak_d</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
         <span class="p">{</span>
-            <span class="s2">&quot;slope&quot;</span><span class="p">:</span> <span class="n">slope</span><span class="p">,</span>
-            <span class="s2">&quot;intercept&quot;</span><span class="p">:</span> <span class="n">intercept</span><span class="p">,</span>
-            <span class="s2">&quot;p_value&quot;</span><span class="p">:</span> <span class="n">p_value</span><span class="p">,</span>
-            <span class="s2">&quot;std_error&quot;</span><span class="p">:</span> <span class="n">std_error</span><span class="p">,</span>
+            <span class="s2">"slope"</span><span class="p">:</span> <span class="n">slope</span><span class="p">,</span>
+            <span class="s2">"intercept"</span><span class="p">:</span> <span class="n">intercept</span><span class="p">,</span>
+            <span class="s2">"p_value"</span><span class="p">:</span> <span class="n">p_value</span><span class="p">,</span>
+            <span class="s2">"std_error"</span><span class="p">:</span> <span class="n">std_error</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">)</span>
 </pre></div>
@@ -326,38 +326,38 @@ Retrieving: peaks · 1 page · 56 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">peak_trend_analysis</span><span class="p">(</span><span class="n">state_names</span><span class="p">,</span> <span class="n">start_date</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    state_names : list</span>
-<span class="sd">        state names to include in the analysis, e.g. [&quot;Illinois&quot;, &quot;Indiana&quot;].</span>
+<span class="sd">        state names to include in the analysis, e.g. ["Illinois", "Indiana"].</span>
 <span class="sd">    start_date : string</span>
 <span class="sd">        the date to use as the beginning of the analysis (YYYY-MM-DD).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">state_names</span><span class="p">:</span>
         <span class="c1"># find stream gages in the state (keep the geometry for mapping)</span>
         <span class="n">sites</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-            <span class="n">state_name</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">site_type_code</span><span class="o">=</span><span class="s2">&quot;ST&quot;</span>
+            <span class="n">state_name</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">site_type_code</span><span class="o">=</span><span class="s2">"ST"</span>
         <span class="p">)</span>
         <span class="c1"># download annual peak discharge for those sites</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_peaks</span><span class="p">(</span>
-            <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">[</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-            <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start_date</span><span class="si">}</span><span class="s2">/..&quot;</span><span class="p">,</span>
+            <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">[</span><span class="s2">"monitoring_location_id"</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+            <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">start_date</span><span class="si">}</span><span class="s2">/.."</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># group the data by site and apply our regression</span>
         <span class="n">temp</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;monitoring_location_id&quot;</span><span class="p">)</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"monitoring_location_id"</span><span class="p">)</span>
             <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">peak_trend_regression</span><span class="p">)</span>
             <span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="c1"># drop any insignificant results</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="s2">&quot;p_value&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">]</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="n">temp</span><span class="p">[</span><span class="s2">"p_value"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">]</span>
 
         <span class="c1"># join site geometry/metadata with the trend results; GeoDataFrame.merge</span>
         <span class="c1"># keeps the joined result spatial</span>
         <span class="n">merged</span> <span class="o">=</span> <span class="n">sites</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;monitoring_location_id&quot;</span>
+            <span class="n">temp</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">"monitoring_location_id"</span>
         <span class="p">)</span>
         <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
 
@@ -374,8 +374,8 @@ Retrieving: peaks · 1 page · 56 rows
 <span class="c1"># trend regression on each. For larger states the async chunker (default</span>
 <span class="c1"># concurrency 16) automatically fans the ``get_peaks`` call across many sites;</span>
 <span class="c1"># Rhode Island is small enough to return in a single request.</span>
-<span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;1970-01-01&quot;</span>
-<span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Rhode Island&quot;</span><span class="p">]</span>
+<span class="n">start</span> <span class="o">=</span> <span class="s2">"1970-01-01"</span>
+<span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Rhode Island"</span><span class="p">]</span>
 <span class="n">final_df</span> <span class="o">=</span> <span class="n">peak_trend_analysis</span><span class="p">(</span><span class="n">state_names</span><span class="o">=</span><span class="n">states</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
 <span class="n">final_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
@@ -552,17 +552,17 @@ No API key detected — register for higher rate limits at https://api.waterdata
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="c1"># final_df is a GeoDataFrame, so its station points plot directly.</span>
-<span class="n">increasing</span> <span class="o">=</span> <span class="n">final_df</span><span class="p">[</span><span class="n">final_df</span><span class="p">[</span><span class="s2">&quot;slope&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">decreasing</span> <span class="o">=</span> <span class="n">final_df</span><span class="p">[</span><span class="n">final_df</span><span class="p">[</span><span class="s2">&quot;slope&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">increasing</span> <span class="o">=</span> <span class="n">final_df</span><span class="p">[</span><span class="n">final_df</span><span class="p">[</span><span class="s2">"slope"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">decreasing</span> <span class="o">=</span> <span class="n">final_df</span><span class="p">[</span><span class="n">final_df</span><span class="p">[</span><span class="s2">"slope"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">increasing</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-    <span class="n">increasing</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;increasing&quot;</span><span class="p">)</span>
+    <span class="n">increasing</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"increasing"</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">decreasing</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-    <span class="n">decreasing</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;decreasing&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peak annual streamflow trends (</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">states</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Longitude&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Latitude&quot;</span><span class="p">)</span>
+    <span class="n">decreasing</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"decreasing"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Peak annual streamflow trends (</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">states</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Longitude"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Latitude"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>

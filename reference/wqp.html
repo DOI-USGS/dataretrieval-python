@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -354,15 +354,15 @@ for WQX3 responses) when present.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a radial distance of a point</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s2">&quot;44.2&quot;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s2">&quot;-88.9&quot;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s2">&quot;0.5&quot;</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s2">"44.2"</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s2">"-88.9"</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s2">"0.5"</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results within a bounding box</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">bBox</span><span class="o">=</span><span class="s2">&quot;-92.8,44.2,-88.9,46.0&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">bBox</span><span class="o">=</span><span class="s2">"-92.8,44.2,-88.9,46.0"</span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get results using a new WQX3.0 profile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">siteid</span><span class="o">=</span><span class="s2">&quot;UTAHDWQ_WQX-4993795&quot;</span><span class="p">,</span> <span class="n">dataProfile</span><span class="o">=</span><span class="s2">&quot;narrow&quot;</span>
+<span class="gp">... </span>    <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">siteid</span><span class="o">=</span><span class="s2">"UTAHDWQ_WQX-4993795"</span><span class="p">,</span> <span class="n">dataProfile</span><span class="o">=</span><span class="s2">"narrow"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -399,18 +399,18 @@ or the Swagger documentation at:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activities within Washington D.C.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># during a specific time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:11&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">&quot;12-30-2019&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">&quot;01-01-2020&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">"US:11"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">"12-30-2019"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">"01-01-2020"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activities within Washington D.C.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using the WQX3.0 profile during a specific time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activities</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:11&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">&quot;12-30-2019&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">&quot;01-01-2020&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">"US:11"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">"12-30-2019"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">"01-01-2020"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -447,9 +447,9 @@ or the Swagger documentation at:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get activity metrics for a state (North Dakota in this case)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_activity_metrics</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:38&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">&quot;07-01-2006&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">&quot;12-01-2006&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">"US:38"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">"07-01-2006"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">"12-01-2006"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -486,10 +486,10 @@ or the Swagger documentation at:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get detection limits for Nitrite measurements in Rhode Island</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># between specific dates</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_detection_limits</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:44&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">characteristicName</span><span class="o">=</span><span class="s2">&quot;Nitrite&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">&quot;01-01-2021&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">&quot;02-20-2021&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">"US:44"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">characteristicName</span><span class="o">=</span><span class="s2">"Nitrite"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">"01-01-2021"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">"02-20-2021"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -524,7 +524,7 @@ or the Swagger documentation at:
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get habitat metrics for a state (Rhode Island in this case)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_habitat_metrics</span><span class="p">(</span><span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:44&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_habitat_metrics</span><span class="p">(</span><span class="n">statecode</span><span class="o">=</span><span class="s2">"US:44"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -594,9 +594,9 @@ or the Swagger documentation at:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get project weights for a state (North Dakota in this case)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># within a set time period</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_project_weights</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">&quot;US:38&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">&quot;01-01-2006&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">&quot;01-01-2009&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">statecode</span><span class="o">=</span><span class="s2">"US:38"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateLo</span><span class="o">=</span><span class="s2">"01-01-2006"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">startDateHi</span><span class="o">=</span><span class="s2">"01-01-2009"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -631,7 +631,7 @@ or the Swagger documentation at:
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get projects within a HUC region</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_projects</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s2">&quot;19&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_projects</span><span class="p">(</span><span class="n">huc</span><span class="o">=</span><span class="s2">"19"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -668,7 +668,7 @@ profile when one is available. Defaults to True.</p></li>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get sites within a radial distance of a point</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">wqp</span><span class="o">.</span><span class="n">what_sites</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s2">&quot;44.2&quot;</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s2">&quot;-88.9&quot;</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s2">&quot;2.5&quot;</span>
+<span class="gp">... </span>    <span class="n">lat</span><span class="o">=</span><span class="s2">"44.2"</span><span class="p">,</span> <span class="n">long</span><span class="o">=</span><span class="s2">"-88.9"</span><span class="p">,</span> <span class="n">within</span><span class="o">=</span><span class="s2">"2.5"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>

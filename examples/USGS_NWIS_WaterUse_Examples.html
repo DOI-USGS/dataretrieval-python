@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Water Use Examples &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>USGS dataretrieval Python Package Water Use Examples &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -130,7 +130,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g6924c61b0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g996b7a4af)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.14.2)
@@ -171,8 +171,8 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># [Defunct] pennsylvania = nwis.get_water_use(state=&quot;PA&quot;)</span>
-<span class="c1"># [Defunct] print(&quot;Retrieved &quot; + str(len(pennsylvania[0])) + &quot; water use records.&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># [Defunct] pennsylvania = nwis.get_water_use(state="PA")</span>
+<span class="c1"># [Defunct] print("Retrieved " + str(len(pennsylvania[0])) + " water use records.")</span>
 </pre></div>
 </div>
 </div>
@@ -207,8 +207,8 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># [Defunct] ohio = nwis.get_water_use(years=[2000, 2005, 2010], state=&quot;OH&quot;)</span>
-<span class="c1"># [Defunct] print(&quot;Retrieved &quot; + str(len(ohio[0])) + &quot; water use records.&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># [Defunct] ohio = nwis.get_water_use(years=[2000, 2005, 2010], state="OH")</span>
+<span class="c1"># [Defunct] print("Retrieved " + str(len(ohio[0])) + " water use records.")</span>
 <span class="c1"># [Defunct] display(ohio[0])</span>
 </pre></div>
 </div>
@@ -221,8 +221,8 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get water use data for livestock (LI) and irrigation (IT)</span>
-<span class="c1"># [Defunct] kansas = nwis.get_water_use(state=&quot;KS&quot;, categories=[&quot;IT&quot;, &quot;LI&quot;])</span>
-<span class="c1"># [Defunct] print(&quot;Retrieved &quot; + str(len(kansas[0])) + &quot; water use records.&quot;)</span>
+<span class="c1"># [Defunct] kansas = nwis.get_water_use(state="KS", categories=["IT", "LI"])</span>
+<span class="c1"># [Defunct] print("Retrieved " + str(len(kansas[0])) + " water use records.")</span>
 <span class="c1"># [Defunct] display(kansas[0])</span>
 </pre></div>
 </div>

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,7 +128,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g6924c61b0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g996b7a4af)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.14.2)
@@ -183,7 +183,7 @@ Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Ohio&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">siteListPhos</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">state_name</span><span class="o">=</span><span class="s2">"Ohio"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -530,7 +530,7 @@ Retrieving: monitoring-locations · 1 page · 16,075 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The query URL used to retrieve the data from the Water Data API was: &quot;</span> <span class="o">+</span> <span class="n">siteListPhos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"The query URL used to retrieve the data from the Water Data API was: "</span> <span class="o">+</span> <span class="n">siteListPhos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -551,7 +551,7 @@ The query URL used to retrieve the data from the Water Data API was: https://api
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -648,9 +648,9 @@ Retrieving: monitoring-locations · 1 page · 1 rows
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite_nogeom</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span> <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">,</span> <span class="n">skip_geometry</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;geometry column present:&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span> <span class="ow">in</span> <span class="n">oneSite_nogeom</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"geometry column present:"</span><span class="p">,</span> <span class="s2">"geometry"</span> <span class="ow">in</span> <span class="n">oneSite_nogeom</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite_nogeom</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -754,7 +754,7 @@ geometry column present: False
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">UTsites</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
-    <span class="n">state_name</span><span class="o">=</span><span class="s2">&quot;Utah&quot;</span>
+    <span class="n">state_name</span><span class="o">=</span><span class="s2">"Utah"</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">UTsites</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -1091,7 +1091,7 @@ Retrieving: monitoring-locations · 1 page · 32,833 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">oneSite</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">oneSite</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -1232,7 +1232,7 @@ Retrieving: time-series-metadata · 1 page · 25 rows
       <td>00011</td>
       <td>090100080904</td>
       <td>North Dakota</td>
-      <td>2026-08-16 08:14:05.611134</td>
+      <td>2026-08-17 08:13:46.854877</td>
       <td>2022-10-01 06:00:00.000001</td>
       <td>...</td>
       <td>Points</td>
@@ -1304,7 +1304,7 @@ Retrieving: time-series-metadata · 1 page · 25 rows
       <td>00011</td>
       <td>090100080904</td>
       <td>North Dakota</td>
-      <td>2026-08-16 08:13:41.601624</td>
+      <td>2026-08-17 08:13:30.475739</td>
       <td>2007-10-01 06:30:00.000001</td>
       <td>...</td>
       <td>Points</td>
@@ -1424,7 +1424,7 @@ Retrieving: time-series-metadata · 1 page · 25 rows
       <td>00011</td>
       <td>090100080904</td>
       <td>North Dakota</td>
-      <td>2026-08-16 07:13:14.084223</td>
+      <td>2026-08-17 07:14:22.011022</td>
       <td>1994-10-01 06:00:00.000001</td>
       <td>...</td>
       <td>Points</td>
@@ -1520,7 +1520,7 @@ Retrieving: time-series-metadata · 1 page · 25 rows
       <td>00003</td>
       <td>090100080904</td>
       <td>North Dakota</td>
-      <td>2026-08-16 23:14:20.387191</td>
+      <td>2026-08-17 18:14:39.168600</td>
       <td>2000-10-01 00:00:00.000001</td>
       <td>...</td>
       <td>Daily</td>
@@ -1592,7 +1592,7 @@ Retrieving: time-series-metadata · 1 page · 25 rows
       <td>00003</td>
       <td>090100080904</td>
       <td>North Dakota</td>
-      <td>2026-08-16 06:14:37.235021</td>
+      <td>2026-08-17 06:15:15.386223</td>
       <td>1930-03-11 00:00:00.000001</td>
       <td>...</td>
       <td>Daily</td>

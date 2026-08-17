@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>Configuration &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -129,14 +129,14 @@ authenticates to a gateway rather than to an adapter, so it stays package-wide.<
 <p>This is the case the mechanism exists for. Say the file holds what you would
 write once and keep — the key, a retry budget, and Water Data’s everyday
 concurrency — plus two named profiles for the shapes you only sometimes want:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span><span class="w">   </span><span class="c1"># package-wide: every adapter that reads it</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"your_api_key_here"</span><span class="w">   </span><span class="c1"># package-wide: every adapter that reads it</span>
 <span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span>
 
 <span class="k">[waterdata]</span>
-<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">                </span><span class="c1"># waterdata&#39;s default profile: always active</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">                </span><span class="c1"># waterdata's default profile: always active</span>
 
 <span class="k">[waterdata.overnight]</span><span class="w">           </span><span class="c1"># a named profile: only when selected</span>
-<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unbounded&quot;</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"unbounded"</span>
 <span class="n">parallel_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
 
 <span class="k">[ngwmn.gentle]</span>
@@ -152,11 +152,11 @@ name and building the third on the spot:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.wqp</span><span class="w"> </span><span class="kn">import</span> <span class="n">WqpConfiguration</span>
 
 <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;overnight&quot;</span><span class="p">),</span>  <span class="c1"># from the file, by name</span>
-    <span class="n">NgwmnConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;gentle&quot;</span><span class="p">),</span>         <span class="c1"># from the file, by name</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"overnight"</span><span class="p">),</span>  <span class="c1"># from the file, by name</span>
+    <span class="n">NgwmnConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"gentle"</span><span class="p">),</span>         <span class="c1"># from the file, by name</span>
     <span class="n">WqpConfiguration</span><span class="p">(</span><span class="n">retries</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>               <span class="c1"># built here</span>
 <span class="p">):</span>
-    <span class="n">flow</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P30D&quot;</span><span class="p">)</span>
+    <span class="n">flow</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="s2">"P30D"</span><span class="p">)</span>
     <span class="n">levels</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">ngwmn</span><span class="o">.</span><span class="n">get_water_level</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">wells</span><span class="p">)</span>
     <span class="n">samples</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
 </pre></div>
@@ -292,7 +292,7 @@ environment-above-file rule, in the same block. See <a class="reference internal
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">An environment variable</a><a class="headerlink" href="#an-environment-variable" title="Link to this heading"></a></h2>
 <p>Still fully supported, and the simplest option for a single key on one
 machine:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">API_USGS_PAT</span><span class="o">=</span><span class="s2">&quot;your_api_key_here&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">API_USGS_PAT</span><span class="o">=</span><span class="s2">"your_api_key_here"</span>
 </pre></div>
 </div>
 <p>This is also the mechanism the <a class="reference external" href="https://github.com/DOI-USGS/dataRetrieval">R dataRetrieval package</a> uses, under the same variable
@@ -303,7 +303,7 @@ name, so one export serves both.</p>
 <p>Better when you would rather not have a credential in your shell environment,
 where it is inherited by every process you start. Create
 <code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"your_api_key_here"</span>
 </pre></div>
 </div>
 <p>Restrict it so other users on the machine cannot read it — <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>
@@ -312,7 +312,7 @@ warns once if a file containing a key is group- or world-readable:</p>
 </pre></div>
 </div>
 <p>Any setting can go in the file:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;your_api_key_here&quot;</span>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"your_api_key_here"</span>
 <span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span>
 <span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
 </pre></div>
@@ -403,7 +403,7 @@ that adapter’s <strong>default profile</strong> — always in effect, as above
 <span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">          </span><span class="c1"># the default profile: always in effect</span>
 
 <span class="k">[waterdata.bulk-pull]</span>
-<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;unbounded&quot;</span><span class="w"> </span><span class="c1"># only when selected</span>
+<span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"unbounded"</span><span class="w"> </span><span class="c1"># only when selected</span>
 <span class="n">parallel_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
 </pre></div>
 </div>
@@ -431,11 +431,11 @@ selected in the same block, as in <a class="reference internal" href="#configura
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">waterdata</span>
 
-<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">&quot;usgs&quot;</span><span class="p">])):</span>
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">"usgs"</span><span class="p">])):</span>
     <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
-        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">,</span>
-        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00060&quot;</span><span class="p">,</span>
-        <span class="n">time</span><span class="o">=</span><span class="s2">&quot;P7D&quot;</span><span class="p">,</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="s2">"P7D"</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -491,7 +491,7 @@ from. It never prints the key itself. The report below is what a file holding a
 key, a package-wide <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>, an <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> table and a
 <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code> profile produces, with <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code> exported and
 the <code class="docutils literal notranslate"><span class="pre">bulk</span></code> profile selected for the block:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">)):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"bulk"</span><span class="p">)):</span>
 <span class="gp">... </span>    <span class="n">dataretrieval</span><span class="o">.</span><span class="n">show_configuration</span><span class="p">()</span>
 <span class="go">config file  /home/u/.dataretrieval/config.toml (found)</span>
 <span class="go">api_key          &lt;set&gt;  /home/u/.dataretrieval/config.toml</span>
@@ -510,7 +510,7 @@ the <code class="docutils literal notranslate"><span class="pre">bulk</span></co
 
 <span class="go">profiles in the file: [waterdata.bulk]</span>
 <span class="go">  A profile applies only where a row above names it; select one in</span>
-<span class="go">  code with &lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;).</span>
+<span class="go">  code with &lt;Adapter&gt;Configuration.load("&lt;name&gt;").</span>
 
 <span class="go">not reported: nldi (not imported, so the settings each accepts are unknown here)</span>
 </pre></div>
@@ -573,9 +573,9 @@ a mirror, or a recording proxy — for the duration of a block:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata</span><span class="w"> </span><span class="kn">import</span> <span class="n">WaterdataConfiguration</span>
 
 <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">WaterdataConfiguration</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;https://staging.example/waterdata&quot;</span><span class="p">)</span>
+    <span class="n">WaterdataConfiguration</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="s2">"https://staging.example/waterdata"</span><span class="p">)</span>
 <span class="p">):</span>
-    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>It names one adapter, so nothing else moves: NGWMN is served from the same host
@@ -610,11 +610,11 @@ mechanism.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">waterdata</span>
 
-<span class="n">secrets</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;secretsmanager&quot;</span><span class="p">)</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(</span><span class="n">SecretId</span><span class="o">=</span><span class="s2">&quot;usgs-pat&quot;</span><span class="p">)[</span><span class="s2">&quot;SecretString&quot;</span><span class="p">]</span>
+<span class="n">secrets</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">"secretsmanager"</span><span class="p">)</span>
+<span class="n">key</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(</span><span class="n">SecretId</span><span class="o">=</span><span class="s2">"usgs-pat"</span><span class="p">)[</span><span class="s2">"SecretString"</span><span class="p">]</span>
 
 <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">key</span><span class="p">)):</span>
-    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Wherever the key comes from, it is sent only to <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and

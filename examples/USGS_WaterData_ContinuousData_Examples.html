@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Continuous Data &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>Continuous Data &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -116,7 +116,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
-<span class="n">site</span> <span class="o">=</span> <span class="s2">&quot;USGS-0208458892&quot;</span>
+<span class="n">site</span> <span class="o">=</span> <span class="s2">"USGS-0208458892"</span>
 </pre></div>
 </div>
 </div>
@@ -129,10 +129,10 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">continuous_available</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_combined_metadata</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-    <span class="n">data_type</span><span class="o">=</span><span class="s2">&quot;Continuous values&quot;</span><span class="p">,</span>
+    <span class="n">data_type</span><span class="o">=</span><span class="s2">"Continuous values"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">avail</span> <span class="o">=</span> <span class="n">continuous_available</span><span class="p">[[</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_name&quot;</span><span class="p">,</span> <span class="s2">&quot;begin&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">]]</span>
-<span class="n">avail</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">avail</span> <span class="o">=</span> <span class="n">continuous_available</span><span class="p">[[</span><span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"parameter_name"</span><span class="p">,</span> <span class="s2">"begin"</span><span class="p">,</span> <span class="s2">"end"</span><span class="p">]]</span>
+<span class="n">avail</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"parameter_code"</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -179,49 +179,49 @@ Retrieving: combined-metadata · 1 page · 8 rows
       <td>00010</td>
       <td>Temperature, water</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-08-16 10:15:00+00:00</td>
+      <td>2026-08-17 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>1</th>
       <td>00062</td>
       <td>Reservoir elevation</td>
       <td>2013-10-01 09:00:00+00:00</td>
-      <td>2026-08-16 11:15:00+00:00</td>
+      <td>2026-08-17 12:15:00+00:00</td>
     </tr>
     <tr>
       <th>2</th>
       <td>00095</td>
       <td>Specific cond at 25C</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-08-16 10:15:00+00:00</td>
+      <td>2026-08-17 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>00300</td>
       <td>Dissolved oxygen</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-08-16 10:15:00+00:00</td>
+      <td>2026-08-17 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>00400</td>
       <td>pH</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-08-16 11:15:00+00:00</td>
+      <td>2026-08-17 12:15:00+00:00</td>
     </tr>
     <tr>
       <th>5</th>
       <td>00480</td>
       <td>Salinity</td>
       <td>2012-09-21 08:00:00+00:00</td>
-      <td>2026-08-16 10:15:00+00:00</td>
+      <td>2026-08-17 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>6</th>
       <td>62615</td>
       <td>Elevation, lake/res, NAVD88</td>
       <td>2013-10-01 09:00:00+00:00</td>
-      <td>2026-08-16 10:15:00+00:00</td>
+      <td>2026-08-17 10:15:00+00:00</td>
     </tr>
     <tr>
       <th>7</th>
@@ -245,10 +245,10 @@ Retrieving: combined-metadata · 1 page · 8 rows
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">multi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
     <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span> <span class="s2">&quot;00010&quot;</span><span class="p">],</span>  <span class="c1"># specific conductance + water temperature</span>
-    <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-07-01/2024-07-02&quot;</span><span class="p">,</span>
+    <span class="n">parameter_code</span><span class="o">=</span><span class="p">[</span><span class="s2">"00095"</span><span class="p">,</span> <span class="s2">"00010"</span><span class="p">],</span>  <span class="c1"># specific conductance + water temperature</span>
+    <span class="n">time</span><span class="o">=</span><span class="s2">"2024-07-01/2024-07-02"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">multi</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;parameter_code&quot;</span><span class="p">)[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">])</span>
+<span class="n">multi</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"parameter_code"</span><span class="p">)[</span><span class="s2">"value"</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s2">"count"</span><span class="p">,</span> <span class="s2">"min"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -334,12 +334,12 @@ No API key detected — register for higher rate limits at https://api.waterdata
 <span class="k">try</span><span class="p">:</span>
     <span class="n">sensor_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
         <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span>
-        <span class="n">time</span><span class="o">=</span><span class="s2">&quot;2024-07-01/2024-07-08&quot;</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00095"</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="s2">"2024-07-01/2024-07-08"</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;interrupted after </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">completed_chunks</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">total_chunks</span><span class="si">}</span><span class="s2"> chunks; resuming&quot;</span>
+        <span class="sa">f</span><span class="s2">"interrupted after </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">completed_chunks</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">total_chunks</span><span class="si">}</span><span class="s2"> chunks; resuming"</span>
     <span class="p">)</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">retry_after</span> <span class="ow">or</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># honor Retry-After, else back off</span>
@@ -349,8 +349,8 @@ No API key detected — register for higher rate limits at https://api.waterdata
         <span class="k">except</span> <span class="n">ChunkInterrupted</span> <span class="k">as</span> <span class="n">again</span><span class="p">:</span>
             <span class="n">exc</span> <span class="o">=</span> <span class="n">again</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sensor_data</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows&quot;</span><span class="p">)</span>
-<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;parameter_code&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="s2">&quot;approval_status&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sensor_data</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows"</span><span class="p">)</span>
+<span class="n">sensor_data</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"parameter_code"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">,</span> <span class="s2">"approval_status"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -451,16 +451,16 @@ Retrieving: continuous · 1 page · 673 rows
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Split [start, end] into per-calendar-year (start, end) date strings.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">year_chunks</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
     <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
-    <span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">-01-01&quot;</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">([</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">-01-01"</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
     <span class="n">starts</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="o">*</span><span class="n">edges</span><span class="p">]</span>
     <span class="n">ends</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="p">(</span><span class="n">edges</span> <span class="o">-</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span> <span class="n">end</span><span class="p">]</span>
     <span class="k">return</span> <span class="p">[</span>
-        <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">),</span> <span class="n">e</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">),</span> <span class="n">e</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)</span>
     <span class="p">]</span>
 
 
 <span class="c1"># Covering a full multi-year record (no data downloaded here):</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">year_chunks</span><span class="p">(</span><span class="s2">&quot;2012-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2025-09-30&quot;</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">])</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">year_chunks</span><span class="p">(</span><span class="s2">"2012-10-01"</span><span class="p">,</span> <span class="s2">"2025-09-30"</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"start"</span><span class="p">,</span> <span class="s2">"end"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -571,21 +571,21 @@ Retrieving: continuous · 1 page · 673 rows
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chunks</span> <span class="o">=</span> <span class="n">year_chunks</span><span class="p">(</span><span class="s2">&quot;2023-10-01&quot;</span><span class="p">,</span> <span class="s2">&quot;2024-03-31&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chunks</span> <span class="o">=</span> <span class="n">year_chunks</span><span class="p">(</span><span class="s2">"2023-10-01"</span><span class="p">,</span> <span class="s2">"2024-03-31"</span><span class="p">)</span>
 
 <span class="n">frames</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
     <span class="n">part</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_continuous</span><span class="p">(</span>
         <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">site</span><span class="p">,</span>
-        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">&quot;00095&quot;</span><span class="p">,</span>
-        <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00095"</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
 
 <span class="n">por</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">por</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> windows, &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">por</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> rows from </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span><span class="si">}</span><span class="s2"> windows, "</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">'time'</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">por</span><span class="p">[</span><span class="s1">'time'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 </pre></div>
 </div>

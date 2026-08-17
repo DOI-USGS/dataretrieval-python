@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
+      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -154,8 +154,8 @@ deliberate act than a variable inherited from a shell, and a profile reaches the
 chain by being passed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a>, which is above the environment.</p>
 <p>A caller configures by passing configuration objects, at most one per adapter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs/pat&quot;</span><span class="p">)),</span>
-    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">),</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"usgs/pat"</span><span class="p">)),</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"bulk"</span><span class="p">),</span>
     <span class="n">NgwmnConfiguration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
 <span class="p">):</span>
     <span class="o">...</span>
@@ -321,8 +321,8 @@ seconds. Progress resets the clock; <code class="docutils literal notranslate"><
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs&quot;</span><span class="p">))):</span>
-    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"usgs"</span><span class="p">))):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -354,8 +354,8 @@ check its cache by identity instead of re-normalizing a fresh <code class="docut
 <p>The highest-precedence source. Takes configuration objects positionally, at
 most one per adapter, and nothing else:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">&quot;usgs&quot;</span><span class="p">]),</span>
-    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">),</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">secrets</span><span class="p">[</span><span class="s2">"usgs"</span><span class="p">]),</span>
+    <span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"bulk"</span><span class="p">),</span>
     <span class="n">NgwmnConfiguration</span><span class="p">(</span><span class="n">concurrency</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
 <span class="p">):</span>
     <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
@@ -393,12 +393,12 @@ module – <code class="docutils literal notranslate"><span class="pre">Waterdat
 <p class="rubric">Examples</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># credentials from a secret store, no environment mutation</span>
 <span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;usgs/pat&quot;</span><span class="p">))</span>
+    <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"usgs/pat"</span><span class="p">))</span>
 <span class="p">):</span>
-    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">&quot;USGS-05114000&quot;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 
 <span class="c1"># a big overnight pull, from a [waterdata.bulk] table in the file</span>
-<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;bulk&quot;</span><span class="p">)):</span>
+<span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"bulk"</span><span class="p">)):</span>
     <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">many_sites</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -439,7 +439,7 @@ profile. The API key is never printed, only whether one is set.</p>
 <p>The sample below is generated by running this function, not written by
 hand; <code class="docutils literal notranslate"><span class="pre">test_show_configuration_sample_output_is_current</span></code> re-runs it and
 fails if the two drift apart.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; with dataretrieval.configure(WaterdataConfiguration.load(&quot;bulk&quot;)):
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
 ...     dataretrieval.show_configuration()
 config file  /home/u/.dataretrieval/config.toml (found)
 api_key          &lt;set&gt;  /home/u/.dataretrieval/config.toml
@@ -458,7 +458,7 @@ adapter overrides
 
 profiles in the file: [waterdata.bulk]
   A profile applies only where a row above names it; select one in
-  code with &lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;).
+  code with &lt;Adapter&gt;Configuration.load("&lt;name&gt;").
 
 not reported: nldi (not imported, so the settings each accepts are unknown here)
 </pre></div>
