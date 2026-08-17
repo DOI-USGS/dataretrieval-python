@@ -180,15 +180,19 @@ def _to_state_one(value: str | int, to: str) -> str:
             f'code ("WI"), or a two-digit ANSI/FIPS code ("55").'
         )
 
-    if to == "name":
-        return name
-    if to == "postal":
-        return state_codes[name].upper()
-    if to == "fips":
-        return fips_codes[name]
-    if to == "fips_us":
-        return f"US:{fips_codes[name]}"
-    raise ValueError(f"to must be 'name', 'postal', 'fips', or 'fips_us'; got {to!r}")
+    fips = fips_codes[name]
+    formats = {
+        "name": name,
+        "postal": state_codes[name].upper(),
+        "fips": fips,
+        "fips_us": f"US:{fips}",
+    }
+    try:
+        return formats[to]
+    except KeyError:
+        raise ValueError(
+            f"to must be 'name', 'postal', 'fips', or 'fips_us'; got {to!r}"
+        ) from None
 
 
 def apply_state(
