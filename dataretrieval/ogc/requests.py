@@ -95,29 +95,44 @@ def _ogc_query_params(
     return params
 
 
+def _is_post_param(value: Any) -> bool:
+    """True when ``value`` is a multi-value list suitable for CQL2 POST."""
+    return isinstance(value, (list, tuple)) and len(value) > 1
+
+
+def _partition_cql2(
+    params: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """CQL2 path: multi-value lists go to POST body, rest stay as URL params."""
+    post_params = {key: value for key, value in params.items() if _is_post_param(value)}
+    url_params = {key: value for key, value in params.items() if key not in post_params}
+    return url_params, post_params
+
+
+def _join_get_value(value: Any) -> Any:
+    """Comma-join list/tuple values for GET params; pass scalars through."""
+    if isinstance(value, (list, tuple)):
+        return ",".join(str(item) for item in value)
+    return value
+
+
+def _partition_get(params: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """GET path: comma-join multi-value lists, drop empty lists."""
+    get_params = {
+        key: _join_get_value(value)
+        for key, value in params.items()
+        if not (isinstance(value, (list, tuple)) and len(value) == 0)
+    }
+    return get_params, {}
+
+
 def _partition_request_params(
     params: dict[str, Any], *, use_cql2: bool
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Split URL parameters from multi-value CQL2 POST predicates."""
     if use_cql2:
-        post_params = {
-            key: value
-            for key, value in params.items()
-            if isinstance(value, (list, tuple)) and len(value) > 1
-        }
-        return (
-            {key: value for key, value in params.items() if key not in post_params},
-            post_params,
-        )
-
-    get_params = {
-        key: ",".join(str(item) for item in value)
-        if isinstance(value, (list, tuple))
-        else value
-        for key, value in params.items()
-        if not (isinstance(value, (list, tuple)) and len(value) == 0)
-    }
-    return get_params, {}
+        return _partition_cql2(params)
+    return _partition_get(params)
 
 
 def _items_url(collection: str, base_url: str) -> str:
