@@ -48,6 +48,18 @@ def _build_utc_datetime(
     )
 
 
+def _build_triplet_datetime(
+    df: pd.DataFrame, prefix: str, columns: set[str]
+) -> pd.Series | None:
+    """Try each Time/TimeZone suffix pair and return a UTC Series, or None."""
+    for time_suffix, tz_suffix in _TIME_TZ_SUFFIXES:
+        time_col = prefix + time_suffix
+        tz_col = prefix + tz_suffix
+        if time_col in columns and tz_col in columns:
+            return _build_utc_datetime(df[prefix + "Date"], df[time_col], df[tz_col])
+    return None
+
+
 def _find_datetime_triplets(
     df: pd.DataFrame,
 ) -> tuple[dict[str, pd.Series], str | None]:
@@ -69,14 +81,9 @@ def _find_datetime_triplets(
         target = prefix + "DateTime"
         if target in columns or target in new_columns:
             continue
-        for time_suffix, tz_suffix in _TIME_TZ_SUFFIXES:
-            time_col = prefix + time_suffix
-            tz_col = prefix + tz_suffix
-            if time_col in columns and tz_col in columns:
-                new_columns[target] = _build_utc_datetime(
-                    df[col], df[time_col], df[tz_col]
-                )
-                break
+        utc_series = _build_triplet_datetime(df, prefix, columns)
+        if utc_series is not None:
+            new_columns[target] = utc_series
 
     return new_columns, first_date_col
 
