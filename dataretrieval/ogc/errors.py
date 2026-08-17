@@ -66,6 +66,14 @@ _FORBIDDEN_CAUSES = (
 )
 
 
+def _clean_field(value: object | None) -> str | None:
+    """Normalize a JSON error field: strip whitespace and trailing dot."""
+    if value is None:
+        return None
+    text = str(value).strip().rstrip(".")
+    return text or None
+
+
 def _json_error_detail(resp: httpx.Response) -> str | None:
     """Render a supported JSON error body, or ``None`` for another shape."""
     try:
@@ -79,15 +87,11 @@ def _json_error_detail(resp: httpx.Response) -> str | None:
     if not isinstance(candidate, dict):
         candidate = body
 
-    def clean(value: object | None) -> str | None:
-        if value is None:
-            return None
-        text = str(value).strip().rstrip(".")
-        return text or None
-
-    code = clean(candidate.get("code"))
-    detail = clean(candidate.get("description")) or clean(candidate.get("message"))
-    parts = [part for part in (code, detail) if part is not None]
+    code = _clean_field(candidate.get("code"))
+    detail = _clean_field(candidate.get("description")) or _clean_field(
+        candidate.get("message")
+    )
+    parts = [p for p in (code, detail) if p]
     return ". ".join(parts) + "." if parts else None
 
 
