@@ -56,20 +56,24 @@ def _empty_feature_frame(
     non-empty pages in the same frame family, so ordinary ``pd.concat`` is
     sufficient. ``columns`` is supplied only when finalization has fetched the
     collection schema; page-level empties intentionally remain schema-light.
+
+    Geometry is always placed last in the column list (after any caller-
+    supplied columns), matching the convention that spatial columns trail
+    attribute columns.
     """
-    result_columns = list(columns or [])
+    # Strip geometry from the caller list; it will be re-appended at the end
+    # only when the request includes geometry, guaranteeing geometry-last order.
+    result_columns = [c for c in (columns or []) if c != "geometry"]
     if include_geometry:
-        if "geometry" not in result_columns:
-            result_columns.append("geometry")
-    else:
-        result_columns = [name for name in result_columns if name != "geometry"]
+        result_columns.append("geometry")
 
     data = {name: pd.Series(dtype=object) for name in result_columns}
-    if not geopd:
-        return pd.DataFrame(data, columns=result_columns)
-
-    data["geometry"] = gpd.GeoSeries([], crs=_CRS)
-    return gpd.GeoDataFrame(data, columns=result_columns, geometry="geometry", crs=_CRS)
+    if geopd:
+        data["geometry"] = gpd.GeoSeries([], crs=_CRS)
+        return gpd.GeoDataFrame(
+            data, columns=result_columns, geometry="geometry", crs=_CRS
+        )
+    return pd.DataFrame(data, columns=result_columns)
 
 
 def _attach_coordinates(df: pd.DataFrame, features: list[dict[str, Any]]) -> None:
