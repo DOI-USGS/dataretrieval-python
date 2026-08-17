@@ -431,17 +431,7 @@ class ChunkPlan:
             if _safe_request_bytes(build_request, worst, url_limit) <= url_limit:
                 return
 
-            biggest_axis: _Axis | None = None
-            biggest_idx = -1
-            biggest_size = -1
-            for axis in self.axes:
-                for idx, chunk in enumerate(self.chunks[axis.arg_key]):
-                    if len(chunk) <= 1:
-                        continue
-                    size = axis.chunk_bytes(chunk)
-                    if size > biggest_size:
-                        biggest_axis, biggest_idx, biggest_size = axis, idx, size
-
+            biggest_axis, biggest_idx = self._largest_splittable_chunk_by_bytes()
             if biggest_axis is None:
                 raise Unchunkable(
                     f"Request exceeds {url_limit} bytes (URL + body) at the "
@@ -450,6 +440,24 @@ class ChunkPlan:
                     f"the filter, or split the call manually."
                 )
             _split_at(self.chunks[biggest_axis.arg_key], biggest_idx)
+
+    def _largest_splittable_chunk_by_bytes(self) -> tuple[_Axis | None, int]:
+        """Find the largest splittable chunk ranked by URL-encoded byte size.
+
+        Returns ``(axis, index)`` of the biggest chunk with more than one atom,
+        or ``(None, -1)`` when every axis is at one atom per chunk (saturated).
+        """
+        biggest_axis: _Axis | None = None
+        biggest_idx = -1
+        biggest_size = -1
+        for axis in self.axes:
+            for idx, chunk in enumerate(self.chunks[axis.arg_key]):
+                if len(chunk) <= 1:
+                    continue
+                size = axis.chunk_bytes(chunk)
+                if size > biggest_size:
+                    biggest_axis, biggest_idx, biggest_size = axis, idx, size
+        return biggest_axis, biggest_idx
 
     def _refine(self, max_chunks: int) -> None:
         """
