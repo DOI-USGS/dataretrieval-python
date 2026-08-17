@@ -99,6 +99,25 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     )
 
 
+def _plain_feature_frame(
+    features: list[dict[str, Any]], *, include_geometry: bool
+) -> pd.DataFrame:
+    """Build a plain DataFrame from GeoJSON features."""
+    properties = [feature.get("properties") or {} for feature in features]
+    df = pd.json_normalize(properties, sep="_")
+    df["id"] = [feature.get("id") for feature in features]
+    if include_geometry:
+        _attach_coordinates(df, features)
+    return df
+
+
+def _spatial_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
+    """Build a GeoDataFrame from GeoJSON features with ``id`` first."""
+    df = _geo_feature_frame(features)
+    df["id"] = [f.get("id") for f in features]
+    return df[["id"] + [col for col in df.columns if col != "id"]]
+
+
 def _get_resp_data(
     resp: httpx.Response,
     geopd: bool,
@@ -160,23 +179,9 @@ def _get_resp_data(
         return _empty_feature_frame(geopd, include_geometry=include_geometry)
 
     if not geopd:
-        properties = [feature.get("properties") or {} for feature in features]
-        df = pd.json_normalize(properties, sep="_")
-        # Always materialize the feature-level ID (possibly all-None) so
-        # ``_arrange_cols`` can perform the documented collection-specific rename.
-        df["id"] = [feature.get("id") for feature in features]
-        if include_geometry:
-            _attach_coordinates(df, features)
-        return df
+        return _plain_feature_frame(features, include_geometry=include_geometry)
 
-    # A spatial request remains geospatial even when this particular page
-    # carries only null/missing geometries; changing frame family based on page
-    # contents makes pagination concat order-dependent.
-    df = _geo_feature_frame(features)
-    # Mirror the plain branch's defensive ``f.get("id")`` so a feature missing
-    # a top-level id yields None rather than a KeyError.
-    df["id"] = [f.get("id") for f in features]
-    return df[["id"] + [col for col in df.columns if col != "id"]]
+    return _spatial_feature_frame(features)
 
 
 def _deal_with_empty(
