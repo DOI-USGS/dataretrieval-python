@@ -240,32 +240,25 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
     overrides: dict[_ScopeKey, tuple[_SettingValue, str]] = {}
     seen: set[str | None] = set()
     for configuration in configurations:
-        _check_is_configuration(configuration)
-        _check_no_duplicate_adapter(configuration.adapter, seen)
-        seen.add(configuration.adapter)
+        if not isinstance(configuration, BaseConfiguration):
+            raise ConfigurationError(
+                "configure() takes configuration objects, not "
+                f"{type(configuration).__name__}. Package-wide settings go on "
+                "Configuration(...); a setting for one service goes on that "
+                "adapter's configuration, e.g. WaterdataConfiguration(...)."
+            )
+
+        adapter = configuration.adapter
+        if adapter in seen:
+            where = f"the {adapter} adapter" if adapter else "the package-wide settings"
+            raise ConfigurationError(
+                f"configure() got two configurations for {where}. Precedence "
+                "between them would be undefined, so combine them into one."
+            )
+
+        seen.add(adapter)
         overrides.update(_configuration_overrides(configuration))
     return overrides
-
-
-def _check_is_configuration(configuration: object) -> None:
-    """Raise if an argument to configure() is not a BaseConfiguration."""
-    if not isinstance(configuration, BaseConfiguration):
-        raise ConfigurationError(
-            "configure() takes configuration objects, not "
-            f"{type(configuration).__name__}. Package-wide settings go on "
-            "Configuration(...); a setting for one service goes on that "
-            "adapter's configuration, e.g. WaterdataConfiguration(...)."
-        )
-
-
-def _check_no_duplicate_adapter(adapter: str | None, seen: set[str | None]) -> None:
-    """Raise if two configurations target the same adapter."""
-    if adapter in seen:
-        where = f"the {adapter} adapter" if adapter else "the package-wide settings"
-        raise ConfigurationError(
-            f"configure() got two configurations for {where}. Precedence "
-            "between them would be undefined, so combine them into one."
-        )
 
 
 def _configuration_overrides(
@@ -733,7 +726,7 @@ def _check_adapter_known(adapter: str | None) -> None:
     through to the package-wide value -- so a ``[waterdata]`` table, or a
     ``WaterdataConfiguration``, would be ignored with nothing raised anywhere.
     """
-    if adapter is not None and adapter not in ADAPTERS:
+    if adapter not in (*ADAPTERS, None):
         raise ConfigurationError(
             f"{adapter!r} is not a configurable adapter. The adapters are "
             f"{', '.join(ADAPTERS)}."
