@@ -76,6 +76,7 @@ import sys
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from functools import partial
+from pathlib import Path
 from typing import TextIO, overload
 
 # Explicit same-name aliases preserve the facade's public and private compatibility
@@ -321,64 +322,81 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         print(f"config file  <unresolved: {exc}>", file=out)
         return
 
-    # Nothing here raises. This function exists to explain a configuration, and
-    # the configurations most in need of explaining are the broken ones -- an
-    # unparseable file, a value that fails its grammar, a profile that no
-    # longer exists. Each distinct failure is printed once, in the first place
-    # it shows up; a repeat is collapsed, so one bad file does not bury the
-    # rows that did resolve under ten copies of the same message.
-    reported: str | None = None
-
-    def cell(render: Callable[[], object]) -> str:
-        nonlocal reported
-        try:
-            value = render()
-        except ConfigurationError as exc:
-            if str(exc) == reported:
-                return "<unreadable>"
-            reported = str(exc)
-            return f"<error: {exc}>"
-        return "" if value is None else str(value)
-
-    # Probing the file once here means a whole-file problem -- unparseable
-    # TOML, a bad value at the top level -- is reported on the file row rather
-    # than repeated in every setting's row below. The parsed form is kept for
-    # the profile section, which asks what the file *defines* rather than what
-    # resolved; an unparseable file defines nothing, and has already said so
-    # here.
-    parsed = _NO_FILE
-    try:
-        _, parsed = _current_file()
-        status = "found" if path.exists() else "not found"
-    except ConfigurationError as exc:
-        reported = str(exc)
-        status = f"ERROR: {exc}"
-    print(f"config file  {path} ({status})", file=out)
+    cell = _ErrorDeduplicatingCell()
+    parsed = _show_file_status(out, path, cell)
 
     rows = [
         (name, cell(partial(_DISPLAYS[name], None)), cell(partial(_source_label, name)))
         for name in SETTINGS
     ]
+    _print_setting_rows(out, rows)
+    _show_built_in_default_note(out, rows)
+    _show_adapter_overrides(out, cell, {name: source for name, _value, source in rows})
+    _show_profiles(out, parsed)
+    _show_unimported_adapters(out)
+
+
+class _ErrorDeduplicatingCell:
+    """Render a value, deduplicating consecutive configuration errors.
+
+    This function exists to explain a configuration, and the configurations
+    most in need of explaining are the broken ones -- an unparseable file, a
+    value that fails its grammar, a profile that no longer exists. Each
+    distinct failure is printed once, in the first place it shows up; a repeat
+    is collapsed, so one bad file does not bury the rows that did resolve
+    under ten copies of the same message.
+    """
+
+    def __init__(self) -> None:
+        self.reported: str | None = None
+
+    def __call__(self, render: Callable[[], object]) -> str:
+        try:
+            value = render()
+        except ConfigurationError as exc:
+            if str(exc) == self.reported:
+                return "<unreadable>"
+            self.reported = str(exc)
+            return f"<error: {exc}>"
+        return "" if value is None else str(value)
+
+
+def _show_file_status(
+    out: TextIO, path: Path, cell: _ErrorDeduplicatingCell
+) -> _ParsedFile:
+    """Probe and print the config file status line, returning the parsed file.
+
+    Probing the file once here means a whole-file problem -- unparseable TOML,
+    a bad value at the top level -- is reported on the file row rather than
+    repeated in every setting's row below.
+    """
+    parsed = _NO_FILE
+    try:
+        _, parsed = _current_file()
+        status = "found" if path.exists() else "not found"
+    except ConfigurationError as exc:
+        cell.reported = str(exc)
+        status = f"ERROR: {exc}"
+    print(f"config file  {path} ({status})", file=out)
+    return parsed
+
+
+def _print_setting_rows(out: TextIO, rows: list[tuple[str, str, str]]) -> None:
+    """Print the package-wide setting rows in aligned columns."""
     name_width = max(len(name) for name, _value, _source in rows)
     value_width = max(len(value) for _name, value, _source in rows)
     for name, value, source in rows:
         print(f"{name:<{name_width}}  {value:<{value_width}}  {source}", file=out)
 
-    # A built-in default is package-wide, and a service may prefer its own for
-    # its own calls -- so a row reading "built-in default" is not a promise
-    # about every service. Saying so is the honest scope of this report: this
-    # module is a leaf and cannot enumerate the services, and a value from any
-    # source outranks both kinds of default anyway.
+
+def _show_built_in_default_note(out: TextIO, rows: list[tuple[str, str, str]]) -> None:
+    """Print the built-in default footnote when at least one row uses it."""
     if any(source == _BUILT_IN for _name, _value, source in rows):
         print(
             "\nA built-in default is package-wide. An adapter may prefer its own "
             "for\nits own calls; a value from any source above overrides both.",
             file=out,
         )
-
-    _show_adapter_overrides(out, cell, {name: source for name, _value, source in rows})
-    _show_profiles(out, parsed)
-    _show_unimported_adapters(out)
 
 
 def _show_adapter_overrides(
