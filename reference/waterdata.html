@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g470280d9a documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g6924c61b0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a32a80f0"></script>
+      <script src="../_static/documentation_options.js?v=bf07b7cb"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1954,6 +1954,11 @@ silently dropped.</p></li>
 <li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMetadata</span></code></a>) – Metadata from the underlying <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> call.</p></li>
 </ul>
 </p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><strong>FanOutInterrupted</strong></a> – If the underlying fan-out is interrupted. <code class="docutils literal notranslate"><span class="pre">partial_frame</span></code> and
+    <code class="docutils literal notranslate"><span class="pre">call.partial_frame</span></code> contain nearest-selected rows with
+    <code class="docutils literal notranslate"><span class="pre">target_time</span></code>; <code class="docutils literal notranslate"><span class="pre">call.resume()</span></code> returns that same public shape.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
