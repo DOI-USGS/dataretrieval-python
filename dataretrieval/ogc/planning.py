@@ -228,6 +228,22 @@ class _Axis:
         return list(chunk) if self.joiner == _LIST_SEP else self.joiner.join(chunk)
 
 
+def _filter_axis(args: dict[str, Any]) -> _Axis | None:
+    """Build the filter axis from CQL-text ``filter``, if chunkable.
+
+    Returns an :class:`_Axis` whose atoms are top-level OR-clauses when the
+    filter has two or more splittable clauses; ``None`` otherwise.
+    """
+    filter_expr = args.get("filter")
+    if filter_expr is None or not _is_chunkable(filter_expr, args.get("filter_lang")):
+        return None
+    _check_numeric_filter_pitfall(filter_expr)
+    clauses = _split_top_level_or(filter_expr)
+    if len(clauses) < 2:
+        return None
+    return _Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP)
+
+
 def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     """
     Build the chunkable-axis set from a request's args.
@@ -251,19 +267,16 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
         per eligible kwarg, in ``args`` order), then the filter axis
         if present.
     """
-    axes: list[_Axis] = []
-    for key, value in args.items():
-        if key in _NEVER_CHUNK:
-            continue
-        if isinstance(value, (list, tuple)) and len(value) > 1:
-            axes.append(_Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP))
-
-    filter_expr = args.get("filter")
-    if filter_expr is not None and _is_chunkable(filter_expr, args.get("filter_lang")):
-        _check_numeric_filter_pitfall(filter_expr)
-        clauses = _split_top_level_or(filter_expr)
-        if len(clauses) >= 2:
-            axes.append(_Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP))
+    axes: list[_Axis] = [
+        _Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP)
+        for key, value in args.items()
+        if key not in _NEVER_CHUNK
+        and isinstance(value, (list, tuple))
+        and len(value) > 1
+    ]
+    fax = _filter_axis(args)
+    if fax is not None:
+        axes.append(fax)
     return axes
 
 
