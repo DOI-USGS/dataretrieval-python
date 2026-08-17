@@ -92,6 +92,36 @@ def _request_bytes(req: httpx.Request) -> int:
     return len(str(req.url)) + len(req.content)
 
 
+def _try_build(
+    build_request: Callable[..., httpx.Request],
+    args: dict[str, Any],
+) -> httpx.Request | None:
+    """Attempt to construct a request, returning ``None`` on overflow.
+
+    ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
+    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes`
+    and :meth:`ChunkPlan._probe_initial_request` need exactly this
+    "build-or-None" step, so it lives here once.
+
+    Parameters
+    ----------
+    build_request : Callable[..., httpx.Request]
+        Factory that turns a kwargs dict into a sized request.
+    args : dict[str, Any]
+        Per-chunk kwargs to pass through to ``build_request``.
+
+    Returns
+    -------
+    httpx.Request or None
+        The built request, or ``None`` when construction raised
+        ``httpx.InvalidURL``.
+    """
+    try:
+        return build_request(**args)
+    except httpx.InvalidURL:
+        return None
+
+
 def _safe_request_bytes(
     build_request: Callable[..., httpx.Request],
     args: dict[str, Any],
@@ -122,11 +152,8 @@ def _safe_request_bytes(
         ``url_limit + 1`` so the planner's "too large" branch keeps
         halving.
     """
-    try:
-        req = build_request(**args)
-    except httpx.InvalidURL:
-        return url_limit + 1
-    return _request_bytes(req)
+    req = _try_build(build_request, args)
+    return _request_bytes(req) if req is not None else url_limit + 1
 
 
 @dataclass(frozen=True)
@@ -401,9 +428,8 @@ class ChunkPlan:
         Returns ``(request, fits)`` where ``request`` is ``None`` when
         construction raised ``httpx.InvalidURL`` (URL > 64 KB).
         """
-        try:
-            initial_request = build_request(**args)
-        except httpx.InvalidURL:
+        initial_request = _try_build(build_request, args)
+        if initial_request is None:
             return None, False
         return initial_request, _request_bytes(initial_request) <= url_limit
 
