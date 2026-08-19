@@ -199,6 +199,13 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         The formatted data frame.
 
     """
+    if "peak_dt" not in df.columns:
+        # An empty peaks response (e.g. "No sites found") parses to a
+        # column-less frame, so there is no peak_dt to reformat. Return it
+        # unchanged and let format_response's empty-frame path handle it,
+        # matching how the other services treat empty results (issue #171).
+        return df
+
     df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
     df.dropna(subset=["datetime"], inplace=True)
     return df

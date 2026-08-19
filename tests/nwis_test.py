@@ -11,6 +11,7 @@ import pytest
 from dataretrieval.nwis import (
     NWIS_Metadata,
     _read_rdb,
+    format_response,
     get_discharge_measurements,
     get_gwlevels,
     get_iv,
@@ -19,6 +20,7 @@ from dataretrieval.nwis import (
     get_record,
     get_water_use,
     preformat_peaks_response,
+    read_rdb,
 )
 
 START_DATE = "2018-01-24"
@@ -301,5 +303,24 @@ class TestReadRdb:
             "# //Response-Message: No sites found matching all criteria\n"
         )
         df = _read_rdb(no_sites_rdb)
+        assert isinstance(df, pd.DataFrame)
+        assert df.empty
+
+    def test_no_peaks_flows_through_format_response(self):
+        """The 'peaks' service takes an extra formatting step
+        (preformat_peaks_response) before the empty-frame check, so an empty
+        peaks response has to survive that too. Previously this raised
+        KeyError('peak_dt'); now it returns an empty frame like the other
+        services (same empty-result contract as issue #171).
+        """
+        no_peaks_rdb = (
+            "# //Output-Format: RDB\n"
+            "# //Response-Status: OK\n"
+            "# //Response-Message: No sites found matching all criteria\n"
+        )
+        # Mirror get_discharge_peaks: raw read_rdb, then the peaks-specific
+        # format_response (not _read_rdb, which formats with service=None).
+        df = read_rdb(no_peaks_rdb)
+        df = format_response(df, service="peaks")
         assert isinstance(df, pd.DataFrame)
         assert df.empty
