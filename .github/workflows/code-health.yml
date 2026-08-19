@@ -1,10 +1,10 @@
-# Periodic structural sweep: duplication, coupling, cohesion, dead code, and the
-# maintainability trend.
+# Periodic health sweep: dependency vulnerabilities, duplication, coupling,
+# cohesion, dead code, and the maintainability trend.
 #
-# Advisory by design, and nothing here fails the build. These measures move over
-# months rather than commits, and they report findings a reviewer has to judge
-# rather than obey -- a metric can call good design a violation. The merge gates
-# live in python-package.yml. See CONTRIBUTING.md for how to read the output.
+# Advisory by design, and nothing here fails the build. Structural measures move
+# over months rather than commits, while vulnerability reports and metric
+# findings both need human triage. The merge gates live in python-package.yml.
+# See CONTRIBUTING.md for how to read the output.
 
 name: Code Health
 
@@ -27,20 +27,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          persist-credentials: false
           # wily indexes git history; a shallow clone gives it one revision to
           # trend against, which is no trend at all.
           fetch-depth: 0
       - name: Set up Python 3.13
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.13"
           cache: "pip"
       - name: Install analysis tooling
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[metrics,health]
+          pip install -e .[metrics,health,security]
+
+      - name: Dependency vulnerability audit (pip-audit)
+        # Advisory like the structural scan: publish new vulnerability reports
+        # for triage without making an unrelated PR depend on advisory uptime.
+        continue-on-error: true
+        run: |
+          python -m pip_audit --strict --progress-spinner off . \
+            2>&1 | tee pip-audit-summary.txt
 
       - name: Structural analysis (pyscn)
         # One output format per invocation, so run it twice: JSON to read the
@@ -92,6 +101,11 @@ jobs:
         if: always()
         run: |
           {
+            echo '## Dependency audit'
+            echo '```'
+            cat pip-audit-summary.txt 2>/dev/null \
+              || echo 'pip-audit produced no output'
+            echo '```'
             echo '## Structural analysis'
             echo '```'
             if [[ -s pyscn-summary.txt ]]; then
@@ -111,13 +125,14 @@ jobs:
 
       - name: Upload reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: code-health-report
           path: |
             .pyscn/reports/
             pyscn-summary.txt
             pyscn-sanity.txt
+            pip-audit-summary.txt
             wily-summary.txt
           retention-days: 90
           if-no-files-found: warn

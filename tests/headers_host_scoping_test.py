@@ -18,7 +18,7 @@ from dataretrieval.utils import (
 class TestDefaultHeadersHostScoping:
     """_default_headers only sends X-Api-Key to the authorized Water Data host."""
 
-    FAKE_TOKEN = "test-fake-token-abc123"
+    FAKE_TOKEN = "test-fake-token-abc123"  # noqa: S105 - deliberate test token
 
     @pytest.fixture(autouse=True)
     def _api_token(self, monkeypatch: pytest.MonkeyPatch) -> None:

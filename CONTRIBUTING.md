@@ -126,7 +126,20 @@ clone detector's floor and neither one couples or complicates anything. A grep
 for the mechanism you are about to write is the only thing that does.
 
 The continuous integration and pre-commit configurations enforce formatting,
-linting, and strict type checking. Run the relevant checks before opening a PR:
+linting, security-smell checks, and strict type checking. The shortest complete
+local feedback loop before opening a PR is:
+
+```bash
+pre-commit run --all-files
+coverage run -m pytest tests/
+coverage report -m
+```
+
+Coverage measures branches in the package itself, excludes the generated
+``_version.py``, and fails when the reported total rounds below 90.00%. This is
+a repository-wide floor, not a claim that every changed line is tested.
+
+The equivalent individual checks are:
 
 ```bash
 ruff check .
@@ -166,6 +179,11 @@ ADR 0003). If you are adding a rule and it is purely "module A must not import
 module B", it belongs in `.importlinter`. A boundary that legitimately moves is
 one edit there, plus the ADR it cites.
 
+Ruff's ``S`` rules provide the static security-smell gate. Suppress a finding
+only at the narrowest justified scope and explain why it is safe; tests ignore
+``assert`` warnings, pickle compatibility tests ignore pickle warnings, and
+retry jitter explicitly marks its non-cryptographic randomness.
+
 To see the *trend* rather than a pass/fail, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
 history:
@@ -188,6 +206,14 @@ Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 which attaches an HTML and a JSON report to each run. Nothing gates on it. These
 measures move over months rather than commits, and a threshold nobody agreed to
 is either noise or theatre.
+
+The same workflow runs `pip-audit` against the latest compatible resolution of
+the core runtime dependencies and includes its output in the weekly report. Run
+it on demand with `pip install -e '.[security]'` followed by
+`pip-audit --strict --progress-spinner off .`. This catches known
+vulnerabilities in the resolution users receive today; it does not prove every
+version allowed by broad constraints is safe, and project-path mode does not
+audit optional extras.
 
 You do not need it to contribute, but it is the right tool for "what should we
 clean up next?" -- including for an agent working on this repo, which gets a

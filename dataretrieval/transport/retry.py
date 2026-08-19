@@ -202,8 +202,11 @@ class RetryPolicy:
         """
         ceiling = min(self.max_backoff, self.base_backoff * 2 ** (attempt - 1))
         if retry_after is None:
-            return random.uniform(0.0, ceiling)
-        nudge = random.uniform(0.0, min(self.max_backoff, _RETRY_AFTER_JITTER))
+            # Retry jitter decorrelates clients; it is not security-sensitive.
+            return random.uniform(0.0, ceiling)  # noqa: S311
+        nudge = random.uniform(  # noqa: S311
+            0.0, min(self.max_backoff, _RETRY_AFTER_JITTER)
+        )
         return min(retry_after + nudge, self.retry_after_cap)
 
 

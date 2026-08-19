@@ -50,6 +50,16 @@ dataretrieval = ["py.typed"]
 max-complexity-allowed = 10
 failed = true
 
+[tool.coverage.run]
+branch = true
+source = ["dataretrieval"]
+omit = ["dataretrieval/_version.py"]
+
+[tool.coverage.report]
+fail_under = 90
+precision = 2
+show_missing = true
+
 [project.optional-dependencies]
 # Minimal set the CI ``type-check`` job installs — just mypy + the package,
 # not the whole test stack.
@@ -70,6 +80,10 @@ metrics = [
 # so keep it separate from the extra used by merge gates and contributors.
 health = [
   "pyscn==1.29.0",
+]
+# Audit the latest compatible resolution of the core runtime dependencies.
+security = [
+  "pip-audit==2.10.1",
 ]
 test = [
   "pytest > 5.0.0",
@@ -117,9 +131,10 @@ extend-exclude = ["demos"]
 [tool.ruff.lint]
 preview = true
 # Select rules: Pyflakes(F), pycodestyle(E,W), isort(I), pyupgrade(UP),
-# flake8-bugbear(B), flake8-quotes(Q), flake8-simplify(SIM), flake8-tidy-imports(TID)
+# flake8-bugbear(B), flake8-quotes(Q), flake8-simplify(SIM),
+# flake8-tidy-imports(TID), flake8-bandit(S)
 select = [
-    "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID",
+    "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID", "S",
     "C90", # mccabe
     "E501", # line-length
     # A first-party import used only in annotations is not a runtime
@@ -142,7 +157,7 @@ ignore = [
 max-complexity = 20
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["SIM108"]
+"tests/*" = ["SIM108", "S101"]
 "**/__init__.py" = ["F403"]
 
 [tool.ruff.format]
