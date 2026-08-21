@@ -100,7 +100,7 @@ def get_reference_table(
     # ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm
     # was unreachable and would stay correct if a singular collection appeared.
     if collection in ("counties", "countries"):
-        output_id = collection[:-3] + "y"  # county / country
+        output_id = collection.removesuffix("ies") + "y"
     else:
         output_id = collection.removesuffix("s").replace("-", "_")
 

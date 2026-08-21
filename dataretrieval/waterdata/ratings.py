@@ -17,6 +17,7 @@ from typing import Any, Literal, get_args
 import httpx
 import pandas as pd
 
+from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
@@ -177,7 +178,9 @@ def get_ratings(
     _validate_file_types(file_types)
     _validate_time_no_duration(time)
     time_str = (
-        _format_api_dates(time, name="time", advertise_duration=False)
+        _format_api_dates(
+            time, name="time", single_value_hint="an instant ('2020-01-01')"
+        )
         if time is not None
         else None
     )
@@ -209,8 +212,8 @@ def _validate_file_types(file_types: list[str]) -> None:
     invalid = [ft for ft in file_types if ft not in _VALID_FILE_TYPES]
     if invalid:
         raise ValueError(
-            f"Invalid file_type {invalid!r}; "
-            f"valid options are {list(_VALID_FILE_TYPES)}."
+            f"Invalid file_type: {render_options(invalid)}. "
+            f"Valid options are: {render_options(_VALID_FILE_TYPES)}."
         )
 
 

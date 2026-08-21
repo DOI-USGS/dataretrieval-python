@@ -48,6 +48,16 @@ WATERDATA_SERVICES = [
     "peaks",
     "ratings",
 ]
+# The major filters each query function accepts, hoisted beside the service
+# lists so the checks and their remedies read from one roster.
+_WATERDATA_MAJOR_FILTERS = ("site_no", "stateCd")
+_WATERDATA_BBOX_CORNERS = (
+    "nw_longitude_va",
+    "nw_latitude_va",
+    "se_longitude_va",
+    "se_latitude_va",
+)
+_WATERSERVICES_MAJOR_FILTERS = ("sites", "stateCd", "bBox", "huc", "countyCd")
 # NAD83
 _CRS = "EPSG:4269"
 
@@ -392,33 +402,26 @@ def query_waterdata(
     request: ``httpx.Response``
         The response object from the API request to the web service.
     """
-    major_params = ["site_no", "stateCd"]
-    bbox_params = [
-        "nw_longitude_va",
-        "nw_latitude_va",
-        "se_longitude_va",
-        "se_latitude_va",
-    ]
-
     require_any_of(
-        {name: kwargs.get(name) for name in major_params + bbox_params},
+        {
+            name: kwargs.get(name)
+            for name in _WATERDATA_MAJOR_FILTERS + _WATERDATA_BBOX_CORNERS
+        },
         context="as a major filter",
         remedy=(
             "Pass one, e.g. site_no='01491000' or stateCd='WI', or all four "
             "bounding-box corners together with "
             "coordinate_format='decimal_degrees'."
         ),
-        error=TypeError,
     )
     require_together(
-        {name: kwargs.get(name) for name in bbox_params},
+        {name: kwargs.get(name) for name in _WATERDATA_BBOX_CORNERS},
         context="to describe a bounding box",
         remedy=(
             "Pass them along with coordinate_format='decimal_degrees', or "
-            f"drop the bounding box and filter with {' or '.join(major_params)} "
-            "instead."
+            "drop the bounding box and filter with "
+            f"{' or '.join(_WATERDATA_MAJOR_FILTERS)} instead."
         ),
-        error=TypeError,
     )
     require_one_of(
         service,
@@ -427,9 +430,10 @@ def query_waterdata(
         remedy=(
             "Rating tables come from waterdata.get_ratings("
             "monitoring_location_id='USGS-01646500'), served from a different "
-            "endpoint and keyed by the AGENCY-ID form of the site number."
+            "endpoint and keyed by the AGENCY-ID form of the site number. It "
+            "returns {'USGS-01646500.exsa.rdb': DataFrame} -- a dict per file, "
+            "not a (frame, metadata) pair."
         ),
-        error=TypeError,
     )
 
     url = WATERDATA_URL + service
@@ -479,14 +483,12 @@ def query_waterservices(
         The response object from the API request to the web service.
 
     """
-    major_filters = ["sites", "stateCd", "bBox", "huc", "countyCd"]
     require_any_of(
-        {name: kwargs.get(name) for name in major_filters},
+        {name: kwargs.get(name) for name in _WATERSERVICES_MAJOR_FILTERS},
         context="as a major filter",
         remedy=("Pass one, e.g. sites='01491000', stateCd='WI', or countyCd='55025'."),
-        error=TypeError,
     )
-    require_one_of(service, WATERSERVICES_SERVICES, name="service", error=TypeError)
+    require_one_of(service, WATERSERVICES_SERVICES, name="service")
 
     if "format" not in kwargs:
         kwargs["format"] = "rdb"
@@ -830,10 +832,7 @@ def get_ratings(
     if site is not None:
         payload.update({"site_no": site})
     if file_type is not None:
-        if file_type not in ["base", "corr", "exsa"]:
-            raise ValueError(
-                f'Unrecognized file_type: {file_type}, must be "base", "corr" or "exsa"'
-            )
+        require_one_of(file_type, ("base", "corr", "exsa"), name="file_type")
         payload.update({"file_type": file_type})
     response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
@@ -993,7 +992,6 @@ def get_record(
             "New work should use the dataretrieval.waterdata getters instead; "
             "NWIS is deprecated."
         ),
-        error=TypeError,
     )
 
     if service == "iv":
@@ -1044,12 +1042,8 @@ def get_record(
         df, _ = get_stats(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    else:  # pragma: no cover - a recognized service with no branch above
-        raise TypeError(
-            f"The {service!r} service is recognized but get_record has no "
-            "handler for it. This is a bug in dataretrieval; please report it "
-            "at https://github.com/DOI-USGS/dataretrieval-python/issues."
-        )
+    else:  # pragma: no cover - every recognized service has a branch above
+        raise AssertionError(f"get_record has no handler for service {service!r}")
 
 
 def _site_block_boundaries(site_list: list[str]) -> list[int]:

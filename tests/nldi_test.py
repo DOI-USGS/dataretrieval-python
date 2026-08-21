@@ -394,7 +394,7 @@ def test_validate_data_source_rejects_invalid_after_cache_populated(httpx_mock):
 
     nldi._validate_data_source("WQP")
 
-    with pytest.raises(ValueError, match="Invalid data source 'not_a_real_source'"):
+    with pytest.raises(ValueError, match="Invalid data source: 'not_a_real_source'"):
         nldi._validate_data_source("not_a_real_source")
 
 

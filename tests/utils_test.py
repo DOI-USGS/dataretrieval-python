@@ -449,7 +449,7 @@ class Test_to_state:
     def test_rejects_unknown_target(self):
         from dataretrieval.codes.states import to_state
 
-        with pytest.raises(ValueError, match="to must be"):
+        with pytest.raises(ValueError, match="Invalid to"):
             to_state("WI", "zipcode")
 
     def test_resolves_an_iterable_element_wise(self):

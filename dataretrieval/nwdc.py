@@ -52,7 +52,7 @@ import pandas as pd
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval._validation import require_exactly_one
+from dataretrieval._validation import render_options, require_exactly_one
 from dataretrieval.codes.states import to_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -302,8 +302,7 @@ def _resolve_locations(
     location string per value — the caller issues one request per location.
     """
     selectors = {"state": state, "county": county, "huc": huc}
-    require_exactly_one(selectors, context="as the query's location")
-    [(name, value)] = ((n, v) for n, v in selectors.items() if v is not None)
+    name, value = require_exactly_one(selectors, context="as the query's location")
     locations = _LOCATION_BUILDERS[name](value)
     if not locations:
         raise ValueError(
@@ -467,7 +466,7 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
         return None
     if detail.startswith("Invalid model name"):
         # The service names the rejected value but not the accepted ones.
-        return f"{detail.rstrip('.')}. Valid models are: {', '.join(MODELS)}."
+        return f"{detail.rstrip('.')}. Valid models are: {render_options(MODELS)}."
     return detail
 
 

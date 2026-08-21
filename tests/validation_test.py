@@ -130,8 +130,11 @@ class TestRequireAnyOf:
 
 
 class TestRequireExactlyOne:
-    def test_accepts_exactly_one(self):
-        require_exactly_one({"comid": 1, "feature_source": None})
+    def test_accepts_exactly_one_and_returns_it(self):
+        assert require_exactly_one({"comid": 1, "feature_source": None}) == (
+            "comid",
+            1,
+        )
 
     def test_none_supplied_says_to_pass_one(self):
         with pytest.raises(ValueError) as excinfo:
@@ -171,20 +174,3 @@ class TestRejectTogether:
             reject_together(
                 {"lat": 1.0, "comid": 2}, context="they name different origins"
             )
-
-
-@pytest.mark.parametrize(
-    "check",
-    [
-        lambda: require_one_of("x", ("a",), name="service", error=TypeError),
-        lambda: require_argument("service", None, error=TypeError),
-        lambda: require_together({"a": 1, "b": None}, error=TypeError),
-        lambda: require_any_of({"a": None}, error=TypeError),
-        lambda: require_exactly_one({"a": None, "b": None}, error=TypeError),
-        lambda: reject_together({"a": 1, "b": 2}, error=TypeError),
-    ],
-)
-def test_every_check_raises_the_callers_exception_class(check):
-    """Sharing the wording must not change what a caller already catches."""
-    with pytest.raises(TypeError):
-        check()

@@ -933,7 +933,9 @@ def test_the_duration_example_is_withheld_where_durations_are_rejected():
     with pytest.raises(ValueError) as allowed:
         _format_api_dates(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
-        _format_api_dates(["a", "b", "c"], name="time", advertise_duration=False)
+        _format_api_dates(
+            ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
+        )
 
     assert "'P7D'" in str(allowed.value)
     assert "'P7D'" not in str(refused.value)
@@ -1315,11 +1317,11 @@ def test_with_state_routes_into_native_queryable():
 def test_with_state_conflict_raises():
     """Passing ``state`` together with a native ``state_code``/``state_name``
     is ambiguous and raises."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_code": "55"}, to="name", into="state_name"
         )
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_name": "Wisconsin"}, to="name", into="state_name"
         )
@@ -1330,7 +1332,7 @@ def test_with_state_conflict_via_queryables_raises():
     explicit getter parameter, as with ``get_time_series_metadata``'s
     ``state_code``) is flattened before the mutual-exclusion check, so combining
     it with ``state`` still raises rather than silently sending both filters."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
             to="name",

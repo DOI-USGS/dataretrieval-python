@@ -18,6 +18,7 @@ from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _query_with_retry
 from dataretrieval._validation import (
     reject_together,
+    render_options,
     require_argument,
     require_exactly_one,
     require_one_of,
@@ -54,15 +55,15 @@ _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 #: Built from the tuple above, so a mode added there cannot go unmentioned.
-_NAVIGATION_MODES_HINT = (
-    f"Pass one of {', '.join(repr(mode) for mode in _VALID_NAVIGATION_MODES)}."
-)
+_NAVIGATION_MODES_HINT = f"Pass one of {render_options(_VALID_NAVIGATION_MODES)}."
 #: Shared by the conflict check and the nothing-supplied check, so both
 #: offer the same ways forward.
 _ORIGIN_HINT = (
     "Navigate from a comid, e.g. comid=13294314, or from a "
     "feature_source/feature_id pair -- not both"
 )
+_ORIGIN_REMEDY = f"{_ORIGIN_HINT}."
+_ORIGIN_REMEDY_NEITHER = f"{_ORIGIN_HINT}, and not neither."
 
 
 def _api_base() -> str:
@@ -352,32 +353,6 @@ def _navigation_request(
     return url, {"distance": str(distance)}
 
 
-def _validate_lat_long_origin(
-    comid: int | None,
-    feature_source: str | None,
-    feature_id: str | None,
-) -> None:
-    """Raise if lat/long is combined with another origin type.
-
-    Called with a lat/long already supplied, so the pair is passed as a
-    present marker: the conflict is between origin *types*, and naming the
-    type is what tells the caller which argument to drop.
-    """
-    reject_together(
-        {
-            "lat/long": True,
-            "comid": comid,
-            "feature_source": feature_source,
-            "feature_id": feature_id,
-        },
-        context="each names a different origin to navigate from",
-        remedy=(
-            "Navigate from a point (lat and long), a comid, or a "
-            "feature_source/feature_id pair -- one origin per call."
-        ),
-    )
-
-
 def _get_features_request(
     *,
     data_source: str | None,
@@ -398,7 +373,20 @@ def _get_features_request(
     )
 
     if lat is not None:
-        _validate_lat_long_origin(comid, feature_source, feature_id)
+        # The pair is one origin, so it enters the conflict check as one entry.
+        reject_together(
+            {
+                "lat/long": lat,
+                "comid": comid,
+                "feature_source": feature_source,
+                "feature_id": feature_id,
+            },
+            context="each names a different origin to navigate from",
+            remedy=(
+                "Navigate from a point (lat and long), a comid, or a "
+                "feature_source/feature_id pair -- one origin per call."
+            ),
+        )
         return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
     if comid is not None or data_source is not None:
@@ -494,13 +482,13 @@ def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[st
         context="for find='basin'",
         remedy=remedy,
     )
+    feature_source = require_argument(
+        "feature_source", feature_source, context="for find='basin'", remedy=remedy
+    )
+    # require_together above: feature_id is present iff feature_source is.
     return get_basin(
-        feature_source=require_argument(
-            "feature_source", feature_source, context="for find='basin'", remedy=remedy
-        ),
-        feature_id=require_argument(
-            "feature_id", feature_id, context="for find='basin'", remedy=remedy
-        ),
+        feature_source=feature_source,
+        feature_id=cast("str", feature_id),
         as_json=True,
     )
 
@@ -682,12 +670,7 @@ def _validate_data_source(data_source: str, *, name: str = "data source") -> Non
             )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
 
-    if data_source not in _AVAILABLE_DATA_SOURCES:
-        err_msg = (
-            f"Invalid {name} '{data_source}'."
-            f" Available sources are: {_AVAILABLE_DATA_SOURCES}"
-        )
-        raise ValueError(err_msg)
+    require_one_of(data_source, _AVAILABLE_DATA_SOURCES, name=name)
 
 
 def _validate_navigation_mode(navigation_mode: str | None) -> str:
@@ -714,7 +697,7 @@ def _validate_feature_source_comid(
                 "feature_id": feature_id,
             },
             context="they name different origins",
-            remedy=f"{_ORIGIN_HINT}.",
+            remedy=_ORIGIN_REMEDY,
         )
     require_together(
         {"feature_source": feature_source, "feature_id": feature_id},
@@ -724,7 +707,7 @@ def _validate_feature_source_comid(
     require_exactly_one(
         {"comid": comid, "feature_source": feature_source},
         context="as the origin to navigate from",
-        remedy=f"{_ORIGIN_HINT}, and not neither.",
+        remedy=_ORIGIN_REMEDY_NEITHER,
     )
 
 

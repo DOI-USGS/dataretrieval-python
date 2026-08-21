@@ -338,7 +338,7 @@ class TestGetRecordDispatch:
         assert out is frame
 
     def test_unrecognized_service_lists_the_ones_it_serves(self):
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(ValueError) as excinfo:
             get_record(sites="01491000", service="nope")
         message = str(excinfo.value)
         assert "Invalid service: 'nope'" in message

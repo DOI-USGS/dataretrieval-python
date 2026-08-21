@@ -111,7 +111,7 @@ def _format_api_dates(
     date: bool = False,
     *,
     name: str = "date input",
-    advertise_duration: bool = True,
+    single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -135,12 +135,11 @@ def _format_api_dates(
         every message raised here. Defaults to a generic "date input"; pass
         the real parameter name (``"time"``, ``"last_modified"``) so a caller
         correcting the error edits an argument their getter actually accepts.
-    advertise_duration : bool, optional
-        Whether the "too many values" message offers an ISO 8601 duration as
-        an accepted single value. **Wording only -- this does not reject
-        durations.** A getter that refuses them (``get_ratings``, via
-        :func:`~dataretrieval.waterdata.ratings._validate_time_no_duration`)
-        enforces that itself and passes False here so the remedy does not
+    single_value_hint : str, optional
+        How the "too many values" message describes an acceptable single
+        value. Wording only -- a getter that rejects some of the default's
+        forms (``get_ratings`` refuses durations) enforces that itself and
+        passes a hint naming only what it accepts, so the remedy does not
         send a caller straight into its rejection.
 
     Returns
@@ -182,12 +181,8 @@ def _format_api_dates(
     if len(items) > 2:
         raise ValueError(
             f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
-            + (
-                "Pass one value for an instant or a duration ('2020-01-01', 'P7D'), "
-                if advertise_duration
-                else "Pass one value for an instant ('2020-01-01'), "
-            )
-            + "or two for a closed interval ('2020-01-01', '2020-12-31')."
+            f"Pass one value for {single_value_hint}, "
+            "or two for a closed interval ('2020-01-01', '2020-12-31')."
         )
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")

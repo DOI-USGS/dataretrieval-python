@@ -30,25 +30,25 @@ def test_query_waterdata_validation():
     typically a program, and what it needs from the failure is the set of
     values that would have been accepted.
     """
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service="pmcodes", format="rdb")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "is required as a major filter" in message
     assert "site_no, stateCd" in message
     assert "nw_longitude_va" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service=None, site_no="sites")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "Invalid service: None" in message
     # 'ratings' was advertised here but is not an NwisWeb program: the URL it
     # built returned an HTML error page, not data.
     assert "'peaks'" in message
     assert "get_ratings" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service="pmcodes", nw_longitude_va="something")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "must be given together to describe a bounding box" in message
     # The three corners actually absent, so the caller knows what to add.
     assert "nw_latitude_va, se_longitude_va and se_latitude_va" in message
@@ -56,15 +56,15 @@ def test_query_waterdata_validation():
 
 def test_query_waterservices_validation():
     """Tests the validation parameters of the query_waterservices method"""
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterservices(service="dv", format="rdb")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "is required as a major filter" in message
     assert "sites, stateCd, bBox, huc or countyCd" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterservices(service=None, sites="sites")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "Invalid service: None" in message
     assert "'dv', 'iv', 'site', 'stat'" in message
 
@@ -91,9 +91,9 @@ def test_query_validation(httpx_mock):
 
 def test_get_record_validation():
     """An unknown service names the ones get_record does serve."""
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         get_record(sites=["01491000"], service="not_a_service")
-    message = str(type_error.value)
+    message = str(value_error.value)
     assert "Invalid service: 'not_a_service'" in message
     assert "'dv', 'iv', 'site', 'stat', 'peaks', 'ratings'" in message
 
@@ -275,9 +275,9 @@ def test_get_ratings_validation():
     site = "01594440"
     with pytest.raises(ValueError) as value_error:
         get_ratings(site=site, file_type="BAD")
-    assert 'Unrecognized file_type: BAD, must be "base", "corr" or "exsa"' in str(
-        value_error
-    )
+    message = str(value_error.value)
+    assert "Invalid file_type: 'BAD'" in message
+    assert "'base', 'corr', 'exsa'" in message
 
 
 def test_get_ratings(httpx_mock):

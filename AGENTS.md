@@ -106,13 +106,14 @@ raise states the problem and then the move that fixes it, in that order.
   (`require_one_of`), missing argument (`require_argument`), incomplete group
   (`require_together`), no filter at all (`require_any_of`), and conflicting
   arguments (`require_exactly_one`, `reject_together`). Reach for one before
-  hand-writing a message. Neither a service-specific pointer nor an exception
-  class is a reason to hand-write: every check takes a `remedy=` for the move it
-  cannot derive, and an `error=` for the class to raise (`nwis` passes
-  `TypeError`, which its query entry points raised long before this module).
-- `require_argument` returns the narrowed value, so use its result rather than
-  re-testing for `None` to satisfy mypy — a second, unreachable message beside
-  the first is how the two drift apart.
+  hand-writing a message. A service-specific pointer is not a reason to
+  hand-write: every check takes a `remedy=` for the move it cannot derive. Every
+  check raises `ValueError` -- one class for a bad argument value, so a caller
+  catches by shape rather than by which module rejected it.
+- `require_argument` returns the narrowed value and `require_exactly_one` the
+  winning `(name, value)` pair, so use their results rather than re-testing for
+  `None` to satisfy mypy — a second, unreachable message beside the first is
+  how the two drift apart.
 - **Paste the remedy back before trusting it.** Whatever a message names must be
   a real parameter of the function the *caller* called — not a private helper's
   local, not a prose label — and following it literally must produce a working

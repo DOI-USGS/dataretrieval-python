@@ -14,6 +14,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
+from dataretrieval._validation import reject_together, require_one_of
+
 state_codes = {
     "Alabama": "al",
     "Alaska": "ak",
@@ -196,15 +198,14 @@ def _to_state_one(value: str | int, to: str) -> str:
 
 def _format_state(name: str, to: str) -> str:
     """Render a canonical state *name* in the ``to`` representation."""
+    require_one_of(to, ("name", "postal", "fips", "fips_us"), name="to")
     if to == "name":
         return name
     if to == "postal":
         return state_codes[name].upper()
     if to == "fips":
         return fips_codes[name]
-    if to == "fips_us":
-        return f"US:{fips_codes[name]}"
-    raise ValueError(f"to must be 'name', 'postal', 'fips', or 'fips_us'; got {to!r}")
+    return f"US:{fips_codes[name]}"
 
 
 def apply_state(
@@ -237,25 +238,21 @@ def apply_state(
     state = local_vars.pop("state", None)
     if state is None:
         return local_vars
-    # Name only the parameters actually supplied: a caller told to choose
-    # between `state` and an argument it never passed cannot act on the message.
-    conflicting = " or ".join(p for p in reject if local_vars.get(p) is not None)
-    if conflicting:
-        raise ValueError(
-            f"state cannot be combined with {conflicting} -- they filter on "
-            f"the same thing. Pass state, or {conflicting}, not both."
-        )
+    reject_together(
+        {"state": state, **{p: local_vars.get(p) for p in reject}},
+        context="they filter on the same thing",
+    )
     try:
         local_vars[into] = to_state(state, to)
     except ValueError as err:
+        if not reject:
+            # No native spelling of the getter's own to offer instead.
+            raise
         # Only ``reject`` proves the getter accepts a spelling; ``into`` is the
         # wire queryable, so it leads only when it appears there too.
         offered = dict.fromkeys(n for n in (into, *reject) if n in reject)
-        native = " or ".join(offered)
-        if not native:
-            raise
         raise ValueError(
-            f"{err} Pass {native} instead -- they take the values the API "
-            f"itself uses, unnormalized."
+            f"{err} Pass {' or '.join(offered)} instead -- they take the "
+            f"values the API itself uses, unnormalized."
         ) from err
     return local_vars
