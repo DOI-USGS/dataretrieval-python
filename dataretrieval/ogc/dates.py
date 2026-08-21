@@ -111,7 +111,7 @@ def _format_api_dates(
     date: bool = False,
     *,
     name: str = "date input",
-    allow_duration: bool = True,
+    advertise_duration: bool = True,
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -130,6 +130,18 @@ def _format_api_dates(
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+    name : str, optional
+        The caller's own spelling of this argument, used as the subject of
+        every message raised here. Defaults to a generic "date input"; pass
+        the real parameter name (``"time"``, ``"last_modified"``) so a caller
+        correcting the error edits an argument their getter actually accepts.
+    advertise_duration : bool, optional
+        Whether the "too many values" message offers an ISO 8601 duration as
+        an accepted single value. **Wording only -- this does not reject
+        durations.** A getter that refuses them (``get_ratings``, via
+        :func:`~dataretrieval.waterdata.ratings._validate_time_no_duration`)
+        enforces that itself and passes False here so the remedy does not
+        send a caller straight into its rejection.
 
     Returns
     -------
@@ -172,7 +184,7 @@ def _format_api_dates(
             f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
             + (
                 "Pass one value for an instant or a duration ('2020-01-01', 'P7D'), "
-                if allow_duration
+                if advertise_duration
                 else "Pass one value for an instant ('2020-01-01'), "
             )
             + "or two for a closed interval ('2020-01-01', '2020-12-31')."

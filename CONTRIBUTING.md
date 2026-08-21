@@ -161,6 +161,12 @@ The blocking run is a single Linux job. The OS/Python matrix reports its own
 number with `--fail-under=0`, because several tests are POSIX-only and a
 Windows run genuinely measures a smaller suite.
 
+For the same reason the threshold assumes the whole suite: on Windows, or
+without the `nldi` extra installed, some tests skip and the local number comes
+in under the gate through no fault of your change. Run
+`coverage report --fail-under=0` in that situation and let CI grade the
+ratchet.
+
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
 tightest the package passes today, so they fail only when a change makes things
 worse. They disagree usefully. `xenon` counts branches (cyclomatic complexity),

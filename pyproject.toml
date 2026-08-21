@@ -203,9 +203,15 @@ skip_covered = true
 # rounded one -- 98.97% displays as "99%" and would otherwise pass a
 # ``fail_under = 99`` on rounding alone.
 precision = 2
-# The ratchet, set at the measured value. Raise it when coverage rises; never
-# lower it to make a red build green -- lower it only deliberately, when a
-# genuinely untestable path is added and excluding it would be dishonest.
+# The ratchet, set just under the measured value. Raise it when coverage
+# rises; never lower it to make a red build green -- lower it only
+# deliberately, when a genuinely untestable path is added and excluding it
+# would be dishonest.
+#
+# Verified identical (98.97%, 3683 stmts / 20 missing, 964 branches / 28
+# partial) on 3.12 and on 3.14, the version the blocking job runs -- branch
+# arcs can differ between interpreters, so the threshold was checked against
+# the one that enforces it rather than only the one it was written on.
 #
 # The remaining gap is concentrated in async fan-out internals
 # (transport/fanout, ogc/engine), the response-shaping dialect defaults

@@ -1508,3 +1508,18 @@ def test_get_reference_table_forwards_limit_as_a_query_arg():
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
         get_reference_table("agency-codes", limit=25)
     assert fake.call_args.kwargs["args"]["limit"] == 25
+
+
+def test_get_reference_table_docstring_lists_every_collection():
+    """The docstring enumerates the vocabulary by hand, so it drifts the
+    moment a collection is added -- ``countries`` was served, accepted, and
+    absent from the docs. A reader who trusts the prose must not be told a
+    real collection does not exist.
+    """
+    from typing import get_args
+
+    from dataretrieval.waterdata.types import METADATA_COLLECTIONS
+
+    doc = get_reference_table.__doc__ or ""
+    missing = [c for c in get_args(METADATA_COLLECTIONS) if f'"{c}"' not in doc]
+    assert not missing, f"collections served but undocumented: {missing}"

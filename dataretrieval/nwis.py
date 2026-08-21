@@ -372,7 +372,9 @@ def query_waterdata(
     Parameters
     ----------
     service: string
-        Name of the service to query: 'peaks' or 'ratings'.
+        Name of the service to query. Only ``'peaks'`` is served here; rating
+        tables come from :func:`get_ratings`, which uses a different
+        endpoint.
     ssl_check: bool, optional
         Whether to check SSL certificates. Default is True.
     **kwargs: optional

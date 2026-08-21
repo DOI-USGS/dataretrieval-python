@@ -41,9 +41,11 @@ def get_reference_table(
         One of the following options: "agency-codes", "altitude-datums",
         "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
         "coordinate-datum-codes", "coordinate-method-codes", "counties",
-        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
-        "parameter-codes", "reliability-codes", "site-types", "states",
-        "statistic-codes", "topographic-codes", "time-zone-codes"
+        "countries", "hydrologic-unit-codes", "medium-codes",
+        "national-aquifer-codes", "parameter-codes", "reliability-codes",
+        "site-types", "states", "statistic-codes", "topographic-codes",
+        "time-zone-codes". ``METADATA_COLLECTIONS`` is the authoritative
+        list; a test pins this text against it.
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower

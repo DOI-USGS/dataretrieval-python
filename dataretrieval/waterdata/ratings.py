@@ -177,7 +177,7 @@ def get_ratings(
     _validate_file_types(file_types)
     _validate_time_no_duration(time)
     time_str = (
-        _format_api_dates(time, name="time", allow_duration=False)
+        _format_api_dates(time, name="time", advertise_duration=False)
         if time is not None
         else None
     )

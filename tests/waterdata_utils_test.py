@@ -933,7 +933,7 @@ def test_the_duration_example_is_withheld_where_durations_are_rejected():
     with pytest.raises(ValueError) as allowed:
         _format_api_dates(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
-        _format_api_dates(["a", "b", "c"], name="time", allow_duration=False)
+        _format_api_dates(["a", "b", "c"], name="time", advertise_duration=False)
 
     assert "'P7D'" in str(allowed.value)
     assert "'P7D'" not in str(refused.value)
