@@ -148,6 +148,20 @@ df, metadata = waterdata.get_continuous(
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
 
+#### Search the Water Data STAC catalog
+
+Use the raw STAC helpers when you need catalog metadata or item documents rather
+than parsed rating tables. Responses preserve the standard STAC links and are
+returned with request metadata:
+
+```python
+collections, metadata = waterdata.stac.get_collections()
+items, metadata = waterdata.stac.search(collections=["ratings"], limit=5)
+
+print([collection["id"] for collection in collections["collections"]])
+print([item["id"] for item in items["features"]])
+```
+
 #### Speeding up large downloads with `parallel_chunks`
 
 By default the getters split a multi-value request only as far as the server's

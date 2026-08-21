@@ -71,9 +71,14 @@ Public service facades
     compatibility facade over collection-family modules: ``time_series``,
     ``metadata``, ``measurements``, ``reference``, ``samples``, and ``cql``.
     Focused modules own ratings, nearest-value selection, statistics execution,
-    shared service policy, and type vocabularies. Internal modules import
-    protocol helpers from their canonical OGC modules rather than re-exporting
-    them through Water Data utilities.
+    shared service policy, and type vocabularies. Raw STAC catalog operations
+    are grouped under the public ``waterdata.stac`` namespace rather than
+    exported as flat prefixed helpers; analysis-ready ``waterdata.get_ratings``
+    remains on the main facade. Internal modules import protocol helpers from
+    their canonical OGC modules rather than re-exporting them through Water Data
+    utilities.
+
+    This public boundary is recorded in :doc:`decisions/0012-stac-namespace`.
 
 ``dataretrieval.ngwmn``
     NGWMN facade. Its only OGC dependency is the public OGC facade, which it
@@ -235,6 +240,10 @@ service into one return shape:
 - ``waterdata.get_ratings`` returns a mapping of feature IDs to parsed rating
   ``DataFrame`` objects by default, or the raw STAC feature list when downloads
   are disabled.
+- ``waterdata.stac`` catalog helpers return ``(dict, BaseMetadata)``. The
+  mapping preserves each upstream Catalog, Collection, GeoJSON ItemCollection,
+  Item, or JSON Schema document and its standard links without flattening unlike
+  shapes into one table.
 - NLDI navigation functions return ``GeoDataFrame`` objects directly, or raw
   GeoJSON-like dictionaries when ``as_json=True``; they do not add a metadata
   tuple.

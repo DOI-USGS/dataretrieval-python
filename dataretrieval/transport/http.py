@@ -30,6 +30,7 @@ __all__ = [
     "get",
     "network_error",
     "open_async_client",
+    "request",
     "strip_api_key_from_untrusted_host",
     "strip_api_key_from_untrusted_host_async",
 ]
@@ -83,8 +84,30 @@ def network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkErr
     return NetworkError(f"Could not reach the service at {url}: {detail}")
 
 
-def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
-    """Issue one guarded synchronous GET and map transport failures."""
+def request(method: str, url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
+    """Issue one guarded synchronous HTTP request.
+
+    Parameters
+    ----------
+    method : str
+        HTTP method, such as ``"GET"`` or ``"POST"``.
+    url : str or httpx.URL
+        Request destination.
+    **kwargs : Any
+        Request arguments accepted by :meth:`httpx.Client.request`. Client
+        options such as ``verify`` and ``timeout`` are applied to the guarded
+        client instead.
+
+    Returns
+    -------
+    httpx.Response
+        The completed response.
+
+    Raises
+    ------
+    NetworkError
+        If no HTTP response is received.
+    """
     client_options: dict[str, Any] = {
         key: kwargs.pop(key)
         for key in ("follow_redirects", "timeout", "transport", "verify")
@@ -93,9 +116,14 @@ def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
     client_options["event_hooks"] = {"request": [strip_api_key_from_untrusted_host]}
     try:
         with httpx.Client(**client_options) as client:
-            return client.get(url, **kwargs)
+            return client.request(method, url, **kwargs)
     except httpx.TransportError as exc:
         raise network_error(url, exc) from exc
+
+
+def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
+    """Issue one guarded synchronous GET and map transport failures."""
+    return request("GET", url, **kwargs)
 
 
 @asynccontextmanager

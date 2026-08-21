@@ -26,6 +26,7 @@ _EXPECTED_WATERDATA_ALL = [
     "SERVICES",
     "WATERDATA_SERVICES",
     "parallel_chunks",
+    "stac",
     "get_channel",
     "get_codes",
     "get_combined_metadata",
