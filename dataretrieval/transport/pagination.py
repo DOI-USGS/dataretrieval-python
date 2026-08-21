@@ -21,6 +21,7 @@ from dataretrieval.combining import (
     _merge_response,
     _safe_elapsed,
 )
+from dataretrieval.credentials import accepts_api_key
 from dataretrieval.exceptions import DataRetrievalError, RateLimited
 
 # One-way: ``fanout`` does not import this module, so this edge cannot cycle.
@@ -56,7 +57,11 @@ async def _client_for(
         yield new
 
 
-def paginated_failure_message(pages_collected: int, cause: BaseException) -> str:
+def paginated_failure_message(
+    pages_collected: int,
+    cause: BaseException,
+    url: str | httpx.URL | None = None,
+) -> str:
     """Build a recovery-oriented message for an interrupted page walk."""
     cause_str = str(cause).removesuffix(".")
     if not cause_str.strip():
@@ -65,11 +70,13 @@ def paginated_failure_message(pages_collected: int, cause: BaseException) -> str
         action = "wait for the rate-limit window to reset and retry"
     else:
         action = "retry the request (possibly after a short backoff)"
+    # "get a token" is only actionable against the host that honours one.
+    token_advice = ", or obtain an API token" if accepts_api_key(url) else ""
     return (
         f"Paginated request failed after collecting {pages_collected} "
         f"page(s): {cause_str}. To recover: {action}, reduce the "
         f"request size (e.g. fewer locations, a shorter time range, or "
-        f"a smaller ``limit``), or obtain an API token."
+        f"a smaller ``limit``){token_advice}."
     )
 
 
@@ -111,7 +118,9 @@ async def paginate(
             frame, cursor = parse_response(response)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Initial response parse failed.")
-            raise DataRetrievalError(paginated_failure_message(0, exc)) from exc
+            raise DataRetrievalError(
+                paginated_failure_message(0, exc, response.url)
+            ) from exc
 
         frames = [frame]
         nrows = len(frame)
@@ -137,7 +146,7 @@ async def paginate(
                     "Request failed at cursor %r. Data download interrupted.", cursor
                 )
                 raise DataRetrievalError(
-                    paginated_failure_message(len(frames), exc)
+                    paginated_failure_message(len(frames), exc, response.url)
                 ) from exc
 
         final_response = _merge_response(

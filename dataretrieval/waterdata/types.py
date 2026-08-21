@@ -33,6 +33,7 @@ METADATA_COLLECTIONS = Literal[
     "coordinate-datum-codes",
     "coordinate-method-codes",
     "counties",
+    "countries",
     "hydrologic-unit-codes",
     "medium-codes",
     "national-aquifer-codes",

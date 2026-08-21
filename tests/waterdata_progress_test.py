@@ -567,3 +567,30 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     # current_chunk reflects the total number of successful chunks —
     # plan.total in the all-success case.
     assert current_recorded == plan.total
+
+
+def test_closing_twice_is_a_no_op():
+    """``close`` runs from both the success path and the interruption
+    handler, so a call that fails after finishing would close twice and
+    print a second trailing newline into the user's terminal."""
+    stream = io.StringIO()
+    reporter = _progress.ProgressReporter(enabled=True, stream=stream)
+    reporter._rendered = True
+    reporter.close()
+    first = stream.getvalue()
+    reporter.close()
+    assert stream.getvalue() == first
+
+
+def test_a_broken_stream_disables_the_reporter_instead_of_failing_the_query():
+    """Progress is decoration. A closed or redirected stream must not take
+    down a query whose data already arrived."""
+
+    class _Broken(io.StringIO):
+        def write(self, s):
+            raise ValueError("stream closed")
+
+    reporter = _progress.ProgressReporter(enabled=True, stream=_Broken())
+    reporter._rendered = True
+    reporter.close()
+    assert reporter.enabled is False

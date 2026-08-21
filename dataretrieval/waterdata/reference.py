@@ -41,9 +41,11 @@ def get_reference_table(
         One of the following options: "agency-codes", "altitude-datums",
         "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
         "coordinate-datum-codes", "coordinate-method-codes", "counties",
-        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",
-        "parameter-codes", "reliability-codes", "site-types", "states",
-        "statistic-codes", "topographic-codes", "time-zone-codes"
+        "countries", "hydrologic-unit-codes", "medium-codes",
+        "national-aquifer-codes", "parameter-codes", "reliability-codes",
+        "site-types", "states", "statistic-codes", "topographic-codes",
+        "time-zone-codes". ``METADATA_COLLECTIONS`` is the authoritative
+        list; a test pins this text against it.
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
@@ -95,12 +97,12 @@ def get_reference_table(
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
     # Give the ID column the collection name, singularized and underscored.
-    if collection == "counties":
-        output_id = "county"
-    elif collection.endswith("s"):
-        output_id = collection[:-1].replace("-", "_")
+    # ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm
+    # was unreachable and would stay correct if a singular collection appeared.
+    if collection in ("counties", "countries"):
+        output_id = collection.removesuffix("ies") + "y"
     else:
-        output_id = collection.replace("-", "_")
+        output_id = collection.removesuffix("s").replace("-", "_")
 
     query_args = dict(query) if query else {}
     if limit is not None:

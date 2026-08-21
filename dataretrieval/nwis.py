@@ -18,6 +18,11 @@ import pandas as pd
 
 from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import (
+    require_any_of,
+    require_one_of,
+    require_together,
+)
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.rdb import read_rdb
 
@@ -37,10 +42,22 @@ PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
 ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
 WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
+# What ``get_record`` routes, which is wider than what ``query_waterdata``
+# reaches: 'ratings' is served by ``get_ratings`` from a different endpoint.
 WATERDATA_SERVICES = [
     "peaks",
     "ratings",
 ]
+# The major filters each query function accepts, hoisted beside the service
+# lists so the checks and their remedies read from one roster.
+_WATERDATA_MAJOR_FILTERS = ("site_no", "stateCd")
+_WATERDATA_BBOX_CORNERS = (
+    "nw_longitude_va",
+    "nw_latitude_va",
+    "se_longitude_va",
+    "se_latitude_va",
+)
+_WATERSERVICES_MAJOR_FILTERS = ("sites", "stateCd", "bBox", "huc", "countyCd")
 # NAD83
 _CRS = "EPSG:4269"
 
@@ -121,8 +138,10 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
         ):
             raise ValueError(
                 f"Received HTML response instead of JSON from {response.url} "
-                f"(Status: {response.status_code}). This often indicates "
-                "that the service is currently unavailable."
+                f"(Status: {response.status_code}). This usually means the "
+                "service is down or rate-limiting. Wait and retry; if it "
+                "persists, check https://waterservices.usgs.gov/ or switch to "
+                "the dataretrieval.waterdata getters."
             ) from e
         raise
 
@@ -370,7 +389,9 @@ def query_waterdata(
     Parameters
     ----------
     service: string
-        Name of the service to query: 'peaks' or 'ratings'.
+        Name of the service to query. Only ``'peaks'`` is served here; rating
+        tables come from :func:`get_ratings`, which uses a different
+        endpoint.
     ssl_check: bool, optional
         Whether to check SSL certificates. Default is True.
     **kwargs: optional
@@ -381,24 +402,39 @@ def query_waterdata(
     request: ``httpx.Response``
         The response object from the API request to the web service.
     """
-    major_params = ["site_no", "stateCd"]
-    bbox_params = [
-        "nw_longitude_va",
-        "nw_latitude_va",
-        "se_longitude_va",
-        "se_latitude_va",
-    ]
-
-    if not any(key in kwargs for key in major_params + bbox_params):
-        raise TypeError("Query must specify a major filter: site_no, stateCd, bBox")
-
-    elif any(key in kwargs for key in bbox_params) and not all(
-        key in kwargs for key in bbox_params
-    ):
-        raise TypeError("One or more lat/long coordinates missing or invalid.")
-
-    if service not in WATERDATA_SERVICES:
-        raise TypeError("Service not recognized")
+    require_any_of(
+        {
+            name: kwargs.get(name)
+            for name in _WATERDATA_MAJOR_FILTERS + _WATERDATA_BBOX_CORNERS
+        },
+        context="as a major filter",
+        remedy=(
+            "Pass one, e.g. site_no='01491000' or stateCd='WI', or all four "
+            "bounding-box corners together with "
+            "coordinate_format='decimal_degrees'."
+        ),
+    )
+    require_together(
+        {name: kwargs.get(name) for name in _WATERDATA_BBOX_CORNERS},
+        context="to describe a bounding box",
+        remedy=(
+            "Pass them along with coordinate_format='decimal_degrees', or "
+            "drop the bounding box and filter with "
+            f"{' or '.join(_WATERDATA_MAJOR_FILTERS)} instead."
+        ),
+    )
+    require_one_of(
+        service,
+        ("peaks",),
+        name="service",
+        remedy=(
+            "Rating tables come from waterdata.get_ratings("
+            "monitoring_location_id='USGS-01646500'), served from a different "
+            "endpoint and keyed by the AGENCY-ID form of the site number. It "
+            "returns {'USGS-01646500.exsa.rdb': DataFrame} -- a dict per file, "
+            "not a (frame, metadata) pair."
+        ),
+    )
 
     url = WATERDATA_URL + service
 
@@ -447,15 +483,12 @@ def query_waterservices(
         The response object from the API request to the web service.
 
     """
-    if not any(
-        key in kwargs for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
-    ):
-        raise TypeError(
-            "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
-        )
-
-    if service not in WATERSERVICES_SERVICES:
-        raise TypeError("Service not recognized")
+    require_any_of(
+        {name: kwargs.get(name) for name in _WATERSERVICES_MAJOR_FILTERS},
+        context="as a major filter",
+        remedy=("Pass one, e.g. sites='01491000', stateCd='WI', or countyCd='55025'."),
+    )
+    require_one_of(service, WATERSERVICES_SERVICES, name="service")
 
     if "format" not in kwargs:
         kwargs["format"] = "rdb"
@@ -734,8 +767,8 @@ def get_iv(
 def get_pmcodes(**kwargs: Any) -> NoReturn:
     """Defunct: use ``waterdata.get_reference_table(collection='parameter-codes')``."""
     raise NameError(
-        "`nwis.get_pmcodes` has been replaced "
-        "with `get_reference_table(collection='parameter-codes')`."
+        "`nwis.get_pmcodes` has been replaced with "
+        "`waterdata.get_reference_table(collection='parameter-codes')`."
     )
 
 
@@ -799,10 +832,7 @@ def get_ratings(
     if site is not None:
         payload.update({"site_no": site})
     if file_type is not None:
-        if file_type not in ["base", "corr", "exsa"]:
-            raise ValueError(
-                f'Unrecognized file_type: {file_type}, must be "base", "corr" or "exsa"'
-            )
+        require_one_of(file_type, ("base", "corr", "exsa"), name="file_type")
         payload.update({"file_type": file_type})
     response = query(url, payload, ssl_check=ssl_check)
     return _read_rdb(response.text), NWIS_Metadata(response, site_no=site)
@@ -895,7 +925,7 @@ def get_record(
         - 'gwlevels': (defunct) use `waterdata.get_continuous`,
           `waterdata.get_daily`, or `waterdata.get_field_measurements`
         - 'pmcodes': (defunct) use `waterdata.get_reference_table`
-        - 'water_use': (defunct) no replacement available
+        - 'water_use': (defunct) use `nwdc.get_wateruse`
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
@@ -946,7 +976,7 @@ def get_record(
             "(discrete)"
         ),
         "pmcodes": "`waterdata.get_reference_table`",
-        "water_use": "no replacement available",
+        "water_use": "`nwdc.get_wateruse`",
     }
     if service in defunct_replacements:
         raise NameError(
@@ -954,8 +984,15 @@ def get_record(
             f"get_record. Use {defunct_replacements[service]} instead."
         )
 
-    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
-        raise TypeError(f"Unrecognized service: {service}")
+    require_one_of(
+        service,
+        WATERSERVICES_SERVICES + WATERDATA_SERVICES,
+        name="service",
+        remedy=(
+            "New work should use the dataretrieval.waterdata getters instead; "
+            "NWIS is deprecated."
+        ),
+    )
 
     if service == "iv":
         df, _ = get_iv(
@@ -1005,8 +1042,8 @@ def get_record(
         df, _ = get_stats(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    else:
-        raise TypeError(f"{service} service not yet implemented")
+    else:  # pragma: no cover - every recognized service has a branch above
+        raise AssertionError(f"get_record has no handler for service {service!r}")
 
 
 def _site_block_boundaries(site_list: list[str]) -> list[int]:
@@ -1124,7 +1161,11 @@ def _read_rdb(rdb: str) -> pd.DataFrame:
 
 def _check_sites_value_types(sites: list[str] | str | None) -> None:
     if sites and not isinstance(sites, list) and not isinstance(sites, str):
-        raise TypeError("sites must be a string or a list of strings")
+        raise TypeError(
+            "sites must be a site number as a string, or a list of them, not "
+            f"{type(sites).__name__}. Pass sites='01491000' for one site, or "
+            "sites=['01491000', '01645000'] for several."
+        )
 
 
 class NWIS_Metadata(BaseMetadata):

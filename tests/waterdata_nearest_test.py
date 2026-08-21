@@ -415,3 +415,133 @@ def test_nearest_shape_survives_repeated_resume_interruptions(patch_get_continuo
 
     assert list(resumed["target_time"]) == list(target)
     assert resumed_metadata is metadata
+
+
+def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous):
+    """A caller's ``properties`` list gains 'time' and the grouping column.
+
+    Without the injection a list like ``['time', 'value']`` reached the
+    service unchanged, the response came back with no
+    ``monitoring_location_id``, and every site but one was silently dropped --
+    a wrong answer with nothing for a caller to notice it by.
+    """
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "USGS-A",
+                },
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 2.0,
+                    "monitoring_location_id": "USGS-B",
+                },
+            ]
+        ),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"],
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        properties=["time", "value"],
+    )
+    sent = patch_get_continuous.call_args.kwargs["properties"]
+    assert "monitoring_location_id" in sent
+    assert sent[:2] == ["time", "value"]
+    # One row per site, not one row for the pair.
+    assert len(result) == 2
+
+
+def test_properties_are_left_alone_when_already_complete(patch_get_continuous):
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [{"time": "2023-06-15T10:30:00Z", "monitoring_location_id": "USGS-A"}]
+        ),
+        mock.Mock(),
+    )
+    asked = ["time", "monitoring_location_id"]
+    get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-A", properties=asked
+    )
+    assert patch_get_continuous.call_args.kwargs["properties"] == asked
+
+
+def test_no_observation_inside_the_window_returns_the_empty_shape(
+    patch_get_continuous,
+):
+    """A target with nothing near it is a legitimate answer, not a failure --
+    but the frame must keep the result columns so a caller can concatenate it
+    with a populated one instead of special-casing empties."""
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "A",
+                }
+            ]
+        ),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        ["2020-01-01T00:00:00Z"],  # years from the only observation
+        monitoring_location_id="A",
+        window="1h",
+    )
+    assert result.empty
+    assert "target_time" in result.columns
+
+
+class TestNearestPartialResults:
+    """When a fan-out is interrupted the caller still gets the chunks that
+    finished, shaped like a normal result -- otherwise recovering from an
+    interruption means handling a second frame layout."""
+
+    def test_a_partial_frame_with_no_completed_chunks_keeps_the_result_shape(self):
+        from dataretrieval.waterdata.nearest import _NearestSelector
+
+        selector = _NearestSelector(
+            pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+        )
+        out = selector.select_partial(pd.DataFrame())
+
+        assert out.empty
+        assert "target_time" in out.columns
+
+    def test_a_partial_frame_with_rows_is_selected_normally(self):
+        from dataretrieval.waterdata.nearest import _NearestSelector
+
+        selector = _NearestSelector(
+            pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+        )
+        frame = pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:05Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "A",
+                }
+            ]
+        )
+        out = selector.select_partial(frame)
+
+        assert len(out) == 1
+
+    def test_the_wrapper_passes_the_inner_calls_live_response_through(self):
+        """``partial_response`` is how a caller inspects what arrived before
+        the interruption; the nearest wrapper must not shadow it."""
+        from dataretrieval.waterdata.nearest import _NearestCall, _NearestSelector
+
+        inner = mock.Mock()
+        inner.partial_response = "sentinel-response"
+        call = _NearestCall(
+            inner,
+            _NearestSelector(
+                pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+            ),
+        )
+
+        assert call.partial_response == "sentinel-response"

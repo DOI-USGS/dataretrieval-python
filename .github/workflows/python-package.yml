@@ -145,13 +145,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .[test,nldi]
-      - name: Test with pytest and report coverage
+      - name: Test with pytest
         # Pinned to bash on every OS. The default Windows shell is PowerShell,
         # which does not stop on a failing native command and takes the step's
         # exit code from the last one -- so a pytest failure was masked by the
         # coverage report that followed it, and the Windows matrix reported
         # success while tests were red.
         shell: bash
-        run: |
-          coverage run -m pytest tests/
-          coverage report -m
+        run: coverage run -m pytest tests/
+      - name: Coverage ratchet
+        # Windows skips POSIX-only tests, so its number measures a smaller
+        # suite. Negative condition: a matrix edit cannot silently unenforce it.
+        if: runner.os != 'Windows'
+        shell: bash
+        run: coverage report
+      - name: Coverage report (informational)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: coverage report -m --fail-under=0

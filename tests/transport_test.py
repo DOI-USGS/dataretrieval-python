@@ -605,3 +605,35 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
         ServiceInterrupted(completed_chunks=0, total_chunks=1, cause=first).status_code
         is None
     )
+
+
+def test_an_unusable_next_page_link_is_reported_not_swallowed():
+    """A malformed ``next`` href ends the page walk, so it must raise rather
+    than quietly truncate the result -- a short frame with no error is
+    indistinguishable from a complete one."""
+    from dataretrieval.transport.links import resolve_next_url
+
+    response = httpx.Response(
+        200, request=httpx.Request("GET", "https://api.waterdata.usgs.gov/x")
+    )
+    with pytest.raises(exceptions.DataRetrievalError) as excinfo:
+        resolve_next_url(None, response, service="Water Data")
+    message = str(excinfo.value)
+    assert "unusable next-page link" in message
+    assert "page walk cannot continue" in message
+
+
+class TestErrorForStatus:
+    def test_a_success_status_is_a_usage_error(self):
+        """``error_for_status`` builds an exception for a failure. Handing it a
+        200 means the caller's branch is wrong, and returning some default
+        exception would hide that."""
+        with pytest.raises(ValueError, match="expects an HTTP error status"):
+            exceptions.error_for_status(200, "not an error")
+
+    def test_a_leaf_without_a_default_status_demands_one(self):
+        """Only RateLimited and ServiceUnavailable imply their own status. Any
+        other HTTPError constructed without one would carry a meaningless
+        status_code, so it refuses instead."""
+        with pytest.raises(TypeError, match="requires status_code"):
+            exceptions.TransientError("boom")
