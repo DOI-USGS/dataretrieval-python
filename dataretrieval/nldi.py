@@ -16,7 +16,13 @@ from typing import Any, ClassVar, Literal, cast
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _query_with_retry
-from dataretrieval._validation import require_one_of
+from dataretrieval._validation import (
+    reject_together,
+    require_argument,
+    require_exactly_one,
+    require_one_of,
+    require_together,
+)
 from dataretrieval.configuration import (
     BaseConfiguration,
     _Redirectable,
@@ -37,12 +43,27 @@ __all__ = [
 try:
     import geopandas as gpd
 except ImportError as err:
-    raise ImportError("Install geopandas to use the NLDI module.") from err
+    raise ImportError(
+        "The NLDI module requires geopandas, which is not installed. "
+        "Install it with `pip install 'dataretrieval[nldi]'` "
+        "(quoted, so the shell does not glob the brackets)."
+    ) from err
 
 NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
+#: The modes rendered for a message. Built from the tuple above rather than
+#: written beside it, so a mode added there cannot go unmentioned here.
+_NAVIGATION_MODES_HINT = (
+    f"Pass one of {', '.join(repr(mode) for mode in _VALID_NAVIGATION_MODES)}."
+)
+#: The two ways to name an origin. Shared by the conflict check and the
+#: nothing-supplied check so the same pair of ways forward is offered either way.
+_ORIGIN_HINT = (
+    "Navigate from a comid, e.g. comid=13294314, or from a "
+    "feature_source/feature_id pair -- not both"
+)
 
 
 def _api_base() -> str:
@@ -156,7 +177,7 @@ def get_flowlines(
     navigation_mode = _validate_navigation_mode(navigation_mode)
     _validate_feature_source_comid(feature_source, feature_id, comid)
     if feature_source:
-        _validate_data_source(feature_source)
+        _validate_data_source(feature_source, name="feature source")
     url, query_params = _navigation_request(
         feature_source=feature_source,
         feature_id=feature_id,
@@ -208,9 +229,15 @@ def get_basin(
         ... )
     """
     # validate the feature source
-    _validate_data_source(feature_source)
-    if not feature_id:
-        raise ValueError("feature_id is required")
+    _validate_data_source(feature_source, name="feature source")
+    require_argument(
+        "feature_id",
+        feature_id or None,
+        context=f"to say which {feature_source} feature the basin drains to",
+        remedy=(
+            "Pass the id as its source spells it, e.g. feature_id='USGS-01031500'."
+        ),
+    )
 
     url = f"{_api_base()}/{feature_source}/{feature_id}/basin"
     simplified_str = str(simplified).lower()
@@ -331,16 +358,25 @@ def _validate_lat_long_origin(
     feature_source: str | None,
     feature_id: str | None,
 ) -> None:
-    """Raise if lat/long is combined with another origin type."""
-    if comid is not None:
-        raise ValueError(
-            "Provide only one origin type - comid cannot be provided with lat or long"
-        )
-    if feature_source is not None or feature_id is not None:
-        raise ValueError(
-            "Provide only one origin type - feature_source and feature_id cannot"
-            " be provided with lat or long"
-        )
+    """Raise if lat/long is combined with another origin type.
+
+    Called with a lat/long already supplied, so the pair is passed as a
+    present marker: the conflict is between origin *types*, and naming the
+    type is what tells the caller which argument to drop.
+    """
+    reject_together(
+        {
+            "lat/long": True,
+            "comid": comid,
+            "feature_source": feature_source,
+            "feature_id": feature_id,
+        },
+        context="each names a different origin to navigate from",
+        remedy=(
+            "Navigate from a point (lat and long), a comid, or a "
+            "feature_source/feature_id pair -- one origin per call."
+        ),
+    )
 
 
 def _get_features_request(
@@ -356,35 +392,57 @@ def _get_features_request(
     stop_comid: int | None,
 ) -> tuple[str, dict[str, str]]:
     """Validate a feature origin and build its NLDI request parameters."""
-    if (lat is None) != (long is None):
-        raise ValueError("Both lat and long are required")
+    require_together(
+        {"lat": lat, "long": long},
+        context="to navigate from a point",
+        remedy="Pass both, e.g. lat=43.087, long=-89.509.",
+    )
 
     if lat is not None:
         _validate_lat_long_origin(comid, feature_source, feature_id)
         return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
-    if (comid is not None or data_source is not None) and navigation_mode is None:
-        raise ValueError(
-            "navigation_mode is required if comid or data_source is provided"
+    if comid is not None or data_source is not None:
+        require_argument(
+            "navigation_mode",
+            navigation_mode,
+            context="when comid or data_source is given",
+            remedy=_NAVIGATION_MODES_HINT,
         )
 
     _validate_feature_source_comid(feature_source, feature_id, comid)
     if data_source is not None:
         _validate_data_source(data_source)
     if feature_source is not None:
-        _validate_data_source(feature_source)
+        _validate_data_source(feature_source, name="feature source")
 
     if not navigation_mode:
         return f"{_api_base()}/{feature_source}/{feature_id}", {}
 
+    # Before the data_source check below: a caller who mistyped the mode should
+    # hear about the mode, not be sent to fix a second argument first.
     navigation_mode = _validate_navigation_mode(navigation_mode)
+    # The navigation's tail is the data source, so a missing one is spelled
+    # "None" into the path and the service answers 200 with zero features.
+    data_source = require_argument(
+        "data_source",
+        data_source,
+        context=(
+            "when navigation_mode is given -- it names which features to "
+            "return along the navigation"
+        ),
+        remedy=(
+            "Pass the source of the features, e.g. data_source='nwissite'. "
+            "For the flowlines themselves call get_flowlines() instead."
+        ),
+    )
     url, query_params = _navigation_request(
         feature_source=feature_source,
         feature_id=feature_id,
         comid=comid,
         navigation_mode=navigation_mode,
         distance=distance,
-        tail=f"{data_source}",
+        tail=data_source,
     )
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
@@ -428,9 +486,27 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
 
 def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[str, Any]:
     """Handle ``find='basin'`` for :func:`search`."""
-    if feature_source is None or feature_id is None:
-        raise ValueError("feature_source and feature_id are required to find a basin")
-    return get_basin(feature_source=feature_source, feature_id=feature_id, as_json=True)
+    remedy = (
+        "Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'; "
+        "a basin has no other origin."
+    )
+    # ``require_together`` reports a half-supplied pair, naming both sides at
+    # once; it permits the pair being absent entirely, which the two checks
+    # below reject. Together they cover every way the origin can be incomplete.
+    require_together(
+        {"feature_source": feature_source, "feature_id": feature_id},
+        context="for find='basin'",
+        remedy=remedy,
+    )
+    return get_basin(
+        feature_source=require_argument(
+            "feature_source", feature_source, context="for find='basin'", remedy=remedy
+        ),
+        feature_id=require_argument(
+            "feature_id", feature_id, context="for find='basin'", remedy=remedy
+        ),
+        as_json=True,
+    )
 
 
 def _search_flowlines(
@@ -442,11 +518,12 @@ def _search_flowlines(
     comid: int | None,
 ) -> dict[str, Any]:
     """Handle ``find='flowlines'`` for :func:`search`."""
-    if navigation_mode is None:
-        raise ValueError(
-            "navigation_mode is required for find='flowlines';"
-            f" allowed values are {_VALID_NAVIGATION_MODES}"
-        )
+    navigation_mode = require_argument(
+        "navigation_mode",
+        navigation_mode,
+        context="for find='flowlines'",
+        remedy=_NAVIGATION_MODES_HINT,
+    )
     return get_flowlines(
         navigation_mode=navigation_mode,
         distance=distance,
@@ -535,19 +612,28 @@ def search(
         ... )
 
     """
-    if (lat is None) != (long is None):
-        raise ValueError("Both lat and long are required")
+    require_together(
+        {"lat": lat, "long": long},
+        context="to search from a point",
+        remedy="Pass both, e.g. lat=43.087, long=-89.509.",
+    )
 
     find = cast("Literal['basin', 'flowlines', 'features']", find.lower())
     require_one_of(find, ("basin", "flowlines", "features"), name="find")
     if lat is not None and find != "features":
         raise ValueError(
-            f"Invalid value for find: {find} - lat/long is to get features not {find}"
+            f"find={find!r} cannot be combined with lat/long -- a point origin "
+            "resolves to features only. Pass find='features' to keep the "
+            "point origin, or drop lat and long and pass the origin "
+            f"{find} takes: feature_source and feature_id"
+            f"{' or comid' if find == 'flowlines' else ''}."
         )
     if comid is not None and find == "basin":
         raise ValueError(
-            "Invalid value for find: basin - comid is to get features"
-            " or flowlines not basin"
+            "find='basin' cannot be combined with comid -- a basin is looked "
+            "up by feature, not by flowline. Pass feature_source and "
+            "feature_id instead, or keep comid and pass find='flowlines' "
+            "or find='features'."
         )
 
     if lat is not None:
@@ -577,7 +663,7 @@ def search(
     )
 
 
-def _validate_data_source(data_source: str) -> None:
+def _validate_data_source(data_source: str, *, name: str = "data source") -> None:
     # A helper function to validate user specified data source/feature source
 
     global _AVAILABLE_DATA_SOURCES
@@ -592,23 +678,28 @@ def _validate_data_source(data_source: str) -> None:
             raise ValueError(
                 "NLDI data-source catalog returned an unexpected shape; "
                 "expected a list of {'source': ..., ...} objects, got: "
-                f"{available_data_sources!r}"
+                f"{available_data_sources!r}. If you set "
+                "NldiConfiguration(base_url=...), point it at the linked-data "
+                "root, e.g. base_url='https://api.water.usgs.gov/nldi/"
+                "linked-data'; otherwise the service returned an unexpected "
+                "body -- retry later."
             )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
 
     if data_source not in _AVAILABLE_DATA_SOURCES:
         err_msg = (
-            f"Invalid data source '{data_source}'."
-            f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
+            f"Invalid {name} '{data_source}'."
+            f" Available sources are: {_AVAILABLE_DATA_SOURCES}"
         )
         raise ValueError(err_msg)
 
 
 def _validate_navigation_mode(navigation_mode: str | None) -> str:
-    if navigation_mode is None:
-        raise ValueError(
-            f"navigation_mode is required; allowed values are {_VALID_NAVIGATION_MODES}"
-        )
+    navigation_mode = require_argument(
+        "navigation_mode",
+        navigation_mode,
+        remedy=_NAVIGATION_MODES_HINT,
+    )
     normalized = navigation_mode.upper()
     require_one_of(normalized, _VALID_NAVIGATION_MODES, name="navigation_mode")
     return normalized
@@ -617,19 +708,28 @@ def _validate_navigation_mode(navigation_mode: str | None) -> str:
 def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
 ) -> None:
-    if feature_source is not None and feature_id is None:
-        raise ValueError("feature_id is required if feature_source is provided")
-    if feature_id is not None and feature_source is None:
-        raise ValueError("feature_source is required if feature_id is provided")
-    if comid is not None and feature_source is not None:
-        raise ValueError(
-            "Specify only one origin type - comid and feature_source"
-            " cannot be provided together"
+    if comid is not None:
+        # Half a feature pair beside a comid is a conflict, not a gap: advising
+        # the caller to complete the pair would only raise the conflict next.
+        reject_together(
+            {
+                "comid": comid,
+                "feature_source": feature_source,
+                "feature_id": feature_id,
+            },
+            context="they name different origins",
+            remedy=f"{_ORIGIN_HINT}.",
         )
-    if comid is None and feature_source is None:
-        raise ValueError(
-            "Specify one origin type - comid or feature_source is required"
-        )
+    require_together(
+        {"feature_source": feature_source, "feature_id": feature_id},
+        context="to name one feature between them",
+        remedy=("Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'."),
+    )
+    require_exactly_one(
+        {"comid": comid, "feature_source": feature_source},
+        context="as the origin to navigate from",
+        remedy=f"{_ORIGIN_HINT}, and not neither.",
+    )
 
 
 @dataclass(frozen=True)

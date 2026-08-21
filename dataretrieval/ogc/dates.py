@@ -83,13 +83,14 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
 
 def _coerce_to_list(
     datetime_input: str | Sequence[str | None],
+    name: str = "date input",
 ) -> list[str | None]:
     """Normalize datetime input to a list, raising on invalid shapes."""
     if isinstance(datetime_input, str):
         return [datetime_input]
     if isinstance(datetime_input, Mapping):
         raise TypeError(
-            f"date input must be a string or sequence of strings, "
+            f"{name} must be a string or sequence of strings, "
             f"not {type(datetime_input).__name__}."
         )
     return list(datetime_input)
@@ -106,7 +107,11 @@ def _all_blank(items: list[str | None]) -> bool:
 
 
 def _format_api_dates(
-    datetime_input: str | Sequence[str | None] | None, date: bool = False
+    datetime_input: str | Sequence[str | None] | None,
+    date: bool = False,
+    *,
+    name: str = "date input",
+    allow_duration: bool = True,
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -157,13 +162,21 @@ def _format_api_dates(
     if datetime_input is None:
         return None
 
-    items = _coerce_to_list(datetime_input)
+    items = _coerce_to_list(datetime_input, name)
 
     if _all_blank(items):
         return None
 
     if len(items) > 2:
-        raise ValueError("datetime_input should only include 1-2 values")
+        raise ValueError(
+            f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
+            + (
+                "Pass one value for an instant or a duration ('2020-01-01', 'P7D'), "
+                if allow_duration
+                else "Pass one value for an instant ('2020-01-01'), "
+            )
+            + "or two for a closed interval ('2020-01-01', '2020-12-31')."
+        )
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
     if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):

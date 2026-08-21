@@ -121,8 +121,10 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
         ):
             raise ValueError(
                 f"Received HTML response instead of JSON from {response.url} "
-                f"(Status: {response.status_code}). This often indicates "
-                "that the service is currently unavailable."
+                f"(Status: {response.status_code}). This usually means the "
+                "service is down or rate-limiting. Wait and retry; if it "
+                "persists, check https://waterservices.usgs.gov/ or switch to "
+                "the dataretrieval.waterdata getters."
             ) from e
         raise
 
@@ -390,15 +392,30 @@ def query_waterdata(
     ]
 
     if not any(key in kwargs for key in major_params + bbox_params):
-        raise TypeError("Query must specify a major filter: site_no, stateCd, bBox")
+        raise TypeError(
+            "Query must specify a major filter. Pass one of "
+            f"{', '.join(major_params)}, or all four bounding-box corners "
+            f"({', '.join(bbox_params)}) together with "
+            "coordinate_format='decimal_degrees'."
+        )
 
     elif any(key in kwargs for key in bbox_params) and not all(
         key in kwargs for key in bbox_params
     ):
-        raise TypeError("One or more lat/long coordinates missing or invalid.")
+        absent = [key for key in bbox_params if key not in kwargs]
+        raise TypeError(
+            "A bounding box needs all four corners. Missing: "
+            f"{', '.join(absent)}. Pass them along with "
+            "coordinate_format='decimal_degrees', or drop the bounding box "
+            f"and filter with {' or '.join(major_params)} instead."
+        )
 
-    if service not in WATERDATA_SERVICES:
-        raise TypeError("Service not recognized")
+    if service != "peaks":
+        raise TypeError(
+            f"Unrecognized service: {service!r}. query_waterdata serves "
+            "'peaks'. For rating tables call nwis.get_ratings(site=...), "
+            "which is served from a different endpoint."
+        )
 
     url = WATERDATA_URL + service
 
@@ -447,15 +464,18 @@ def query_waterservices(
         The response object from the API request to the web service.
 
     """
-    if not any(
-        key in kwargs for key in ["sites", "stateCd", "bBox", "huc", "countyCd"]
-    ):
+    major_filters = ["sites", "stateCd", "bBox", "huc", "countyCd"]
+    if not any(key in kwargs for key in major_filters):
         raise TypeError(
-            "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
+            "Query must specify a major filter. Pass one of "
+            f"{', '.join(major_filters)}."
         )
 
     if service not in WATERSERVICES_SERVICES:
-        raise TypeError("Service not recognized")
+        raise TypeError(
+            f"Unrecognized service: {service!r}. query_waterservices serves "
+            f"{', '.join(repr(name) for name in WATERSERVICES_SERVICES)}."
+        )
 
     if "format" not in kwargs:
         kwargs["format"] = "rdb"
@@ -734,8 +754,8 @@ def get_iv(
 def get_pmcodes(**kwargs: Any) -> NoReturn:
     """Defunct: use ``waterdata.get_reference_table(collection='parameter-codes')``."""
     raise NameError(
-        "`nwis.get_pmcodes` has been replaced "
-        "with `get_reference_table(collection='parameter-codes')`."
+        "`nwis.get_pmcodes` has been replaced with "
+        "`waterdata.get_reference_table(collection='parameter-codes')`."
     )
 
 
@@ -895,7 +915,7 @@ def get_record(
         - 'gwlevels': (defunct) use `waterdata.get_continuous`,
           `waterdata.get_daily`, or `waterdata.get_field_measurements`
         - 'pmcodes': (defunct) use `waterdata.get_reference_table`
-        - 'water_use': (defunct) no replacement available
+        - 'water_use': (defunct) use `nwdc.get_wateruse`
         - 'ratings': get rating table
         - 'stat': get statistics
     ssl_check: bool, optional
@@ -946,7 +966,7 @@ def get_record(
             "(discrete)"
         ),
         "pmcodes": "`waterdata.get_reference_table`",
-        "water_use": "no replacement available",
+        "water_use": "`nwdc.get_wateruse`",
     }
     if service in defunct_replacements:
         raise NameError(
@@ -954,8 +974,14 @@ def get_record(
             f"get_record. Use {defunct_replacements[service]} instead."
         )
 
-    if service not in WATERSERVICES_SERVICES + WATERDATA_SERVICES:
-        raise TypeError(f"Unrecognized service: {service}")
+    supported = WATERSERVICES_SERVICES + WATERDATA_SERVICES
+    if service not in supported:
+        raise TypeError(
+            f"Unrecognized service: {service!r}. get_record serves "
+            f"{', '.join(repr(name) for name in supported)}. New work should "
+            "use the dataretrieval.waterdata getters instead; NWIS is "
+            "deprecated."
+        )
 
     if service == "iv":
         df, _ = get_iv(
@@ -1005,8 +1031,12 @@ def get_record(
         df, _ = get_stats(sites=sites, ssl_check=ssl_check, **kwargs)
         return df
 
-    else:
-        raise TypeError(f"{service} service not yet implemented")
+    else:  # pragma: no cover - a recognized service with no branch above
+        raise TypeError(
+            f"The {service!r} service is recognized but get_record has no "
+            "handler for it. This is a bug in dataretrieval; please report it "
+            "at https://github.com/DOI-USGS/dataretrieval-python/issues."
+        )
 
 
 def _site_block_boundaries(site_list: list[str]) -> list[int]:
@@ -1124,7 +1154,11 @@ def _read_rdb(rdb: str) -> pd.DataFrame:
 
 def _check_sites_value_types(sites: list[str] | str | None) -> None:
     if sites and not isinstance(sites, list) and not isinstance(sites, str):
-        raise TypeError("sites must be a string or a list of strings")
+        raise TypeError(
+            "sites must be a site number as a string, or a list of them, not "
+            f"{type(sites).__name__}. Pass sites='01491000' for one site, or "
+            "sites=['01491000', '01645000'] for several."
+        )
 
 
 class NWIS_Metadata(BaseMetadata):

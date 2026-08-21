@@ -1172,6 +1172,35 @@ def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mo
     assert not httpx_mock.get_requests(), "must reject before issuing a request"
 
 
+def test_get_reference_table_serves_countries(httpx_mock):
+    """``countries`` is a real reference collection and singularizes correctly.
+
+    It sits beside ``counties`` in the service catalog but was missing from the
+    accepted vocabulary, so the rejection told a caller asking for a real
+    collection that it did not exist. The shared ``-s`` rule would also have
+    named its id column ``countrie``.
+    """
+    _mock_items(
+        httpx_mock,
+        "countries",
+        body={
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "id": "AD",
+                    "type": "Feature",
+                    "geometry": None,
+                    "properties": {"id": "AD", "country_name": "Andorra"},
+                }
+            ],
+        },
+    )
+
+    df, _ = get_reference_table("countries")
+
+    assert "country" in df.columns
+
+
 def test_get_reference_table_with_query(httpx_mock):
     """A ``query`` dict is merged into the request's query params."""
     _mock_items(httpx_mock, "agency-codes")

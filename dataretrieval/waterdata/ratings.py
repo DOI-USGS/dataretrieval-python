@@ -176,7 +176,11 @@ def get_ratings(
     file_types = _as_list(file_type)
     _validate_file_types(file_types)
     _validate_time_no_duration(time)
-    time_str = _format_api_dates(time) if time is not None else None
+    time_str = (
+        _format_api_dates(time, name="time", allow_duration=False)
+        if time is not None
+        else None
+    )
 
     # Mirror R: pin file_type server-side only when one type is requested.
     server_file_type = file_types[0] if len(file_types) == 1 else None
@@ -346,7 +350,12 @@ async def _fetch_rating(
     fid = feature["id"]
     href = _asset_href(feature)
     if not href:
-        raise ValueError(f"STAC feature {fid!r} carries no data asset href.")
+        raise ValueError(
+            f"STAC feature {fid!r} carries no data asset href, so its rating "
+            "cannot be downloaded. Retrying will not help; exclude this "
+            "monitoring location, or report it if the rating is expected to "
+            "exist."
+        )
     headers = _default_headers(href)
     session = active_client()
     if session is None:

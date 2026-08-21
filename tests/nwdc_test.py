@@ -16,7 +16,12 @@ import dataretrieval
 from dataretrieval import configuration, nwdc
 from dataretrieval import progress as _progress
 from dataretrieval.exceptions import DataRetrievalError
-from dataretrieval.nwdc import _next_page_url, _resolve_locations, get_wateruse
+from dataretrieval.nwdc import (
+    _next_page_url,
+    _nwdc_error_detail,
+    _resolve_locations,
+    get_wateruse,
+)
 from dataretrieval.transport import fanout as _fanout
 from dataretrieval.utils import BaseMetadata
 
@@ -402,6 +407,33 @@ def test_resolve_locations_requires_exactly_one():
 def test_resolve_locations_empty_list_rejected():
     with pytest.raises(ValueError, match="empty"):
         _resolve_locations([], None, None)
+
+
+def test_empty_selector_is_not_reported_as_the_wrong_selector_count():
+    """One selector was given; the fault is its value, not how many there are.
+
+    The message used to close with "exactly one of state, county, or huc must
+    be given", sending a caller who passed ``state=[]`` to change ``county``
+    or ``huc`` instead of filling in ``state``.
+    """
+    with pytest.raises(ValueError) as excinfo:
+        _resolve_locations([], None, None)
+    message = str(excinfo.value)
+    assert "Pass at least one state value." in message
+    assert "exactly one" not in message
+
+
+def test_a_non_prose_detail_is_not_forwarded_into_the_message():
+    """A validation envelope spells ``detail`` as a list of error objects."""
+    response = httpx.Response(422, json={"detail": [{"loc": ["q"], "msg": "bad"}]})
+
+    assert _nwdc_error_detail(response) is None
+
+
+def test_a_detail_that_already_ends_in_a_period_is_not_double_punctuated():
+    response = httpx.Response(400, json={"detail": "Invalid model name: bad."})
+
+    assert "bad.. " not in _nwdc_error_detail(response)
 
 
 def test_resolve_locations_rejects_malformed_selectors():

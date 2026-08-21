@@ -415,3 +415,54 @@ def test_nearest_shape_survives_repeated_resume_interruptions(patch_get_continuo
 
     assert list(resumed["target_time"]) == list(target)
     assert resumed_metadata is metadata
+
+
+def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous):
+    """A caller's ``properties`` list gains 'time' and the grouping column.
+
+    Without the injection a list like ``['time', 'value']`` reached the
+    service unchanged, the response came back with no
+    ``monitoring_location_id``, and every site but one was silently dropped --
+    a wrong answer with nothing for a caller to notice it by.
+    """
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "USGS-A",
+                },
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 2.0,
+                    "monitoring_location_id": "USGS-B",
+                },
+            ]
+        ),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"],
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        properties=["time", "value"],
+    )
+    sent = patch_get_continuous.call_args.kwargs["properties"]
+    assert "monitoring_location_id" in sent
+    assert sent[:2] == ["time", "value"]
+    # One row per site, not one row for the pair.
+    assert len(result) == 2
+
+
+def test_properties_are_left_alone_when_already_complete(patch_get_continuous):
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [{"time": "2023-06-15T10:30:00Z", "monitoring_location_id": "USGS-A"}]
+        ),
+        mock.Mock(),
+    )
+    asked = ["time", "monitoring_location_id"]
+    get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-A", properties=asked
+    )
+    assert patch_get_continuous.call_args.kwargs["properties"] == asked

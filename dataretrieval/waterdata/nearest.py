@@ -162,7 +162,11 @@ def get_nearest_continuous(
         Additional keyword arguments forwarded to ``get_continuous``
         (e.g. ``statistic_id``, ``approval_status``, ``properties``).
         Passing ``time``, ``filter``, or ``filter_lang`` raises
-        ``TypeError`` — this function builds those itself.
+        ``TypeError`` — this function builds those itself. A ``properties``
+        list gains ``time`` and ``monitoring_location_id`` if it omits
+        them: the match is computed against the first and grouped by the
+        second, so the returned frame carries both columns even when they
+        were not requested.
 
     Returns
     -------
@@ -233,10 +237,15 @@ def get_nearest_continuous(
     window_td = pd.Timedelta(window)
 
     if len(target_index) == 0:
-        raise ValueError("targets must contain at least one timestamp")
+        raise ValueError(
+            "targets is empty; there is nothing to find a nearest value for. "
+            "Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "
+            "or a pandas DatetimeIndex."
+        )
 
     selector = _NearestSelector(target_index, window_td, on_tie)
     filter_expr = _build_window_or_filter(target_index, window_td)
+    kwargs = _with_required_properties(kwargs)
     try:
         df, md = get_continuous(
             monitoring_location_id=monitoring_location_id,
@@ -251,6 +260,25 @@ def get_nearest_continuous(
     return selector.select(df), md
 
 
+def _with_required_properties(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Keep the columns the nearest-match needs in a caller's ``properties``.
+
+    ``time`` is what the match is computed against and
+    ``monitoring_location_id`` is what it groups by, so a ``properties`` list
+    omitting either silently collapses every site into one row per target
+    rather than failing. Added rather than rejected: the caller asked for
+    columns, not for a lecture about which ones this getter needs.
+    """
+    properties = kwargs.get("properties")
+    if properties is None:
+        return kwargs
+    names = [properties] if isinstance(properties, str) else list(properties)
+    missing = [c for c in ("time", "monitoring_location_id") if c not in names]
+    if not missing:
+        return kwargs
+    return {**kwargs, "properties": names + missing}
+
+
 def _select_nearest_rows(
     df: pd.DataFrame,
     targets: pd.DatetimeIndex,
@@ -260,8 +288,11 @@ def _select_nearest_rows(
     """Apply the public nearest-per-target shape to continuous rows."""
     if "time" not in df.columns:
         raise ValueError(
-            "get_nearest_continuous requires a 'time' column in the response; "
-            "if a `properties` kwarg was passed, include 'time' in it"
+            "get_nearest_continuous requires a 'time' column in the "
+            "response; if a `properties` kwarg was passed, include 'time' in "
+            "it -- and 'monitoring_location_id' when more than one site is "
+            "requested, or observations from different sites collapse into "
+            "one row per target."
         )
     if df.empty:
         return _empty_nearest_result(df)

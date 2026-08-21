@@ -95,8 +95,8 @@ def get_reference_table(
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
     # Give the ID column the collection name, singularized and underscored.
-    if collection == "counties":
-        output_id = "county"
+    if collection in ("counties", "countries"):
+        output_id = collection[:-3] + "y"  # county / country
     elif collection.endswith("s"):
         output_id = collection[:-1].replace("-", "_")
     else:

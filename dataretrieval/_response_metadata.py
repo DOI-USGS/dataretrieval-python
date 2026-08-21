@@ -53,13 +53,17 @@ class BaseMetadata:
         # # disclaimer seems to be only part of importWaterML1
         # self.disclaimer = None
 
-    # ``site_info`` is set by ``nwis`` / ``wqp``-specific metadata classes; the
-    # modern ``waterdata`` metadata leaves it unimplemented (use
-    # ``waterdata.get_monitoring_locations`` to retrieve site descriptions).
+    # Set by the ``nwis`` / ``wqp`` metadata subclasses only.
     @property
     def site_info(self) -> Any:
         raise NotImplementedError(
-            "site_info must be implemented by BaseMetadata children"
+            "This metadata object carries no site_info: only the nwis and wqp "
+            "metadata classes implement it, and the getter that produced this "
+            "result does not return site descriptions alongside data. Fetch "
+            "them from the same adapter -- "
+            "dataretrieval.waterdata.get_monitoring_locations("
+            "monitoring_location_id=...) for Water Data, "
+            "dataretrieval.ngwmn.get_sites(...) for NGWMN."
         )
 
     def __repr__(self) -> str:

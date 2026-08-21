@@ -177,7 +177,10 @@ def _to_state_one(value: str | int, to: str) -> str:
         raise ValueError(
             f"{value!r} is not a recognized US state or the District of "
             f'Columbia. Provide a full name ("Wisconsin"), a two-letter postal '
-            f'code ("WI"), or a two-digit ANSI/FIPS code ("55").'
+            f'code ("WI"), or a two-digit ANSI/FIPS code ("55"). Coverage is '
+            f"the 50 states and DC only -- a US territory (Puerto Rico, Guam, "
+            f"US Virgin Islands, American Samoa, Northern Mariana Islands) "
+            f"has no entry in this table."
         )
 
     return _format_state(name, to)
@@ -211,11 +214,41 @@ def apply_state(
     native state parameters that must not be combined with ``state``; passing
     ``state`` alongside any of them raises ``ValueError``. Returns the (mutated)
     ``local_vars``.
+
+    An unrecognized ``state`` -- a US territory, say -- is re-raised naming the
+    parameters in ``reject``, and only those. They are the endpoint's own state
+    parameters *as the caller spells them*: the mutual-exclusion guard below is
+    proof the getter accepts them as keyword arguments. ``into`` is deliberately
+    not offered, because it is a wire queryable that need not exist on the
+    getter's signature -- NGWMN's ``get_sites`` filters on ``state_name`` but
+    accepts only ``state``, so naming ``into`` there produced a remedy that
+    raises ``TypeError`` when followed. An endpoint with an empty ``reject`` has
+    no alternative spelling to offer, so it appends nothing rather than pointing
+    a caller back at the argument that just failed.
     """
     state = local_vars.pop("state", None)
     if state is None:
         return local_vars
-    if any(local_vars.get(p) is not None for p in reject):
-        raise ValueError(f"Pass `state`, or {'/'.join(reject)}, but not both.")
-    local_vars[into] = to_state(state, to)
+    # Name only the parameters actually supplied: a caller told to choose
+    # between `state` and an argument it never passed cannot act on the message.
+    conflicting = " or ".join(p for p in reject if local_vars.get(p) is not None)
+    if conflicting:
+        raise ValueError(
+            f"state cannot be combined with {conflicting} -- they filter on "
+            f"the same thing. Pass state, or {conflicting}, not both."
+        )
+    try:
+        local_vars[into] = to_state(state, to)
+    except ValueError as err:
+        # ``into`` leads when it is also a rejected spelling (it is the
+        # queryable this endpoint filters on), but it is never offered on its
+        # own strength -- only ``reject`` proves the getter accepts the name.
+        offered = dict.fromkeys(n for n in (into, *reject) if n in reject)
+        native = " or ".join(offered)
+        if not native:
+            raise
+        raise ValueError(
+            f"{err} Pass {native} instead -- they take the values the API "
+            f"itself uses, territories included."
+        ) from err
     return local_vars

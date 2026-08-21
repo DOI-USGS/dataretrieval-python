@@ -465,6 +465,65 @@ class Test_to_state:
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
 
+    def test_the_table_names_no_endpoint_parameter_of_its_own(self):
+        """``to_state`` is a pure conversion with no ``state`` argument and no
+        endpoint behind it, so its rejection must not tell a caller to pass a
+        differently-named parameter that this call does not accept."""
+        from dataretrieval.codes.states import to_state
+
+        with pytest.raises(ValueError) as excinfo:
+            to_state("Puerto Rico")
+        message = str(excinfo.value)
+        assert "no entry in this table" in message
+        assert "state_name" not in message
+        assert "state_code" not in message
+
+
+class TestApplyStateTerritories:
+    """A territory has no row in the table, so the remedy is the endpoint's own
+    state queryable -- and *which* one differs per endpoint, so the message has
+    to be built where those names are known."""
+
+    def test_the_remedy_names_this_endpoints_native_parameters(self):
+        from dataretrieval.codes.states import apply_state
+
+        with pytest.raises(ValueError) as excinfo:
+            apply_state(
+                {"state": "Puerto Rico"},
+                to="name",
+                into="state_name",
+                reject=("state_code", "state_name"),
+            )
+        message = str(excinfo.value)
+        assert "not a recognized US state" in message
+        assert "Pass state_name or state_code instead" in message
+
+    def test_an_endpoint_with_no_alternative_offers_none(self):
+        """NGWMN's getters expose only the unified ``state``: ``sites``
+        filters on the ``state_name`` queryable but does not accept it as an
+        argument, and ``providers``' queryable *is* ``state``. Appending a
+        remedy from ``into`` sent a caller to ``get_sites(state_name=...)``
+        (``TypeError``) or straight back into this same error.
+        """
+        from dataretrieval.codes.states import apply_state
+
+        for into, to in (("state", "postal"), ("state_name", "name")):
+            with pytest.raises(ValueError) as excinfo:
+                apply_state({"state": "Guam"}, to=to, into=into)
+            message = str(excinfo.value)
+            assert "no entry in this table" in message
+            assert "instead" not in message
+
+    def test_the_ngwmn_getters_reject_a_territory_without_misdirecting(self):
+        """End to end: whatever the message names must be an argument the
+        getter the caller actually called accepts."""
+        from dataretrieval import ngwmn
+
+        for getter in (ngwmn.get_sites, ngwmn.get_providers):
+            with pytest.raises(ValueError) as excinfo:
+                getter(state="Puerto Rico")
+            assert "state_name" not in str(excinfo.value)
+
 
 def test_retrying_get_maps_invalid_url(monkeypatch):
     """Direct active-service GETs do not leak raw httpx InvalidURL errors."""

@@ -132,7 +132,8 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
     same, and the name space belongs to the server (``get_queryables``) rather
     than to us. The point is to answer the caller who reasonably guesses that a
     credential goes here, with a ``TypeError`` naming
-    ``configure(Configuration(api_key=...))`` instead of a token in a URL. It
+    ``with configure(Configuration(api_key=...)):`` instead of a token in a
+    URL (the bare call is a no-op -- ``configure`` is a context manager). It
     errs toward rejecting for that reason.
     """
     forbidden = set()
@@ -144,7 +145,9 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
         spellings = ", ".join(f"{name}=" for name in sorted(forbidden))
         raise TypeError(
             f"Credentials cannot be passed as query parameters ({spellings}); "
-            "use dataretrieval.configure(Configuration(api_key=...)) instead."
+            "wrap the call in `with dataretrieval.configure("
+            "dataretrieval.Configuration(api_key=...)):`, or set the "
+            f"{API_KEY_ENV} environment variable."
         )
 
 

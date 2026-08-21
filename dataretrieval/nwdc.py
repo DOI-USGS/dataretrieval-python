@@ -314,7 +314,7 @@ def _resolve_locations(
     locations = _LOCATION_BUILDERS[name](value)
     if not locations:
         raise ValueError(
-            "The chosen location selector is empty; pass at least one value."
+            f"{name} was given an empty value. Pass at least one {name} value."
         )
     return locations
 
@@ -413,7 +413,10 @@ def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
         # zeros, never an empty body — but keep the typed-error contract if it
         # ever returns one rather than leaking a bare pandas exception.
         raise DataRetrievalError(
-            f"NWDC returned an empty response body (URL: {response.url})."
+            f"NWDC returned an empty response body (URL: {response.url}). "
+            "The service signals 'no data' with a 400 or with zero-valued "
+            "rows, so an empty body is unexpected: retry once, and report it "
+            "if it persists."
         ) from exc
 
 
@@ -464,7 +467,15 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
         body = response.json()
     except ValueError:
         return None
-    return body.get("detail") if isinstance(body, dict) else None
+    detail = body.get("detail") if isinstance(body, dict) else None
+    if not isinstance(detail, str):
+        # A validation envelope spells ``detail`` as a list of error objects;
+        # only prose belongs in a message.
+        return None
+    if detail.startswith("Invalid model name"):
+        # The service names the rejected value but not the accepted ones.
+        return f"{detail.rstrip('.')}. Valid models are: {', '.join(MODELS)}."
+    return detail
 
 
 @dataclass(frozen=True)
