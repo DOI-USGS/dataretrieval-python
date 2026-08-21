@@ -404,7 +404,7 @@ def query_waterdata(
         {name: kwargs.get(name) for name in major_params + bbox_params},
         context="as a major filter",
         remedy=(
-            f"Pass one of {' or '.join(major_params)}, or all four "
+            "Pass one, e.g. site_no='01491000' or stateCd='WI', or all four "
             "bounding-box corners together with "
             "coordinate_format='decimal_degrees'."
         ),
@@ -425,8 +425,9 @@ def query_waterdata(
         ("peaks",),
         name="service",
         remedy=(
-            "For rating tables call nwis.get_ratings(site=...), which is "
-            "served from a different endpoint."
+            "Rating tables come from waterdata.get_ratings("
+            "monitoring_location_id='USGS-01646500'), served from a different "
+            "endpoint and keyed by the AGENCY-ID form of the site number."
         ),
         error=TypeError,
     )
@@ -482,6 +483,7 @@ def query_waterservices(
     require_any_of(
         {name: kwargs.get(name) for name in major_filters},
         context="as a major filter",
+        remedy=("Pass one, e.g. sites='01491000', stateCd='WI', or countyCd='55025'."),
         error=TypeError,
     )
     require_one_of(service, WATERSERVICES_SERVICES, name="service", error=TypeError)

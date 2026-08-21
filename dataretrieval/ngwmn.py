@@ -182,7 +182,7 @@ def get_sites(
     state : str or iterable of str, optional
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
-        The 50 states and DC only; a US territory is rejected.
+        The 50 states, DC, and the five US territories.
     county_name : str or iterable of str, optional
         County name filter.
     aquifer_name, site_type, aquifer_type_code : str or iterable, optional
@@ -413,7 +413,7 @@ def get_providers(
     state : str or iterable of str, optional
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
-        The 50 states and DC only; a US territory is rejected. Only one
+        The 50 states, DC, and the five US territories. Only one
         state at a time — a multi-value state filter
         returns no records for this collection.
     agency_code : str or iterable of str, optional

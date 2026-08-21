@@ -473,15 +473,50 @@ class Test_to_state:
         from dataretrieval.codes.states import to_state
 
         with pytest.raises(ValueError) as excinfo:
-            to_state("Puerto Rico")
+            to_state("Atlantis")
         message = str(excinfo.value)
-        assert "no entry in this table" in message
         assert "state_name" not in message
         assert "state_code" not in message
 
 
-class TestApplyStateTerritories:
-    """A territory has no row in the table, so the remedy is the endpoint's own
+class TestTerritories:
+    """The five territories are real ANSI/FIPS entities, and every service this
+    package reaches carries data for them."""
+
+    @pytest.mark.parametrize(
+        ("value", "name", "postal", "fips"),
+        [
+            ("Puerto Rico", "Puerto Rico", "PR", "72"),
+            ("PR", "Puerto Rico", "PR", "72"),
+            ("72", "Puerto Rico", "PR", "72"),
+            ("US:72", "Puerto Rico", "PR", "72"),
+            ("Guam", "Guam", "GU", "66"),
+            ("VI", "US Virgin Islands", "VI", "78"),
+            ("60", "American Samoa", "AS", "60"),
+            ("MP", "Northern Mariana Islands", "MP", "69"),
+        ],
+    )
+    def test_every_encoding_resolves(self, value, name, postal, fips):
+        from dataretrieval.codes.states import to_state
+
+        assert to_state(value, "name") == name
+        assert to_state(value, "postal") == postal
+        assert to_state(value, "fips") == fips
+
+    def test_the_ngwmn_shim_routes_a_territory_to_each_queryable(self):
+        """``sites`` filters on ``state_name``, ``providers`` on ``state``."""
+        from dataretrieval.codes.states import apply_state
+
+        assert apply_state({"state": "Puerto Rico"}, to="name", into="state_name") == {
+            "state_name": "Puerto Rico"
+        }
+        assert apply_state({"state": "Puerto Rico"}, to="postal", into="state") == {
+            "state": "PR"
+        }
+
+
+class TestApplyStateUnrecognized:
+    """The remedy for a value the table does not hold is the endpoint's own
     state queryable -- and *which* one differs per endpoint, so the message has
     to be built where those names are known."""
 
@@ -490,7 +525,7 @@ class TestApplyStateTerritories:
 
         with pytest.raises(ValueError) as excinfo:
             apply_state(
-                {"state": "Puerto Rico"},
+                {"state": "Atlantis"},
                 to="name",
                 into="state_name",
                 reject=("state_code", "state_name"),
@@ -500,30 +535,15 @@ class TestApplyStateTerritories:
         assert "Pass state_name or state_code instead" in message
 
     def test_an_endpoint_with_no_alternative_offers_none(self):
-        """NGWMN's getters expose only the unified ``state``: ``sites``
-        filters on the ``state_name`` queryable but does not accept it as an
-        argument, and ``providers``' queryable *is* ``state``. Appending a
+        """NGWMN's getters expose only the unified ``state``, so appending a
         remedy from ``into`` sent a caller to ``get_sites(state_name=...)``
-        (``TypeError``) or straight back into this same error.
-        """
+        (``TypeError``) or straight back into this same error."""
         from dataretrieval.codes.states import apply_state
 
         for into, to in (("state", "postal"), ("state_name", "name")):
             with pytest.raises(ValueError) as excinfo:
-                apply_state({"state": "Guam"}, to=to, into=into)
-            message = str(excinfo.value)
-            assert "no entry in this table" in message
-            assert "instead" not in message
-
-    def test_the_ngwmn_getters_reject_a_territory_without_misdirecting(self):
-        """End to end: whatever the message names must be an argument the
-        getter the caller actually called accepts."""
-        from dataretrieval import ngwmn
-
-        for getter in (ngwmn.get_sites, ngwmn.get_providers):
-            with pytest.raises(ValueError) as excinfo:
-                getter(state="Puerto Rico")
-            assert "state_name" not in str(excinfo.value)
+                apply_state({"state": "Atlantis"}, to=to, into=into)
+            assert "instead" not in str(excinfo.value)
 
 
 def test_retrying_get_maps_invalid_url(monkeypatch):

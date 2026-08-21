@@ -6,7 +6,7 @@ two-digit FIPS codes (e.g. ``"Alabama": "01"``). :func:`to_state` normalizes
 a state identifier -- a full name, postal code, or two-digit /
 ``US:``-prefixed FIPS code (or an iterable of them) -- to a chosen
 representation. An unrecognized value raises ``ValueError``. Coverage is the
-50 states plus the District of Columbia.
+50 states, the District of Columbia, and the five US territories.
 """
 
 from __future__ import annotations
@@ -66,6 +66,11 @@ state_codes = {
     "West Virginia": "wv",
     "Wisconsin": "wi",
     "Wyoming": "wy",
+    "American Samoa": "as",
+    "Guam": "gu",
+    "Northern Mariana Islands": "mp",
+    "Puerto Rico": "pr",
+    "US Virgin Islands": "vi",
 }
 
 fips_codes = {
@@ -120,6 +125,11 @@ fips_codes = {
     "West Virginia": "54",
     "Wisconsin": "55",
     "Wyoming": "56",
+    "American Samoa": "60",
+    "Guam": "66",
+    "Northern Mariana Islands": "69",
+    "Puerto Rico": "72",
+    "US Virgin Islands": "78",
 }
 
 # Reverse lookups (built once): postal code -> name, FIPS code -> name, and a
@@ -150,9 +160,10 @@ def to_state(
     * ``"fips"``    -> two-digit ANSI/FIPS code, e.g. ``"55"``
     * ``"fips_us"`` -> ``"US:"`` + FIPS code, e.g. ``"US:55"``
 
-    Coverage is the 50 states plus the District of Columbia. A ``value`` that
-    isn't a recognized state in one of those encodings raises ``ValueError``
-    (so a typo fails fast rather than silently matching nothing).
+    Coverage is the 50 states, DC, and the five US territories, each under its
+    real ANSI/FIPS code. A ``value`` that isn't recognized in one of those
+    encodings raises ``ValueError``, so a typo fails fast rather than
+    silently matching nothing.
     """
     if isinstance(value, str):
         return _to_state_one(value, to)
@@ -175,12 +186,9 @@ def _to_state_one(value: str | int, to: str) -> str:
 
     if name is None:
         raise ValueError(
-            f"{value!r} is not a recognized US state or the District of "
-            f'Columbia. Provide a full name ("Wisconsin"), a two-letter postal '
-            f'code ("WI"), or a two-digit ANSI/FIPS code ("55"). Coverage is '
-            f"the 50 states and DC only -- a US territory (Puerto Rico, Guam, "
-            f"US Virgin Islands, American Samoa, Northern Mariana Islands) "
-            f"has no entry in this table."
+            f"{value!r} is not a recognized US state, district, or "
+            f'territory. Provide a full name ("Wisconsin"), a two-letter '
+            f'postal code ("WI"), or a two-digit ANSI/FIPS code ("55").'
         )
 
     return _format_state(name, to)
@@ -215,8 +223,8 @@ def apply_state(
     ``state`` alongside any of them raises ``ValueError``. Returns the (mutated)
     ``local_vars``.
 
-    An unrecognized ``state`` -- a US territory, say -- is re-raised naming the
-    parameters in ``reject``, and only those. They are the endpoint's own state
+    An unrecognized ``state`` is re-raised naming the parameters in ``reject``,
+    and only those. They are the endpoint's own state
     parameters *as the caller spells them*: the mutual-exclusion guard below is
     proof the getter accepts them as keyword arguments. ``into`` is deliberately
     not offered, because it is a wire queryable that need not exist on the
@@ -248,6 +256,6 @@ def apply_state(
             raise
         raise ValueError(
             f"{err} Pass {native} instead -- they take the values the API "
-            f"itself uses, territories included."
+            f"itself uses, unnormalized."
         ) from err
     return local_vars
