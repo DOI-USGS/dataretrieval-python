@@ -440,12 +440,7 @@ def test_search_for_basin_names_the_missing_half(kwargs, problem):
     ],
 )
 def test_half_a_feature_pair_beside_a_comid_is_reported_as_a_conflict(half, supplied):
-    """Completing the pair would only raise the origin conflict next.
-
-    The pair check fired first, so the caller was told to supply the missing
-    half, and the corrected call then failed on ``comid`` -- two round trips
-    for one mistake.
-    """
+    """Completing the pair would only raise the origin conflict next."""
     with pytest.raises(ValueError) as excinfo:
         _validate_feature_source_comid(comid=13294314, **supplied)
     message = str(excinfo.value)

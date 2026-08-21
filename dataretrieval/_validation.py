@@ -1,36 +1,25 @@
 """Argument checks shared by every adapter.
 
-Rejecting a value that is not in a closed vocabulary is the one validation
-every adapter does, and it was written eleven times: eight message phrasings
-for one concept, so each new check was a coin flip on wording. That is how
-:func:`~dataretrieval.waterdata.get_reference_table` came to tell callers who
-passed a bad ``collection`` that their *code service* was invalid -- the check
-was copied from :mod:`~dataretrieval.waterdata.samples`, message and local
-variable name included, and the noun was never changed.
+Rejecting a value outside a closed vocabulary is the one validation every
+adapter does, and it was written eleven times in eight phrasings -- which is
+how :func:`~dataretrieval.waterdata.get_reference_table` came to tell callers
+who passed a bad ``collection`` that their *code service* was invalid. This
+module owns the wording so a new check cannot invent its own. It is a leaf
+with no first-party imports: the vocabularies live with the adapters that
+define them, and only the rejection is shared.
 
-This module owns the wording so a new check cannot invent its own. It is a
-leaf with no first-party imports: the vocabularies it validates against live
-with the adapters that define them, and only the rejection is shared.
+Three shapes recur: a value outside a closed vocabulary
+(:func:`require_one_of`), a missing argument (:func:`require_argument`,
+:func:`require_together`, :func:`require_any_of`), and arguments that cannot be
+combined (:func:`require_exactly_one`, :func:`reject_together`). The exception
+class is the caller's, like the parameter name: ``error=TypeError`` lets
+:mod:`~dataretrieval.nwis` share the wording without changing what its callers
+already catch.
 
-Three checks recur across the adapters, and each has a message shape here: a
-value outside a closed vocabulary (:func:`require_one_of`), an argument that is
-missing (:func:`require_argument`, :func:`require_together`,
-:func:`require_any_of`), and arguments that cannot be combined
-(:func:`require_exactly_one`, :func:`reject_together`).
-
-The exception class is the caller's, like the parameter name. These raise
-``ValueError``, which is what the modern adapters raise; :mod:`~dataretrieval.nwis`
-has answered a malformed query with ``TypeError`` since long before this module
-existed, and a deprecated module cannot start raising a different class without
-breaking the handlers written against it. ``error=TypeError`` lets it share the
-wording without changing what callers catch.
-
-Every message states the problem and then the move that fixes it, in that
-order. Most callers of this package are programs -- a script, a pipeline stage,
-an agent -- and a program cannot infer from "Service not recognized" which
-services exist. Naming the remedy is what lets the caller correct itself
-without a human reading the source, so a check that cannot name one is a check
-whose message is not finished.
+Every message states the problem and then the move that fixes it. Most callers
+here are programs, and a program cannot infer from "Service not recognized"
+which services exist -- so a check that cannot name a remedy is a check whose
+message is not finished.
 """
 
 from __future__ import annotations
@@ -79,11 +68,10 @@ def require_one_of(
         e.g. ``context="service 'wqp'"`` when the valid profiles differ per
         service.
     remedy
-        A further move, for a vocabulary that is narrower than the service's:
-        how to reach what this function does not accept. Unlike the checks
-        below there is no remedy to override -- naming the options *is* the
-        message -- so this is added rather than substituted, and is omitted
-        when the options are the whole answer.
+        A further move, for a vocabulary narrower than the service's: how to
+        reach what this function does not accept. Added rather than
+        substituted -- unlike the checks below, there is no derived remedy
+        here, since naming the options *is* the message.
     error
         The exception class to raise; see the module docstring.
 
@@ -239,10 +227,8 @@ def require_any_of(
     major filters, where any one of five is enough for the service to answer.
     The permissive sibling of :func:`require_exactly_one`: two of them is a
     narrower query rather than a contradiction, so only none is an error.
-
-    ``None`` counts as not supplied, per :func:`_supplied`, so a caller who
-    passes ``sites=None`` expecting it to be ignored is told the query has no
-    filter rather than having ``None`` spelled into the URL.
+    ``None`` counts as not supplied, so ``sites=None`` is refused rather than
+    reaching the URL.
 
     Parameters
     ----------

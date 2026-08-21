@@ -240,9 +240,8 @@ def apply_state(
     try:
         local_vars[into] = to_state(state, to)
     except ValueError as err:
-        # ``into`` leads when it is also a rejected spelling (it is the
-        # queryable this endpoint filters on), but it is never offered on its
-        # own strength -- only ``reject`` proves the getter accepts the name.
+        # Only ``reject`` proves the getter accepts a spelling; ``into`` is the
+        # wire queryable, so it leads only when it appears there too.
         offered = dict.fromkeys(n for n in (into, *reject) if n in reject)
         native = " or ".join(offered)
         if not native:

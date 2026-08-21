@@ -36,13 +36,8 @@ def test_context_qualifies_a_vocabulary_that_depends_on_another_argument():
 
 
 def test_remedy_adds_a_move_without_dropping_the_options():
-    """A vocabulary narrower than the service's needs both halves.
-
-    ``get_cql`` accepts the collections it can shape; the service serves more,
-    so the message has to name what this function takes *and* how to reach the
-    rest. Unlike the group checks there is no derived remedy to replace here --
-    naming the options is the message.
-    """
+    """A vocabulary narrower than the service's needs both halves: what this
+    function takes, and how to reach the rest."""
     with pytest.raises(ValueError) as excinfo:
         require_one_of(
             "hourly", ("daily",), name="collection", remedy="Call get_queryables."
@@ -190,8 +185,6 @@ class TestRejectTogether:
     ],
 )
 def test_every_check_raises_the_callers_exception_class(check):
-    """``nwis`` has answered a malformed query with ``TypeError`` since long
-    before this module existed. Sharing the wording must not change what a
-    caller catches, or adopting it here would be a breaking change."""
+    """Sharing the wording must not change what a caller already catches."""
     with pytest.raises(TypeError):
         check()

@@ -154,11 +154,8 @@ jobs:
         shell: bash
         run: coverage run -m pytest tests/
       - name: Coverage ratchet
-        # Blocks on every leg but Windows, where POSIX-only tests ``skipif``
-        # out and the number measures a genuinely smaller suite. Phrased as
-        # "not Windows" rather than by naming one leg, so editing the matrix
-        # cannot leave the ratchet silently unenforced. The measurement is
-        # interpreter-independent -- see [tool.coverage.report].
+        # Windows skips POSIX-only tests, so its number measures a smaller
+        # suite. Negative condition: a matrix edit cannot silently unenforce it.
         if: runner.os != 'Windows'
         shell: bash
         run: coverage report

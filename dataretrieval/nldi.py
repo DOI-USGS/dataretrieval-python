@@ -53,13 +53,12 @@ NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
-#: The modes rendered for a message. Built from the tuple above rather than
-#: written beside it, so a mode added there cannot go unmentioned here.
+#: Built from the tuple above, so a mode added there cannot go unmentioned.
 _NAVIGATION_MODES_HINT = (
     f"Pass one of {', '.join(repr(mode) for mode in _VALID_NAVIGATION_MODES)}."
 )
-#: The two ways to name an origin. Shared by the conflict check and the
-#: nothing-supplied check so the same pair of ways forward is offered either way.
+#: Shared by the conflict check and the nothing-supplied check, so both
+#: offer the same ways forward.
 _ORIGIN_HINT = (
     "Navigate from a comid, e.g. comid=13294314, or from a "
     "feature_source/feature_id pair -- not both"
@@ -490,9 +489,6 @@ def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[st
         "Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'; "
         "a basin has no other origin."
     )
-    # ``require_together`` reports a half-supplied pair, naming both sides at
-    # once; it permits the pair being absent entirely, which the two checks
-    # below reject. Together they cover every way the origin can be incomplete.
     require_together(
         {"feature_source": feature_source, "feature_id": feature_id},
         context="for find='basin'",

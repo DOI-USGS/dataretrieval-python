@@ -53,7 +53,6 @@ class BaseMetadata:
         # # disclaimer seems to be only part of importWaterML1
         # self.disclaimer = None
 
-    # Set by the ``nwis`` / ``wqp`` metadata subclasses only.
     @property
     def site_info(self) -> Any:
         raise NotImplementedError(

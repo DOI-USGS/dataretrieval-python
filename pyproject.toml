@@ -186,55 +186,32 @@ markers = [
 
 [tool.coverage.run]
 source = ["dataretrieval"]
-# Branch coverage, because most of what this package gets wrong is a branch
-# rather than a line: a service-dispatch arm that routes to the wrong getter,
-# an error path that never fires, a fallback that silently becomes the norm.
+# Most of what this package gets wrong is a branch rather than a line.
 branch = true
 omit = [
-  # Written by setuptools_scm at build time. Not ours, and absent from a
-  # source checkout until something builds.
+  # Written by setuptools_scm at build time; absent from a source checkout.
   "dataretrieval/_version.py",
 ]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-# Two decimals so the gate compares against the real number rather than a
-# rounded one -- 98.97% displays as "99%" and would otherwise pass a
-# ``fail_under = 99`` on rounding alone.
+# 98.97% displays as "99%", which would pass a ``fail_under = 99`` on rounding.
 precision = 2
-# The ratchet, set just under the measured value. Raise it when coverage
-# rises; never lower it to make a red build green -- lower it only
-# deliberately, when a genuinely untestable path is added and excluding it
-# would be dishonest.
-#
-# Measured identically on 3.10, 3.13 and 3.14: 98.97%, 3695 statements / 20
-# missing, 956 branches / 28 partial. Every Linux leg of the test matrix
-# enforces this threshold, so they have to agree -- 3.10 used to read 98.95%
-# because the ``tomllib`` arm of a version-conditional import is dead there,
-# which is why ``exclude_also`` drops version-conditional code below.
-#
-# The remaining gap is concentrated in async fan-out internals
-# (transport/fanout, ogc/engine), the response-shaping dialect defaults
-# (ogc/shaping), and a handful of partial branches. Those are reachable, but
-# each needs real scaffolding rather than a one-liner -- they are the next
-# rungs, not exclusions.
+# A ratchet: raise it as coverage rises. Lower it only when a genuinely
+# untestable path is added and excluding it would be dishonest.
 fail_under = 98.9
-# Anchored to the start of a statement rather than matched anywhere on the
-# line, so a pattern cannot also match its own words inside a comment or a
-# string. Literal strings, because TOML rejects ``\s`` as an escape.
+# Anchored to the statement, so a pattern cannot match its own words in a
+# comment or a string. Literal strings, because TOML rejects ``\s``.
 exclude_also = [
   # Type-checking-only imports never execute.
   '^\s*if TYPE_CHECKING:',
   '^\s*@overload',
-  # Environment fallbacks for a dependency or a package that is absent. The
-  # suite installs the [test,nldi] extras, so these branches are unreachable
-  # here by construction; reaching them means unimporting a module mid-run,
-  # which tests the import system rather than this package.
+  # The suite installs the [test,nldi] extras, so an absent-dependency fallback
+  # is unreachable here by construction.
   '^\s*except ImportError',
   '^\s*except PackageNotFoundError',
-  # Version-conditional code: one arm is dead on every interpreter by
-  # construction, so measuring it makes the total depend on which version
-  # ran -- and the ratchet is enforced on every supported one.
+  # One arm is dead on every interpreter, which would otherwise make the total
+  # depend on which version measured it.
   '^\s*if sys\.version_info',
 ]

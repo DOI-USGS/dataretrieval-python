@@ -410,12 +410,7 @@ def test_resolve_locations_empty_list_rejected():
 
 
 def test_empty_selector_is_not_reported_as_the_wrong_selector_count():
-    """One selector was given; the fault is its value, not how many there are.
-
-    The message used to close with "exactly one of state, county, or huc must
-    be given", sending a caller who passed ``state=[]`` to change ``county``
-    or ``huc`` instead of filling in ``state``.
-    """
+    """One selector was given; the fault is its value, not how many there are."""
     with pytest.raises(ValueError) as excinfo:
         _resolve_locations([], None, None)
     message = str(excinfo.value)
