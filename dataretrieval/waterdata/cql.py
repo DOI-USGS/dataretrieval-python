@@ -45,6 +45,7 @@ def get_cql(
     properties: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
+    max_rows: int | None = None,
     skip_geometry: bool | None = None,
     convert_type: bool = True,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
@@ -84,7 +85,16 @@ def get_cql(
         Bounding box ``[xmin, ymin, xmax, ymax]`` in CRS 4326. Combines with the
         CQL filter as an additional spatial predicate.
     limit : int, optional
-        Page size, clamped server-side to 50,000.
+        The number of features returned in each page, clamped server-side to
+        50,000. This is a per-page size, not a cap on the total result: a
+        filter matching more rows than ``limit`` still returns every matching
+        row across multiple pages, so a small ``limit`` makes *more* requests,
+        not fewer. Use ``max_rows`` to cap the total instead.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total across every page. The default
+        (None) follows pagination to completion.
     skip_geometry : bool, optional
         If True, the server omits geometry from each feature
         (``skipGeometry=true``).
@@ -165,7 +175,7 @@ def get_cql(
             "convert_type": convert_type,
         }
     )
-    return get_ogc_data(args, collection, cql_body=body)
+    return get_ogc_data(args, collection, max_rows=max_rows, cql_body=body)
 
 
 __all__ = ["get_cql"]
