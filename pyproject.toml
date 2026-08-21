@@ -208,10 +208,11 @@ precision = 2
 # deliberately, when a genuinely untestable path is added and excluding it
 # would be dishonest.
 #
-# Verified identical (98.97%, 3683 stmts / 20 missing, 964 branches / 28
-# partial) on 3.12 and on 3.14, the version the blocking job runs -- branch
-# arcs can differ between interpreters, so the threshold was checked against
-# the one that enforces it rather than only the one it was written on.
+# Measured identically on 3.10, 3.13 and 3.14: 98.97%, 3695 statements / 20
+# missing, 956 branches / 28 partial. Every Linux leg of the test matrix
+# enforces this threshold, so they have to agree -- 3.10 used to read 98.95%
+# because the ``tomllib`` arm of a version-conditional import is dead there,
+# which is why ``exclude_also`` drops version-conditional code below.
 #
 # The remaining gap is concentrated in async fan-out internals
 # (transport/fanout, ogc/engine), the response-shaping dialect defaults
@@ -219,14 +220,21 @@ precision = 2
 # each needs real scaffolding rather than a one-liner -- they are the next
 # rungs, not exclusions.
 fail_under = 98.9
+# Anchored to the start of a statement rather than matched anywhere on the
+# line, so a pattern cannot also match its own words inside a comment or a
+# string. Literal strings, because TOML rejects ``\s`` as an escape.
 exclude_also = [
   # Type-checking-only imports never execute.
-  "if TYPE_CHECKING:",
-  "@overload",
+  '^\s*if TYPE_CHECKING:',
+  '^\s*@overload',
   # Environment fallbacks for a dependency or a package that is absent. The
   # suite installs the [test,nldi] extras, so these branches are unreachable
   # here by construction; reaching them means unimporting a module mid-run,
   # which tests the import system rather than this package.
-  "except ImportError",
-  "except PackageNotFoundError",
+  '^\s*except ImportError',
+  '^\s*except PackageNotFoundError',
+  # Version-conditional code: one arm is dead on every interpreter by
+  # construction, so measuring it makes the total depend on which version
+  # ran -- and the ratchet is enforced on every supported one.
+  '^\s*if sys\.version_info',
 ]
