@@ -53,6 +53,16 @@ jobs:
       - name: Dependency-direction contracts
         # Rules and rationale live in .importlinter and the ADRs it cites.
         run: lint-imports
+      - name: Coverage ratchet
+        # Graded here rather than in the OS/Python matrix: several tests are
+        # POSIX-only (``skipif``), so a Windows or macOS run measures a
+        # genuinely smaller suite and would trip a shared threshold. The
+        # matrix still reports its own coverage; this is the one that blocks.
+        # Threshold and rationale live in [tool.coverage.report].
+        run: |
+          pip install -e .[test,nldi]
+          coverage run -m pytest tests/
+          coverage report
       - name: Complexity trend vs base
         # Advisory: reports which files moved and by how much, so a reviewer
         # can see direction rather than a pass/fail. Never fails the build --
@@ -154,4 +164,7 @@ jobs:
         shell: bash
         run: |
           coverage run -m pytest tests/
-          coverage report -m
+          # --fail-under=0 disables the ratchet here on purpose: this matrix
+          # skips POSIX-only tests on Windows, so its number is informational.
+          # The gate that blocks runs once, on Linux, in the complexity job.
+          coverage report -m --fail-under=0

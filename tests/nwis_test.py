@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dataretrieval import nwis
+from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.nwis import (
     NWIS_Metadata,
     _read_rdb,
@@ -303,3 +305,148 @@ class TestReadRdb:
         df = _read_rdb(no_sites_rdb)
         assert isinstance(df, pd.DataFrame)
         assert df.empty
+
+
+class TestGetRecordDispatch:
+    """``get_record`` is a router; each service must reach its own getter.
+
+    The arms are near-identical by eye, which is what makes a mis-wired one
+    survive review: every arm forwards ``sites`` except ``ratings``, which
+    takes a scalar ``site``. A swap there fails only at request time, for one
+    service, in a deprecated facade nobody reads.
+    """
+
+    @pytest.mark.parametrize(
+        "service,target,site_kwarg",
+        [
+            ("iv", "get_iv", "sites"),
+            ("dv", "get_dv", "sites"),
+            ("site", "get_info", "sites"),
+            ("peaks", "get_discharge_peaks", "sites"),
+            ("stat", "get_stats", "sites"),
+            ("ratings", "get_ratings", "site"),
+        ],
+    )
+    def test_each_service_reaches_its_own_getter(self, service, target, site_kwarg):
+        frame = pd.DataFrame({"x": [1]})
+        with mock.patch(f"dataretrieval.nwis.{target}") as fake:
+            fake.return_value = (frame, mock.Mock())
+            out = get_record(sites="01491000", service=service)
+        assert fake.call_count == 1
+        assert fake.call_args.kwargs[site_kwarg] == "01491000"
+        # The router returns the frame alone, dropping the metadata half.
+        assert out is frame
+
+    def test_unrecognized_service_lists_the_ones_it_serves(self):
+        with pytest.raises(TypeError) as excinfo:
+            get_record(sites="01491000", service="nope")
+        message = str(excinfo.value)
+        assert "Unrecognized service: 'nope'" in message
+        assert "'iv'" in message and "'peaks'" in message
+        assert "waterdata" in message
+
+
+def test_html_error_page_instead_of_json_says_what_to_do():
+    """A 200 carrying an HTML error page must not surface as a JSON parse error.
+
+    The legacy services answer an outage with a styled page and a 200, so the
+    only signal is the body. A caller that gets ``JSONDecodeError`` learns
+    nothing actionable; this path names the cause and the move.
+    """
+    response = mock.Mock()
+    response.json.side_effect = ValueError("no json")
+    response.text = "<!DOCTYPE html><html><body>USGS</body></html>"
+    response.headers = {"Content-Type": "text/html; charset=UTF-8"}
+    response.status_code = 200
+    response.url = "https://waterservices.usgs.gov/nwis/dv?sites=01646500"
+
+    with pytest.raises(ValueError) as excinfo:
+        nwis._parse_json_or_raise(response)
+    message = str(excinfo.value)
+    assert "HTML response instead of JSON" in message
+    assert "Wait and retry" in message
+    assert "waterdata" in message
+
+
+def test_a_non_html_parse_failure_is_re_raised_unchanged():
+    """Only HTML gets the rewrite; a genuine malformed-JSON body must not be
+    relabelled as a service outage."""
+    response = mock.Mock()
+    response.json.side_effect = ValueError("Expecting value")
+    response.text = "{not json"
+    response.headers = {"Content-Type": "application/json"}
+    response.status_code = 200
+    response.url = "https://waterservices.usgs.gov/nwis/dv"
+
+    with pytest.raises(ValueError, match="Expecting value"):
+        nwis._parse_json_or_raise(response)
+
+
+def test_deprecating_a_getter_with_no_named_replacement_is_refused():
+    """``@_deprecated`` promises the caller a replacement, so the decorator
+    refuses to be applied to a function whose replacement nobody recorded --
+    a deprecation warning naming nothing is worse than none."""
+    with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
+
+        @nwis._deprecated
+        def not_a_real_getter():
+            pass
+
+
+def test_utc_localization_of_a_single_datetime_index():
+    """NWIS returns naive local timestamps; a frame whose index is a plain
+    DatetimeIndex must still come back tz-aware, or two services' frames
+    cannot be concatenated."""
+    df = pd.DataFrame(
+        {"x": [1, 2]},
+        index=pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"]),
+    )
+    out = nwis._localize_datetime_index(df)
+    assert str(out.index.tz) == "UTC"
+
+
+def test_metadata_site_info_is_none_when_no_site_filter_was_used():
+    """``site_info`` fetches the sites a query named. A query filtered by
+    something else (a parameter code alone) has no sites to describe, and
+    guessing one would describe the wrong thing."""
+    md = NWIS_Metadata(mock.MagicMock(), parameterCd="00060")
+    assert md.site_info is None
+
+
+def test_utc_localization_of_a_multi_index_datetime_level():
+    """``multi_index=True`` puts the timestamp on level 1 under the site id.
+    The naive level must still be localized, or a multi-site frame carries
+    two different clock conventions in one column."""
+    idx = pd.MultiIndex.from_arrays(
+        [
+            ["01491000", "01491000"],
+            pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"]),
+        ],
+        names=["site_no", "datetime"],
+    )
+    out = nwis._localize_datetime_index(pd.DataFrame({"x": [1, 2]}, index=idx))
+    assert str(out.index.levels[1].tz) == "UTC"
+
+
+class TestGetInfoSeriesCatalog:
+    """``seriesCatalogOutput`` and the expanded site format are mutually
+    exclusive on the wire, so the getter picks one and warns when the caller
+    asked for the retiring one."""
+
+    @pytest.mark.parametrize("flag", ["True", "TRUE", "true", True])
+    def test_asking_for_the_series_catalog_warns_and_forwards_it(
+        self, flag, httpx_mock
+    ):
+        httpx_mock.add_response(method="GET", url=_SITE_RE, text="#\nx\n5s\n")
+        with pytest.warns(DataCurrencyWarning, match="qw data endpoint is"):
+            nwis.get_info(sites="01491000", seriesCatalogOutput=flag)
+        sent = str(httpx_mock.get_requests()[-1].url)
+        assert "seriesCatalogOutput=True" in sent
+        assert "siteOutput" not in sent
+
+    def test_without_it_the_expanded_site_format_is_requested(self, httpx_mock):
+        httpx_mock.add_response(method="GET", url=_SITE_RE, text="#\nx\n5s\n")
+        nwis.get_info(sites="01491000")
+        sent = str(httpx_mock.get_requests()[-1].url)
+        assert "siteOutput=Expanded" in sent
+        assert "seriesCatalogOutput" not in sent

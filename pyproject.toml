@@ -183,3 +183,44 @@ addopts = "-m 'not live'"
 markers = [
   "live: hits real USGS services; deselected by default, run on a schedule",
 ]
+
+[tool.coverage.run]
+source = ["dataretrieval"]
+# Branch coverage, because most of what this package gets wrong is a branch
+# rather than a line: a service-dispatch arm that routes to the wrong getter,
+# an error path that never fires, a fallback that silently becomes the norm.
+branch = true
+omit = [
+  # Written by setuptools_scm at build time. Not ours, and absent from a
+  # source checkout until something builds.
+  "dataretrieval/_version.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+# Two decimals so the gate compares against the real number rather than a
+# rounded one -- 98.97% displays as "99%" and would otherwise pass a
+# ``fail_under = 99`` on rounding alone.
+precision = 2
+# The ratchet, set at the measured value. Raise it when coverage rises; never
+# lower it to make a red build green -- lower it only deliberately, when a
+# genuinely untestable path is added and excluding it would be dishonest.
+#
+# The remaining gap is concentrated in async fan-out internals
+# (transport/fanout, ogc/engine), the response-shaping dialect defaults
+# (ogc/shaping), and a handful of partial branches. Those are reachable, but
+# each needs real scaffolding rather than a one-liner -- they are the next
+# rungs, not exclusions.
+fail_under = 98.9
+exclude_also = [
+  # Type-checking-only imports never execute.
+  "if TYPE_CHECKING:",
+  "@overload",
+  # Environment fallbacks for a dependency or a package that is absent. The
+  # suite installs the [test,nldi] extras, so these branches are unreachable
+  # here by construction; reaching them means unimporting a module mid-run,
+  # which tests the import system rather than this package.
+  "except ImportError",
+  "except PackageNotFoundError",
+]

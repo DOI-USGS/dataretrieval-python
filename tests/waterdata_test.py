@@ -1499,3 +1499,12 @@ class TestNormalizeStrIterable:
                 monitoring_location_id="USGS-05427718",
                 parameter_code=[60, 65],
             )
+
+
+def test_get_reference_table_forwards_limit_as_a_query_arg():
+    """``limit`` is a server-side page size and belongs in the query, unlike
+    ``max_rows``, which is a client-side cap the service never sees."""
+    with mock.patch("dataretrieval.waterdata.reference.get_ogc_data") as fake:
+        fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+        get_reference_table("agency-codes", limit=25)
+    assert fake.call_args.kwargs["args"]["limit"] == 25

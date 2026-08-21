@@ -95,12 +95,13 @@ def get_reference_table(
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
     # Give the ID column the collection name, singularized and underscored.
+    # ``removesuffix`` rather than an ``endswith`` branch: every collection in
+    # the vocabulary is plural today, so the non-plural arm was unreachable,
+    # and this stays correct if a singular one is ever added.
     if collection in ("counties", "countries"):
         output_id = collection[:-3] + "y"  # county / country
-    elif collection.endswith("s"):
-        output_id = collection[:-1].replace("-", "_")
     else:
-        output_id = collection.replace("-", "_")
+        output_id = collection.removesuffix("s").replace("-", "_")
 
     query_args = dict(query) if query else {}
     if limit is not None:

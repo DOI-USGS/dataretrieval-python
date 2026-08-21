@@ -2,6 +2,7 @@
 
 from unittest import mock
 
+import numpy
 import pandas as pd
 import pytest
 
@@ -537,3 +538,57 @@ def test_retrying_get_maps_invalid_url(monkeypatch):
 
     with pytest.raises(exceptions.URLTooLong):
         _querying._get_with_retry("https://example.invalid")
+
+
+class TestFormatDatetime:
+    """``format_datetime`` joins the three columns NWIS RDB splits a
+    timestamp across, and is the only place the package parses a local time
+    with a named zone."""
+
+    def test_joins_date_time_and_zone_into_utc(self):
+        df = pd.DataFrame(
+            {
+                "sample_dt": ["2018-01-24", "2018-06-24"],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EDT"],
+            }
+        )
+
+        out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert str(out["datetime"].dt.tz) == "UTC"
+        # EST is -0500 and EDT -0400, so the same wall clock is a different
+        # instant in each row -- the reason the zone column cannot be ignored.
+        assert out["datetime"][0].hour == 15
+        assert out["datetime"][1].hour == 14
+
+    def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
+        """An unparseable row becomes NaT rather than failing the whole frame,
+        but silently dropping timestamps would be a wrong answer -- so it
+        warns, and names the switch that avoids the loss."""
+        df = pd.DataFrame(
+            {
+                # A missing date field, as an RDB row with an unrecorded
+                # sample date arrives. There is no ``errors="coerce"``, so a
+                # malformed *string* raises; only an absent value reaches here.
+                "sample_dt": ["2018-01-24", numpy.nan],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EST"],
+            }
+        )
+
+        with pytest.warns(UserWarning, match="incomplete dates"):
+            out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert out["datetime"].isna().sum() == 1
+        assert out["datetime"].notna().sum() == 1
+
+
+def test_base_metadata_repr_names_the_type_and_url():
+    """``md`` is what a user prints when a query surprises them, so the repr
+    has to say which metadata class it is and which URL produced it."""
+    response = mock.MagicMock()
+    response.url = "https://example.test/items?limit=1"
+    md = utils.BaseMetadata(response)
+    assert "BaseMetadata" in repr(md)
+    assert "https://example.test/items?limit=1" in repr(md)

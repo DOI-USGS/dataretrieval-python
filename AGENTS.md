@@ -65,8 +65,13 @@ can predict where a thing lives.
 ## Commands
 - Lint: `ruff check .` and `ruff format --check .` (pinned to the version in
   `.pre-commit-config.yaml` and the CI lint job — keep them aligned).
-- Tests: `coverage run -m pytest tests/ && coverage report -m`, or focused like
-  `pytest tests/waterdata_test.py::test_mock_get_samples`.
+- Tests: `coverage run -m pytest tests/ && coverage report`, or focused like
+  `pytest tests/waterdata_test.py::test_mock_get_samples`. `coverage report` is
+  a merge gate: branch coverage with a `fail_under` ratchet in
+  `[tool.coverage.report]`. Chase the uncovered *branch*, not the number -- a
+  test written to colour a line green catches nothing and costs a maintenance
+  slot. If a path is genuinely unreachable, add it to `exclude_also` with a
+  reason, or leave the ratchet alone.
 - Types: `mypy` (`strict = true` in `pyproject.toml`; CI runs it over the
   PR-merged-into-main, so bare `dict`/`list` annotations fail there even if they
   pass on your branch).
