@@ -341,7 +341,7 @@ class TestGetRecordDispatch:
         with pytest.raises(TypeError) as excinfo:
             get_record(sites="01491000", service="nope")
         message = str(excinfo.value)
-        assert "Unrecognized service: 'nope'" in message
+        assert "Invalid service: 'nope'" in message
         assert "'iv'" in message and "'peaks'" in message
         assert "waterdata" in message
 

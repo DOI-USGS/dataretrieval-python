@@ -10,6 +10,7 @@ import pytest
 
 from dataretrieval._validation import (
     reject_together,
+    require_any_of,
     require_argument,
     require_exactly_one,
     require_one_of,
@@ -32,6 +33,23 @@ def test_message_names_the_parameter_and_the_options():
 def test_context_qualifies_a_vocabulary_that_depends_on_another_argument():
     with pytest.raises(ValueError, match="for service 'wqp'"):
         require_one_of("x", ("a",), name="profile", context="service 'wqp'")
+
+
+def test_remedy_adds_a_move_without_dropping_the_options():
+    """A vocabulary narrower than the service's needs both halves.
+
+    ``get_cql`` accepts the collections it can shape; the service serves more,
+    so the message has to name what this function takes *and* how to reach the
+    rest. Unlike the group checks there is no derived remedy to replace here --
+    naming the options is the message.
+    """
+    with pytest.raises(ValueError) as excinfo:
+        require_one_of(
+            "hourly", ("daily",), name="collection", remedy="Call get_queryables."
+        )
+    message = str(excinfo.value)
+    assert "Valid options are: 'daily'." in message
+    assert message.endswith("Call get_queryables.")
 
 
 def test_a_string_vocabulary_is_refused():
@@ -87,6 +105,35 @@ class TestRequireTogether:
             require_together({"a": 1, "b": None, "c": None})
 
 
+class TestRequireAnyOf:
+    def test_accepts_one_supplied(self):
+        require_any_of({"sites": "01491000", "stateCd": None})
+
+    def test_accepts_more_than_one(self):
+        """Two filters narrow the query; only none of them is an error."""
+        require_any_of({"sites": "01491000", "stateCd": "WI"})
+
+    def test_message_names_every_argument_that_would_have_served(self):
+        with pytest.raises(ValueError) as excinfo:
+            require_any_of({"sites": None, "stateCd": None, "huc": None})
+        message = str(excinfo.value)
+        assert "At least one of sites, stateCd or huc is required" in message
+        assert "Pass one of sites, stateCd or huc." in message
+
+    def test_context_says_what_the_group_is_for(self):
+        with pytest.raises(ValueError, match="as a major filter"):
+            require_any_of({"sites": None}, context="as a major filter")
+
+    def test_remedy_replaces_the_default(self):
+        with pytest.raises(ValueError, match="Pass all four corners."):
+            require_any_of({"sites": None}, remedy="Pass all four corners.")
+
+    def test_an_explicit_none_is_not_a_filter(self):
+        """``sites=None`` counted as supplied is how ``None`` reaches a URL."""
+        with pytest.raises(ValueError):
+            require_any_of({"sites": None})
+
+
 class TestRequireExactlyOne:
     def test_accepts_exactly_one(self):
         require_exactly_one({"comid": 1, "feature_source": None})
@@ -129,3 +176,22 @@ class TestRejectTogether:
             reject_together(
                 {"lat": 1.0, "comid": 2}, context="they name different origins"
             )
+
+
+@pytest.mark.parametrize(
+    "check",
+    [
+        lambda: require_one_of("x", ("a",), name="service", error=TypeError),
+        lambda: require_argument("service", None, error=TypeError),
+        lambda: require_together({"a": 1, "b": None}, error=TypeError),
+        lambda: require_any_of({"a": None}, error=TypeError),
+        lambda: require_exactly_one({"a": None, "b": None}, error=TypeError),
+        lambda: reject_together({"a": 1, "b": 2}, error=TypeError),
+    ],
+)
+def test_every_check_raises_the_callers_exception_class(check):
+    """``nwis`` has answered a malformed query with ``TypeError`` since long
+    before this module existed. Sharing the wording must not change what a
+    caller catches, or adopting it here would be a breaking change."""
+    with pytest.raises(TypeError):
+        check()

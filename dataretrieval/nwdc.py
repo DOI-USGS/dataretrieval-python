@@ -52,6 +52,7 @@ import pandas as pd
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import require_exactly_one
 from dataretrieval.codes.states import to_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -300,17 +301,9 @@ def _resolve_locations(
     ``huc`` code's length selects its level (``huc2`` … ``huc12``). Returns one
     location string per value — the caller issues one request per location.
     """
-    selected = {
-        name: value
-        for name, value in (("state", state), ("county", county), ("huc", huc))
-        if value is not None
-    }
-    if len(selected) != 1:
-        raise ValueError(
-            "Specify exactly one of state, county, or huc "
-            f"(got: {', '.join(selected) or 'none'})."
-        )
-    [(name, value)] = selected.items()
+    selectors = {"state": state, "county": county, "huc": huc}
+    require_exactly_one(selectors, context="as the query's location")
+    [(name, value)] = ((n, v) for n, v in selectors.items() if v is not None)
     locations = _LOCATION_BUILDERS[name](value)
     if not locations:
         raise ValueError(

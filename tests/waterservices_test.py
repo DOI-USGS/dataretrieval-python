@@ -33,14 +33,14 @@ def test_query_waterdata_validation():
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service="pmcodes", format="rdb")
     message = str(type_error.value)
-    assert "Query must specify a major filter" in message
+    assert "is required as a major filter" in message
     assert "site_no, stateCd" in message
     assert "nw_longitude_va" in message
 
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service=None, site_no="sites")
     message = str(type_error.value)
-    assert "Unrecognized service: None" in message
+    assert "Invalid service: None" in message
     # 'ratings' was advertised here but is not an NwisWeb program: the URL it
     # built returned an HTML error page, not data.
     assert "'peaks'" in message
@@ -49,9 +49,9 @@ def test_query_waterdata_validation():
     with pytest.raises(TypeError) as type_error:
         query_waterdata(service="pmcodes", nw_longitude_va="something")
     message = str(type_error.value)
-    assert "bounding box needs all four corners" in message
+    assert "must be given together to describe a bounding box" in message
     # The three corners actually absent, so the caller knows what to add.
-    assert "nw_latitude_va, se_longitude_va, se_latitude_va" in message
+    assert "nw_latitude_va, se_longitude_va and se_latitude_va" in message
 
 
 def test_query_waterservices_validation():
@@ -59,13 +59,13 @@ def test_query_waterservices_validation():
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service="dv", format="rdb")
     message = str(type_error.value)
-    assert "Query must specify a major filter" in message
-    assert "sites, stateCd, bBox, huc, countyCd" in message
+    assert "is required as a major filter" in message
+    assert "sites, stateCd, bBox, huc or countyCd" in message
 
     with pytest.raises(TypeError) as type_error:
         query_waterservices(service=None, sites="sites")
     message = str(type_error.value)
-    assert "Unrecognized service: None" in message
+    assert "Invalid service: None" in message
     assert "'dv', 'iv', 'site', 'stat'" in message
 
 
@@ -94,7 +94,7 @@ def test_get_record_validation():
     with pytest.raises(TypeError) as type_error:
         get_record(sites=["01491000"], service="not_a_service")
     message = str(type_error.value)
-    assert "Unrecognized service: 'not_a_service'" in message
+    assert "Invalid service: 'not_a_service'" in message
     assert "'dv', 'iv', 'site', 'stat', 'peaks', 'ratings'" in message
 
 

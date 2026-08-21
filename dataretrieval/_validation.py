@@ -14,8 +14,16 @@ with the adapters that define them, and only the rejection is shared.
 
 Three checks recur across the adapters, and each has a message shape here: a
 value outside a closed vocabulary (:func:`require_one_of`), an argument that is
-missing (:func:`require_argument`, :func:`require_together`), and arguments that
-cannot be combined (:func:`require_exactly_one`, :func:`reject_together`).
+missing (:func:`require_argument`, :func:`require_together`,
+:func:`require_any_of`), and arguments that cannot be combined
+(:func:`require_exactly_one`, :func:`reject_together`).
+
+The exception class is the caller's, like the parameter name. These raise
+``ValueError``, which is what the modern adapters raise; :mod:`~dataretrieval.nwis`
+has answered a malformed query with ``TypeError`` since long before this module
+existed, and a deprecated module cannot start raising a different class without
+breaking the handlers written against it. ``error=TypeError`` lets it share the
+wording without changing what callers catch.
 
 Every message states the problem and then the move that fixes it, in that
 order. Most callers of this package are programs -- a script, a pipeline stage,
@@ -48,6 +56,8 @@ def require_one_of(
     *,
     name: str,
     context: str = "",
+    remedy: str = "",
+    error: type[Exception] = ValueError,
 ) -> None:
     """Raise ``ValueError`` unless *value* is one of *options*.
 
@@ -68,6 +78,14 @@ def require_one_of(
         Optional qualifier for a vocabulary that depends on another argument,
         e.g. ``context="service 'wqp'"`` when the valid profiles differ per
         service.
+    remedy
+        A further move, for a vocabulary that is narrower than the service's:
+        how to reach what this function does not accept. Unlike the checks
+        below there is no remedy to override -- naming the options *is* the
+        message -- so this is added rather than substituted, and is omitted
+        when the options are the whole answer.
+    error
+        The exception class to raise; see the module docstring.
 
     Raises
     ------
@@ -81,9 +99,10 @@ def require_one_of(
     if value in options:
         return
     qualifier = f" for {context}" if context else ""
-    raise ValueError(
+    message = (
         f"Invalid {name}: {value!r}{qualifier}. Valid options are: {_render(options)}."
     )
+    raise error(f"{message} {remedy}" if remedy else message)
 
 
 def _render_names(names: Collection[str], *, conjunction: str = "and") -> str:
@@ -119,6 +138,7 @@ def require_argument(
     *,
     context: str = "",
     remedy: str = "",
+    error: type[Exception] = ValueError,
 ) -> _T:
     """Return *value*, or raise ``ValueError`` if it was not supplied.
 
@@ -142,6 +162,8 @@ def require_argument(
     remedy
         What to do instead, when the default ("pass a value") is not enough to
         act on -- typically the accepted forms or an example value.
+    error
+        The exception class to raise; see the module docstring.
 
     Returns
     -------
@@ -155,7 +177,7 @@ def require_argument(
     if value is not None:
         return value
     when = f" {context}" if context else ""
-    raise ValueError(f"{name} is required{when}. {remedy or f'Pass a {name} value.'}")
+    raise error(f"{name} is required{when}. {remedy or f'Pass a {name} value.'}")
 
 
 def require_together(
@@ -163,6 +185,7 @@ def require_together(
     *,
     context: str = "",
     remedy: str = "",
+    error: type[Exception] = ValueError,
 ) -> None:
     """Raise ``ValueError`` unless *values* are all supplied or all omitted.
 
@@ -182,6 +205,8 @@ def require_together(
     remedy
         Overrides the default remedy, which names the missing arguments to
         supply and the supplied ones to drop.
+    error
+        The exception class to raise; see the module docstring.
 
     Raises
     ------
@@ -195,10 +220,56 @@ def require_together(
     fix = remedy or (
         f"Pass {_render_names(missing)}, or omit {_render_names(supplied)}."
     )
-    raise ValueError(
+    raise error(
         f"{_render_names(values)} must be given together{where}. "
         f"Missing: {_render_names(missing)}. {fix}"
     )
+
+
+def require_any_of(
+    values: Mapping[str, object],
+    *,
+    context: str = "",
+    remedy: str = "",
+    error: type[Exception] = ValueError,
+) -> None:
+    """Raise ``ValueError`` unless at least one of *values* was supplied.
+
+    For a query that needs to be narrowed but does not care how -- the NWIS
+    major filters, where any one of five is enough for the service to answer.
+    The permissive sibling of :func:`require_exactly_one`: two of them is a
+    narrower query rather than a contradiction, so only none is an error.
+
+    ``None`` counts as not supplied, per :func:`_supplied`, so a caller who
+    passes ``sites=None`` expecting it to be ignored is told the query has no
+    filter rather than having ``None`` spelled into the URL.
+
+    Parameters
+    ----------
+    values
+        Parameter name to supplied value, in the order the message should
+        list them.
+    context
+        What the group is for, when the parameter names do not say --
+        ``context="to narrow the query"``.
+    remedy
+        Overrides the default remedy, which names the arguments to choose
+        among.
+    error
+        The exception class to raise; see the module docstring.
+
+    Raises
+    ------
+    ValueError
+        If none of *values* were supplied.
+    """
+    supplied, _ = _supplied(values)
+    if supplied:
+        return
+    where = f" {context}" if context else ""
+    names = _render_names(values, conjunction="or")
+    fix = remedy or f"Pass one of {names}."
+    raise error(f"At least one of {names} is required{where}. {fix}")
 
 
 def require_exactly_one(
@@ -206,6 +277,7 @@ def require_exactly_one(
     *,
     context: str = "",
     remedy: str = "",
+    error: type[Exception] = ValueError,
 ) -> None:
     """Raise ``ValueError`` unless exactly one of *values* was supplied.
 
@@ -225,6 +297,8 @@ def require_exactly_one(
     remedy
         Overrides the default remedy, which is derived from which way the
         check failed.
+    error
+        The exception class to raise; see the module docstring.
 
     Raises
     ------
@@ -241,7 +315,7 @@ def require_exactly_one(
     else:
         fix = remedy or f"Pass one of {_render_names(values, conjunction='or')}."
         got = "none"
-    raise ValueError(
+    raise error(
         f"Provide exactly one of {_render_names(values, conjunction='or')}"
         f"{where}. Supplied: {got}. {fix}"
     )
@@ -252,6 +326,7 @@ def reject_together(
     *,
     context: str = "",
     remedy: str = "",
+    error: type[Exception] = ValueError,
 ) -> None:
     """Raise ``ValueError`` if more than one of *values* was supplied.
 
@@ -270,6 +345,8 @@ def reject_together(
     remedy
         Overrides the default remedy, which names the supplied arguments to
         choose between.
+    error
+        The exception class to raise; see the module docstring.
 
     Raises
     ------
@@ -281,4 +358,4 @@ def reject_together(
         return
     why = f" -- {context}" if context else ""
     fix = remedy or f"Pass only one of {_render_names(supplied, conjunction='or')}."
-    raise ValueError(f"{_render_names(supplied)} cannot be combined{why}. {fix}")
+    raise error(f"{_render_names(supplied)} cannot be combined{why}. {fix}")

@@ -18,6 +18,11 @@ import pandas as pd
 
 from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import (
+    require_any_of,
+    require_one_of,
+    require_together,
+)
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.rdb import read_rdb
 
@@ -37,6 +42,8 @@ PARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_nm_query?"
 ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
 WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
+# What ``get_record`` routes, which is wider than what ``query_waterdata``
+# reaches: 'ratings' is served by ``get_ratings`` from a different endpoint.
 WATERDATA_SERVICES = [
     "peaks",
     "ratings",
@@ -393,31 +400,36 @@ def query_waterdata(
         "se_latitude_va",
     ]
 
-    if not any(key in kwargs for key in major_params + bbox_params):
-        raise TypeError(
-            "Query must specify a major filter. Pass one of "
-            f"{', '.join(major_params)}, or all four bounding-box corners "
-            f"({', '.join(bbox_params)}) together with "
+    require_any_of(
+        {name: kwargs.get(name) for name in major_params + bbox_params},
+        context="as a major filter",
+        remedy=(
+            f"Pass one of {' or '.join(major_params)}, or all four "
+            "bounding-box corners together with "
             "coordinate_format='decimal_degrees'."
-        )
-
-    elif any(key in kwargs for key in bbox_params) and not all(
-        key in kwargs for key in bbox_params
-    ):
-        absent = [key for key in bbox_params if key not in kwargs]
-        raise TypeError(
-            "A bounding box needs all four corners. Missing: "
-            f"{', '.join(absent)}. Pass them along with "
-            "coordinate_format='decimal_degrees', or drop the bounding box "
-            f"and filter with {' or '.join(major_params)} instead."
-        )
-
-    if service != "peaks":
-        raise TypeError(
-            f"Unrecognized service: {service!r}. query_waterdata serves "
-            "'peaks'. For rating tables call nwis.get_ratings(site=...), "
-            "which is served from a different endpoint."
-        )
+        ),
+        error=TypeError,
+    )
+    require_together(
+        {name: kwargs.get(name) for name in bbox_params},
+        context="to describe a bounding box",
+        remedy=(
+            "Pass them along with coordinate_format='decimal_degrees', or "
+            f"drop the bounding box and filter with {' or '.join(major_params)} "
+            "instead."
+        ),
+        error=TypeError,
+    )
+    require_one_of(
+        service,
+        ("peaks",),
+        name="service",
+        remedy=(
+            "For rating tables call nwis.get_ratings(site=...), which is "
+            "served from a different endpoint."
+        ),
+        error=TypeError,
+    )
 
     url = WATERDATA_URL + service
 
@@ -467,17 +479,12 @@ def query_waterservices(
 
     """
     major_filters = ["sites", "stateCd", "bBox", "huc", "countyCd"]
-    if not any(key in kwargs for key in major_filters):
-        raise TypeError(
-            "Query must specify a major filter. Pass one of "
-            f"{', '.join(major_filters)}."
-        )
-
-    if service not in WATERSERVICES_SERVICES:
-        raise TypeError(
-            f"Unrecognized service: {service!r}. query_waterservices serves "
-            f"{', '.join(repr(name) for name in WATERSERVICES_SERVICES)}."
-        )
+    require_any_of(
+        {name: kwargs.get(name) for name in major_filters},
+        context="as a major filter",
+        error=TypeError,
+    )
+    require_one_of(service, WATERSERVICES_SERVICES, name="service", error=TypeError)
 
     if "format" not in kwargs:
         kwargs["format"] = "rdb"
@@ -976,14 +983,16 @@ def get_record(
             f"get_record. Use {defunct_replacements[service]} instead."
         )
 
-    supported = WATERSERVICES_SERVICES + WATERDATA_SERVICES
-    if service not in supported:
-        raise TypeError(
-            f"Unrecognized service: {service!r}. get_record serves "
-            f"{', '.join(repr(name) for name in supported)}. New work should "
-            "use the dataretrieval.waterdata getters instead; NWIS is "
-            "deprecated."
-        )
+    require_one_of(
+        service,
+        WATERSERVICES_SERVICES + WATERDATA_SERVICES,
+        name="service",
+        remedy=(
+            "New work should use the dataretrieval.waterdata getters instead; "
+            "NWIS is deprecated."
+        ),
+        error=TypeError,
+    )
 
     if service == "iv":
         df, _ = get_iv(
