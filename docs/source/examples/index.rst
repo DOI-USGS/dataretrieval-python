@@ -17,9 +17,10 @@ covers a basic introduction to module functions and usage.
 
 USGS Water Data API vignettes
 -----------------------------
-These notebooks are Python ports of the new USGS Water Data API vignettes from
-the R `dataRetrieval`_ package. Each introduces a family of Water Data API
-functions and is executed against the live USGS Water Data API.
+These notebooks include Python ports of the new USGS Water Data API vignettes
+from the R `dataRetrieval`_ package and focused walkthroughs of other Water Data
+services. Each introduces a family of functions and is executed against the live
+USGS Water Data APIs.
 
 .. _dataRetrieval: https://doi-usgs.github.io/dataRetrieval/
 
@@ -31,6 +32,7 @@ functions and is executed against the live USGS Water Data API.
     USGS_WaterData_DailyStatistics_Examples
     USGS_WaterData_ContinuousData_Examples
     USGS_WaterData_ReferenceLists_Examples
+    USGS_WaterData_STAC_Examples
     USGS_NGWMN_Examples
 
 Simple uses of the ``dataretrieval`` package

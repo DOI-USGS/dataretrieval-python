@@ -12,6 +12,7 @@ from dataretrieval.ogc.chunking import parallel_chunks
 from dataretrieval.ogc.filters import FILTER_LANG
 
 # Public API exports
+from . import stac
 from .api import (
     get_channel,
     get_codes,
@@ -53,6 +54,7 @@ __all__ = [
     "SERVICES",
     "WATERDATA_SERVICES",
     "parallel_chunks",
+    "stac",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

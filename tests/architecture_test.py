@@ -431,6 +431,7 @@ _EXPLICIT_EXPORT_MODULES = (
     "wqp.py",
     "waterdata/nearest.py",
     "waterdata/ratings.py",
+    "waterdata/stac.py",
     "waterdata/stats.py",
     "waterdata/types.py",
     *_WATERDATA_FAMILIES,
