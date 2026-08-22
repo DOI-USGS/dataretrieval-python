@@ -103,12 +103,11 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
 def _properties_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     """Build the frame of feature properties, normalizing only when values nest.
 
-    ``json_normalize`` pays a per-cell Python walk to flatten nested objects,
-    but every Water Data / NGWMN collection publishes flat properties, where a
-    plain ``DataFrame`` build is ~2x faster. A nested value in *any* feature
-    must route the whole page through ``json_normalize`` so no row keeps a raw
-    dict — and dicts can only land in object-dtype columns, so scanning those
-    columns after the cheap build catches every one without a full pre-scan.
+    Flat properties — every Water Data / NGWMN collection — build with the
+    plain ``DataFrame`` constructor; a nested value in *any* feature routes
+    the whole page through ``json_normalize`` so no row keeps a raw dict.
+    Dicts can only land in object-dtype columns, so scanning those after the
+    cheap build catches every one.
     """
     properties = [feature.get("properties") or {} for feature in features]
     frame = pd.DataFrame(properties)
@@ -151,14 +150,13 @@ def _point_xy(feature: dict[str, Any]) -> Any:
 
 
 def _point_geometries(features: list[dict[str, Any]]) -> Any:
-    """Build a vectorized shapely geometry array for all-2D-point features.
+    """Build the geometry array for all-2D-point features in one vectorized
+    ``shapely.points`` call.
 
     Returns ``None`` when any feature carries a non-point (or malformed)
     geometry, so the caller falls back to ``GeoDataFrame.from_features``.
-    ``shapely.points`` over one coordinate array skips the per-feature
-    Python object walk ``from_features`` does — ~4x faster at page scale.
-    A feature with no geometry stays ``None`` in the result, matching
-    ``from_features``.
+    A feature with no geometry stays ``None`` in the result, matching the
+    fallback.
     """
     nan = float("nan")
     coords: list[Any] = []
@@ -202,8 +200,7 @@ def _spatial_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     df = _point_feature_frame(features)
     if df is None:
         df = _geo_feature_frame(features)
-    # Assignment, not ``insert``: a properties ``id`` column must be
-    # overwritten by the feature-level id.
+    # A properties ``id`` column is overwritten by the feature-level id.
     df["id"] = [f.get("id") for f in features]
     ordered = ["id", "geometry"]
     return df[ordered + [col for col in df.columns if col not in ordered]]
