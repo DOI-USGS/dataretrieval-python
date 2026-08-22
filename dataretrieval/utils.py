@@ -17,6 +17,7 @@ import warnings
 
 import pandas as pd
 
+import dataretrieval._deprecation as _deprecation
 import dataretrieval._querying as _querying
 import dataretrieval.transport.http as _transport_http
 from dataretrieval._ambient import Ambient  # noqa: F401 - compatibility re-export
@@ -59,8 +60,16 @@ def format_datetime(
     df: ``pandas.DataFrame``
         The data frame with a formatted 'datetime' column.
 
+    .. deprecated::
+        The qw services this shaped responses for are retired; nothing in the
+        package calls it. Combine the columns with :func:`pandas.to_datetime`
+        directly.
     """
-    # create a datetime index from the columns in qwdata response
+    _deprecation.warn_deprecated(
+        "`utils.format_datetime`",
+        replacement="a direct `pandas.to_datetime` over the combined columns",
+        removal=_deprecation.REMOVALS["utils.format_datetime"],
+    )
     df[tz_field] = df[tz_field].map(tz)
 
     df["datetime"] = pd.to_datetime(
