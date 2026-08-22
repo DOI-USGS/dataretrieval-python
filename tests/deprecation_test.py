@@ -70,3 +70,14 @@ def test_detail_is_appended_not_interpolated():
     assert message.endswith("Because reasons. And more.")
     assert "use 'b' instead." in message
     assert "in a future release" not in message
+
+
+def test_format_datetime_is_deprecated_with_horizon():
+    """The orphaned qw-era helper warns with the published removal date."""
+    import pandas as pd
+
+    from dataretrieval import utils
+
+    df = pd.DataFrame({"d": ["2020-01-01"], "t": ["12:00"], "z": ["EST"]})
+    with pytest.warns(DeprecationWarning, match=REMOVALS["utils.format_datetime"]):
+        utils.format_datetime(df, "d", "t", "z")

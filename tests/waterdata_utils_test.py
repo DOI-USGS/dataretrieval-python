@@ -1345,3 +1345,98 @@ def test_credential_shaped_queryables_are_rejected(name):
 )
 def test_real_queryables_still_pass_through(name):
     assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}
+
+
+# ---------------------------------------------------------------------------
+# Feature-frame fast paths (vectorized points, flat properties)
+# ---------------------------------------------------------------------------
+
+_POINT_FEATURES = [
+    {
+        "id": "f-1",
+        "properties": {"id": "wire-1", "value": "1", "site": "USGS-A"},
+        "geometry": {"type": "Point", "coordinates": [-77.1, 38.9]},
+    },
+    {
+        "id": "f-2",
+        "properties": {"id": "wire-2", "value": "2", "site": "USGS-B"},
+        "geometry": {"type": "Point", "coordinates": [-80.0, 40.0]},
+    },
+    {
+        # No geometry at all (NGWMN observation shape).
+        "id": "f-3",
+        "properties": {"id": "wire-3", "value": "3", "site": "USGS-C"},
+    },
+]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_fast_path_matches_from_features():
+    """The vectorized point build is a pure speedup: identical frame,
+    column order, CRS, and missing-geometry handling as the
+    ``from_features`` fallback — including the feature-level ``id``
+    overwriting a properties ``id`` column."""
+    fast = _shaping_module._spatial_feature_frame(_POINT_FEATURES)
+    with mock.patch.object(_shaping_module, "_point_geometries", return_value=None):
+        fallback = _shaping_module._spatial_feature_frame(_POINT_FEATURES)
+
+    pd.testing.assert_frame_equal(fast, fallback)
+    assert fast.crs == "EPSG:4326"
+    assert list(fast["id"]) == ["f-1", "f-2", "f-3"]
+    assert fast.geometry.isna().tolist() == [False, False, True]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_non_point_geometry_uses_from_features():
+    """A non-point geometry anywhere disables the vectorized build; the
+    result still carries the real geometry via ``from_features``."""
+    features = _POINT_FEATURES[:1] + [
+        {
+            "id": "f-poly",
+            "properties": {"value": "4"},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]],
+            },
+        }
+    ]
+    assert _shaping_module._point_geometries(features) is None
+    df = _shaping_module._spatial_feature_frame(features)
+    assert df.geometry.iloc[1].geom_type == "Polygon"
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_point_geometries_rejects_malformed_coordinates():
+    """3-D or non-pair coordinates disable the fast path rather than
+    building a wrong geometry."""
+    threed = [
+        {
+            "id": "f",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": [1.0, 2.0, 3.0]},
+        }
+    ]
+    assert _shaping_module._point_geometries(threed) is None
+
+
+def test_properties_frame_flat_matches_normalize():
+    """Flat properties take the plain-DataFrame path and match
+    ``json_normalize`` exactly."""
+    properties = [
+        {"a": "1", "b": None},
+        {"a": "2", "b": "x"},
+    ]
+    fast = _shaping_module._properties_frame([{"properties": p} for p in properties])
+    pd.testing.assert_frame_equal(fast, pd.json_normalize(properties, sep="_"))
+
+
+def test_properties_frame_nested_still_normalizes():
+    """One nested value anywhere routes the whole page through
+    ``json_normalize`` so no row keeps a raw dict."""
+    properties = [
+        {"a": "1", "nested": None},
+        {"a": "2", "nested": {"x": "y"}},
+    ]
+    df = _shaping_module._properties_frame([{"properties": p} for p in properties])
+    assert "nested_x" in df.columns
+    assert not any(isinstance(v, dict) for v in df.to_numpy().ravel())
