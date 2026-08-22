@@ -18,6 +18,7 @@ from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
 from dataretrieval.combining import (
     _QUOTA_HEADER,
+    _drop_body,
     _merge_response,
     _safe_elapsed,
 )
@@ -117,11 +118,9 @@ async def paginate(
         nrows = len(frame)
         seen: set[Any] = set()
         report_page(response, frame)
-        # The first page's body is parsed and never read again, but the
-        # response object must survive to the final merge (status, request,
-        # URL). Free the body now rather than holding one page of JSON for
-        # the whole walk.
-        initial_response._content = b""
+        # Parsed and never read again; free the body now rather than pinning
+        # one page of JSON for the whole walk.
+        _drop_body(initial_response)
 
         while (
             cursor is not None

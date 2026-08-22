@@ -1405,10 +1405,10 @@ def test_spatial_non_point_geometry_uses_from_features():
     assert df.geometry.iloc[1].geom_type == "Polygon"
 
 
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
 def test_point_geometries_rejects_malformed_coordinates():
     """3-D or non-pair coordinates disable the fast path rather than
     building a wrong geometry."""
-    pytest.importorskip("geopandas")
     threed = [
         {
             "id": "f",
@@ -1426,7 +1426,7 @@ def test_properties_frame_flat_matches_normalize():
         {"a": "1", "b": None},
         {"a": "2", "b": "x"},
     ]
-    fast = _shaping_module._properties_frame(properties)
+    fast = _shaping_module._properties_frame([{"properties": p} for p in properties])
     pd.testing.assert_frame_equal(fast, pd.json_normalize(properties, sep="_"))
 
 
@@ -1437,6 +1437,6 @@ def test_properties_frame_nested_still_normalizes():
         {"a": "1", "nested": None},
         {"a": "2", "nested": {"x": "y"}},
     ]
-    df = _shaping_module._properties_frame(properties)
+    df = _shaping_module._properties_frame([{"properties": p} for p in properties])
     assert "nested_x" in df.columns
     assert not any(isinstance(v, dict) for v in df.to_numpy().ravel())
