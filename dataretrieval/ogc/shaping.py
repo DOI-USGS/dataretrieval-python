@@ -22,6 +22,7 @@ from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 
 try:
     import geopandas as gpd
+    import shapely
 
     GEOPANDAS = True
 except ImportError:
@@ -99,20 +100,94 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     )
 
 
+def _properties_frame(properties: list[dict[str, Any]]) -> pd.DataFrame:
+    """Build the properties frame, normalizing only when values nest.
+
+    ``json_normalize`` pays a per-cell Python walk to flatten nested objects,
+    but every Water Data / NGWMN collection publishes flat properties, where a
+    plain ``DataFrame`` build is ~2x faster. The guard must scan every row:
+    a nested value in *any* feature means a plain build would leave raw dicts
+    in rows that ``json_normalize`` would have flattened into columns.
+    """
+    if any(isinstance(value, dict) for row in properties for value in row.values()):
+        return pd.json_normalize(properties, sep="_")
+    return pd.DataFrame(properties)
+
+
 def _plain_feature_frame(
     features: list[dict[str, Any]], *, include_geometry: bool
 ) -> pd.DataFrame:
     """Build a plain DataFrame from GeoJSON features."""
     properties = [feature.get("properties") or {} for feature in features]
-    df = pd.json_normalize(properties, sep="_")
+    df = _properties_frame(properties)
     df["id"] = [feature.get("id") for feature in features]
     if include_geometry:
         _attach_coordinates(df, features)
     return df
 
 
+#: Sentinel for a geometry the vectorized point build can't represent.
+_NON_POINT = object()
+
+
+def _point_xy(feature: dict[str, Any]) -> Any:
+    """One feature's 2-D point coordinates: ``None`` when it has no
+    geometry, :data:`_NON_POINT` for anything else the fast path can't build.
+    """
+    geometry = feature.get("geometry")
+    if geometry is None:
+        return None
+    xy = geometry.get("coordinates")
+    if (
+        geometry.get("type") == "Point"
+        and isinstance(xy, (list, tuple))
+        and len(xy) == 2
+    ):
+        return xy
+    return _NON_POINT
+
+
+def _point_geometries(features: list[dict[str, Any]]) -> Any:
+    """Build a vectorized shapely geometry array for all-2D-point features.
+
+    Returns ``None`` when any feature carries a non-point (or malformed)
+    geometry, so the caller falls back to ``GeoDataFrame.from_features``.
+    ``shapely.points`` over one coordinate array skips the per-feature
+    Python object walk ``from_features`` does — ~4x faster at page scale.
+    A feature with no geometry stays ``None`` in the result, matching
+    ``from_features``.
+    """
+    coords = [_point_xy(feature) for feature in features]
+    if any(xy is _NON_POINT for xy in coords):
+        return None
+    nan = float("nan")
+    try:
+        points = shapely.points([xy if xy is not None else (nan, nan) for xy in coords])
+    except (TypeError, ValueError):
+        return None
+    missing = [index for index, xy in enumerate(coords) if xy is None]
+    if missing:
+        points[missing] = None
+    return points
+
+
 def _spatial_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     """Build a GeoDataFrame from GeoJSON features with ``id`` first."""
+    points = _point_geometries(features)
+    if points is not None:
+        frame = _properties_frame(
+            [feature.get("properties") or {} for feature in features]
+        )
+        # A ``geometry`` *property* would collide with the geometry column
+        # this constructor names; no known collection has one, so take the
+        # slow path rather than guess a resolution here.
+        if "geometry" not in frame.columns:
+            df = gpd.GeoDataFrame(frame, geometry=points, crs=_CRS)
+            # Assignment, not ``insert``: a properties ``id`` column must be
+            # overwritten by the feature-level id, as the fallback path does.
+            df["id"] = [f.get("id") for f in features]
+            ordered = ["id", "geometry"]
+            return df[ordered + [col for col in df.columns if col not in ordered]]
     df = _geo_feature_frame(features)
     df["id"] = [f.get("id") for f in features]
     return df[["id"] + [col for col in df.columns if col != "id"]]
