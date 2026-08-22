@@ -117,6 +117,11 @@ async def paginate(
         nrows = len(frame)
         seen: set[Any] = set()
         report_page(response, frame)
+        # The first page's body is parsed and never read again, but the
+        # response object must survive to the final merge (status, request,
+        # URL). Free the body now rather than holding one page of JSON for
+        # the whole walk.
+        initial_response._content = b""
 
         while (
             cursor is not None

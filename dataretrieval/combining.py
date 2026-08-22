@@ -111,6 +111,11 @@ def _merge_response(
     (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
     fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
+    # Drop the body: an aggregate's content would be one arbitrary page's
+    # bytes (the base's), and holding it keeps every chunk's first page
+    # resident for the whole call — the frames are the product, not the raw
+    # JSON. Cleared on the copy only; ``base`` keeps its body.
+    merged._content = b""
     merged.headers = httpx.Headers(headers_from.headers)
     merged.elapsed = elapsed
     if url is not None:
