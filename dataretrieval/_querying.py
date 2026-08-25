@@ -174,18 +174,24 @@ def _get_with_retry(
 def _query_with_retry(
     url: str,
     payload: dict[str, Any],
-    delimiter: str = ",",
+    delimiter: str | None = ",",
     ssl_check: bool = True,
     *,
     retry_policy: RetryPolicy | None = None,
     adapter: str | None = None,
 ) -> httpx.Response:
-    """Send an active-service query with bounded transient retry by default."""
+    """Send an active-service query with bounded transient retry by default.
 
-    for key, value in payload.items():
-        payload[key] = to_str(value, delimiter)
+    When ``delimiter`` is ``None``, iterable values pass through for ``httpx``
+    to encode as repeated query parameters.
+    """
+
+    if delimiter is not None:
+        for key, value in payload.items():
+            payload[key] = to_str(value, delimiter)
     # httpx serializes None params as ``foo=``; USGS rejects with 400.
-    # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
+    # Drop them. (With a delimiter, ``to_str`` also returns None for
+    # non-iterable scalars like bools.)
     payload = {k: v for k, v in payload.items() if v is not None}
 
     user_agent = {"user-agent": USER_AGENT}
