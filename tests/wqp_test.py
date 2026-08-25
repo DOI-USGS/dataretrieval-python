@@ -121,6 +121,34 @@ def test_get_results_WQX3(httpx_mock):
     assert df["Activity_StartDateTime"].notna().all()
 
 
+def test_wqx3_get_results_repeats_list_query_parameters(httpx_mock):
+    """WQX3 array filters use repeated keys rather than semicolons."""
+    with open("tests/data/wqp3_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    get_results(
+        legacy=False,
+        characteristicName=["Carbon", "Total carbon"],
+        siteType=["Stream", "River/Stream"],
+        dataProfile="basicPhysChem",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("characteristicName") == ["Carbon", "Total carbon"]
+    assert params.get_list("siteType") == ["Stream", "River/Stream"]
+
+
+def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
+    """The WQX3 serializer also applies to metadata search endpoints."""
+    with open("tests/data/wqp_sites.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    what_sites(legacy=False, siteType=["Stream", "River/Stream"])
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("siteType") == ["Stream", "River/Stream"]
+
+
 @pytest.mark.parametrize(
     ("builder", "service", "expected", "warning"),
     [

@@ -138,8 +138,9 @@ def get_results(
         US state FIPS code (Example: Illinois is "US:17").
     countycode : string
         US county FIPS code.
-    huc : string
-        Eight-digit hydrologic unit (HUC), delimited by semicolons.
+    huc : string or iterable of strings
+        Eight-digit hydrologic unit (HUC). Iterable values are encoded as
+        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -148,8 +149,9 @@ def get_results(
         Radial-search central longitude in WGS84 decimal degrees.
     within : string
         Radial-search distance in decimal miles.
-    pCode : string
-        Five-digit USGS parameter code, delimited by semicolons.
+    pCode : string or iterable of strings
+        Five-digit USGS parameter code. Iterable values are encoded as
+        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
         NWIS only.
     startDateLo : string
         Date of the earliest desired data-collection activity,
@@ -157,9 +159,11 @@ def get_results(
     startDateHi : string
         Date of the last desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
-    characteristicName : string
-        One or more case-sensitive characteristic names, separated by
-        semicolons (https://www.waterqualitydata.us/public_srsnames/).
+    characteristicName : string or iterable of strings
+        One or more case-sensitive characteristic names
+        (https://www.waterqualitydata.us/public_srsnames/). Iterable values are
+        encoded as repeated parameters for WQX3 and semicolon-delimited for
+        legacy WQP.
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
@@ -215,8 +219,9 @@ def get_results(
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
+    delimiter = ";" if legacy else None
     response = _query_with_retry(
-        url, kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+        url, kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
 
     df = _read_wqp_csv(response.text)
@@ -241,13 +246,15 @@ def _what(
     """
     kwargs = _check_kwargs(kwargs)
 
+    use_wqx3 = service in services_wqx3 and not legacy
     if service in services_wqx3:
-        url = wqp_url(service) if legacy else wqx3_url(service)
+        url = wqx3_url(service) if use_wqx3 else wqp_url(service)
     else:
         url = _legacy_only_url(service, legacy=legacy)
 
+    delimiter = None if use_wqx3 else ";"
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
     return df, WQP_Metadata(response, **kwargs)
