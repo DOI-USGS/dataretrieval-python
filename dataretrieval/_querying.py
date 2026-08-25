@@ -187,11 +187,8 @@ def _query_with_retry(
     """
 
     if delimiter is not None:
-        for key, value in payload.items():
-            payload[key] = to_str(value, delimiter)
-    # httpx serializes None params as ``foo=``; USGS rejects with 400.
-    # Drop them. (With a delimiter, ``to_str`` also returns None for
-    # non-iterable scalars like bools.)
+        payload = {k: to_str(v, delimiter) for k, v in payload.items()}
+    # httpx serializes None params as ``foo=``; USGS rejects with 400. Drop them.
     payload = {k: v for k, v in payload.items() if v is not None}
 
     user_agent = {"user-agent": USER_AGENT}

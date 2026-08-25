@@ -129,13 +129,13 @@ def test_wqx3_get_results_repeats_list_query_parameters(httpx_mock):
     get_results(
         legacy=False,
         characteristicName=["Carbon", "Total carbon"],
-        siteType=["Stream", "River/Stream"],
+        siteType=["Stream", "Well"],
         dataProfile="basicPhysChem",
     )
 
     params = httpx_mock.get_requests()[-1].url.params
     assert params.get_list("characteristicName") == ["Carbon", "Total carbon"]
-    assert params.get_list("siteType") == ["Stream", "River/Stream"]
+    assert params.get_list("siteType") == ["Stream", "Well"]
 
 
 def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
@@ -143,10 +143,10 @@ def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
     with open("tests/data/wqp_sites.txt") as text:
         httpx_mock.add_response(method="GET", text=text.read())
 
-    what_sites(legacy=False, siteType=["Stream", "River/Stream"])
+    what_sites(legacy=False, siteType=["Stream", "Well"])
 
     params = httpx_mock.get_requests()[-1].url.params
-    assert params.get_list("siteType") == ["Stream", "River/Stream"]
+    assert params.get_list("siteType") == ["Stream", "Well"]
 
 
 @pytest.mark.parametrize(

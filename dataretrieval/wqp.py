@@ -206,10 +206,12 @@ def get_results(
         valid_profiles = result_profiles_legacy
         kind = "legacy"
         url = wqp_url("Result")
+        delimiter = ";"
     else:
         valid_profiles = result_profiles_wqx3
         kind = "WQX3.0"
         url = wqx3_url("Result")
+        delimiter = None
 
     profile = kwargs.get("dataProfile")
     if profile is not None:
@@ -219,7 +221,6 @@ def get_results(
     if legacy is not True and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
-    delimiter = ";" if legacy else None
     response = _query_with_retry(
         url, kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
@@ -246,13 +247,16 @@ def _what(
     """
     kwargs = _check_kwargs(kwargs)
 
-    use_wqx3 = service in services_wqx3 and not legacy
-    if service in services_wqx3:
-        url = wqx3_url(service) if use_wqx3 else wqp_url(service)
-    else:
+    if service not in services_wqx3:
         url = _legacy_only_url(service, legacy=legacy)
+        delimiter = ";"
+    elif legacy:
+        url = wqp_url(service)
+        delimiter = ";"
+    else:
+        url = wqx3_url(service)
+        delimiter = None
 
-    delimiter = None if use_wqx3 else ";"
     response = _query_with_retry(
         url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
