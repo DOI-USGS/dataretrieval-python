@@ -149,7 +149,8 @@ raise states the problem and then the move that fixes it, in that order.
   (`skip_geometry` -> `skipGeometry`, `filter_lang` -> `filter-lang`); tests
   assert exact URLs and query params.
 - Multi-value OGC params are comma-joined GETs, except `monitoring-locations`
-  which POSTs CQL2 JSON. The OGC edge WAF caps total request bytes (URL + body)
+  and `combined-metadata`, which POST CQL2 JSON because comma-joined values
+  return no rows. The OGC edge WAF caps total request bytes (URL + body)
   at ~8200, so `dataretrieval/ogc/chunking.py` auto-splits oversized queries
   across chunks (both GET and POST paths); preserve this when adding new
   list-shaped kwargs.

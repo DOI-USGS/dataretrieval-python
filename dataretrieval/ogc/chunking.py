@@ -155,7 +155,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
       rows the un-fanned call would return.
     - Resumability: a single request either fully succeeds or fully fails,
       but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
-      raise a resumable :class:`~dataretrieval.ogc.interruptions.ChunkInterrupted`
+      raise a resumable :class:`~dataretrieval.interruptions.ChunkInterrupted`
       (or ``QuotaExhausted``) carrying the completed chunks. Finish the
       call with ``exc.call.resume()``.
     - Cross-chunk de-duplication keys on the feature ``id``; features

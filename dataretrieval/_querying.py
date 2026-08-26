@@ -171,22 +171,37 @@ def _get_with_retry(
         raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
 
 
+def _materialize_query_iterables(payload: dict[str, Any]) -> dict[str, Any]:
+    """Copy a query payload, materializing non-string iterables as lists."""
+    return {
+        key: list(value)
+        if isinstance(value, Iterable) and not isinstance(value, (str, list))
+        else value
+        for key, value in payload.items()
+    }
+
+
 def _query_with_retry(
     url: str,
     payload: dict[str, Any],
-    delimiter: str = ",",
+    delimiter: str | None = ",",
     ssl_check: bool = True,
     *,
     retry_policy: RetryPolicy | None = None,
     adapter: str | None = None,
 ) -> httpx.Response:
-    """Send an active-service query with bounded transient retry by default."""
+    """Send an active-service query with bounded transient retry by default.
 
-    for key, value in payload.items():
-        payload[key] = to_str(value, delimiter)
-    # httpx serializes None params as ``foo=``; USGS rejects with 400.
-    # Drop them. (``to_str`` returns None for non-iterable scalars like bools.)
-    payload = {k: v for k, v in payload.items() if v is not None}
+    When ``delimiter`` is ``None``, iterable values are materialized for
+    ``httpx`` to encode as repeated query parameters. Strings remain scalar.
+    """
+
+    if delimiter is None:
+        payload = _materialize_query_iterables(payload)
+    else:
+        payload = {key: to_str(value, delimiter) for key, value in payload.items()}
+    # httpx serializes None params as ``foo=``; USGS rejects with 400. Drop them.
+    payload = {key: value for key, value in payload.items() if value is not None}
 
     user_agent = {"user-agent": USER_AGENT}
 

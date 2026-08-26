@@ -29,7 +29,7 @@ from dataretrieval.configuration import (
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.exceptions import DataCurrencyWarning
 
-from ._querying import _query_with_retry
+from ._querying import _materialize_query_iterables, _query_with_retry
 from ._wqx import _attach_datetime_columns
 
 __all__ = [
@@ -167,13 +167,20 @@ def _query_wqp(
     kwargs = _check_kwargs(kwargs)
     kwargs = _resolve_profile(service, legacy, kwargs)
 
-    if service in services_wqx3:
-        url = wqp_url(service) if legacy else wqx3_url(service)
-    else:
+    # WQX3 rejects semicolon-joined array filters, so only the legacy
+    # interface gets a delimiter; delimiter=None repeats the key instead.
+    if service not in services_wqx3:
         url = _legacy_only_url(service, legacy=legacy)
+        delimiter = ";"
+    elif legacy:
+        url = wqp_url(service)
+        delimiter = ";"
+    else:
+        url = wqx3_url(service)
+        delimiter = None
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
     # Only get_results documents the appended DateTime columns and the
@@ -217,8 +224,8 @@ def get_results(
         US state FIPS code (Example: Illinois is "US:17").
     countycode : string
         US county FIPS code.
-    huc : string
-        Eight-digit hydrologic unit (HUC), delimited by semicolons.
+    huc : string or iterable of strings
+        Eight-digit hydrologic unit (HUC).
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -227,18 +234,17 @@ def get_results(
         Radial-search central longitude in WGS84 decimal degrees.
     within : string
         Radial-search distance in decimal miles.
-    pCode : string
-        Five-digit USGS parameter code, delimited by semicolons.
-        NWIS only.
+    pCode : string or iterable of strings
+        Five-digit USGS parameter code. NWIS only.
     startDateLo : string
         Date of the earliest desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
     startDateHi : string
         Date of the last desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
-    characteristicName : string
-        One or more case-sensitive characteristic names, separated by
-        semicolons (https://www.waterqualitydata.us/public_srsnames/).
+    characteristicName : string or iterable of strings
+        One or more case-sensitive characteristic names
+        (https://www.waterqualitydata.us/public_srsnames/).
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
@@ -762,7 +768,9 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
     getter now that ``configure(Configuration(api_key=...))`` is the spelling,
     and this is the adapter with the widest passthrough -- ten getters, whose
-    filter names the portal rather than this package defines.
+    filter names the portal rather than this package defines. The returned
+    payload materializes non-string iterables as lists so one-shot iterators
+    remain reusable by both request serialization and response metadata.
     """
     refuse_credential_keywords(kwargs)
 
@@ -784,7 +792,7 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     else:
         kwargs["mimeType"] = "csv"
 
-    return kwargs
+    return _materialize_query_iterables(kwargs)
 
 
 def _warn_wqx3_use() -> None:
