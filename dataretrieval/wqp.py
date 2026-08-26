@@ -13,7 +13,7 @@ from __future__ import annotations
 import warnings
 from dataclasses import dataclass
 from io import StringIO
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple
 
 import pandas as pd
 
@@ -75,38 +75,49 @@ services_legacy = [
     "Station",
 ]
 
-# Accepted dataProfile values for the endpoints that support the parameter.
-# An absent endpoint/profile pair means dataProfile is unsupported there.
-_PROFILE_OPTIONS: dict[tuple[str, bool], list[str]] = {
-    ("Result", True): result_profiles_legacy,
-    ("Result", False): result_profiles_wqx3,
-    ("Activity", True): activity_profiles_legacy,
+
+class _ProfileRule(NamedTuple):
+    """The ``dataProfile`` contract for one ``(service, legacy)`` pair."""
+
+    valid: list[str]
+    default: str | None = None
+
+
+# The dataProfile vocabulary, and any default, per service and profile.
+# An absent key means the service does not accept dataProfile at all.
+_PROFILE_RULES: dict[tuple[str, bool], _ProfileRule] = {
+    ("Result", True): _ProfileRule(result_profiles_legacy),
+    ("Result", False): _ProfileRule(result_profiles_wqx3, default="fullPhysChem"),
+    ("Activity", True): _ProfileRule(activity_profiles_legacy),
 }
 
 
-def _validate_profile(endpoint: str, legacy: bool, kwargs: dict[str, Any]) -> None:
-    """Validate ``dataProfile`` for a WQP endpoint and apply its default."""
+def _resolve_profile(
+    service: str, legacy: bool, kwargs: dict[str, Any]
+) -> dict[str, Any]:
+    """Validate ``dataProfile`` for a WQP service and apply the service default."""
+    rule = _PROFILE_RULES.get((service, legacy))
     profile = kwargs.get("dataProfile")
-    valid = _PROFILE_OPTIONS.get((endpoint, legacy))
 
-    if valid is None and profile is not None:
+    if profile is None:
+        if rule is not None and rule.default is not None:
+            kwargs["dataProfile"] = rule.default
+        return kwargs
+
+    if rule is None:
         raise ValueError(
-            f"The {endpoint!r} endpoint does not accept a dataProfile parameter. "
+            f"The {service!r} service does not accept a dataProfile parameter. "
             f"Remove dataProfile={profile!r} from your call."
         )
 
-    if valid is not None and profile is not None:
-        kind = "legacy" if legacy else "WQX3.0"
-        require_one_of(
-            profile,
-            valid,
-            name="dataProfile",
-            context=f"{kind} {endpoint} endpoint",
-        )
-
-    # WQX3 Result defaults to fullPhysChem when no profile is given.
-    if endpoint == "Result" and not legacy and profile is None:
-        kwargs["dataProfile"] = "fullPhysChem"
+    kind = "legacy" if legacy else "WQX3.0"
+    require_one_of(
+        profile,
+        rule.valid,
+        name="dataProfile",
+        context=f"{kind} {service} service",
+    )
+    return kwargs
 
 
 def _is_code_column(name: str) -> bool:
@@ -138,33 +149,36 @@ def _read_wqp_csv(text: str) -> DataFrame:
 
 
 def _query_wqp(
-    endpoint: str,
+    service: str,
     *,
     ssl_check: bool,
     legacy: bool,
     **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
-    """Run one WQP getter query against the selected endpoint.
+    """Run one WQP getter query against the selected service.
 
-    Endpoints with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
+    Services with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
     :func:`wqx3_url` when ``legacy=False`` and :func:`wqp_url` otherwise.
-    Legacy-only endpoints route through :func:`_legacy_only_url`, which warns
-    and falls back to the legacy profile. The CSV response is parsed via
+    Legacy-only services route through :func:`_legacy_only_url`, which warns
+    and falls back to the legacy profile. ``dataProfile`` is validated against
+    :data:`_PROFILE_RULES`, and the CSV response is parsed via
     :func:`_read_wqp_csv`.
     """
     kwargs = _check_kwargs(kwargs)
-    _validate_profile(endpoint, legacy, kwargs)
+    kwargs = _resolve_profile(service, legacy, kwargs)
 
-    if endpoint in services_wqx3:
-        url = wqp_url(endpoint) if legacy else wqx3_url(endpoint)
+    if service in services_wqx3:
+        url = wqp_url(service) if legacy else wqx3_url(service)
     else:
-        url = _legacy_only_url(endpoint, legacy=legacy)
+        url = _legacy_only_url(service, legacy=legacy)
 
     response = _query_with_retry(
         url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
-    if endpoint == "Result":
+    # Only get_results documents the appended DateTime columns and the
+    # activity-start sort, so the other services keep their parsed shape.
+    if service == "Result":
         df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response, **kwargs)
 

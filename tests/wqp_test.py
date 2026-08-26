@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 from pandas import DataFrame
+from pandas.testing import assert_frame_equal
 
 import dataretrieval
 import dataretrieval.wqp as wqp
@@ -10,6 +11,7 @@ from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.wqp import (
     WQP_Metadata,
     _check_kwargs,
+    _read_wqp_csv,
     get_results,
     what_activities,
     what_activity_metrics,
@@ -121,7 +123,7 @@ def test_get_results_WQX3(httpx_mock):
     assert df["Activity_StartDateTime"].notna().all()
 
 
-@pytest.mark.parametrize("profile", ["activity", "activityAll"])
+@pytest.mark.parametrize("profile", wqp.activity_profiles_legacy)
 def test_what_activities_accepts_documented_legacy_profiles(httpx_mock, profile):
     """Accept both Activity profiles published by the WQP OpenAPI document."""
     httpx_mock.add_response(method="GET", text="ActivityIdentifier\nA\n")
@@ -131,28 +133,6 @@ def test_what_activities_accepts_documented_legacy_profiles(httpx_mock, profile)
 
     assert df["ActivityIdentifier"].tolist() == ["A"]
     assert httpx_mock.get_requests()[-1].url.params["dataProfile"] == profile
-
-
-def test_what_activities_preserves_columns_and_row_order(httpx_mock):
-    """Sharing request plumbing must not change an established return shape."""
-    columns = [
-        "ActivityIdentifier",
-        "ActivityStartDate",
-        "ActivityStartTime/Time",
-        "ActivityStartTime/TimeZoneCode",
-    ]
-    text = (
-        ",".join(columns)
-        + "\nlater,2024-02-01,10:00:00,CST"
-        + "\nearlier,2024-01-01,10:00:00,CST\n"
-    )
-    httpx_mock.add_response(method="GET", text=text)
-
-    with pytest.warns(DataCurrencyWarning):
-        df, _ = what_activities()
-
-    assert df.columns.tolist() == columns
-    assert df["ActivityIdentifier"].tolist() == ["later", "earlier"]
 
 
 @pytest.mark.parametrize(
@@ -279,6 +259,10 @@ def test_what_query(httpx_mock, func, service, fixture, profile_column):
     assert type(df) is DataFrame
     assert not df.empty
     assert profile_column in df.columns
+    # Only get_results post-processes: the shared funnel must hand back each
+    # what_* response exactly as parsed, with no DateTime columns and no sort.
+    with open(f"tests/data/{fixture}") as text:
+        assert_frame_equal(df, _read_wqp_csv(text.read()))
     _assert_wqp_metadata(md, request_url)
 
 
