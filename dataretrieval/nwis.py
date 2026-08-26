@@ -238,12 +238,23 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
 
     Notes
     -----
+    An empty frame with no ``peak_dt`` column is returned unchanged, so that
+    an empty peaks response reaches :func:`format_response`'s empty-frame path
+    rather than raising ``KeyError``.
+
     Peaks whose day or month is unknown are dated to the start of the known
     period rather than discarded; see :func:`_peak_datetimes`. Rows with no
     ``peak_dt`` at all are dropped, since they cannot be placed on the
     datetime index :func:`format_response` builds.
 
     """
+    if df.empty and "peak_dt" not in df.columns:
+        # An empty response parses to a column-less frame; return it so
+        # format_response's empty-frame path handles it like every other
+        # service. A non-empty frame missing peak_dt is malformed, not empty,
+        # and still raises.
+        return df
+
     df["datetime"] = _peak_datetimes(df.pop("peak_dt"))
     df.dropna(subset=["datetime"], inplace=True)
     return df

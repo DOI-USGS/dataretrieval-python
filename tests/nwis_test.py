@@ -11,8 +11,10 @@ import pytest
 from dataretrieval import nwis
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.nwis import (
+    _NWIS_RDB_DTYPES,
     NWIS_Metadata,
     _read_rdb,
+    format_response,
     get_discharge_measurements,
     get_gwlevels,
     get_iv,
@@ -22,6 +24,7 @@ from dataretrieval.nwis import (
     get_water_use,
     preformat_peaks_response,
 )
+from dataretrieval.rdb import read_rdb
 
 START_DATE = "2018-01-24"
 END_DATE = "2018-01-25"
@@ -318,11 +321,12 @@ class TestMetaData:
 
 
 class TestReadRdb:
-    """Tests for the NWIS-specific _read_rdb wrapper.
+    """Tests for the NWIS-specific parse-then-format path.
 
     The format-agnostic parser is exercised in tests/rdb_test.py; this
-    class pins the wrapper-specific contract — that an empty parser
-    result flows through format_response without crashing (issue #171).
+    class pins the NWIS-specific contract — that an empty parser result
+    flows through format_response without crashing (issue #171), on the
+    plain arm via _read_rdb and on the peaks arm via format_response.
     """
 
     def test_no_sites_flows_through_format_response(self):
@@ -339,6 +343,43 @@ class TestReadRdb:
         df = _read_rdb(no_sites_rdb)
         assert isinstance(df, pd.DataFrame)
         assert df.empty
+
+    def test_no_peaks_flows_through_format_response(self):
+        """``format_response(service="peaks")`` must tolerate an empty frame.
+
+        The peaks arm runs ``preformat_peaks_response`` before the
+        "datetime not in columns" check, and that function popped ``peak_dt``
+        unconditionally, so a column-less frame raised ``KeyError`` where every
+        other service returned an empty frame (issue #171's contract).
+
+        Both functions are public API, so any caller parsing a peaks RDB
+        reaches this. It is not dead code guarded by ``NoSitesError``: that
+        check in ``_querying`` fires only on a body starting "No sites/data",
+        which is what the live service happens to send today -- a comment-only
+        RDB reaches the guarded line instead.
+        """
+        no_peaks_rdb = (
+            "# //Output-Format: RDB\n"
+            "# //Response-Status: OK\n"
+            "# //Response-Message: No sites found matching all criteria\n"
+        )
+        # Mirror get_discharge_peaks: raw read_rdb with the NWIS dtype hints,
+        # then the peaks-specific format_response.
+        df = read_rdb(no_peaks_rdb, dtypes=_NWIS_RDB_DTYPES)
+        df = format_response(df, service="peaks")
+        assert isinstance(df, pd.DataFrame)
+        assert df.empty
+
+    def test_malformed_peaks_frame_still_raises(self):
+        """Only an *empty* peaks frame is a legitimate empty result. A
+        non-empty frame with no ``peak_dt`` column is a malformed response --
+        a truncated or altered RDB header -- and must stay loud rather than be
+        returned silently without its datetime index.
+        """
+        df = pd.DataFrame({"peak_va": [1000]})
+
+        with pytest.raises(KeyError, match="peak_dt"):
+            format_response(df, service="peaks")
 
 
 class TestGetRecordDispatch:
