@@ -466,6 +466,42 @@ class Test_to_state:
             to_state(["WI", "XX"])
 
 
+class TestTerritories:
+    """The five territories are real ANSI/FIPS entities, and every service this
+    package reaches carries data for them."""
+
+    @pytest.mark.parametrize(
+        ("value", "name", "postal", "fips"),
+        [
+            ("Puerto Rico", "Puerto Rico", "PR", "72"),
+            ("PR", "Puerto Rico", "PR", "72"),
+            ("72", "Puerto Rico", "PR", "72"),
+            ("US:72", "Puerto Rico", "PR", "72"),
+            ("Guam", "Guam", "GU", "66"),
+            ("VI", "US Virgin Islands", "VI", "78"),
+            ("60", "American Samoa", "AS", "60"),
+            ("MP", "Northern Mariana Islands", "MP", "69"),
+        ],
+    )
+    def test_every_encoding_resolves(self, value, name, postal, fips):
+        from dataretrieval.codes.states import to_state
+
+        assert to_state(value, "name") == name
+        assert to_state(value, "postal") == postal
+        assert to_state(value, "fips") == fips
+
+    def test_the_ngwmn_shim_routes_a_territory_to_each_queryable(self):
+        """``sites`` filters on ``state_name``, ``providers`` on ``state``."""
+        from dataretrieval.codes.states import apply_state
+
+        assert apply_state({"state": "Puerto Rico"}, to="name", into="state_name") == {
+            "state_name": "Puerto Rico"
+        }
+        assert apply_state({"state": "Puerto Rico"}, to="postal", into="state") == {
+            "state": "PR"
+        }
+
+
 def test_retrying_get_maps_invalid_url(monkeypatch):
     """Direct active-service GETs do not leak raw httpx InvalidURL errors."""
     import httpx
