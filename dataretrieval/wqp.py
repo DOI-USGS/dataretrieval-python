@@ -221,9 +221,8 @@ def get_results(
         US state FIPS code (Example: Illinois is "US:17").
     countycode : string
         US county FIPS code.
-    huc : string or iterable of strings
-        Eight-digit hydrologic unit (HUC). Iterable values are encoded as
-        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
+    huc : string or list of strings
+        Eight-digit hydrologic unit (HUC).
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -232,21 +231,17 @@ def get_results(
         Radial-search central longitude in WGS84 decimal degrees.
     within : string
         Radial-search distance in decimal miles.
-    pCode : string or iterable of strings
-        Five-digit USGS parameter code. Iterable values are encoded as
-        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
-        NWIS only.
+    pCode : string or list of strings
+        Five-digit USGS parameter code.
     startDateLo : string
         Date of the earliest desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
     startDateHi : string
         Date of the last desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
-    characteristicName : string or iterable of strings
+    characteristicName : string or list of strings
         One or more case-sensitive characteristic names
-        (https://www.waterqualitydata.us/public_srsnames/). Iterable values are
-        encoded as repeated parameters for WQX3 and semicolon-delimited for
-        legacy WQP.
+        (https://www.waterqualitydata.us/public_srsnames/).
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
