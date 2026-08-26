@@ -61,7 +61,7 @@ _WQP_BASE_URL = "https://www.waterqualitydata.us"
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
 result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
-activity_profiles_legacy = ["activityAll"]
+activity_profiles_legacy = ["activity", "activityAll"]
 services_wqx3 = ["Activity", "Result", "Station"]
 services_legacy = [
     "Activity",
@@ -75,50 +75,37 @@ services_legacy = [
     "Station",
 ]
 
-# Valid dataProfile values per service, keyed by (service, legacy: bool).
-# None means the service does not accept a dataProfile parameter at all.
-_PROFILES: dict[tuple[str, bool], list[str] | None] = {
+# Accepted dataProfile values for the endpoints that support the parameter.
+# An absent endpoint/profile pair means dataProfile is unsupported there.
+_PROFILE_OPTIONS: dict[tuple[str, bool], list[str]] = {
     ("Result", True): result_profiles_legacy,
     ("Result", False): result_profiles_wqx3,
     ("Activity", True): activity_profiles_legacy,
-    ("Activity", False): None,
-    ("Station", True): None,
-    ("Station", False): None,
-    ("Organization", True): None,
-    ("Project", True): None,
-    ("ActivityMetric", True): None,
-    ("BiologicalMetric", True): None,
-    ("ProjectMonitoringLocationWeighting", True): None,
-    ("ResultDetectionQuantitationLimit", True): None,
 }
 
 
-def _validate_profile(service: str, legacy: bool, kwargs: dict[str, Any]) -> None:
-    """Check that ``dataProfile`` is valid for *service*, or absent when unsupported.
-
-    Raises ``ValueError`` if the service does not accept profiles and one was
-    passed, or if the profile is not in the service's known list. When the
-    service is Result with ``legacy=False`` and no profile is given, defaults
-    to ``'fullPhysChem'`` (mutates *kwargs* in place).
-    """
+def _validate_profile(endpoint: str, legacy: bool, kwargs: dict[str, Any]) -> None:
+    """Validate ``dataProfile`` for a WQP endpoint and apply its default."""
     profile = kwargs.get("dataProfile")
-    key = (service, legacy)
-    valid = _PROFILES.get(key)
+    valid = _PROFILE_OPTIONS.get((endpoint, legacy))
 
     if valid is None and profile is not None:
         raise ValueError(
-            f"The {service!r} service does not accept a dataProfile parameter. "
+            f"The {endpoint!r} endpoint does not accept a dataProfile parameter. "
             f"Remove dataProfile={profile!r} from your call."
         )
 
     if valid is not None and profile is not None:
         kind = "legacy" if legacy else "WQX3.0"
         require_one_of(
-            profile, valid, name="dataProfile", context=f"{kind} {service}"
+            profile,
+            valid,
+            name="dataProfile",
+            context=f"{kind} {endpoint} endpoint",
         )
 
     # WQX3 Result defaults to fullPhysChem when no profile is given.
-    if service == "Result" and not legacy and profile is None:
+    if endpoint == "Result" and not legacy and profile is None:
         kwargs["dataProfile"] = "fullPhysChem"
 
 
@@ -151,39 +138,34 @@ def _read_wqp_csv(text: str) -> DataFrame:
 
 
 def _query_wqp(
-    service: str,
+    endpoint: str,
     *,
     ssl_check: bool,
     legacy: bool,
     **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
-    """Query a WQP service and return the parsed result.
+    """Run one WQP getter query against the selected endpoint.
 
-    ``service`` is the WQP service name (e.g. ``"Result"``, ``"Station"``).
-    Services with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
+    Endpoints with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
     :func:`wqx3_url` when ``legacy=False`` and :func:`wqp_url` otherwise.
-    Legacy-only services route through :func:`_legacy_only_url`, which warns
+    Legacy-only endpoints route through :func:`_legacy_only_url`, which warns
     and falls back to the legacy profile. The CSV response is parsed via
     :func:`_read_wqp_csv`.
     """
     kwargs = _check_kwargs(kwargs)
-    _validate_profile(service, legacy, kwargs)
+    _validate_profile(endpoint, legacy, kwargs)
 
-    if service not in services_wqx3:
-        url = _legacy_only_url(service, legacy=legacy)
-        delimiter = ";"
-    elif legacy:
-        url = wqp_url(service)
-        delimiter = ";"
+    if endpoint in services_wqx3:
+        url = wqp_url(endpoint) if legacy else wqx3_url(endpoint)
     else:
-        url = wqx3_url(service)
-        delimiter = None
+        url = _legacy_only_url(endpoint, legacy=legacy)
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
+        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
-    df = _attach_datetime_columns(df)
+    if endpoint == "Result":
+        df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response, **kwargs)
 
 
@@ -221,8 +203,8 @@ def get_results(
         US state FIPS code (Example: Illinois is "US:17").
     countycode : string
         US county FIPS code.
-    huc : string or list of strings
-        Eight-digit hydrologic unit (HUC).
+    huc : string
+        Eight-digit hydrologic unit (HUC), delimited by semicolons.
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -231,17 +213,18 @@ def get_results(
         Radial-search central longitude in WGS84 decimal degrees.
     within : string
         Radial-search distance in decimal miles.
-    pCode : string or list of strings
-        Five-digit USGS parameter code.
+    pCode : string
+        Five-digit USGS parameter code, delimited by semicolons.
+        NWIS only.
     startDateLo : string
         Date of the earliest desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
     startDateHi : string
         Date of the last desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
-    characteristicName : string or list of strings
-        One or more case-sensitive characteristic names
-        (https://www.waterqualitydata.us/public_srsnames/).
+    characteristicName : string
+        One or more case-sensitive characteristic names, separated by
+        semicolons (https://www.waterqualitydata.us/public_srsnames/).
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
@@ -810,8 +793,8 @@ def _warn_legacy_use() -> None:
 
 
 def _warn_wqx3_unavailable() -> None:
-    # stacklevel=4: warn -> _warn_wqx3_unavailable -> _legacy_only_url -> _what
-    # -> what_*, so the warning is attributed to the public ``what_*`` call.
+    # stacklevel=4: warn -> _warn_wqx3_unavailable -> _legacy_only_url ->
+    # _query_wqp -> what_*, so the warning is attributed to the public call.
     warnings.warn(
         "WQX3.0 profile not available, returning legacy profile.",
         UserWarning,

@@ -121,6 +121,40 @@ def test_get_results_WQX3(httpx_mock):
     assert df["Activity_StartDateTime"].notna().all()
 
 
+@pytest.mark.parametrize("profile", ["activity", "activityAll"])
+def test_what_activities_accepts_documented_legacy_profiles(httpx_mock, profile):
+    """Accept both Activity profiles published by the WQP OpenAPI document."""
+    httpx_mock.add_response(method="GET", text="ActivityIdentifier\nA\n")
+
+    with pytest.warns(DataCurrencyWarning):
+        df, _ = what_activities(dataProfile=profile)
+
+    assert df["ActivityIdentifier"].tolist() == ["A"]
+    assert httpx_mock.get_requests()[-1].url.params["dataProfile"] == profile
+
+
+def test_what_activities_preserves_columns_and_row_order(httpx_mock):
+    """Sharing request plumbing must not change an established return shape."""
+    columns = [
+        "ActivityIdentifier",
+        "ActivityStartDate",
+        "ActivityStartTime/Time",
+        "ActivityStartTime/TimeZoneCode",
+    ]
+    text = (
+        ",".join(columns)
+        + "\nlater,2024-02-01,10:00:00,CST"
+        + "\nearlier,2024-01-01,10:00:00,CST\n"
+    )
+    httpx_mock.add_response(method="GET", text=text)
+
+    with pytest.warns(DataCurrencyWarning):
+        df, _ = what_activities()
+
+    assert df.columns.tolist() == columns
+    assert df["ActivityIdentifier"].tolist() == ["later", "earlier"]
+
+
 @pytest.mark.parametrize(
     ("builder", "service", "expected", "warning"),
     [
