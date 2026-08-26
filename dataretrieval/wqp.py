@@ -150,6 +150,43 @@ def _read_wqp_csv(text: str) -> DataFrame:
     return pd.read_csv(StringIO(text), delimiter=",", low_memory=False, dtype=str_cols)
 
 
+def _query_wqp(
+    service: str,
+    *,
+    ssl_check: bool,
+    legacy: bool,
+    **kwargs: Any,
+) -> tuple[DataFrame, WQP_Metadata]:
+    """Query a WQP service and return the parsed result.
+
+    ``service`` is the WQP service name (e.g. ``"Result"``, ``"Station"``).
+    Services with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
+    :func:`wqx3_url` when ``legacy=False`` and :func:`wqp_url` otherwise.
+    Legacy-only services route through :func:`_legacy_only_url`, which warns
+    and falls back to the legacy profile. The CSV response is parsed via
+    :func:`_read_wqp_csv`.
+    """
+    kwargs = _check_kwargs(kwargs)
+    _validate_profile(service, legacy, kwargs)
+
+    if service not in services_wqx3:
+        url = _legacy_only_url(service, legacy=legacy)
+        delimiter = ";"
+    elif legacy:
+        url = wqp_url(service)
+        delimiter = ";"
+    else:
+        url = wqx3_url(service)
+        delimiter = None
+
+    response = _query_with_retry(
+        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
+    )
+    df = _read_wqp_csv(response.text)
+    df = _attach_datetime_columns(df)
+    return df, WQP_Metadata(response, **kwargs)
+
+
 def get_results(
     ssl_check: bool = True,
     legacy: bool = True,
@@ -245,60 +282,7 @@ def get_results(
         ... )
 
     """
-
-    kwargs = _check_kwargs(kwargs)
-
-    if legacy is True:
-        url = wqp_url("Result")
-        delimiter = ";"
-    else:
-        url = wqx3_url("Result")
-        delimiter = None
-
-    _validate_profile("Result", legacy, kwargs)
-
-    response = _query_with_retry(
-        url, kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
-    )
-
-    df = _read_wqp_csv(response.text)
-    df = _attach_datetime_columns(df)
-    return df, WQP_Metadata(response, **kwargs)
-
-
-def _what(
-    service: str,
-    *,
-    ssl_check: bool,
-    legacy: bool,
-    **kwargs: Any,
-) -> tuple[DataFrame, WQP_Metadata]:
-    """Shared implementation for the ``what_*`` metadata search functions.
-
-    ``service`` is the WQP service name (e.g. ``"Station"``). Services with a
-    WQX3.0 equivalent (those in :data:`services_wqx3`) use :func:`wqx3_url`
-    when ``legacy=False`` and :func:`wqp_url` otherwise. Legacy-only services
-    route through :func:`_legacy_only_url`, which warns and falls back to the
-    legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.
-    """
-    kwargs = _check_kwargs(kwargs)
-    _validate_profile(service, legacy, kwargs)
-
-    if service not in services_wqx3:
-        url = _legacy_only_url(service, legacy=legacy)
-        delimiter = ";"
-    elif legacy:
-        url = wqp_url(service)
-        delimiter = ";"
-    else:
-        url = wqx3_url(service)
-        delimiter = None
-
-    response = _query_with_retry(
-        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
-    )
-    df = _read_wqp_csv(response.text)
-    return df, WQP_Metadata(response, **kwargs)
+    return _query_wqp("Result", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_sites(
@@ -345,7 +329,7 @@ def what_sites(
 
     """
 
-    return _what("Station", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("Station", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_organizations(
@@ -388,7 +372,7 @@ def what_organizations(
 
     """
 
-    return _what("Organization", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("Organization", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_projects(
@@ -431,7 +415,7 @@ def what_projects(
 
     """
 
-    return _what("Project", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("Project", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_activities(
@@ -487,7 +471,7 @@ def what_activities(
         ... )
     """
 
-    return _what("Activity", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("Activity", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_detection_limits(
@@ -536,7 +520,7 @@ def what_detection_limits(
 
     """
 
-    return _what(
+    return _query_wqp(
         "ResultDetectionQuantitationLimit",
         ssl_check=ssl_check,
         legacy=legacy,
@@ -584,7 +568,7 @@ def what_habitat_metrics(
 
     """
 
-    return _what("BiologicalMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("BiologicalMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def what_project_weights(
@@ -632,7 +616,7 @@ def what_project_weights(
 
     """
 
-    return _what(
+    return _query_wqp(
         "ProjectMonitoringLocationWeighting",
         ssl_check=ssl_check,
         legacy=legacy,
@@ -685,7 +669,7 @@ def what_activity_metrics(
 
     """
 
-    return _what("ActivityMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
+    return _query_wqp("ActivityMetric", ssl_check=ssl_check, legacy=legacy, **kwargs)
 
 
 def _validate_service(service: str, valid_services: list[str], profile: str) -> None:
