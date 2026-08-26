@@ -204,6 +204,25 @@ def format_response(
     return df.sort_index()
 
 
+def _peak_datetimes(peak_dt: pd.Series) -> pd.Series:
+    """Parse a ``peak_dt`` column, keeping peaks whose date is partly unknown.
+
+    NWIS writes ``YYYY-MM-00`` when the day of a historical peak is not known
+    and ``YYYY-00-00`` when the month is not either -- the ``Bd`` and ``Bm``
+    ``peak_cd`` qualifiers. Neither parses as a date, so each is pinned to the
+    start of the period that *is* known. ``waterdata.get_peaks()`` resolves the
+    same records the same way, dating a year-only peak to 1 January and
+    flagging it ``[MONTHUNKNOWN]``.
+
+    A ``peak_dt`` that is blank or absent stays ``NaT``: there is no period to
+    pin it to, and :func:`preformat_peaks_response` drops it.
+    """
+    text = peak_dt.astype("string").str.strip()
+    text = text.str.replace(r"^(\d{4})-00-", r"\1-01-", regex=True)
+    text = text.str.replace(r"^(\d{4}-\d{2})-00$", r"\1-01", regex=True)
+    return pd.to_datetime(text, errors="coerce")
+
+
 def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     """Format the datetime column of the 'peaks' service response.
 
@@ -217,8 +236,15 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     df: ``pandas.DataFrame``
         The formatted data frame.
 
+    Notes
+    -----
+    Peaks whose day or month is unknown are dated to the start of the known
+    period rather than discarded; see :func:`_peak_datetimes`. Rows with no
+    ``peak_dt`` at all are dropped, since they cannot be placed on the
+    datetime index :func:`format_response` builds.
+
     """
-    df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
+    df["datetime"] = _peak_datetimes(df.pop("peak_dt"))
     df.dropna(subset=["datetime"], inplace=True)
     return df
 

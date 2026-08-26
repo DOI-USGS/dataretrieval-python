@@ -92,6 +92,40 @@ def test_preformat_peaks_response():
     assert df["datetime"].isna().sum() == 0
 
 
+@pytest.mark.parametrize(
+    ("peak_dt", "expected"),
+    [
+        ("1878-06-12", "1878-06-12"),  # fully known
+        ("1844-06-00", "1844-06-01"),  # day unknown (peak_cd Bd)
+        ("1858-00-00", "1858-01-01"),  # month unknown (peak_cd Bm)
+    ],
+)
+def test_preformat_peaks_response_keeps_partial_dates(peak_dt, expected):
+    """NWIS zero-fills the unknown part of a historical peak's date, and those
+    are real peaks -- often a site's largest. They must be pinned to the start
+    of the known period, not coerced to NaT and dropped. ``waterdata.get_peaks``
+    resolves the same records the same way.
+    """
+    df = pd.DataFrame({"peak_dt": [peak_dt], "peak_va": [563000]})
+
+    df = preformat_peaks_response(df)
+
+    assert len(df) == 1, f"{peak_dt} was dropped"
+    assert df["datetime"].iloc[0] == pd.Timestamp(expected)
+    assert df["peak_va"].iloc[0] == 563000
+
+
+def test_preformat_peaks_response_drops_dateless_peaks():
+    """A peak with no date at all has no period to pin it to, so it cannot go
+    on the datetime index format_response builds and is still dropped.
+    """
+    df = pd.DataFrame({"peak_dt": ["2000-03-22", None, ""], "peak_va": [1, 2, 3]})
+
+    df = preformat_peaks_response(df)
+
+    assert df["peak_va"].tolist() == [1]
+
+
 class TestDeprecationWarnings:
     """Verify per-function DeprecationWarning fires with the right replacement.
 
