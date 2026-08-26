@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g7043932dd documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=74faf411"></script>
+      <script src="../../_static/documentation_options.js?v=4a6e2673"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -106,7 +106,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">refuse_credential_keywords</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataCurrencyWarning</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_materialize_query_iterables</span><span class="p">,</span> <span class="n">_query_with_retry</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._wqx</span><span class="w"> </span><span class="kn">import</span> <span class="n">_attach_datetime_columns</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -217,8 +217,8 @@
 <span class="sd">        US state FIPS code (Example: Illinois is "US:17").</span>
 <span class="sd">    countycode : string</span>
 <span class="sd">        US county FIPS code.</span>
-<span class="sd">    huc : string</span>
-<span class="sd">        Eight-digit hydrologic unit (HUC), delimited by semicolons.</span>
+<span class="sd">    huc : string or iterable of strings</span>
+<span class="sd">        Eight-digit hydrologic unit (HUC).</span>
 <span class="sd">    bBox : string</span>
 <span class="sd">        Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).</span>
 <span class="sd">    lat : string</span>
@@ -227,18 +227,17 @@
 <span class="sd">        Radial-search central longitude in WGS84 decimal degrees.</span>
 <span class="sd">    within : string</span>
 <span class="sd">        Radial-search distance in decimal miles.</span>
-<span class="sd">    pCode : string</span>
-<span class="sd">        Five-digit USGS parameter code, delimited by semicolons.</span>
-<span class="sd">        NWIS only.</span>
+<span class="sd">    pCode : string or iterable of strings</span>
+<span class="sd">        Five-digit USGS parameter code. NWIS only.</span>
 <span class="sd">    startDateLo : string</span>
 <span class="sd">        Date of the earliest desired data-collection activity,</span>
 <span class="sd">        expressed as 'MM-DD-YYYY'.</span>
 <span class="sd">    startDateHi : string</span>
 <span class="sd">        Date of the last desired data-collection activity,</span>
 <span class="sd">        expressed as 'MM-DD-YYYY'.</span>
-<span class="sd">    characteristicName : string</span>
-<span class="sd">        One or more case-sensitive characteristic names, separated by</span>
-<span class="sd">        semicolons (https://www.waterqualitydata.us/public_srsnames/).</span>
+<span class="sd">    characteristicName : string or iterable of strings</span>
+<span class="sd">        One or more case-sensitive characteristic names</span>
+<span class="sd">        (https://www.waterqualitydata.us/public_srsnames/).</span>
 <span class="sd">    mimeType : string</span>
 <span class="sd">        Output format. Only 'csv' is supported at this time.</span>
 
@@ -281,10 +280,12 @@
         <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">result_profiles_legacy</span>
         <span class="n">kind</span> <span class="o">=</span> <span class="s2">"legacy"</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="s2">"Result"</span><span class="p">)</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">";"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">valid_profiles</span> <span class="o">=</span> <span class="n">result_profiles_wqx3</span>
         <span class="n">kind</span> <span class="o">=</span> <span class="s2">"WQX3.0"</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="s2">"Result"</span><span class="p">)</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">profile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"dataProfile"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">profile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -295,7 +296,7 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"dataProfile"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"fullPhysChem"</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">";"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
     <span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
@@ -321,13 +322,18 @@
 <span class="sd">    """</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">services_wqx3</span><span class="p">:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span> <span class="k">if</span> <span class="n">legacy</span> <span class="k">else</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">services_wqx3</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">_legacy_only_url</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="n">legacy</span><span class="p">)</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">";"</span>
+    <span class="k">elif</span> <span class="n">legacy</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">wqp_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="s2">";"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">wqx3_url</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="n">delimiter</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">";"</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"wqp"</span>
     <span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -854,7 +860,9 @@
 <span class="sd">    ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any</span>
 <span class="sd">    getter now that ``configure(Configuration(api_key=...))`` is the spelling,</span>
 <span class="sd">    and this is the adapter with the widest passthrough -- ten getters, whose</span>
-<span class="sd">    filter names the portal rather than this package defines.</span>
+<span class="sd">    filter names the portal rather than this package defines. The returned</span>
+<span class="sd">    payload materializes non-string iterables as lists so one-shot iterators</span>
+<span class="sd">    remain reusable by both request serialization and response metadata.</span>
 <span class="sd">    """</span>
     <span class="n">refuse_credential_keywords</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -876,7 +884,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"mimeType"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"csv"</span>
 
-    <span class="k">return</span> <span class="n">kwargs</span>
+    <span class="k">return</span> <span class="n">_materialize_query_iterables</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_wqx3_use</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

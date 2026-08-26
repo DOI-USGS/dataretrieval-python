@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g7043932dd documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=74faf411"></script>
+      <script src="../_static/documentation_options.js?v=4a6e2673"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -320,19 +320,18 @@ Legacy profiles include ‘resultPhysChem’, ‘biological’, and
 identification number (Example: “USGS-05586100”).</p></li>
 <li><p><strong>statecode</strong> (<em>string</em>) – US state FIPS code (Example: Illinois is “US:17”).</p></li>
 <li><p><strong>countycode</strong> (<em>string</em>) – US county FIPS code.</p></li>
-<li><p><strong>huc</strong> (<em>string</em>) – Eight-digit hydrologic unit (HUC), delimited by semicolons.</p></li>
+<li><p><strong>huc</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em>) – Eight-digit hydrologic unit (HUC).</p></li>
 <li><p><strong>bBox</strong> (<em>string</em>) – Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).</p></li>
 <li><p><strong>lat</strong> (<em>string</em>) – Radial-search central latitude in WGS84 decimal degrees.</p></li>
 <li><p><strong>long</strong> (<em>string</em>) – Radial-search central longitude in WGS84 decimal degrees.</p></li>
 <li><p><strong>within</strong> (<em>string</em>) – Radial-search distance in decimal miles.</p></li>
-<li><p><strong>pCode</strong> (<em>string</em>) – Five-digit USGS parameter code, delimited by semicolons.
-NWIS only.</p></li>
+<li><p><strong>pCode</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em>) – Five-digit USGS parameter code. NWIS only.</p></li>
 <li><p><strong>startDateLo</strong> (<em>string</em>) – Date of the earliest desired data-collection activity,
 expressed as ‘MM-DD-YYYY’.</p></li>
 <li><p><strong>startDateHi</strong> (<em>string</em>) – Date of the last desired data-collection activity,
 expressed as ‘MM-DD-YYYY’.</p></li>
-<li><p><strong>characteristicName</strong> (<em>string</em>) – One or more case-sensitive characteristic names, separated by
-semicolons (<a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a>).</p></li>
+<li><p><strong>characteristicName</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em>) – One or more case-sensitive characteristic names
+(<a class="reference external" href="https://www.waterqualitydata.us/public_srsnames/">https://www.waterqualitydata.us/public_srsnames/</a>).</p></li>
 <li><p><strong>mimeType</strong> (<em>string</em>) – Output format. Only ‘csv’ is supported at this time.</p></li>
 </ul>
 </dd>
