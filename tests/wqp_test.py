@@ -138,6 +138,52 @@ def test_wqx3_get_results_repeats_list_query_parameters(httpx_mock):
     assert params.get_list("siteType") == ["Stream", "Well"]
 
 
+@pytest.mark.parametrize(
+    "values_factory",
+    [
+        pytest.param(lambda: ("Carbon", "Total carbon"), id="tuple"),
+        pytest.param(
+            lambda: (value for value in ("Carbon", "Total carbon")), id="generator"
+        ),
+        pytest.param(
+            lambda: DataFrame({"value": ["Carbon", "Total carbon"]})["value"],
+            id="series",
+        ),
+    ],
+)
+def test_wqx3_get_results_repeats_iterable_query_parameters(httpx_mock, values_factory):
+    """WQX3 materializes non-list iterables before httpx serialization."""
+    with open("tests/data/wqp3_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    _df, md = get_results(
+        legacy=False,
+        characteristicName=values_factory(),
+        dataProfile="basicPhysChem",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("characteristicName") == ["Carbon", "Total carbon"]
+    assert params.get_list("dataProfile") == ["basicPhysChem"]
+    assert list(md._parameters["characteristicName"]) == ["Carbon", "Total carbon"]
+
+
+def test_legacy_get_results_preserves_generator_values_in_metadata(httpx_mock):
+    """Legacy serialization must not leave an exhausted metadata iterator."""
+    with open("tests/data/wqp_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    _df, md = get_results(
+        legacy=True,
+        pCode=(value for value in ("00010", "00300")),
+        dataProfile="narrowResult",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("pCode") == ["00010;00300"]
+    assert md._parameters["pCode"] == ["00010", "00300"]
+
+
 def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
     """The WQX3 serializer also applies to metadata search endpoints."""
     with open("tests/data/wqp_sites.txt") as text:

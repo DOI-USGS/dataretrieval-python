@@ -29,7 +29,7 @@ from dataretrieval.configuration import (
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.exceptions import DataCurrencyWarning
 
-from ._querying import _query_with_retry
+from ._querying import _materialize_query_iterables, _query_with_retry
 from ._wqx import _attach_datetime_columns
 
 __all__ = [
@@ -139,8 +139,7 @@ def get_results(
     countycode : string
         US county FIPS code.
     huc : string or iterable of strings
-        Eight-digit hydrologic unit (HUC). Iterable values are encoded as
-        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
+        Eight-digit hydrologic unit (HUC).
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -150,9 +149,7 @@ def get_results(
     within : string
         Radial-search distance in decimal miles.
     pCode : string or iterable of strings
-        Five-digit USGS parameter code. Iterable values are encoded as
-        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
-        NWIS only.
+        Five-digit USGS parameter code. NWIS only.
     startDateLo : string
         Date of the earliest desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
@@ -161,9 +158,7 @@ def get_results(
         expressed as 'MM-DD-YYYY'.
     characteristicName : string or iterable of strings
         One or more case-sensitive characteristic names
-        (https://www.waterqualitydata.us/public_srsnames/). Iterable values are
-        encoded as repeated parameters for WQX3 and semicolon-delimited for
-        legacy WQP.
+        (https://www.waterqualitydata.us/public_srsnames/).
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
@@ -749,7 +744,9 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
     getter now that ``configure(Configuration(api_key=...))`` is the spelling,
     and this is the adapter with the widest passthrough -- ten getters, whose
-    filter names the portal rather than this package defines.
+    filter names the portal rather than this package defines. The returned
+    payload materializes non-string iterables as lists so one-shot iterators
+    remain reusable by both request serialization and response metadata.
     """
     refuse_credential_keywords(kwargs)
 
@@ -771,7 +768,7 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     else:
         kwargs["mimeType"] = "csv"
 
-    return kwargs
+    return _materialize_query_iterables(kwargs)
 
 
 def _warn_wqx3_use() -> None:
