@@ -183,3 +183,35 @@ addopts = "-m 'not live'"
 markers = [
   "live: hits real USGS services; deselected by default, run on a schedule",
 ]
+
+[tool.coverage.run]
+source = ["dataretrieval"]
+# Most of what this package gets wrong is a branch rather than a line.
+branch = true
+omit = [
+  # Written by setuptools_scm at build time; absent from a source checkout.
+  "dataretrieval/_version.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+# 98.97% displays as "99%", which would pass a ``fail_under = 99`` on rounding.
+precision = 2
+# A ratchet: raise it as coverage rises. Lower it only when a genuinely
+# untestable path is added and excluding it would be dishonest.
+fail_under = 98.9
+# Anchored to the statement, so a pattern cannot match its own words in a
+# comment or a string. Literal strings, because TOML rejects ``\s``.
+exclude_also = [
+  # Type-checking-only imports never execute.
+  '^\s*if TYPE_CHECKING:',
+  '^\s*@overload',
+  # The suite installs the [test,nldi] extras, so an absent-dependency fallback
+  # is unreachable here by construction.
+  '^\s*except ImportError',
+  '^\s*except PackageNotFoundError',
+  # One arm is dead on every interpreter, which would otherwise make the total
+  # depend on which version measured it.
+  '^\s*if sys\.version_info',
+]

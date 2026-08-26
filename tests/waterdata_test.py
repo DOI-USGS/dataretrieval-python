@@ -1191,6 +1191,35 @@ def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mo
     assert not httpx_mock.get_requests(), "must reject before issuing a request"
 
 
+def test_get_reference_table_serves_countries(httpx_mock):
+    """``countries`` is a real reference collection and singularizes correctly.
+
+    It sits beside ``counties`` in the service catalog but was missing from the
+    accepted vocabulary, so the rejection told a caller asking for a real
+    collection that it did not exist. The shared ``-s`` rule would also have
+    named its id column ``countrie``.
+    """
+    _mock_items(
+        httpx_mock,
+        "countries",
+        body={
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "id": "AD",
+                    "type": "Feature",
+                    "geometry": None,
+                    "properties": {"id": "AD", "country_name": "Andorra"},
+                }
+            ],
+        },
+    )
+
+    df, _ = get_reference_table("countries")
+
+    assert "country" in df.columns
+
+
 def test_get_reference_table_with_query(httpx_mock):
     """A ``query`` dict is merged into the request's query params."""
     _mock_items(httpx_mock, "agency-codes")
@@ -1217,6 +1246,26 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
         get_daily(
             monitoring_location_id="USGS-05427718",
             parameter_code="00060",
+            max_rows=3,
+        )
+    args_dict = fake.call_args[0][0]
+    assert "max_rows" not in args_dict  # not leaked into the query params
+    assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
+
+
+def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
+    """``get_cql`` caps the total like every other Water Data getter.
+
+    It was the only one without ``max_rows``, and its ``limit`` is the page
+    size -- so the obvious way to ask for a few rows instead paged the whole
+    match a few rows at a time. A bounded probe written that way spent ~400
+    requests of an hourly quota of 1000 before the service refused it.
+    """
+    with mock.patch("dataretrieval.waterdata.cql.get_ogc_data") as fake:
+        fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+        get_cql(
+            collection="daily",
+            cql={"op": "=", "args": [{"property": "parameter_code"}, "00060"]},
             max_rows=3,
         )
     args_dict = fake.call_args[0][0]
@@ -1469,3 +1518,27 @@ class TestNormalizeStrIterable:
                 monitoring_location_id="USGS-05427718",
                 parameter_code=[60, 65],
             )
+
+
+def test_get_reference_table_forwards_limit_as_a_query_arg():
+    """``limit`` is a server-side page size and belongs in the query, unlike
+    ``max_rows``, which is a client-side cap the service never sees."""
+    with mock.patch("dataretrieval.waterdata.reference.get_ogc_data") as fake:
+        fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+        get_reference_table("agency-codes", limit=25)
+    assert fake.call_args.kwargs["args"]["limit"] == 25
+
+
+def test_get_reference_table_docstring_lists_every_collection():
+    """The docstring enumerates the vocabulary by hand, so it drifts the
+    moment a collection is added -- ``countries`` was served, accepted, and
+    absent from the docs. A reader who trusts the prose must not be told a
+    real collection does not exist.
+    """
+    from typing import get_args
+
+    from dataretrieval.waterdata.types import METADATA_COLLECTIONS
+
+    doc = get_reference_table.__doc__ or ""
+    missing = [c for c in get_args(METADATA_COLLECTIONS) if f'"{c}"' not in doc]
+    assert not missing, f"collections served but undocumented: {missing}"

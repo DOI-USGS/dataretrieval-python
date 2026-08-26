@@ -13,6 +13,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval._validation import require_one_of
+from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.interruptions import FanOutInterrupted
 from dataretrieval.waterdata.time_series import get_continuous
 
@@ -162,7 +163,11 @@ def get_nearest_continuous(
         Additional keyword arguments forwarded to ``get_continuous``
         (e.g. ``statistic_id``, ``approval_status``, ``properties``).
         Passing ``time``, ``filter``, or ``filter_lang`` raises
-        ``TypeError`` — this function builds those itself.
+        ``TypeError`` — this function builds those itself. A caller-provided
+        ``properties`` list gains ``time`` and ``monitoring_location_id`` when
+        either is omitted: the match is computed against the first and grouped
+        by the second, so the returned frame carries both columns even when they
+        were not requested.
 
     Returns
     -------
@@ -233,10 +238,15 @@ def get_nearest_continuous(
     window_td = pd.Timedelta(window)
 
     if len(target_index) == 0:
-        raise ValueError("targets must contain at least one timestamp")
+        raise ValueError(
+            "targets is empty; there is nothing to find a nearest value for. "
+            "Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "
+            "or a pandas DatetimeIndex."
+        )
 
     selector = _NearestSelector(target_index, window_td, on_tie)
     filter_expr = _build_window_or_filter(target_index, window_td)
+    kwargs = _with_required_properties(kwargs)
     try:
         df, md = get_continuous(
             monitoring_location_id=monitoring_location_id,
@@ -251,6 +261,23 @@ def get_nearest_continuous(
     return selector.select(df), md
 
 
+def _with_required_properties(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Add columns needed for matching to an explicit ``properties`` list.
+
+    ``time`` is what the match is computed against and
+    ``monitoring_location_id`` is what it groups by. Omitting either can collapse
+    observations from different sites into one row per target.
+    """
+    properties = kwargs.get("properties")
+    if properties is None:
+        return kwargs
+    names = [properties] if isinstance(properties, str) else list(properties)
+    missing = [c for c in ("time", "monitoring_location_id") if c not in names]
+    if not missing:
+        return kwargs
+    return {**kwargs, "properties": names + missing}
+
+
 def _select_nearest_rows(
     df: pd.DataFrame,
     targets: pd.DatetimeIndex,
@@ -258,20 +285,21 @@ def _select_nearest_rows(
     on_tie: OnTie,
 ) -> pd.DataFrame:
     """Apply the public nearest-per-target shape to continuous rows."""
-    if "time" not in df.columns:
-        raise ValueError(
-            "get_nearest_continuous requires a 'time' column in the response; "
-            "if a `properties` kwarg was passed, include 'time' in it"
-        )
     if df.empty:
         return _empty_nearest_result(df)
 
+    required = ("time", "monitoring_location_id")
+    missing = [name for name in required if name not in df.columns]
+    if missing:
+        names = ", ".join(repr(name) for name in missing)
+        raise DataRetrievalError(
+            "The service response omitted columns required by "
+            f"get_nearest_continuous: {names}. Retry the request; report the "
+            "response if the problem persists."
+        )
+
     df = df.assign(time=pd.to_datetime(df["time"], utc=True))
-    site_groups = (
-        df.groupby("monitoring_location_id", sort=False)
-        if "monitoring_location_id" in df.columns
-        else [(None, df)]
-    )
+    site_groups = df.groupby("monitoring_location_id", sort=False)
 
     selected = [
         row

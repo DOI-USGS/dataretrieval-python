@@ -24,37 +24,49 @@ except ImportError:
 
 
 def test_query_waterdata_validation():
-    """Tests the validation parameters of the query_waterservices method"""
-    with pytest.raises(TypeError) as type_error:
+    """Rejections name the filters, corners, and services that would work.
+
+    Asserted on the remedy rather than the whole message: the caller is
+    typically a program, and what it needs from the failure is the set of
+    values that would have been accepted.
+    """
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service="pmcodes", format="rdb")
-    assert (
-        str(type_error.value)
-        == "Query must specify a major filter: site_no, stateCd, bBox"
-    )
+    message = str(value_error.value)
+    assert "is required as a major filter" in message
+    assert "site_no, stateCd" in message
+    assert "nw_longitude_va" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service=None, site_no="sites")
-    assert str(type_error.value) == "Service not recognized"
+    message = str(value_error.value)
+    assert "Invalid service: None" in message
+    # 'ratings' was advertised here but is not an NwisWeb program: the URL it
+    # built returned an HTML error page, not data.
+    assert "'peaks'" in message
+    assert "get_ratings" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterdata(service="pmcodes", nw_longitude_va="something")
-    assert (
-        str(type_error.value) == "One or more lat/long coordinates missing or invalid."
-    )
+    message = str(value_error.value)
+    assert "must be given together to describe a bounding box" in message
+    # The three corners actually absent, so the caller knows what to add.
+    assert "nw_latitude_va, se_longitude_va and se_latitude_va" in message
 
 
 def test_query_waterservices_validation():
     """Tests the validation parameters of the query_waterservices method"""
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterservices(service="dv", format="rdb")
-    assert (
-        str(type_error.value)
-        == "Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"
-    )
+    message = str(value_error.value)
+    assert "is required as a major filter" in message
+    assert "sites, stateCd, bBox, huc or countyCd" in message
 
-    with pytest.raises(TypeError) as type_error:
+    with pytest.raises(ValueError) as value_error:
         query_waterservices(service=None, sites="sites")
-    assert str(type_error.value) == "Service not recognized"
+    message = str(value_error.value)
+    assert "Invalid service: None" in message
+    assert "'dv', 'iv', 'site', 'stat'" in message
 
 
 def test_query_validation(httpx_mock):
@@ -78,10 +90,22 @@ def test_query_validation(httpx_mock):
 
 
 def test_get_record_validation():
-    """Tests the validation parameters of the get_record method"""
-    with pytest.raises(TypeError) as type_error:
+    """An unknown service names the ones get_record does serve."""
+    with pytest.raises(ValueError) as value_error:
         get_record(sites=["01491000"], service="not_a_service")
-    assert str(type_error.value) == "Unrecognized service: not_a_service"
+    message = str(value_error.value)
+    assert "Invalid service: 'not_a_service'" in message
+    assert "'dv', 'iv', 'site', 'stat', 'peaks', 'ratings'" in message
+
+
+def test_get_record_rejects_non_string_sites():
+    """The type rejection shows both accepted spellings of ``sites``."""
+    with pytest.raises(TypeError) as type_error:
+        get_record(sites=1491000, service="dv")
+    message = str(type_error.value)
+    assert "not int" in message
+    assert "sites='01491000'" in message
+    assert "sites=['01491000', '01645000']" in message
 
 
 def test_get_dv(httpx_mock):
@@ -251,9 +275,9 @@ def test_get_ratings_validation():
     site = "01594440"
     with pytest.raises(ValueError) as value_error:
         get_ratings(site=site, file_type="BAD")
-    assert 'Unrecognized file_type: BAD, must be "base", "corr" or "exsa"' in str(
-        value_error
-    )
+    message = str(value_error.value)
+    assert "Invalid file_type: 'BAD'" in message
+    assert "'base', 'corr', 'exsa'" in message
 
 
 def test_get_ratings(httpx_mock):

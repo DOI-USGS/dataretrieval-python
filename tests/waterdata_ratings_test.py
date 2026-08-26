@@ -256,7 +256,7 @@ def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
     httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, json=body)
     httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=_SAMPLE_RDB)
 
-    with pytest.warns(SkippedRatingWarning, match="no data asset"):
+    with pytest.warns(SkippedRatingWarning, match="no download URL"):
         out = get_ratings(monitoring_location_id=["USGS-99999999", "USGS-01104475"])
 
     assert sorted(out) == ["USGS-01104475.exsa.rdb"]
