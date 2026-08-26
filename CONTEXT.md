@@ -128,9 +128,13 @@ it. **Configure** is the verb for applying one.
 **Setting** — One named tunable the caller may adjust: the API key, the
 concurrency cap, the retry count, the progress line, the fan-out baseline. A
 setting means the same thing wherever it applies, but it does not apply
-everywhere: `concurrency` and `parallel_chunks` are meaningless to an adapter
-that issues one request, and `ssl_check` is meaningful to only three. Which
-settings an adapter accepts is part of that adapter's vocabulary.
+everywhere: `concurrency` is meaningless to an adapter that issues one request
+at a time, and `parallel_chunks` applies only to the two adapters whose queries
+chunk. Which settings an adapter accepts is part of that adapter's vocabulary.
+
+A public keyword is not automatically a setting. `ssl_check` is a getter
+argument on four adapters and resolves through no chain at all; the settings are
+the roster the configuration system knows.
 
 **Package-wide setting** — A setting that applies to every adapter: the retry
 count, the progress line, the stall timeout. Set once, honored everywhere.
