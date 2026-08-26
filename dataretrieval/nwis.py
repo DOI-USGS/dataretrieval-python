@@ -217,10 +217,18 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     df: ``pandas.DataFrame``
         The formatted data frame.
 
+    Notes
+    -----
+    An empty frame with no ``peak_dt`` column is returned unchanged, so that
+    an empty peaks response reaches :func:`format_response`'s empty-frame path
+    rather than raising ``KeyError``.
+
     """
-    if "peak_dt" not in df.columns:
+    if df.empty and "peak_dt" not in df.columns:
         # An empty response parses to a column-less frame; return it so
-        # format_response's empty-frame path handles it like every other service.
+        # format_response's empty-frame path handles it like every other
+        # service. A non-empty frame missing peak_dt is malformed, not empty,
+        # and still raises.
         return df
 
     df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
