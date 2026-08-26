@@ -48,6 +48,11 @@ from dataretrieval.exceptions import (
     TransientError,
     Unchunkable,
 )
+from dataretrieval.interruptions import (
+    ChunkInterrupted,
+    QuotaExhausted,
+    ServiceInterrupted,
+)
 from dataretrieval.ogc import chunking as _chunking
 from dataretrieval.ogc import engine as _engine
 from dataretrieval.ogc.chunking import (
@@ -58,11 +63,6 @@ from dataretrieval.ogc.chunking import (
     parallel_chunks,
 )
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
-from dataretrieval.ogc.interruptions import (
-    ChunkInterrupted,
-    QuotaExhausted,
-    ServiceInterrupted,
-)
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
