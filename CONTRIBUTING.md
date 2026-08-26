@@ -133,7 +133,7 @@ ruff check .
 ruff format --check .
 mypy
 coverage run -m pytest tests/
-coverage report -m
+coverage report
 xenon --max-absolute C --max-modules B --max-average A dataretrieval
 complexipy dataretrieval
 lint-imports
@@ -141,6 +141,31 @@ lint-imports
 
 The last three come from `pip install -e '.[metrics]'`, and each has a pre-commit
 hook running the identical check, so a clean pre-commit run means CI agrees.
+
+`coverage report` is a ratchet too. The threshold lives in
+`[tool.coverage.report]` in `pyproject.toml` and sits at the measured value, so
+it fails on regression rather than demanding new tests of a change that added
+none. Raise it when coverage rises; lower it only deliberately, and say why in
+the commit.
+
+Coverage is measured with branches on, because most of what this package gets
+wrong is a branch rather than a line -- a dispatch arm routing to the wrong
+getter, an error path that never fires, a fallback that quietly becomes the
+norm. Chase the *uncovered branch*, not the percentage: a test written only to
+colour a line green costs a real maintenance slot and catches nothing. If a
+path cannot be reached without contorting the code, exclude it in
+`[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
+it is. Both are better than a hollow test.
+
+The blocking run is a single Linux job. The OS/Python matrix reports its own
+number with `--fail-under=0`, because several tests are POSIX-only and a
+Windows run genuinely measures a smaller suite.
+
+For the same reason the threshold assumes the whole suite: on Windows, or
+without the `nldi` extra installed, some tests skip and the local number comes
+in under the gate through no fault of your change. Run
+`coverage report --fail-under=0` in that situation and let CI grade the
+ratchet.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
 tightest the package passes today, so they fail only when a change makes things

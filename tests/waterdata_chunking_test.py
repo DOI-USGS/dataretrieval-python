@@ -2539,3 +2539,37 @@ def test_parallel_chunks_supports_arbitrary_n(n):
         fetch({"monitoring_location_id": sites})
     assert len(calls) == n
     assert sum(calls) == 8
+
+
+class TestSetResponseUrl:
+    """The combined response advertises the canonical URL, not the last
+    chunk's. ``httpx.Response`` resolves ``.url`` through its bound request,
+    so the rebind has to go through the request rather than the attribute."""
+
+    def test_a_response_with_no_bound_request_gets_one_synthesized(self):
+        """``httpx.Response(200)`` built by hand has no request, and reading
+        ``.request`` raises rather than returning None."""
+        from dataretrieval.combining import _set_response_url
+
+        response = httpx.Response(200)
+        _set_response_url(response, "https://example.test/combined")
+
+        assert str(response.url) == "https://example.test/combined"
+
+    def test_an_existing_request_keeps_its_method_and_headers(self):
+        """A combined POST must not silently become a GET, and the headers
+        carry the credential scoping."""
+        from dataretrieval.combining import _set_response_url
+
+        original = httpx.Request(
+            "POST", "https://example.test/chunk1", headers={"X-Api-Key": "k"}
+        )
+        response = httpx.Response(200, request=original)
+
+        _set_response_url(response, "https://example.test/combined")
+
+        assert response.request.method == "POST"
+        assert response.request.headers["X-Api-Key"] == "k"
+        assert str(response.url) == "https://example.test/combined"
+        # A shallow copy sharing the old request must not see the new URL.
+        assert str(original.url) == "https://example.test/chunk1"

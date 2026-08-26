@@ -445,3 +445,28 @@ def test_get_continuous_surfaces_pitfall_to_caller():
                 filter_lang="cql-text",
             )
         build.assert_not_called()
+
+
+class TestOrSeparatorBoundaries:
+    """Top-level ``OR`` splitting drives chunking, so a false split changes
+    the query's meaning and a missed one leaves an unchunkable filter."""
+
+    def test_a_word_merely_starting_with_or_is_not_a_separator(self):
+        """``A ORDER BY b`` must not split on ``OR``; the trailing space is
+        what distinguishes the keyword from a longer identifier."""
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        assert _resume_after_or("a ORDER BY b", 1) is None
+
+    def test_a_trailing_or_at_end_of_expression_is_not_a_separator(self):
+        """There is no clause after it, so treating it as one would index
+        past the end."""
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        assert _resume_after_or("a OR", 1) is None
+
+    def test_a_real_separator_returns_the_next_clause_start(self):
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        expr = "a OR b"
+        assert expr[_resume_after_or(expr, 1) :] == "b"

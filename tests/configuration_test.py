@@ -17,6 +17,7 @@ from typing import ClassVar
 import pytest
 
 import dataretrieval
+from dataretrieval import _configuration_core as _core
 from dataretrieval import configuration, streamstats, waterdata
 from dataretrieval.configuration import Configuration
 from dataretrieval.ngwmn import NgwmnConfiguration
@@ -2024,3 +2025,127 @@ def test_show_configuration_survives_a_malformed_profile(config_file):
         WaterdataConfiguration.load("bulk")
     with pytest.raises(configuration.ConfigurationError, match="contains a table"):
         NgwmnConfiguration.load("gentle")
+
+
+class TestConfigValueParsing:
+    """The coercion layer between a config file / env var and a setting.
+
+    Every one of these is a message a user reads while their config is not
+    working, so each names the setting, what it expected, and what it got.
+    """
+
+    def test_a_non_numeric_stall_timeout_is_rejected_by_type(self):
+        with pytest.raises(configuration.ConfigurationError) as excinfo:
+            _core._coerce_seconds("soon", "stall_timeout", "")
+        message = str(excinfo.value)
+        assert "stall_timeout" in message
+        assert "a number of seconds" in message
+
+    def test_a_bool_is_not_a_number_of_seconds(self):
+        """``True`` is an ``int`` in Python, so a bare isinstance check would
+        accept ``stall_timeout = true`` and silently mean one second."""
+        with pytest.raises(configuration.ConfigurationError):
+            _core._coerce_seconds(True, "stall_timeout", "")
+
+    def test_a_blank_count_falls_through_to_the_default(self):
+        """An empty env var means "unset", not "zero" -- exporting an empty
+        string is how a shell unsets a variable in practice."""
+        assert _core._parse_int("   ", "API_USGS_RETRIES", default=4, minimum=0) == 4
+
+    def test_a_blank_stall_timeout_falls_through_to_the_default(self):
+        assert (
+            _core._parse_seconds("  ", "API_USGS_STALL_TIMEOUT")
+            == _core.DEFAULT_STALL_TIMEOUT
+        )
+
+    def test_a_blank_progress_toggle_is_refused_in_strict_mode(self):
+        """A config file is strict: a blank value there is a typo, not an
+        unset. The env path stays permissive for backwards compatibility."""
+        with pytest.raises(configuration.ConfigurationError, match="must not be blank"):
+            _core._parse_progress("", "progress", strict=True)
+
+    def test_an_adapter_key_that_is_not_a_table_says_what_it_should_be(
+        self, config_file
+    ):
+        """``[nldi]`` names an adapter, so ``nldi = 4`` at top level is a
+        caller who meant a table; the message must say so rather than
+        reporting an unknown setting."""
+        config_file("nldi = 4\n")
+        with pytest.raises(configuration.ConfigurationError) as excinfo:
+            configuration.retries()
+        message = str(excinfo.value)
+        assert "[nldi]" in message
+        assert "table of settings" in message
+
+
+class TestConfigPathResolutionFailures:
+    """The file layer sits on the per-request path, so a filesystem that will
+    not answer must not take every query down with it."""
+
+    def test_an_unresolvable_home_leaves_the_file_layer_inert(self, monkeypatch):
+        """A container with no passwd entry raises from ``Path.home()``. The
+        unexpanded ``~`` form is returned instead: it does not exist, so the
+        file layer is simply empty, and the environment alone still works --
+        which is how this package behaved before settings were layered."""
+        monkeypatch.setattr(
+            _core.Path,
+            "home",
+            staticmethod(lambda: (_ for _ in ()).throw(RuntimeError)),
+        )
+        assert _core._default_home_path() == pathlib.Path(
+            "~/.dataretrieval/config.toml"
+        )
+
+    def test_a_missing_working_directory_is_a_configuration_error(self, monkeypatch):
+        """A job that deletes its own cwd cannot resolve a relative
+        DATARETRIEVAL_CONFIG. That must surface as this module's own error
+        type rather than a bare OSError escaping onto the request path."""
+        monkeypatch.setattr(
+            _core.Path,
+            "cwd",
+            staticmethod(lambda: (_ for _ in ()).throw(OSError("gone"))),
+        )
+        with pytest.raises(configuration.ConfigurationError) as excinfo:
+            _core._resolve_against_cwd(pathlib.Path("config.toml"))
+        message = str(excinfo.value)
+        assert "working directory is unavailable" in message
+        assert _core.CONFIG_PATH_ENV in message
+
+    def test_an_unreadable_config_file_names_the_path(self, tmp_path):
+        missing = tmp_path / "nope.toml"
+        with pytest.raises(configuration.ConfigurationError, match="could not read"):
+            _core._read_file_content(missing)
+
+    def test_the_home_memo_watches_the_variable_that_moves_the_path(self, monkeypatch):
+        """``ntpath.expanduser`` ignores HOME and reads USERPROFILE, so on
+        Windows the memo must watch USERPROFILE or it invalidates on a
+        variable that cannot move the path and misses the one that can."""
+        monkeypatch.setattr(_core.os, "name", "nt")
+        monkeypatch.setenv("USERPROFILE", r"C:\Users\ada")
+        monkeypatch.setenv("HOME", "/ignored")
+        assert _core._home_id() == r"C:\Users\ada"
+
+        monkeypatch.delenv("USERPROFILE")
+        monkeypatch.setenv("HOMEDRIVE", "C:")
+        monkeypatch.setenv("HOMEPATH", r"\Users\ada")
+        assert _core._home_id() == r"C:\Users\ada"
+
+
+def test_show_configuration_reports_an_unresolvable_path_as_the_file_row(
+    monkeypatch,
+):
+    """A caller runs ``show_configuration`` precisely when their config is not
+    behaving. If path resolution itself fails, raising out of the explainer
+    withholds the one answer they came for."""
+    monkeypatch.setattr(
+        configuration,
+        "config_path",
+        lambda: (_ for _ in ()).throw(
+            configuration.ConfigurationError("working directory is unavailable")
+        ),
+    )
+    out = io.StringIO()
+    dataretrieval.show_configuration(stream=out)
+    text = out.getvalue()
+    assert "config file  <unresolved:" in text
+    assert "working directory is unavailable" in text

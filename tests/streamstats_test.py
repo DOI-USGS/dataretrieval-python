@@ -93,3 +93,43 @@ def test_get_watershed_retries_transient_failure(httpx_mock, monkeypatch):
 
     assert response.status_code == 200
     assert len(httpx_mock.get_requests()) == 2
+
+
+def test_watershed_constructor_delineates_and_parses(monkeypatch):
+    """``Watershed(...)`` is the object-shaped entry point: it must issue the
+    geojson request and land the parsed fields on the instance, so a caller
+    never handles the raw response."""
+    import httpx
+
+    from dataretrieval import streamstats
+
+    captured = {}
+
+    def fake_get_watershed(rcode, x, y, **kwargs):
+        captured.update(rcode=rcode, x=x, y=y, format=kwargs.get("format"))
+        return httpx.Response(200, text=json.dumps(_SAMPLE))
+
+    monkeypatch.setattr(streamstats, "get_watershed", fake_get_watershed)
+
+    ws = Watershed("NY", -74.524, 43.939)
+
+    assert captured == {"rcode": "NY", "x": -74.524, "y": 43.939, "format": "geojson"}
+    assert ws.watershed_point == _SAMPLE["featurecollection"][0]["feature"]
+    assert ws.parameters == _SAMPLE["parameters"]
+
+
+def test_get_sample_watershed_uses_the_documented_sample_location(monkeypatch):
+    """The sample helper exists so a new user can get a real object in one
+    call; it must keep asking for the location the docstring advertises."""
+    from dataretrieval import streamstats
+
+    captured = {}
+
+    def fake_get_watershed(rcode, x, y, **kwargs):
+        captured.update(rcode=rcode, x=x, y=y, format=kwargs.get("format"))
+        return "sentinel"
+
+    monkeypatch.setattr(streamstats, "get_watershed", fake_get_watershed)
+
+    assert streamstats.get_sample_watershed() == "sentinel"
+    assert captured == {"rcode": "NY", "x": -74.524, "y": 43.939, "format": "object"}
