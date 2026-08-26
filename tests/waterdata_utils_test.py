@@ -1395,6 +1395,159 @@ def test_real_queryables_still_pass_through(name):
     assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}
 
 
+# ---------------------------------------------------------------------------
+# Feature-frame fast paths (vectorized points, flat properties)
+# ---------------------------------------------------------------------------
+
+_POINT_FEATURES = [
+    {
+        "id": "f-1",
+        "properties": {"id": "wire-1", "value": "1", "site": "USGS-A"},
+        "geometry": {"type": "Point", "coordinates": [-77.1, 38.9]},
+    },
+    {
+        "id": "f-2",
+        "properties": {"id": "wire-2", "value": "2", "site": "USGS-B"},
+        "geometry": {"type": "Point", "coordinates": [-80.0, 40.0]},
+    },
+    {
+        # No geometry at all (NGWMN observation shape).
+        "id": "f-3",
+        "properties": {"id": "wire-3", "value": "3", "site": "USGS-C"},
+    },
+]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_fast_path_matches_from_features():
+    """The vectorized point build is a pure speedup: identical frame,
+    column order, CRS, and missing-geometry handling as the
+    ``from_features`` fallback — including the feature-level ``id``
+    overwriting a properties ``id`` column."""
+    fast = _shaping_module._spatial_feature_frame(_POINT_FEATURES)
+    with mock.patch.object(_shaping_module, "_point_geometries", return_value=None):
+        fallback = _shaping_module._spatial_feature_frame(_POINT_FEATURES)
+
+    pd.testing.assert_frame_equal(fast, fallback)
+    assert fast.crs == "EPSG:4326"
+    assert list(fast["id"]) == ["f-1", "f-2", "f-3"]
+    assert fast.geometry.isna().tolist() == [False, False, True]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_non_point_geometry_uses_from_features():
+    """A non-point geometry anywhere disables the vectorized build; the
+    result still carries the real geometry via ``from_features``."""
+    features = _POINT_FEATURES[:1] + [
+        {
+            "id": "f-poly",
+            "properties": {"value": "4"},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]],
+            },
+        }
+    ]
+    df = _shaping_module._spatial_feature_frame(features)
+    assert df.geometry.iloc[1].geom_type == "Polygon"
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+@pytest.mark.parametrize(
+    "coordinates",
+    [
+        pytest.param([1.0, 2.0, 3.0], id="3d"),
+        pytest.param([1.0], id="single"),
+        pytest.param({"x": 1.0, "y": 2.0}, id="mapping"),
+        # A pair of non-scalars passes the shape check and is refused by the
+        # array build instead, which is the only param reaching that branch.
+        pytest.param([[1.0, 2.0], [3.0, 4.0]], id="ragged"),
+    ],
+)
+def test_point_geometries_rejects_malformed_coordinates(coordinates):
+    """Coordinates that are not a usable 2-element pair disable the fast path
+    rather than building a wrong geometry."""
+    features = [
+        {
+            "id": "f",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": coordinates},
+        }
+    ]
+    assert _shaping_module._point_geometries(features) is None
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_nested_properties_match_the_fallback():
+    """A nested property must not change the spatial column names.
+
+    ``from_features`` keeps raw dicts, so if the fast path normalized, one
+    chunk being all points and the next holding a LineString would emit
+    ``nested_x`` and ``nested`` for the same collection — and a chunked
+    concat would carry both, each half NaN.
+    """
+    nested = [
+        {
+            "id": "f-1",
+            "properties": {"value": "1", "nested": {"x": "y"}},
+            "geometry": {"type": "Point", "coordinates": [-77.1, 38.9]},
+        },
+        {
+            "id": "f-2",
+            "properties": {"value": "2", "nested": {"x": "z"}},
+            "geometry": {"type": "Point", "coordinates": [-80.0, 40.0]},
+        },
+    ]
+    mixed = nested + [
+        {
+            "id": "f-3",
+            "properties": {"value": "3", "nested": {"x": "w"}},
+            "geometry": {"type": "LineString", "coordinates": [[0, 0], [1, 1]]},
+        }
+    ]
+
+    all_points = _shaping_module._spatial_feature_frame(nested)
+    with_a_line = _shaping_module._spatial_feature_frame(mixed)
+
+    assert list(all_points.columns) == list(with_a_line.columns)
+    assert "nested" in all_points.columns and "nested_x" not in all_points.columns
+    # The page that can take the fast path declines it, so both go through
+    # ``from_features`` and a concat stays single-columned.
+    assert _shaping_module._point_feature_frame(nested) is None
+    assert list(pd.concat([all_points, with_a_line]).columns) == list(
+        all_points.columns
+    )
+
+
+def test_properties_frame_flat_matches_normalize():
+    """Flat properties take the plain-DataFrame path and match
+    ``json_normalize`` exactly."""
+    properties = [
+        {"a": "1", "b": None},
+        {"a": "2", "b": "x"},
+    ]
+    fast, normalized = _shaping_module._properties_frame(
+        [{"properties": p} for p in properties]
+    )
+    pd.testing.assert_frame_equal(fast, pd.json_normalize(properties, sep="_"))
+    assert normalized is False
+
+
+def test_properties_frame_nested_still_normalizes():
+    """One nested value anywhere routes the whole page through
+    ``json_normalize`` so no row keeps a raw dict."""
+    properties = [
+        {"a": "1", "nested": None},
+        {"a": "2", "nested": {"x": "y"}},
+    ]
+    df, normalized = _shaping_module._properties_frame(
+        [{"properties": p} for p in properties]
+    )
+    assert normalized is True
+    assert "nested_x" in df.columns
+    assert not any(isinstance(v, dict) for v in df.to_numpy().ravel())
+
+
 class TestWireIdSwitch:
     """The API keys every collection on ``id``; callers spell it after the
     collection (``monitoring_location_id``). The switch happens here, and

@@ -11,11 +11,13 @@ pagination machinery in :mod:`dataretrieval.ogc.engine`.
 from __future__ import annotations
 
 import logging
+import math
 import re
 from typing import Any
 
 import httpx
 import pandas as pd
+from pandas.api.types import infer_dtype
 
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
@@ -34,6 +36,11 @@ logger = logging.getLogger(__name__)
 # spatial joins fail). Mirrors the constants in ``nldi`` (EPSG:4326) and ``nwis``
 # (EPSG:4269).
 _CRS = "EPSG:4326"
+
+# What ``infer_dtype`` reports for an object column that cannot hide a dict.
+# Named this way round so a label this package has not seen falls through to
+# the authoritative scan rather than silently skipping it.
+_FLAT_DTYPES = frozenset({"string", "empty"})
 
 # Whether geopandas is present is a static, environment-level fact, so warn
 # once here at import time rather than per query/chunk.
@@ -99,23 +106,125 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     )
 
 
+def _properties_frame(features: list[dict[str, Any]]) -> tuple[pd.DataFrame, bool]:
+    """Build the frame of feature properties, and say whether values nested.
+
+    Flat properties — every Water Data / NGWMN collection — build with the
+    plain ``DataFrame`` constructor; a nested value in *any* feature routes
+    the whole page through ``json_normalize`` so no row keeps a raw dict.
+    Dicts can only land in object-dtype columns, and only in one whose
+    values ``infer_dtype`` does not call flat, so the Python scan runs on
+    those alone — under pandas 2, where every string column is object dtype,
+    that is the difference between scanning one column and scanning all of
+    them.
+
+    The second element reports whether ``json_normalize`` was needed. Only
+    the plain builder may act on a normalized frame: ``from_features`` keeps
+    raw dicts, so a spatial page that normalized would disagree with its own
+    fallback about the column names (see :func:`_point_feature_frame`).
+    """
+    properties = [feature.get("properties") or {} for feature in features]
+    frame = pd.DataFrame(properties)
+    if any(_holds_nested_value(column) for _, column in frame.items()):
+        return pd.json_normalize(properties, sep="_"), True
+    return frame, False
+
+
+def _holds_nested_value(column: pd.Series) -> bool:
+    """Whether a built column carries a raw dict that needs flattening."""
+    if column.dtype != object:
+        return False
+    values = column.to_numpy()
+    if infer_dtype(values, skipna=True) in _FLAT_DTYPES:
+        return False
+    return any(isinstance(value, dict) for value in values)
+
+
 def _plain_feature_frame(
     features: list[dict[str, Any]], *, include_geometry: bool
 ) -> pd.DataFrame:
     """Build a plain DataFrame from GeoJSON features."""
-    properties = [feature.get("properties") or {} for feature in features]
-    df = pd.json_normalize(properties, sep="_")
+    df, _ = _properties_frame(features)
     df["id"] = [feature.get("id") for feature in features]
     if include_geometry:
         _attach_coordinates(df, features)
     return df
 
 
+def _point_geometries(features: list[dict[str, Any]]) -> Any:
+    """Build the geometry array for an all-2D-point page in one vectorized
+    :func:`geopandas.points_from_xy` call.
+
+    Returns ``None`` when any feature carries a non-point (or malformed)
+    geometry, so the caller falls back to ``GeoDataFrame.from_features``.
+    A feature with no geometry stays ``None`` in the result, matching the
+    fallback (:func:`_geo_feature_frame`, which handles the same omission for
+    the slow path). Two flat x/y lists rather than coordinate pairs: the
+    paired form is ~1.6x slower.
+    """
+    xs: list[Any] = []
+    ys: list[Any] = []
+    missing: list[int] = []
+    for index, feature in enumerate(features):
+        geometry = feature.get("geometry") or {}
+        if not geometry:
+            missing.append(index)
+            xs.append(math.nan)
+            ys.append(math.nan)
+            continue
+        xy: Any = geometry.get("coordinates")
+        if geometry.get("type") != "Point" or not _is_pair(xy):
+            return None
+        xs.append(xy[0])
+        ys.append(xy[1])
+    try:
+        points = gpd.points_from_xy(xs, ys)
+    except (TypeError, ValueError):
+        return None
+    points[missing] = None
+    return points
+
+
+def _is_pair(value: Any) -> bool:
+    """Whether ``value`` is a two-element coordinate sequence."""
+    return isinstance(value, (list, tuple)) and len(value) == 2
+
+
+def _point_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame | None:
+    """Fast-path GeoDataFrame for an all-2D-point page, or ``None`` to fall
+    back to :func:`_geo_feature_frame`.
+
+    Declines a page whose properties needed flattening: ``from_features``
+    leaves nested values as raw dicts, so normalizing here would make a
+    chunked call's column names depend on whether each page happened to be
+    all points. Declines a ``geometry`` *property* too — it collides with
+    the geometry column, and while this constructor would let the real
+    geometry win, ``from_features`` lets the property overwrite it and then
+    raises, so neither path claims to shape it.
+
+    Properties are built first: both bail-outs are decided from that frame,
+    and the geometry array would otherwise be built only to be thrown away.
+    """
+    frame, normalized = _properties_frame(features)
+    if normalized or "geometry" in frame.columns:
+        return None
+    points = _point_geometries(features)
+    if points is None:
+        return None
+    return gpd.GeoDataFrame(frame, geometry=points, crs=_CRS)
+
+
 def _spatial_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
     """Build a GeoDataFrame from GeoJSON features with ``id`` first."""
-    df = _geo_feature_frame(features)
+    df = _point_feature_frame(features)
+    if df is None:
+        df = _geo_feature_frame(features)
     df["id"] = [f.get("id") for f in features]
-    return df[["id"] + [col for col in df.columns if col != "id"]]
+    # Pin both names: the fast path appends ``geometry`` last and
+    # ``from_features`` emits it first, so only naming them keeps the two
+    # paths' column order identical across a chunked concat.
+    ordered = ["id", "geometry"]
+    return df[ordered + [col for col in df.columns if col not in ordered]]
 
 
 def _get_resp_data(
