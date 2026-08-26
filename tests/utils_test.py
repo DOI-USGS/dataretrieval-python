@@ -1,5 +1,6 @@
 """Unit tests for functions in utils.py"""
 
+import warnings
 from unittest import mock
 
 import numpy
@@ -234,7 +235,7 @@ class Test_error_taxonomy:
             ServiceUnavailable,
             Unchunkable,
         )
-        from dataretrieval.ogc.interruptions import ChunkInterrupted
+        from dataretrieval.interruptions import ChunkInterrupted
 
         for cls in (RateLimited, ServiceUnavailable, Unchunkable, ChunkInterrupted):
             assert issubclass(cls, exceptions.DataRetrievalError)
@@ -254,10 +255,10 @@ class Test_error_taxonomy:
     def test_chunk_interruptions_exported_at_top_level(self):
         """The resumable chunk-interruption exceptions are reachable from the
         top level (``from dataretrieval import ChunkInterrupted``) instead of
-        only the internal ``dataretrieval.ogc.interruptions`` module, and
-        resolve to the same classes."""
+        only the internal ``dataretrieval.interruptions`` leaf, and resolve to
+        the same classes."""
         import dataretrieval
-        from dataretrieval.ogc import interruptions
+        from dataretrieval import interruptions
 
         for name in ("ChunkInterrupted", "QuotaExhausted", "ServiceInterrupted"):
             assert getattr(dataretrieval, name) is getattr(interruptions, name)
@@ -269,6 +270,46 @@ class Test_error_taxonomy:
         assert issubclass(
             dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
         )
+
+    def test_ordinary_imports_do_not_load_ogc_interruptions(self):
+        """Only callers naming the deprecated path should see its warning."""
+        import importlib
+        import sys
+
+        import dataretrieval
+        import dataretrieval.ogc as ogc
+
+        sys.modules.pop("dataretrieval.ogc.interruptions", None)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            importlib.reload(ogc)
+
+        assert not [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert "dataretrieval.ogc.interruptions" not in sys.modules
+        assert dataretrieval.ChunkInterrupted is not None
+
+    def test_ogc_interruptions_path_warns_and_names_the_replacement(self):
+        """The v1.2.0 import path works through its migration window."""
+        import importlib
+        import sys
+
+        sys.modules.pop("dataretrieval.ogc.interruptions", None)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            module = importlib.import_module("dataretrieval.ogc.interruptions")
+
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert len(deprecations) == 1, [str(w.message) for w in caught]
+        message = str(deprecations[0].message)
+        assert "`dataretrieval.ogc.interruptions` is deprecated" in message
+        assert "`dataretrieval.interruptions`" in message
+        assert module.OGC_INTERRUPTIONS_REMOVAL_DATE in message
+        assert "future major release" in message
+
+        import dataretrieval
+
+        for name in module.__all__:
+            assert getattr(module, name) is getattr(dataretrieval, name)
 
     def test_parallel_chunks_exported_at_top_level_and_waterdata(self):
         """The ``parallel_chunks`` context manager is reachable both from the top

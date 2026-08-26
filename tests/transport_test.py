@@ -168,16 +168,18 @@ def test_sync_bridge_runs_async_operation() -> None:
 
 
 def test_retry_tunables_have_a_single_home() -> None:
-    """Patching the tunables must reach the policy that reads them.
+    """Patching retry tunables must reach the policy that reads them."""
+    from dataretrieval import interruptions
 
-    Re-exporting them from ``ogc.retry`` would hand out copies taken at import
-    time, so patching that path would change a value nothing consults. That
-    module owns OGC classification only.
-    """
-    import dataretrieval.ogc.retry as ogc_retry
+    assert not [name for name in vars(interruptions) if name.startswith("_RETRY")]
 
-    assert not [name for name in vars(ogc_retry) if name.startswith("_RETRY")]
-    assert set(ogc_retry.__all__) == {"_classify_chunk_error", "_classify_transient"}
+
+def test_retired_ogc_retry_shim_stays_absent() -> None:
+    """The private OGC retry re-export must not be recreated."""
+    import importlib
+
+    with pytest.raises(ModuleNotFoundError):
+        importlib.import_module("dataretrieval.ogc.retry")
 
 
 def test_parse_retry_after_accepts_http_date() -> None:
@@ -557,7 +559,7 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     that cannot be resumed, hiding the ``NetworkError`` that actually explains
     the failure.
     """
-    from dataretrieval.ogc.retry import _classify_chunk_error
+    from dataretrieval.interruptions import _classify_chunk_error
 
     permanent = _wrapped_dns_failure(socket.EAI_NONAME)
     assert retry._retryable(permanent) == (False, None)
