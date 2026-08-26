@@ -179,6 +179,7 @@ def _construct_api_requests(
         if key in kwargs:
             kwargs[key] = _format_api_dates(
                 kwargs[key],
+                name=key,
                 date=(
                     collection in dialect.date_only_services and key != "last_modified"
                 ),

@@ -148,7 +148,16 @@ def get_cql(
         ...     ' "02070010%"]}',
         ... )
     """
-    require_one_of(collection, sorted(_OUTPUT_ID_BY_COLLECTION), name="collection")
+    require_one_of(
+        collection,
+        sorted(_OUTPUT_ID_BY_COLLECTION),
+        name="collection",
+        remedy=(
+            "The service serves more collections than these; for the full "
+            "inventory call get_queryables(<collection id>), which accepts "
+            "any collection string."
+        ),
+    )
 
     # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a

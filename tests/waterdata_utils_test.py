@@ -903,6 +903,54 @@ def test_format_api_dates(value, date, expected):
     assert _format_api_dates(value, date=date) == expected
 
 
+def test_format_api_dates_passes_none_through():
+    """``None`` means "no date filter", not an empty one."""
+    assert _format_api_dates(None) is None
+
+
+def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
+    """``[None, None]`` is an interval with no endpoints, which is no filter at
+    all -- sending ``../..`` would be a query the service has to reject."""
+    assert _format_api_dates([None, None]) is None
+    assert _format_api_dates(["", ""]) is None
+
+
+def test_format_api_dates_rejects_more_than_two_values():
+    """A date filter is an instant, a duration, or a closed interval. Three
+    values is a caller who meant something else, and the message says which
+    shapes exist rather than truncating silently."""
+    with pytest.raises(ValueError) as excinfo:
+        _format_api_dates(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
+    message = str(excinfo.value)
+    assert "time takes at most 2 values, got 3" in message
+    assert "closed interval" in message
+
+
+def test_the_duration_example_is_withheld_where_durations_are_rejected():
+    """``get_ratings`` refuses ISO 8601 durations, so the shared message must
+    not offer 'P7D' on that path -- a caller following it would be sent
+    straight into a second rejection."""
+    with pytest.raises(ValueError) as allowed:
+        _format_api_dates(["a", "b", "c"], name="time")
+    with pytest.raises(ValueError) as refused:
+        _format_api_dates(
+            ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
+        )
+
+    assert "'P7D'" in str(allowed.value)
+    assert "'P7D'" not in str(refused.value)
+    assert "an instant ('2020-01-01')" in str(refused.value)
+
+
+def test_format_api_dates_names_the_callers_parameter():
+    """The subject must be the argument the caller passed. It used to be
+    ``datetime_input`` -- a local of this private helper that no public getter
+    accepts, so correcting the argument the message named sent an
+    unrecognized parameter."""
+    with pytest.raises(TypeError, match="^time must be a string"):
+        _format_api_dates({"2024-01-01": "ignored"}, name="time")
+
+
 def test_format_api_dates_rejects_mapping():
     """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
     accepting input the user clearly didn't intend.
@@ -1269,11 +1317,11 @@ def test_with_state_routes_into_native_queryable():
 def test_with_state_conflict_raises():
     """Passing ``state`` together with a native ``state_code``/``state_name``
     is ambiguous and raises."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_code": "55"}, to="name", into="state_name"
         )
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_name": "Wisconsin"}, to="name", into="state_name"
         )
@@ -1284,7 +1332,7 @@ def test_with_state_conflict_via_queryables_raises():
     explicit getter parameter, as with ``get_time_series_metadata``'s
     ``state_code``) is flattened before the mutual-exclusion check, so combining
     it with ``state`` still raises rather than silently sending both filters."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
             to="name",
@@ -1345,3 +1393,99 @@ def test_credential_shaped_queryables_are_rejected(name):
 )
 def test_real_queryables_still_pass_through(name):
     assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}
+
+
+class TestWireIdSwitch:
+    """The API keys every collection on ``id``; callers spell it after the
+    collection (``monitoring_location_id``). The switch happens here, and
+    dropping the wrong key silently sends an unfiltered query."""
+
+    def test_the_collection_scoped_spelling_becomes_id(self):
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        # The collection-derived spelling wins over the getter's own id_name.
+        out = _switch_arg_id(
+            {"monitoring_locations_id": "USGS-01646500"},
+            "some_other_id",
+            "monitoring-locations",
+        )
+        assert out == {"id": "USGS-01646500"}
+
+    def test_the_getters_own_id_name_becomes_id(self):
+        """A getter whose id argument is not the collection name + ``_id``
+        still has its spelling translated."""
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        out = _switch_arg_id({"site_id": "X"}, "site_id", "daily")
+        assert out == {"id": "X"}
+
+    def test_an_explicit_id_wins_and_the_aliases_are_dropped(self):
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        out = _switch_arg_id(
+            {"id": "chosen", "daily_id": "ignored"}, "daily_id", "daily"
+        )
+        assert out == {"id": "chosen"}
+
+
+def test_extract_features_returns_none_for_a_missing_body():
+    """``None`` means "give the caller an empty frame". An empty features list
+    is a real mid-pagination shape, and letting it through would crash the
+    downstream merge with a missing join key rather than returning nothing."""
+    from dataretrieval.waterdata.stats import _extract_features
+
+    assert _extract_features(None) is None
+    assert _extract_features({"features": []}) is None
+    assert _extract_features({"features": [{"id": 1}]}) == [{"id": 1}]
+
+
+def test_next_req_url_parses_the_body_when_not_handed_one():
+    """The page walk normally passes the already-parsed body to avoid a second
+    parse; the no-body path is what a caller outside the walk gets, and it must
+    still find the link rather than returning None and truncating the walk."""
+    from dataretrieval.ogc.engine import _next_req_url
+
+    payload = {
+        "features": [{"id": 1}],
+        "links": [{"rel": "next", "href": "https://example.test/page2"}],
+    }
+    response = httpx.Response(
+        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    )
+
+    assert _next_req_url(response) == "https://example.test/page2"
+
+
+def test_next_req_url_stops_on_a_page_with_no_features():
+    """A ``next`` link on a featureless page is the service's pagination
+    running past the end; following it would loop."""
+    from dataretrieval.ogc.engine import _next_req_url
+
+    payload = {
+        "features": [],
+        "links": [{"rel": "next", "href": "https://example.test/page2"}],
+    }
+    response = httpx.Response(
+        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    )
+
+    assert _next_req_url(response) is None
+
+
+class TestOgcJsonErrorDetail:
+    """The service's own wording is surfaced when it sends one; anything else
+    must fall back to the status-derived message rather than raising while
+    building an error."""
+
+    def test_a_non_json_body_yields_no_detail(self):
+        from dataretrieval.ogc.errors import _json_error_detail
+
+        resp = httpx.Response(400, text="<html>gateway</html>")
+        assert _json_error_detail(resp) is None
+
+    def test_a_json_scalar_body_yields_no_detail(self):
+        """A bare string or list is valid JSON but carries no error envelope."""
+        from dataretrieval.ogc.errors import _json_error_detail
+
+        assert _json_error_detail(httpx.Response(400, json="just a string")) is None
+        assert _json_error_detail(httpx.Response(400, json=[1, 2, 3])) is None

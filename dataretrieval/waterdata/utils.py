@@ -168,12 +168,12 @@ def _get_args(
 
 
 def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:
-    """Resolve the unified ``state`` argument into an endpoint's state queryable.
+    """Resolve the unified ``state`` argument into an API state parameter.
 
     Returns the (mutated) args mapping. ``state`` is the canonical,
     format-flexible parameter (full name / postal / FIPS); it is normalized via
     :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
-    and stored under ``into`` (the queryable this endpoint actually filters on).
+    and stored under ``into`` (the API parameter this endpoint filters on).
     It is additive sugar over the native ``state_code`` / ``state_name``
     parameters, which still accept the API's raw values (e.g. non-US FIPS);
     passing ``state`` together with either raises ``ValueError``.

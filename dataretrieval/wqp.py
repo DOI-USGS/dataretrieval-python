@@ -744,9 +744,19 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
 
     mimetype = kwargs.get("mimeType")
     if mimetype == "geojson":
-        raise NotImplementedError("GeoJSON not yet supported. Set 'mimeType=csv'.")
+        raise NotImplementedError(
+            "GeoJSON is not supported by this package. Pass mimeType='csv' "
+            "(the default); coordinates are not in the default Result "
+            "profile -- get them from dataretrieval.wqp.what_sites "
+            "(LatitudeMeasure/LongitudeMeasure), from the returned "
+            "metadata's .site_info, or by passing legacy=False, whose "
+            "WQX3.0 profiles include Location_Latitude/Location_Longitude."
+        )
     elif mimetype != "csv" and mimetype is not None:
-        raise ValueError("Invalid mimeType. Set 'mimeType=csv'.")
+        raise ValueError(
+            f"Invalid mimeType: {mimetype!r}. Pass mimeType='csv', or omit it "
+            "-- csv is the only format this package parses."
+        )
     else:
         kwargs["mimeType"] = "csv"
 

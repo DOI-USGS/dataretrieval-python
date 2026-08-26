@@ -14,6 +14,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
+from dataretrieval._validation import reject_together, require_one_of
+
 state_codes = {
     "Alabama": "al",
     "Alaska": "ak",
@@ -196,15 +198,14 @@ def _to_state_one(value: str | int, to: str) -> str:
 
 def _format_state(name: str, to: str) -> str:
     """Render a canonical state *name* in the ``to`` representation."""
+    require_one_of(to, ("name", "postal", "fips", "fips_us"), name="to")
     if to == "name":
         return name
     if to == "postal":
         return state_codes[name].upper()
     if to == "fips":
         return fips_codes[name]
-    if to == "fips_us":
-        return f"US:{fips_codes[name]}"
-    raise ValueError(f"to must be 'name', 'postal', 'fips', or 'fips_us'; got {to!r}")
+    return f"US:{fips_codes[name]}"
 
 
 def apply_state(
@@ -214,19 +215,44 @@ def apply_state(
     into: str,
     reject: tuple[str, ...] = (),
 ) -> dict[str, Any]:
-    """Resolve a unified ``state`` kwarg into an endpoint's native queryable.
+    """Resolve a unified ``state`` kwarg into an API query parameter.
 
     Pops ``state`` from ``local_vars`` (a no-op when absent), normalizes it via
     :func:`to_state` to the ``to`` representation, and stores the result under
-    ``into`` -- the queryable the endpoint actually filters on. ``reject`` names
+    ``into`` -- the API query parameter the endpoint filters on. ``reject`` names
     native state parameters that must not be combined with ``state``; passing
     ``state`` alongside any of them raises ``ValueError``. Returns the (mutated)
     ``local_vars``.
+
+    An unrecognized ``state`` is re-raised naming the parameters in ``reject``,
+    and only those. They are the endpoint's own state parameters as the public
+    getter spells them: the mutual-exclusion guard below proves the getter
+    accepts them as keyword arguments. ``into`` is deliberately not offered,
+    because an API query parameter need not exist on the getter's signature --
+    NGWMN's ``get_sites`` filters on ``state_name`` but accepts only ``state``,
+    so naming ``into`` there produced a remedy that raises ``TypeError`` when
+    followed. An endpoint with an empty ``reject`` has no alternative spelling
+    to offer, so it appends nothing rather than pointing back at the argument
+    that just failed.
     """
     state = local_vars.pop("state", None)
     if state is None:
         return local_vars
-    if any(local_vars.get(p) is not None for p in reject):
-        raise ValueError(f"Pass `state`, or {'/'.join(reject)}, but not both.")
-    local_vars[into] = to_state(state, to)
+    reject_together(
+        {"state": state, **{p: local_vars.get(p) for p in reject}},
+        context="they filter on the same thing",
+    )
+    try:
+        local_vars[into] = to_state(state, to)
+    except ValueError as err:
+        if not reject:
+            # No native spelling of the getter's own to offer instead.
+            raise
+        # Only ``reject`` proves the getter accepts a spelling; ``into`` is the
+        # API query parameter, so it leads only when it appears there too.
+        offered = dict.fromkeys(n for n in (into, *reject) if n in reject)
+        raise ValueError(
+            f"{err} Pass {' or '.join(offered)} directly instead, using the "
+            "API's native value."
+        ) from err
     return local_vars

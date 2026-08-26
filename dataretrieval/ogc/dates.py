@@ -83,13 +83,14 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
 
 def _coerce_to_list(
     datetime_input: str | Sequence[str | None],
+    name: str = "date input",
 ) -> list[str | None]:
     """Normalize datetime input to a list, raising on invalid shapes."""
     if isinstance(datetime_input, str):
         return [datetime_input]
     if isinstance(datetime_input, Mapping):
         raise TypeError(
-            f"date input must be a string or sequence of strings, "
+            f"{name} must be a string or sequence of strings, "
             f"not {type(datetime_input).__name__}."
         )
     return list(datetime_input)
@@ -106,7 +107,11 @@ def _all_blank(items: list[str | None]) -> bool:
 
 
 def _format_api_dates(
-    datetime_input: str | Sequence[str | None] | None, date: bool = False
+    datetime_input: str | Sequence[str | None] | None,
+    date: bool = False,
+    *,
+    name: str = "date input",
+    single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -125,6 +130,17 @@ def _format_api_dates(
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+    name : str, optional
+        The caller's own spelling of this argument, used as the subject of
+        every message raised here. Defaults to a generic "date input"; pass
+        the real parameter name (``"time"``, ``"last_modified"``) so a caller
+        correcting the error edits an argument their getter actually accepts.
+    single_value_hint : str, optional
+        How the "too many values" message describes an acceptable single
+        value. Wording only -- a getter that rejects some of the default's
+        forms (``get_ratings`` refuses durations) enforces that itself and
+        passes a hint naming only what it accepts, so the remedy does not
+        send a caller straight into its rejection.
 
     Returns
     -------
@@ -157,13 +173,17 @@ def _format_api_dates(
     if datetime_input is None:
         return None
 
-    items = _coerce_to_list(datetime_input)
+    items = _coerce_to_list(datetime_input, name)
 
     if _all_blank(items):
         return None
 
     if len(items) > 2:
-        raise ValueError("datetime_input should only include 1-2 values")
+        raise ValueError(
+            f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
+            f"Pass one value for {single_value_hint}, "
+            "or two for a closed interval ('2020-01-01', '2020-12-31')."
+        )
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
     if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):

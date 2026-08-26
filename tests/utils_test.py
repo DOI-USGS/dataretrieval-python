@@ -2,6 +2,7 @@
 
 from unittest import mock
 
+import numpy
 import pandas as pd
 import pytest
 
@@ -448,7 +449,7 @@ class Test_to_state:
     def test_rejects_unknown_target(self):
         from dataretrieval.codes.states import to_state
 
-        with pytest.raises(ValueError, match="to must be"):
+        with pytest.raises(ValueError, match="Invalid to"):
             to_state("WI", "zipcode")
 
     def test_resolves_an_iterable_element_wise(self):
@@ -464,6 +465,18 @@ class Test_to_state:
         # A bad element fails the whole call (fail-fast).
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
+
+    def test_the_table_names_no_endpoint_parameter_of_its_own(self):
+        """``to_state`` is a pure conversion with no ``state`` argument and no
+        endpoint behind it, so its rejection must not tell a caller to pass a
+        differently-named parameter that this call does not accept."""
+        from dataretrieval.codes.states import to_state
+
+        with pytest.raises(ValueError) as excinfo:
+            to_state("Atlantis")
+        message = str(excinfo.value)
+        assert "state_name" not in message
+        assert "state_code" not in message
 
 
 class TestTerritories:
@@ -502,6 +515,40 @@ class TestTerritories:
         }
 
 
+class TestApplyStateUnrecognized:
+    """The remedy for an unknown value names the endpoint's API state parameter.
+
+    Which parameter is public differs by endpoint, so the message must be built
+    where those names are known.
+    """
+
+    def test_the_remedy_names_this_endpoints_native_parameters(self):
+        from dataretrieval.codes.states import apply_state
+
+        with pytest.raises(ValueError) as excinfo:
+            apply_state(
+                {"state": "Atlantis"},
+                to="name",
+                into="state_name",
+                reject=("state_code", "state_name"),
+            )
+        message = str(excinfo.value)
+        assert "not a recognized US state" in message
+        assert "Pass state_name or state_code directly instead" in message
+        assert "using the API's native value" in message
+
+    def test_an_endpoint_with_no_alternative_offers_none(self):
+        """NGWMN's getters expose only the unified ``state``, so appending a
+        remedy from ``into`` sent a caller to ``get_sites(state_name=...)``
+        (``TypeError``) or straight back into this same error."""
+        from dataretrieval.codes.states import apply_state
+
+        for into, to in (("state", "postal"), ("state_name", "name")):
+            with pytest.raises(ValueError) as excinfo:
+                apply_state({"state": "Atlantis"}, to=to, into=into)
+            assert "instead" not in str(excinfo.value)
+
+
 def test_retrying_get_maps_invalid_url(monkeypatch):
     """Direct active-service GETs do not leak raw httpx InvalidURL errors."""
     import httpx
@@ -514,3 +561,57 @@ def test_retrying_get_maps_invalid_url(monkeypatch):
 
     with pytest.raises(exceptions.URLTooLong):
         _querying._get_with_retry("https://example.invalid")
+
+
+class TestFormatDatetime:
+    """``format_datetime`` joins the three columns NWIS RDB splits a
+    timestamp across, and is the only place the package parses a local time
+    with a named zone."""
+
+    def test_joins_date_time_and_zone_into_utc(self):
+        df = pd.DataFrame(
+            {
+                "sample_dt": ["2018-01-24", "2018-06-24"],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EDT"],
+            }
+        )
+
+        out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert str(out["datetime"].dt.tz) == "UTC"
+        # EST is -0500 and EDT -0400, so the same wall clock is a different
+        # instant in each row -- the reason the zone column cannot be ignored.
+        assert out["datetime"][0].hour == 15
+        assert out["datetime"][1].hour == 14
+
+    def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
+        """An unparseable row becomes NaT rather than failing the whole frame,
+        but silently dropping timestamps would be a wrong answer -- so it
+        warns, and names the switch that avoids the loss."""
+        df = pd.DataFrame(
+            {
+                # A missing date field, as an RDB row with an unrecorded
+                # sample date arrives. There is no ``errors="coerce"``, so a
+                # malformed *string* raises; only an absent value reaches here.
+                "sample_dt": ["2018-01-24", numpy.nan],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EST"],
+            }
+        )
+
+        with pytest.warns(UserWarning, match="incomplete dates"):
+            out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert out["datetime"].isna().sum() == 1
+        assert out["datetime"].notna().sum() == 1
+
+
+def test_base_metadata_repr_names_the_type_and_url():
+    """``md`` is what a user prints when a query surprises them, so the repr
+    has to say which metadata class it is and which URL produced it."""
+    response = mock.MagicMock()
+    response.url = "https://example.test/items?limit=1"
+    md = utils.BaseMetadata(response)
+    assert "BaseMetadata" in repr(md)
+    assert "https://example.test/items?limit=1" in repr(md)
