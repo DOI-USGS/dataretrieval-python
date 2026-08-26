@@ -401,6 +401,34 @@ def test_next_req_url_stops_when_no_features():
     assert _next_req_url(resp, body=body) is None
 
 
+def test_merge_response_empties_the_body_but_keeps_the_rest():
+    """``_drop_body`` writes httpx's private ``_content`` slot, so a rename
+    upstream would silently stop freeing anything -- ``.content`` would keep
+    returning real bytes and only the heap would regress. Pin both halves:
+    the aggregate carries no body, and status/headers/URL still read."""
+    from dataretrieval.combining import _merge_response
+
+    page = httpx.Response(200, headers={"x-page": "1"}, content=b'{"features": []}')
+    page._request = httpx.Request("GET", "https://example.com/items?page=1")
+    assert page.text  # an adapter that parses via .text caches the decoded body
+
+    merged = _merge_response(
+        page,
+        headers_from=page,
+        elapsed=datetime.timedelta(seconds=2),
+        url="https://example.com/items",
+    )
+
+    assert merged.content == b""
+    # ``.text`` is cached in its own slot and rides along on the shallow copy,
+    # so clearing only ``_content`` would leave the two accessors disagreeing.
+    assert merged.text == ""
+    assert page.content == b'{"features": []}'  # the base is never mutated
+    assert merged.status_code == 200
+    assert merged.headers["x-page"] == "1"
+    assert str(merged.url) == "https://example.com/items"
+
+
 def test_walk_pages_does_not_mutate_initial_response():
     """The aggregated response returned from ``_walk_pages`` is built
     via ``_merge_response``, which returns a fresh copy.
