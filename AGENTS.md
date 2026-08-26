@@ -30,5 +30,10 @@
 - `dataretrieval/__init__.py` star-imports service modules; `dataretrieval/waterdata/__init__.py` controls Water Data exports via `__all__`.
 - `dataretrieval.waterdata.utils._default_headers()` adds `X-Api-Key` from `API_USGS_PAT`; never hard-code tokens in examples or tests.
 - Water Data request builders translate Python kwargs to API spellings (`skip_geometry` -> `skipGeometry`, `filter_lang` -> `filter-lang`); tests assert exact URLs/query params.
-- Multi-value OGC params are comma-joined GETs, except `monitoring-locations` which POSTs CQL2 JSON. The OGC edge WAF caps total request bytes (URL + body) at ~8200, so `dataretrieval/waterdata/chunking.py` auto-splits oversized queries across sub-requests (both GET and POST paths); preserve this when adding new list-shaped kwargs.
+- Multi-value OGC params are comma-joined GETs, except `monitoring-locations`
+  and `combined-metadata`, which POST CQL2 JSON because comma-joined values
+  return no rows. The OGC edge WAF caps total request bytes (URL + body) at
+  ~8200, so `dataretrieval/waterdata/chunking.py` auto-splits oversized queries
+  across sub-requests (both GET and POST paths); preserve this when adding new
+  list-shaped kwargs.
 - NLDI requires `geopandas` at import time (`pip install .[nldi]`); other modules fall back to pandas when geopandas is absent.

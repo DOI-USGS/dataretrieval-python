@@ -74,11 +74,11 @@ _EXTRA_ID_COLS = frozenset(
 )
 
 # The Water Data API dialect: ``monitoring-locations`` and
-# ``combined-metadata`` don't accept comma-separated multi-value GET params
-# (so they must POST CQL2 JSON), ``daily`` renders its time arguments date-only
-# (``YYYY-MM-DD``), and the ``time_cols``/``numerical_cols``/``sort_cols`` are
-# the Water-Data column vocabulary used to coerce datetime/numeric columns and
-# to sort results.
+# ``combined-metadata`` don't interpret comma-separated GET params as multiple
+# values (they return empty results, so multi-value filters must POST CQL2 JSON),
+# ``daily`` renders its time arguments date-only (``YYYY-MM-DD``), and the
+# ``time_cols``/``numerical_cols``/``sort_cols`` are the Water-Data column
+# vocabulary used to coerce datetime/numeric columns and to sort results.
 WATERDATA_DIALECT = OgcDialect(
     cql2_services=frozenset({"combined-metadata", "monitoring-locations"}),
     date_only_services=frozenset({"daily"}),
