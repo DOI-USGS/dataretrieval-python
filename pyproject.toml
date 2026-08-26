@@ -33,14 +33,22 @@ dependencies = [
     # Directly imported by ``waterdata`` (``anyio.from_thread.start_blocking_portal``),
     # so declared here rather than relied on transitively via httpx.
     "anyio>=4.0",
+    # ``dataretrieval.config`` reads a TOML config file. ``tomllib`` is stdlib
+    # from 3.11, so this marker installs the backport only on 3.10 and drops
+    # itself when ``requires-python`` moves to >=3.11.
+    "tomli>=1.1.0; python_version < '3.11'",
 ]
 dynamic = ["version"]
 
-[tool.setuptools]
-packages = ["dataretrieval", "dataretrieval.codes"]
+[tool.setuptools.packages.find]
+include = ["dataretrieval*"]
 
 [tool.setuptools.package-data]
 dataretrieval = ["py.typed"]
+
+[tool.complexipy]
+max-complexity-allowed = 10
+failed = true
 
 [project.optional-dependencies]
 # Minimal set the CI ``type-check`` job installs — just mypy + the package,
@@ -48,13 +56,28 @@ dataretrieval = ["py.typed"]
 type-check = [
   "mypy",
 ]
+# Structural gates (complexity ratchets, dependency contracts) and the wily
+# trend history. Kept out of ``test`` so the test job stays lean; see
+# CONTRIBUTING.md for what each does.
+metrics = [
+  "xenon==0.9.3",
+  "wily==1.25.0",
+  "complexipy==6.2.0",
+  "import-linter==2.13",
+]
+# Advisory weekly deep sweep -- see .github/workflows/code-health.yml. Pyscn has
+# wheels only for macOS ARM64, Linux x86-64, and Windows x86-64, with no sdist,
+# so keep it separate from the extra used by merge gates and contributors.
+health = [
+  "pyscn==1.29.0",
+]
 test = [
   "pytest > 5.0.0",
   "pytest-cov[all]",
   "pytest-rerunfailures",
   "coverage",
   "pytest-httpx",
-  "ruff",
+  "ruff==0.16.1",
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
 doc = [
@@ -99,6 +122,16 @@ select = [
     "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID",
     "C90", # mccabe
     "E501", # line-length
+    # A first-party import used only in annotations is not a runtime
+    # dependency, and the project already says so twice: ``.importlinter`` sets
+    # ``exclude_type_checking_imports = True`` ("Contracts describe what runs")
+    # and ``tests/architecture_test.py`` skips ``TYPE_CHECKING`` blocks when it
+    # asserts the module seams. TC001 makes the code agree with the policy
+    # instead of leaving it to reviewer memory. TC002/TC003 (third-party and
+    # stdlib) are a separate import-cost concern with no policy behind them
+    # here, so they stay unselected.
+    "TC001",
+    "TC006", # quoted first argument to ``typing.cast``
 ]
 ignore = [
     "SIM105", # Use `contextlib.suppress(...)` instead of `try-except-pass`
@@ -137,3 +170,48 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["anyio", "anyio.*"]
 follow_imports = "skip"
+
+[tool.pytest.ini_options]
+# The suite is offline by default. Every HTTP call is mocked (see
+# ``tests/conftest.py``), so a push neither depends on USGS uptime nor spends
+# someone's rate limit. The exception is the handful of tests marked ``live``,
+# which exist precisely to notice when an upstream API changes shape -- a thing
+# a mock can never tell us, because the mock is what would need updating.
+# Deselecting them here rather than in the CI command keeps a local
+# ``pytest tests/`` doing what CI does; run them with ``-m live``.
+addopts = "-m 'not live'"
+markers = [
+  "live: hits real USGS services; deselected by default, run on a schedule",
+]
+
+[tool.coverage.run]
+source = ["dataretrieval"]
+# Most of what this package gets wrong is a branch rather than a line.
+branch = true
+omit = [
+  # Written by setuptools_scm at build time; absent from a source checkout.
+  "dataretrieval/_version.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+# 98.97% displays as "99%", which would pass a ``fail_under = 99`` on rounding.
+precision = 2
+# A ratchet: raise it as coverage rises. Lower it only when a genuinely
+# untestable path is added and excluding it would be dishonest.
+fail_under = 98.9
+# Anchored to the statement, so a pattern cannot match its own words in a
+# comment or a string. Literal strings, because TOML rejects ``\s``.
+exclude_also = [
+  # Type-checking-only imports never execute.
+  '^\s*if TYPE_CHECKING:',
+  '^\s*@overload',
+  # The suite installs the [test,nldi] extras, so an absent-dependency fallback
+  # is unreachable here by construction.
+  '^\s*except ImportError',
+  '^\s*except PackageNotFoundError',
+  # One arm is dead on every interpreter, which would otherwise make the total
+  # depend on which version measured it.
+  '^\s*if sys\.version_info',
+]

@@ -1,19 +1,86 @@
+"""Retrieve hydrologic network features from the Network Linked Data Index (NLDI).
+
+The getters below navigate the hydrologic network from an origin -- a feature
+source and id, a ``comid``, or a lat/long point -- and return flowlines, basins,
+or registered features as a ``geopandas.GeoDataFrame``, or as raw JSON when
+``as_json=True``. This module requires geopandas.
+
+See https://api.water.usgs.gov/nldi/linked-data for the API reference.
+"""
+
 from __future__ import annotations
 
+from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Any, Literal, cast
+from typing import Any, ClassVar, Literal, cast
 
-from dataretrieval.utils import query
+from dataretrieval import configuration as _configuration
+from dataretrieval._querying import _query_with_retry
+from dataretrieval._validation import (
+    reject_together,
+    render_options,
+    require_argument,
+    require_exactly_one,
+    require_one_of,
+    require_together,
+)
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
+
+__all__ = [
+    "NldiConfiguration",
+    "get_flowlines",
+    "get_basin",
+    "get_features",
+    "get_features_by_data_source",
+    "search",
+]
+
 
 try:
     import geopandas as gpd
 except ImportError as err:
-    raise ImportError("Install geopandas to use the NLDI module.") from err
+    raise ImportError(
+        "The NLDI module requires geopandas, which is not installed. "
+        "Install it with `pip install 'dataretrieval[nldi]'` "
+        "(quoted, so the shell does not glob the brackets)."
+    ) from err
 
 NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
+#: Built from the tuple above, so a mode added there cannot go unmentioned.
+_NAVIGATION_MODES_HINT = f"Pass one of {render_options(_VALID_NAVIGATION_MODES)}."
+#: Shared by the conflict check and the nothing-supplied check, so both
+#: offer the same ways forward.
+_ORIGIN_HINT = (
+    "Navigate from a comid, e.g. comid=13294314, or from a "
+    "feature_source/feature_id pair -- not both"
+)
+_ORIGIN_REMEDY = f"{_ORIGIN_HINT}."
+_ORIGIN_REMEDY_NEITHER = f"{_ORIGIN_HINT}, and not neither."
+
+
+def _api_base() -> str:
+    """The NLDI base this call targets: a block's redirect, or the service's.
+
+    Every URL below is built from this rather than from
+    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
+    reaches every navigation, basin, and catalog request alike -- a redirect
+    that covered only some of them would leave the library asking the real
+    service about the mirror's data. Resolved per call, because a ``configure``
+    block is scoped to a ``with`` statement rather than to the process.
+
+    Six call sites, which is what this seam is for; choosing between the
+    redirect and the service's own base is the accessor's job, not each
+    service's.
+    """
+    return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
 
 
 def _query_nldi(
@@ -23,7 +90,7 @@ def _query_nldi(
     # A helper function to query the NLDI API. ``query()`` already raises a
     # typed ``DataRetrievalError`` for any HTTP error response, so a returned
     # response is a success that we only need to parse.
-    response = query(url, payload=query_params)
+    response = _query_with_retry(url, payload=query_params, adapter="nldi")
     response_data: dict[str, Any] | list[Any] = {}
     try:
         response_data = response.json()
@@ -39,7 +106,7 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
 
     NLDI can legitimately return no features (e.g. a feature with nothing
     upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response
-    carries no JSON body. ``GeoDataFrame.from_features`` raises on those
+    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases
     (there's no geometry column to attach the CRS to), so return an empty
     GeoDataFrame with the correct CRS instead of crashing.
     """
@@ -47,6 +114,14 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     if not features:
         return gpd.GeoDataFrame(geometry=[], crs=_CRS)
     return gpd.GeoDataFrame.from_features(feature_collection, crs=_CRS)
+
+
+def _query_features(
+    url: str, query_params: dict[str, str], as_json: bool
+) -> gpd.GeoDataFrame | dict[str, Any]:
+    """Run an NLDI query and return the raw FeatureCollection or a GeoDataFrame."""
+    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
+    return feature_collection if as_json else _features_to_gdf(feature_collection)
 
 
 def get_flowlines(
@@ -59,8 +134,10 @@ def get_flowlines(
     trim_start: bool = False,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets the flowlines for the specified navigation either by comid or feature
-    source in WGS84 lat/long coordinates as GeoDataFrame containing a polyline geometry.
+    """Get the flowlines for a navigation, either by comid or by feature source.
+
+    Flowlines are returned in WGS84 lat/long coordinates as a GeoDataFrame
+    containing a polyline geometry.
 
     Parameters
     ----------
@@ -100,21 +177,20 @@ def get_flowlines(
     navigation_mode = _validate_navigation_mode(navigation_mode)
     _validate_feature_source_comid(feature_source, feature_id, comid)
     if feature_source:
-        _validate_data_source(feature_source)
-        url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-    else:
-        url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-    query_params = {"distance": str(distance), "trimStart": str(trim_start).lower()}
-
-    url += f"/{navigation_mode}/flowlines"
+        _validate_data_source(feature_source, name="feature source")
+    url, query_params = _navigation_request(
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        tail="flowlines",
+    )
+    query_params["trimStart"] = str(trim_start).lower()
     if stop_comid is not None:
         query_params["stopComid"] = str(stop_comid)
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_basin(
@@ -124,8 +200,10 @@ def get_basin(
     split_catchment: bool = False,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets the aggregated basin for the specified feature in WGS84 lat/lon
-    as GeoDataFrame or as JSON containing a polygon geometry.
+    """Get the aggregated basin for the specified feature.
+
+    The basin is returned in WGS84 lat/lon as a GeoDataFrame or as JSON,
+    containing a polygon geometry.
 
     Parameters
     ----------
@@ -151,22 +229,24 @@ def get_basin(
         ... )
     """
     # validate the feature source
-    _validate_data_source(feature_source)
-    if not feature_id:
-        raise ValueError("feature_id is required")
+    _validate_data_source(feature_source, name="feature source")
+    require_argument(
+        "feature_id",
+        feature_id or None,
+        context=f"to say which {feature_source} feature the basin drains to",
+        remedy=(
+            "Pass the id as its source spells it, e.g. feature_id='USGS-01031500'."
+        ),
+    )
 
-    url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/basin"
+    url = f"{_api_base()}/{feature_source}/{feature_id}/basin"
     simplified_str = str(simplified).lower()
     split_catchment_str = str(split_catchment).lower()
     query_params = {
         "simplified": simplified_str,
         "splitCatchment": split_catchment_str,
     }
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    return _query_features(url, query_params, as_json)
 
 
 def get_features(
@@ -181,9 +261,10 @@ def get_features(
     stop_comid: int | None = None,
     as_json: bool = False,
 ) -> gpd.GeoDataFrame | dict[str, Any]:
-    """Gets all features found along the specified navigation either by
-    comid or feature source as points in WGS84 lat/long coordinates - a GeoDataFrame
-    containing a point geometry.
+    """Get all features along a navigation, either by comid or by feature source.
+
+    Features are returned as points in WGS84 lat/long coordinates - a
+    GeoDataFrame containing a point geometry.
 
     Parameters
     ----------
@@ -236,58 +317,132 @@ def get_features(
         >>> gdf = dataretrieval.nldi.get_features(lat=43.073051, long=-89.401230)
     """
 
-    if (lat is None) != (long is None):
-        raise ValueError("Both lat and long are required")
+    url, query_params = _get_features_request(
+        data_source=data_source,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        lat=lat,
+        long=long,
+        stop_comid=stop_comid,
+    )
+
+    return _query_features(url, query_params, as_json)
+
+
+def _navigation_request(
+    *,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+    navigation_mode: str,
+    distance: int,
+    tail: str,
+) -> tuple[str, dict[str, str]]:
+    """URL and query params for an NLDI navigation from a validated origin.
+
+    The single home for the navigation path grammar — ``{origin}/navigation/
+    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific
+    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query
+    string keeps its documented parameter order.
+    """
+    origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
+    url = f"{_api_base()}/{origin}/navigation/{navigation_mode}/{tail}"
+    return url, {"distance": str(distance)}
+
+
+def _get_features_request(
+    *,
+    data_source: str | None,
+    navigation_mode: str | None,
+    distance: int,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+    lat: float | None,
+    long: float | None,
+    stop_comid: int | None,
+) -> tuple[str, dict[str, str]]:
+    """Validate a feature origin and build its NLDI request parameters."""
+    require_together(
+        {"lat": lat, "long": long},
+        context="to navigate from a point",
+        remedy="Pass both, e.g. lat=43.087, long=-89.509.",
+    )
 
     if lat is not None:
-        if comid is not None:
-            raise ValueError(
-                "Provide only one origin type - comid cannot be provided"
-                " with lat or long"
-            )
-        if feature_source is not None or feature_id is not None:
-            raise ValueError(
-                "Provide only one origin type - feature_source and feature_id cannot"
-                " be provided with lat or long"
-            )
-        url = f"{NLDI_API_BASE_URL}/comid/position"
-        query_params = {"coords": f"POINT({long} {lat})"}
-    else:
-        if (comid is not None or data_source is not None) and navigation_mode is None:
-            raise ValueError(
-                "navigation_mode is required if comid or data_source is provided"
-            )
-        _validate_feature_source_comid(feature_source, feature_id, comid)
-        if data_source is not None:
-            _validate_data_source(data_source)
-        if feature_source is not None:
-            _validate_data_source(feature_source)
-        if navigation_mode:
-            navigation_mode = _validate_navigation_mode(navigation_mode)
-            if feature_source:
-                url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}/navigation"
-            else:
-                url = f"{NLDI_API_BASE_URL}/comid/{comid}/navigation"
-            url += f"/{navigation_mode}/{data_source}"
-            query_params = {"distance": str(distance)}
-            if stop_comid is not None:
-                query_params["stopComid"] = str(stop_comid)
-        else:
-            url = f"{NLDI_API_BASE_URL}/{feature_source}/{feature_id}"
-            query_params = {}
+        # The pair is one origin, so it enters the conflict check as one entry.
+        reject_together(
+            {
+                "lat/long": lat,
+                "comid": comid,
+                "feature_source": feature_source,
+                "feature_id": feature_id,
+            },
+            context="each names a different origin to navigate from",
+            remedy=(
+                "Navigate from a point (lat and long), a comid, or a "
+                "feature_source/feature_id pair -- one origin per call."
+            ),
+        )
+        return f"{_api_base()}/comid/position", {"coords": f"POINT({long} {lat})"}
 
-    feature_collection = cast("dict[str, Any]", _query_nldi(url, query_params))
-    if as_json:
-        return feature_collection
-    gdf = _features_to_gdf(feature_collection)
-    return gdf
+    if comid is not None or data_source is not None:
+        require_argument(
+            "navigation_mode",
+            navigation_mode,
+            context="when comid or data_source is given",
+            remedy=_NAVIGATION_MODES_HINT,
+        )
+
+    _validate_feature_source_comid(feature_source, feature_id, comid)
+    if data_source is not None:
+        _validate_data_source(data_source)
+    if feature_source is not None:
+        _validate_data_source(feature_source, name="feature source")
+
+    if not navigation_mode:
+        return f"{_api_base()}/{feature_source}/{feature_id}", {}
+
+    # Before the data_source check below: a caller who mistyped the mode should
+    # hear about the mode, not be sent to fix a second argument first.
+    navigation_mode = _validate_navigation_mode(navigation_mode)
+    # The navigation's tail is the data source, so a missing one is spelled
+    # "None" into the path and the service answers 200 with zero features.
+    data_source = require_argument(
+        "data_source",
+        data_source,
+        context=(
+            "when navigation_mode is given -- it names which features to "
+            "return along the navigation"
+        ),
+        remedy=(
+            "Pass the source of the features, e.g. data_source='nwissite'. "
+            "For the flowlines themselves call get_flowlines() instead."
+        ),
+    )
+    url, query_params = _navigation_request(
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        navigation_mode=navigation_mode,
+        distance=distance,
+        tail=data_source,
+    )
+    if stop_comid is not None:
+        query_params["stopComid"] = str(stop_comid)
+    return url, query_params
 
 
 # TODO: This function can cause a timeout error for some data sources
 #  - maybe we shouldn't provide this function?
 def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
-    """Gets all features found for the specified data source as
-    points in WGS84 lat/long coordinates as GeoDataFrame containing a point geometry.
+    """Get all features for the specified data source.
+
+    Features are returned as points in WGS84 lat/long coordinates as a
+    GeoDataFrame containing a point geometry.
 
     Parameters
     ----------
@@ -310,10 +465,57 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     """
     # validate the data source
     _validate_data_source(data_source)
-    url = f"{NLDI_API_BASE_URL}/{data_source}"
+    url = f"{_api_base()}/{data_source}"
     feature_collection = cast("dict[str, Any]", _query_nldi(url, {}))
     gdf = _features_to_gdf(feature_collection)
     return gdf
+
+
+def _search_basin(feature_source: str | None, feature_id: str | None) -> dict[str, Any]:
+    """Handle ``find='basin'`` for :func:`search`."""
+    remedy = (
+        "Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'; "
+        "a basin has no other origin."
+    )
+    require_together(
+        {"feature_source": feature_source, "feature_id": feature_id},
+        context="for find='basin'",
+        remedy=remedy,
+    )
+    feature_source = require_argument(
+        "feature_source", feature_source, context="for find='basin'", remedy=remedy
+    )
+    # require_together above: feature_id is present iff feature_source is.
+    return get_basin(
+        feature_source=feature_source,
+        feature_id=cast("str", feature_id),
+        as_json=True,
+    )
+
+
+def _search_flowlines(
+    *,
+    navigation_mode: str | None,
+    distance: int,
+    feature_source: str | None,
+    feature_id: str | None,
+    comid: int | None,
+) -> dict[str, Any]:
+    """Handle ``find='flowlines'`` for :func:`search`."""
+    navigation_mode = require_argument(
+        "navigation_mode",
+        navigation_mode,
+        context="for find='flowlines'",
+        remedy=_NAVIGATION_MODES_HINT,
+    )
+    return get_flowlines(
+        navigation_mode=navigation_mode,
+        distance=distance,
+        feature_source=feature_source,
+        feature_id=feature_id,
+        comid=comid,
+        as_json=True,
+    )
 
 
 def search(
@@ -327,8 +529,7 @@ def search(
     long: float | None = None,
     distance: int = 50,
 ) -> dict[str, Any]:
-    """Searches for the specified feature in NLDI and returns the results
-    as a dictionary.
+    """Search NLDI for the specified feature and return the results as a dict.
 
     Parameters
     ----------
@@ -395,52 +596,46 @@ def search(
         ... )
 
     """
-    if (lat is None) != (long is None):
-        raise ValueError("Both lat and long are required")
+    require_together(
+        {"lat": lat, "long": long},
+        context="to search from a point",
+        remedy="Pass both, e.g. lat=43.087, long=-89.509.",
+    )
 
-    find = cast(Literal["basin", "flowlines", "features"], find.lower())
-    if find not in ("basin", "flowlines", "features"):
-        raise ValueError(
-            f"Invalid value for find: {find} - allowed values are:"
-            f" 'basin', 'flowlines', or 'features'"
-        )
+    find = cast("Literal['basin', 'flowlines', 'features']", find.lower())
+    require_one_of(find, ("basin", "flowlines", "features"), name="find")
     if lat is not None and find != "features":
         raise ValueError(
-            f"Invalid value for find: {find} - lat/long is to get features not {find}"
+            f"find={find!r} cannot be combined with lat/long -- a point origin "
+            "resolves to features only. Pass find='features' to keep the "
+            "point origin, or drop lat and long and pass the origin "
+            f"{find} takes: feature_source and feature_id"
+            f"{' or comid' if find == 'flowlines' else ''}."
         )
     if comid is not None and find == "basin":
         raise ValueError(
-            "Invalid value for find: basin - comid is to get features"
-            " or flowlines not basin"
+            "find='basin' cannot be combined with comid -- a basin is looked "
+            "up by feature, not by flowline. Pass feature_source and "
+            "feature_id instead, or keep comid and pass find='flowlines' "
+            "or find='features'."
         )
 
     if lat is not None:
         return get_features(lat=lat, long=long, as_json=True)
 
     if find == "basin":
-        if feature_source is None or feature_id is None:
-            raise ValueError(
-                "feature_source and feature_id are required to find a basin"
-            )
-        return get_basin(
-            feature_source=feature_source, feature_id=feature_id, as_json=True
-        )
+        return _search_basin(feature_source, feature_id)
 
     if find == "flowlines":
-        if navigation_mode is None:
-            raise ValueError(
-                "navigation_mode is required for find='flowlines';"
-                f" allowed values are {_VALID_NAVIGATION_MODES}"
-            )
-        return get_flowlines(
+        return _search_flowlines(
             navigation_mode=navigation_mode,
             distance=distance,
             feature_source=feature_source,
             feature_id=feature_id,
             comid=comid,
-            as_json=True,
         )
-    # here find == 'features'
+
+    # find == 'features'
     return get_features(
         data_source=data_source,
         navigation_mode=navigation_mode,
@@ -452,14 +647,14 @@ def search(
     )
 
 
-def _validate_data_source(data_source: str) -> None:
+def _validate_data_source(data_source: str, *, name: str = "data source") -> None:
     # A helper function to validate user specified data source/feature source
 
     global _AVAILABLE_DATA_SOURCES
 
     # get the available data/feature sources - if not already cached
     if _AVAILABLE_DATA_SOURCES is None:
-        url = f"{NLDI_API_BASE_URL}/"
+        url = f"{_api_base()}/"
         available_data_sources = _query_nldi(url, {})
         if not isinstance(available_data_sources, list) or not all(
             isinstance(ds, dict) and "source" in ds for ds in available_data_sources
@@ -467,45 +662,89 @@ def _validate_data_source(data_source: str) -> None:
             raise ValueError(
                 "NLDI data-source catalog returned an unexpected shape; "
                 "expected a list of {'source': ..., ...} objects, got: "
-                f"{available_data_sources!r}"
+                f"{available_data_sources!r}. If you set "
+                "NldiConfiguration(base_url=...), point it at the linked-data "
+                "root, e.g. base_url='https://api.water.usgs.gov/nldi/"
+                "linked-data'; otherwise the service returned an unexpected "
+                "body -- retry later."
             )
         _AVAILABLE_DATA_SOURCES = [ds["source"] for ds in available_data_sources]
 
-    if data_source not in _AVAILABLE_DATA_SOURCES:
-        err_msg = (
-            f"Invalid data source '{data_source}'."
-            f" Available data sources are: {_AVAILABLE_DATA_SOURCES}"
-        )
-        raise ValueError(err_msg)
+    require_one_of(data_source, _AVAILABLE_DATA_SOURCES, name=name)
 
 
 def _validate_navigation_mode(navigation_mode: str | None) -> str:
-    if navigation_mode is None:
-        raise ValueError(
-            f"navigation_mode is required; allowed values are {_VALID_NAVIGATION_MODES}"
-        )
+    navigation_mode = require_argument(
+        "navigation_mode",
+        navigation_mode,
+        remedy=_NAVIGATION_MODES_HINT,
+    )
     normalized = navigation_mode.upper()
-    if normalized not in _VALID_NAVIGATION_MODES:
-        raise ValueError(
-            f"Invalid navigation mode '{navigation_mode}';"
-            f" allowed values are {_VALID_NAVIGATION_MODES}"
-        )
+    require_one_of(normalized, _VALID_NAVIGATION_MODES, name="navigation_mode")
     return normalized
 
 
 def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
 ) -> None:
-    if feature_source is not None and feature_id is None:
-        raise ValueError("feature_id is required if feature_source is provided")
-    if feature_id is not None and feature_source is None:
-        raise ValueError("feature_source is required if feature_id is provided")
-    if comid is not None and feature_source is not None:
-        raise ValueError(
-            "Specify only one origin type - comid and feature_source"
-            " cannot be provided together"
+    if comid is not None:
+        # Half a feature pair beside a comid is a conflict, not a gap: advising
+        # the caller to complete the pair would only raise the conflict next.
+        reject_together(
+            {
+                "comid": comid,
+                "feature_source": feature_source,
+                "feature_id": feature_id,
+            },
+            context="they name different origins",
+            remedy=_ORIGIN_REMEDY,
         )
-    if comid is None and feature_source is None:
-        raise ValueError(
-            "Specify one origin type - comid or feature_source is required"
-        )
+    require_together(
+        {"feature_source": feature_source, "feature_id": feature_id},
+        context="to name one feature between them",
+        remedy=("Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'."),
+    )
+    require_exactly_one(
+        {"comid": comid, "feature_source": feature_source},
+        context="as the origin to navigate from",
+        remedy=_ORIGIN_REMEDY_NEITHER,
+    )
+
+
+@dataclass(frozen=True)
+class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+    """Settings for NLDI calls alone.
+
+    No fan-out dials: an NLDI query is answered by a single request.
+
+    This adapter is imported on demand for the geopandas extra, so this
+    class registers itself later than the rest -- which is exactly why
+    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
+    rather than being derived from what has been imported.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Linked-data base to send NLDI requests to, instead of the
+        service's own (``NLDI_API_BASE_URL``). Every navigation, basin
+        and catalog request is built on it. Code only: the file and the
+        environment refuse it.
+    """
+
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    adapter: ClassVar[str] = "nldi"
+
+
+_register(NldiConfiguration)

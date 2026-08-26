@@ -4,7 +4,7 @@
 User Guide
 ==========
 
-Topic guides to provide additional information about various aspects of
+These topic guides provide additional information about various aspects of
 ``dataretrieval``.
 
 Contents
@@ -13,6 +13,7 @@ Contents
 .. toctree::
     :maxdepth: 1
 
+    configuration
     errors
     timeconventions
     dataportals

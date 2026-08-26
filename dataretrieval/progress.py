@@ -1,10 +1,10 @@
-"""A single self-updating status line for paginated / chunked OGC queries.
+"""A single self-updating status line for paginated and chunked queries.
 
-OGC getters fan out two ways the caller can't see: large multi-value
+Retrieval adapters can fan out in ways the caller cannot see: large multi-value
 requests are split into URL-length-safe *chunks* (``chunking`` module), and each
 request follows ``next`` links across an unknown number of *pages*
-(``engine._paginate``). This module surfaces that work as one line on stderr,
-rewritten in place as data arrives::
+(``transport.pagination.paginate``). This module surfaces that work as one
+line on stderr, rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
@@ -14,6 +14,11 @@ chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
 page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
+This is a top-level leaf rather than part of :mod:`dataretrieval.transport`: it
+is terminal presentation, not HTTP execution policy. Transport modules report
+*into* it, so keeping it outside means the execution layer owns no rendering, and
+every service adapter -- OGC or not -- reaches the same reporter.
+
 By default the line is shown for interactive use — an interactive terminal or a
 Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clean.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
@@ -21,12 +26,17 @@ Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clea
 
 from __future__ import annotations
 
-import contextvars
-import os
 import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TextIO
+from typing import TYPE_CHECKING, TextIO
+
+from dataretrieval import configuration as _configuration
+from dataretrieval._ambient import Ambient
+from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
+
+if TYPE_CHECKING:
+    import httpx
 
 
 def _group_int(value: str) -> str:
@@ -43,22 +53,14 @@ def _group_int(value: str) -> str:
 # within one query, and an unrelated query in another context can't clobber its
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
-_active: contextvars.ContextVar[ProgressReporter | None] = contextvars.ContextVar(
-    "ogc_progress", default=None
-)
-
-# Where to register for an API key. Surfaced once when a query runs without an
-# API key configured (no API_USGS_PAT), since unauthenticated callers hit much
-# lower rate limits (see the API_USGS_PAT note in the README).
-SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
+_active: Ambient[ProgressReporter | None] = Ambient("dataretrieval_progress", None)
 
 # Process-level latch so the "no API key" pointer is shown at most once.
 _api_key_hint_shown = False
 
 
 def _in_jupyter_kernel() -> bool:
-    """True when running inside a Jupyter/IPython *kernel* (notebook, lab,
-    qtconsole).
+    """True when running inside a Jupyter/IPython *kernel* (notebook, lab, qtconsole).
 
     A kernel's ``stderr`` isn't a TTY, but it honors carriage-return rewrites in
     the cell output area — the same mechanism ``tqdm`` rides on — so the line is
@@ -81,9 +83,12 @@ def _enabled_default(stream: TextIO) -> bool:
     a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
     logs, and CI.
     """
-    override = os.getenv("API_USGS_PROGRESS")
+    # config owns the grammar, so this is already a bool: the same value means
+    # the same thing whether it came from a configure() block, the environment,
+    # or the file. Re-parsing here is what let those three disagree.
+    override = _configuration.progress()
     if override is not None:
-        return override.strip().lower() not in {"", "0", "false", "no", "off"}
+        return override
     if _in_jupyter_kernel():
         return True
     return hasattr(stream, "isatty") and stream.isatty()
@@ -104,9 +109,12 @@ class ProgressReporter:
         service: str | None = None,
         stream: TextIO | None = None,
         enabled: bool | None = None,
+        target_url: str | httpx.URL | None = None,
     ) -> None:
         self._stream = stream if stream is not None else sys.stderr
         self.enabled = _enabled_default(self._stream) if enabled is None else enabled
+        # Whether the sign-up pointer on close() is advice this caller can act on.
+        self._key_helps = accepts_api_key(target_url)
         # The service/collection being retrieved (e.g. "daily", "peaks"),
         # shown as the line's leading label.
         self.service = service
@@ -118,7 +126,7 @@ class ProgressReporter:
         # The hourly request quota (``x-ratelimit-limit``), shown as the
         # denominator when the server reports it.
         self.rate_limit: str | None = None
-        # Transient note shown while a sub-request backs off before a
+        # Transient note shown while a chunk backs off before a
         # retry; cleared by the next page/chunk so it doesn't linger.
         self.retry_note: str | None = None
         self._last_len = 0
@@ -152,7 +160,7 @@ class ProgressReporter:
         self._render()
 
     def note_retry(self, *, attempt: int, wait: float) -> None:
-        """Show that a sub-request is backing off before retry ``attempt``.
+        """Show that a chunk is backing off before retry ``attempt``.
 
         Cleared by the next :meth:`add_page` / :meth:`start_chunk` (or by
         :meth:`close`) so the line returns to normal once the retry resolves.
@@ -225,9 +233,9 @@ class ProgressReporter:
     def close(self) -> None:
         """Finalize the line with a trailing newline so it persists on screen.
 
-        If no API key is configured (no ``API_USGS_PAT``), append a one-time
-        pointer to API-key registration, since unauthenticated callers hit much
-        lower rate limits.
+        If the query targeted the API-key host and no key is configured (no
+        ``API_USGS_PAT``), append a one-time pointer to API-key registration,
+        since unauthenticated callers hit much lower rate limits.
         """
         if self._closed:
             return
@@ -250,7 +258,7 @@ class ProgressReporter:
 
     def _maybe_hint_api_key(self) -> None:
         global _api_key_hint_shown
-        if _api_key_hint_shown or os.getenv("API_USGS_PAT"):
+        if not self._key_helps or _api_key_hint_shown or api_key():
             return
         # Set the once-per-process latch only after a successful write, so a
         # failed write (broken pipe) doesn't silently burn the hint for every
@@ -267,24 +275,28 @@ def progress_context(
     service: str | None = None,
     stream: TextIO | None = None,
     enabled: bool | None = None,
+    target_url: str | httpx.URL | None = None,
 ) -> Iterator[ProgressReporter]:
     """Activate a :class:`ProgressReporter` for the duration of a query.
 
-    ``service`` labels the line (e.g. ``"Retrieving: daily ..."``). If a reporter
-    is already active (a nested call), the existing one is yielded unchanged so
-    the outermost query owns the single line; only the outermost context closes
-    it (and ``service``/``stream``/``enabled`` of a nested call are ignored).
+    ``service`` labels the line (e.g. ``"Retrieving: daily ..."``), and
+    ``target_url`` is where the query is going -- it decides whether an
+    API-key pointer is worth showing when the line closes. If a reporter is
+    already active (a nested call), the existing one is yielded unchanged so the
+    outermost query owns the single line; only the outermost context closes it
+    (and every argument of a nested call is ignored).
     """
     existing = _active.get()
     if existing is not None:
         yield existing
         return
-    reporter = ProgressReporter(service=service, stream=stream, enabled=enabled)
-    token = _active.set(reporter)
+    reporter = ProgressReporter(
+        service=service, stream=stream, enabled=enabled, target_url=target_url
+    )
     try:
-        yield reporter
+        with _active(reporter):
+            yield reporter
     finally:
-        _active.reset(token)
         reporter.close()
 
 

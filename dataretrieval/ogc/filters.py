@@ -20,6 +20,7 @@ can be union'd.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from typing import Any, Literal
 
 FILTER_LANG = Literal["cql-text", "cql-json"]
@@ -63,6 +64,66 @@ def _quote_cql_str(value: str) -> str:
     return value.replace("'", "''")
 
 
+def _skip_space(expr: str, i: int) -> int:
+    """Index of the first non-space character at or after ``i``."""
+    while i < len(expr) and expr[i].isspace():
+        i += 1
+    return i
+
+
+def _resume_after_or(expr: str, i: int) -> int | None:
+    """Where the clause after a top-level ``OR`` begins, if one starts at ``i``.
+
+    ``i`` is the index of a space that may open a ``<space>OR<space>``
+    separator. Returns the index of the next clause's first character, or
+    ``None`` when this space does not begin one -- so the caller's test is
+    "is this a separator?" rather than four nested boundary checks.
+
+    The trailing space is required: without it ``A ORDER BY b`` would split on
+    the ``OR`` inside ``ORDER``.
+    """
+    word_start = _skip_space(expr, i)
+    if expr[word_start : word_start + 2].lower() != "or":
+        return None
+    after_word = word_start + 2
+    if after_word >= len(expr) or not expr[after_word].isspace():
+        return None
+    return _skip_space(expr, after_word)
+
+
+def _skip_quoted(expr: str, i: int) -> int:
+    """Index just past the quoted span opening at ``i``.
+
+    An unterminated quote swallows the rest of the expression. A doubled
+    ``''`` escape reads as close-then-reopen, which nets to the same state.
+    """
+    close = expr.find(expr[i], i + 1)
+    return len(expr) if close == -1 else close + 1
+
+
+def _iter_top_level_spaces(expr: str) -> Iterator[int]:
+    """Yield the indices of whitespace outside quotes and parens.
+
+    Owns the depth/quote state so callers only see split candidates; quoted
+    spans are skipped wholesale.
+    """
+    depth = 0
+    i = 0
+    n = len(expr)
+    while i < n:
+        ch = expr[i]
+        if ch in ("'", '"'):
+            i = _skip_quoted(expr, i)
+            continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif depth == 0 and ch.isspace():
+            yield i
+        i += 1
+
+
 def _split_top_level_or(expr: str) -> list[str]:
     """Split ``expr`` at each top-level ``OR``, respecting quotes and parens.
 
@@ -72,46 +133,60 @@ def _split_top_level_or(expr: str) -> list[str]:
     """
     parts: list[str] = []
     last = 0
-    depth = 0
-    in_quote: str | None = None
-    i = 0
-    n = len(expr)
-    while i < n:
-        ch = expr[i]
-        if in_quote is not None:
-            if ch == in_quote:
-                in_quote = None
-            i += 1
-            continue
-        if ch in ("'", '"'):
-            in_quote = ch
-            i += 1
-            continue
-        if ch == "(":
-            depth += 1
-            i += 1
-            continue
-        if ch == ")":
-            depth -= 1
-            i += 1
-            continue
-        if depth == 0 and ch.isspace():
-            j = i + 1
-            while j < n and expr[j].isspace():
-                j += 1
-            if j + 2 <= n and expr[j : j + 2].lower() == "or":
-                k = j + 2
-                if k < n and expr[k].isspace():
-                    m = k + 1
-                    while m < n and expr[m].isspace():
-                        m += 1
-                    parts.append(expr[last:i].strip())
-                    last = m
-                    i = m
-                    continue
-        i += 1
+    for i in _iter_top_level_spaces(expr):
+        if i < last:
+            continue  # inside an already-consumed OR separator
+        resume = _resume_after_or(expr, i + 1)
+        if resume is not None:
+            parts.append(expr[last:i].strip())
+            last = resume
     parts.append(expr[last:].strip())
     return [p for p in parts if p]
+
+
+def _numeric_pitfall_error(field: str, offense: str) -> ValueError:
+    """Build the error for an unquoted numeric comparison."""
+    return ValueError(
+        f"Filter uses an unquoted numeric comparison against {field!r} "
+        f"(``{offense}``). Every queryable on the Water Data API is "
+        f"typed as a string, so the server rejects unquoted numeric "
+        f"literals with HTTP 500; even quoting the literal gives a "
+        f"lexicographic comparison (``value > '10'`` matches "
+        f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
+        f"because the real codes are ``'00060'``-shaped). For a true "
+        f"numeric filter, fetch a wider result and reduce in pandas."
+    )
+
+
+def _check_compare(masked: str) -> None:
+    """Raise on a bare ``field op number`` or ``number op field`` pattern."""
+    compare = _NUMERIC_COMPARE_RE.search(masked)
+    if not compare:
+        return
+    field = compare.group("field1") or compare.group("field2")
+    op = compare.group("op1") or compare.group("op2")
+    num = compare.group("num1") or compare.group("num2")
+    raise _numeric_pitfall_error(field, f"{field} {op} {num}")
+
+
+def _check_in_membership(masked: str) -> None:
+    """Raise on a ``field [NOT] IN (…numeric…)`` pattern."""
+    membership = _IN_NUMERIC_RE.search(masked)
+    if not membership:
+        return
+    field = membership.group("field")
+    op = "NOT IN" if membership.group("negated") else "IN"
+    raise _numeric_pitfall_error(field, f"{field} {op} (…)")
+
+
+def _check_between(masked: str) -> None:
+    """Raise on a ``field [NOT] BETWEEN … AND …`` pattern with numerics."""
+    between = _BETWEEN_NUMERIC_RE.search(masked)
+    if not between:
+        return
+    field = between.group("field")
+    op = "NOT BETWEEN" if between.group("negated") else "BETWEEN"
+    raise _numeric_pitfall_error(field, f"{field} {op} …")
 
 
 def _check_numeric_filter_pitfall(filter_expr: str) -> None:
@@ -123,8 +198,8 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     ``hydrologic_unit_code``, ``channel_flow``). Any unquoted numeric
     comparison — ``value >= 1000``, ``parameter_code = 60``,
     ``parameter_code IN (60, 61)``, ``value BETWEEN 5 AND 10`` — either gets
-    rejected with HTTP 500 or silently produces lexicographic results;
-    zero-padded codes are the worst case (``parameter_code = '60'`` matches
+    rejected with HTTP 500 or silently produces lexicographic results.
+    Zero-padded codes are the worst case (``parameter_code = '60'`` matches
     nothing because the real codes are ``'00060'``-shaped).
 
     Quoted literals (``value >= '1000'``) are not flagged — the caller has
@@ -134,37 +209,9 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     masked = (
         _QUOTED_STR_RE.sub("''", filter_expr) if "'" in filter_expr else filter_expr
     )
-
-    def fail(field: str, offense: str) -> None:
-        raise ValueError(
-            f"Filter uses an unquoted numeric comparison against {field!r} "
-            f"(``{offense}``). Every queryable on the Water Data API is "
-            f"typed as a string, so the server rejects unquoted numeric "
-            f"literals with HTTP 500; even quoting the literal gives a "
-            f"lexicographic comparison (``value > '10'`` matches "
-            f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
-            f"because the real codes are ``'00060'``-shaped). For a true "
-            f"numeric filter, fetch a wider result and reduce in pandas."
-        )
-
-    compare = _NUMERIC_COMPARE_RE.search(masked)
-    if compare:
-        field = compare.group("field1") or compare.group("field2")
-        op = compare.group("op1") or compare.group("op2")
-        num = compare.group("num1") or compare.group("num2")
-        fail(field, f"{field} {op} {num}")
-
-    membership = _IN_NUMERIC_RE.search(masked)
-    if membership:
-        field = membership.group("field")
-        op = "NOT IN" if membership.group("negated") else "IN"
-        fail(field, f"{field} {op} (…)")
-
-    between = _BETWEEN_NUMERIC_RE.search(masked)
-    if between:
-        field = between.group("field")
-        op = "NOT BETWEEN" if between.group("negated") else "BETWEEN"
-        fail(field, f"{field} {op} …")
+    _check_compare(masked)
+    _check_in_membership(masked)
+    _check_between(masked)
 
 
 def _is_chunkable(filter_expr: Any, filter_lang: Any) -> bool:

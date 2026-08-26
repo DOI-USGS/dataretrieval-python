@@ -1,5 +1,4 @@
-"""
-This module is a wrapper for the StreamStats API (`streamstats documentation`_).
+"""Wrapper for the StreamStats API (`streamstats documentation`_).
 
 .. _streamstats documentation: https://streamstats.usgs.gov/streamstatsservices/#/
 
@@ -8,24 +7,54 @@ This module is a wrapper for the StreamStats API (`streamstats documentation`_).
 from __future__ import annotations
 
 import json
-from typing import Any, cast
+from dataclasses import dataclass
+from typing import Any, ClassVar, cast
 
 import httpx
 
-from dataretrieval.utils import HTTPX_DEFAULTS, _get, _raise_for_status
+from dataretrieval import configuration as _configuration
+from dataretrieval._querying import _get_with_retry
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
+from dataretrieval.transport.http import HTTPX_DEFAULTS
+
+__all__ = [
+    "StreamstatsConfiguration",
+    "Watershed",
+    "download_workspace",
+    "get_sample_watershed",
+    "get_watershed",
+]
+
+STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
+
+
+def _service_base() -> str:
+    """The StreamStats base this call targets: a block's redirect, or its own.
+
+    Both endpoints below hang off this, so a
+    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
+    than the one endpoint a caller happened to reach first. Resolved per call,
+    because a ``configure`` block is scoped to a ``with`` statement.
+    """
+    return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
-    """Function to download a StreamStats workspace.
+    """Download a StreamStats workspace.
 
     Parameters
     ----------
     workspaceID: string
-        Service workspace received from watershed result
+        Service workspace received from a watershed result.
 
     format: string
-        Download return format. Default will return ESRI geodatabase zipfile.
-        'SHAPE' will return a zip file containing shape format.
+        Format of the download. The default returns an ESRI geodatabase
+        zipfile; 'SHAPE' returns a zip file containing shape format.
 
     Returns
     -------
@@ -35,11 +64,9 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
     """
     payload = {"workspaceID": workspaceID, "format": format}
-    url = "https://streamstats.usgs.gov/streamstatsservices/download"
+    url = f"{_service_base()}/download"
 
-    r = _get(url, params=payload, **HTTPX_DEFAULTS)
-
-    _raise_for_status(r)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
     return r
     # data = r.raw.read()
 
@@ -50,11 +77,10 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
 
 def get_sample_watershed() -> Watershed:
-    """Sample function to get a watershed object for a location in NY.
+    """Get a watershed object for a sample location in NY.
 
-    Makes the function call :obj:`dataretrieval.streamstats.get_watershed`
-    with the parameters 'NY', -74.524, 43.939, and returns the watershed
-    object.
+    Calls :obj:`dataretrieval.streamstats.get_watershed` with the parameters
+    'NY', -74.524, and 43.939, and returns the resulting watershed object.
 
     Returns
     -------
@@ -80,13 +106,13 @@ def get_watershed(
     simplify: bool = True,
     format: str = "geojson",
 ) -> httpx.Response | Watershed:
-    """Get watershed object based on location
+    """Get a watershed object for a location.
 
     **StreamStats documentation:**
     Returns a watershed object. The request configuration will determine the
-    overall request response. However all returns will return a watershed
+    overall request response. However, all returns will return a watershed
     object with at least the workspaceid. The workspace id is the id to the
-    service workspace where files are stored and can be used for further
+    service workspace where files are stored, and can be used for further
     processing such as for downloads and flow statistic computations.
 
     See: https://streamstats.usgs.gov/streamstatsservices/#/ for more
@@ -102,17 +128,16 @@ def get_watershed(
     ylocation: float
         Y location of the most downstream point of desired study area.
     crs: integer, string, optional
-        EPSG spatial reference code, default is 4326
+        EPSG spatial reference code. Default is 4326.
     includeparameters: bool, optional
-        Boolean flag to include parameters in response.
+        Whether to include parameters in the response.
     includeflowtypes: bool, string, optional
-        Not yet implemented. Would be a comma separated list of region flow
-        types to compute with the default being True
+        Comma-separated list of region flow types to compute, with the default
+        being True. Not yet implemented.
     includefeatures: list, optional
-        Comma separated list of features to include in response.
+        Comma-separated list of features to include in the response.
     simplify: bool, optional
-        Boolean flag controlling whether or not to simplify the returned
-        result.
+        Whether to simplify the returned result.
     format: string, optional
         Controls the return type, default is 'geojson'. 'geojson' returns
         the raw ``httpx.Response``; 'object' parses the response into a
@@ -142,11 +167,9 @@ def get_watershed(
         "includefeatures": includefeatures,
         "simplify": simplify,
     }
-    url = "https://streamstats.usgs.gov/streamstatsservices/watershed.geojson"
+    url = f"{_service_base()}/watershed.geojson"
 
-    r = _get(url, params=payload, **HTTPX_DEFAULTS)
-
-    _raise_for_status(r)
+    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
 
     if format == "geojson":
         return r
@@ -188,32 +211,66 @@ class Watershed:
     """
 
     def __init__(self, rcode: str, xlocation: float, ylocation: float) -> None:
-        """Delineate the watershed at ``(xlocation, ylocation)`` and
-        parse the response onto this instance."""
+        """Delineate the watershed at ``(xlocation, ylocation)``.
+
+        Parses the response onto this instance.
+        """
         response = cast(
-            httpx.Response,
+            "httpx.Response",
             get_watershed(rcode, xlocation, ylocation, format="geojson"),
         )
         self._populate(json.loads(response.text))
 
     @classmethod
     def from_streamstats_json(cls, streamstats_json: dict[str, Any]) -> Watershed:
-        """Create a :class:`Watershed` from an already-parsed StreamStats
-        JSON payload, without issuing a new request.
+        """Create a :class:`Watershed` from a parsed StreamStats JSON payload.
 
-        Builds a fresh instance (via ``__new__``, so the
-        network-fetching ``__init__`` is bypassed) and populates it; each
-        call returns an independent object rather than mutating shared
-        class state.
+        No new request is issued. Builds a fresh instance (via ``__new__``, so
+        the network-fetching ``__init__`` is bypassed) and populates it; each
+        call returns an independent object rather than mutating shared class
+        state.
         """
         self = cls.__new__(cls)
         self._populate(streamstats_json)
         return self
 
     def _populate(self, streamstats_json: dict[str, Any]) -> None:
-        """Extract watershed fields from a StreamStats JSON payload onto
-        this instance."""
+        """Extract watershed fields from ``streamstats_json`` onto this instance."""
         self.watershed_point = streamstats_json["featurecollection"][0]["feature"]
         self.watershed_polygon = streamstats_json["featurecollection"][1]["feature"]
         self.parameters = streamstats_json["parameters"]
         self._workspaceID = streamstats_json["workspaceID"]
+
+
+@dataclass(frozen=True)
+class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
+    """Settings for StreamStats calls alone.
+
+    No fan-out dials: a StreamStats query is answered by a single
+    request.
+
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        Services base to send StreamStats requests to, instead of its own
+        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:
+        the file and the environment refuse it.
+    """
+
+    # One request per call, so this service reads the retry dials and a
+    # redirectable base and no fan-out dial. Each setting is declared once,
+    # in :mod:`dataretrieval.configuration`, beside its grammar.
+    adapter: ClassVar[str] = "streamstats"
+
+
+_register(StreamstatsConfiguration)

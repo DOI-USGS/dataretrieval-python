@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import functools
 import json
 import logging
 from unittest import mock
@@ -8,7 +9,6 @@ import httpx
 import pandas as pd
 import pytest
 
-import dataretrieval.ogc.engine as _engine_module
 import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
@@ -19,29 +19,50 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
     TransientError,
 )
+from dataretrieval.interruptions import ServiceInterrupted
+from dataretrieval.ogc.dates import _format_api_dates
+from dataretrieval.ogc.engine import (
+    _next_req_url,
+    _walk_pages,
+)
+from dataretrieval.ogc.errors import (
+    _error_body,
+    _parse_retry_after,
+    _raise_for_non_200,
+)
+from dataretrieval.ogc.schema import _check_ogc_requests
+from dataretrieval.ogc.shaping import (
+    _arrange_cols,
+    _deal_with_empty,
+    _get_resp_data,
+    _to_snake_case,
+)
+from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
+    _EXTRA_ID_COLS,
     OGC_API_URL,
-    _arrange_cols,
-    _check_ogc_requests,
-    _error_body,
-    _finalize_ogc,
-    _format_api_dates,
+    WATERDATA_DIALECT,
+    _flatten_queryables,
     _get_args,
-    _get_resp_data,
-    _next_req_url,
-    _parse_retry_after,
-    _raise_for_non_200,
-    _row_cap,
-    _to_snake_case,
-    _walk_pages,
+)
+
+# The Water Data injection ``get_cql`` performs at its call site, so these tests
+# exercise the same result shape the typed getters produce.
+_finalize_ogc = functools.partial(
+    _ogc_finalize,
+    extra_id_cols=_EXTRA_ID_COLS,
+    dialect=WATERDATA_DIALECT,
+    base_url=OGC_API_URL,
+    geopd=False,
+    include_geometry=True,
 )
 
 _LOGGER_NAME = _utils_module.__name__
 
 
-def _run_walk_pages(*, geopd, req, client):
+def _run_walk_pages(*, geopd, req, client, row_cap=None):
     """Drive the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
@@ -50,13 +71,15 @@ def _run_walk_pages(*, geopd, req, client):
     keeps the historical sync-shaped call sites terse while exercising the
     real async pagination loop.
     """
-    return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
+    return asyncio.run(
+        _walk_pages(geopd=geopd, req=req, client=client, row_cap=row_cap)
+    )
 
 
 def test_get_args_basic():
     local_vars = {
         "monitoring_location_id": "USGS-123",
-        "service": "daily",
+        "collection": "daily",
         "output_id": "daily_id",
         "none_val": None,
         "other": "val",
@@ -68,7 +91,7 @@ def test_get_args_basic():
 def test_get_args_with_exclude():
     local_vars = {
         "monitoring_location_id": "USGS-123",
-        "service": "daily",
+        "collection": "daily",
         "output_id": "daily_id",
         "to_exclude": "secret",
         "other": "val",
@@ -84,6 +107,9 @@ def test_get_args_empty():
 def test_walk_pages_multiple_mocked():
     # Setup mock responses
     resp1 = mock.MagicMock()
+    # A real response always carries an ``httpx.URL``; the next-page check
+    # resolves and host-checks the ``next`` link against it.
+    resp1.url = httpx.URL("https://example.com/page1")
     resp1.json.return_value = {
         "numberReturned": 1,
         "features": [{"id": "1", "properties": {"val": "a"}}],
@@ -128,7 +154,7 @@ def test_walk_pages_multiple_mocked():
 
 
 def test_row_cap_truncates_and_stops_within_first_page():
-    # Regression for BUG 2: ``_row_cap`` bounds the TOTAL rows. A first page
+    # Regression for BUG 2: ``row_cap`` bounds the TOTAL rows. A first page
     # already over the cap is truncated to exactly ``max_rows`` and the
     # ``next`` link is never followed.
     resp1 = mock.MagicMock()
@@ -149,8 +175,7 @@ def test_row_cap_truncates_and_stops_within_first_page():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    with _row_cap(2):
-        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client, row_cap=2)
 
     assert len(df) == 2  # truncated to the cap, not the page's 3 rows
     assert not mock_client.request.called  # ``next`` link never followed
@@ -182,8 +207,7 @@ def test_row_cap_stops_across_pages():
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
 
-    with _row_cap(2):
-        df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
+    df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client, row_cap=2)
 
     assert len(df) == 2
     assert mock_client.request.call_count == 1  # fetched page 2, stopped before 3
@@ -192,7 +216,7 @@ def test_row_cap_stops_across_pages():
 def test_finalize_ogc_truncates_combined_to_max_rows():
     # max_rows is enforced on the *combined* frame in _finalize_ogc (after
     # dedup/sort), so it bounds the total exactly even when a chunked call's
-    # per-sub-request pages overshoot the per-_paginate early-stop.
+    # per-chunk pages overshoot the per-_paginate early-stop.
     frame = pd.DataFrame({"id": [str(i) for i in range(10)]})
     resp = mock.MagicMock()
     resp.url = "https://example.com/q"
@@ -205,7 +229,7 @@ def test_finalize_ogc_truncates_combined_to_max_rows():
         properties=None,
         output_id="thing_id",
         convert_type=False,
-        service="things",
+        collection="things",
         max_rows=3,
     )
     assert len(df) == 3
@@ -444,7 +468,7 @@ def _stats_initial_ok():
         "features": [],
     }
     resp.headers = {}
-    resp.url = "https://example.com/stats?service=foo"
+    resp.url = "https://example.com/stats?collection=foo"
     return resp
 
 
@@ -480,15 +504,26 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     same ``_paginate`` strategy helper, so error-routing behaviour is
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_data`` mid-pagination case proves the stats-specific
-    follow-up callback is wired into ``_paginate`` correctly."""
-    with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
+    follow-up callback is wired into ``_paginate`` correctly.
+
+    Statistics drives that page walk as a one-item ``FanOut``, the same
+    executor every other getter uses, so a transient mid-walk failure is
+    resumable here too rather than ending the call outright.
+    """
+    with pytest.raises(ServiceInterrupted) as excinfo:
         _run_get_data_with_failure(
             httpx.ConnectError("stats-boom"),
             monkeypatch,
         )
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
-    assert "stats-boom" in str(excinfo.value)
+    # The pagination wrapper is the direct cause and still names the failure.
+    paginated = excinfo.value.__cause__
+    assert isinstance(paginated, DataRetrievalError)
+    assert "Paginated request failed" in str(paginated)
+    assert isinstance(paginated.__cause__, httpx.ConnectError)
+    assert "stats-boom" in str(paginated)
+    # Nothing completed, so there is nothing to hand back but the handle.
+    assert excinfo.value.call.completed_chunks == 0
 
 
 def test_get_data_warning_includes_next_token(caplog, monkeypatch):
@@ -574,6 +609,66 @@ def test_handle_nesting_empty_preserves_geopd_type():
     assert isinstance(result, _Sentinel)
 
 
+def test_empty_result_uses_request_geometry_contract():
+    """All-empty shaping follows the request mode, not the template class."""
+    with_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=True,
+    )
+    without_geometry = _deal_with_empty(
+        pd.DataFrame(),
+        ["a", "geometry", "b"],
+        "daily",
+        base_url="x",
+        geopd=False,
+        include_geometry=False,
+    )
+
+    assert type(with_geometry) is pd.DataFrame
+    assert list(with_geometry.columns) == ["a", "b", "geometry"]
+    assert all(dtype.kind == "O" for dtype in with_geometry.dtypes)
+    assert list(without_geometry.columns) == ["a", "b"]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_empty_result_matches_a_non_empty_geodataframe():
+    """An empty geospatial result remains usable like a non-empty one."""
+    import geopandas as gpd
+
+    response = _resp_ok([])
+    page = _get_resp_data(response, geopd=True)
+    template = pd.concat([page], ignore_index=True)
+    out = _deal_with_empty(
+        template,
+        ["monitoring_location_id"],
+        "daily",
+        base_url="x",
+        geopd=True,
+        include_geometry=True,
+    )
+
+    assert isinstance(template, gpd.GeoDataFrame)
+    assert isinstance(out, gpd.GeoDataFrame) and out.empty
+    assert out["monitoring_location_id"].dtype == object
+    assert out.geometry is not None
+    assert out.crs == "EPSG:4326"
+    out["monitoring_location_id"].str.startswith("USGS")
+    out.to_crs("EPSG:3857")
+    real = gpd.GeoDataFrame(
+        {
+            "monitoring_location_id": ["USGS-1"],
+            "geometry": gpd.points_from_xy([1], [2]),
+        },
+        crs="EPSG:4326",
+    )
+    combined = pd.concat([out, real], ignore_index=True)
+    assert isinstance(combined, gpd.GeoDataFrame) and combined.crs == "EPSG:4326"
+
+
 def test_get_resp_data_empty_preserves_geopd_type():
     """Same as the stats-side preservation: ``_get_resp_data``'s
     ``numberReturned == 0`` short-circuit must return a
@@ -594,6 +689,27 @@ def test_get_resp_data_empty_preserves_geopd_type():
     with mock.patch.object(_shaping_module, "gpd", fake_gpd, create=True):
         result = _get_resp_data(resp, geopd=True)
     assert isinstance(result, _Sentinel)
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_get_resp_data_keeps_one_geospatial_type_when_geometry_is_missing():
+    """A spatial request cannot change frame family based on page contents."""
+    import geopandas as gpd
+
+    empty = _get_resp_data(_resp_ok([]), geopd=True)
+    missing = _get_resp_data(
+        _resp_ok([{"id": "1", "properties": {"value": 1}}]),
+        geopd=True,
+    )
+
+    assert isinstance(empty, gpd.GeoDataFrame)
+    assert isinstance(missing, gpd.GeoDataFrame)
+    assert missing.geometry.isna().all()
+    for pages in ([empty, missing], [missing, empty]):
+        combined = pd.concat(pages, ignore_index=True)
+        assert isinstance(combined, gpd.GeoDataFrame)
+        assert combined.geometry.name == "geometry"
+        assert combined.crs == "EPSG:4326"
 
 
 def test_get_resp_data_attaches_wgs84_crs():
@@ -660,7 +776,7 @@ def test_handle_nesting_tolerates_missing_features_key():
 def test_get_resp_data_always_materializes_id_column():
     """``_get_resp_data`` must always materialize the ``id`` column
     (NaN-filled when no feature carries one) so the downstream
-    ``_arrange_cols`` rename to the service-specific output_id
+    ``_arrange_cols`` rename to the collection-specific output_id
     (``daily_id``, ``channel_measurements_id``, etc.) isn't a
     silent no-op."""
     resp = mock.MagicMock()
@@ -674,6 +790,25 @@ def test_get_resp_data_always_materializes_id_column():
     df = _get_resp_data(resp, geopd=False)
     assert "id" in df.columns
     assert df["id"].isna().all()
+
+
+def test_get_resp_data_flattens_nested_properties():
+    """Nested GeoJSON properties keep underscore-separated column names."""
+    resp = mock.MagicMock()
+    resp.json.return_value = {
+        "features": [
+            {
+                "id": "feature-1",
+                "properties": {"station": {"code": "A"}, "value": 1},
+            }
+        ]
+    }
+
+    df = _get_resp_data(resp, geopd=False)
+
+    assert df.to_dict(orient="records") == [
+        {"value": 1, "station_code": "A", "id": "feature-1"}
+    ]
 
 
 # --- _arrange_cols ----------------------------------------------------------
@@ -768,6 +903,54 @@ def test_format_api_dates(value, date, expected):
     assert _format_api_dates(value, date=date) == expected
 
 
+def test_format_api_dates_passes_none_through():
+    """``None`` means "no date filter", not an empty one."""
+    assert _format_api_dates(None) is None
+
+
+def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
+    """``[None, None]`` is an interval with no endpoints, which is no filter at
+    all -- sending ``../..`` would be a query the service has to reject."""
+    assert _format_api_dates([None, None]) is None
+    assert _format_api_dates(["", ""]) is None
+
+
+def test_format_api_dates_rejects_more_than_two_values():
+    """A date filter is an instant, a duration, or a closed interval. Three
+    values is a caller who meant something else, and the message says which
+    shapes exist rather than truncating silently."""
+    with pytest.raises(ValueError) as excinfo:
+        _format_api_dates(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
+    message = str(excinfo.value)
+    assert "time takes at most 2 values, got 3" in message
+    assert "closed interval" in message
+
+
+def test_the_duration_example_is_withheld_where_durations_are_rejected():
+    """``get_ratings`` refuses ISO 8601 durations, so the shared message must
+    not offer 'P7D' on that path -- a caller following it would be sent
+    straight into a second rejection."""
+    with pytest.raises(ValueError) as allowed:
+        _format_api_dates(["a", "b", "c"], name="time")
+    with pytest.raises(ValueError) as refused:
+        _format_api_dates(
+            ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
+        )
+
+    assert "'P7D'" in str(allowed.value)
+    assert "'P7D'" not in str(refused.value)
+    assert "an instant ('2020-01-01')" in str(refused.value)
+
+
+def test_format_api_dates_names_the_callers_parameter():
+    """The subject must be the argument the caller passed. It used to be
+    ``datetime_input`` -- a local of this private helper that no public getter
+    accepts, so correcting the argument the message named sent an
+    unrecognized parameter."""
+    with pytest.raises(TypeError, match="^time must be a string"):
+        _format_api_dates({"2024-01-01": "ignored"}, name="time")
+
+
 def test_format_api_dates_rejects_mapping():
     """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
     accepting input the user clearly didn't intend.
@@ -859,13 +1042,15 @@ def test_parse_retry_after_clamps_negative_delta_to_zero():
     assert _parse_retry_after("-0.5") == 0.0
 
 
-def test_parse_retry_after_returns_none_for_unparseable():
-    """Garbage values (including the RFC 1123 HTTP-date form that the
-    HTTP spec allows but USGS doesn't actually send) surface as
-    ``None``, letting the chunker fall back to its own retry policy
-    instead of guessing a delay."""
+def test_parse_retry_after_supports_http_date_and_rejects_garbage():
+    """Both standard header forms are accepted; malformed values use backoff.
+
+    A date is converted to seconds exactly like the delta-seconds form, however
+    far out it lands: an over-long wait stops the retry and travels to the
+    caller on ``.retry_after`` rather than being silently ignored.
+    """
     assert _parse_retry_after("not-a-date") is None
-    assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") is None
+    assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") > 0
 
 
 def test_raise_for_non_200_raises_service_unavailable_for_5xx():
@@ -888,6 +1073,99 @@ def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
     with pytest.raises(RateLimited) as excinfo:
         _raise_for_non_200(resp)
     assert excinfo.value.retry_after == 60.0
+
+
+def test_403_reports_the_services_own_reason():
+    """A 403 envelope must reach the user rather than a canned guess.
+
+    The message was fixed text naming only "query exceeding server limits",
+    and never read the body -- so a revoked ``API_USGS_PAT``, the most common
+    real 403, was reported as a query-size problem.
+    """
+    resp = _make_response(
+        403,
+        '{"code": "Forbidden", "description": "API key revoked"}',
+        reason="Forbidden",
+        content_type="application/json",
+    )
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "API key revoked" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ('{"message": "API key is invalid"}', "403: API key is invalid."),
+        (
+            '{"error": {"code": "API_KEY_INVALID", '
+            '"message": "An invalid api_key was supplied"}}',
+            "403: API_KEY_INVALID. An invalid api_key was supplied.",
+        ),
+        (
+            '{"code": "Forbidden", "description": null, "message": "API key revoked"}',
+            "403: Forbidden. API key revoked.",
+        ),
+        (
+            '{"code": "Forbidden", "description": "", "message": "API key revoked"}',
+            "403: Forbidden. API key revoked.",
+        ),
+    ],
+    ids=(
+        "flat-message",
+        "nested-live-envelope",
+        "null-description",
+        "empty-description",
+    ),
+)
+def test_403_with_a_gateway_json_message_shows_the_message(body, expected):
+    """Gateway JSON errors are rendered deliberately, not as raw JSON."""
+    resp = _make_response(
+        403,
+        body,
+        reason="Forbidden",
+        content_type="application/json",
+    )
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    message = str(excinfo.value)
+    assert message == expected
+    assert "{" not in message
+
+
+def test_403_with_a_non_json_body_shows_it_like_any_other_status():
+    """A WAF 403 is plain text; discarding it was the bug this PR fixes, so
+    403 shares the snippet path rather than having its own."""
+    resp = _make_response(403, "Access Denied: API key revoked", reason="Forbidden")
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "API key revoked" in str(excinfo.value)
+
+
+def test_403_without_an_envelope_names_the_credential_cause():
+    """With no body to quote, both plausible causes are offered."""
+    resp = _make_response(403, "", reason="Forbidden")
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    message = str(excinfo.value)
+    assert "API_USGS_PAT" in message and "server limits" in message
+
+
+def test_error_messages_name_the_url():
+    """Without the URL a failed chunk in a fan-out cannot be traced back to
+    the request that produced it -- the message is all the interruption
+    carries."""
+    request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v0/x")
+    resp = httpx.Response(400, content=b"", request=request)
+    with pytest.raises(HTTPError) as excinfo:
+        _raise_for_non_200(resp)
+    assert "https://api.waterdata.usgs.gov/ogcapi/v0/x" in str(excinfo.value)
+
+
+def test_error_message_survives_a_response_with_no_request():
+    """An error path must not fail while reporting a failure."""
+    with pytest.raises(HTTPError):
+        _raise_for_non_200(_make_response(400, "", reason="Bad Request"))
 
 
 def test_raise_for_non_200_400_raises_http_error():
@@ -925,6 +1203,34 @@ def test_next_req_url_rejects_cross_host():
         _next_req_url(resp, body=body)
 
 
+def test_next_req_url_strips_embedded_credentials():
+    """A same-host next link carrying ``user:pass@`` must not survive.
+
+    The cross-host guard passes here by construction -- the host matches -- so
+    nothing else would catch it. httpx derives ``Authorization: Basic`` from
+    userinfo, so following the link verbatim would mint a credential the caller
+    never configured and send it alongside the real API key.
+    """
+    resp = mock.MagicMock()
+    resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
+    body = {
+        "numberReturned": 1,
+        "features": [{"id": "1"}],
+        "links": [
+            {"rel": "next", "href": "https://attacker:pw@api.waterdata.usgs.gov/page2"}
+        ],
+    }
+    following = _next_req_url(resp, body=body)
+    assert following == "https://api.waterdata.usgs.gov/page2"
+    # Asserted through a real client: ``httpx.Request`` alone never derives the
+    # header from userinfo, so checking it there would pass for any URL.
+    with httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200))
+    ) as client:
+        sent = client.build_request("GET", following)
+    assert sent.headers.get("Authorization") is None
+
+
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
     so a 5xx surfaces as the typed ``ServiceUnavailable`` — the same typed
@@ -936,7 +1242,7 @@ def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
         json={"code": "ServiceUnavailable", "description": "maintenance window"},
     )
     with pytest.raises(ServiceUnavailable):
-        _check_ogc_requests(endpoint="daily", req_type="schema")
+        _check_ogc_requests(endpoint="daily", req_type="schema", base_url=OGC_API_URL)
 
 
 @pytest.mark.parametrize(
@@ -1011,11 +1317,11 @@ def test_with_state_routes_into_native_queryable():
 def test_with_state_conflict_raises():
     """Passing ``state`` together with a native ``state_code``/``state_name``
     is ambiguous and raises."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_code": "55"}, to="name", into="state_name"
         )
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "state_name": "Wisconsin"}, to="name", into="state_name"
         )
@@ -1026,7 +1332,7 @@ def test_with_state_conflict_via_queryables_raises():
     explicit getter parameter, as with ``get_time_series_metadata``'s
     ``state_code``) is flattened before the mutual-exclusion check, so combining
     it with ``state`` still raises rather than silently sending both filters."""
-    with pytest.raises(ValueError, match="not both"):
+    with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
             to="name",
@@ -1038,16 +1344,16 @@ def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
     """The OGC getters resolve the unified ``state`` into ``state_name``
     themselves (any encoding), so the shared ``get_ogc_data`` wrapper stays
     state-agnostic."""
-    import dataretrieval.waterdata.api as _api
+    import dataretrieval.waterdata.metadata as _metadata
 
     captured: dict = {}
 
-    def fake_get_ogc_data(args, service, *a, **k):
-        captured.update(args=args, service=service)
+    def fake_get_ogc_data(args, collection, *a, **k):
+        captured.update(args=args, collection=collection)
         return pd.DataFrame(), mock.Mock()
 
-    monkeypatch.setattr(_api, "get_ogc_data", fake_get_ogc_data)
-    _api.get_monitoring_locations(state="55")  # FIPS in -> full name out
+    monkeypatch.setattr(_metadata, "get_ogc_data", fake_get_ogc_data)
+    _metadata.get_monitoring_locations(state="55")  # FIPS in -> full name out
     assert captured["args"].get("state_name") == "Wisconsin"
     assert "state" not in captured["args"]
 
@@ -1057,10 +1363,129 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
     query dict (e.g. from ``get_reference_table``) is forwarded untouched."""
     captured: dict = {}
 
-    def fake_engine_get_ogc_data(args, service, output_id, **k):
+    def fake_engine_get_ogc_data(args, collection, output_id, **k):
         captured["args"] = dict(args)
         return pd.DataFrame(), mock.Mock()
 
-    with mock.patch.object(_engine_module, "get_ogc_data", fake_engine_get_ogc_data):
+    with mock.patch.object(
+        _utils_module, "_facade_get_ogc_data", fake_engine_get_ogc_data
+    ):
         _utils_module.get_ogc_data({"state": "WI"}, "monitoring-locations")
     assert captured["args"] == {"state": "WI"}
+
+
+@pytest.mark.parametrize(
+    "name", ["x_api_key", "x-api-key", "api_token", "access_token", "pat", "auth"]
+)
+def test_credential_shaped_queryables_are_rejected(name):
+    """The denylist matches spellings, not just a few exact names.
+
+    ``x_api_key`` is the tempting one -- it mirrors the ``X-Api-Key`` header
+    the README documents -- and an exact-match list let it through into the
+    query string.
+    """
+    with pytest.raises(TypeError, match="Credentials cannot be passed"):
+        _flatten_queryables({"queryables": {name: "SECRET"}})
+
+
+@pytest.mark.parametrize(
+    "name", ["state_name", "site_type_code", "monitoring_location_id", "qualifier"]
+)
+def test_real_queryables_still_pass_through(name):
+    assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}
+
+
+class TestWireIdSwitch:
+    """The API keys every collection on ``id``; callers spell it after the
+    collection (``monitoring_location_id``). The switch happens here, and
+    dropping the wrong key silently sends an unfiltered query."""
+
+    def test_the_collection_scoped_spelling_becomes_id(self):
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        # The collection-derived spelling wins over the getter's own id_name.
+        out = _switch_arg_id(
+            {"monitoring_locations_id": "USGS-01646500"},
+            "some_other_id",
+            "monitoring-locations",
+        )
+        assert out == {"id": "USGS-01646500"}
+
+    def test_the_getters_own_id_name_becomes_id(self):
+        """A getter whose id argument is not the collection name + ``_id``
+        still has its spelling translated."""
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        out = _switch_arg_id({"site_id": "X"}, "site_id", "daily")
+        assert out == {"id": "X"}
+
+    def test_an_explicit_id_wins_and_the_aliases_are_dropped(self):
+        from dataretrieval.ogc.requests import _switch_arg_id
+
+        out = _switch_arg_id(
+            {"id": "chosen", "daily_id": "ignored"}, "daily_id", "daily"
+        )
+        assert out == {"id": "chosen"}
+
+
+def test_extract_features_returns_none_for_a_missing_body():
+    """``None`` means "give the caller an empty frame". An empty features list
+    is a real mid-pagination shape, and letting it through would crash the
+    downstream merge with a missing join key rather than returning nothing."""
+    from dataretrieval.waterdata.stats import _extract_features
+
+    assert _extract_features(None) is None
+    assert _extract_features({"features": []}) is None
+    assert _extract_features({"features": [{"id": 1}]}) == [{"id": 1}]
+
+
+def test_next_req_url_parses_the_body_when_not_handed_one():
+    """The page walk normally passes the already-parsed body to avoid a second
+    parse; the no-body path is what a caller outside the walk gets, and it must
+    still find the link rather than returning None and truncating the walk."""
+    from dataretrieval.ogc.engine import _next_req_url
+
+    payload = {
+        "features": [{"id": 1}],
+        "links": [{"rel": "next", "href": "https://example.test/page2"}],
+    }
+    response = httpx.Response(
+        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    )
+
+    assert _next_req_url(response) == "https://example.test/page2"
+
+
+def test_next_req_url_stops_on_a_page_with_no_features():
+    """A ``next`` link on a featureless page is the service's pagination
+    running past the end; following it would loop."""
+    from dataretrieval.ogc.engine import _next_req_url
+
+    payload = {
+        "features": [],
+        "links": [{"rel": "next", "href": "https://example.test/page2"}],
+    }
+    response = httpx.Response(
+        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    )
+
+    assert _next_req_url(response) is None
+
+
+class TestOgcJsonErrorDetail:
+    """The service's own wording is surfaced when it sends one; anything else
+    must fall back to the status-derived message rather than raising while
+    building an error."""
+
+    def test_a_non_json_body_yields_no_detail(self):
+        from dataretrieval.ogc.errors import _json_error_detail
+
+        resp = httpx.Response(400, text="<html>gateway</html>")
+        assert _json_error_detail(resp) is None
+
+    def test_a_json_scalar_body_yields_no_detail(self):
+        """A bare string or list is valid JSON but carries no error envelope."""
+        from dataretrieval.ogc.errors import _json_error_detail
+
+        assert _json_error_detail(httpx.Response(400, json="just a string")) is None
+        assert _json_error_detail(httpx.Response(400, json=[1, 2, 3])) is None

@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import httpx
 
-from dataretrieval.exceptions import RateLimited, error_for_status
+from dataretrieval.exceptions import error_for_status
+from dataretrieval.exceptions import parse_retry_after as _parse_retry_after
 
 
 def _error_body(resp: httpx.Response) -> str:
@@ -29,15 +30,15 @@ def _error_body(resp: httpx.Response) -> str:
 
         * **429** — predefined message describing the rate-limit and pointing
           at the API-token path; the response body is not consulted.
-        * **403** — predefined message describing the most common cause
-          (query exceeding server limits); the response body is not
-          consulted.
-        * **other statuses** — attempts ``resp.json()`` and renders
-          ``"<status>: <code>. <description>."`` from the JSON error
-          envelope. If the body is not JSON (e.g. an HTML 502 from a
-          gateway), falls back to ``"<status>: <reason>. <snippet>"`` with
-          the first 200 characters of ``resp.text``; an empty body
-          degrades to ``"<status>: <reason>."``.
+        * **every other status** — a supported JSON error body (the USGS
+          ``code``/``description`` envelope or a gateway ``message``) when
+          present; otherwise ``"<status>: <reason>. <snippet>"`` with the first
+          200 characters of ``resp.text``; an empty body degrades to
+          ``"<status>: <reason>."``, except **403**, which falls back to
+          :data:`_FORBIDDEN_CAUSES` so a credential problem is named.
+
+    :func:`_raise_for_non_200` appends ``" (URL: ...)"`` to whatever this
+    returns.
     """
     status = resp.status_code
     if status == 429:
@@ -45,54 +46,65 @@ def _error_body(resp: httpx.Response) -> str:
             "429: Too many requests made. Please obtain an API token "
             "or try again later."
         )
-    elif status == 403:
-        return (
-            "403: Query request denied. Possible reasons include "
-            "query exceeding server limits."
-        )
+    detail = _json_error_detail(resp)
+    if detail is not None:
+        return f"{status}: {detail}"
+    snippet = (resp.text or "").strip()[:200]
+    reason = resp.reason_phrase or "Error"
+    if snippet:
+        return f"{status}: {reason}. {snippet}"
+    if status == 403:
+        return f"403: {_FORBIDDEN_CAUSES}"
+    return f"{status}: {reason}."
+
+
+#: What a 403 means when the service sends no error envelope. Both causes are
+#: named because the credential one is far more common and was omitted.
+_FORBIDDEN_CAUSES = (
+    "Query request denied. The API key may be missing, expired, or revoked "
+    "(see API_USGS_PAT), or the query may exceed server limits."
+)
+
+
+def _clean_field(value: object | None) -> str | None:
+    """Normalize a JSON error field: strip whitespace and trailing dot."""
+    if value is None:
+        return None
+    text = str(value).strip().rstrip(".")
+    return text or None
+
+
+def _json_error_detail(resp: httpx.Response) -> str | None:
+    """Render a supported JSON error body, or ``None`` for another shape."""
     try:
-        j_txt = resp.json()
+        body = resp.json()
     except ValueError:
-        snippet = (resp.text or "").strip()[:200]
-        reason = resp.reason_phrase or "Error"
-        if snippet:
-            return f"{status}: {reason}. {snippet}"
-        return f"{status}: {reason}."
-    return (
-        f"{status}: {j_txt.get('code', 'Unknown type')}. "
-        f"{j_txt.get('description', 'No description provided')}."
+        return None
+    if not isinstance(body, dict):
+        return None
+
+    candidate = body.get("error")
+    if not isinstance(candidate, dict):
+        candidate = body
+
+    code = _clean_field(candidate.get("code"))
+    detail = _clean_field(candidate.get("description")) or _clean_field(
+        candidate.get("message")
     )
+    parts = [p for p in (code, detail) if p]
+    return ". ".join(parts) + "." if parts else None
 
 
-def _parse_retry_after(value: str | None) -> float | None:
+def _url_suffix(resp: httpx.Response) -> str:
+    """`` (URL: ...)``, or empty when no request is attached.
+
+    ``httpx`` raises on ``.url`` for a hand-built response; an error path must
+    not fail while reporting a failure.
     """
-    Parse a USGS ``Retry-After`` header into seconds.
-
-    Parameters
-    ----------
-    value : str or None
-        The raw header value, or ``None`` if absent.
-
-    Returns
-    -------
-    float or None
-        Non-negative delta-seconds, clamped at zero. ``None`` when the
-        header is absent or unparseable; ``ChunkedCall`` treats
-        ``None`` as "fall back to my own retry policy".
-
-    Notes
-    -----
-    USGS sends ``Retry-After`` as integer delta-seconds (empirically
-    verified — e.g. ``Retry-After: 2619``). The HTTP spec also allows
-    HTTP-date form, but USGS doesn't use it, so this function doesn't
-    bother parsing it.
-    """
-    if not value:
-        return None
     try:
-        return max(0.0, float(value.strip()))
-    except ValueError:
-        return None
+        return f" (URL: {resp.url})"
+    except RuntimeError:
+        return ""
 
 
 def _raise_for_non_200(resp: httpx.Response) -> None:
@@ -116,56 +128,16 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
         :func:`dataretrieval.exceptions.error_for_status` for the mapping). The
         transient types (:class:`~dataretrieval.exceptions.TransientError`) are
         distinguished so ``ChunkedCall`` can wrap them as a resumable
-        :class:`~dataretrieval.ogc.interruptions.QuotaExhausted` /
-        :class:`~dataretrieval.ogc.interruptions.ServiceInterrupted`; a fatal
-        :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``)
-        the chunker won't resume.
+        :class:`~dataretrieval.interruptions.QuotaExhausted` /
+        :class:`~dataretrieval.interruptions.ServiceInterrupted`. The
+        chunker won't resume a fatal
+        :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``).
     """
     status = resp.status_code
     if status < 400:
         return
     raise error_for_status(
         status,
-        _error_body(resp),
+        _error_body(resp) + _url_suffix(resp),
         retry_after=_parse_retry_after(resp.headers.get("Retry-After")),
-    )
-
-
-def _paginated_failure_message(pages_collected: int, cause: BaseException) -> str:
-    """
-    Build a user-facing message for a mid-pagination failure.
-
-    The API exposes no resume cursor, so the caller's only recovery is
-    to retry the whole call — the message lists the practical knobs,
-    tailored to whether the failure was rate-limit (429) or something
-    else.
-
-    Parameters
-    ----------
-    pages_collected : int
-        Number of pages successfully fetched before the failure.
-    cause : BaseException
-        The underlying exception that interrupted pagination.
-
-    Returns
-    -------
-    str
-        A message suitable for the ``DataRetrievalError`` that the
-        paginated fetch paths raise from the original exception.
-    """
-    cause_str = str(cause).removesuffix(".")
-    # Some ``httpx`` exceptions (e.g. ``TimeoutException()`` with no args)
-    # stringify to empty; fall back to the class name so the
-    # returned message is always informative.
-    if not cause_str.strip():
-        cause_str = type(cause).__name__
-    if isinstance(cause, RateLimited):
-        action = "wait for the rate-limit window to reset and retry"
-    else:
-        action = "retry the request (possibly after a short backoff)"
-    return (
-        f"Paginated request failed after collecting {pages_collected} "
-        f"page(s): {cause_str}. To recover: {action}, reduce the "
-        f"request size (e.g. fewer locations, a shorter time range, or "
-        f"a smaller ``limit``), or obtain an API token."
     )

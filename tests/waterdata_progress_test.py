@@ -17,15 +17,17 @@ import httpx
 import pandas as pd
 import pytest
 
-from dataretrieval.ogc import progress as _progress
+from dataretrieval import progress as _progress
 from dataretrieval.ogc.chunking import ChunkedCall
+from dataretrieval.ogc.engine import _walk_pages
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.planning import ChunkPlan
-from dataretrieval.ogc.progress import (
+from dataretrieval.progress import (
     ProgressReporter,
     current,
     progress_context,
 )
-from dataretrieval.waterdata.utils import _paginate, _walk_pages
+from dataretrieval.transport.pagination import paginate
 
 
 def _run_walk_pages(*, geopd, req, client):
@@ -38,6 +40,11 @@ def _run_walk_pages(*, geopd, req, client):
     ``asyncio.run`` copies the calling context.
     """
     return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
+
+
+# The Water Data host is the only one that honors ``API_USGS_PAT``, and so the
+# only one where pointing the user at API-key registration is useful advice.
+_KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/"
 
 
 @pytest.fixture(autouse=True)
@@ -124,8 +131,8 @@ def test_note_retry_is_noop_when_disabled():
 
 def test_note_retry_accepts_integer_wait():
     # An int ``wait`` (e.g. whole seconds) must render without raising:
-    # ``round(int, 1)`` returns an int and ``int.is_integer()`` only exists
-    # on Python 3.12+, while the package floor is 3.9. Renders like the float.
+    # ``round(int, 1)`` returns an int and ``int.is_integer()`` only exists on
+    # Python 3.12+, while the package floor is 3.10. Renders like the float.
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
     reporter.note_retry(attempt=1, wait=5)
@@ -220,7 +227,7 @@ def test_reporter_swallows_stream_errors_and_disables(monkeypatch):
 def test_hints_api_key_when_no_key_configured(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.add_page(rows=5)
     reporter.close()
     assert _progress.SIGNUP_URL in stream.getvalue()
@@ -231,7 +238,7 @@ def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
     # — not absence of the header — is what drives the pointer.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.set_rate_remaining("891")
     reporter.add_page(rows=5)
     reporter.close()
@@ -241,8 +248,24 @@ def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
 def test_no_hint_when_api_key_present(monkeypatch):
     monkeypatch.setenv("API_USGS_PAT", "secret")
     stream = io.StringIO()
-    reporter = ProgressReporter(stream=stream, enabled=True)
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
     reporter.add_page(rows=5)  # no rate-limit, but a key is configured
+    reporter.close()
+    assert _progress.SIGNUP_URL not in stream.getvalue()
+
+
+def test_no_hint_for_a_service_the_key_does_not_cover(monkeypatch):
+    """Only the host that honors ``API_USGS_PAT`` gets the sign-up pointer.
+
+    Water Use is on a different host and never receives the key, so telling its
+    users to register sends them after a fix that changes nothing.
+    """
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    stream = io.StringIO()
+    reporter = ProgressReporter(
+        stream=stream, enabled=True, target_url="https://api.water.usgs.gov/nwaa-data/"
+    )
+    reporter.add_page(rows=5)
     reporter.close()
     assert _progress.SIGNUP_URL not in stream.getvalue()
 
@@ -260,13 +283,13 @@ def test_api_key_hint_shown_at_most_once(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
 
     first = io.StringIO()
-    r1 = ProgressReporter(stream=first, enabled=True)
+    r1 = ProgressReporter(stream=first, enabled=True, target_url=_KEYED_URL)
     r1.add_page(rows=5)
     r1.close()
     assert _progress.SIGNUP_URL in first.getvalue()
 
     second = io.StringIO()
-    r2 = ProgressReporter(stream=second, enabled=True)
+    r2 = ProgressReporter(stream=second, enabled=True, target_url=_KEYED_URL)
     r2.add_page(rows=5)
     r2.close()
     assert _progress.SIGNUP_URL not in second.getvalue()
@@ -350,6 +373,9 @@ def test_nested_context_reuses_outer_reporter():
 
 def _resp(features, *, next_url=None, rate_remaining=None):
     resp = mock.MagicMock()
+    # A real response always carries an ``httpx.URL``; the next-page check
+    # resolves and host-checks the ``next`` link against it.
+    resp.url = httpx.URL("https://example.com/p1")
     links = [{"rel": "next", "href": next_url}] if next_url else []
     resp.json.return_value = {
         "numberReturned": len(features),
@@ -387,7 +413,7 @@ def test_walk_pages_reports_pages_and_rate_limit():
 
     assert len(df) == 2
     out = stream.getvalue()
-    # The service set on the context reaches _paginate's render via the contextvar.
+    # The collection set on the context reaches _paginate's render via the contextvar.
     assert "Retrieving: daily ·" in out
     assert "2 pages" in out
     assert "4,998 requests remaining" in out
@@ -477,11 +503,12 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
 
     async def run():
         with progress_context(service="continuous", stream=stream, enabled=True):
-            df, _ = await _paginate(
+            df, _ = await paginate(
                 req,
                 parse_response=parse_sync,
                 follow_up=follow_up,
                 client=client,
+                raise_for_status=_raise_for_non_200,
             )
         return df
 
@@ -497,8 +524,8 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
 def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     """The async fan-out core (``ChunkedCall._run``) records
     ``plan.total`` on the active reporter so the progress line knows how
-    many sub-requests are in flight, and ticks ``current_chunk`` via
-    ``start_chunk(len(completed))`` as each gathered sub-request finishes
+    many chunks are in flight, and ticks ``current_chunk`` via
+    ``start_chunk(len(completed))`` as each gathered chunk finishes
     — reaching ``plan.total`` in the all-success case."""
 
     # Fake build_request whose URL length scales with the sites list,
@@ -535,8 +562,35 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
 
     total_recorded, current_recorded = asyncio.run(run())
     assert total_recorded == plan.total
-    # Each sub-request that completes bumps current_chunk via
+    # Each chunk that completes bumps current_chunk via
     # start_chunk(len(completed)), so by the time the gather finishes
     # current_chunk reflects the total number of successful chunks —
     # plan.total in the all-success case.
     assert current_recorded == plan.total
+
+
+def test_closing_twice_is_a_no_op():
+    """``close`` runs from both the success path and the interruption
+    handler, so a call that fails after finishing would close twice and
+    print a second trailing newline into the user's terminal."""
+    stream = io.StringIO()
+    reporter = _progress.ProgressReporter(enabled=True, stream=stream)
+    reporter._rendered = True
+    reporter.close()
+    first = stream.getvalue()
+    reporter.close()
+    assert stream.getvalue() == first
+
+
+def test_a_broken_stream_disables_the_reporter_instead_of_failing_the_query():
+    """Progress is decoration. A closed or redirected stream must not take
+    down a query whose data already arrived."""
+
+    class _Broken(io.StringIO):
+        def write(self, s):
+            raise ValueError("stream closed")
+
+    reporter = _progress.ProgressReporter(enabled=True, stream=_Broken())
+    reporter._rendered = True
+    reporter.close()
+    assert reporter.enabled is False

@@ -1,4 +1,4 @@
-.. api:
+.. _api:
 
 =============
 API reference
@@ -7,6 +7,7 @@ API reference
 .. toctree::
     :maxdepth: 1
 
+    config
     exceptions
     ngwmn
     nldi
@@ -14,5 +15,5 @@ API reference
     streamstats
     utils
     waterdata
-    wateruse
+    nwdc
     wqp

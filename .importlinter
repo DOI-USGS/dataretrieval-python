@@ -1,0 +1,162 @@
+; Declarative dependency-direction contracts for ``dataretrieval``.
+;
+; This file owns dependency-direction rules. ``tests/architecture_test.py``
+; owns symbol-level claims, ``__all__`` surfaces, AST shape, positive imports,
+; and package-wide cycle detection (see ADR 0003). The split is deliberate and
+; the two do not overlap -- a rule enforced twice is a rule that gets updated
+; once.
+;
+; Run with ``lint-imports`` (installed by the ``[metrics]`` extra).
+
+[importlinter]
+root_package = dataretrieval
+; Contracts describe what runs, matching the AST suite. Type-checking imports
+; document structural protocols and callback types without creating runtime
+; dependency edges.
+exclude_type_checking_imports = True
+
+[importlinter:contract:layers]
+name = Dependencies point toward stable policy (ADR 0003, ADR 0006)
+type = layers
+containers =
+    dataretrieval
+layers =
+; The deprecated ``wateruse`` alias re-exports ``nwdc``, so it sits above the
+; adapters rather than beside them. A compatibility facade may depend on the
+; adapter it forwards to; nothing may depend on the facade.
+    wateruse
+    ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
+    ogc
+    utils
+    _querying
+    transport
+    progress
+; Response-format conventions sit above the pure leaves because they read the
+; code tables, and below every adapter that shapes a response with them.
+    _wqx
+    _response_metadata | codes | combining | interruptions | rdb
+    credentials
+    configuration
+    _configuration_core
+    exceptions
+; Pure dependency-free mechanisms sit together at the floor: none imports
+; first-party code, so every layer can use them without reaching sideways or
+; creating artificial dependencies among them.
+    _ambient | _deprecation | _validation
+; Every top-level module must be placed in the stack deliberately. A new
+; top-level module fails this contract until someone decides where it sits.
+exhaustive = True
+exhaustive_ignores =
+    _version
+
+[importlinter:contract:configuration-core]
+name = Only the configuration facade may import its private core
+; Keep the extracted foundation private: adapters and other package modules
+; continue to depend on dataretrieval.configuration, preserving all existing
+; import paths and preventing parallel configuration interfaces.
+type = protected
+protected_modules =
+    dataretrieval._configuration_core
+allowed_importers =
+    dataretrieval.configuration
+
+[importlinter:contract:ogc-consumers]
+name = Only NGWMN and Water Data consume the OGC subsystem (ADR 0003)
+type = protected
+; Read as: nothing outside this list may reach into OGC, directly or through a
+; submodule. An allowlist rather than a denylist, so a new service module is
+; refused by default instead of being silently permitted until someone
+; remembers to add it.
+;
+; The root ``dataretrieval`` package is deliberately NOT an allowed importer.
+; ``allowed_importers`` is matched with ``as_packages``, so naming the root here
+; would make every module in the distribution an allowed importer and the
+; contract could never fail. Its two real imports are listed as explicit
+; exceptions below instead -- narrow, visible, and they fail if they go stale.
+protected_modules =
+    dataretrieval.ogc
+allowed_importers =
+    dataretrieval.ngwmn
+    dataretrieval.waterdata
+ignore_imports =
+; The package __init__ re-exports the parallel-chunks context manager; it is
+; part of the documented public surface, not a service reaching into OGC.
+    dataretrieval -> dataretrieval.ogc.chunking
+
+[importlinter:contract:ogc-facade]
+name = Facade-only OGC consumers, never its internals (ADR 0007)
+type = forbidden
+; Listed per module rather than by package: most of ``waterdata`` (``ratings``,
+; ``reference``, ``samples``, ``stats``, the package ``__init__``) legitimately
+; imports ``ogc`` internals today, so only the modules that have earned the
+; facade-only seam belong here.
+source_modules =
+    dataretrieval.ngwmn
+    dataretrieval.waterdata.cql
+; The wildcard is what makes this durable: a new ``ogc`` submodule is covered
+; the day it is added, without editing this contract.
+forbidden_modules =
+    dataretrieval.ogc.**
+; Direct imports only. Reaching an internal *through* the facade is the design,
+; not a violation -- ``ngwmn -> ogc -> ogc.engine`` is how the seam is supposed
+; to work, and the default (indirect included) forbids exactly that.
+allow_indirect_imports = True
+
+[importlinter:contract:ogc-internal-seams]
+name = OGC internal seams (ADR 0003)
+type = forbidden
+source_modules =
+; Feature shaping is downstream of execution. If shaping imports engine the
+; subsystem gains a cycle and the schema fetch on an empty frame becomes
+; reachable from request construction.
+    dataretrieval.ogc.shaping
+forbidden_modules =
+    dataretrieval.ogc.engine
+
+[importlinter:contract:ogc-utils]
+name = OGC core does not depend on legacy utilities (ADR 0003)
+type = forbidden
+source_modules =
+    dataretrieval.ogc
+forbidden_modules =
+    dataretrieval._querying
+    dataretrieval.utils
+
+[importlinter:contract:nwis-quarantine]
+name = Deprecated NWIS has no dependents (ADR 0005)
+type = forbidden
+source_modules =
+    dataretrieval._querying
+    dataretrieval.codes
+    dataretrieval.combining
+    dataretrieval.credentials
+    dataretrieval.exceptions
+    dataretrieval.interruptions
+    dataretrieval.ngwmn
+    dataretrieval.nldi
+    dataretrieval.ogc
+    dataretrieval.progress
+    dataretrieval.rdb
+    dataretrieval.streamstats
+    dataretrieval.transport
+    dataretrieval.utils
+    dataretrieval.nwdc
+    dataretrieval.waterdata
+    dataretrieval.wateruse
+    dataretrieval.wqp
+forbidden_modules =
+    dataretrieval.nwis
+
+[importlinter:contract:waterdata-families]
+name = Water Data collection families do not reach through each other (ADR 0007)
+type = independence
+; This is the single collection-family inventory. ``tests/architecture_test.py``
+; reads it to derive the facade's expected export union, so adding a module here
+; brings it under both the independence contract and the facade check.
+modules =
+    dataretrieval.waterdata.cql
+    dataretrieval.waterdata.measurements
+    dataretrieval.waterdata.metadata
+    dataretrieval.waterdata.reference
+    dataretrieval.waterdata.samples
+    dataretrieval.waterdata.time_series

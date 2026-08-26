@@ -2,24 +2,36 @@
 
 Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
-fails, so one ``except dataretrieval.DataRetrievalError`` catches them all --
-including connection-level failures (timeouts, DNS, refused connections), which
-are wrapped as :class:`NetworkError` with the underlying ``httpx`` exception on
-``__cause__``.
+fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
+includes connection-level failures (timeouts, DNS, refused connections), which
+remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
+deterministic failure is :class:`NetworkError`; a recoverable failure that
+exhausts retries during fan-out is a resumable ``ServiceInterrupted``.
 
 Most failures are an :class:`HTTPError` carrying the response ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
-and :class:`NoSitesError`. :func:`error_for_status` maps a status to its type.
+:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
+:func:`error_for_status` maps a status to its type. ``ConfigurationError`` is
+the one member that is not a request failure at all: it reports an unusable
+setting or config file, raised from wherever a setting is first resolved --
+which, because resolution is lazy, is inside whichever getter runs first. The
+*warning* side of the taxonomy lives here too: :class:`SkippedItemWarning`
+(specialized by :class:`SkippedRatingWarning`) for a per-item skip inside a
+batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
+that has stopped being updated.
 
 This module has no third-party runtime dependencies -- ``httpx`` is imported only
-for type checking -- so any module can import it without pulling in pandas / httpx
-and without risking an import cycle.
+for type checking. Any module can therefore import it without pulling in pandas
+or httpx, and without risking an import cycle.
 """
 
 from __future__ import annotations
 
+import math
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
@@ -36,12 +48,25 @@ __all__ = [
     "Unchunkable",
     "NetworkError",
     "NoSitesError",
+    "ConfigurationError",
+    "DataCurrencyWarning",
+    "SkippedItemWarning",
+    "SkippedRatingWarning",
     "error_for_status",
+    "parse_retry_after",
 ]
 
 
 class DataRetrievalError(Exception):
-    """Base class for every failed-request error in ``dataretrieval``.
+    """Base class for every ``dataretrieval`` error.
+
+    Almost every member is a failed request, and the read-anywhere fields below
+    describe one. The exception is :class:`ConfigurationError`, which reports a
+    configuration the library cannot use; it appears here because configuration
+    is resolved lazily on the request path, so it surfaces from inside a getter
+    and one ``except DataRetrievalError`` should cover it too. It carries no
+    status and is not retryable, so the branching idiom below routes it to the
+    final ``raise``.
 
     Catch it to handle any USGS or EPA service failure uniformly, and branch on
     the read-anywhere fields below without needing the concrete subclass::
@@ -57,8 +82,9 @@ class DataRetrievalError(Exception):
             else:
                 raise
 
-    Connection-level failures (timeouts, DNS) are wrapped as
-    :class:`NetworkError`, so this single clause covers them too.
+    Connection-level failures (timeouts, DNS) remain subclasses of this base:
+    :class:`NetworkError` when deterministic, or a resumable
+    ``ServiceInterrupted`` when recoverable fan-out retries are exhausted.
     """
 
     #: HTTP status that triggered the error, or ``None`` for errors without one
@@ -92,8 +118,10 @@ class DataRetrievalError(Exception):
 
 
 def _new_error(cls: type[DataRetrievalError]) -> DataRetrievalError:
-    """Build a blank :class:`DataRetrievalError` for unpickling, bypassing
-    ``__init__``; pickle then calls ``__setstate__`` to restore its state."""
+    """Build a blank :class:`DataRetrievalError` for unpickling.
+
+    Bypasses ``__init__``; pickle then calls ``__setstate__`` to restore state.
+    """
     return cls.__new__(cls)
 
 
@@ -108,8 +136,8 @@ class HTTPError(DataRetrievalError):
     (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one
     exception to "a status is an ``HTTPError``" is a request the service rejects
     as too long: it surfaces as :class:`URLTooLong` (a :class:`RequestTooLarge`),
-    *not* an ``HTTPError`` -- so catch :class:`DataRetrievalError` to be certain
-    of spanning every failure. See :func:`error_for_status` for the full mapping.
+    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain of
+    spanning every failure. See :func:`error_for_status` for the full mapping.
 
     Parameters
     ----------
@@ -125,8 +153,9 @@ class HTTPError(DataRetrievalError):
 
 
 class TransientError(HTTPError):
-    """A 429 or 5xx the server may serve on a later try -- :class:`RateLimited`
-    for 429, :class:`ServiceUnavailable` for 5xx.
+    """A 429 or 5xx the server may serve on a later try.
+
+    :class:`RateLimited` covers 429 and :class:`ServiceUnavailable` covers 5xx.
 
     This only classifies the condition; it does not itself retry. Whether to
     retry is up to the calling path: a single-shot request raises it for the
@@ -216,9 +245,9 @@ class Unchunkable(RequestTooLarge):
     """No chunking plan fits the URL byte limit.
 
     Raised by the Water Data chunker when even the smallest reducible plan
-    (every list axis at one atom per sub-request, the filter at one clause per
-    sub-request) still exceeds the server's byte limit -- so unlike
-    :class:`URLTooLong`, automatic splitting has already been tried and
+    (every list axis at one atom per chunk, the filter at one clause per
+    chunk) still exceeds the server's byte limit. Unlike
+    :class:`URLTooLong`, then, automatic splitting has already been tried and
     exhausted. Shrink the input lists, simplify the filter, or split the call
     manually.
     """
@@ -228,9 +257,10 @@ class Unchunkable(RequestTooLarge):
 
 
 class NetworkError(DataRetrievalError):
-    """The request never completed a round-trip to the service -- a DNS
-    failure, refused connection, or timeout -- so no HTTP response arrived to
-    classify.
+    """The request never completed a round-trip to the service.
+
+    A DNS failure, refused connection, or timeout stopped it, so no HTTP
+    response arrived to classify.
 
     Wraps the underlying ``httpx`` transport exception, preserved on
     ``__cause__``. Worth retrying (:attr:`~DataRetrievalError.retryable` is
@@ -238,6 +268,25 @@ class NetworkError(DataRetrievalError):
     """
 
     retryable: ClassVar[bool] = True
+
+
+# --- Bad configuration ---------------------------------------------------
+
+
+class ConfigurationError(DataRetrievalError, ValueError):
+    """A ``dataretrieval`` setting holds a value that can't be used, so no
+    request was issued -- an environment variable, a policy field, a malformed
+    ``config.toml``, or a profile the file does not define.
+
+    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches
+    it rather than letting a bare ``ValueError`` escape a request path. That
+    matters because settings resolve lazily, on the request path: a broken
+    config file surfaces from inside whichever getter runs first, and belongs in
+    the same handler as any other failure of that call. It is *also* a
+    :class:`ValueError`, so code that already treats a bad setting as one keeps
+    working whether the value came from the environment, a file, or a
+    :func:`dataretrieval.configure` block.
+    """
 
 
 # --- Empty result --------------------------------------------------------
@@ -259,6 +308,62 @@ class NoSitesError(DataRetrievalError):
             "No sites/data found using the selection criteria specified in "
             f"url: {self.url}"
         )
+
+
+# --- Upstream data currency -----------------------------------------------
+
+
+class DataCurrencyWarning(UserWarning):
+    """An upstream dataset is frozen, retired, or no longer updated.
+
+    Distinct from ``DeprecationWarning``, which promises that a *name in this
+    package* is going away and gives the caller something to migrate to. Here
+    the API is fine and there is nothing to migrate: the service's own data
+    has stopped moving, and only the caller can judge whether that matters.
+
+    It is a ``UserWarning`` for that reason. Emitting it as a
+    ``DeprecationWarning`` meant a downstream project running
+    ``-W error::DeprecationWarning`` -- ordinary CI hygiene -- could not call
+    the affected getters with their default arguments at all.
+    """
+
+
+# --- Skipped work ---------------------------------------------------------
+
+
+class SkippedItemWarning(UserWarning):
+    """One item of a batched retrieval was skipped; the rest were returned.
+
+    The policy for batch getters whose items are independent documents: an
+    item that fails *deterministically* -- so retrying would reproduce the
+    failure -- is dropped from the result under a warning naming it, because
+    aborting would discard every other item's data over one bad entry.
+    Transient failures (429 / 5xx / timeouts / connection drops) are never
+    skipped -- they are retried and, if retries run out, raised as a
+    resumable interruption. Rate limiting in particular is systematic, so
+    skipping there would silently drop most of a batch; that silent loss is
+    the failure mode this policy exists to prevent.
+
+    A warning rather than a log line so it is visible by default. To make
+    any skip fatal (strict all-or-nothing behavior)::
+
+        warnings.filterwarnings("error", category=SkippedItemWarning)
+
+    Getters emit a subclass naming their surface (e.g.
+    :class:`SkippedRatingWarning`), so a filter can also target one getter.
+    """
+
+
+class SkippedRatingWarning(SkippedItemWarning):
+    """A rating feature was skipped by
+    :func:`dataretrieval.waterdata.get_ratings`.
+
+    Emitted when a single STAC feature fails deterministically -- a stale
+    catalog entry (404 on its data asset), a feature carrying no data asset,
+    a malformed RDB file. The failed feature's id is absent from the returned
+    dict. See :class:`SkippedItemWarning` for the policy and how to escalate
+    a skip to an error.
+    """
 
 
 def error_for_status(
@@ -293,3 +398,50 @@ def error_for_status(
     if 500 <= status < 600:
         return ServiceUnavailable(message, status_code=status, retry_after=retry_after)
     return HTTPError(message, status_code=status)
+
+
+def parse_retry_after(value: str | None) -> float | None:
+    """Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.
+
+    Both header forms mean the same thing and are treated the same way: the
+    seconds are returned as given, however large. A value past what a caller will
+    wait out inline stops the retry and surfaces a transient carrying the hint on
+    ``.retry_after``, so a long wait becomes the caller's decision (and, for a
+    chunked call, a resumable interruption) instead of being ignored.
+
+    An over-long hint is honored rather than discarded. Dropping it would make
+    the client retry *harder* against a service that just asked for a long
+    pause, and would deny the caller the number it needs on ``.retry_after``.
+    Clock skew can inflate a date-form hint, but trusting one costs a
+    recoverable escalation while ignoring it costs hammering a service that is
+    already asking for room.
+
+    A date that has *already* passed yields no hint at all rather than ``0.0``.
+    Read literally it says "retry now", but the likelier reading is that our
+    clock runs ahead of the server's -- and acting on it would re-send almost
+    immediately against a service that just asked for a pause. Falling back to
+    our own bounded backoff is right under either reading. (Delta-seconds is
+    clock-independent, so a literal ``Retry-After: 0`` is still honored as the
+    instruction it is, floored by
+    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s jitter.)
+    """
+    if not value:
+        return None
+    raw = value.strip()
+    try:
+        seconds = float(raw)
+    except ValueError:
+        pass
+    else:
+        # ``inf``/``nan`` parse cleanly but poison every later comparison: an
+        # infinite hint would refuse retry forever and travel to the caller on
+        # ``.retry_after``. Treat them as no hint at all.
+        return max(0.0, seconds) if math.isfinite(seconds) else None
+    try:
+        retry_at = parsedate_to_datetime(raw)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if retry_at.tzinfo is None:
+        retry_at = retry_at.replace(tzinfo=timezone.utc)
+    delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+    return delay if delay > 0 else None

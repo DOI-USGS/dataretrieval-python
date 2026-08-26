@@ -21,7 +21,7 @@ repos:
       - id: debug-statements
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
+    rev: v0.16.1
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -37,6 +37,64 @@ repos:
       - id: mypy
         pass_filenames: false
         additional_dependencies: [httpx, anyio]
+
+  # Complexity ratchet. Thresholds are the tightest the package currently
+  # passes, so this holds the line rather than demanding a refactor: no block
+  # above rank C (cyclomatic complexity 20), no module below B, average at A.
+  # Tightening a letter is a deliberate commit, and the failure names the
+  # offending block, so the fix is local. Applied to the package only --
+  # tests legitimately contain long, branchy fixtures.
+  - repo: https://github.com/rubik/xenon
+    rev: v0.9.3
+    hooks:
+      - id: xenon
+        # The package path is in args, not passed by pre-commit: --max-average
+        # and --max-modules are whole-package judgements, and computing them
+        # over only the changed files would let the average drift upward one
+        # commit at a time. ``files`` decides whether to run, not what to scan.
+        args:
+          - "--max-absolute"
+          - "C"
+          - "--max-modules"
+          - "B"
+          - "--max-average"
+          - "A"
+          - "dataretrieval"
+        files: ^dataretrieval/.*\.py$
+        pass_filenames: false
+
+  # Cognitive-complexity ratchet, the counterpart to xenon's cyclomatic one.
+  # The two measure different things: xenon counts branches, complexipy counts
+  # how hard the control flow is to hold in your head, so nesting and early
+  # exits weigh differently. 25 is the package's current maximum
+  # (``nwis._read_json``), so this holds the line rather than demanding a
+  # refactor. Unlike xenon this one is per-function, so scanning only the
+  # changed files gives the same verdict CI gives for the whole package.
+  - repo: https://github.com/rohaquinlop/complexipy-pre-commit
+    rev: v6.2.0
+    hooks:
+      - id: complexipy
+        files: ^dataretrieval/.*\.py$
+
+  # Dependency-direction contracts (ADR 0003, 0005, 0006, 0007). Complements
+  # tests/architecture_test.py, which enforces named pairwise claims by parsing
+  # the AST; this checks the whole layer stack over the *transitive* graph, so
+  # a service reaching transport through OGC fails here. Runs in about a
+  # second. Declared as a local hook rather than using the upstream one, which
+  # is ``language: system`` and so needs lint-imports already on PATH.
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        description: Enforce the dependency layers declared in .importlinter
+        entry: lint-imports
+        language: python
+        additional_dependencies: ["import-linter==2.13"]
+        # Reads the package tree from the repo root, not a file list; grimp
+        # resolves ``dataretrieval`` relative to the working directory, so the
+        # hook needs neither the package nor its runtime deps installed.
+        pass_filenames: false
+        files: ^(dataretrieval/.*\.py|\.importlinter)$
 
   # Strip cell outputs + execution_count from notebooks on commit so the
   # diff is the source, not the rendered run. Demos still execute fine

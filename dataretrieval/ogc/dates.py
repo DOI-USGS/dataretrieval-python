@@ -59,9 +59,14 @@ def _parse_datetime(value: str) -> datetime | None:
     return None
 
 
+def _is_blank(dt: str | None) -> bool:
+    """True for a None, NaN, or empty-string element."""
+    return dt is None or bool(pd.isna(dt)) or dt == ""
+
+
 def _format_one(dt: str | None, *, date: bool) -> str | None:
     """Format a single datetime element for inclusion in the API time arg."""
-    if pd.isna(dt) or dt == "" or dt is None:
+    if dt is None or _is_blank(dt):
         return ".."
     parsed = _parse_datetime(dt)
     if parsed is None:
@@ -76,13 +81,42 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
     return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _coerce_to_list(
+    datetime_input: str | Sequence[str | None],
+    name: str = "date input",
+) -> list[str | None]:
+    """Normalize datetime input to a list, raising on invalid shapes."""
+    if isinstance(datetime_input, str):
+        return [datetime_input]
+    if isinstance(datetime_input, Mapping):
+        raise TypeError(
+            f"{name} must be a string or sequence of strings, "
+            f"not {type(datetime_input).__name__}."
+        )
+    return list(datetime_input)
+
+
+def _is_passthrough(single: str) -> bool:
+    """True when a single-element input should be returned as-is."""
+    return bool(_DURATION_RE.match(single) or "/" in single)
+
+
+def _all_blank(items: list[str | None]) -> bool:
+    """True when every element is None, NaN, or the empty string."""
+    return all(_is_blank(dt) for dt in items)
+
+
 def _format_api_dates(
-    datetime_input: str | Sequence[str | None] | None, date: bool = False
+    datetime_input: str | Sequence[str | None] | None,
+    date: bool = False,
+    *,
+    name: str = "date input",
+    single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
 
-    Handles single values or ranges, and converting to ISO 8601 or date-only
+    Handles single values or ranges, converting to ISO 8601 or date-only
     formats as needed.
 
     Parameters
@@ -96,15 +130,26 @@ def _format_api_dates(
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
+    name : str, optional
+        The caller's own spelling of this argument, used as the subject of
+        every message raised here. Defaults to a generic "date input"; pass
+        the real parameter name (``"time"``, ``"last_modified"``) so a caller
+        correcting the error edits an argument their getter actually accepts.
+    single_value_hint : str, optional
+        How the "too many values" message describes an acceptable single
+        value. Wording only -- a getter that rejects some of the default's
+        forms (``get_ratings`` refuses durations) enforces that itself and
+        passes a hint naming only what it accepts, so the remedy does not
+        send a caller straight into its rejection.
 
     Returns
     -------
     Union[str, None]
         - If input is a single value, returns the formatted date/datetime string
-        or None if parsing fails.
+          or None if parsing fails.
         - If input is a list of two values, returns a date/datetime range string
-        separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
-        "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
+          separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
+          "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
         - Returns None if input is empty, all NA, or cannot be parsed.
 
     Raises
@@ -115,50 +160,38 @@ def _format_api_dates(
     Notes
     -----
     - A single blank/NA value returns None. In a two-value range, a blank/NA
-    endpoint is rendered as ``".."`` to denote an open bound (e.g.
-    ``"2024-01-01/.."``); the range is only None when *every* element is
-    blank/NA or any non-NA element fails to parse.
+      endpoint is rendered as ``".."`` to denote an open bound (e.g.
+      ``"2024-01-01/.."``); the range is only None when *every* element is
+      blank/NA or any non-NA element fails to parse.
     - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
-    intervals containing ``"/"``; both are passed through unchanged.
+      intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
-    `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
-    converted from that offset to UTC; naive inputs are interpreted in the
-    local time zone for backwards compatibility.
+      `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
+      converted from that offset to UTC; naive inputs are interpreted in the
+      local time zone for backwards compatibility.
     """
     if datetime_input is None:
         return None
 
-    # Convert single string to list for uniform processing
-    if isinstance(datetime_input, str):
-        datetime_input = [datetime_input]
-    elif isinstance(datetime_input, Mapping):
-        # `list(mapping)` returns keys, which silently accepts the wrong shape.
-        raise TypeError(
-            f"date input must be a string or sequence of strings, "
-            f"not {type(datetime_input).__name__}."
-        )
-    elif not isinstance(datetime_input, (list, tuple)):
-        # Materialize any other iterable (pandas.Series, numpy.ndarray,
-        # generator, ...) so the len()/subscript operations below work.
-        datetime_input = list(datetime_input)
+    items = _coerce_to_list(datetime_input, name)
 
-    # Check for null or all NA and return None
-    if all(pd.isna(dt) or dt == "" or dt is None for dt in datetime_input):
+    if _all_blank(items):
         return None
 
-    if len(datetime_input) > 2:
-        raise ValueError("datetime_input should only include 1-2 values")
+    if len(items) > 2:
+        raise ValueError(
+            f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
+            f"Pass one value for {single_value_hint}, "
+            "or two for a closed interval ('2020-01-01', '2020-12-31')."
+        )
 
     # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
-    # strings untouched.
-    if len(datetime_input) == 1 and isinstance(datetime_input[0], str):
-        single = datetime_input[0]
-        if _DURATION_RE.match(single) or "/" in single:
-            return single
+    if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
+        return items[0]
 
-    # element invalidates the range.
+    # Format each element; any element that fails to parse invalidates the range.
     formatted: list[str] = []
-    for dt in datetime_input:
+    for dt in items:
         one = _format_one(dt, date=date)
         if one is None:
             return None

@@ -32,10 +32,9 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     text : str
         The RDB text response from a USGS web service.
     dtypes : dict[str, type] or None, optional
-        Optional column-name to dtype hints, forwarded to
-        ``pandas.read_csv``. Unknown column names are silently ignored, so
-        callers may safely pass a dict of all columns they might be
-        interested in.
+        Column-name to dtype hints, forwarded to ``pandas.read_csv``. Unknown
+        column names are silently ignored, so callers can pass a dict of every
+        column they might be interested in.
 
     Returns
     -------
@@ -52,8 +51,13 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     """
     if "<html>" in text.lower() or "<!doctype html>" in text.lower():
         raise ValueError(
-            "Received HTML response instead of RDB. This often indicates "
-            "that the service has been moved or is currently unavailable."
+            "Received an HTML response instead of RDB, which usually means "
+            "the service is degraded, has moved, or returned an error page "
+            "rather than that the query was wrong. Retry once after a short "
+            "wait; if the same HTML comes back, the endpoint has most likely "
+            "been retired -- see "
+            "https://waterdata.usgs.gov/blog/api-waterservices-decom/ and "
+            "migrate to the dataretrieval.waterdata getters."
         )
 
     lines = text.splitlines()

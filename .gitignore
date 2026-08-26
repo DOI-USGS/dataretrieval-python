@@ -112,3 +112,17 @@ ENV/
 
 # macOS
 *.DS_Store
+
+# wily metrics cache (rebuildable: `wily build dataretrieval`)
+.wily/
+
+# pyscn analysis reports (rebuildable: `pyscn analyze dataretrieval`)
+.pyscn/
+
+# Working design note for the layered-configuration work; the durable
+# record is ADR 0009 + docs/source/userguide/configuration.rst.
+CONFIG-PLAN.md
+
+# Resolver lock for local dev; the package ships a range-based pyproject and
+# is not deployed from a pinned set.
+uv.lock

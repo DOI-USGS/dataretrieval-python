@@ -1,11 +1,30 @@
 """Unit tests for functions in utils.py"""
 
+import warnings
 from unittest import mock
 
+import numpy
 import pandas as pd
 import pytest
 
-from dataretrieval import exceptions, nwis, utils
+from dataretrieval import _querying, _wqx, exceptions, nwis, utils
+
+
+class Test_Ambient:
+    def test_implementation_keeps_documented_public_identity(self):
+        from dataretrieval._ambient import Ambient
+
+        assert utils.Ambient is Ambient
+        assert Ambient.__module__ == "dataretrieval.utils"
+
+    def test_scope_restores_previous_value(self):
+        value = utils.Ambient("test_ambient", "default")
+
+        with value("outer"):
+            with value("inner"):
+                assert value.get() == "inner"
+            assert value.get() == "outer"
+        assert value.get() == "default"
 
 
 class Test_query:
@@ -32,6 +51,50 @@ class Test_query:
         response = utils.query(url, payload)
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
+
+    def test_no_sites_detection_respects_response_charset(self, httpx_mock):
+        """The legacy sentinel is checked after HTTP charset decoding."""
+        url = "https://example.invalid/x"
+        body = "No sites/data found".encode("utf-16")
+        httpx_mock.add_response(
+            method="GET",
+            url=url,
+            content=body,
+            headers={"Content-Type": "text/plain; charset=utf-16"},
+        )
+
+        with pytest.raises(exceptions.NoSitesError):
+            utils.query(url, {})
+
+    def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
+        """The public legacy adapter still surfaces the first transient failure."""
+        url = "https://example.invalid/x"
+        request_url = f"{url}?a=1"
+        httpx_mock.add_response(method="GET", url=request_url, status_code=503)
+        httpx_mock.add_response(method="GET", url=request_url, text="unexpected retry")
+        monkeypatch.setenv("API_USGS_RETRIES", "1")
+
+        with pytest.raises(exceptions.ServiceUnavailable):
+            utils.query(url, {"a": "1"})
+
+        assert len(httpx_mock.get_requests()) == 1
+
+    def test_opt_in_retry_recovers_from_transient(self, httpx_mock, monkeypatch):
+        """Active adapters can opt into bounded retry without changing NWIS."""
+        import dataretrieval.transport.retry as retry
+
+        url = "https://example.invalid/x"
+        request_url = f"{url}?a=1"
+        httpx_mock.add_response(method="GET", url=request_url, status_code=503)
+        httpx_mock.add_response(method="GET", url=request_url, text="ok")
+        monkeypatch.setenv("API_USGS_RETRIES", "1")
+        monkeypatch.setattr(retry, "_RETRY_BASE_BACKOFF", 0.0)
+        monkeypatch.setattr(retry, "_RETRY_MAX_BACKOFF", 0.0)
+
+        response = _querying._query_with_retry(url, {"a": "1"})
+
+        assert response.text == "ok"
+        assert len(httpx_mock.get_requests()) == 2
 
 
 class Test_error_taxonomy:
@@ -172,7 +235,7 @@ class Test_error_taxonomy:
             ServiceUnavailable,
             Unchunkable,
         )
-        from dataretrieval.ogc.interruptions import ChunkInterrupted
+        from dataretrieval.interruptions import ChunkInterrupted
 
         for cls in (RateLimited, ServiceUnavailable, Unchunkable, ChunkInterrupted):
             assert issubclass(cls, exceptions.DataRetrievalError)
@@ -192,10 +255,10 @@ class Test_error_taxonomy:
     def test_chunk_interruptions_exported_at_top_level(self):
         """The resumable chunk-interruption exceptions are reachable from the
         top level (``from dataretrieval import ChunkInterrupted``) instead of
-        only the internal ``dataretrieval.ogc.interruptions`` module, and
-        resolve to the same classes."""
+        only the internal ``dataretrieval.interruptions`` leaf, and resolve to
+        the same classes."""
         import dataretrieval
-        from dataretrieval.ogc import interruptions
+        from dataretrieval import interruptions
 
         for name in ("ChunkInterrupted", "QuotaExhausted", "ServiceInterrupted"):
             assert getattr(dataretrieval, name) is getattr(interruptions, name)
@@ -207,6 +270,60 @@ class Test_error_taxonomy:
         assert issubclass(
             dataretrieval.ChunkInterrupted, dataretrieval.DataRetrievalError
         )
+
+    def test_ordinary_imports_do_not_load_ogc_interruptions(self):
+        """Only callers naming the deprecated path should see its warning."""
+        import importlib
+        import sys
+
+        import dataretrieval
+        import dataretrieval.ogc as ogc
+
+        sys.modules.pop("dataretrieval.ogc.interruptions", None)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            importlib.reload(ogc)
+
+        assert not [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert "dataretrieval.ogc.interruptions" not in sys.modules
+        assert dataretrieval.ChunkInterrupted is not None
+
+    def test_ogc_interruptions_path_warns_and_names_the_replacement(self):
+        """The v1.2.0 import path works through its migration window."""
+        import importlib
+        import sys
+
+        sys.modules.pop("dataretrieval.ogc.interruptions", None)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            module = importlib.import_module("dataretrieval.ogc.interruptions")
+
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        assert len(deprecations) == 1, [str(w.message) for w in caught]
+        message = str(deprecations[0].message)
+        assert "`dataretrieval.ogc.interruptions` is deprecated" in message
+        assert "`dataretrieval.interruptions`" in message
+        assert module.OGC_INTERRUPTIONS_REMOVAL_DATE in message
+        assert "future major release" in message
+
+        import dataretrieval
+
+        for name in module.__all__:
+            assert getattr(module, name) is getattr(dataretrieval, name)
+
+    def test_parallel_chunks_exported_at_top_level_and_waterdata(self):
+        """The ``parallel_chunks`` context manager is reachable both from the top
+        level (``from dataretrieval import parallel_chunks``) and from the
+        user-facing ``dataretrieval.waterdata`` namespace, and both resolve to
+        the single object defined in ``dataretrieval.ogc.chunking``."""
+        import dataretrieval
+        from dataretrieval import waterdata
+        from dataretrieval.ogc import chunking
+
+        assert dataretrieval.parallel_chunks is chunking.parallel_chunks
+        assert waterdata.parallel_chunks is chunking.parallel_chunks
+        assert "parallel_chunks" in dataretrieval.__all__
+        assert "parallel_chunks" in waterdata.__all__
 
 
 class Test_BaseMetadata:
@@ -224,6 +341,23 @@ class Test_BaseMetadata:
         # site_info is abstract on BaseMetadata; only nwis/wqp implement it.
         with pytest.raises(NotImplementedError):
             _ = md.site_info
+
+    def test_pickle_keeps_historical_import_path(self):
+        """New pickles remain readable by releases predating the class move."""
+        import pickle
+
+        from dataretrieval._response_metadata import BaseMetadata
+
+        md = BaseMetadata.__new__(BaseMetadata)
+        md.url = "https://example.test"
+        md.query_time = None
+        md.header = {}
+        md.comment = None
+
+        payload = pickle.dumps(md)
+
+        assert b"dataretrieval.utils" in payload
+        assert pickle.loads(payload).__class__ is BaseMetadata
 
 
 class Test_to_str:
@@ -278,7 +412,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["PST", "EST"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -295,7 +429,7 @@ class Test_attach_datetime_columns:
                 "ActivityStartTime/TimeZoneCode": ["PST"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["ActivityStartDateTime"][0] == pd.Timestamp(
             "2024-01-09 18:00:00", tz="UTC"
         )
@@ -308,7 +442,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["BOGUS"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].isna().all()
 
     def test_existing_datetime_column_not_overwritten(self):
@@ -320,7 +454,7 @@ class Test_attach_datetime_columns:
                 "Activity_StartDateTime": ["preexisting"],
             }
         )
-        df = utils._attach_datetime_columns(df)
+        df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].tolist() == ["preexisting"]
 
 
@@ -356,7 +490,7 @@ class Test_to_state:
     def test_rejects_unknown_target(self):
         from dataretrieval.codes.states import to_state
 
-        with pytest.raises(ValueError, match="to must be"):
+        with pytest.raises(ValueError, match="Invalid to"):
             to_state("WI", "zipcode")
 
     def test_resolves_an_iterable_element_wise(self):
@@ -372,3 +506,153 @@ class Test_to_state:
         # A bad element fails the whole call (fail-fast).
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
+
+    def test_the_table_names_no_endpoint_parameter_of_its_own(self):
+        """``to_state`` is a pure conversion with no ``state`` argument and no
+        endpoint behind it, so its rejection must not tell a caller to pass a
+        differently-named parameter that this call does not accept."""
+        from dataretrieval.codes.states import to_state
+
+        with pytest.raises(ValueError) as excinfo:
+            to_state("Atlantis")
+        message = str(excinfo.value)
+        assert "state_name" not in message
+        assert "state_code" not in message
+
+
+class TestTerritories:
+    """The five territories are real ANSI/FIPS entities, and every service this
+    package reaches carries data for them."""
+
+    @pytest.mark.parametrize(
+        ("value", "name", "postal", "fips"),
+        [
+            ("Puerto Rico", "Puerto Rico", "PR", "72"),
+            ("PR", "Puerto Rico", "PR", "72"),
+            ("72", "Puerto Rico", "PR", "72"),
+            ("US:72", "Puerto Rico", "PR", "72"),
+            ("Guam", "Guam", "GU", "66"),
+            ("VI", "US Virgin Islands", "VI", "78"),
+            ("60", "American Samoa", "AS", "60"),
+            ("MP", "Northern Mariana Islands", "MP", "69"),
+        ],
+    )
+    def test_every_encoding_resolves(self, value, name, postal, fips):
+        from dataretrieval.codes.states import to_state
+
+        assert to_state(value, "name") == name
+        assert to_state(value, "postal") == postal
+        assert to_state(value, "fips") == fips
+
+    def test_the_ngwmn_shim_routes_a_territory_to_each_queryable(self):
+        """``sites`` filters on ``state_name``, ``providers`` on ``state``."""
+        from dataretrieval.codes.states import apply_state
+
+        assert apply_state({"state": "Puerto Rico"}, to="name", into="state_name") == {
+            "state_name": "Puerto Rico"
+        }
+        assert apply_state({"state": "Puerto Rico"}, to="postal", into="state") == {
+            "state": "PR"
+        }
+
+
+class TestApplyStateUnrecognized:
+    """The remedy for an unknown value names the endpoint's API state parameter.
+
+    Which parameter is public differs by endpoint, so the message must be built
+    where those names are known.
+    """
+
+    def test_the_remedy_names_this_endpoints_native_parameters(self):
+        from dataretrieval.codes.states import apply_state
+
+        with pytest.raises(ValueError) as excinfo:
+            apply_state(
+                {"state": "Atlantis"},
+                to="name",
+                into="state_name",
+                reject=("state_code", "state_name"),
+            )
+        message = str(excinfo.value)
+        assert "not a recognized US state" in message
+        assert "Pass state_name or state_code directly instead" in message
+        assert "using the API's native value" in message
+
+    def test_an_endpoint_with_no_alternative_offers_none(self):
+        """NGWMN's getters expose only the unified ``state``, so appending a
+        remedy from ``into`` sent a caller to ``get_sites(state_name=...)``
+        (``TypeError``) or straight back into this same error."""
+        from dataretrieval.codes.states import apply_state
+
+        for into, to in (("state", "postal"), ("state_name", "name")):
+            with pytest.raises(ValueError) as excinfo:
+                apply_state({"state": "Atlantis"}, to=to, into=into)
+            assert "instead" not in str(excinfo.value)
+
+
+def test_retrying_get_maps_invalid_url(monkeypatch):
+    """Direct active-service GETs do not leak raw httpx InvalidURL errors."""
+    import httpx
+
+    monkeypatch.setattr(
+        _querying,
+        "_get",
+        mock.Mock(side_effect=httpx.InvalidURL("invalid URL")),
+    )
+
+    with pytest.raises(exceptions.URLTooLong):
+        _querying._get_with_retry("https://example.invalid")
+
+
+class TestFormatDatetime:
+    """``format_datetime`` joins the three columns NWIS RDB splits a
+    timestamp across, and is the only place the package parses a local time
+    with a named zone."""
+
+    def test_joins_date_time_and_zone_into_utc(self):
+        df = pd.DataFrame(
+            {
+                "sample_dt": ["2018-01-24", "2018-06-24"],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EDT"],
+            }
+        )
+
+        out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert str(out["datetime"].dt.tz) == "UTC"
+        # EST is -0500 and EDT -0400, so the same wall clock is a different
+        # instant in each row -- the reason the zone column cannot be ignored.
+        assert out["datetime"][0].hour == 15
+        assert out["datetime"][1].hour == 14
+
+    def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
+        """An unparseable row becomes NaT rather than failing the whole frame,
+        but silently dropping timestamps would be a wrong answer -- so it
+        warns, and names the switch that avoids the loss."""
+        df = pd.DataFrame(
+            {
+                # A missing date field, as an RDB row with an unrecorded
+                # sample date arrives. There is no ``errors="coerce"``, so a
+                # malformed *string* raises; only an absent value reaches here.
+                "sample_dt": ["2018-01-24", numpy.nan],
+                "sample_tm": ["10:30", "10:30"],
+                "sample_tz_cd": ["EST", "EST"],
+            }
+        )
+
+        with pytest.warns(UserWarning, match="incomplete dates"):
+            out = utils.format_datetime(df, "sample_dt", "sample_tm", "sample_tz_cd")
+
+        assert out["datetime"].isna().sum() == 1
+        assert out["datetime"].notna().sum() == 1
+
+
+def test_base_metadata_repr_names_the_type_and_url():
+    """``md`` is what a user prints when a query surprises them, so the repr
+    has to say which metadata class it is and which URL produced it."""
+    response = mock.MagicMock()
+    response.url = "https://example.test/items?limit=1"
+    md = utils.BaseMetadata(response)
+    assert "BaseMetadata" in repr(md)
+    assert "https://example.test/items?limit=1" in repr(md)

@@ -9,6 +9,8 @@ from unittest import mock
 import pandas as pd
 import pytest
 
+from dataretrieval.exceptions import DataRetrievalError
+from dataretrieval.interruptions import QuotaExhausted, ServiceInterrupted
 from dataretrieval.waterdata.nearest import get_nearest_continuous
 
 
@@ -312,10 +314,8 @@ def test_accepts_pandas_series_targets(patch_get_continuous):
     assert len(result) == 2
 
 
-def test_missing_time_column_raises_helpful_error(patch_get_continuous):
-    """If the response has no 'time' column (e.g. user passed `properties`
-    that excluded it), raise ValueError instead of crashing with KeyError.
-    """
+def test_missing_time_column_reports_incomplete_response(patch_get_continuous):
+    """A nonempty response missing a requested match column is a service error."""
     df_no_time = pd.DataFrame(
         {
             "value": [22.4],
@@ -324,9 +324,259 @@ def test_missing_time_column_raises_helpful_error(patch_get_continuous):
     )
     patch_get_continuous.return_value = (df_no_time, mock.Mock())
 
-    with pytest.raises(ValueError, match="'time' column"):
+    with pytest.raises(DataRetrievalError, match="omitted.*'time'"):
         get_nearest_continuous(
             ["2023-06-15T10:30:31Z"],
             monitoring_location_id="USGS-02238500",
             properties=["value", "monitoring_location_id"],
         )
+
+
+def test_interruption_preserves_nearest_shape_for_partial_and_resumed_rows(
+    patch_get_continuous,
+):
+    """Partial and resumed results keep the outer getter's return shape."""
+    targets = pd.to_datetime(["2024-01-01T00:00:00Z", "2024-01-02T00:00:00Z"], utc=True)
+    raw = _fake_df(
+        [
+            {"time": "2024-01-01T00:03:00Z", "value": 8.1},
+            {"time": "2024-01-02T00:03:00Z", "value": 8.2},
+        ]
+    )
+    response = mock.Mock()
+    metadata = mock.Mock()
+
+    class FakeCall:
+        partial_frame = raw
+        partial_response = response
+
+        def resume(self):
+            return raw, metadata
+
+    patch_get_continuous.side_effect = QuotaExhausted(
+        completed_chunks=1, total_chunks=2, call=FakeCall()
+    )
+
+    with pytest.raises(QuotaExhausted) as excinfo:
+        get_nearest_continuous(
+            targets,
+            monitoring_location_id="USGS-02238500",
+            window="PT1H",
+        )
+
+    interrupted = excinfo.value
+    assert list(interrupted.partial_frame["target_time"]) == list(targets)
+    assert list(interrupted.call.partial_frame["target_time"]) == list(targets)
+    assert interrupted.partial_response is response
+
+    resumed, resumed_metadata = interrupted.call.resume()
+
+    assert list(resumed["target_time"]) == list(targets)
+    assert list(resumed["value"]) == [8.1, 8.2]
+    assert resumed_metadata is metadata
+
+
+def test_nearest_shape_survives_repeated_resume_interruptions(patch_get_continuous):
+    """A resume that is interrupted again returns another outer-shaped call."""
+    target = pd.to_datetime(["2024-01-01T00:00:00Z"], utc=True)
+    raw = _fake_df([{"time": "2024-01-01T00:03:00Z", "value": 8.1}])
+    metadata = mock.Mock()
+
+    class FakeCall:
+        partial_frame = raw
+        partial_response = mock.Mock()
+        attempts = 0
+
+        def resume(self):
+            self.attempts += 1
+            if self.attempts == 1:
+                raise ServiceInterrupted(completed_chunks=1, total_chunks=2, call=self)
+            return raw, metadata
+
+    call = FakeCall()
+    patch_get_continuous.side_effect = QuotaExhausted(
+        completed_chunks=1, total_chunks=2, call=call
+    )
+
+    with pytest.raises(QuotaExhausted) as first:
+        get_nearest_continuous(
+            target,
+            monitoring_location_id="USGS-02238500",
+            window="PT1H",
+        )
+    with pytest.raises(ServiceInterrupted) as second:
+        first.value.call.resume()
+
+    assert list(second.value.partial_frame["target_time"]) == list(target)
+    assert list(second.value.call.partial_frame["target_time"]) == list(target)
+
+    resumed, resumed_metadata = second.value.call.resume()
+
+    assert list(resumed["target_time"]) == list(target)
+    assert resumed_metadata is metadata
+
+
+def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous):
+    """A caller's ``properties`` list gains 'time' and the grouping column.
+
+    Without the injection a list like ``['time', 'value']`` reached the
+    service unchanged, the response came back with no
+    ``monitoring_location_id``, and every site but one was silently dropped --
+    a wrong answer with nothing for a caller to notice it by.
+    """
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "USGS-A",
+                },
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 2.0,
+                    "monitoring_location_id": "USGS-B",
+                },
+            ]
+        ),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"],
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        properties=["time", "value"],
+    )
+    sent = patch_get_continuous.call_args.kwargs["properties"]
+    assert "monitoring_location_id" in sent
+    assert sent[:2] == ["time", "value"]
+    # One row per site, not one row for the pair.
+    assert len(result) == 2
+
+
+def test_properties_are_left_alone_when_already_complete(patch_get_continuous):
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [{"time": "2023-06-15T10:30:00Z", "monitoring_location_id": "USGS-A"}]
+        ),
+        mock.Mock(),
+    )
+    asked = ["time", "monitoring_location_id"]
+    get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-A", properties=asked
+    )
+    assert patch_get_continuous.call_args.kwargs["properties"] == asked
+
+
+@pytest.mark.parametrize(
+    ("frame", "missing"),
+    [
+        (pd.DataFrame({"monitoring_location_id": ["USGS-A"]}), "time"),
+        (pd.DataFrame({"time": ["2023-06-15T10:30:00Z"]}), "monitoring_location_id"),
+    ],
+)
+def test_nonempty_response_requires_matching_columns(
+    patch_get_continuous, frame, missing
+):
+    """Required request properties are also validated on the response boundary."""
+    patch_get_continuous.return_value = (frame, mock.Mock())
+
+    with pytest.raises(DataRetrievalError) as excinfo:
+        get_nearest_continuous(
+            ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-A"
+        )
+
+    message = str(excinfo.value)
+    assert repr(missing) in message
+    assert "Retry the request" in message
+    assert "report the response" in message
+
+
+def test_empty_response_does_not_require_matching_columns(patch_get_continuous):
+    """No observations is a valid result even when the empty frame has no schema."""
+    patch_get_continuous.return_value = (pd.DataFrame(), mock.Mock())
+
+    result, _ = get_nearest_continuous(
+        ["2023-06-15T10:30:31Z"], monitoring_location_id="USGS-A"
+    )
+
+    assert result.empty
+    assert "target_time" in result.columns
+
+
+def test_no_observation_inside_the_window_returns_the_empty_shape(
+    patch_get_continuous,
+):
+    """A target with nothing near it is a legitimate answer, not a failure --
+    but the frame must keep the result columns so a caller can concatenate it
+    with a populated one instead of special-casing empties."""
+    patch_get_continuous.return_value = (
+        pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:00Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "A",
+                }
+            ]
+        ),
+        mock.Mock(),
+    )
+    result, _ = get_nearest_continuous(
+        ["2020-01-01T00:00:00Z"],  # years from the only observation
+        monitoring_location_id="A",
+        window="1h",
+    )
+    assert result.empty
+    assert "target_time" in result.columns
+
+
+class TestNearestPartialResults:
+    """When a fan-out is interrupted the caller still gets the chunks that
+    finished, shaped like a normal result -- otherwise recovering from an
+    interruption means handling a second frame layout."""
+
+    def test_a_partial_frame_with_no_completed_chunks_keeps_the_result_shape(self):
+        from dataretrieval.waterdata.nearest import _NearestSelector
+
+        selector = _NearestSelector(
+            pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+        )
+        out = selector.select_partial(pd.DataFrame())
+
+        assert out.empty
+        assert "target_time" in out.columns
+
+    def test_a_partial_frame_with_rows_is_selected_normally(self):
+        from dataretrieval.waterdata.nearest import _NearestSelector
+
+        selector = _NearestSelector(
+            pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+        )
+        frame = pd.DataFrame(
+            [
+                {
+                    "time": "2023-06-15T10:30:05Z",
+                    "value": 1.0,
+                    "monitoring_location_id": "A",
+                }
+            ]
+        )
+        out = selector.select_partial(frame)
+
+        assert len(out) == 1
+
+    def test_the_wrapper_passes_the_inner_calls_live_response_through(self):
+        """``partial_response`` is how a caller inspects what arrived before
+        the interruption; the nearest wrapper must not shadow it."""
+        from dataretrieval.waterdata.nearest import _NearestCall, _NearestSelector
+
+        inner = mock.Mock()
+        inner.partial_response = "sentinel-response"
+        call = _NearestCall(
+            inner,
+            _NearestSelector(
+                pd.to_datetime(["2023-06-15T10:30:00Z"]), pd.Timedelta("1h"), "first"
+            ),
+        )
+
+        assert call.partial_response == "sentinel-response"

@@ -33,7 +33,6 @@ import pytest
 import dataretrieval
 from dataretrieval import waterdata
 from dataretrieval.utils import BaseMetadata
-from tests.conftest import flaky_api
 
 # The OGC queryables endpoint for any Water Data collection.
 QUERYABLES_RE = re.compile(
@@ -129,7 +128,7 @@ def _items_query(httpx_mock):
 
 def test_passthrough_queryables_sent_as_filters(httpx_mock):
     """An OGC getter forwards queryables that aren't in its explicit signature
-    (e.g. ``state_name``, ``site_type_code``) to the service as query filters,
+    (e.g. ``state_name``, ``site_type_code``) to the collection as query filters,
     alongside the named params."""
     _mock_daily(httpx_mock)
 
@@ -161,7 +160,7 @@ def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
 # --- live queryables monitor -----------------------------------------------
 
 
-@flaky_api
+@pytest.mark.live
 @pytest.mark.parametrize("collection", sorted(_SNAPSHOT))
 def test_queryables_match_snapshot(collection):
     """Each collection's live queryables match the committed snapshot.

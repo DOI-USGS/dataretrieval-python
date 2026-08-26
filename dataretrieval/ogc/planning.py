@@ -1,31 +1,31 @@
-"""Pure URL-byte chunk planning and result recombination (no I/O).
+"""Pure URL-byte chunk planning (no I/O).
 
-This module holds the side-effect-free half of the chunker: deciding how
-to split one over-budget OGC request into URL-fitting sub-requests
-(:class:`ChunkPlan` and the axis/byte-accounting helpers) and reassembling
-their per-chunk frames and responses (:func:`_combine_chunk_frames`,
-:func:`_combine_chunk_responses`). It has no event loop, retry policy, or
-network state — those live in :mod:`dataretrieval.ogc.chunking` (execution)
-and :mod:`dataretrieval.ogc.retry` (retry policy), which import the plan and
-drive it. Keeping the planning/combination logic here
-makes it unit-testable without an HTTP client and gives the two concerns
-separate reasons to change.
+This module holds the side-effect-free planning half of the chunker:
+deciding how to split one over-budget OGC request into URL-fitting
+chunks (:class:`ChunkPlan` and the axis/byte-accounting helpers).
+It has no event loop, retry policy, or network state — those live in
+:mod:`dataretrieval.ogc.chunking` (resumable execution) and
+:mod:`dataretrieval.transport.retry` (retry policy), which import the plan and
+drive it.
+
+Result recombination — reassembling the per-chunk frames and responses
+back into one result
+(:func:`~dataretrieval.combining._combine_chunk_frames`,
+:func:`~dataretrieval.combining._combine_chunk_responses`, etc.) —
+lives in the top-level :mod:`dataretrieval.combining` module.
 """
 
 from __future__ import annotations
 
-import copy
 import itertools
 import math
 from collections.abc import Callable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass
-from datetime import timedelta
 from typing import Any
 from urllib.parse import quote_plus
 
 import httpx
-import pandas as pd
 
 from dataretrieval.exceptions import Unchunkable
 from dataretrieval.ogc.filters import (
@@ -92,14 +92,43 @@ def _request_bytes(req: httpx.Request) -> int:
     return len(str(req.url)) + len(req.content)
 
 
+def _try_build(
+    build_request: Callable[..., httpx.Request],
+    args: dict[str, Any],
+) -> httpx.Request | None:
+    """Attempt to construct a request, returning ``None`` on overflow.
+
+    ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
+    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes`
+    and :class:`ChunkPlan`'s initial-request probe need exactly this
+    "build-or-None" step, so it lives here once.
+
+    Parameters
+    ----------
+    build_request : Callable[..., httpx.Request]
+        Factory that turns a kwargs dict into a sized request.
+    args : dict[str, Any]
+        Per-chunk kwargs to pass through to ``build_request``.
+
+    Returns
+    -------
+    httpx.Request or None
+        The built request, or ``None`` when construction raised
+        ``httpx.InvalidURL``.
+    """
+    try:
+        return build_request(**args)
+    except httpx.InvalidURL:
+        return None
+
+
 def _safe_request_bytes(
     build_request: Callable[..., httpx.Request],
     args: dict[str, Any],
     url_limit: int,
 ) -> int:
     """
-    Size a candidate sub-request, treating ``httpx.InvalidURL`` as
-    "still too large".
+    Size a candidate chunk, treating ``httpx.InvalidURL`` as "too large".
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component
     (``MAX_URL_LENGTH``) and raises ``httpx.InvalidURL`` for anything
@@ -112,7 +141,7 @@ def _safe_request_bytes(
     build_request : Callable[..., httpx.Request]
         Factory that turns a kwargs dict into a sized request.
     args : dict[str, Any]
-        Per-sub-request kwargs to pass through to ``build_request``.
+        Per-chunk kwargs to pass through to ``build_request``.
     url_limit : int
         The chunker's byte budget; returned + 1 on overflow.
 
@@ -123,66 +152,45 @@ def _safe_request_bytes(
         ``url_limit + 1`` so the planner's "too large" branch keeps
         halving.
     """
-    try:
-        req = build_request(**args)
-    except httpx.InvalidURL:
-        return url_limit + 1
-    return _request_bytes(req)
+    req = _try_build(build_request, args)
+    return _request_bytes(req) if req is not None else url_limit + 1
 
 
-def _safe_elapsed(response: httpx.Response) -> timedelta:
+def _check_unchunkable_request(
+    args: dict[str, Any],
+    build_request: Callable[..., httpx.Request],
+    url_limit: int,
+) -> None:
+    """Enforce the byte budget on a request with no chunkable axis.
+
+    Passthrough when the single request fits or when the filter is in a
+    language the chunker doesn't manage (cql-json) — the server, not us,
+    judges that one. Raises
+    :class:`~dataretrieval.exceptions.Unchunkable` when the request is
+    over budget and has nothing to split.
     """
-    Read ``response.elapsed``, falling back to ``timedelta(0)`` when
-    the attribute hasn't been populated.
-
-    httpx only writes ``.elapsed`` when a response is closed through
-    its normal transport path. ``MockTransport`` (used by
-    ``pytest-httpx``) and hand-constructed ``httpx.Response`` objects
-    leave the attribute unset, so accessing it raises ``RuntimeError``.
-    Combining responses across chunks needs a defined duration, so we
-    treat the missing attribute as zero elapsed.
-    """
-    try:
-        return response.elapsed
-    except RuntimeError:
-        return timedelta(0)
-
-
-def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
-    """
-    Overwrite the URL surfaced by a response without back-propagating
-    the change into any aliased original.
-
-    Try the direct assignment first: on lightweight test mocks ``.url``
-    is a plain writable attribute. On real ``httpx.Response`` it's
-    read-only (it resolves through the bound request), so swap in a
-    fresh :class:`httpx.Request` carrying the new URL — mutating the
-    existing one would leak through any shallow copy that shares the
-    same ``.request``.
-    """
-    try:
-        response.url = url  # type: ignore[misc, assignment]
-    except AttributeError:
-        target = httpx.URL(str(url))
-        try:
-            old = response.request
-        except RuntimeError:
-            # No request bound (some hand-built httpx.Response fixtures);
-            # synthesize a minimal one to hold the URL.
-            response.request = httpx.Request("GET", target)
-            return
-        response.request = httpx.Request(
-            method=old.method, url=target, headers=old.headers
-        )
+    if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
+        return
+    filter_expr = args.get("filter")
+    if filter_expr is not None and not _is_chunkable(
+        filter_expr, args.get("filter_lang")
+    ):
+        return
+    raise Unchunkable(
+        f"Request exceeds {url_limit} bytes (URL + body) and has no "
+        f"chunkable multi-value argument to split (e.g. a single large "
+        f"CQL `IN` clause, or one oversized value). Narrow the query, "
+        f"simplify the filter, or split the call manually."
+    )
 
 
 @dataclass(frozen=True)
 class _Axis:
     """
-    A single chunkable axis of one user-level request — a list of
-    atomic units and the separator that joins them in the URL.
+    A single chunkable axis of one user-level request.
 
-    Both multi-value list parameters (``sites=[...]``, joiner ``","``)
+    An axis is a list of atomic units plus the separator that joins them in
+    the URL. Both multi-value list parameters (``sites=[...]``, joiner ``","``)
     and the cql-text ``filter`` (split on top-level ``OR``, joiner
     ``" OR "``) fit this shape, so a single greedy halving loop in
     ``ChunkPlan._plan`` handles both — no need for two separate
@@ -192,7 +200,7 @@ class _Axis:
     ----------
     arg_key : str
         The args-dict key this axis substitutes back into when a
-        sub-request is rendered.
+        chunk is rendered.
     atoms : tuple of str
         The smallest indivisible units along this axis (one site, one
         OR-clause, …). A "chunk" is a contiguous slice of ``atoms``.
@@ -208,8 +216,7 @@ class _Axis:
 
     def chunk_bytes(self, chunk: list[str]) -> int:
         """
-        Return the URL-encoded byte count this chunk contributes when
-        substituted into the request.
+        Return the URL-encoded byte count this chunk contributes to the request.
 
         ``quote_plus`` is faithful to what the real URL builder
         produces, so values containing characters that expand under URL
@@ -249,6 +256,22 @@ class _Axis:
         return list(chunk) if self.joiner == _LIST_SEP else self.joiner.join(chunk)
 
 
+def _filter_axis(args: dict[str, Any]) -> _Axis | None:
+    """Build the filter axis from CQL-text ``filter``, if chunkable.
+
+    Returns an :class:`_Axis` whose atoms are top-level OR-clauses when the
+    filter has two or more splittable clauses; ``None`` otherwise.
+    """
+    filter_expr = args.get("filter")
+    if filter_expr is None or not _is_chunkable(filter_expr, args.get("filter_lang")):
+        return None
+    _check_numeric_filter_pitfall(filter_expr)
+    clauses = _split_top_level_or(filter_expr)
+    if len(clauses) < 2:
+        return None
+    return _Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP)
+
+
 def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     """
     Build the chunkable-axis set from a request's args.
@@ -257,7 +280,7 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     axis. The cql-text filter (when chunkable and split into more than
     one top-level OR-clause) becomes one too. Anything in
     ``_NEVER_CHUNK`` is excluded except ``filter`` itself, which is
-    handled separately so its atoms are clauses not characters.
+    handled separately so its atoms are clauses, not characters.
 
     Parameters
     ----------
@@ -272,35 +295,46 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
         per eligible kwarg, in ``args`` order), then the filter axis
         if present.
     """
-    axes: list[_Axis] = []
-    for key, value in args.items():
-        if key in _NEVER_CHUNK:
-            continue
-        if isinstance(value, (list, tuple)) and len(value) > 1:
-            axes.append(_Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP))
-
-    filter_expr = args.get("filter")
-    if filter_expr is not None and _is_chunkable(filter_expr, args.get("filter_lang")):
-        _check_numeric_filter_pitfall(filter_expr)
-        clauses = _split_top_level_or(filter_expr)
-        if len(clauses) >= 2:
-            axes.append(_Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP))
+    axes: list[_Axis] = [
+        _Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP)
+        for key, value in args.items()
+        if key not in _NEVER_CHUNK
+        and isinstance(value, (list, tuple))
+        and len(value) > 1
+    ]
+    fax = _filter_axis(args)
+    if fax is not None:
+        axes.append(fax)
     return axes
+
+
+def _split_at(chunks: list[list[str]], idx: int) -> None:
+    """Replace ``chunks[idx]`` in place with its two contiguous halves.
+
+    The single primitive both planning passes use to fan an axis out. It
+    preserves the partition invariants every consumer relies on: *coverage*
+    (each atom survives, exactly once) and *contiguous, deterministic order*
+    (resume and :meth:`ChunkPlan.iter_chunk_args` depend on it). Kept in one
+    place so those invariants can't drift between :meth:`ChunkPlan._plan`
+    (byte-driven) and :meth:`ChunkPlan._refine` (fan-out-driven).
+    """
+    chunk = chunks[idx]
+    mid = len(chunk) // 2
+    chunks[idx : idx + 1] = [chunk[:mid], chunk[mid:]]
 
 
 class ChunkPlan:
     """
-    Strategy for issuing one user-level request as a sequence of
-    sub-requests whose URLs each fit ``url_limit``.
+    Strategy for issuing one user-level request as URL-fitting chunks.
 
-    Constructing a plan *is* planning:
+    Every chunk URL fits ``url_limit``. Constructing a plan *is* planning:
     ``ChunkPlan(args, build_request, url_limit)`` extracts the
     chunkable axes, runs greedy halving on the biggest chunk across
     all axes, and stores the result.
 
     Passthrough requests (no chunkable axes, or already fitting) are
     represented as a trivial plan with empty ``axes`` / ``chunks`` and
-    ``total == 1``; :meth:`iter_sub_args` yields the original args
+    ``total == 1``; :meth:`iter_chunk_args` yields the original args
     unchanged so the ``ChunkedCall`` loop is the same shape either
     way.
 
@@ -312,13 +346,28 @@ class ChunkPlan:
         Factory that turns a kwargs dict into a sized httpx request,
         e.g. ``_construct_api_requests``.
     url_limit : int
-        Byte budget for the request (URL + body).
+        Byte budget for the request (URL + body) — a hard ceiling every
+        chunk must fit.
+    max_chunks : int, optional
+        Hard cap on the plan's total chunk count (default ``1`` = off).
+        ``1`` chunks only as much as ``url_limit`` requires — the most
+        conservative plan, fewest chunks — so a fitting request is a
+        passthrough. A cap of ``2`` or more fans the plan out to up to
+        ``max_chunks`` chunks overall (the cartesian product across axes,
+        never fewer than the byte budget already forces). The cap applies to
+        the plan as a whole, not per axis, so several multi-value axes can't
+        multiply past it. The plan never exceeds the cap and may land below it
+        when no whole split lands on it exactly. ``max_chunks`` is a
+        chunk count, so a value below ``1`` (``0`` or negative) is a
+        caller error and raises ``ValueError``. Set from the
+        :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
+        :meth:`_refine`.
 
     Attributes
     ----------
     args : dict
         The original user-level args this plan was built for. Bound to
-        the plan so :meth:`iter_sub_args` is self-contained.
+        the plan so :meth:`iter_chunk_args` is self-contained.
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
@@ -337,6 +386,8 @@ class ChunkPlan:
     Unchunkable
         If the request needs chunking but even the singleton plan
         doesn't fit ``url_limit``.
+    ValueError
+        If ``max_chunks`` is less than 1 (0 or negative).
     """
 
     def __init__(
@@ -344,7 +395,13 @@ class ChunkPlan:
         args: dict[str, Any],
         build_request: Callable[..., httpx.Request],
         url_limit: int,
+        max_chunks: int = 1,
     ) -> None:
+        if max_chunks < 1:
+            raise ValueError(
+                f"max_chunks must be >= 1 (1 disables fan-out); got {max_chunks!r}."
+            )
+
         self.args = args
         self.axes: list[_Axis] = []
         self.chunks: dict[str, list[list[str]]] = {}
@@ -352,57 +409,27 @@ class ChunkPlan:
 
         axes = _extract_axes(args)
         if not axes:
-            # No chunkable axis: nothing to split. If the single request fits,
-            # run it verbatim (the common passthrough). ``_safe_request_bytes``
-            # treats an un-constructable URL (httpx.InvalidURL, > 64 KB) as over
-            # budget.
-            if _safe_request_bytes(build_request, args, url_limit) <= url_limit:
-                return
-            # Over budget. A filter the chunker doesn't manage — cql-json — is
-            # passed through unchanged (chunking applies only to cql-text); the
-            # server, not us, judges it. Otherwise this is an in-domain shape we
-            # would normally chunk but can't (a single large CQL ``IN`` clause
-            # with no top-level ``OR``, or one oversized value), so raise an
-            # actionable error instead of shipping it for an opaque HTTP 414.
-            filter_expr = args.get("filter")
-            if filter_expr is not None and not _is_chunkable(
-                filter_expr, args.get("filter_lang")
-            ):
-                return
-            raise Unchunkable(
-                f"Request exceeds {url_limit} bytes (URL + body) and has no "
-                f"chunkable multi-value argument to split (e.g. a single large "
-                f"CQL `IN` clause, or one oversized value). Narrow the query, "
-                f"simplify the filter, or split the call manually."
-            )
+            _check_unchunkable_request(args, build_request, url_limit)
+            return
 
-        # Constructing the initial request can itself trip
-        # ``httpx.InvalidURL`` (URL > 64 KB) — that's the canonical
-        # "needs chunking" signal, so swallow it and proceed to plan.
-        # When the unchunked URL does build, preserve it as
-        # ``canonical_url`` so ``BaseMetadata.url`` echoes the user's
-        # original query verbatim; only fall back to a worst-case
-        # sub-request URL when the URL itself can't be constructed.
-        try:
-            initial_request = build_request(**args)
-        except httpx.InvalidURL:
-            initial_request = None
-
+        # When the un-chunked URL builds, preserve it as ``canonical_url`` so
+        # ``BaseMetadata.url`` echoes the user's original query verbatim.
+        initial_request = _try_build(build_request, args)
+        fits = False
         if initial_request is not None:
             self.canonical_url = str(initial_request.url)
-            if _request_bytes(initial_request) <= url_limit:
-                return
+            fits = _request_bytes(initial_request) <= url_limit
+
+        if fits and max_chunks <= 1:
+            return
 
         self.axes = axes
         self.chunks = {axis.arg_key: [list(axis.atoms)] for axis in axes}
-        self._plan(build_request, url_limit)
+        if not fits:
+            self._plan(build_request, url_limit)
+        self._refine(max_chunks)
 
         if self.canonical_url is None:
-            # Original URL was un-constructable (httpx.InvalidURL); fall
-            # back to the worst-case sub-request URL so
-            # ``BaseMetadata.url`` still surfaces something
-            # informative. If even that overflows, leave canonical_url
-            # as None (set above) and let the response's own URL stand.
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
 
@@ -412,11 +439,12 @@ class ChunkPlan:
         url_limit: int,
     ) -> None:
         """
-        Greedy-halve the biggest chunk across all axes until the
-        worst-case sub-request URL fits ``url_limit``. Mutates
-        ``self.chunks`` in place; treats list axes and the filter axis
-        uniformly — each is just a list of atoms joined by its axis's
-        separator.
+        Greedy-halve the biggest chunk across axes until every URL fits.
+
+        Halving continues until the worst-case chunk URL fits
+        ``url_limit``, mutating ``self.chunks`` in place. List axes and the
+        filter axis are treated uniformly — each is just a list of atoms
+        joined by its axis's separator.
 
         Raises
         ------
@@ -429,34 +457,126 @@ class ChunkPlan:
             if _safe_request_bytes(build_request, worst, url_limit) <= url_limit:
                 return
 
-            biggest_axis: _Axis | None = None
-            biggest_idx = -1
-            biggest_size = -1
-            for axis in self.axes:
-                for idx, chunk in enumerate(self.chunks[axis.arg_key]):
-                    if len(chunk) <= 1:
-                        continue
-                    size = axis.chunk_bytes(chunk)
-                    if size > biggest_size:
-                        biggest_axis, biggest_idx, biggest_size = axis, idx, size
-
+            biggest_axis, biggest_idx = self._largest_splittable_chunk_by_bytes()
             if biggest_axis is None:
                 raise Unchunkable(
                     f"Request exceeds {url_limit} bytes (URL + body) at the "
                     f"smallest reducible plan (every axis at one atom per "
-                    f"sub-request). Reduce input sizes, shorten or simplify "
+                    f"chunk). Reduce input sizes, shorten or simplify "
                     f"the filter, or split the call manually."
                 )
-            axis_chunks = self.chunks[biggest_axis.arg_key]
-            chunk = axis_chunks[biggest_idx]
-            mid = len(chunk) // 2
-            axis_chunks[biggest_idx : biggest_idx + 1] = [chunk[:mid], chunk[mid:]]
+            _split_at(self.chunks[biggest_axis.arg_key], biggest_idx)
+
+    def _largest_splittable_chunk_by_bytes(self) -> tuple[_Axis | None, int]:
+        """Find the largest splittable chunk ranked by URL-encoded byte size.
+
+        Returns ``(axis, index)`` of the biggest chunk with more than one atom,
+        or ``(None, -1)`` when every axis is at one atom per chunk (saturated).
+        """
+        biggest_axis: _Axis | None = None
+        biggest_idx = -1
+        biggest_size = -1
+        for axis in self.axes:
+            idx, size = self._largest_chunk_in(
+                self.chunks[axis.arg_key], key=axis.chunk_bytes
+            )
+            if size > biggest_size:
+                biggest_axis, biggest_idx, biggest_size = axis, idx, size
+        return biggest_axis, biggest_idx
+
+    def _refine(self, max_chunks: int) -> None:
+        """
+        Fan the plan out more finely than the byte budget alone requires.
+
+        This is the ``parallel_chunks`` dial: see
+        :func:`~dataretrieval.ogc.chunking.parallel_chunks` for why a caller
+        would want this, and :class:`ChunkPlan`'s ``max_chunks`` parameter for
+        the cap's contract (total-not-per-axis, a hard ceiling that may land
+        below the cap).
+
+        Implementation. Each split multiplies the plan by ``(k+1)/k`` for the
+        chosen axis (adding ``total // k`` chunks, not one), so a split
+        is taken only when it keeps :attr:`total` within the cap. When no
+        in-budget split remains, the plan stops *below* the cap rather than
+        overshooting (two even axes can reach 4 but not 5, so a cap of 5 yields
+        4). Each split picks the single largest splittable chunk among the
+        in-budget axes (ties broken by axis-extraction order, then lowest
+        index), so growth is distributed round-robin rather than one axis
+        saturating before another is touched. Purely additive — only ever
+        *splits* existing chunks, so the byte pass's work and the ``url_limit``
+        invariant are both preserved, and it never raises. A no-op at
+        ``max_chunks == 1``.
+
+        Parameters
+        ----------
+        max_chunks : int
+            The ``parallel_chunks(n)`` value; see :class:`ChunkPlan`'s
+            ``max_chunks`` parameter for the full contract.
+        """
+        if max_chunks <= 1:
+            return
+        while True:
+            total = self.total
+            if total >= max_chunks:
+                return
+            candidate = self._best_refine_candidate(total, max_chunks)
+            if candidate is None:
+                return
+            axis, idx = candidate
+            _split_at(self.chunks[axis.arg_key], idx)
+
+    @staticmethod
+    def _largest_chunk_in(
+        axis_chunks: list[list[str]],
+        key: Callable[[list[str]], int] = len,
+    ) -> tuple[int, int]:
+        """Return ``(index, key(chunk))`` of the largest splittable chunk.
+
+        A chunk is splittable when it has more than one atom; *key* ranks the
+        qualifying chunks (atom count by default, URL bytes for the byte
+        pass). Returns ``(-1, -1)`` when no chunk qualifies.
+        """
+        best_idx = -1
+        best_size = -1
+        for idx, chunk in enumerate(axis_chunks):
+            if len(chunk) <= 1:
+                continue
+            size = key(chunk)
+            if size > best_size:
+                best_idx, best_size = idx, size
+        return best_idx, best_size
+
+    def _best_refine_candidate(
+        self, total: int, max_chunks: int
+    ) -> tuple[_Axis, int] | None:
+        """Find the best chunk to split during the refine pass.
+
+        Returns the largest splittable chunk (by atom count) among axes whose
+        split stays within the ``max_chunks`` cap, or ``None`` when no
+        in-budget split remains. Splitting any chunk of an axis with ``k``
+        chunks adds ``total // k`` chunks (the product of the other axes),
+        so the budget test is per axis rather than per chunk. The ranking key
+        is atom count (not URL bytes like ``_plan``) because this pass
+        balances work across chunks rather than fitting a byte budget.
+        Stable input order breaks ties by axis order, then lowest index.
+        """
+        candidate: tuple[_Axis, int] | None = None
+        candidate_size = -1
+        for axis in self.axes:
+            axis_chunks = self.chunks[axis.arg_key]
+            if total + total // len(axis_chunks) > max_chunks:
+                continue  # any split of this axis would overshoot the cap
+            axis_best, axis_best_size = self._largest_chunk_in(axis_chunks)
+            if axis_best_size > candidate_size:
+                candidate, candidate_size = (axis, axis_best), axis_best_size
+        return candidate
 
     def _worst_case_args(self) -> dict[str, Any]:
         """
-        Args dict representing the largest sub-request the current
-        ``self.chunks`` partition will issue — each axis's longest
-        (by URL-encoded bytes) chunk rendered back in.
+        Args for the largest chunk the current partition will issue.
+
+        Each axis contributes its longest chunk (by URL-encoded bytes),
+        rendered back into the args dict.
         """
         out = dict(self.args)
         for axis in self.axes:
@@ -467,7 +587,7 @@ class ChunkPlan:
     @property
     def total(self) -> int:
         """
-        Total sub-request count: product of per-axis chunk counts.
+        Total chunk count: product of per-axis chunk counts.
 
         Returns
         -------
@@ -477,13 +597,13 @@ class ChunkPlan:
         """
         return math.prod((len(self.chunks[ax.arg_key]) for ax in self.axes), start=1)
 
-    def iter_sub_args(self) -> Iterator[dict[str, Any]]:
+    def iter_chunk_args(self) -> Iterator[dict[str, Any]]:
         """
-        Yield substituted args for each sub-request, in deterministic
-        order — cartesian product over axes in extraction order.
+        Yield substituted args for each chunk, in deterministic order.
 
-        The same plan yields the same sub-args sequence on every
-        invocation, so resume is well-defined.
+        The order is the cartesian product over axes in extraction order. The
+        same plan yields the same sub-args sequence on every invocation, so
+        resume is well-defined.
 
         Yields
         ------
@@ -496,175 +616,18 @@ class ChunkPlan:
             return
         chunk_lists = [self.chunks[ax.arg_key] for ax in self.axes]
         for combo in itertools.product(*chunk_lists):
-            sub_args = dict(self.args)
+            chunk_args = dict(self.args)
             for axis, chunk in zip(self.axes, combo, strict=False):
-                sub_args[axis.arg_key] = axis.render(chunk)
-            yield sub_args
+                chunk_args[axis.arg_key] = axis.render(chunk)
+            yield chunk_args
 
+    # ``total`` and ``iter_chunk_args`` are this class's domain vocabulary and
+    # stay as they are. The dunders are how a plan satisfies
+    # :class:`~dataretrieval.transport.fanout.FanOutPlan`, which asks for a
+    # sized iterable and nothing chunking-specific. They delegate rather than
+    # duplicate, so ``len(plan)`` cannot disagree with what iterating yields.
+    def __len__(self) -> int:
+        return self.total
 
-def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
-    """
-    Concatenate per-chunk frames, dropping empties and deduping by ``id``.
-
-    Parameters
-    ----------
-    frames : list[pandas.DataFrame]
-        One frame per completed sub-request.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The concatenated, deduplicated result. Empty when every input
-        frame is empty.
-
-    Notes
-    -----
-    An empty chunk can be a plain ``pd.DataFrame()`` (no geopandas);
-    concatenating it with real ``GeoDataFrame``s downgrades the result
-    to plain ``DataFrame`` and strips geometry/CRS, so empties are
-    dropped first. Dedup on the pre-rename feature ``id`` keeps
-    overlapping user OR-clauses from producing duplicate rows across
-    chunks.
-
-    Dedup is restricted to rows whose ``id`` is non-null. ``pandas``
-    treats NaN==NaN as a duplicate for ``drop_duplicates``, so a
-    blanket call would collapse every id-less row into a single one —
-    silent data loss if any chunk emits features without an
-    ``id`` field.
-    """
-    non_empty = [f for f in frames if not f.empty]
-    if not non_empty:
-        # Preserve the frame type (GeoDataFrame vs DataFrame) of the
-        # input even when every chunk is empty — ``_get_resp_data``
-        # returns ``gpd.GeoDataFrame()`` on empty geopd responses, and
-        # returning a plain ``pd.DataFrame()`` here would downgrade
-        # the type in a downstream ``pd.concat([result, geo_page])`` to
-        # a plain DataFrame and strip geometry/CRS.
-        return frames[0] if frames else pd.DataFrame()
-    if len(non_empty) == 1:
-        # Single-completed-chunk fast path. Return a copy so callers
-        # who treat ``ChunkedCall.partial_frame`` as a fresh result
-        # (the property docstring says "live; recomputed per access")
-        # don't accidentally mutate ``_chunks[0][0]`` in place.
-        return non_empty[0].copy()
-    combined = pd.concat(non_empty, ignore_index=True)
-    if "id" in combined.columns:
-        has_id = combined["id"].notna()
-        if has_id.all():
-            combined = combined.drop_duplicates(subset="id", ignore_index=True)
-        elif has_id.any():
-            # Mixed: dedupe only the id-bearing rows; preserve id-less
-            # rows verbatim (their order relative to id-bearing rows
-            # may shift, which is acceptable — dedup can't be id-keyed
-            # for rows without an id).
-            id_rows = combined[has_id].drop_duplicates(subset="id")
-            no_id_rows = combined[~has_id]
-            combined = pd.concat([id_rows, no_id_rows], ignore_index=True)
-    return combined
-
-
-# Response header USGS uses to advertise remaining hourly quota. Lives in this
-# base module so every layer (planning's ``_lowest_remaining``, the engine's
-# per-page progress) reads it from one place rather than hard-coding the string.
-_QUOTA_HEADER = "x-ratelimit-remaining"
-
-
-def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
-    """The response reporting the lowest ``x-ratelimit-remaining``.
-
-    The rate-limit counter decreases monotonically within a window, so the
-    smallest value any sub-request saw is the most-current "quota left after
-    this call" — the right thing to surface. Under concurrent fan-out the
-    last response *by index* need not be the one the server processed last, so
-    pick the minimum (falling back to the last response if none report it).
-    """
-    best: httpx.Response | None = None
-    best_remaining: int | None = None
-    for response in responses:
-        try:
-            remaining = int(response.headers[_QUOTA_HEADER])
-        except (KeyError, ValueError):
-            continue
-        if best_remaining is None or remaining < best_remaining:
-            best, best_remaining = response, remaining
-    return best if best is not None else responses[-1]
-
-
-def _merge_response(
-    base: httpx.Response,
-    *,
-    headers_from: httpx.Response,
-    elapsed: timedelta,
-    url: str | httpx.URL | None = None,
-) -> httpx.Response:
-    """Fold several responses into one: a shallow copy of ``base`` whose
-    ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from ``headers_from``,
-    ``.elapsed`` set to ``elapsed``, and ``.url`` overridden when ``url`` is
-    given. ``base`` and ``headers_from`` are never mutated, and the fresh
-    ``httpx.Headers`` means downstream mutations don't back-propagate into any
-    underlying response — so callers may re-fold idempotently. This is the one
-    low-level merge behind both pagination (:func:`_paginate`) and the chunked /
-    fan-out aggregation (:func:`_combine_chunk_responses`)."""
-    merged = copy.copy(base)
-    merged.headers = httpx.Headers(headers_from.headers)
-    merged.elapsed = elapsed
-    if url is not None:
-        _set_response_url(merged, url)
-    return merged
-
-
-def _combine_chunk_responses(
-    responses: list[httpx.Response], canonical_url: str | None
-) -> httpx.Response:
-    """
-    Fold per-sub-request responses into a single aggregated response.
-
-    For a multi-response input, returns a shallow copy of
-    ``responses[0]`` with ``.headers`` set to those of the most-depleted
-    response (lowest ``x-ratelimit-remaining`` — the quota actually left
-    after the fan-out; see :func:`_lowest_remaining`), ``.elapsed`` set
-    to total wall-clock across every response, and ``.url`` set to the
-    canonical original-query URL (when supplied) so ``BaseMetadata``
-    reflects the user's full request rather than the first chunk.
-
-    For a single-response input with no canonical-URL override,
-    ``responses[0]`` is returned unchanged to skip the copy on the
-    passthrough hot path.
-
-    Parameters
-    ----------
-    responses : list[httpx.Response]
-        One response per completed sub-request, in execution order.
-    canonical_url : str or None
-        URL of the unchunked original request. ``None`` skips the URL
-        override — used by the passthrough path (the fetcher's
-        response already carries the original-query URL) and by the
-        worst-case overflow path (no buildable canonical URL exists).
-
-    Returns
-    -------
-    httpx.Response
-        A shallow copy of the first response with aggregated
-        ``headers``, ``elapsed``, and ``url``. The function is
-        idempotent (the input responses' ``headers`` / ``elapsed`` /
-        ``url`` are never mutated), so it's safe to call repeatedly
-        via :attr:`ChunkedCall.partial_response` during error
-        inspection or resume retries. ``headers`` on the returned
-        object is a fresh ``httpx.Headers``, so mutations there don't
-        back-propagate into any chunk's underlying response.
-    """
-    if len(responses) == 1 and canonical_url is None:
-        return responses[0]
-
-    # Headers come from the most-depleted response (lowest quota left after a
-    # concurrent fan-out; ``_lowest_remaining`` returns the lone response as-is
-    # for a single-element list). ``_merge_response`` re-sums elapsed onto a
-    # fresh copy, so repeated calls (e.g. via ``ChunkedCall.partial_response``
-    # during resume) stay idempotent.
-    elapsed = sum((_safe_elapsed(r) for r in responses), start=timedelta())
-    return _merge_response(
-        responses[0],
-        headers_from=_lowest_remaining(responses),
-        elapsed=elapsed,
-        url=canonical_url,
-    )
+    def __iter__(self) -> Iterator[dict[str, Any]]:
+        return self.iter_chunk_args()

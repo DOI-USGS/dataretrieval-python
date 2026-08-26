@@ -6,12 +6,13 @@
 
 ## What is dataretrieval?
 
-`dataretrieval` simplifies the process of loading hydrologic data into Python.
-Like the original R version
-[`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval), it retrieves major
-U.S. Geological Survey (USGS) hydrology data types available on the Web, as well
-as data from the Water Quality Portal (WQP), the National Ground-Water
-Monitoring Network (NGWMN), and the Network Linked Data Index (NLDI).
+`dataretrieval` simplifies loading hydrologic data into Python. Like the
+original R version
+[`dataRetrieval`](https://github.com/DOI-USGS/dataRetrieval), it retrieves the
+major U.S. Geological Survey (USGS) hydrology data types available on the Web.
+It also retrieves data from the Water Quality Portal (WQP), the National
+Ground-Water Monitoring Network (NGWMN), and the Network Linked Data Index
+(NLDI).
 
 Check the [NEWS](NEWS.md) for all updates and announcements.
 
@@ -42,13 +43,55 @@ pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
 Access USGS water-monitoring data.
 
 **Important:** Users are strongly encouraged to obtain an API key for higher
-rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/)
-and set it as an environment variable:
+rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/),
+then supply it in whichever of these ways suits you. They are listed from
+highest to lowest precedence, so an explicit block or deployment environment
+can override a file without editing it:
 
 ```python
-import os
-os.environ["API_USGS_PAT"] = "your_api_key_here"
+# 1. a configure() block - for one call, an interactive prompt, or when
+#    different threads/tasks need different credentials.
+from getpass import getpass
+
+import dataretrieval
+from dataretrieval import Configuration, waterdata
+
+with dataretrieval.configure(Configuration(api_key=getpass("USGS API key: "))):
+    df, metadata = waterdata.get_daily(monitoring_location_id="USGS-01646500")
 ```
+
+```bash
+# 2. an environment variable (the R dataRetrieval package uses the same
+#    variable, so one export serves both)
+export API_USGS_PAT="your_api_key_here"
+```
+
+```toml
+# 3. ~/.dataretrieval/config.toml - keeps the key out of your shell
+#    environment, where every process you start inherits it.
+#    Restrict it afterwards:  chmod 600 ~/.dataretrieval/config.toml
+api_key = "your_api_key_here"
+```
+
+`dataretrieval.show_configuration()` reports what is in effect and where each setting
+came from, without printing the key. Concurrency, retries, and the progress
+line are configured the same way, and can be narrowed to one service: a
+`configure()` block takes at most one configuration per adapter, each either
+built in code or loaded by name from a profile in the file.
+
+```python
+from dataretrieval.ngwmn import NgwmnConfiguration
+from dataretrieval.waterdata import WaterdataConfiguration
+
+with dataretrieval.configure(
+    WaterdataConfiguration.load("overnight"),  # a profile in config.toml
+    NgwmnConfiguration(concurrency=2),  # built here
+):
+    ...
+```
+
+See the
+[configuration guide](https://doi-usgs.github.io/dataretrieval-python/userguide/configuration.html).
 
 The following example retrieves daily streamflow data for a specific
 monitoring location. The `/` in the `time` argument separates the start and
@@ -59,9 +102,9 @@ from dataretrieval import waterdata
 
 # Get daily streamflow data (returns DataFrame and metadata)
 df, metadata = waterdata.get_daily(
-    monitoring_location_id='USGS-01646500',
-    parameter_code='00060',  # Discharge
-    time='2024-10-01/2025-09-30'
+    monitoring_location_id="USGS-01646500",
+    parameter_code="00060",  # Discharge
+    time="2024-10-01/2025-09-30",
 )
 
 print(f"Retrieved {len(df)} records")
@@ -72,9 +115,9 @@ Retrieve streamflow at multiple locations from October 1, 2024 to the present:
 
 ```python
 df, metadata = waterdata.get_daily(
-    monitoring_location_id=["USGS-13018750","USGS-13013650"],
-    parameter_code='00060',
-    time='2024-10-01/..'
+    monitoring_location_id=["USGS-13018750", "USGS-13013650"],
+    parameter_code="00060",
+    time="2024-10-01/..",
 )
 
 print(f"Retrieved {len(df)} records")
@@ -85,8 +128,8 @@ stream sites in Maryland:
 ```python
 # Get monitoring location information
 df, metadata = waterdata.get_monitoring_locations(
-    state='Maryland',  # full name, postal code ('MD'), or FIPS ('24')
-    site_type_code='ST'  # Stream sites
+    state="Maryland",  # full name, postal code ('MD'), or FIPS ('24')
+    site_type_code="ST",  # Stream sites
 )
 
 print(f"Found {len(df)} stream monitoring locations in Maryland")
@@ -98,12 +141,64 @@ windows to avoid timeouts and other issues:
 ```python
 # Get continuous data for a single monitoring location and water year
 df, metadata = waterdata.get_continuous(
-    monitoring_location_id='USGS-01646500',
-    parameter_code='00065',  # Gage height
-    time='2024-10-01/2025-09-30'
+    monitoring_location_id="USGS-01646500",
+    parameter_code="00065",  # Gage height
+    time="2024-10-01/2025-09-30",
 )
 print(f"Retrieved {len(df)} continuous gage height measurements")
 ```
+
+#### Speeding up large downloads with `parallel_chunks`
+
+By default the getters split a multi-value request only as far as the server's
+~8 KB URL limit forces — the fewest sub-requests. For a **large, paginated**
+pull, that default is needlessly conservative: every sub-request pages through
+its own results, so dividing the query into more, smaller sub-requests lets
+those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
+into that finer split, fanning it out into `n` sub-requests. The finer split
+pays off only when the result is large enough to span many pages *and* the query
+has a multi-value argument to divide, such as a list of monitoring locations. On
+a small query — or one with nothing to split — it only adds requests, so
+`parallel_chunks` is a deliberate, scoped `with` block, never the default.
+
+```python
+from dataretrieval import waterdata
+
+# All stream gages in Ohio, then 20 years of their daily discharge — large
+# enough to span many pages, so it profits from a finer split.
+sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
+
+with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
+    df, md = waterdata.get_daily(
+        monitoring_location_id=sites["monitoring_location_id"],
+        parameter_code="00060",  # discharge
+        time="2004-01-01/2023-12-31",
+    )
+```
+
+`n` is the number of sub-requests to fan the call out into, capped by how many
+values there are to split. Each sub-request costs a request against your hourly
+[rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
+capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
+roughly `2` up to that value.
+
+Benchmark — a fixed 271-site subset of Ohio stream gages
+(`get_daily`, `parameter_code="00060"`), with a small fixed page size
+(`limit=250`) so every run fetches roughly the same number of pages (isolating
+the effect of parallelism). Each `n` ran against its own cold 1-year time
+window, so no run is served from the server's data-window cache:
+
+| `n`  | optional fan-out | pages | wall-clock             | speedup |
+| ---- | ---------------- | ----- | ---------------------- | ------- |
+| off  | 1                | ~30   | 9.5 s / 9.1 s (2 runs) | 1×      |
+| `8`  | 8                | ~32   | 2.2 s / 1.9 s          | ~4.5×   |
+| `32` | 32               | 54    | 1.2 s                  | ~8×     |
+
+The gain comes from overlapping each sub-request's per-page latency and
+server-side work. The exact multiplier therefore scales with how many pages the
+pull spans: a larger pull (more pages) has more parallelism to exploit. The
+extra sub-requests each cost quota, so reserve a large `n` for pulls you know
+are large.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
@@ -115,6 +210,7 @@ API — enable debug-level
 
 ```python
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 ```
 
@@ -129,14 +225,14 @@ from dataretrieval import ngwmn
 
 # Find the groundwater monitoring sites in a state
 # (state accepts a full name, a postal code like 'WI', or a FIPS code like '55')
-sites, metadata = ngwmn.get_sites(state='Wisconsin')
+sites, metadata = ngwmn.get_sites(state="Wisconsin")
 
 print(f"Found {len(sites)} NGWMN sites in Wisconsin")
 
 # Pull water levels from the first twenty sites over a time window.
 water_levels, metadata = ngwmn.get_water_level(
-    monitoring_location_id=sites['monitoring_location_id'][:20],
-    datetime=['2022-01-01', '2024-01-01']
+    monitoring_location_id=sites["monitoring_location_id"][:20],
+    datetime=["2022-01-01", "2024-01-01"],
 )
 
 print(f"Retrieved {len(water_levels)} water-level observations")
@@ -151,16 +247,15 @@ from dataretrieval import wqp
 
 # Find water quality monitoring sites (returns a DataFrame and metadata)
 sites, metadata = wqp.what_sites(
-    statecode='US:55',  # Wisconsin
-    siteType='Stream'
+    statecode="US:55",  # Wisconsin
+    siteType="Stream",
 )
 
 print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
 
 # Get water quality results
 results, metadata = wqp.get_results(
-    siteid='USGS-05427718',
-    characteristicName='Temperature, water'
+    siteid="USGS-05427718", characteristicName="Temperature, water"
 )
 
 print(f"Retrieved {len(results)} temperature measurements")
@@ -175,18 +270,18 @@ from dataretrieval import nldi
 
 # Get watershed basin for a stream reach
 basin = nldi.get_basin(
-    feature_source='comid',
-    feature_id='13293474'  # NHD reach identifier
+    feature_source="comid",
+    feature_id="13293474",  # NHD reach identifier
 )
 
 print(f"Basin contains {len(basin)} feature(s)")
 
 # Find upstream flowlines
 flowlines = nldi.get_flowlines(
-    feature_source='comid',
-    feature_id='13293474',
-    navigation_mode='UT',  # Upstream tributaries
-    distance=50  # km
+    feature_source="comid",
+    feature_id="13293474",
+    navigation_mode="UT",  # Upstream tributaries
+    distance=50,  # km
 )
 
 print(f"Found {len(flowlines)} upstream tributaries within 50km")
@@ -198,22 +293,22 @@ Retrieve modeled water-use estimates from the National Water Availability
 Assessment Data Companion:
 
 ```python
-from dataretrieval import wateruse
+from dataretrieval import nwdc
 
 # Monthly public-supply withdrawals for Rhode Island, split into
 # groundwater and surface-water sources (returns a DataFrame and metadata).
-df, metadata = wateruse.get_wateruse(
-    model='wu-public-supply-wd',
-    variable=['pswdtot', 'pswdgw', 'pswdsw'],
-    state='RI',  # name/postal/FIPS; pass a list to fan out over several areas
-    start_date='2020-01',
-    time_resolution='monthly',
+df, metadata = nwdc.get_wateruse(
+    model="wu-public-supply-wd",
+    variable=["pswdtot", "pswdgw", "pswdsw"],
+    state="RI",  # name/postal/FIPS; pass a list to fan out over several areas
+    start_date="2020-01",
+    time_resolution="monthly",
 )
 
 print(f"Retrieved {len(df)} records across {df['huc12_id'].nunique()} watersheds")
 
 # Aggregate the HUC12 grid to a statewide monthly total (million gallons/day)
-statewide = df.groupby('year_month')['pswdtot_mgd'].sum()
+statewide = df.groupby("year_month")["pswdtot_mgd"].sum()
 print(statewide.head())
 ```
 
@@ -258,7 +353,7 @@ print(statewide.head())
 - `get_features`: Find monitoring sites, dams, and other features along the network
 - `get_features_by_data_source`: Features from a specific data source
 
-### Water Use (NWDC) — `dataretrieval.wateruse`
+### NWDC (National Water Availability Assessment Data Companion) — `dataretrieval.nwdc`
 - `get_wateruse`: Modeled water-use estimates — public-supply, irrigation, and thermoelectric withdrawals and consumptive use — on a national 12-digit hydrologic-unit (HUC12) grid, summarizable to counties, states, or coarser hydrologic units
 
 ## More Examples
@@ -274,7 +369,7 @@ directory, including Jupyter notebooks demonstrating advanced usage patterns.
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for
 development guidelines.
 
 ## Acknowledgments

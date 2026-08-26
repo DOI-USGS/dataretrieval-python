@@ -4,6 +4,9 @@ from unittest import mock
 import pytest
 from pandas import DataFrame
 
+import dataretrieval
+import dataretrieval.wqp as wqp
+from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.wqp import (
     WQP_Metadata,
     _check_kwargs,
@@ -35,6 +38,23 @@ def _assert_wqp_metadata(md, request_url):
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header.get("mock_header") == "value"
     assert md.comment is None
+
+
+def test_get_results_opts_into_retry(monkeypatch):
+    """WQP explicitly enables retry at its shared query boundary."""
+    response = mock.Mock(
+        text="ResultIdentifier,ResultMeasureValue\nA,1.0\n",
+        url="https://example.test",
+        elapsed=datetime.timedelta(),
+        headers={},
+    )
+    query = mock.Mock(return_value=response)
+    monkeypatch.setattr(wqp, "_query_with_retry", query)
+
+    df, _ = wqp.get_results(legacy=True)
+
+    assert len(df) == 1
+    assert query.call_count == 1
 
 
 def test_read_wqp_csv_preserves_leading_zero_codes():
@@ -101,37 +121,193 @@ def test_get_results_WQX3(httpx_mock):
     assert df["Activity_StartDateTime"].notna().all()
 
 
+def test_wqx3_get_results_repeats_list_query_parameters(httpx_mock):
+    """WQX3 array filters use repeated keys rather than semicolons."""
+    with open("tests/data/wqp3_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    get_results(
+        legacy=False,
+        characteristicName=["Carbon", "Total carbon"],
+        siteType=["Stream", "Well"],
+        dataProfile="basicPhysChem",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("characteristicName") == ["Carbon", "Total carbon"]
+    assert params.get_list("siteType") == ["Stream", "Well"]
+
+
+@pytest.mark.parametrize(
+    "values_factory",
+    [
+        pytest.param(lambda: ("Carbon", "Total carbon"), id="tuple"),
+        pytest.param(
+            lambda: (value for value in ("Carbon", "Total carbon")), id="generator"
+        ),
+        pytest.param(
+            lambda: DataFrame({"value": ["Carbon", "Total carbon"]})["value"],
+            id="series",
+        ),
+    ],
+)
+def test_wqx3_get_results_repeats_iterable_query_parameters(httpx_mock, values_factory):
+    """WQX3 materializes non-list iterables before httpx serialization."""
+    with open("tests/data/wqp3_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    _df, md = get_results(
+        legacy=False,
+        characteristicName=values_factory(),
+        dataProfile="basicPhysChem",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("characteristicName") == ["Carbon", "Total carbon"]
+    assert params.get_list("dataProfile") == ["basicPhysChem"]
+    assert list(md._parameters["characteristicName"]) == ["Carbon", "Total carbon"]
+
+
+def test_legacy_get_results_preserves_generator_values_in_metadata(httpx_mock):
+    """Legacy serialization must not leave an exhausted metadata iterator."""
+    with open("tests/data/wqp_results.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    _df, md = get_results(
+        legacy=True,
+        pCode=(value for value in ("00010", "00300")),
+        dataProfile="narrowResult",
+    )
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("pCode") == ["00010;00300"]
+    assert md._parameters["pCode"] == ["00010", "00300"]
+
+
+def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
+    """The WQX3 serializer also applies to metadata search endpoints."""
+    with open("tests/data/wqp_sites.txt") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    what_sites(legacy=False, siteType=["Stream", "Well"])
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params.get_list("siteType") == ["Stream", "Well"]
+
+
+@pytest.mark.parametrize(
+    ("builder", "service", "expected", "warning"),
+    [
+        (
+            wqp.wqp_url,
+            "Result",
+            "https://www.waterqualitydata.us/data/Result/Search?",
+            DataCurrencyWarning,
+        ),
+        (
+            wqp.wqx3_url,
+            "Result",
+            "https://www.waterqualitydata.us/wqx3/Result/search?",
+            UserWarning,
+        ),
+    ],
+)
+def test_wqp_url_profiles(builder, service, expected, warning):
+    """Each profile keeps its warning policy and exact endpoint casing."""
+    with pytest.warns(warning):
+        assert builder(service) == expected
+
+
+def test_a_configured_base_url_moves_both_interfaces():
+    """One root, both paths: the portal serves legacy and WQX3 from one host.
+
+    Redirecting only the interface a caller happened to use first would leave
+    the other pointed at the service they were redirecting away from, which is
+    the failure a redirect exists to prevent.
+    """
+    mirror = "https://mirror.example/wqp"
+
+    with dataretrieval.configure(wqp.WqpConfiguration(base_url=mirror)):
+        with pytest.warns(DataCurrencyWarning):
+            legacy = wqp.wqp_url("Result")
+        with pytest.warns(UserWarning):
+            wqx3 = wqp.wqx3_url("Result")
+
+    assert legacy == f"{mirror}/data/Result/Search?"
+    assert wqx3 == f"{mirror}/wqx3/Result/search?"
+
+    # Outside the block, the portal's own root again -- the redirect is scoped
+    # to the ``with`` statement, not latched at import.
+    with pytest.warns(DataCurrencyWarning):
+        assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
+
+
+@pytest.mark.parametrize(
+    ("builder", "profile", "valid_services", "warning"),
+    [
+        (wqp.wqp_url, "Legacy", wqp.services_legacy, DataCurrencyWarning),
+        (wqp.wqx3_url, "WQX3.0", wqp.services_wqx3, UserWarning),
+    ],
+)
+def test_wqp_url_profiles_reject_unknown_service(
+    builder, profile, valid_services, warning
+):
+    """Shared validation names the offending service and its profile."""
+    with pytest.warns(warning):
+        with pytest.raises(
+            ValueError,
+            match=rf"^Invalid service: 'unknown' for {profile}\. Valid options are: ",
+        ) as exc_info:
+            builder("unknown")
+
+    # Every valid service is offered, in declaration order.
+    assert ", ".join(repr(s) for s in valid_services) in str(exc_info.value)
+
+
 # Every WQP ``what_*`` wrapper issues the same query against its own service
 # endpoint and returns the parsed DataFrame + metadata; they differ only by the
-# service path segment, the response fixture, and the expected size.
+# service path segment and the response fixture. Each case names one column that
+# is unique to that service's profile, which is what distinguishes "parsed the
+# right response" from a row count -- a count only says the fixture has not been
+# re-captured, and pinning one made the fixtures grow to tens of megabytes.
 _WHAT_CASES = [
-    (what_sites, "Station", "wqp_sites.txt", 239868),
-    (what_organizations, "Organization", "wqp_organizations.txt", 576),
-    (what_projects, "Project", "wqp_projects.txt", 530),
-    (what_activities, "Activity", "wqp_activities.txt", 5087443),
+    (what_sites, "Station", "wqp_sites.txt", "MonitoringLocationIdentifier"),
+    (what_organizations, "Organization", "wqp_organizations.txt", "OrganizationType"),
+    (what_projects, "Project", "wqp_projects.txt", "ProjectName"),
+    (what_activities, "Activity", "wqp_activities.txt", "ActivityTypeCode"),
     (
         what_detection_limits,
         "ResultDetectionQuantitationLimit",
         "wqp_detection_limits.txt",
-        98770,
+        "DetectionQuantitationLimitTypeName",
     ),
-    (what_habitat_metrics, "BiologicalMetric", "wqp_habitat_metrics.txt", 48114),
+    (
+        what_habitat_metrics,
+        "BiologicalMetric",
+        "wqp_habitat_metrics.txt",
+        "IndexTypeName",
+    ),
     (
         what_project_weights,
         "ProjectMonitoringLocationWeighting",
         "wqp_project_weights.txt",
-        33098,
+        "StatisticalStratumText",
     ),
-    (what_activity_metrics, "ActivityMetric", "wqp_activity_metrics.txt", 378),
+    (
+        what_activity_metrics,
+        "ActivityMetric",
+        "wqp_activity_metrics.txt",
+        "ActivityMetricType/MetricTypeName",
+    ),
 ]
 
 
 @pytest.mark.parametrize(
-    "func, service, fixture, size",
+    "func, service, fixture, profile_column",
     _WHAT_CASES,
     ids=[case[0].__name__ for case in _WHAT_CASES],
 )
-def test_what_query(httpx_mock, func, service, fixture, size):
+def test_what_query(httpx_mock, func, service, fixture, profile_column):
     """Each WQP ``what_*`` wrapper hits its own service endpoint and returns the
     parsed DataFrame + metadata."""
     request_url = (
@@ -141,7 +317,8 @@ def test_what_query(httpx_mock, func, service, fixture, size):
     mock_request(httpx_mock, request_url, f"tests/data/{fixture}")
     df, md = func(statecode="US:34", characteristicName="Chloride")
     assert type(df) is DataFrame
-    assert df.size == size
+    assert not df.empty
+    assert profile_column in df.columns
     _assert_wqp_metadata(md, request_url)
 
 
@@ -153,6 +330,30 @@ def test_check_kwargs():
     kwargs = {"mimeType": "foo"}
     with pytest.raises(ValueError):
         kwargs = _check_kwargs(kwargs)
+
+
+@pytest.mark.parametrize(
+    "name", ["api_key", "x_api_key", "access_token", "password", "pat", "auth"]
+)
+def test_credential_shaped_wqp_kwargs_are_rejected(name):
+    """WQP has the widest ``**kwargs`` passthrough in the package.
+
+    Its ten getters forward whatever the caller names straight into the query
+    string, so ``api_key=`` -- the plausible guess now that ``configure()``
+    takes ``Configuration(api_key=...)`` -- would put a secret in a URL that
+    clients, proxies and logs retain. Same predicate and same message as Water
+    Data's ``**queryables`` guard, because it is the same mistake.
+    """
+    with pytest.raises(TypeError, match="Credentials cannot be passed"):
+        _check_kwargs({name: "SECRET"})
+
+
+@pytest.mark.parametrize(
+    "name", ["siteid", "characteristicName", "statecode", "providers", "pCode"]
+)
+def test_real_wqp_filters_still_pass_through(name):
+    """The denylist must not claim names the portal owns."""
+    assert _check_kwargs({name: "v"})[name] == "v"
 
 
 def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):

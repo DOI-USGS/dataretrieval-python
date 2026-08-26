@@ -1,14 +1,14 @@
-"""
-Water Data API module for accessing USGS water data services.
+"""Water Data API module for accessing USGS water data services.
 
 This module provides functions for downloading data from the Water Data APIs,
 including the USGS Aquarius Samples database.
 
-See https://api.waterdata.usgs.gov/ for API reference.
+See https://api.waterdata.usgs.gov/ for the API reference.
 """
 
 from __future__ import annotations
 
+from dataretrieval.ogc.chunking import parallel_chunks
 from dataretrieval.ogc.filters import FILTER_LANG
 
 # Public API exports
@@ -33,6 +33,7 @@ from .api import (
     get_stats_por,
     get_time_series_metadata,
 )
+from .configuration import WaterdataConfiguration
 from .nearest import get_nearest_continuous
 from .ratings import get_ratings
 from .types import (
@@ -46,10 +47,12 @@ from .types import (
 __all__ = [
     "CODE_SERVICES",
     "FILTER_LANG",
+    "WaterdataConfiguration",
     "PROFILES",
     "PROFILE_LOOKUP",
     "SERVICES",
     "WATERDATA_SERVICES",
+    "parallel_chunks",
     "get_channel",
     "get_codes",
     "get_combined_metadata",

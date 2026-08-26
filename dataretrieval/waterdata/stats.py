@@ -3,8 +3,10 @@
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
 *separate*, non-OGC API: it has no chunkable multi-value axes, so it drives
-:func:`engine._paginate` directly through a blocking portal rather than going
-through ``multi_value_chunked``. The typed getters ``get_stats_por`` and
+:func:`dataretrieval.transport.pagination.paginate` as a one-item
+:class:`~dataretrieval.transport.fanout.FanOut` rather than going through
+``multi_value_chunked``. The typed getters
+``get_stats_por`` and
 ``get_stats_date_range`` in :mod:`dataretrieval.waterdata.api` call
 :func:`get_data` here.
 """
@@ -16,42 +18,28 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from dataretrieval.ogc.engine import (
-    BASE_URL,
-    _paginate,
-    _run_sync,
-)
+from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
-    _CRS,
     GEOPANDAS,
     _attach_coordinates,
     _empty_feature_frame,
+    _geo_feature_frame,
 )
-from dataretrieval.utils import BaseMetadata, _default_headers
+from dataretrieval.transport.http import default_headers
+from dataretrieval.transport.pagination import run_paginated
+from dataretrieval.waterdata.endpoints import statistics_api_url
 
-# ``_handle_nesting``'s geopandas branch calls ``gpd.GeoDataFrame.from_features``
-# directly, so this module needs its own bound ``gpd`` name. Import it under the
-# same guard the engine uses; when geopandas is absent ``gpd`` is left unbound
-# (``GEOPANDAS`` is ``False``, so the stats path never touches it). The
-# empty-page short-circuit instead delegates to ``shaping._empty_feature_frame``,
-# which resolves ``shaping``'s ``gpd`` — so an empty-page test patches
-# ``shaping.gpd`` while the populated geopandas branch uses ``stats.gpd``.
-try:
-    import geopandas as gpd
-except ImportError:  # pragma: no cover - exercised only without geopandas
-    pass
-
-STATISTICS_API_VERSION = "v0"
-STATISTICS_API_URL = f"{BASE_URL}/statistics/{STATISTICS_API_VERSION}"
+__all__ = ["get_data"]
 
 
 def _handle_nesting(
     body: dict[str, Any],
     geopd: bool = False,
 ) -> pd.DataFrame:
-    """
-    Takes nested json from stats service and flattens into a dataframe with
-    one row per monitoring location, parameter, and statistic.
+    """Flatten nested JSON from the stats service into a dataframe.
+
+    The result has one row per monitoring location, parameter, and statistic.
 
     Parameters
     ----------
@@ -79,42 +67,11 @@ def _handle_nesting(
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
-    if body is None:
+    features = _extract_features(body)
+    if features is None:
         return _empty_feature_frame(geopd)
 
-    # An empty (or missing) features list — a real mid-pagination
-    # shape — would otherwise crash the downstream merge with
-    # ``KeyError: 'monitoring_location_id'`` because neither df nor
-    # dat would carry the merge key. ``_empty_feature_frame`` bails out
-    # with a geo-typed empty frame so a later ``pd.concat`` with non-empty
-    # geo pages doesn't downgrade to a plain DataFrame and strip geometry/CRS.
-    features = body.get("features") or []
-    if not features:
-        return _empty_feature_frame(geopd)
-
-    # The geopd-missing warning is emitted once at import (see engine module);
-    # doing it here would log per page.
-    if not geopd:
-        outer_props = [
-            {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
-            for f in features
-        ]
-        df = pd.json_normalize(outer_props, sep=".")
-        df.columns = df.columns.str.split(".").str[-1]
-        # Stats features don't carry a top-level ``id`` field — the
-        # geopandas branch (``GeoDataFrame.from_features``) doesn't
-        # surface one either, so the non-geopd branch stays
-        # consistent by NOT adding an id column.
-        _attach_coordinates(df, features)
-    else:
-        # Default a missing ``geometry`` key to ``None`` per feature so
-        # ``from_features`` (which indexes ``feature["geometry"]`` directly)
-        # can't ``KeyError`` on a stats feature that omits geometry — mirrors
-        # the guard in :func:`engine._get_resp_data`.
-        df = gpd.GeoDataFrame.from_features(
-            [f if "geometry" in f else {**f, "geometry": None} for f in features],
-            crs=_CRS,
-        ).drop(columns=["data"], errors="ignore")
+    df = _build_outer_frame(features, geopd)
 
     # Unnest json features, properties, data, and values while retaining necessary
     # metadata to merge with main dataframe.
@@ -135,14 +92,51 @@ def _handle_nesting(
     return df.merge(dat, on="monitoring_location_id", how="left")
 
 
-def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
+def _extract_features(body: dict[str, Any] | None) -> list[dict[str, Any]] | None:
+    """Return the features list from a response body, or None for empty/missing.
+
+    ``None`` signals the caller to return an empty frame. An empty (or
+    missing) features list — a real mid-pagination shape — would otherwise
+    crash the downstream merge with ``KeyError: 'monitoring_location_id'``
+    because neither frame would carry the merge key.
     """
-    Takes percentile value and thresholds columns containing lists
-    of values and turns each list element into its own row in the
-    original dataframe. Exploded ``'nan'`` values are dropped. If
-    no percentile data exist, it adds a percentile column and
-    populates it with the percentile assigned to min, max, and
-    median.
+    if body is None:
+        return None
+    return body.get("features") or None
+
+
+def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFrame:
+    """Build the outer (per-monitoring-location) frame from GeoJSON features.
+
+    The geopd-missing warning is emitted once at import (see engine module);
+    doing it here would log per page.
+    """
+    if not geopd:
+        outer_props = [
+            {k: v for k, v in (f.get("properties") or {}).items() if k != "data"}
+            for f in features
+        ]
+        df = pd.json_normalize(outer_props, sep=".")
+        df.columns = df.columns.str.split(".").str[-1]
+        # Stats features don't carry a top-level ``id`` field — the
+        # geopandas branch (``GeoDataFrame.from_features``) doesn't
+        # surface one either, so the non-geopd branch stays
+        # consistent by NOT adding an id column.
+        _attach_coordinates(df, features)
+        return df
+
+    # Stats features may omit ``geometry`` entirely; ``_geo_feature_frame``
+    # is the shared home for that upstream-schema workaround.
+    return _geo_feature_frame(features).drop(columns=["data"], errors="ignore")
+
+
+def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
+    """Explode percentile value and threshold lists into one row per element.
+
+    The "values" and "percentiles" columns hold lists; each element becomes its
+    own row in the original dataframe, and exploded ``'nan'`` values are
+    dropped. If no percentile data exist, a percentile column is added and
+    populated with the percentile assigned to min, max, and median.
 
     Parameters
     ----------
@@ -211,19 +205,19 @@ def get_data(
     expand_percentiles: bool,
     client: httpx.AsyncClient | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """
-    Retrieves statistical data from a specified endpoint and returns it
-    as a pandas DataFrame with metadata.
+    """Retrieve statistical data from a statistics endpoint.
 
-    This function prepares request arguments, constructs API requests,
-    handles pagination, processes results, and formats output according
-    to the specified parameters.
+    Returns the data as a pandas DataFrame with metadata. This function
+    prepares request arguments, constructs API requests, handles pagination,
+    processes results, and formats output according to the specified
+    parameters.
 
     The stats path doesn't go through ``multi_value_chunked`` (its query
-    shape has no chunkable list axes), so it drives :func:`engine._paginate`
-    directly through an ``anyio`` blocking portal. The portal runs the
-    pagination loop in a short-lived worker thread, so this works whether
-    or not the caller is already inside an event loop.
+    shape has no chunkable list axes), so it drives transport pagination as a
+    one-item :class:`~dataretrieval.transport.fanout.FanOut`. The executor
+    runs the pagination loop in a short-lived worker thread, so this works
+    whether or not the caller is already inside an event loop, and the single
+    request gets the same retry and resume semantics as every other getter.
 
     Parameters
     ----------
@@ -233,35 +227,43 @@ def get_data(
         The statistics service type (for example,
         "observationNormals" or "observationIntervals").
     expand_percentiles : bool
-        Determines whether the percentiles column is expanded so that
-        each percentile gets its own row in the returned dataframe. If
-        True and the user requests a computation_type other than
-        percentiles, a percentile column is still returned.
+        Whether to expand the percentiles column so that each percentile gets
+        its own row in the returned dataframe. If True and the caller requests a
+        computation_type other than percentiles, a percentile column is still
+        returned.
     client : httpx.AsyncClient, optional
-        Caller-borrowed async client. ``None`` (default) opens a
-        temporary one inside the portal. Primarily a test seam.
+        Caller-borrowed async client. ``None`` (default) borrows the one this
+        call's :class:`~dataretrieval.transport.fanout.FanOut` opened, which
+        lives in the same event loop as the page walk. Primarily a test seam.
 
     Returns
     -------
     pd.DataFrame
         A DataFrame containing the retrieved and processed statistical data.
     BaseMetadata
-        A metadata object containing request information including URL and query time.
+        A metadata object with request information, including the URL and
+        query time.
 
     Raises
     ------
     DataRetrievalError
-        The typed subclass for an HTTP error response (see :func:`engine._paginate`);
-        or :class:`~dataretrieval.exceptions.NetworkError` if the initial request
-        can't reach the service (timeout / DNS), the ``httpx`` exception chained
+        The typed subclass for an HTTP error response (see
+        :func:`transport.pagination.paginate`);
+        or :class:`~dataretrieval.exceptions.NetworkError` if the request
+        can't reach the service in a way retrying cannot fix (bad scheme,
+        a hostname that does not resolve), the ``httpx`` exception chained
         on ``__cause__``.
+    FanOutInterrupted
+        A transient failure (429 / 5xx / timeout) survived the built-in
+        retries. Resume with ``exc.call.resume()`` (see
+        :doc:`/userguide/errors`).
     """
 
-    url = f"{STATISTICS_API_URL}/{service}"
+    url = f"{statistics_api_url()}/{service}"
     req = httpx.Request(
         method="GET",
         url=url,
-        headers=_default_headers(),
+        headers=default_headers(url),
         params=args,
     )
     method = req.method
@@ -281,15 +283,15 @@ def get_data(
             method, url=url, params={**args, "next_token": cursor}, headers=headers
         )
 
-    async def _run() -> tuple[pd.DataFrame, httpx.Response]:
-        return await _paginate(
-            req,
-            parse_response=parse_response,
-            follow_up=follow_up,
-            client=client,
-        )
-
-    df, response = _run_sync(_run, service=service)
+    df, response = run_paginated(
+        [req],
+        parse_response=parse_response,
+        follow_up=follow_up,
+        raise_for_status=_raise_for_non_200,
+        client=client,
+        service=service,
+        adapter="waterdata",
+    )
 
     if expand_percentiles:
         df = _expand_percentiles(df)

@@ -2,11 +2,10 @@ Welcome
 =======
 
 Welcome to the documentation for the Python ``dataretrieval`` package.
-``dataretrieval`` is a Python alternative to the `USGS R dataRetrieval package`_
-and is used to obtain USGS and EPA water quality data, streamflow data, and
-metadata directly from webservices (see the
-:doc:`data portals documentation </userguide/dataportals>` for additional
-details about specific data sources).
+``dataretrieval`` is a Python alternative to the `USGS R dataRetrieval package`_.
+The package obtains USGS and EPA water quality data, streamflow data, and
+metadata directly from webservices. For additional details about specific data
+sources, see the :doc:`data portals documentation </userguide/dataportals>`.
 
 .. _USGS R dataRetrieval package: https://github.com/DOI-USGS/dataRetrieval
 
@@ -20,6 +19,7 @@ Table of Contents
    meta/installing
    userguide/index
    examples/index
+   architecture/index
    meta/contributing
    meta/license
    reference/index

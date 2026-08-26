@@ -4,9 +4,8 @@
 Data Portals
 ============
 
-``dataretrieval`` provides a number of functions to retrieve data from several
-data portals, a table listing the portals and corresponding web addresses is
-provided below.
+``dataretrieval`` provides functions to retrieve data from several data
+portals. The table below lists those portals and their web addresses.
 
 +-----------------------------------+---------------------------------------------------------------+
 | Data Portal                       | Uniform Resource Locator (URL)                                |

@@ -1,13 +1,12 @@
-"""National Ground-Water Monitoring Network (NGWMN) getters.
+"""Retrieve data from the National Ground-Water Monitoring Network (NGWMN).
 
 The NGWMN exposes its data through a dedicated OGC API
 (``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:
 ``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and
-``providers``. Each getter below delegates to the shared OGC engine
-(:func:`~dataretrieval.ogc.engine.get_ogc_data`) with
-``base_url=NGWMN_OGC_API_URL``, so multi-value chunking, pagination,
-retry/resume, and result shaping all behave exactly as they do for the main
-Water Data getters.
+``providers``. Each getter below delegates to the shared OGC facade
+(:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.
+Multi-value chunking, pagination, retry/resume, and result shaping therefore
+behave exactly as they do for the main Water Data getters.
 
 Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so ``monitoring_location_id`` values use other agency
@@ -19,13 +18,44 @@ See https://api.waterdata.usgs.gov/ngwmn/ogcapi for the API reference.
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
+from dataretrieval import configuration as _configuration
 from dataretrieval.codes.states import apply_state
-from dataretrieval.ogc.engine import BASE_URL, OgcDialect, _get_args, get_ogc_data
-from dataretrieval.utils import BaseMetadata
+from dataretrieval.configuration import (
+    BaseConfiguration,
+    _Chunked,
+    _Concurrent,
+    _Redirectable,
+    _register,
+    _Retrying,
+)
+from dataretrieval.credentials import WATERDATA_BASE_URL
+from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
+
+if TYPE_CHECKING:
+    from dataretrieval._response_metadata import BaseMetadata
+
+__all__ = [
+    "NgwmnConfiguration",
+    "get_sites",
+    "get_water_level",
+    "get_lithology",
+    "get_well_construction",
+    "get_providers",
+]
+
+
+# The Water Data API base URL, from the credentials leaf rather than OGC policy
+# internals: it names the same authority the API key is scoped to. Spelling the
+# host out here instead would put a second copy of it in the package, which
+# ``tests/architecture_test.py::test_credential_policy_has_one_definition``
+# rejects: the code that attaches the API key and the code that strips it at
+# redirect time must not be able to disagree about which host is authorized.
+BASE_URL = WATERDATA_BASE_URL
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
 # separate, unversioned base.
@@ -72,7 +102,7 @@ NGWMN_DIALECT = OgcDialect(
 
 
 def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Marshal a getter's arguments and dispatch to the shared OGC engine.
+    """Marshal a getter's arguments and dispatch to the shared OGC facade.
 
     Every NGWMN getter ends with this same call; centralizing it keeps the
     NGWMN base URL, output id, and dialect wired up in exactly one place.
@@ -80,13 +110,19 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = _get_args(local_vars)
+    args = prepare_request_args(local_vars)
     return get_ogc_data(
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
-        base_url=NGWMN_OGC_API_URL,
+        # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
+        # this service's own base. Resolved per call because the block is
+        # scoped to a ``with`` statement, and read here because this is the one
+        # place the NGWMN base is named.
+        base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
+        spatial=service == "sites",
         dialect=NGWMN_DIALECT,
+        adapter="ngwmn",
     )
 
 
@@ -144,9 +180,9 @@ def get_sites(
     country_code, country_name : str or iterable, optional
         Country filters.
     state : str or iterable of str, optional
-        State/territory filter. Accepts a full name (``"Wisconsin"``), a
-        two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS code
-        (``"55"``).
+        State filter. Accepts a full name (``"Wisconsin"``), a two-letter
+        postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
+        The 50 states, DC, and the five US territories.
     county_name : str or iterable of str, optional
         County name filter.
     aquifer_name, site_type, aquifer_type_code : str or iterable, optional
@@ -375,9 +411,10 @@ def get_providers(
     Parameters
     ----------
     state : str or iterable of str, optional
-        State/territory filter. Accepts a full name (``"Wisconsin"``), a
-        two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS code
-        (``"55"``). Only one state at a time — a multi-value state filter
+        State filter. Accepts a full name (``"Wisconsin"``), a two-letter
+        postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
+        The 50 states, DC, and the five US territories. Only one
+        state at a time — a multi-value state filter
         returns no records for this collection.
     agency_code : str or iterable of str, optional
         Provider agency code.
@@ -409,3 +446,48 @@ def get_providers(
         ... )
     """
     return _get("providers", locals())
+
+
+@dataclass(frozen=True)
+class NgwmnConfiguration(
+    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
+):
+    """Settings for NGWMN calls alone.
+
+    NGWMN is a second OGC API on the Water Data host, so its queries
+    divide along the same URL byte budget and take the same two fan-out
+    dials. The API key is not among them: one gateway fronts both
+    adapters, so one key and one quota pool serve them (ADR 0010).
+
+    Lives here rather than in :mod:`dataretrieval.configuration` because
+    *which* settings a service reads is the service's own knowledge (ADR
+    0011); what each of them means is shared, so the fields come from the
+    setting groups declared beside their grammar.
+
+    Parameters
+    ----------
+    retries : int, optional
+        Retries attempted after a transient failure; ``0`` disables retrying.
+    stall_timeout : float, optional
+        Seconds a call may go without receiving any data before retrying
+        stops.
+    base_url : str, optional
+        OGC API base to send NGWMN requests to, instead of the service's
+        own (``NGWMN_OGC_API_URL``). Code only: the file and the
+        environment refuse it. The API key is scoped to the host that
+        honors it, so a redirected call carries no key.
+    concurrency : int or str, optional
+        Cap on simultaneous sub-requests, or ``"unbounded"``.
+    parallel_chunks : int, optional
+        Baseline fan-out for multi-value queries. Each sub-request spends
+        rate-limit quota, so raise it only for pulls you know are large.
+    """
+
+    # NGWMN rides the same OGC engine as Water Data, so it reads the same
+    # groups: retry dials, a redirectable base, and both fan-out dials. The
+    # settings themselves are declared once in
+    # :mod:`dataretrieval.configuration`, beside the grammar that parses them.
+    adapter: ClassVar[str] = "ngwmn"
+
+
+_register(NgwmnConfiguration)

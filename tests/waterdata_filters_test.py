@@ -1,3 +1,4 @@
+import functools
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest import mock
@@ -11,8 +12,17 @@ from dataretrieval.ogc.filters import (
     _quote_cql_str,
     _split_top_level_or,
 )
+from dataretrieval.ogc.requests import (
+    _construct_api_requests as _construct_api_requests_explicit,
+)
 from dataretrieval.waterdata import get_continuous
-from dataretrieval.waterdata.utils import _construct_api_requests
+from dataretrieval.waterdata.utils import OGC_API_URL
+
+# Bind the target API the way ``get_ogc_data`` does — explicitly — so the
+# direct construction tests below exercise the real builder.
+_construct_api_requests = functools.partial(
+    _construct_api_requests_explicit, base_url=OGC_API_URL
+)
 
 
 def _query_params(prepared_request):
@@ -20,8 +30,13 @@ def _query_params(prepared_request):
 
 
 def _fake_prepared_request(url="https://example.test"):
-    """Stand-in for the object ``_construct_api_requests`` returns."""
-    return SimpleNamespace(url=url, method="GET", headers={})
+    """Stand-in for the object ``_construct_api_requests`` returns.
+
+    Carries ``content`` because the planner sizes candidate chunks as
+    ``len(url) + len(content)`` — and with the builder bound per call, a
+    patched builder is what the planner measures.
+    """
+    return SimpleNamespace(url=url, method="GET", headers={}, content=b"")
 
 
 def _fake_response(url="https://example.test", elapsed_ms=1):
@@ -44,7 +59,7 @@ def test_quote_cql_str_doubles_embedded_quotes():
 def test_construct_filter_lang_hyphenated():
     """The Python kwarg `filter_lang` is sent as URL key `filter-lang`."""
     req = _construct_api_requests(
-        service="continuous",
+        collection="continuous",
         monitoring_location_id="USGS-07374525",
         parameter_code="72255",
         filter="time >= '2023-01-01T00:00:00Z'",
@@ -99,7 +114,7 @@ def test_split_top_level_or_single_clause():
 
 
 @pytest.mark.parametrize(
-    "service",
+    "collection",
     [
         "daily",
         "continuous",
@@ -111,10 +126,10 @@ def test_split_top_level_or_single_clause():
         "channel-measurements",
     ],
 )
-def test_construct_filter_on_all_ogc_services(service):
+def test_construct_filter_on_all_ogc_services(collection):
     """Filter passthrough works uniformly for every OGC collection endpoint."""
     req = _construct_api_requests(
-        service=service,
+        collection=collection,
         filter="value > 0",
         filter_lang="cql-text",
     )
@@ -143,13 +158,13 @@ def _filter_size_aware_build(**kwargs):
 
 def test_long_filter_fans_out_into_multiple_requests():
     """An oversized top-level OR filter triggers multiple HTTP
-    sub-requests via the joint planner; every original clause is
-    preserved across sub-requests; results concatenate to one row per
-    sub-request given the one-row-per-chunk mock."""
+    chunks via the joint planner; every original clause is
+    preserved across chunks; results concatenate to one row per
+    chunk given the one-row-per-chunk mock."""
     expr = _filter_chunking_clauses()
     sent_filters: list[str] = []
 
-    async def fake_walk_pages(*, geopd, req):
+    async def fake_walk_pages(*, geopd, req, include_geometry=True, row_cap=None):
         idx = len(sent_filters)
         sent_filters.append(_query_params(req).get("filter", [None])[0])
         return pd.DataFrame({"id": [f"chunk-{idx}"], "value": [idx]}), _fake_response()
@@ -181,7 +196,7 @@ def test_long_filter_fans_out_into_multiple_requests():
 
 
 def test_long_filter_deduplicates_cross_chunk_overlap():
-    """Features returned by multiple sub-requests with the same ``id``
+    """Features returned by multiple chunks with the same ``id``
     are deduplicated in the concatenated result."""
     expr = _filter_chunking_clauses()
     call_count = {"n": 0}
@@ -215,7 +230,7 @@ def test_long_filter_deduplicates_cross_chunk_overlap():
 
 
 def test_empty_chunks_do_not_downgrade_geodataframe():
-    """A mix of empty and non-empty sub-request responses must not
+    """A mix of empty and non-empty chunk responses must not
     downgrade a GeoDataFrame-typed result to a plain DataFrame.
     ``_get_resp_data`` returns ``pd.DataFrame()`` on empty responses,
     which would otherwise strip geometry/CRS from the concatenated
@@ -272,20 +287,18 @@ def test_cql_json_filter_is_not_chunked():
         sent_filters.append(kwargs.get("filter"))
         return _fake_prepared_request()
 
+    walk = mock.AsyncMock(
+        return_value=(
+            pd.DataFrame({"id": ["row-1"], "value": [1]}),
+            _fake_response(),
+        )
+    )
     with (
         mock.patch(
             "dataretrieval.ogc.engine._construct_api_requests",
             side_effect=fake_construct_api_requests,
         ),
-        mock.patch(
-            "dataretrieval.ogc.engine._walk_pages",
-            new=mock.AsyncMock(
-                return_value=(
-                    pd.DataFrame({"id": ["row-1"], "value": [1]}),
-                    _fake_response(),
-                )
-            ),
-        ),
+        mock.patch("dataretrieval.ogc.engine._walk_pages", new=walk),
     ):
         get_continuous(
             monitoring_location_id="USGS-07374525",
@@ -294,7 +307,11 @@ def test_cql_json_filter_is_not_chunked():
             filter_lang="cql-json",
         )
 
-    assert sent_filters == [expr]
+    # The planner sizes through the (patched) builder and the fetch builds
+    # through it again; every call must carry the caller's cql-json filter
+    # verbatim — never split — and exactly one chunk is fetched.
+    assert sent_filters and set(sent_filters) == {expr}
+    assert walk.await_count == 1
 
 
 @pytest.mark.parametrize(
@@ -428,3 +445,28 @@ def test_get_continuous_surfaces_pitfall_to_caller():
                 filter_lang="cql-text",
             )
         build.assert_not_called()
+
+
+class TestOrSeparatorBoundaries:
+    """Top-level ``OR`` splitting drives chunking, so a false split changes
+    the query's meaning and a missed one leaves an unchunkable filter."""
+
+    def test_a_word_merely_starting_with_or_is_not_a_separator(self):
+        """``A ORDER BY b`` must not split on ``OR``; the trailing space is
+        what distinguishes the keyword from a longer identifier."""
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        assert _resume_after_or("a ORDER BY b", 1) is None
+
+    def test_a_trailing_or_at_end_of_expression_is_not_a_separator(self):
+        """There is no clause after it, so treating it as one would index
+        past the end."""
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        assert _resume_after_or("a OR", 1) is None
+
+    def test_a_real_separator_returns_the_next_clause_start(self):
+        from dataretrieval.ogc.filters import _resume_after_or
+
+        expr = "a OR b"
+        assert expr[_resume_after_or(expr, 1) :] == "b"
