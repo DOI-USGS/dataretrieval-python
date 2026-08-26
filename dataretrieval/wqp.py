@@ -75,6 +75,52 @@ services_legacy = [
     "Station",
 ]
 
+# Valid dataProfile values per service, keyed by (service, legacy: bool).
+# None means the service does not accept a dataProfile parameter at all.
+_PROFILES: dict[tuple[str, bool], list[str] | None] = {
+    ("Result", True): result_profiles_legacy,
+    ("Result", False): result_profiles_wqx3,
+    ("Activity", True): activity_profiles_legacy,
+    ("Activity", False): None,
+    ("Station", True): None,
+    ("Station", False): None,
+    ("Organization", True): None,
+    ("Project", True): None,
+    ("ActivityMetric", True): None,
+    ("BiologicalMetric", True): None,
+    ("ProjectMonitoringLocationWeighting", True): None,
+    ("ResultDetectionQuantitationLimit", True): None,
+}
+
+
+def _validate_profile(service: str, legacy: bool, kwargs: dict[str, Any]) -> None:
+    """Check that ``dataProfile`` is valid for *service*, or absent when unsupported.
+
+    Raises ``ValueError`` if the service does not accept profiles and one was
+    passed, or if the profile is not in the service's known list. When the
+    service is Result with ``legacy=False`` and no profile is given, defaults
+    to ``'fullPhysChem'`` (mutates *kwargs* in place).
+    """
+    profile = kwargs.get("dataProfile")
+    key = (service, legacy)
+    valid = _PROFILES.get(key)
+
+    if valid is None and profile is not None:
+        raise ValueError(
+            f"The {service!r} service does not accept a dataProfile parameter. "
+            f"Remove dataProfile={profile!r} from your call."
+        )
+
+    if valid is not None and profile is not None:
+        kind = "legacy" if legacy else "WQX3.0"
+        require_one_of(
+            profile, valid, name="dataProfile", context=f"{kind} {service}"
+        )
+
+    # WQX3 Result defaults to fullPhysChem when no profile is given.
+    if service == "Result" and not legacy and profile is None:
+        kwargs["dataProfile"] = "fullPhysChem"
+
 
 def _is_code_column(name: str) -> bool:
     """Report whether a WQP column name denotes a code or identifier.
@@ -138,8 +184,9 @@ def get_results(
         US state FIPS code (Example: Illinois is "US:17").
     countycode : string
         US county FIPS code.
-    huc : string
-        Eight-digit hydrologic unit (HUC), delimited by semicolons.
+    huc : string or iterable of strings
+        Eight-digit hydrologic unit (HUC). Iterable values are encoded as
+        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
     bBox : string
         Search bounding box (Example: bBox=-92.8,44.2,-88.9,46.0).
     lat : string
@@ -148,8 +195,9 @@ def get_results(
         Radial-search central longitude in WGS84 decimal degrees.
     within : string
         Radial-search distance in decimal miles.
-    pCode : string
-        Five-digit USGS parameter code, delimited by semicolons.
+    pCode : string or iterable of strings
+        Five-digit USGS parameter code. Iterable values are encoded as
+        repeated parameters for WQX3 and semicolon-delimited for legacy WQP.
         NWIS only.
     startDateLo : string
         Date of the earliest desired data-collection activity,
@@ -157,9 +205,11 @@ def get_results(
     startDateHi : string
         Date of the last desired data-collection activity,
         expressed as 'MM-DD-YYYY'.
-    characteristicName : string
-        One or more case-sensitive characteristic names, separated by
-        semicolons (https://www.waterqualitydata.us/public_srsnames/).
+    characteristicName : string or iterable of strings
+        One or more case-sensitive characteristic names
+        (https://www.waterqualitydata.us/public_srsnames/). Iterable values are
+        encoded as repeated parameters for WQX3 and semicolon-delimited for
+        legacy WQP.
     mimeType : string
         Output format. Only 'csv' is supported at this time.
 
@@ -199,24 +249,16 @@ def get_results(
     kwargs = _check_kwargs(kwargs)
 
     if legacy is True:
-        valid_profiles = result_profiles_legacy
-        kind = "legacy"
         url = wqp_url("Result")
+        delimiter = ";"
     else:
-        valid_profiles = result_profiles_wqx3
-        kind = "WQX3.0"
         url = wqx3_url("Result")
+        delimiter = None
 
-    profile = kwargs.get("dataProfile")
-    if profile is not None:
-        require_one_of(
-            profile, valid_profiles, name="dataProfile", context=f"{kind} results"
-        )
-    if legacy is not True and profile is None:
-        kwargs["dataProfile"] = "fullPhysChem"
+    _validate_profile("Result", legacy, kwargs)
 
     response = _query_with_retry(
-        url, kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+        url, kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
 
     df = _read_wqp_csv(response.text)
@@ -240,14 +282,20 @@ def _what(
     legacy profile. The CSV response is parsed via :func:`_read_wqp_csv`.
     """
     kwargs = _check_kwargs(kwargs)
+    _validate_profile(service, legacy, kwargs)
 
-    if service in services_wqx3:
-        url = wqp_url(service) if legacy else wqx3_url(service)
-    else:
+    if service not in services_wqx3:
         url = _legacy_only_url(service, legacy=legacy)
+        delimiter = ";"
+    elif legacy:
+        url = wqp_url(service)
+        delimiter = ";"
+    else:
+        url = wqx3_url(service)
+        delimiter = None
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=";", ssl_check=ssl_check, adapter="wqp"
+        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
     df = _read_wqp_csv(response.text)
     return df, WQP_Metadata(response, **kwargs)
