@@ -38,8 +38,7 @@ logger = logging.getLogger(__name__)
 _CRS = "EPSG:4326"
 
 # What ``infer_dtype`` reports for an object column that cannot hide a dict.
-# Named this way round so a label this package has not seen falls through to
-# the authoritative scan rather than silently skipping it.
+# Named this way round so an unfamiliar label falls through to the scan.
 _FLAT_DTYPES = frozenset({"string", "empty"})
 
 # Whether geopandas is present is a static, environment-level fact, so warn
@@ -109,19 +108,13 @@ def _geo_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
 def _properties_frame(features: list[dict[str, Any]]) -> tuple[pd.DataFrame, bool]:
     """Build the frame of feature properties, and say whether values nested.
 
-    Flat properties — every Water Data / NGWMN collection — build with the
-    plain ``DataFrame`` constructor; a nested value in *any* feature routes
-    the whole page through ``json_normalize`` so no row keeps a raw dict.
-    Dicts can only land in object-dtype columns, and only in one whose
-    values ``infer_dtype`` does not call flat, so the Python scan runs on
-    those alone — under pandas 2, where every string column is object dtype,
-    that is the difference between scanning one column and scanning all of
-    them.
+    Flat properties build with the plain ``DataFrame`` constructor; a nested
+    value in *any* feature routes the whole page through ``json_normalize``
+    so no row keeps a raw dict.
 
-    The second element reports whether ``json_normalize`` was needed. Only
-    the plain builder may act on a normalized frame: ``from_features`` keeps
-    raw dicts, so a spatial page that normalized would disagree with its own
-    fallback about the column names (see :func:`_point_feature_frame`).
+    Only the plain builder may act on a normalized frame: ``from_features``
+    keeps raw dicts, so a spatial page that normalized would disagree with
+    its own fallback about the column names.
     """
     properties = [feature.get("properties") or {} for feature in features]
     frame = pd.DataFrame(properties)
@@ -155,12 +148,10 @@ def _point_geometries(features: list[dict[str, Any]]) -> Any:
     """Build the geometry array for an all-2D-point page in one vectorized
     :func:`geopandas.points_from_xy` call.
 
-    Returns ``None`` when any feature carries a non-point (or malformed)
-    geometry, so the caller falls back to ``GeoDataFrame.from_features``.
-    A feature with no geometry stays ``None`` in the result, matching the
-    fallback (:func:`_geo_feature_frame`, which handles the same omission for
-    the slow path). Two flat x/y lists rather than coordinate pairs: the
-    paired form is ~1.6x slower.
+    Returns ``None`` when any feature carries a non-point or malformed
+    geometry, so the caller falls back to :func:`_geo_feature_frame`. A
+    feature with no geometry stays ``None``, matching that fallback. Two
+    flat x/y lists rather than coordinate pairs: the paired form is slower.
     """
     xs: list[Any] = []
     ys: list[Any] = []
@@ -194,16 +185,11 @@ def _point_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame | None:
     """Fast-path GeoDataFrame for an all-2D-point page, or ``None`` to fall
     back to :func:`_geo_feature_frame`.
 
-    Declines a page whose properties needed flattening: ``from_features``
-    leaves nested values as raw dicts, so normalizing here would make a
-    chunked call's column names depend on whether each page happened to be
-    all points. Declines a ``geometry`` *property* too — it collides with
-    the geometry column, and while this constructor would let the real
-    geometry win, ``from_features`` lets the property overwrite it and then
-    raises, so neither path claims to shape it.
-
-    Properties are built first: both bail-outs are decided from that frame,
-    and the geometry array would otherwise be built only to be thrown away.
+    Declines a page whose properties needed flattening, so a chunked call's
+    column names cannot depend on which pages happened to be all points, and
+    one naming a ``geometry`` property, which collides with the geometry
+    column and which ``from_features`` cannot shape either. Properties are
+    built first because both bail-outs read that frame.
     """
     frame, normalized = _properties_frame(features)
     if normalized or "geometry" in frame.columns:

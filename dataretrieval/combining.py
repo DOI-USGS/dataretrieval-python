@@ -8,13 +8,10 @@ chunk execution, service fan-out, and cursor-driven pagination.
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
 
-A top-level leaf rather than part of :mod:`dataretrieval.transport`: these are
-transforms over already-fetched results, with no HTTP or event-loop concern,
-consumed by chunk planning and service fan-out as well as by pagination. That
-covers the response adjusters here (url, elapsed, headers, body release) as
-well as the frame merges: both the merge and the page walk need one spelling
-of each, and transport sits *above* this leaf in the layer stack (see the
-import-linter contracts), so a shared helper can only live below it.
+A top-level leaf rather than part of :mod:`dataretrieval.transport`, holding
+the response adjusters (url, elapsed, headers, body release) alongside the
+frame merges. See ADR 0003 for the dependency direction and ADR 0006 for the
+transport boundary and the aggregated-response contract.
 """
 
 from __future__ import annotations
@@ -79,17 +76,8 @@ def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
 def _drop_body(response: httpx.Response) -> None:
     """Free a response's fetched body, keeping status/headers/URL readable.
 
-    ``_content`` is the slot httpx caches a read body in, and ``_text`` the
-    one it caches a decoded body in; emptying both releases the bytes while
-    leaving the ``.content`` and ``.text`` accessors valid and agreeing.
-    Clearing only ``_content`` would leave a merged copy answering ``b""``
-    to one and the whole page to the other, and would free nothing at all
-    for an adapter that parses through ``.text``.
-
-    Only network-built responses are actually freed: a
-    ``httpx.Response(content=...)`` test double keeps its bytes alive in
-    ``response.stream``, so measuring this against ``MockTransport`` shows
-    no gain.
+    ``_content`` and ``_text`` are the slots httpx caches a read and a decoded
+    body in; both are emptied so the two accessors stay valid and agree.
     """
     response._content = b""
     response.__dict__.pop("_text", None)
@@ -127,9 +115,8 @@ def _merge_response(
 
     The copy's ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from
     ``headers_from``, ``.elapsed`` is set to ``elapsed``, and ``.url`` is
-    overridden when ``url`` is given.  The copy's body is emptied — an
-    aggregate's content would be one arbitrary page's bytes, not the
-    combined query's data.  ``base`` and ``headers_from`` are never
+    overridden when ``url`` is given, and its body is emptied (ADR 0006).
+    ``base`` and ``headers_from`` are never
     mutated, and the fresh ``httpx.Headers`` means downstream mutations don't
     back-propagate into any underlying response — so callers may re-fold
     idempotently.  This is the one low-level merge behind both pagination
