@@ -117,8 +117,8 @@ Shared components
     pagination and binds per-call state into its fetch closures;
     ``planning`` determines chunk boundaries; ``chunking`` connects those plans
     to the shared fan-out executor and retains compatibility aliases;
-    ``interruptions`` and ``retry`` re-export their moved compatibility
-    surfaces; and ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
+    ``interruptions`` retains its deprecated public import path; and
+    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
     their named protocol concerns. The full runtime OGC graph, including the
     facade, is acyclic -- enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g7043932dd documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g7fabee2ef documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4a6e2673"></script>
+      <script src="../_static/documentation_options.js?v=673ff24c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -205,8 +205,8 @@ explicit parameters; <code class="docutils literal notranslate"><span class="pre
 pagination and binds per-call state into its fetch closures;
 <code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries; <code class="docutils literal notranslate"><span class="pre">chunking</span></code> connects those plans
 to the shared fan-out executor and retains compatibility aliases;
-<code class="docutils literal notranslate"><span class="pre">interruptions</span></code> and <code class="docutils literal notranslate"><span class="pre">retry</span></code> re-export their moved compatibility
-surfaces; and <code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate
+<code class="docutils literal notranslate"><span class="pre">interruptions</span></code> retains its deprecated public import path; and
+<code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate
 their named protocol concerns. The full runtime OGC graph, including the
 facade, is acyclic – enforced by the package-wide fitness function in
 <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
