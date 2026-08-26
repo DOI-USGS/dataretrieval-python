@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,6 +90,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.interruptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FanOutInterrupted</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.time_series</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_continuous</span>
 
@@ -241,7 +242,11 @@
 <span class="sd">        Additional keyword arguments forwarded to ``get_continuous``</span>
 <span class="sd">        (e.g. ``statistic_id``, ``approval_status``, ``properties``).</span>
 <span class="sd">        Passing ``time``, ``filter``, or ``filter_lang`` raises</span>
-<span class="sd">        ``TypeError`` — this function builds those itself.</span>
+<span class="sd">        ``TypeError`` — this function builds those itself. A caller-provided</span>
+<span class="sd">        ``properties`` list gains ``time`` and ``monitoring_location_id`` when</span>
+<span class="sd">        either is omitted: the match is computed against the first and grouped</span>
+<span class="sd">        by the second, so the returned frame carries both columns even when they</span>
+<span class="sd">        were not requested.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -312,10 +317,15 @@
     <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"targets must contain at least one timestamp"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"targets is empty; there is nothing to find a nearest value for. "</span>
+            <span class="s2">"Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "</span>
+            <span class="s2">"or a pandas DatetimeIndex."</span>
+        <span class="p">)</span>
 
     <span class="n">selector</span> <span class="o">=</span> <span class="n">_NearestSelector</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
     <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_with_required_properties</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">get_continuous</span><span class="p">(</span>
             <span class="n">monitoring_location_id</span><span class="o">=</span><span class="n">monitoring_location_id</span><span class="p">,</span>
@@ -331,6 +341,23 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_with_required_properties</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Add columns needed for matching to an explicit ``properties`` list.</span>
+
+<span class="sd">    ``time`` is what the match is computed against and</span>
+<span class="sd">    ``monitoring_location_id`` is what it groups by. Omitting either can collapse</span>
+<span class="sd">    observations from different sites into one row per target.</span>
+<span class="sd">    """</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"properties"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">properties</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"monitoring_location_id"</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+    <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="s2">"properties"</span><span class="p">:</span> <span class="n">names</span> <span class="o">+</span> <span class="n">missing</span><span class="p">}</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_select_nearest_rows</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">targets</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">,</span>
@@ -338,20 +365,21 @@
     <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Apply the public nearest-per-target shape to continuous rows."""</span>
-    <span class="k">if</span> <span class="s2">"time"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"get_nearest_continuous requires a 'time' column in the response; "</span>
-            <span class="s2">"if a `properties` kwarg was passed, include 'time' in it"</span>
-        <span class="p">)</span>
     <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_empty_nearest_result</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
+    <span class="n">required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"monitoring_location_id"</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">required</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">missing</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">DataRetrievalError</span><span class="p">(</span>
+            <span class="s2">"The service response omitted columns required by "</span>
+            <span class="sa">f</span><span class="s2">"get_nearest_continuous: </span><span class="si">{</span><span class="n">names</span><span class="si">}</span><span class="s2">. Retry the request; report the "</span>
+            <span class="s2">"response if the problem persists."</span>
+        <span class="p">)</span>
+
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"time"</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="n">site_groups</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">"monitoring_location_id"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
-        <span class="k">else</span> <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">df</span><span class="p">)]</span>
-    <span class="p">)</span>
+    <span class="n">site_groups</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"monitoring_location_id"</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">selected</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">row</span>

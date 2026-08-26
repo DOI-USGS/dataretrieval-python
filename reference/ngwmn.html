@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../_static/documentation_options.js?v=74faf411"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -236,9 +236,10 @@ location, with depth intervals and controlled lithology concepts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>state</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – State/territory filter. Accepts a full name (<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a
-two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit ANSI/FIPS code
-(<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code>). Only one state at a time — a multi-value state filter
+<li><p><strong>state</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – State filter. Accepts a full name (<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter
+postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit ANSI/FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code>).
+The 50 states, DC, and the five US territories. Only one
+state at a time — a multi-value state filter
 returns no records for this collection.</p></li>
 <li><p><strong>agency_code</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Provider agency code.</p></li>
 <li><p><strong>organization_type</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Provider organization type, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;NWIS&quot;</span></code>.</p></li>
@@ -285,9 +286,9 @@ network’s water-quality (<code class="docutils literal notranslate"><span clas
 <li><p><strong>national_aquifer_description</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – National aquifer code / description.</p></li>
 <li><p><strong>country_code</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Country filters.</p></li>
 <li><p><strong>country_name</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Country filters.</p></li>
-<li><p><strong>state</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – State/territory filter. Accepts a full name (<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a
-two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit ANSI/FIPS code
-(<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code>).</p></li>
+<li><p><strong>state</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – State filter. Accepts a full name (<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter
+postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit ANSI/FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code>).
+The 50 states, DC, and the five US territories.</p></li>
 <li><p><strong>county_name</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – County name filter.</p></li>
 <li><p><strong>aquifer_name</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Aquifer name, site type, and aquifer-type code.</p></li>
 <li><p><strong>site_type</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Aquifer name, site type, and aquifer-type code.</p></li>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -259,9 +259,9 @@
 <span class="sd">    country_code, country_name : str or iterable, optional</span>
 <span class="sd">        Country filters.</span>
 <span class="sd">    state : str or iterable of str, optional</span>
-<span class="sd">        State/territory filter. Accepts a full name (``"Wisconsin"``), a</span>
-<span class="sd">        two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS code</span>
-<span class="sd">        (``"55"``).</span>
+<span class="sd">        State filter. Accepts a full name (``"Wisconsin"``), a two-letter</span>
+<span class="sd">        postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).</span>
+<span class="sd">        The 50 states, DC, and the five US territories.</span>
 <span class="sd">    county_name : str or iterable of str, optional</span>
 <span class="sd">        County name filter.</span>
 <span class="sd">    aquifer_name, site_type, aquifer_type_code : str or iterable, optional</span>
@@ -502,9 +502,10 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    state : str or iterable of str, optional</span>
-<span class="sd">        State/territory filter. Accepts a full name (``"Wisconsin"``), a</span>
-<span class="sd">        two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS code</span>
-<span class="sd">        (``"55"``). Only one state at a time — a multi-value state filter</span>
+<span class="sd">        State filter. Accepts a full name (``"Wisconsin"``), a two-letter</span>
+<span class="sd">        postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).</span>
+<span class="sd">        The 50 states, DC, and the five US territories. Only one</span>
+<span class="sd">        state at a time — a multi-value state filter</span>
 <span class="sd">        returns no records for this collection.</span>
 <span class="sd">    agency_code : str or iterable of str, optional</span>
 <span class="sd">        Provider agency code.</span>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,6 +95,11 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._deprecation</span><span class="w"> </span><span class="kn">import</span> <span class="n">REMOVALS</span><span class="p">,</span> <span class="n">warn_deprecated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">require_any_of</span><span class="p">,</span>
+    <span class="n">require_one_of</span><span class="p">,</span>
+    <span class="n">require_together</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataCurrencyWarning</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.rdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_rdb</span>
 
@@ -114,10 +119,22 @@
 <span class="n">ALLPARAMCODES_URL</span> <span class="o">=</span> <span class="s2">"https://help.waterdata.usgs.gov/code/parameter_cd_query?"</span>
 
 <span class="n">WATERSERVICES_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"dv"</span><span class="p">,</span> <span class="s2">"iv"</span><span class="p">,</span> <span class="s2">"site"</span><span class="p">,</span> <span class="s2">"stat"</span><span class="p">]</span>
+<span class="c1"># What ``get_record`` routes, which is wider than what ``query_waterdata``</span>
+<span class="c1"># reaches: 'ratings' is served by ``get_ratings`` from a different endpoint.</span>
 <span class="n">WATERDATA_SERVICES</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"peaks"</span><span class="p">,</span>
     <span class="s2">"ratings"</span><span class="p">,</span>
 <span class="p">]</span>
+<span class="c1"># The major filters each query function accepts, hoisted beside the service</span>
+<span class="c1"># lists so the checks and their remedies read from one roster.</span>
+<span class="n">_NWIS_WEB_MAJOR_FILTERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"site_no"</span><span class="p">,</span> <span class="s2">"stateCd"</span><span class="p">)</span>
+<span class="n">_NWIS_WEB_BBOX_CORNERS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"nw_longitude_va"</span><span class="p">,</span>
+    <span class="s2">"nw_latitude_va"</span><span class="p">,</span>
+    <span class="s2">"se_longitude_va"</span><span class="p">,</span>
+    <span class="s2">"se_latitude_va"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">_WATERSERVICES_MAJOR_FILTERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"sites"</span><span class="p">,</span> <span class="s2">"stateCd"</span><span class="p">,</span> <span class="s2">"bBox"</span><span class="p">,</span> <span class="s2">"huc"</span><span class="p">,</span> <span class="s2">"countyCd"</span><span class="p">)</span>
 <span class="c1"># NAD83</span>
 <span class="n">_CRS</span> <span class="o">=</span> <span class="s2">"EPSG:4269"</span>
 
@@ -206,8 +223,10 @@
         <span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Received HTML response instead of JSON from </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> "</span>
-                <span class="sa">f</span><span class="s2">"(Status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">). This often indicates "</span>
-                <span class="s2">"that the service is currently unavailable."</span>
+                <span class="sa">f</span><span class="s2">"(Status: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">). This usually means the "</span>
+                <span class="s2">"service is down or rate-limiting. Wait and retry; if it "</span>
+                <span class="s2">"persists, check https://waterservices.usgs.gov/ or switch to "</span>
+                <span class="s2">"the dataretrieval.waterdata getters."</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="k">raise</span></div>
 
@@ -482,7 +501,9 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    service: string</span>
-<span class="sd">        Name of the service to query: 'peaks' or 'ratings'.</span>
+<span class="sd">        Name of the service to query. Only ``'peaks'`` is served here; rating</span>
+<span class="sd">        tables come from :func:`get_ratings`, which uses a different</span>
+<span class="sd">        endpoint.</span>
 <span class="sd">    ssl_check: bool, optional</span>
 <span class="sd">        Whether to check SSL certificates. Default is True.</span>
 <span class="sd">    **kwargs: optional</span>
@@ -493,24 +514,39 @@
 <span class="sd">    request: ``httpx.Response``</span>
 <span class="sd">        The response object from the API request to the web service.</span>
 <span class="sd">    """</span>
-    <span class="n">major_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"site_no"</span><span class="p">,</span> <span class="s2">"stateCd"</span><span class="p">]</span>
-    <span class="n">bbox_params</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">"nw_longitude_va"</span><span class="p">,</span>
-        <span class="s2">"nw_latitude_va"</span><span class="p">,</span>
-        <span class="s2">"se_longitude_va"</span><span class="p">,</span>
-        <span class="s2">"se_latitude_va"</span><span class="p">,</span>
-    <span class="p">]</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">major_params</span> <span class="o">+</span> <span class="n">bbox_params</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Query must specify a major filter: site_no, stateCd, bBox"</span><span class="p">)</span>
-
-    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bbox_params</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
-        <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">bbox_params</span>
-    <span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"One or more lat/long coordinates missing or invalid."</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Service not recognized"</span><span class="p">)</span>
+    <span class="n">require_any_of</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_NWIS_WEB_MAJOR_FILTERS</span> <span class="o">+</span> <span class="n">_NWIS_WEB_BBOX_CORNERS</span>
+        <span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"as a major filter"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Pass one, e.g. site_no='01491000' or stateCd='WI', or all four "</span>
+            <span class="s2">"bounding-box corners together with "</span>
+            <span class="s2">"coordinate_format='decimal_degrees'."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">require_together</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_NWIS_WEB_BBOX_CORNERS</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"to describe a bounding box"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Pass them along with coordinate_format='decimal_degrees', or "</span>
+            <span class="s2">"drop the bounding box and filter with "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">' or '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_NWIS_WEB_MAJOR_FILTERS</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span>
+        <span class="n">service</span><span class="p">,</span>
+        <span class="p">(</span><span class="s2">"peaks"</span><span class="p">,),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"service"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Rating tables come from waterdata.get_ratings("</span>
+            <span class="s2">"monitoring_location_id='USGS-01646500'), served from a different "</span>
+            <span class="s2">"endpoint and keyed by the AGENCY-ID form of the site number. It "</span>
+            <span class="s2">"returns {'USGS-01646500.exsa.rdb': DataFrame} -- a dict per file, "</span>
+            <span class="s2">"not a (frame, metadata) pair."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="n">url</span> <span class="o">=</span> <span class="n">WATERDATA_URL</span> <span class="o">+</span> <span class="n">service</span>
 
@@ -562,15 +598,12 @@
 <span class="sd">        The response object from the API request to the web service.</span>
 
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
-        <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"sites"</span><span class="p">,</span> <span class="s2">"stateCd"</span><span class="p">,</span> <span class="s2">"bBox"</span><span class="p">,</span> <span class="s2">"huc"</span><span class="p">,</span> <span class="s2">"countyCd"</span><span class="p">]</span>
-    <span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">"Query must specify a major filter: sites, stateCd, bBox, huc, or countyCd"</span>
-        <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Service not recognized"</span><span class="p">)</span>
+    <span class="n">require_any_of</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_WATERSERVICES_MAJOR_FILTERS</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"as a major filter"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span><span class="s2">"Pass one, e.g. sites='01491000', stateCd='WI', or countyCd='55025'."</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">WATERSERVICES_SERVICES</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"service"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">"format"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"format"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"rdb"</span>
@@ -864,8 +897,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pmcodes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Defunct: use ``waterdata.get_reference_table(collection='parameter-codes')``."""</span>
     <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
-        <span class="s2">"`nwis.get_pmcodes` has been replaced "</span>
-        <span class="s2">"with `get_reference_table(collection='parameter-codes')`."</span>
+        <span class="s2">"`nwis.get_pmcodes` has been replaced with "</span>
+        <span class="s2">"`waterdata.get_reference_table(collection='parameter-codes')`."</span>
     <span class="p">)</span></div>
 
 
@@ -935,10 +968,7 @@
     <span class="k">if</span> <span class="n">site</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"site_no"</span><span class="p">:</span> <span class="n">site</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">file_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">file_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"base"</span><span class="p">,</span> <span class="s2">"corr"</span><span class="p">,</span> <span class="s2">"exsa"</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">'Unrecognized file_type: </span><span class="si">{</span><span class="n">file_type</span><span class="si">}</span><span class="s1">, must be "base", "corr" or "exsa"'</span>
-            <span class="p">)</span>
+        <span class="n">require_one_of</span><span class="p">(</span><span class="n">file_type</span><span class="p">,</span> <span class="p">(</span><span class="s2">"base"</span><span class="p">,</span> <span class="s2">"corr"</span><span class="p">,</span> <span class="s2">"exsa"</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"file_type"</span><span class="p">)</span>
         <span class="n">payload</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"file_type"</span><span class="p">:</span> <span class="n">file_type</span><span class="p">})</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_read_rdb</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">NWIS_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">site_no</span><span class="o">=</span><span class="n">site</span><span class="p">)</span></div>
@@ -1037,7 +1067,7 @@
 <span class="sd">        - 'gwlevels': (defunct) use `waterdata.get_continuous`,</span>
 <span class="sd">          `waterdata.get_daily`, or `waterdata.get_field_measurements`</span>
 <span class="sd">        - 'pmcodes': (defunct) use `waterdata.get_reference_table`</span>
-<span class="sd">        - 'water_use': (defunct) no replacement available</span>
+<span class="sd">        - 'water_use': (defunct) use `nwdc.get_wateruse`</span>
 <span class="sd">        - 'ratings': get rating table</span>
 <span class="sd">        - 'stat': get statistics</span>
 <span class="sd">    ssl_check: bool, optional</span>
@@ -1088,7 +1118,7 @@
             <span class="s2">"(discrete)"</span>
         <span class="p">),</span>
         <span class="s2">"pmcodes"</span><span class="p">:</span> <span class="s2">"`waterdata.get_reference_table`"</span><span class="p">,</span>
-        <span class="s2">"water_use"</span><span class="p">:</span> <span class="s2">"no replacement available"</span><span class="p">,</span>
+        <span class="s2">"water_use"</span><span class="p">:</span> <span class="s2">"`nwdc.get_wateruse`"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">defunct_replacements</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
@@ -1096,8 +1126,15 @@
             <span class="sa">f</span><span class="s2">"get_record. Use </span><span class="si">{</span><span class="n">defunct_replacements</span><span class="p">[</span><span class="n">service</span><span class="p">]</span><span class="si">}</span><span class="s2"> instead."</span>
         <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">service</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">WATERSERVICES_SERVICES</span> <span class="o">+</span> <span class="n">WATERDATA_SERVICES</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unrecognized service: </span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span>
+        <span class="n">service</span><span class="p">,</span>
+        <span class="n">WATERSERVICES_SERVICES</span> <span class="o">+</span> <span class="n">WATERDATA_SERVICES</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"service"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"New work should use the dataretrieval.waterdata getters instead; "</span>
+            <span class="s2">"NWIS is deprecated."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">"iv"</span><span class="p">:</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_iv</span><span class="p">(</span>
@@ -1147,8 +1184,8 @@
         <span class="n">df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span> <span class="n">ssl_check</span><span class="o">=</span><span class="n">ssl_check</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2"> service not yet implemented"</span><span class="p">)</span></div>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover - every recognized service has a branch above</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"get_record has no handler for service </span><span class="si">{</span><span class="n">service</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
@@ -1285,7 +1322,11 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">sites</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"sites must be a string or a list of strings"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">"sites must be a site number as a string, or a list of them, not "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">. Pass sites='01491000' for one site, or "</span>
+            <span class="s2">"sites=['01491000', '01645000'] for several."</span>
+        <span class="p">)</span>
 
 
 <div class="viewcode-block" id="NWIS_Metadata">

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -94,6 +94,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_options</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span><span class="p">,</span> <span class="n">SkippedRatingWarning</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_format_api_dates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
@@ -255,7 +256,13 @@
     <span class="n">file_types</span> <span class="o">=</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">file_type</span><span class="p">)</span>
     <span class="n">_validate_file_types</span><span class="p">(</span><span class="n">file_types</span><span class="p">)</span>
     <span class="n">_validate_time_no_duration</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-    <span class="n">time_str</span> <span class="o">=</span> <span class="n">_format_api_dates</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">time_str</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_format_api_dates</span><span class="p">(</span>
+            <span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"time"</span><span class="p">,</span> <span class="n">single_value_hint</span><span class="o">=</span><span class="s2">"an instant ('2020-01-01')"</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
 
     <span class="c1"># Mirror R: pin file_type server-side only when one type is requested.</span>
     <span class="n">server_file_type</span> <span class="o">=</span> <span class="n">file_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">file_types</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
@@ -285,8 +292,8 @@
     <span class="n">invalid</span> <span class="o">=</span> <span class="p">[</span><span class="n">ft</span> <span class="k">for</span> <span class="n">ft</span> <span class="ow">in</span> <span class="n">file_types</span> <span class="k">if</span> <span class="n">ft</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VALID_FILE_TYPES</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">invalid</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Invalid file_type </span><span class="si">{</span><span class="n">invalid</span><span class="si">!r}</span><span class="s2">; "</span>
-            <span class="sa">f</span><span class="s2">"valid options are </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">_VALID_FILE_TYPES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+            <span class="sa">f</span><span class="s2">"Invalid file_type: </span><span class="si">{</span><span class="n">render_options</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span><span class="si">}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Valid options are: </span><span class="si">{</span><span class="n">render_options</span><span class="p">(</span><span class="n">_VALID_FILE_TYPES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
 
 
@@ -426,7 +433,11 @@
     <span class="n">fid</span> <span class="o">=</span> <span class="n">feature</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span>
     <span class="n">href</span> <span class="o">=</span> <span class="n">_asset_href</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">href</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"STAC feature </span><span class="si">{</span><span class="n">fid</span><span class="si">!r}</span><span class="s2"> carries no data asset href."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Rating feature </span><span class="si">{</span><span class="n">fid</span><span class="si">!r}</span><span class="s2"> has no download URL, so there is nothing "</span>
+            <span class="s2">"to fetch. Retrying will not help; exclude this monitoring "</span>
+            <span class="s2">"location, or report it if a rating curve file is expected."</span>
+        <span class="p">)</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="n">_default_headers</span><span class="p">(</span><span class="n">href</span><span class="p">)</span>
     <span class="n">session</span> <span class="o">=</span> <span class="n">active_client</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

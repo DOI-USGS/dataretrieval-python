@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -93,7 +93,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_query_with_retry</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">reject_together</span><span class="p">,</span>
+    <span class="n">render_options</span><span class="p">,</span>
+    <span class="n">require_argument</span><span class="p">,</span>
+    <span class="n">require_exactly_one</span><span class="p">,</span>
+    <span class="n">require_one_of</span><span class="p">,</span>
+    <span class="n">require_together</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BaseConfiguration</span><span class="p">,</span>
     <span class="n">_Redirectable</span><span class="p">,</span>
@@ -114,12 +121,26 @@
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">"Install geopandas to use the NLDI module."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+        <span class="s2">"The NLDI module requires geopandas, which is not installed. "</span>
+        <span class="s2">"Install it with `pip install 'dataretrieval[nldi]'` "</span>
+        <span class="s2">"(quoted, so the shell does not glob the brackets)."</span>
+    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
 
 <span class="n">NLDI_API_BASE_URL</span> <span class="o">=</span> <span class="s2">"https://api.water.usgs.gov/nldi/linked-data"</span>
 <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">_CRS</span> <span class="o">=</span> <span class="s2">"EPSG:4326"</span>
 <span class="n">_VALID_NAVIGATION_MODES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"UM"</span><span class="p">,</span> <span class="s2">"DM"</span><span class="p">,</span> <span class="s2">"UT"</span><span class="p">,</span> <span class="s2">"DD"</span><span class="p">)</span>
+<span class="c1">#: Built from the tuple above, so a mode added there cannot go unmentioned.</span>
+<span class="n">_NAVIGATION_MODES_HINT</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Pass one of </span><span class="si">{</span><span class="n">render_options</span><span class="p">(</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+<span class="c1">#: Shared by the conflict check and the nothing-supplied check, so both</span>
+<span class="c1">#: offer the same ways forward.</span>
+<span class="n">_ORIGIN_HINT</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"Navigate from a comid, e.g. comid=13294314, or from a "</span>
+    <span class="s2">"feature_source/feature_id pair -- not both"</span>
+<span class="p">)</span>
+<span class="n">_ORIGIN_REMEDY</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_ORIGIN_HINT</span><span class="si">}</span><span class="s2">."</span>
+<span class="n">_ORIGIN_REMEDY_NEITHER</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_ORIGIN_HINT</span><span class="si">}</span><span class="s2">, and not neither."</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_api_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -235,7 +256,7 @@
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
     <span class="n">_validate_feature_source_comid</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">,</span> <span class="n">comid</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">feature_source</span><span class="p">:</span>
-        <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
+        <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"feature source"</span><span class="p">)</span>
     <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
         <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
         <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
@@ -290,9 +311,15 @@
 <span class="sd">        ... )</span>
 <span class="sd">    """</span>
     <span class="c1"># validate the feature source</span>
-    <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">feature_id</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_id is required"</span><span class="p">)</span>
+    <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"feature source"</span><span class="p">)</span>
+    <span class="n">require_argument</span><span class="p">(</span>
+        <span class="s2">"feature_id"</span><span class="p">,</span>
+        <span class="n">feature_id</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">"to say which </span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2"> feature the basin drains to"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Pass the id as its source spells it, e.g. feature_id='USGS-01031500'."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">/basin"</span>
     <span class="n">simplified_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">simplified</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -412,23 +439,6 @@
     <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="p">{</span><span class="s2">"distance"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">distance</span><span class="p">)}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_lat_long_origin</span><span class="p">(</span>
-    <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Raise if lat/long is combined with another origin type."""</span>
-    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"Provide only one origin type - comid cannot be provided with lat or long"</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"Provide only one origin type - feature_source and feature_id cannot"</span>
-            <span class="s2">" be provided with lat or long"</span>
-        <span class="p">)</span>
-
-
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_features_request</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -442,35 +452,70 @@
     <span class="n">stop_comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""Validate a feature origin and build its NLDI request parameters."""</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both lat and long are required"</span><span class="p">)</span>
+    <span class="n">require_together</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"lat"</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">"long"</span><span class="p">:</span> <span class="n">long</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"to navigate from a point"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="s2">"Pass both, e.g. lat=43.087, long=-89.509."</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_validate_lat_long_origin</span><span class="p">(</span><span class="n">comid</span><span class="p">,</span> <span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">)</span>
+        <span class="c1"># The pair is one origin, so it enters the conflict check as one entry.</span>
+        <span class="n">reject_together</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"lat/long"</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span>
+                <span class="s2">"comid"</span><span class="p">:</span> <span class="n">comid</span><span class="p">,</span>
+                <span class="s2">"feature_source"</span><span class="p">:</span> <span class="n">feature_source</span><span class="p">,</span>
+                <span class="s2">"feature_id"</span><span class="p">:</span> <span class="n">feature_id</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">"each names a different origin to navigate from"</span><span class="p">,</span>
+            <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"Navigate from a point (lat and long), a comid, or a "</span>
+                <span class="s2">"feature_source/feature_id pair -- one origin per call."</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/comid/position"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"coords"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"POINT(</span><span class="si">{</span><span class="n">long</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">lat</span><span class="si">}</span><span class="s2">)"</span><span class="p">}</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"navigation_mode is required if comid or data_source is provided"</span>
+    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">data_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">require_argument</span><span class="p">(</span>
+            <span class="s2">"navigation_mode"</span><span class="p">,</span>
+            <span class="n">navigation_mode</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">"when comid or data_source is given"</span><span class="p">,</span>
+            <span class="n">remedy</span><span class="o">=</span><span class="n">_NAVIGATION_MODES_HINT</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="n">_validate_feature_source_comid</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">,</span> <span class="n">comid</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">data_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">)</span>
+        <span class="n">_validate_data_source</span><span class="p">(</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"feature source"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">navigation_mode</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">{}</span>
 
+    <span class="c1"># Before the data_source check below: a caller who mistyped the mode should</span>
+    <span class="c1"># hear about the mode, not be sent to fix a second argument first.</span>
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
+    <span class="c1"># The navigation's tail is the data source, so a missing one is spelled</span>
+    <span class="c1"># "None" into the path and the service answers 200 with zero features.</span>
+    <span class="n">data_source</span> <span class="o">=</span> <span class="n">require_argument</span><span class="p">(</span>
+        <span class="s2">"data_source"</span><span class="p">,</span>
+        <span class="n">data_source</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"when navigation_mode is given -- it names which features to "</span>
+            <span class="s2">"return along the navigation"</span>
+        <span class="p">),</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"Pass the source of the features, e.g. data_source='nwissite'. "</span>
+            <span class="s2">"For the flowlines themselves call get_flowlines() instead."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
     <span class="n">url</span><span class="p">,</span> <span class="n">query_params</span> <span class="o">=</span> <span class="n">_navigation_request</span><span class="p">(</span>
         <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
         <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span>
         <span class="n">comid</span><span class="o">=</span><span class="n">comid</span><span class="p">,</span>
         <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
         <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
-        <span class="n">tail</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">tail</span><span class="o">=</span><span class="n">data_source</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">stop_comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">query_params</span><span class="p">[</span><span class="s2">"stopComid"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">stop_comid</span><span class="p">)</span>
@@ -517,9 +562,24 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_search_basin</span><span class="p">(</span><span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle ``find='basin'`` for :func:`search`."""</span>
-    <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_source and feature_id are required to find a basin"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">get_basin</span><span class="p">(</span><span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span> <span class="n">feature_id</span><span class="o">=</span><span class="n">feature_id</span><span class="p">,</span> <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">remedy</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">"Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'; "</span>
+        <span class="s2">"a basin has no other origin."</span>
+    <span class="p">)</span>
+    <span class="n">require_together</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"feature_source"</span><span class="p">:</span> <span class="n">feature_source</span><span class="p">,</span> <span class="s2">"feature_id"</span><span class="p">:</span> <span class="n">feature_id</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"for find='basin'"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="n">remedy</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">feature_source</span> <span class="o">=</span> <span class="n">require_argument</span><span class="p">(</span>
+        <span class="s2">"feature_source"</span><span class="p">,</span> <span class="n">feature_source</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="s2">"for find='basin'"</span><span class="p">,</span> <span class="n">remedy</span><span class="o">=</span><span class="n">remedy</span>
+    <span class="p">)</span>
+    <span class="c1"># require_together above: feature_id is present iff feature_source is.</span>
+    <span class="k">return</span> <span class="n">get_basin</span><span class="p">(</span>
+        <span class="n">feature_source</span><span class="o">=</span><span class="n">feature_source</span><span class="p">,</span>
+        <span class="n">feature_id</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="s2">"str"</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">),</span>
+        <span class="n">as_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_search_flowlines</span><span class="p">(</span>
@@ -531,11 +591,12 @@
     <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle ``find='flowlines'`` for :func:`search`."""</span>
-    <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"navigation_mode is required for find='flowlines';"</span>
-            <span class="sa">f</span><span class="s2">" allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
+    <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">require_argument</span><span class="p">(</span>
+        <span class="s2">"navigation_mode"</span><span class="p">,</span>
+        <span class="n">navigation_mode</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"for find='flowlines'"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="n">_NAVIGATION_MODES_HINT</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">get_flowlines</span><span class="p">(</span>
         <span class="n">navigation_mode</span><span class="o">=</span><span class="n">navigation_mode</span><span class="p">,</span>
         <span class="n">distance</span><span class="o">=</span><span class="n">distance</span><span class="p">,</span>
@@ -626,19 +687,28 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Both lat and long are required"</span><span class="p">)</span>
+    <span class="n">require_together</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"lat"</span><span class="p">:</span> <span class="n">lat</span><span class="p">,</span> <span class="s2">"long"</span><span class="p">:</span> <span class="n">long</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"to search from a point"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="s2">"Pass both, e.g. lat=43.087, long=-89.509."</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">find</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"Literal['basin', 'flowlines', 'features']"</span><span class="p">,</span> <span class="n">find</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">find</span><span class="p">,</span> <span class="p">(</span><span class="s2">"basin"</span><span class="p">,</span> <span class="s2">"flowlines"</span><span class="p">,</span> <span class="s2">"features"</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"find"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">!=</span> <span class="s2">"features"</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Invalid value for find: </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2"> - lat/long is to get features not </span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"find=</span><span class="si">{</span><span class="n">find</span><span class="si">!r}</span><span class="s2"> cannot be combined with lat/long -- a point origin "</span>
+            <span class="s2">"resolves to features only. Pass find='features' to keep the "</span>
+            <span class="s2">"point origin, or drop lat and long and pass the origin "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">find</span><span class="si">}</span><span class="s2"> takes: feature_source and feature_id"</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">' or comid'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">find</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'flowlines'</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">find</span> <span class="o">==</span> <span class="s2">"basin"</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"Invalid value for find: basin - comid is to get features"</span>
-            <span class="s2">" or flowlines not basin"</span>
+            <span class="s2">"find='basin' cannot be combined with comid -- a basin is looked "</span>
+            <span class="s2">"up by feature, not by flowline. Pass feature_source and "</span>
+            <span class="s2">"feature_id instead, or keep comid and pass find='flowlines' "</span>
+            <span class="s2">"or find='features'."</span>
         <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">lat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -669,7 +739,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_data_source</span><span class="p">(</span><span class="n">data_source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"data source"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># A helper function to validate user specified data source/feature source</span>
 
     <span class="k">global</span> <span class="n">_AVAILABLE_DATA_SOURCES</span>
@@ -684,23 +754,23 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"NLDI data-source catalog returned an unexpected shape; "</span>
                 <span class="s2">"expected a list of {'source': ..., ...} objects, got: "</span>
-                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">available_data_sources</span><span class="si">!r}</span><span class="s2">"</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">available_data_sources</span><span class="si">!r}</span><span class="s2">. If you set "</span>
+                <span class="s2">"NldiConfiguration(base_url=...), point it at the linked-data "</span>
+                <span class="s2">"root, e.g. base_url='https://api.water.usgs.gov/nldi/"</span>
+                <span class="s2">"linked-data'; otherwise the service returned an unexpected "</span>
+                <span class="s2">"body -- retry later."</span>
             <span class="p">)</span>
         <span class="n">_AVAILABLE_DATA_SOURCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">ds</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">available_data_sources</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">data_source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_AVAILABLE_DATA_SOURCES</span><span class="p">:</span>
-        <span class="n">err_msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Invalid data source '</span><span class="si">{</span><span class="n">data_source</span><span class="si">}</span><span class="s2">'."</span>
-            <span class="sa">f</span><span class="s2">" Available data sources are: </span><span class="si">{</span><span class="n">_AVAILABLE_DATA_SOURCES</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">_AVAILABLE_DATA_SOURCES</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">navigation_mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"navigation_mode is required; allowed values are </span><span class="si">{</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
+    <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">require_argument</span><span class="p">(</span>
+        <span class="s2">"navigation_mode"</span><span class="p">,</span>
+        <span class="n">navigation_mode</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="n">_NAVIGATION_MODES_HINT</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">normalized</span> <span class="o">=</span> <span class="n">navigation_mode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">normalized</span><span class="p">,</span> <span class="n">_VALID_NAVIGATION_MODES</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"navigation_mode"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">normalized</span>
@@ -709,19 +779,28 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_validate_feature_source_comid</span><span class="p">(</span>
     <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_id is required if feature_source is provided"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"feature_source is required if feature_id is provided"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"Specify only one origin type - comid and feature_source"</span>
-            <span class="s2">" cannot be provided together"</span>
+    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Half a feature pair beside a comid is a conflict, not a gap: advising</span>
+        <span class="c1"># the caller to complete the pair would only raise the conflict next.</span>
+        <span class="n">reject_together</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"comid"</span><span class="p">:</span> <span class="n">comid</span><span class="p">,</span>
+                <span class="s2">"feature_source"</span><span class="p">:</span> <span class="n">feature_source</span><span class="p">,</span>
+                <span class="s2">"feature_id"</span><span class="p">:</span> <span class="n">feature_id</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="s2">"they name different origins"</span><span class="p">,</span>
+            <span class="n">remedy</span><span class="o">=</span><span class="n">_ORIGIN_REMEDY</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">feature_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"Specify one origin type - comid or feature_source is required"</span>
-        <span class="p">)</span>
+    <span class="n">require_together</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"feature_source"</span><span class="p">:</span> <span class="n">feature_source</span><span class="p">,</span> <span class="s2">"feature_id"</span><span class="p">:</span> <span class="n">feature_id</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"to name one feature between them"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span><span class="s2">"Pass both, e.g. feature_source='WQP', feature_id='USGS-01031500'."</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">require_exactly_one</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">"comid"</span><span class="p">:</span> <span class="n">comid</span><span class="p">,</span> <span class="s2">"feature_source"</span><span class="p">:</span> <span class="n">feature_source</span><span class="p">},</span>
+        <span class="n">context</span><span class="o">=</span><span class="s2">"as the origin to navigate from"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="n">_ORIGIN_REMEDY_NEITHER</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="NldiConfiguration">

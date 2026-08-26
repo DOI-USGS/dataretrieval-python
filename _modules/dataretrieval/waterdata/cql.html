@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -125,6 +125,7 @@
     <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
@@ -164,7 +165,16 @@
 <span class="sd">        Bounding box ``[xmin, ymin, xmax, ymax]`` in CRS 4326. Combines with the</span>
 <span class="sd">        CQL filter as an additional spatial predicate.</span>
 <span class="sd">    limit : int, optional</span>
-<span class="sd">        Page size, clamped server-side to 50,000.</span>
+<span class="sd">        The number of features returned in each page, clamped server-side to</span>
+<span class="sd">        50,000. This is a per-page size, not a cap on the total result: a</span>
+<span class="sd">        filter matching more rows than ``limit`` still returns every matching</span>
+<span class="sd">        row across multiple pages, so a small ``limit`` makes *more* requests,</span>
+<span class="sd">        not fewer. Use ``max_rows`` to cap the total instead.</span>
+<span class="sd">    max_rows : int, optional</span>
+<span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
+<span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
+<span class="sd">        per-page size), this bounds the total across every page. The default</span>
+<span class="sd">        (None) follows pagination to completion.</span>
 <span class="sd">    skip_geometry : bool, optional</span>
 <span class="sd">        If True, the server omits geometry from each feature</span>
 <span class="sd">        (``skipGeometry=true``).</span>
@@ -217,7 +227,16 @@
 <span class="sd">        ...     ' "02070010%"]}',</span>
 <span class="sd">        ... )</span>
 <span class="sd">    """</span>
-    <span class="n">require_one_of</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">_OUTPUT_ID_BY_COLLECTION</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"collection"</span><span class="p">)</span>
+    <span class="n">require_one_of</span><span class="p">(</span>
+        <span class="n">collection</span><span class="p">,</span>
+        <span class="nb">sorted</span><span class="p">(</span><span class="n">_OUTPUT_ID_BY_COLLECTION</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"collection"</span><span class="p">,</span>
+        <span class="n">remedy</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">"The service serves more collections than these; for the full "</span>
+            <span class="s2">"inventory call get_queryables(&lt;collection id&gt;), which accepts "</span>
+            <span class="s2">"any collection string."</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="c1"># ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent</span>
     <span class="c1"># verbatim so callers who already have a CQL2 doc (e.g. imported from a</span>
@@ -238,7 +257,7 @@
             <span class="s2">"convert_type"</span><span class="p">:</span> <span class="n">convert_type</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">cql_body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span> <span class="n">cql_body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span></div>
 
 
 

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -860,9 +860,19 @@
 
     <span class="n">mimetype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mimeType"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mimetype</span> <span class="o">==</span> <span class="s2">"geojson"</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"GeoJSON not yet supported. Set 'mimeType=csv'."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">"GeoJSON is not supported by this package. Pass mimeType='csv' "</span>
+            <span class="s2">"(the default); coordinates are not in the default Result "</span>
+            <span class="s2">"profile -- get them from dataretrieval.wqp.what_sites "</span>
+            <span class="s2">"(LatitudeMeasure/LongitudeMeasure), from the returned "</span>
+            <span class="s2">"metadata's .site_info, or by passing legacy=False, whose "</span>
+            <span class="s2">"WQX3.0 profiles include Location_Latitude/Location_Longitude."</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="n">mimetype</span> <span class="o">!=</span> <span class="s2">"csv"</span> <span class="ow">and</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid mimeType. Set 'mimeType=csv'."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Invalid mimeType: </span><span class="si">{</span><span class="n">mimetype</span><span class="si">!r}</span><span class="s2">. Pass mimeType='csv', or omit it "</span>
+            <span class="s2">"-- csv is the only format this package parses."</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s2">"mimeType"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"csv"</span>
 

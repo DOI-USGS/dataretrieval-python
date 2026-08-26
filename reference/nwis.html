@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../_static/documentation_options.js?v=74faf411"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -625,7 +625,7 @@ one row per time. Default is True.</p></li>
 <li><p>’gwlevels’: (defunct) use <cite>waterdata.get_continuous</cite>,
 <cite>waterdata.get_daily</cite>, or <cite>waterdata.get_field_measurements</cite></p></li>
 <li><p>’pmcodes’: (defunct) use <cite>waterdata.get_reference_table</cite></p></li>
-<li><p>’water_use’: (defunct) no replacement available</p></li>
+<li><p>’water_use’: (defunct) use <cite>nwdc.get_wateruse</cite></p></li>
 <li><p>’ratings’: get rating table</p></li>
 <li><p>’stat’: get statistics</p></li>
 </ul>
@@ -742,7 +742,9 @@ Companion (NWDC); retrieve them with
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query: ‘peaks’ or ‘ratings’.</p></li>
+<li><p><strong>service</strong> (<em>string</em>) – Name of the service to query. Only <code class="docutils literal notranslate"><span class="pre">'peaks'</span></code> is served here; rating
+tables come from <a class="reference internal" href="#dataretrieval.nwis.get_ratings" title="dataretrieval.nwis.get_ratings"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_ratings()</span></code></a>, which uses a different
+endpoint.</p></li>
 <li><p><strong>ssl_check</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to check SSL certificates. Default is True.</p></li>
 <li><p><strong>**kwargs</strong> (<em>optional</em>) – Additional query parameters, if supplied.</p></li>
 </ul>

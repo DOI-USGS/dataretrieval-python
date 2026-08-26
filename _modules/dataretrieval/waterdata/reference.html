@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g996b7a4af documentation</title>
+  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g64c5f0014 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=dc704d5d"></script>
+      <script src="../../../_static/documentation_options.js?v=74faf411"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -120,9 +120,10 @@
 <span class="sd">        One of the following options: "agency-codes", "altitude-datums",</span>
 <span class="sd">        "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",</span>
 <span class="sd">        "coordinate-datum-codes", "coordinate-method-codes", "counties",</span>
-<span class="sd">        "hydrologic-unit-codes", "medium-codes", "national-aquifer-codes",</span>
-<span class="sd">        "parameter-codes", "reliability-codes", "site-types", "states",</span>
-<span class="sd">        "statistic-codes", "topographic-codes", "time-zone-codes"</span>
+<span class="sd">        "countries", "hydrologic-unit-codes", "medium-codes",</span>
+<span class="sd">        "national-aquifer-codes", "parameter-codes", "reliability-codes",</span>
+<span class="sd">        "site-types", "states", "statistic-codes", "topographic-codes",</span>
+<span class="sd">        "time-zone-codes".</span>
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
@@ -174,12 +175,12 @@
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">get_args</span><span class="p">(</span><span class="n">METADATA_COLLECTIONS</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"collection"</span><span class="p">)</span>
 
     <span class="c1"># Give the ID column the collection name, singularized and underscored.</span>
-    <span class="k">if</span> <span class="n">collection</span> <span class="o">==</span> <span class="s2">"counties"</span><span class="p">:</span>
-        <span class="n">output_id</span> <span class="o">=</span> <span class="s2">"county"</span>
-    <span class="k">elif</span> <span class="n">collection</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"s"</span><span class="p">):</span>
-        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
+    <span class="c1"># ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm</span>
+    <span class="c1"># was unreachable and would stay correct if a singular collection appeared.</span>
+    <span class="k">if</span> <span class="n">collection</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"counties"</span><span class="p">,</span> <span class="s2">"countries"</span><span class="p">):</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">"ies"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"y"</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
+        <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">"s"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
 
     <span class="n">query_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">if</span> <span class="n">query</span> <span class="k">else</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
