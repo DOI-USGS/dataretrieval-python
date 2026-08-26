@@ -1077,26 +1077,45 @@ def test_get_combined_metadata(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
-def test_get_combined_metadata_multi_site(httpx_mock):
-    """Multiple sites are comma-joined into one GET.
-
-    Only ``monitoring-locations`` is a CQL2/POST collection in the Water Data
-    dialect; ``combined-metadata`` is not, so this stays a query param.
-    """
-    sites = ["USGS-07069000", "USGS-07064000", "USGS-07068000"]
+@pytest.mark.parametrize(
+    ("kwargs", "property_name", "values"),
+    [
+        (
+            {"monitoring_location_id": ["USGS-07069000", "USGS-07064000"]},
+            "monitoring_location_id",
+            ["USGS-07069000", "USGS-07064000"],
+        ),
+        ({"site_type_code": ["ST", "ST-TS"]}, "site_type_code", ["ST", "ST-TS"]),
+        ({"agency_code": ["USGS", "USBR"]}, "agency_code", ["USGS", "USBR"]),
+        (
+            {"state": ["New York", "New Jersey"]},
+            "state_name",
+            ["New York", "New Jersey"],
+        ),
+    ],
+)
+def test_get_combined_metadata_iterables_use_post_cql(
+    httpx_mock, kwargs, property_name, values
+):
+    """Iterable filters use CQL2 because comma-joined GET values match no rows."""
     _mock_items(httpx_mock, "combined-metadata")
 
-    get_combined_metadata(
-        monitoring_location_id=sites, parameter_code="00060", skip_geometry=True
-    )
+    get_combined_metadata(parameter_code="00060", skip_geometry=True, **kwargs)
 
     req = next(
         r for r in httpx_mock.get_requests() if "combined-metadata/items" in str(r.url)
     )
-    assert req.method == "GET"
-    qs = _sent(httpx_mock, "combined-metadata")[0]
-    assert qs["monitoring_location_id"] == [",".join(sites)]
-    assert qs["parameter_code"] == ["00060"]
+    assert req.method == "POST"
+    assert parse_qs(urlsplit(str(req.url)).query)["parameter_code"] == ["00060"]
+    assert json.loads(req.content) == {
+        "op": "and",
+        "args": [
+            {
+                "op": "in",
+                "args": [{"property": property_name}, values],
+            }
+        ],
+    }
 
 
 # --- peaks -------------------------------------------------------------------
