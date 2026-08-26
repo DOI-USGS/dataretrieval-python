@@ -1205,6 +1205,26 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
     assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
 
 
+def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
+    """``get_cql`` caps the total like every other Water Data getter.
+
+    It was the only one without ``max_rows``, and its ``limit`` is the page
+    size -- so the obvious way to ask for a few rows instead paged the whole
+    match a few rows at a time. A bounded probe written that way spent ~400
+    requests of an hourly quota of 1000 before the service refused it.
+    """
+    with mock.patch("dataretrieval.waterdata.cql.get_ogc_data") as fake:
+        fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
+        get_cql(
+            collection="daily",
+            cql={"op": "=", "args": [{"property": "parameter_code"}, "00060"]},
+            max_rows=3,
+        )
+    args_dict = fake.call_args[0][0]
+    assert "max_rows" not in args_dict  # not leaked into the query params
+    assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
+
+
 def test_get_reference_table_wrong_name():
     with pytest.raises(ValueError):
         get_reference_table("agency-cod")
