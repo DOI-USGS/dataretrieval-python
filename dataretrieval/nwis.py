@@ -204,21 +204,6 @@ def format_response(
     return df.sort_index()
 
 
-def _peak_datetimes(peak_dt: pd.Series) -> pd.Series:
-    """Parse a ``peak_dt`` column, keeping peaks whose date is partly unknown.
-
-    NWIS writes ``YYYY-MM-00`` when the day of a historical peak is not known
-    and ``YYYY-00-00`` when the month is not either -- the ``Bd`` and ``Bm``
-    ``peak_cd`` qualifiers. Neither parses as a date, so each is pinned to the
-    start of the period that *is* known, as ``waterdata.get_peaks()`` resolves
-    the same records.
-    """
-    text = peak_dt.astype("string").str.strip()
-    text = text.str.replace(r"^(\d{4})-00-", r"\1-01-", regex=True)
-    text = text.str.replace(r"^(\d{4}-\d{2})-00$", r"\1-01", regex=True)
-    return pd.to_datetime(text, errors="coerce")
-
-
 def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     """Format the datetime column of the 'peaks' service response.
 
@@ -236,10 +221,14 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     -----
     An empty frame with no ``peak_dt`` column is returned unchanged, so an
     empty peaks response reaches :func:`format_response`'s empty-frame path
-    instead of raising ``KeyError``. Peaks whose day or month is unknown are
-    dated to the start of the known period rather than discarded; see
-    :func:`_peak_datetimes`. Rows carrying no ``peak_dt`` at all are dropped,
-    having no place on the datetime index :func:`format_response` builds.
+    instead of raising ``KeyError``.
+
+    NWIS zero-fills the unknown part of a historical peak's date --
+    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
+    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks
+    rather than a date NWIS does not have. The peak is kept regardless, and
+    ``peak_dt`` is left in the frame: the response carries no ``water_yr``, so
+    it is the only column holding a censored peak's year.
 
     """
     if df.empty and "peak_dt" not in df.columns:
@@ -247,8 +236,7 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         # still raise.
         return df
 
-    df["datetime"] = _peak_datetimes(df.pop("peak_dt"))
-    df.dropna(subset=["datetime"], inplace=True)
+    df["datetime"] = pd.to_datetime(df["peak_dt"], errors="coerce")
     return df
 
 

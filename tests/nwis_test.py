@@ -85,37 +85,47 @@ def test_iv_service_answer(httpx_mock):
     "peak_dt, expected",
     [
         ("1878-06-12", "1878-06-12"),  # fully known
-        ("1844-06-00", "1844-06-01"),  # day unknown (peak_cd Bd)
-        ("1858-00-00", "1858-01-01"),  # month unknown (peak_cd Bm)
+        ("1844-06-00", None),  # day unknown (peak_cd Bd)
+        ("1858-00-00", None),  # month unknown (peak_cd Bm)
+        ("", None),  # no date at all
+        (np.nan, None),
     ],
 )
-def test_preformat_peaks_response_keeps_partial_dates(peak_dt, expected):
-    """NWIS zero-fills the unknown part of a historical peak's date, and those
-    are real peaks -- often a site's largest. They must be pinned to the start
-    of the known period, not coerced to NaT and dropped. ``waterdata.get_peaks``
-    resolves the same records the same way.
+def test_preformat_peaks_response_keeps_every_peak(peak_dt, expected):
+    """A peak is never dropped for want of a parseable date.
+
+    NWIS zero-fills the unknown part of a historical peak's date --
+    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
+    not either (the ``Bd`` and ``Bm`` ``peak_cd`` qualifiers). Those are real
+    peaks, often a site's largest, and dropping them loses the discharge value
+    with the date. A date NWIS only partly knows stays ``NaT`` rather than
+    being completed into one it does not have.
     """
     df = pd.DataFrame({"peak_dt": [peak_dt], "peak_va": [563000]})
 
     df = preformat_peaks_response(df)
 
-    assert len(df) == 1, f"{peak_dt} was dropped"
-    assert df["datetime"].iloc[0] == pd.Timestamp(expected)
+    assert len(df) == 1, f"{peak_dt!r} was dropped"
     assert df["peak_va"].iloc[0] == 563000
+    if expected is None:
+        assert pd.isna(df["datetime"].iloc[0])
+    else:
+        assert df["datetime"].iloc[0] == pd.Timestamp(expected)
 
 
-def test_preformat_peaks_response_drops_dateless_peaks():
-    """A peak with no date at all has no period to pin it to, so it cannot go
-    on the datetime index format_response builds and is still dropped.
+def test_preformat_peaks_response_preserves_peak_dt():
+    """``peak_dt`` must survive the reformat.
+
+    The peaks response carries no ``water_yr``, so ``peak_dt`` is the only
+    column holding the year of a censored peak -- and the only way a caller can
+    tell an unknown day from a known one, since ``peak_cd`` does not always
+    carry the qualifier.
     """
-    df = pd.DataFrame(
-        {"peak_dt": ["2000-03-22", np.nan, None, ""], "peak_va": [1, 2, 3, 4]}
-    )
+    df = pd.DataFrame({"peak_dt": ["1858-00-00"], "peak_va": [563000]})
 
     df = preformat_peaks_response(df)
 
-    assert "datetime" in df.columns
-    assert df["peak_va"].tolist() == [1]
+    assert df["peak_dt"].iloc[0] == "1858-00-00"
 
 
 def test_preformat_peaks_response_malformed_frame_still_raises():
