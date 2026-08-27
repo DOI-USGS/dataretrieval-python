@@ -210,12 +210,8 @@ def _peak_datetimes(peak_dt: pd.Series) -> pd.Series:
     NWIS writes ``YYYY-MM-00`` when the day of a historical peak is not known
     and ``YYYY-00-00`` when the month is not either -- the ``Bd`` and ``Bm``
     ``peak_cd`` qualifiers. Neither parses as a date, so each is pinned to the
-    start of the period that *is* known. ``waterdata.get_peaks()`` resolves the
-    same records the same way, dating a year-only peak to 1 January and
-    flagging it ``[MONTHUNKNOWN]``.
-
-    A ``peak_dt`` that is blank or absent stays ``NaT``: there is no period to
-    pin it to, and :func:`preformat_peaks_response` drops it.
+    start of the period that *is* known, as ``waterdata.get_peaks()`` resolves
+    the same records.
     """
     text = peak_dt.astype("string").str.strip()
     text = text.str.replace(r"^(\d{4})-00-", r"\1-01-", regex=True)
@@ -238,21 +234,17 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
 
     Notes
     -----
-    An empty frame with no ``peak_dt`` column is returned unchanged, so that
-    an empty peaks response reaches :func:`format_response`'s empty-frame path
-    rather than raising ``KeyError``.
-
-    Peaks whose day or month is unknown are dated to the start of the known
-    period rather than discarded; see :func:`_peak_datetimes`. Rows with no
-    ``peak_dt`` at all are dropped, since they cannot be placed on the
-    datetime index :func:`format_response` builds.
+    An empty frame with no ``peak_dt`` column is returned unchanged, so an
+    empty peaks response reaches :func:`format_response`'s empty-frame path
+    instead of raising ``KeyError``. Peaks whose day or month is unknown are
+    dated to the start of the known period rather than discarded; see
+    :func:`_peak_datetimes`. Rows carrying no ``peak_dt`` at all are dropped,
+    having no place on the datetime index :func:`format_response` builds.
 
     """
     if df.empty and "peak_dt" not in df.columns:
-        # An empty response parses to a column-less frame; return it so
-        # format_response's empty-frame path handles it like every other
-        # service. A non-empty frame missing peak_dt is malformed, not empty,
-        # and still raises.
+        # A non-empty frame missing peak_dt is malformed, not empty, and must
+        # still raise.
         return df
 
     df["datetime"] = _peak_datetimes(df.pop("peak_dt"))
