@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g3b2d9688e documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=15e0eee9"></script>
+      <script src="../_static/documentation_options.js?v=cb799626"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -733,6 +733,16 @@ Companion (NWDC); retrieve them with
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></p>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>An empty frame with no <code class="docutils literal notranslate"><span class="pre">peak_dt</span></code> column is returned unchanged, so an
+empty peaks response reaches <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a>’s empty-frame path
+instead of raising <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>.</p>
+<p>NWIS zero-fills the unknown part of a historical peak’s date –
+<code class="docutils literal notranslate"><span class="pre">YYYY-MM-00</span></code> when the day is not known, <code class="docutils literal notranslate"><span class="pre">YYYY-00-00</span></code> when the month is
+not either. Neither parses, so <code class="docutils literal notranslate"><span class="pre">datetime</span></code> is <code class="docutils literal notranslate"><span class="pre">NaT</span></code> for those peaks
+rather than a date NWIS does not have. The peak is kept regardless, and
+<code class="docutils literal notranslate"><span class="pre">peak_dt</span></code> is left in the frame: the response carries no <code class="docutils literal notranslate"><span class="pre">water_yr</span></code>, so
+it is the only column holding a censored peak’s year.</p>
 </dd></dl>
 
 <dl class="py function">

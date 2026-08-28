@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g3b2d9688e documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=15e0eee9"></script>
+      <script src="../../_static/documentation_options.js?v=cb799626"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -311,9 +311,26 @@
 <span class="sd">    df: ``pandas.DataFrame``</span>
 <span class="sd">        The formatted data frame.</span>
 
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    An empty frame with no ``peak_dt`` column is returned unchanged, so an</span>
+<span class="sd">    empty peaks response reaches :func:`format_response`'s empty-frame path</span>
+<span class="sd">    instead of raising ``KeyError``.</span>
+
+<span class="sd">    NWIS zero-fills the unknown part of a historical peak's date --</span>
+<span class="sd">    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is</span>
+<span class="sd">    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks</span>
+<span class="sd">    rather than a date NWIS does not have. The peak is kept regardless, and</span>
+<span class="sd">    ``peak_dt`` is left in the frame: the response carries no ``water_yr``, so</span>
+<span class="sd">    it is the only column holding a censored peak's year.</span>
+
 <span class="sd">    """</span>
-    <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"peak_dt"</span><span class="p">),</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span> <span class="ow">and</span> <span class="s2">"peak_dt"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="c1"># A non-empty frame missing peak_dt is malformed, not empty, and must</span>
+        <span class="c1"># still raise.</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"peak_dt"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
 
 
