@@ -18,6 +18,7 @@ from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
 from dataretrieval.combining import (
     _QUOTA_HEADER,
+    _drop_body,
     _merge_response,
     _safe_elapsed,
 )
@@ -126,6 +127,10 @@ async def paginate(
         nrows = len(frame)
         seen: set[Any] = set()
         report_page(response, frame)
+        # Parsed and never read again. httpx responses sit in a reference
+        # cycle, so a superseded page waits on the cyclic GC with its body
+        # still charged -- free every page as it is parsed, not just this one.
+        _drop_body(response)
 
         while (
             cursor is not None
@@ -141,6 +146,7 @@ async def paginate(
                 nrows += len(frame)
                 total_elapsed += _safe_elapsed(response)
                 report_page(response, frame)
+                _drop_body(response)
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.", cursor
