@@ -169,14 +169,14 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    with its own ``TypedDict``, so a type checker rejects a setting the adapter
    does not read before the code runs. A ``**unknown`` catch-all remains, and
    exists to turn a misspelled *setting* into a message naming the settings --
-   ``configure(concurrancy=8)`` would otherwise be a bare ``TypeError``.
+   ``configure(concurrency=8)`` would otherwise be a bare ``TypeError``.
 
    *Superseded by* :doc:`0011-configuration-profiles`. ``configure()`` takes
    configuration objects positionally instead, so the adapter is named by the
    class rather than by a keyword. The type checking survives -- a setting an
    adapter does not read is not a field of its class -- and the catch-all is
    no longer needed for a misspelling, because
-   ``WaterdataConfiguration(concurrancy=8)`` is already a ``TypeError`` naming
+   ``WaterdataConfiguration(concurrency=8)`` is already a ``TypeError`` naming
    the keyword that does not exist. What the change buys is that ``configure()``
    no longer enumerates the adapters at all: that enumeration was the roster
    this ADR left spelled in four places.
