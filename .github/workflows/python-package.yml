@@ -107,6 +107,38 @@ jobs:
           assert ngwmn.get_sites
           assert wateruse.get_wateruse
           assert engine.get_ogc_data
+
+          # The named imports above reach most of the tree but not all of it,
+          # and a dependency dropped from [project.dependencies] is only
+          # visible where something imports it. Walk every module instead, so
+          # the gap cannot depend on which names this heredoc happens to list.
+          import importlib
+          import pkgutil
+
+          root = Path(dataretrieval.__file__).parent
+          shipped = {
+              ".".join(("dataretrieval", *p.relative_to(root).with_suffix("").parts))
+              .removesuffix(".__init__")
+              for p in root.rglob("*.py")
+          } - {"dataretrieval"}
+          walked = set()
+          for info in pkgutil.walk_packages(dataretrieval.__path__, "dataretrieval."):
+              walked.add(info.name)
+              if info.name != "dataretrieval.nldi":  # asserted separately below
+                  importlib.import_module(info.name)
+          # walk_packages skips the subtree under a package it cannot import,
+          # and says nothing when it does.
+          assert walked == shipped, shipped ^ walked
+
+          # The optional geospatial dependency stays optional: without
+          # geopandas installed, importing nldi must fail with the message that
+          # says how to fix it, not with a bare ModuleNotFoundError.
+          try:
+              import dataretrieval.nldi
+          except ImportError as exc:
+              assert "geopandas" in str(exc), exc
+          else:
+              raise AssertionError("nldi imported without geopandas installed")
           PY
 
   type-check:

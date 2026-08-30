@@ -163,6 +163,13 @@ python_version = "3.10"  # the project's minimum supported version
 files = ["dataretrieval"]
 strict = true
 ignore_missing_imports = true
+# ``possibly-undefined`` catches a name that is bound on only some paths -- the
+# ``if`` with no ``else`` whose variable is read afterwards, which fails at
+# runtime with ``NameError`` and only on the branch nobody tested. mypy ships
+# the check but leaves it off even under ``strict``, and neither ruff nor the
+# suite models it. The package is clean today, so this is a ratchet at its
+# tightest current setting rather than a request for work.
+enable_error_code = ["possibly-undefined"]
 
 # anyio ships ``py.typed``, so mypy follows into its source — which uses
 # ``match`` statements (3.10+). Under our ``python_version = "3.9"`` target that
