@@ -63,8 +63,8 @@ can predict where a thing lives.
 - Python >= 3.10; the CI test matrix is 3.10, 3.13, 3.14.
 
 ## Commands
-- Lint: `ruff check .` and `ruff format --check .` (pinned to the version in
-  `.pre-commit-config.yaml` and the CI lint job — keep them aligned).
+- Lint: `ruff check .` and `ruff format --check .` (`pip install -e .[lint]`
+  pins the version; keep the `.pre-commit-config.yaml` rev aligned with it).
 - Tests: `coverage run -m pytest tests/ && coverage report`, or focused like
   `pytest tests/waterdata_test.py::test_mock_get_samples`. `coverage report` is
   a merge gate: branch coverage with a `fail_under` ratchet in
