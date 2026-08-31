@@ -196,9 +196,9 @@ def format_response(
         return df
 
     if len(df["site_no"].unique()) > 1 and mi:
-        df.set_index(["site_no", "datetime"], inplace=True)
+        df = df.set_index(["site_no", "datetime"])
     else:
-        df.set_index(["datetime"], inplace=True)
+        df = df.set_index(["datetime"])
 
     df = _localize_datetime_index(df)
     return df.sort_index()
