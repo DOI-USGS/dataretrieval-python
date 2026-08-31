@@ -895,6 +895,41 @@ def what_sites(
     return df, NWIS_Metadata(response, **kwargs)
 
 
+# The value that means "not passed" -- which must stay in step with
+# ``get_record``'s declared default -- and the replacement to name.
+_DEFUNCT_RECORD_OPTIONS: dict[str, tuple[object, str]] = {
+    "wide_format": (True, "`waterdata.get_samples()`"),
+    "datetime_index": (
+        True,
+        "`waterdata.get_continuous()` or `waterdata.get_daily()`",
+    ),
+    "state": (None, "`nwdc.get_wateruse(state=...)`"),
+}
+
+
+def _warn_defunct_record_options(**given: object) -> None:
+    """Advise on each ``get_record`` option asked to do something it cannot.
+
+    Naming an option at its declared default is silent: the caller is asking
+    for what the dead default already gave them.
+    """
+    for name, value in given.items():
+        unset, replacement = _DEFUNCT_RECORD_OPTIONS[name]
+        if value != unset:
+            warn_deprecated(
+                f"`nwis.get_record`'s `{name}` argument",
+                replacement=replacement,
+                removal=_NWIS_REMOVAL_DATE,
+                detail=(
+                    "It is ignored, and has been since the service that read "
+                    "it was retired."
+                ),
+                # _warn_defunct_record_options -> get_record -> @_deprecated
+                # wrapper -> the caller's own line.
+                stacklevel=4,
+            )
+
+
 @_deprecated
 def get_record(
     sites: list[str] | str | None = None,
@@ -927,12 +962,16 @@ def get_record(
         If False, return a dataframe with a single-level index (datetime).
         Default is True.
     wide_format : bool, optional
-        If True, return data in wide format, with multiple samples per row and
-        one row per time. Default is True.
+        (defunct) Shaped the output of the retired 'qwdata' service. Ignored;
+        passing `False` warns. Use `waterdata.get_samples`, which returns one
+        row per result.
     datetime_index : bool, optional
-        If True, create a datetime index. Default is True.
+        (defunct) Shaped the output of the retired 'qwdata' and 'gwlevels'
+        services. Ignored; passing `False` warns. Use `waterdata.get_continuous`
+        or `waterdata.get_daily`, which index by datetime.
     state: string, optional, default is None
-        State full name, abbreviation, or id.
+        (defunct) Selected sites for the retired 'water_use' service. Ignored;
+        passing a state warns. Use `nwdc.get_wateruse`, which takes `state`.
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
@@ -1009,6 +1048,10 @@ def get_record(
             "New work should use the dataretrieval.waterdata getters instead; "
             "NWIS is deprecated."
         ),
+    )
+
+    _warn_defunct_record_options(
+        wide_format=wide_format, datetime_index=datetime_index, state=state
     )
 
     if service == "iv":

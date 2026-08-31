@@ -1,3 +1,4 @@
+import inspect
 import json
 import re
 import warnings
@@ -8,9 +9,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import dataretrieval
 from dataretrieval import nwis
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.nwis import (
+    _DEFUNCT_RECORD_OPTIONS,
+    _REPLACEMENTS,
     NWIS_Metadata,
     _read_rdb,
     format_response,
@@ -33,6 +37,25 @@ SITENO_COL = "site_no"
 
 # Legacy NWIS site endpoint these tests mock — this module makes no live calls.
 _SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
+
+
+# Every concrete ``module.function(args)`` the deprecation tables name, so the
+# tripwire below is derived from what ships rather than from a hand-kept list.
+# The prose entries (``waterdata.get_*()``) do not name a function and so do
+# not match.
+_NAMED_REPLACEMENTS = sorted(
+    set(
+        re.findall(
+            r"`(\w+)\.(\w+)\(([^`]*)\)`",
+            " ".join(
+                [
+                    *_REPLACEMENTS.values(),
+                    *(r for _, r in _DEFUNCT_RECORD_OPTIONS.values()),
+                ]
+            ),
+        )
+    )
+)
 
 
 def _load_mock_json(file_name):
@@ -201,32 +224,102 @@ class TestDeprecationWarnings:
         assert len(deprecations) == 1
         assert "get_record" in str(deprecations[0].message)
 
+    @pytest.mark.parametrize("module_name, func_name, arguments", _NAMED_REPLACEMENTS)
+    def test_named_replacement_resolves(self, module_name, func_name, arguments):
+        """Tripwire: following a deprecation message literally must produce a
+        real call, so a user migrating doesn't hit AttributeError or TypeError.
+
+        Fails loudly if a message lands before its referenced replacement does
+        (e.g. before `get_peaks` from #267).
+        """
+        func = getattr(getattr(dataretrieval, module_name), func_name, None)
+        assert callable(func), (
+            f"`{module_name}.{func_name}` is missing — fix the replacement "
+            "tables in nwis.py or add the replacement before merging."
+        )
+        for keyword in re.findall(r"(\w+)=", arguments):
+            assert keyword in inspect.signature(func).parameters
+
+
+class TestDefunctRecordOptions:
+    """``get_record``'s three inert options advise; they do not raise.
+
+    They are documented parameters of a Production/Stable getter, so they
+    follow the published deprecation policy and go when `nwis` does, rather
+    than on a release of their own.
+    """
+
     @pytest.mark.parametrize(
-        "name",
+        "option, value, replacement",
         [
-            "get_daily",
-            "get_continuous",
-            "get_monitoring_locations",
-            "get_stats_por",
-            "get_stats_date_range",
-            "get_peaks",
-            "get_ratings",
+            ("wide_format", False, "waterdata.get_samples"),
+            ("datetime_index", False, "waterdata.get_continuous"),
+            ("state", "OH", "nwdc.get_wateruse"),
         ],
     )
-    def test_named_replacement_exists_in_waterdata(self, name):
-        """Tripwire: every concrete `waterdata.*` named in a deprecation message
-        must actually exist, so a user following the migration guidance doesn't
-        hit AttributeError.
+    def test_passing_one_advises_and_still_returns_data(
+        self, httpx_mock, option, value, replacement
+    ):
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            df = get_record(sites="01491000", service="site", **{option: value})
+        assert not df.empty
+        assert [
+            w
+            for w in caught
+            if option in str(w.message) and replacement in str(w.message)
+        ]
 
-        Fails loudly if this PR ever lands before its referenced replacement
-        does (e.g. before `get_peaks` from #267).
+    @pytest.mark.parametrize("option", sorted(_DEFUNCT_RECORD_OPTIONS))
+    def test_naming_an_option_at_its_default_is_silent(self, httpx_mock, option):
+        """Passing the declared default asks for nothing the dead option
+        cannot give, so it earns no warning -- and the table's "unset" value
+        has to be that declared default for the distinction to hold.
         """
-        import dataretrieval.waterdata as wd
+        default = inspect.signature(get_record).parameters[option].default
+        assert _DEFUNCT_RECORD_OPTIONS[option][0] == default
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="site", **{option: default})
+        assert not [w for w in caught if f"`{option}` argument" in str(w.message)]
 
-        assert callable(getattr(wd, name, None)), (
-            f"`waterdata.{name}` is missing — fix `_REPLACEMENTS` in nwis.py "
-            "or add the replacement before merging."
-        )
+    def test_defaults_advise_nothing(self, httpx_mock):
+        """A caller who never named an option must not be told about one."""
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="site")
+        assert not [w for w in caught if "argument is deprecated" in str(w.message)]
+
+    def test_each_advisory_is_emitted_once_per_call(self, httpx_mock):
+        """A call naming all three options emits four ``DeprecationWarning``s:
+        one for ``get_record`` itself, and one per named option, each with a
+        distinct subject and a distinct replacement.
+        """
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(
+                sites="01491000",
+                service="site",
+                wide_format=False,
+                datetime_index=False,
+                state="OH",
+            )
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        messages = [str(w.message) for w in deprecations]
+        assert len(messages) == 4
+        for subject in (
+            "`wide_format` argument",
+            "`datetime_index` argument",
+            "`state` argument",
+        ):
+            assert sum(subject in m for m in messages) == 1
+        # Pins the advisories' hand-counted ``stacklevel``: every one must
+        # blame the caller's own line, not a frame inside the package.
+        assert {Path(w.filename).name for w in deprecations} == {Path(__file__).name}
 
 
 class TestDefunct:
