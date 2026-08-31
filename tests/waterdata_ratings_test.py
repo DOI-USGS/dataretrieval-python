@@ -136,6 +136,32 @@ def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
     assert df.attrs["url"] == _GOOD_ASSET
 
 
+def test_get_ratings_writes_the_bytes_the_service_sent(httpx_mock, tmp_path):
+    """The saved file must be the response body, UTF-8, byte for byte.
+
+    Text mode with no ``encoding`` writes in the process locale, and the
+    resulting ``UnicodeEncodeError`` is a ``ValueError``, which the
+    per-feature handler downgrades to a skip -- so the rating would go
+    missing rather than fail. Text mode also rewrites line endings.
+    """
+    # U+2103 is absent from cp1252, so on the Windows leg of the matrix an
+    # unencodable character and a rewritten line ending both land here.
+    body = _SAMPLE_RDB.replace("\n", "\r\n").replace("DEP", "DEP \N{DEGREE CELSIUS}")
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    httpx_mock.add_response(method="GET", url=_GOOD_ASSET, text=body)
+
+    out = get_ratings(
+        monitoring_location_id="USGS-01104475",
+        file_type="exsa",
+        file_path=str(tmp_path),
+    )
+
+    assert "USGS-01104475.exsa.rdb" in out
+    assert (tmp_path / "USGS-01104475.exsa.rdb").read_bytes() == body.encode("utf-8")
+
+
 def test_get_ratings_download_and_parse_false_returns_features(httpx_mock):
     httpx_mock.add_response(
         method="GET",

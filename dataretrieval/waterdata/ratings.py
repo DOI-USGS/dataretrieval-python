@@ -366,7 +366,7 @@ async def _fetch_rating(
     _raise_for_non_200(response)
 
     if file_path is not None:
-        with open(os.path.join(file_path, fid), "w") as f:
+        with open(os.path.join(file_path, fid), "w", encoding="utf-8", newline="") as f:
             f.write(response.text)
 
     df = read_rdb(response.text)
