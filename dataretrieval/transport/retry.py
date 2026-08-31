@@ -292,7 +292,7 @@ async def retry_async(
     while True:
         try:
             return await attempt_once()
-        except Exception as exc:  # noqa: BLE001 - re-raised unless retryable
+        except Exception as exc:
             attempt += 1
             wait = _retry_delay(exc, attempt, policy)
             if wait is None:
@@ -314,7 +314,7 @@ def retry_sync(fn: Callable[[], _T], policy: RetryPolicy | None = None) -> _T:
     while True:
         try:
             return fn()
-        except Exception as exc:  # noqa: BLE001 - re-raised unless retryable
+        except Exception as exc:
             attempt += 1
             wait = _retry_delay(exc, attempt, policy)
             if wait is None:

@@ -1140,15 +1140,13 @@ def _parse_parameter_record(
     record_df["qualifiers"] = (
         record_df["qualifiers"].astype(str).str.strip("[]").str.replace("'", "")
     )
-    record_df.rename(
+    return record_df.rename(
         columns={
             "value": col_name,
             "dateTime": "datetime",
             "qualifiers": col_name + "_cd",
-        },
-        inplace=True,
+        }
     )
-    return record_df
 
 
 def _parse_site_block(site_block: list[dict[str, Any]]) -> pd.DataFrame:

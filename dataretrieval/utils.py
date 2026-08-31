@@ -19,9 +19,9 @@ import pandas as pd
 
 import dataretrieval._querying as _querying
 import dataretrieval.transport.http as _transport_http
-from dataretrieval._ambient import Ambient  # noqa: F401 - compatibility re-export
+from dataretrieval._ambient import Ambient  # noqa: F401 # compatibility re-export
 from dataretrieval._response_metadata import (
-    BaseMetadata,  # noqa: F401  — compatibility re-export; defined there now
+    BaseMetadata,  # noqa: F401 # compatibility re-export; defined there now
 )
 from dataretrieval.codes import tz
 

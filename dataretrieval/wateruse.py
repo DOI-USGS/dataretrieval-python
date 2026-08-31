@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from dataretrieval import nwdc as _nwdc
 from dataretrieval._deprecation import REMOVALS, warn_deprecated
-from dataretrieval.nwdc import *  # noqa: F403  (re-export the public surface)
+from dataretrieval.nwdc import *  # noqa: F403 # re-export the public surface
 
 #: When the alias may be deleted. Read from the shared horizon table rather
 #: than spelled here, so it is audited and bumped with every other published

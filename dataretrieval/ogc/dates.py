@@ -53,7 +53,9 @@ def _parse_datetime(value: str) -> datetime | None:
     candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
     for fmt in _DATETIME_FORMATS:
         try:
-            return datetime.strptime(candidate, fmt)
+            # DTZ007: naive is the documented outcome for a naive input --
+            # ``_DATETIME_FORMATS`` carries both the ``%z`` and the bare forms.
+            return datetime.strptime(candidate, fmt)  # noqa: DTZ007
         except ValueError:
             continue
     return None
