@@ -468,6 +468,41 @@ class TestReadRdb:
         assert df.empty
 
 
+class TestFormatResponseArgument:
+    """``format_response`` indexes a copy, so its argument survives the call.
+
+    The function is public, and both internal callers still hold the frame
+    they passed while it runs. Indexing that frame in place moved their
+    columns into an index they never asked for.
+    """
+
+    @staticmethod
+    def _frame(sites):
+        return pd.DataFrame(
+            {
+                "site_no": sites,
+                "datetime": pd.date_range("2020-01-01", periods=len(sites), freq="D"),
+                "00060": np.arange(float(len(sites))),
+            }
+        )
+
+    @pytest.mark.parametrize(
+        "sites,expected_index",
+        [
+            pytest.param(["01", "01", "01"], pd.DatetimeIndex, id="single-site"),
+            pytest.param(["01", "02", "03"], pd.MultiIndex, id="multi-site"),
+        ],
+    )
+    def test_it_keeps_its_columns_and_index(self, sites, expected_index):
+        df = self._frame(sites)
+        before = df.copy(deep=True)
+
+        out = format_response(df)
+
+        assert isinstance(out.index, expected_index), "the result must be indexed"
+        pd.testing.assert_frame_equal(df, before)
+
+
 class TestGetRecordDispatch:
     """``get_record`` is a router; each service must reach its own getter.
 

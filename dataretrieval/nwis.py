@@ -148,13 +148,22 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
 
 def _localize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
     """Localize a naive datetime index (or multi-index level) to UTC."""
-    if hasattr(df.index, "levels"):
+    index = df.index
+    if hasattr(index, "levels"):
         # Multi-index: localize the datetime level (level 1)
-        if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
-            df = df.tz_localize("UTC", level=1)
-    elif hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
-        df = df.tz_localize("UTC")
-    return df
+        if hasattr(index.levels[1], "tzinfo") and index.levels[1].tzinfo is None:
+            index = index.set_levels(index.levels[1].tz_localize("UTC"), level=1)
+    elif hasattr(index, "tzinfo") and index.tzinfo is None:
+        index = index.tz_localize("UTC")
+
+    if index is df.index:
+        return df
+
+    # Retag the index alone. ``DataFrame.tz_localize`` relabels one axis by
+    # duplicating every column, which pandas does whenever copy-on-write is off.
+    localized = df.copy(deep=False)
+    localized.index = index
+    return localized
 
 
 def format_response(
@@ -196,9 +205,15 @@ def format_response(
         return df
 
     if len(df["site_no"].unique()) > 1 and mi:
-        df = df.set_index(["site_no", "datetime"])
+        keys = ["site_no", "datetime"]
     else:
-        df = df.set_index(["datetime"])
+        keys = ["datetime"]
+
+    # Index our own frame, never the caller's. The shallow copy shares the
+    # columns; ``set_index`` without ``inplace`` duplicates them, because
+    # pandas deep-copies the frame whenever copy-on-write is off.
+    df = df.copy(deep=False)
+    df.set_index(keys, inplace=True)  # noqa: PD002 # our copy, not the caller's
 
     df = _localize_datetime_index(df)
     return df.sort_index()
