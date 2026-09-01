@@ -20,15 +20,6 @@ repos:
       - id: check-yaml
       - id: debug-statements
 
-  # A doubled word is almost always a slip, and mechanical renames are how they
-  # get in: a regex that rewrites one word of a phrase can leave its neighbour
-  # standing, so "a source label" ends up naming the same noun twice. Nothing
-  # else here reads prose, and AST-level checks strip docstrings before
-  # comparing, which is exactly where such a slip hides.
-  #
-  # Line-scoped on purpose. Matching across a newline as well finds nothing new
-  # in practice and reports a heading followed by its own first word, or
-  # ``return df`` above ``df``: 19 such reports against 0 real ones.
   - repo: local
     hooks:
       - id: doubled-word
