@@ -5,8 +5,24 @@ specification: it fixes what words mean so that code, docstrings, ADRs, and
 conversation use them the same way. Architectural decisions live in
 `docs/source/architecture/decisions/`.
 
-When a term here conflicts with a name in the code, the term wins and the name
-is legacy. Legacy names are listed below.
+Two kinds of term live here, and they carry different obligations (ADR 0013).
+
+**Core terms** are ours. The package invented them and no service has a claim on
+them — *chunk*, *page*, *fan-out*, *source*, *dialect*, *leaf*. One spelling,
+everywhere it appears: prose, identifiers, tests. Where a core term conflicts
+with a name in the code the term wins and the name is legacy, listed at the end.
+A second spelling is a defect, not a variation.
+
+**Domain terms** belong to the services, which name the same thing differently
+and will not be reconciled. For these the glossary fixes one word for *prose*,
+so that documents about the package read consistently. It does not fix the wire
+or an adapter's public surface: each adapter keeps its own service's spelling in
+its parameters. Such an entry names the per-service spellings itself; those are
+not legacy names.
+
+A word carrying a package-wide meaning is defined here before this document
+uses it. Naming one only to say what an ADR calls it is a cross-reference,
+not a use.
 
 ## Retrieval
 
@@ -102,13 +118,24 @@ collections. The distinction matters because the OGC machinery is shared: the
 same code path retrieves a Water Data collection and an NGWMN one, and only the
 service differs.
 
+*Domain term.* Water Data and NGWMN say `collection`; legacy NWIS says
+`service=` (`'dv'`, `'peaks'`); WQP names its collections as profiles
+(`Result`, `Station`, `Activity`). Those parameters are frozen public surface
+and keep their spelling. Prose says *collection*, including prose about the
+adapters that spell it otherwise.
+
 **Collection family** — A group of collections sharing a shape and therefore a
 getter signature. Their getters deliberately resemble one another; the
 resemblance is the public contract, not duplication to be removed.
 
-**Monitoring location** — A place where measurements are recorded. The canonical
-term. Legacy: the deprecated NWIS getters and the WQP profiles call this a
-*site*, and their parameters keep that spelling.
+**Monitoring location** — A place where measurements are recorded.
+
+*Domain term.* The services disagree, and each adapter keeps its own service's
+spelling in its parameters: NWIS `site_no` and `sites=`, WQP `Station` and
+`siteid`, Water Data `monitoring_location_id`, NGWMN's `sites` collection. Where
+a service names a thing `site-types` or `site_type_code`, that is its vocabulary
+and is reproduced rather than translated. Prose that is not about one particular
+adapter says *monitoring location*.
 
 **Metadata** — The second half of every getter's return: the request URL, the
 elapsed time, and the response headers. Describes the *retrieval*, not the data.
@@ -149,7 +176,7 @@ count, the progress line, the stall timeout. Set once, honored everywhere.
 
 **Adapter-scoped setting** — A setting named under one adapter, applying to
 that adapter and no other. It overrides the package-wide value for that adapter
-alone; it does not replace the package-wide tier. An adapter rejects a setting
+alone; it does not replace the package-wide source. An adapter rejects a setting
 it has no use for, rather than accepting and ignoring it.
 
 The scope is the *adapter*, not the service and not the host, because the
@@ -162,8 +189,10 @@ Credentials are host-scoped; tunables are adapter-scoped.
 categories: a `configure()` block, the environment, the file, the built-in
 default. The order is resolved per setting rather than per source: a value
 supplied for one setting does not displace another setting's value from a lower
-source. ADR 0010 calls a source a *tier* and ADR 0011 a *rung*; both are this
-term, and the accepted records keep their own wording.
+source.
+
+*Core term.* ADR 0010 calls a source a *tier* and ADR 0011 a *rung*; both are
+this term, and those accepted records keep their own wording.
 
 **Origin label** — The exact thing a value came from, at finer grain than its
 source: `$API_USGS_RETRIES`, a path to the config file, the profile a caller
@@ -171,9 +200,10 @@ selected. What `show_configuration()` prints beside each value, and what a
 parser names when it rejects one. A source is the category; an origin label is
 the instance within it.
 
-The code carries both, and spells them the other way around: `_resolve` returns
-its origin label under the name `source` and its source under the name `tier`.
-Prose uses the terms above.
+*Core terms.* The configuration chain is shared machinery, so one spelling binds
+its identifiers as well as its prose. `_resolve` currently returns the origin
+label under the name `source` and the source under the name `tier`; that is a
+defect being corrected, not a second spelling to work around.
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
@@ -234,7 +264,11 @@ and is not public API.
 
 ## Known legacy names
 
-Recorded so they are not mistaken for the canonical term, and not re-litigated:
+Core-term spellings recorded so they are not mistaken for drift, and not
+re-litigated: frozen misnamings, permanent aliases, and names that agree with
+this glossary by more than luck. A domain term at an adapter's surface is not a
+legacy name and is not listed here; it belongs with that term's own entry
+(ADR 0013).
 
 - `completed_chunks` / `total_chunks` on interruptions, and `set_chunks()` /
   `start_chunk()` on the progress reporter, count chunks as defined above and
@@ -249,11 +283,6 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   compatibility path. Like `ChunkInterrupted`, both spellings are correct.
 - `utils.query` is one *request*, not a query as defined above. It is a frozen
   public path (`dataretrieval.utils.query`) and predates this glossary.
-- `site` appears in deprecated NWIS and WQP parameter names where *monitoring
-  location* is meant. These are frozen public surfaces and will not be renamed.
-  Where the Water Data API itself names a thing `site-types` or
-  `site_type_code`, that is the service's vocabulary and is reproduced
-  faithfully rather than translated.
 - `service` named a collection throughout the OGC machinery. Resolved: the
   OGC internals, the Water Data wrappers, and all eleven typed getters now say
   `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
