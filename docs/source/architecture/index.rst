@@ -202,8 +202,7 @@ than be forbidden, and full-graph cycle detection (see ADR 0003).
 Interface view
 --------------
 
-The primary API is a collection of synchronous functions grouped by data
-portal. Most tabular download functions return ``(DataFrame, metadata)``.
+The primary API is a collection of synchronous functions grouped by service. Most tabular download functions return ``(DataFrame, metadata)``.
 NLDI and StreamStats retain service-specific geospatial or response-object
 contracts.
 

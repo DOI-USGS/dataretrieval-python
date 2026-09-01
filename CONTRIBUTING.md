@@ -244,7 +244,7 @@ link checking.
 * Follow the [PEP8 style guidelines](https://peps.python.org/pep-0008/).
 * The public interface should emphasize functions over classes; classes can and
   should be used internally and in tests.
-* Group public download functions by data portal. For example, modern Water
+* Group public download functions by service. For example, modern Water
   Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
   remain quarantined in `dataretrieval.nwis` during deprecation.
 * Treat a change to a service's documented return shape or metadata type as a
