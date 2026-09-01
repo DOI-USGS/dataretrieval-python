@@ -382,8 +382,8 @@ def get_samples_summary(
     row per (characteristic group, characteristic, user-supplied characteristic)
     combination with result and activity counts and the first / most recent
     activity dates — useful for taking inventory of what discrete-sample data
-    exists at a site before pulling the underlying observations with
-    :func:`get_samples`.
+    exists at a monitoring location before pulling the underlying observations
+    with :func:`get_samples`.
 
     The summary service is single-site only: it accepts exactly one monitoring
     location per request.

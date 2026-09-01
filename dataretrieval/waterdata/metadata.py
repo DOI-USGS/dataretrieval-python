@@ -828,7 +828,7 @@ site_type_code : string or iterable of strings, optional
         ... )
 
         >>> # Two-step "what's available?" → "fetch it" workflow:
-        >>> # 1. inventory the sites in two HUCs
+        >>> # 1. inventory the monitoring locations in two HUCs
         >>> hucs, _ = dataretrieval.waterdata.get_combined_metadata(
         ...     hydrologic_unit_code=["11010008", "11010009"],
         ...     site_type="Stream",
