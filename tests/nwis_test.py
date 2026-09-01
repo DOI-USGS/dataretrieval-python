@@ -128,6 +128,26 @@ def test_preformat_peaks_response_preserves_peak_dt():
     assert df["peak_dt"].iloc[0] == "1858-00-00"
 
 
+def test_preformat_peaks_response_is_quiet_on_partly_dated_peaks():
+    """A frame mixing zero-filled and parseable dates must not warn.
+
+    Left to infer a format, pandas cannot find one that fits both and says so
+    on stderr. Partly dated peaks are normal in a long historical record, so
+    that warning would fire on ordinary calls; the dates parse identically
+    either way, only the noise differs.
+    """
+    df = pd.DataFrame(
+        {"peak_dt": ["1858-00-00", "1900-01-02"], "peak_va": [847000, 12300]}
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = preformat_peaks_response(df)
+
+    assert pd.isna(out["datetime"].iloc[0])
+    assert out["datetime"].iloc[1] == pd.Timestamp("1900-01-02")
+
+
 def test_preformat_peaks_response_malformed_frame_still_raises():
     """Only an *empty* peaks frame is a legitimate empty result. A non-empty
     frame with no ``peak_dt`` column is a malformed response -- a truncated or
