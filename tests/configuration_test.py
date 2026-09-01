@@ -232,7 +232,7 @@ def test_two_configurations_for_one_adapter_raise():
 
 
 def test_a_configuration_resolves_end_to_end(config_file, monkeypatch):
-    """Every tier below a passed configuration still applies, per setting."""
+    """Every source below a passed configuration still applies, per setting."""
     config_file('api_key = "file-key"\nstall_timeout = 15\n')
     monkeypatch.setenv("API_USGS_RETRIES", "9")
 
@@ -359,7 +359,7 @@ def test_several_named_profiles_are_selected_independently(config_file):
 
 
 def test_a_named_profile_layers_per_key_over_the_tiers_below(config_file):
-    """Selecting a profile replaces keys, never whole tiers.
+    """Selecting a profile replaces keys, never whole sources.
 
     Every level of the file overrides the one below it *per key* (ADR 0011), so
     one adapter-scoped read here draws each of its four settings from a
@@ -1073,7 +1073,7 @@ def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn
 
 
 def test_a_malformed_table_does_not_fail_another_adapters_call(config_file):
-    """The blast-radius rule, on the tier a whole adapter table sits in.
+    """The blast-radius rule, on the source a whole adapter table sits in.
 
     Keys are checked when *that* adapter first resolves a setting, so an
     invalid value in ``[nldi]`` costs a Water Data call nothing -- which is
@@ -1174,7 +1174,7 @@ def test_one_block_configures_several_adapters(config_file):
 
 
 def test_environment_outranks_an_adapter_table(config_file, monkeypatch):
-    """Precedence is source-major: the env tier is above the file tier.
+    """Precedence is source-major: the env source is above the file source.
 
     Scope-major ordering would invert this the moment anyone added an adapter
     table, so a variable exported for one run would lose to a stale file entry.

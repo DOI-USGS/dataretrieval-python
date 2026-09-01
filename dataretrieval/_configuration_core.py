@@ -117,7 +117,7 @@ _PROGRESS_FALSEY = frozenset({"", "0", "false", "no", "off"})
 # is absent on a fork), so treating it as configured would let it shadow the
 # config file and silently drop the user's API key. Keeping this a property of
 # the setting -- rather than a second, lower visit to the environment -- keeps
-# the chain at the three sources the docstring and ADR 0009 describe.
+# the chain in the shape the docstring and ADR 0009 describe.
 _BLANK_MEANS_SET = frozenset({"progress"})
 
 # Warnings about the config file report the file, not a call site: settings are
@@ -1019,8 +1019,8 @@ def _current_file() -> tuple[Path, _ParsedFile]:
     """The config file as currently loaded: its path and its parsed form.
 
     One helper so the two always travel together. They are a single fact, and
-    handing the top-level source a different ``_ParsedFile`` than the adapter
-    source saw in the same resolution is exactly the drift that made an
+    handing the top-level scope a different ``_ParsedFile`` than the
+    adapter scope saw in the same resolution is exactly the drift that made an
     adapter-scoped read load the file twice.
     """
     path = config_path()

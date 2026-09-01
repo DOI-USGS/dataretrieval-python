@@ -471,7 +471,7 @@ def _overrides_for_adapter(
             continue
         scoped = cell(partial(_origin_label, name, adapter))
         if scoped == package_wide.get(name, _BUILT_IN):
-            continue  # inherited from the package-wide source
+            continue  # inherited from the package-wide value
         value = cell(partial(_DISPLAYS[name], adapter))
         overrides.append((adapter, name, value, scoped))
     return overrides
@@ -663,7 +663,7 @@ _BLOCK, _ENV, _FILE, _DEFAULT = "block", "environment", "file", "built-in"
 
 
 def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, str]:
-    """Return the raw value for *name*, a label label, and the tier.
+    """Return the raw value for *name*, its origin label, and its source.
 
     Precedence is *source-major*: the chain walks block, then environment, then
     file, exactly as ADR 0009 defines it -- and *within* each source an
@@ -681,7 +681,7 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
     -------
     tuple[str or None, str, str]
         The raw string as written (parsing happens per setting, so each keeps
-        its own blank-value rule), the human-readable label label, and which
+        its own blank-value rule), the human-readable origin label, and which
         source answered (one of the constants above) -- ``None`` with
         ``_BUILT_IN`` / ``_DEFAULT`` when nothing configured it.
     """
@@ -776,7 +776,7 @@ def _resolve_from_env(name: str) -> tuple[str | None, str, str] | None:
 def _resolve_from_file(name: str, scoped: str | None) -> tuple[str | None, str, str]:
     """Fall through to the configuration file, then the built-in default.
 
-    One load serves both file sources.
+    One load serves both scopes within the file.
     """
     path, parsed = _current_file()
 

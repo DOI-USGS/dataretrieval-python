@@ -31,7 +31,7 @@ class WaterdataConfiguration(
     """Settings for Water Data calls alone.
 
     Pass one to :func:`dataretrieval.configure` to narrow a setting to this
-    service, leaving every other adapter on whatever the tiers below it
+    adapter, leaving every other adapter on whatever the sources below it
     resolve::
 
         with dataretrieval.configure(WaterdataConfiguration(concurrency=8)):
