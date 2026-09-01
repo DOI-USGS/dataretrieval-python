@@ -25,9 +25,9 @@ The two sets behave differently because their authority differs.
 Terms like *chunk*, *page*, *fan-out*, *plan*, *interruption*, *dialect* and
 *leaf* appear nowhere in any USGS API's vocabulary. They were invented here to
 describe machinery this package owns. Nothing external constrains them, so when
-the package spells one of them three ways -- the resolution chain's layers have
-been a *source*, a *tier* and a *rung* -- that is simply an inconsistency, and
-one that can be removed by deciding.
+the package spells one of them two ways -- the resolution chain's code said
+*tier* for what its founding records, ADRs 0009 and 0010, call a *source* --
+that is simply an inconsistency, and one that can be removed by deciding.
 
 Terms like *monitoring location* and *collection* are different. The services
 name those things, and they do not agree with each other:
@@ -115,8 +115,8 @@ Consequences
 - A glossary entry now carries an obligation to say which kind it is. That is a
   small cost per term and the reason the distinction is usable at all.
 - The package's own inconsistencies in core vocabulary become defects with a
-  deadline rather than curiosities. The resolution chain's layers are the
-  standing example.
+  deadline rather than curiosities. The resolution chain's ``tier``-for-*source*
+  identifiers are the standing example.
 
 Compliance
 ----------

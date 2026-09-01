@@ -20,8 +20,9 @@ or an adapter's public surface: each adapter keeps its own service's spelling in
 its parameters. Such an entry names the per-service spellings itself; those are
 not legacy names.
 
-A word carrying a package-wide meaning is defined here before this document
-uses it. Naming one only to say what an ADR calls it is a cross-reference,
+A word carrying a package-wide meaning has an entry here, and one entry may
+name another; what no entry may do is lean on a word this document leaves
+undefined. Naming a word only to say what an ADR calls it is a cross-reference,
 not a use.
 
 ## Retrieval
@@ -83,6 +84,10 @@ the start.
 
 Each is an external system this package retrieves from. They are separate
 services with separate conventions, not one API with modes.
+
+A **portal** is the human-facing site fronting one or more services —
+`waterdata.usgs.gov`, `waterqualitydata.us`. The package talks to services; the
+user guide points people at portals. The two words are not interchangeable.
 
 **Water Data** — The modern USGS API at `api.waterdata.usgs.gov`, covering
 monitoring locations, time series, field measurements, samples, ratings, and
@@ -171,12 +176,18 @@ A public keyword is not automatically a setting. `ssl_check` is a getter
 argument on four adapters and resolves through no chain at all; the settings are
 the roster the configuration system knows.
 
+**Scope** — How much of the package a setting's value applies to: the whole
+package, or one adapter. Orthogonal to source: the scope says who a value is
+for, the source says where it came from, and precedence orders sources first,
+scopes within them. ADR 0010's word for a scope level is *tier* — the top-level
+tier that survives, the host or gateway tier it defers.
+
 **Package-wide setting** — A setting that applies to every adapter: the retry
 count, the progress line, the stall timeout. Set once, honored everywhere.
 
 **Adapter-scoped setting** — A setting named under one adapter, applying to
 that adapter and no other. It overrides the package-wide value for that adapter
-alone; it does not replace the package-wide source. An adapter rejects a setting
+alone, leaving that value standing for every other adapter. An adapter rejects a setting
 it has no use for, rather than accepting and ignoring it.
 
 The scope is the *adapter*, not the service and not the host, because the
@@ -191,8 +202,14 @@ default. The order is resolved per setting rather than per source: a value
 supplied for one setting does not displace another setting's value from a lower
 source.
 
-*Core term.* ADR 0010 calls a source a *tier* and ADR 0011 a *rung*; both are
-this term, and those accepted records keep their own wording.
+*Core term.* The accepted records already say it: ADR 0009 resolves settings
+by source, and ADR 0010 keeps precedence *source-major*. ADR 0010's *tier* is a
+different axis — the scope — and ADR 0011's *rungs* are positions of its merged
+precedence ladder, where sources and scopes interleave. Neither is a second
+spelling of this term, and the records keep their own wording.
+
+An external system is a *service*, never a source. NLDI's `data_source`
+parameters are that service's own vocabulary, reproduced like `site-types`.
 
 **Origin label** — The exact thing a value came from, at finer grain than its
 source: `$API_USGS_RETRIES`, a path to the config file, the profile a caller
@@ -201,9 +218,10 @@ parser names when it rejects one. A source is the category; an origin label is
 the instance within it.
 
 *Core terms.* The configuration chain is shared machinery, so one spelling binds
-its identifiers as well as its prose. `_resolve` currently returns the origin
-label under the name `source` and the source under the name `tier`; that is a
-defect being corrected, not a second spelling to work around.
+its identifiers as well as its prose. Where the chain's identifiers have said
+`tier` for the source and `source` for the origin label, that is a defect to
+correct — ADR 0010's scope word misapplied to a different axis — not a second
+spelling to work around.
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
@@ -251,7 +269,7 @@ these and `.importlinter`.
 
 **Facade** — A module that re-exports a subsystem's public surface and contains
 no logic of its own, so callers depend on a stable name rather than on internal
-layout.
+layout. The name is the structural design pattern's, not a coinage.
 
 **Leaf** — A module with no dependencies inside the package beyond other leaves,
 holding one general mechanism so that anything may use it without acquiring the
@@ -277,8 +295,9 @@ legacy name and is not listed here; it belongs with that term's own entry
 - `ChunkInterrupted` is a permanent alias of `FanOutInterrupted` — the same
   class object under the name it was first published as. Both spellings are
   correct; neither is scheduled for removal.
-- *No-progress budget* is ADR 0006's name for the **stall timeout**. Both
-  spellings are current; the setting is `stall_timeout`.
+- *No-progress budget* is ADR 0006's name for the **stall timeout**. The
+  record keeps its wording; prose outside it says *stall timeout*, and the
+  setting is `stall_timeout`.
 - `ChunkedCall` is a permanent alias of `FanOut`, published on the OGC
   compatibility path. Like `ChunkInterrupted`, both spellings are correct.
 - `utils.query` is one *request*, not a query as defined above. It is a frozen
