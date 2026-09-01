@@ -280,7 +280,8 @@ def test_multiple_states_fan_out_preserves_input_order(httpx_mock):
 
 
 def test_fan_out_is_serial_when_concurrency_is_one(httpx_mock, monkeypatch):
-    """``API_USGS_CONCURRENT=1`` still fans out correctly (serial path)."""
+    """``API_USGS_CONCURRENT=1`` still fans out one request per state
+    (serial path)."""
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     httpx_mock.add_response(
         method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
@@ -976,7 +977,7 @@ def test_importing_dataretrieval_does_not_warn():
     itself should see the warning. If ``__init__`` ever imports the alias,
     every user of the library gets a DeprecationWarning they cannot act on.
 
-    Runs in a subprocess: a fresh interpreter is the only honest way to test
+    Runs in a subprocess: a fresh interpreter is the only way to observe
     an import side effect, and clearing ``sys.modules`` in-process would hand
     every later test a second copy of the package.
     """

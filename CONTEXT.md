@@ -6,7 +6,7 @@ conversation use them the same way. Architectural decisions live in
 `docs/source/architecture/decisions/`.
 
 When a term here conflicts with a name in the code, the term wins and the name
-is legacy. Legacy names are called out below rather than quietly tolerated.
+is legacy. Legacy names are listed below.
 
 ## Retrieval
 
@@ -47,8 +47,12 @@ A chunk of a large query commonly spans many pages.
 service error, a timeout. Distinguished from a **deterministic failure**, which
 would fail identically every time — an unresolvable hostname, an unsupported
 scheme, a malformed request. Only transient failures are retried, and only
-transient failures produce a resumable interruption. The two answers are one
-judgement about what a failure means, and must agree.
+transient failures produce a resumable interruption. Both answers follow from
+one judgement about what a failure means, and must agree.
+
+**Stall timeout** — How long a call may receive nothing at all before retrying
+stops, measured from when data last arrived rather than from the call's start.
+ADR 0006 sets the policy and calls it the *no-progress budget*.
 
 **Interruption** — A transient failure that stopped a fan-out partway, raised
 with the completed chunks preserved. The caller may wait for the condition to
@@ -112,8 +116,11 @@ elapsed time, and the response headers. Describes the *retrieval*, not the data.
 ## Configuration
 
 **Configuration profile** — A named set of settings for one adapter, stored in
-the configuration file or built in code. **Configuration** is the short form.
-A profile is an *input* to resolution, never its result.
+the configuration file or built in code. A profile is an *input* to resolution,
+never its result. In prose, **configuration** shortens this; in code,
+`Configuration` is the package-wide settings class, and an adapter's profile is
+its own `*Configuration` subclass. The two differ only by case, so prefer the
+full term wherever a reader could take it either way.
 
 **Default profile** — The profile an adapter uses when no other is selected:
 the `[<adapter>]` table's own keys. Always in effect. A **named profile**
@@ -129,8 +136,9 @@ it. **Configure** is the verb for applying one.
 concurrency cap, the retry count, the progress line, the fan-out baseline. A
 setting means the same thing wherever it applies, but it does not apply
 everywhere: `concurrency` is meaningless to an adapter that issues one request
-at a time, and `parallel_chunks` applies only to the two adapters whose queries
-chunk. Which settings an adapter accepts is part of that adapter's vocabulary.
+at a time, and `parallel_chunks` applies only to the adapters whose chunking the
+planner can refine. Which settings an adapter accepts is part of that adapter's
+vocabulary.
 
 A public keyword is not automatically a setting. `ssl_check` is a getter
 argument on four adapters and resolves through no chain at all; the settings are
@@ -145,15 +153,27 @@ alone; it does not replace the package-wide tier. An adapter rejects a setting
 it has no use for, rather than accepting and ignoring it.
 
 The scope is the *adapter*, not the service and not the host, because the
-adapter is what owns the conventions being tuned. The API key is the
-counter-example that fixes the distinction: it belongs to the gateway fronting
-a host, so Water Data and NGWMN — two adapters, one host — necessarily share
-one key and one quota pool. Credentials are host-scoped; tunables are
-adapter-scoped.
+adapter is what owns the conventions being tuned. The API key shows where the
+boundary falls: it belongs to the gateway fronting a host, so Water Data and
+NGWMN — two adapters, one host — necessarily share one key and one quota pool.
+Credentials are host-scoped; tunables are adapter-scoped.
 
-**Source** — Where a setting's value came from. Sources are ordered, and the
-order is resolved per setting rather than per source: a value supplied for one
-setting does not displace another setting's value from a lower source.
+**Source** — Where a setting's value came from, as one of the ordered
+categories: a `configure()` block, the environment, the file, the built-in
+default. The order is resolved per setting rather than per source: a value
+supplied for one setting does not displace another setting's value from a lower
+source. ADR 0010 calls a source a *tier* and ADR 0011 a *rung*; both are this
+term, and the accepted records keep their own wording.
+
+**Origin label** — The exact thing a value came from, at finer grain than its
+source: `$API_USGS_RETRIES`, a path to the config file, the profile a caller
+selected. What `show_configuration()` prints beside each value, and what a
+parser names when it rejects one. A source is the category; an origin label is
+the instance within it.
+
+The code carries both, and spells them the other way around: `_resolve` returns
+its origin label under the name `source` and its source under the name `tier`.
+Prose uses the terms above.
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
@@ -166,8 +186,8 @@ Package-wide.
 supplies one, because that adapter warrants a different figure — NWDC asks for
 4 concurrent requests where the OGC getters take 32. Supplied by the adapter in
 code, not by the user. It replaces the built-in default for calls through that
-adapter and nothing else. A value from any source outranks it: an adapter able
-to override an explicit setting would make that setting a lie.
+adapter and nothing else. A value from any source outranks it: otherwise an
+adapter could discard a value the caller set explicitly.
 
 Distinct from an **adapter-scoped setting**, which is the *user* naming a value
 for one adapter. Both narrow to a single adapter; only one of them is something
@@ -182,6 +202,22 @@ value. Where the distinction matters — reporting what a call will actually use
 **Adapter** — A module owning one service's conventions: its URLs, parameters,
 error shapes, and response quirks. Adapters may use shared machinery; shared
 machinery may not know about adapters.
+
+**Dialect** — The per-API quirks the shared OGC machinery needs in order to
+serve two services from one code path: which collections must be POSTed as
+CQL2, which render dates date-only, which columns to coerce and sort by. An
+adapter supplies one and the machinery reads it, which is how protocol code
+stays free of service names.
+
+**Single-shot adapter** — An adapter whose query is always exactly one request:
+WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing
+distributes, so `concurrency` and `parallel_chunks` are not part of its
+vocabulary. NWDC is not one: its query fans out per location even though it
+never chunks by bytes.
+
+**Fitness function** — An executable check that an architectural rule still
+holds, living in `tests/architecture_test.py`. ADR 0003 divides the work between
+these and `.importlinter`.
 
 **Facade** — A module that re-exports a subsystem's public surface and contains
 no logic of its own, so callers depend on a stable name rather than on internal
@@ -207,6 +243,12 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
 - `ChunkInterrupted` is a permanent alias of `FanOutInterrupted` — the same
   class object under the name it was first published as. Both spellings are
   correct; neither is scheduled for removal.
+- *No-progress budget* is ADR 0006's name for the **stall timeout**. Both
+  spellings are current; the setting is `stall_timeout`.
+- `ChunkedCall` is a permanent alias of `FanOut`, published on the OGC
+  compatibility path. Like `ChunkInterrupted`, both spellings are correct.
+- `utils.query` is one *request*, not a query as defined above. It is a frozen
+  public path (`dataretrieval.utils.query`) and predates this glossary.
 - `site` appears in deprecated NWIS and WQP parameter names where *monitoring
   location* is meant. These are frozen public surfaces and will not be renamed.
   Where the Water Data API itself names a thing `site-types` or
@@ -216,7 +258,9 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   OGC internals, the Water Data wrappers, and all eleven typed getters now say
   `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
   `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
-  alias remain — a deprecated keyword and a permanent alias respectively.
+  alias remain — a deprecated keyword and a permanent alias respectively. Two
+  `OgcDialect` fields also still say it: `cql2_services` and
+  `date_only_services` are keyed by collection.
 
   `service` still means the external system in `transport` and `progress`,
   where it labels a progress line. That usage is correct.
@@ -228,8 +272,8 @@ Recorded so they are not mistaken for the canonical term, and not re-litigated:
   query rather than five sets of data, and the OGC definition of *collection*
   is scoped to "access mechanisms defined by OGC API standard(s)", which
   Samples does not implement. Kept as-is by decision: renaming a public
-  keyword costs a deprecation cycle for a term with no better-evidenced
-  replacement in reach.
+  keyword costs a deprecation cycle, and no better-evidenced replacement is in
+  reach.
 - `waterdata.get_codes(code_service=)` is correct and stays. The Samples
   documentation calls it a "code service" in prose and serves it from
   `/codeservice/`, so this reproduces the service's own vocabulary, like

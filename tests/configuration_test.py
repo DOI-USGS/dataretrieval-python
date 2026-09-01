@@ -148,7 +148,7 @@ def test_explicit_none_suppresses_lower_sources(monkeypatch):
     ],
 )
 def test_a_configuration_validates_its_own_settings(settings):
-    """A bad value raises where it was written, not inside a later request.
+    """An invalid value raises where it was written, not inside a later request.
 
     Construction is earlier than the ``with``, which is earlier than the
     request the value would otherwise have broken.
@@ -459,7 +459,7 @@ def test_loading_an_undefined_profile_raises(config_file):
     """A name the caller just typed is a typo, not a silent fall-through.
 
     The message lists what the file *does* define, because a misspelling is
-    only obvious next to the spelling that was meant -- and only for this
+    only recognizable next to the spelling that was meant -- and only for this
     adapter, since selecting a profile is per adapter and another service's
     profile names are not candidates for what the caller meant to type.
     """
@@ -1049,7 +1049,7 @@ def test_show_config_renderers_cover_every_setting():
 
 
 def test_unselected_profile_is_not_validated(config_file):
-    """A bad value in a profile nobody selected must not fail every request.
+    """An invalid value in a profile nobody selected must not fail every request.
 
     Profile tables are kept raw at parse time and validated only when one is
     actually selected -- the same blast-radius rule ``_default_headers``
@@ -1075,9 +1075,10 @@ def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn
 def test_a_malformed_table_does_not_fail_another_adapters_call(config_file):
     """The blast-radius rule, on the tier a whole adapter table sits in.
 
-    Keys are checked when *that* adapter first resolves a setting, so a bad
-    value in ``[nldi]`` costs a Water Data call nothing -- which is also what
-    lets an adapter's vocabulary live in a module this leaf cannot import.
+    Keys are checked when *that* adapter first resolves a setting, so an
+    invalid value in ``[nldi]`` costs a Water Data call nothing -- which is
+    also what lets an adapter's vocabulary live in a module this leaf cannot
+    import.
     """
     config_file(
         'api_key = "good"\n\n[nldi]\nretries = -1\n\n[waterdata]\nretries = 2\n'
@@ -1232,8 +1233,9 @@ def test_a_misspelled_setting_is_not_silently_swallowed():
     """A typo must fail, not be accepted and ignored.
 
     ``Configuration(concurrancy=8)`` is not a field, so the dataclass refuses
-    it by name -- the worst outcome for a module whose job is to be
-    trustworthy about what a call will use would be to take it and drop it.
+    it by name -- taking it and dropping it would leave a caller believing a
+    setting is in force that no call reads, from a module whose job is to be
+    trustworthy about what a call will use.
     """
     with pytest.raises(TypeError, match="concurrancy"):
         Configuration(concurrancy=8)
@@ -1271,7 +1273,7 @@ def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
     """``None`` means "cannot validate these keys yet", never "invalid".
 
     NLDI is imported on demand for the geopandas extra, so a roster built from
-    imports would reject a perfectly good ``[nldi]`` table until something
+    imports would reject a valid ``[nldi]`` table until something
     happened to import that module.
     """
     monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
@@ -1280,13 +1282,13 @@ def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
 
 
 def test_every_adapter_is_actually_wired_to_a_read_site():
-    """A schema nothing passes is worse than no schema.
+    """A schema nothing passes costs the caller a report they cannot trust.
 
     ``show_configuration()`` would report a ``[nwis]`` override as live while
     every call ignored it -- the report whose whole job is answering "what will
-    this call use" being confidently wrong. Importability is the weaker half of
-    the invariant: it passed while ``waterdata.get_cql``, eight of nine WQP
-    getters, and all of ``nwis`` silently resolved package-wide.
+    this call use" being confidently incorrect. Importability is the weaker
+    half of the invariant: it passed while ``waterdata.get_cql``, eight of nine
+    WQP getters, and all of ``nwis`` silently resolved package-wide.
     """
     import pathlib
 
@@ -1310,7 +1312,7 @@ def test_a_misspelled_adapter_at_a_read_site_raises():
     matches the typo, every setting is accepted because nothing knows the
     schema, and a ``[waterdata]`` table or a ``WaterdataConfiguration`` is then
     ignored with nothing raised anywhere. The grep only sees that the correctly
-    spelled string occurs somewhere; it cannot see a second, wrong one.
+    spelled string occurs somewhere; it cannot see a second, misspelled one.
     """
     with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
         configuration.retries(adapter="waterdatas")
@@ -1385,7 +1387,7 @@ def test_base_url_is_refused_from_the_environment(monkeypatch):
 
     ``API_USGS_BASE_URL`` is the spelling every other setting's variable
     predicts, so a caller who exports it believes they have redirected
-    something. Leaving it out of ``ENV_VARS`` would make that belief wrong and
+    something. Leaving it out of ``ENV_VARS`` would make that belief false and
     silent; the error names the block to write instead.
     """
     monkeypatch.setenv("API_USGS_BASE_URL", "https://evil.example")
@@ -1475,7 +1477,7 @@ def test_a_redirected_adapter_is_not_sent_the_api_key(httpx_mock):
     ``credentials.accepts_api_key`` is checked where the header is attached, so
     a redirect needs no second rule to be safe -- but "needs no rule" is exactly
     the kind of claim that stops being true silently, and the cost of it being
-    wrong is a credential handed to whatever host the block named.
+    false is a credential handed to whatever host the block named.
     """
     httpx_mock.add_response(method=None, url=_MIRROR_RE, json=_DAILY_PAGE)
     httpx_mock.add_response(method=None, url=_WATERDATA_RE, json=_DAILY_PAGE)
@@ -1645,11 +1647,11 @@ def test_a_loaded_profile_beats_the_environment(config_file, monkeypatch):
     """Rung 2 over rung 3 -- the one inversion ADR 0011 exists to make.
 
     ADR 0009 put the environment above the file, and a named profile lives in
-    the file, so the naive reading is that ``API_USGS_CONCURRENT`` in the shell
-    wins. It does not: what reaches the chain is the caller *naming* the
-    profile in code, which is a more deliberate act than a variable inherited
-    from whatever started the process, and losing to that variable is the
-    behaviour a caller would file a bug about.
+    the file, so those two rules alone predict that ``API_USGS_CONCURRENT`` in
+    the shell wins. It does not: what reaches the chain is the caller *naming*
+    the profile in code, which is a more deliberate act than a variable
+    inherited from whatever started the process, and losing to that variable
+    is the behaviour a caller would file a bug about.
 
     The inversion is also bounded, which the second half asserts: it covers
     what the profile names and nothing else, so ``retries`` -- which the file
@@ -1798,7 +1800,8 @@ def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
 #
 # The report exists to answer "why is this call using that value?", so every
 # row names the source that supplied it. A value from a profile is the case a
-# bare "configure() block" answers badly: a configuration written in code and
+# bare "configure() block" label cannot distinguish: a configuration written in
+# code and
 # one loaded from a table reach the chain by the same route, and only the
 # latter has a name in a file the caller can go and read.
 
@@ -1838,9 +1841,10 @@ def test_show_configuration_names_the_profile_a_value_came_from(config_file):
     ``WaterdataConfiguration.load("bulk")`` and ``WaterdataConfiguration(...)``
     enter the chain by the same route and are indistinguishable once their
     values are in the block, so a report that said only ``configure() block``
-    left a caller who selected the wrong profile -- or who had forgotten a
-    profile was selected at all -- with nothing to look at. The label is the
-    table's own spelling, so it is greppable in the file that defines it.
+    left a caller who selected a profile they did not intend -- or who had
+    forgotten a profile was selected at all -- with nothing to look at. The
+    label is the table's own spelling, so it is greppable in the file that
+    defines it.
     """
     config_file("[waterdata.bulk]\nconcurrency = 6\n")
     out = io.StringIO()
@@ -1927,7 +1931,7 @@ def test_show_configuration_reports_an_unimported_adapter(config_file, monkeypat
     """An adapter this process cannot report on is named, never omitted.
 
     NLDI is imported on demand for the geopandas extra, so a process that has
-    not touched it cannot say which settings it accepts -- the honest cost of
+    not touched it cannot say which settings it accepts -- the cost of
     validating an adapter's keys lazily (ADR 0011). Leaving it out of the
     report would read as "nothing is configured for nldi", which is a
     different claim from "this report could not check", and the caller cannot
@@ -2085,7 +2089,7 @@ class TestConfigPathResolutionFailures:
     def test_an_unresolvable_home_leaves_the_file_layer_inert(self, monkeypatch):
         """A container with no passwd entry raises from ``Path.home()``. The
         unexpanded ``~`` form is returned instead: it does not exist, so the
-        file layer is simply empty, and the environment alone still works --
+        file layer is empty, and the environment alone still works --
         which is how this package behaved before settings were layered."""
         monkeypatch.setattr(
             _core.Path,

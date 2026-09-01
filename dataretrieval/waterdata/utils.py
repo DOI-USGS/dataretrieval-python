@@ -9,9 +9,8 @@ module.
 OGC machinery (request construction, pagination, response shaping, the
 chunked ``get_ogc_data`` entry point) lives in :mod:`dataretrieval.ogc`
 and its implementation submodules. This adapter consumes the public facade
-for dialects, argument normalization, and retrieval; callers that need an OGC
-implementation helper import its canonical module directly rather than using
-this module as a re-export layer.
+for dialects, argument normalization, and retrieval; it is not a re-export
+layer for OGC helpers (ADR 0003).
 """
 
 from __future__ import annotations
@@ -175,9 +174,9 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     format-flexible parameter (full name / postal / FIPS); it is normalized via
     :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
     and stored under ``into`` (the API parameter this endpoint filters on).
-    It is additive sugar over the native ``state_code`` / ``state_name``
-    parameters, which still accept the API's raw values (e.g. non-US FIPS);
-    passing ``state`` together with either raises ``ValueError``.
+    It adds to, rather than replaces, the native ``state_code`` /
+    ``state_name`` parameters, which still accept the API's raw values (e.g.
+    non-US FIPS); passing ``state`` together with either raises ``ValueError``.
     """
     # Flatten ``**queryables`` first so a native state param arriving that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an

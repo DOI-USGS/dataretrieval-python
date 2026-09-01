@@ -50,7 +50,7 @@ _KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/"
 @pytest.fixture(autouse=True)
 def _reset_api_key_hint_latch(monkeypatch):
     """The 'no API key' pointer is latched once per process; reset it so each
-    test sees a clean slate regardless of order."""
+    test sees the latch unset regardless of order."""
     monkeypatch.setattr(_progress, "_api_key_hint_shown", False)
 
 

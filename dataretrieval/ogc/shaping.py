@@ -379,10 +379,8 @@ def _finalize_ogc(
     as :class:`~dataretrieval.utils.BaseMetadata`.
 
     Injected into the chunker as its ``finalize`` hook (see
-    :data:`~dataretrieval.ogc.chunking._Finalize`) so the
-    un-interrupted return *and* a resumed ``ChunkInterrupted.call.resume()``
-    produce the same post-processed ``(DataFrame, BaseMetadata)`` shape, not
-    the chunker's raw frame and bare ``httpx.Response``.
+    :data:`~dataretrieval.ogc.chunking._Finalize`); ADR 0008 makes that hook
+    part of the fan-out contract.
 
     ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
     rather than only per-chunk, so a chunked call's total is bounded

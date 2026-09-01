@@ -38,8 +38,7 @@ def _service_base() -> str:
 
     Both endpoints below hang off this, so a
     ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
-    than the one endpoint a caller happened to reach first. Resolved per call,
-    because a ``configure`` block is scoped to a ``with`` statement.
+    than one endpoint (ADR 0011).
     """
     return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
@@ -249,10 +248,8 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     No fan-out dials: a StreamStats query is answered by a single
     request.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -267,9 +264,6 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         the file and the environment refuse it.
     """
 
-    # One request per call, so this service reads the retry dials and a
-    # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "streamstats"
 
 

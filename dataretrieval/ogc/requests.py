@@ -2,10 +2,8 @@
 
 The API to target and its quirks are explicit parameters (``base_url``,
 ``dialect``) -- construction states everything it needs. Queryables and schema
-execution live in :mod:`dataretrieval.ogc.schema`, not re-exported from here --
-importing the schema helper only to forward it would give this module an edge
-to the one part of OGC that executes HTTP, which is exactly what request
-*construction* is supposed to be free of.
+execution live in :mod:`dataretrieval.ogc.schema` and are not re-exported here,
+so this module does not depend on the part of OGC that executes HTTP (ADR 0007).
 """
 
 from __future__ import annotations

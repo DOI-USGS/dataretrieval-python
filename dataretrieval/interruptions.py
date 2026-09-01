@@ -279,11 +279,10 @@ def _walk_causes(
 def _deterministic_failure(exc: BaseException) -> bool:
     """Whether a transport failure would fail identically on every retry.
 
-    An unsupported scheme or a request we built wrong is settled before a byte
-    goes out, and a hostname the resolver rejects outright won't be accepted on
-    the next attempt either -- so retrying only delays the error the caller
-    needs. A *temporary* resolver failure is not in that class and stays
-    retryable (see :data:`_PERMANENT_DNS_ERRORS`).
+    True for an unsupported scheme, a malformed request, or a hostname the
+    resolver rejects permanently. A *temporary* resolver failure is not in that
+    class and stays retryable (see :data:`_PERMANENT_DNS_ERRORS`). Bounding
+    retry to failures a later attempt could survive is ADR 0006.
 
     Walks ``__context__`` as well as ``__cause__``, because the original
     failure is several layers down and not always an explicit ``raise ...
@@ -311,9 +310,9 @@ def _classify_transient(
     if isinstance(exc, TransientError):
         return ServiceInterrupted, exc.retry_after
     if isinstance(exc, (httpx.HTTPError, httpx.InvalidURL)):
-        # Some failures will fail the same way every time -- a bad scheme, a
-        # hostname that doesn't resolve. Offering to resume one would just
-        # hide the real error behind a retry that can never work.
+        # Some failures will fail the same way every time -- an unsupported
+        # scheme, a hostname that doesn't resolve. Offering to resume one
+        # would hide the real error behind a retry that can never work.
         if _deterministic_failure(exc):
             return None
         return ServiceInterrupted, None

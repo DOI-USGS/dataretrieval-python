@@ -8,9 +8,7 @@ chunk execution, service fan-out, and cursor-driven pagination.
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
 
-A top-level leaf rather than part of :mod:`dataretrieval.transport`: these are
-pandas transforms over already-fetched results, with no HTTP or event-loop
-concern, consumed by chunk planning and service fan-out as well as by pagination.
+A top-level leaf rather than part of :mod:`dataretrieval.transport` -- ADR 0006.
 """
 
 from __future__ import annotations

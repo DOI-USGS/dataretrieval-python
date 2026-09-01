@@ -14,13 +14,12 @@ chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
 page/row/rate-limit counts) both update without knowing about each other. Call
 :func:`progress_context` to activate one and :func:`current` to reach it.
 
-This is a top-level leaf rather than part of :mod:`dataretrieval.transport`: it
-is terminal presentation, not HTTP execution policy. Transport modules report
-*into* it, so keeping it outside means the execution layer owns no rendering, and
-every service adapter -- OGC or not -- reaches the same reporter.
+This is a top-level leaf rather than part of :mod:`dataretrieval.transport`:
+transport modules report *into* it and the execution layer owns no rendering
+(ADR 0006), so every service adapter -- OGC or not -- reaches the same reporter.
 
 By default the line is shown for interactive use — an interactive terminal or a
-Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI stay clean.
+Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI get no line.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
 """
 
@@ -131,8 +130,8 @@ class ProgressReporter:
         self.retry_note: str | None = None
         self._last_len = 0
         # Whether anything was actually written to the stream — drives whether
-        # close() needs a terminating newline. (``current_chunk`` is a poor
-        # proxy: ``start_chunk`` sets it even when it doesn't render.)
+        # close() needs a terminating newline. (``current_chunk`` doesn't
+        # track that: ``start_chunk`` sets it even when it doesn't render.)
         self._rendered = False
         self._closed = False
 
