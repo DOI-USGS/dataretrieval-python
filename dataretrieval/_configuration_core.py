@@ -66,7 +66,7 @@ _REFUSED_ENV_VARS: dict[str, str] = {
 #: Environment variable holding an explicit path to the configuration file.
 CONFIG_PATH_ENV = "DATARETRIEVAL_CONFIG"
 
-#: Source label for a setting no source supplied.
+#: Origin label for a setting no source supplied.
 _BUILT_IN = "built-in default"
 
 #: The table ADR 0011 retired. Named here only so a file written against the
@@ -117,7 +117,7 @@ _PROGRESS_FALSEY = frozenset({"", "0", "false", "no", "off"})
 # is absent on a fork), so treating it as configured would let it shadow the
 # config file and silently drop the user's API key. Keeping this a property of
 # the setting -- rather than a second, lower visit to the environment -- keeps
-# the chain at the three tiers the docstring and ADR 0009 describe.
+# the chain at the three sources the docstring and ADR 0009 describe.
 _BLANK_MEANS_SET = frozenset({"progress"})
 
 # Warnings about the config file report the file, not a call site: settings are
@@ -157,7 +157,7 @@ _ScopeKey = str | tuple[str, str]
 # inner package-wide one, inverting the nesting rule ADR 0011 states.
 #
 # Each entry pairs the raw value with the label naming where it came from, the
-# same shape the file tier returns (:func:`_adapter_file_settings`). The
+# same shape the file source returns (:func:`_adapter_file_settings`). The
 # label is built while the configuration object is still in hand, the only
 # point where the *profile* is known -- by the time a value reaches the frame,
 # one from ``WaterdataConfiguration.load("bulk")`` and one from
@@ -295,7 +295,7 @@ class BaseConfiguration:
             if value is not None:
                 # ``None`` is not a value to check: it means "suppress the
                 # lower sources", which every setting accepts.
-                _validated_raw(name, value, self._source(name), optional=", or None")
+                _validated_raw(name, value, self._label(name), optional=", or None")
         self.validate()
 
     def validate(self) -> None:
@@ -332,7 +332,7 @@ class BaseConfiguration:
 
         ``[<adapter>.<profile>]``. Only the keys that table names are carried,
         so the profile still inherits the adapter's default profile and the
-        package-wide keys per setting from the tiers below.
+        package-wide keys per setting from the sources below.
 
         Selecting a profile the file does not define raises: a name a caller
         just typed is a typo worth reporting, not a silent fall-through to
@@ -364,7 +364,7 @@ class BaseConfiguration:
         object.__setattr__(loaded, "profile", profile)
         return loaded
 
-    def _source(self, name: str) -> str:
+    def _label(self, name: str) -> str:
         """How one of this configuration's settings is named in an error."""
         return f"{name}= in {type(self).__name__}()"
 
@@ -563,8 +563,8 @@ def settings_for(adapter: str) -> frozenset[str] | None:
     return None if cls is None else cls.settings()
 
 
-def _env_source_label(env_var: str) -> str:
-    """How a value read from ``env_var`` is reported as a source."""
+def _env_label(env_var: str) -> str:
+    """How a value read from ``env_var`` is reported as an origin label."""
     return f"${env_var}"
 
 
@@ -720,46 +720,46 @@ def _home_id() -> str:
 # TOML types and reject Python API type errors before producing raw strings.
 
 
-def _type_error(source: str, expected: str, value: object) -> ConfigurationError:
+def _type_error(label: str, expected: str, value: object) -> ConfigurationError:
     """Build a type error without rendering a possibly secret value."""
     return ConfigurationError(
-        f"{source} must be {expected} (got {type(value).__name__})."
+        f"{label} must be {expected} (got {type(value).__name__})."
     )
 
 
-def _coerce_string(value: object, source: str, optional: str) -> str:
+def _coerce_string(value: object, label: str, optional: str) -> str:
     if not isinstance(value, str):
-        raise _type_error(source, "a string" + optional, value)
+        raise _type_error(label, "a string" + optional, value)
     return value
 
 
-def _coerce_progress(value: object, source: str, optional: str) -> str:
+def _coerce_progress(value: object, label: str, optional: str) -> str:
     if isinstance(value, bool):
         return str(value)
     if isinstance(value, str):
         return value
-    raise _type_error(source, "a bool or recognized string" + optional, value)
+    raise _type_error(label, "a bool or recognized string" + optional, value)
 
 
-def _coerce_concurrency(value: object, source: str, optional: str) -> str:
+def _coerce_concurrency(value: object, label: str, optional: str) -> str:
     if isinstance(value, bool) or not isinstance(value, (Integral, str)):
-        raise _type_error(source, "an integer or 'unbounded'" + optional, value)
+        raise _type_error(label, "an integer or 'unbounded'" + optional, value)
     if isinstance(value, str) and value.strip().lower() != CONCURRENCY_UNBOUNDED:
-        raise ConfigurationError(f"{source} must be an integer or 'unbounded'.")
+        raise ConfigurationError(f"{label} must be an integer or 'unbounded'.")
     return str(value)
 
 
-def _coerce_seconds(value: object, source: str, optional: str) -> str:
+def _coerce_seconds(value: object, label: str, optional: str) -> str:
     # Seconds, so a fractional value is meaningful -- unlike the counts, which
     # are whole by nature.
     if isinstance(value, bool) or not isinstance(value, (Integral, float)):
-        raise _type_error(source, "a number of seconds" + optional, value)
+        raise _type_error(label, "a number of seconds" + optional, value)
     return str(value)
 
 
-def _coerce_count(value: object, source: str, optional: str) -> str:
+def _coerce_count(value: object, label: str, optional: str) -> str:
     if isinstance(value, bool) or not isinstance(value, Integral):
-        raise _type_error(source, "an integer" + optional, value)
+        raise _type_error(label, "an integer" + optional, value)
     return str(value)
 
 
@@ -791,7 +791,7 @@ if set(_TYPES) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding erro
     )
 
 
-def _coerce_typed(name: str, value: object, source: str, *, optional: str = "") -> str:
+def _coerce_typed(name: str, value: object, label: str, *, optional: str = "") -> str:
     """Type-check one source-level value and render it as a raw string.
 
     Shared by the two *typed* surfaces -- a configuration's fields and TOML
@@ -802,19 +802,19 @@ def _coerce_typed(name: str, value: object, source: str, *, optional: str = "") 
     ``optional`` is the only thing that differs between them: the Python
     surface accepts ``None`` and says so in its messages.
     """
-    return _TYPES[name](value, source, optional)
+    return _TYPES[name](value, label, optional)
 
 
-def _validated_raw(name: str, value: object, source: str, *, optional: str = "") -> str:
+def _validated_raw(name: str, value: object, label: str, *, optional: str = "") -> str:
     """Type-check, render and grammar-check one typed value."""
-    raw = _coerce_typed(name, value, source, optional=optional)
-    _validate_raw(name, raw, source)
+    raw = _coerce_typed(name, value, label, optional=optional)
+    _validate_raw(name, raw, label)
     return raw
 
 
 def _parse_int(
     raw: str,
-    source: str,
+    label: str,
     *,
     default: int,
     minimum: int,
@@ -826,8 +826,8 @@ def _parse_int(
     ----------
     raw : str
         The value as written, from whichever source supplied it.
-    source : str
-        Human-readable origin, used as the subject of any error message.
+    label : str
+        Human-readable origin label, used as the subject of any error message.
     default : int
         Returned for a blank value, matching the environment-variable
         behavior this replaced.
@@ -843,13 +843,13 @@ def _parse_int(
     try:
         parsed = int(value)
     except ValueError as exc:
-        raise ConfigurationError(f"{source} must be {expected} (got {raw!r}).") from exc
+        raise ConfigurationError(f"{label} must be {expected} (got {raw!r}).") from exc
     if parsed < minimum:
-        raise ConfigurationError(f"{source} must be {expected} (got {parsed}).")
+        raise ConfigurationError(f"{label} must be {expected} (got {parsed}).")
     return parsed
 
 
-def _parse_seconds(raw: str, source: str) -> float:
+def _parse_seconds(raw: str, label: str) -> float:
     """Parse a non-negative duration in seconds; blank falls through.
 
     Seconds rather than a count, so fractional values are accepted. ``0``
@@ -863,29 +863,29 @@ def _parse_seconds(raw: str, source: str) -> float:
     try:
         parsed = float(value)
     except ValueError as exc:
-        raise ConfigurationError(f"{source} must be {expected} (got {raw!r}).") from exc
+        raise ConfigurationError(f"{label} must be {expected} (got {raw!r}).") from exc
     # ``inf`` and ``nan`` both parse as floats and both defeat the bound they
     # are meant to set: ``inf`` makes every wait allowed, and ``nan`` compares
     # false against every threshold. TOML has literal ``inf``/``nan``, so this
     # is reachable from the file as well as from Python.
     if not math.isfinite(parsed) or parsed < 0:
-        raise ConfigurationError(f"{source} must be {expected} (got {parsed}).")
+        raise ConfigurationError(f"{label} must be {expected} (got {parsed}).")
     return parsed
 
 
-def _parse_concurrency(raw: str, source: str) -> int | None:
+def _parse_concurrency(raw: str, label: str) -> int | None:
     """Parse a concurrency cap: a positive int, or ``unbounded`` -> ``None``."""
     if raw.strip().lower() == CONCURRENCY_UNBOUNDED:
         return None
     try:
-        return _parse_int(raw, source, default=DEFAULT_CONCURRENCY, minimum=1)
+        return _parse_int(raw, label, default=DEFAULT_CONCURRENCY, minimum=1)
     except ConfigurationError as exc:
         raise ConfigurationError(
             f"{exc} Use '{CONCURRENCY_UNBOUNDED}' to disable the cap."
         ) from exc
 
 
-def _parse_base_url(raw: str, source: str) -> str:
+def _parse_base_url(raw: str, label: str) -> str:
     """Parse a service base URL: an absolute ``http``/``https`` origin.
 
     Only the scheme is checked, and deliberately so. This module cannot know
@@ -896,16 +896,16 @@ def _parse_base_url(raw: str, source: str) -> str:
     value = raw.strip()
     if not value.startswith(("http://", "https://")):
         raise ConfigurationError(
-            f"{source} must be an absolute http:// or https:// URL (got {raw!r})."
+            f"{label} must be an absolute http:// or https:// URL (got {raw!r})."
         )
     return value
 
 
-def _parse_progress(raw: str, source: str, *, strict: bool) -> bool:
+def _parse_progress(raw: str, label: str, *, strict: bool) -> bool:
     """Parse a progress toggle, optionally preserving legacy env truthiness."""
     value = raw.strip().lower()
     if strict and not value:
-        raise ConfigurationError(f"{source} must not be blank.")
+        raise ConfigurationError(f"{label} must not be blank.")
     if value in _PROGRESS_FALSEY:
         return False
     if value in _PROGRESS_TRUTHY:
@@ -913,7 +913,7 @@ def _parse_progress(raw: str, source: str, *, strict: bool) -> bool:
     if not strict:
         return True
     expected = ", ".join(sorted(_PROGRESS_TRUTHY | _PROGRESS_FALSEY))
-    raise ConfigurationError(f"{source} must be one of {expected} (got {raw!r}).")
+    raise ConfigurationError(f"{label} must be one of {expected} (got {raw!r}).")
 
 
 # Each integer setting's grammar, named once. The accessor and the eager
@@ -936,11 +936,11 @@ _VALIDATORS: dict[str, Callable[[str, str], object]] = {
 }
 
 
-def _validate_raw(name: str, raw: str, source: str) -> None:
+def _validate_raw(name: str, raw: str, label: str) -> None:
     """Run a setting's grammar validator when it has one."""
     validate = _VALIDATORS.get(name)
     if validate is not None:
-        validate(raw, source)
+        validate(raw, label)
 
 
 def _named_profiles(parsed: _ParsedFile, adapter: str) -> dict[str, dict[str, Any]]:
@@ -972,7 +972,7 @@ def _named_profile(
     Returns the TOML scalars as written rather than raw strings, because the
     caller is :meth:`BaseConfiguration.load`, which feeds them straight back
     into the configuration's own typed fields. Values are still checked here,
-    with a source that names the file and the table: a grammar error found on
+    with a label that names the file and the table: a grammar error found on
     the way *out* of the file should say which line to fix, not merely which
     field of which class ended up holding it.
     """
@@ -1019,8 +1019,8 @@ def _current_file() -> tuple[Path, _ParsedFile]:
     """The config file as currently loaded: its path and its parsed form.
 
     One helper so the two always travel together. They are a single fact, and
-    handing the top-level tier a different ``_ParsedFile`` than the adapter
-    tier saw in the same resolution is exactly the drift that made an
+    handing the top-level source a different ``_ParsedFile`` than the adapter
+    source saw in the same resolution is exactly the drift that made an
     adapter-scoped read load the file twice.
     """
     path = config_path()
@@ -1033,7 +1033,7 @@ def _adapter_file_settings(
     """The ``[<adapter>]`` table's own keys -- its default profile.
 
     Layers *above* the file's top-level keys rather than being merged into
-    them: within the file tier an adapter's own value outranks the package-wide
+    them: within the file source an adapter's own value outranks the package-wide
     one. The table's sub-tables are its named profiles, which are inert until a
     caller selects one, so they are skipped here (see :func:`_accepted_keys`).
 
@@ -1299,9 +1299,9 @@ def _checked_table(
                 UserWarning,
                 stacklevel=_WARN_STACKLEVEL,
             )
-        source = f"{path}: {key!r} at {where}"
-        raw = _coerce_typed(key, value, source)
-        _validate_raw(key, raw, source)
+        label = f"{path}: {key!r} at {where}"
+        raw = _coerce_typed(key, value, label)
+        _validate_raw(key, raw, label)
         checked[key] = (value, raw)
     return checked
 

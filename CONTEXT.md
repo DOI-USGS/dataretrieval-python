@@ -171,9 +171,8 @@ selected. What `show_configuration()` prints beside each value, and what a
 parser names when it rejects one. A source is the category; an origin label is
 the instance within it.
 
-The code carries both, and spells them the other way around: `_resolve` returns
-its origin label under the name `source` and its source under the name `tier`.
-Prose uses the terms above.
+The code uses both names: `_resolve` returns `(raw, label, source)`, and the
+parsers take the `label` as the subject of any error message they raise.
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
