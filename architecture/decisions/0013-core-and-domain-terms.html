@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADR 0013: Distinguish the terms we own from the terms the services own &mdash; dataretrieval 0.1.dev1+g08e143c51 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6ae09fef"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ADR template" href="template.html" />
+    <link rel="prev" title="ADR 0012: Announce every removal through one advisory with a published horizon" href="0012-deprecation-horizons.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Architecture</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#purpose-and-scope">Purpose and scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#architecture-characteristics">Architecture characteristics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#context-view">Context view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#composition-and-dependency-view">Composition and dependency view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interface-view">Interface view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#service-return-contracts">Service return contracts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#interaction-view">Interaction view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0008-fan-out-execution.html">ADR 0008: Separate fan-out execution from chunk planning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0013: Distinguish the terms we own from the terms the services own</a></li>
+<li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0013: Distinguish the terms we own from the terms the services own</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/architecture/decisions/0013-core-and-domain-terms.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="adr-0013-distinguish-the-terms-we-own-from-the-terms-the-services-own">
+<h1>ADR 0013: Distinguish the terms we own from the terms the services own<a class="headerlink" href="#adr-0013-distinguish-the-terms-we-own-from-the-terms-the-services-own" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> is one flat glossary. Every term in it reads as equally binding,
+and every place the code disagrees is filed under <em>Known legacy names</em> – a
+list whose framing is that the disagreement is debt, tolerated until someone
+gets to it.</p>
+<p>For most of the glossary that framing is right. But it is wrong for a small set
+of terms, and being wrong about those has produced the same review argument
+repeatedly: whether a docstring may say <em>site</em>, whether <code class="docutils literal notranslate"><span class="pre">service=</span></code> may name a
+collection, whether prose about NWIS is bound by a word chosen from the Water
+Data API.</p>
+<p>The two sets behave differently because their authority differs.</p>
+<p>Terms like <em>chunk</em>, <em>page</em>, <em>fan-out</em>, <em>plan</em>, <em>interruption</em>, <em>dialect</em> and
+<em>leaf</em> appear nowhere in any USGS API’s vocabulary. They were invented here to
+describe machinery this package owns. Nothing external constrains them, so when
+the package spells one of them two ways – the resolution chain’s code said
+<em>tier</em> for what its founding records, ADRs 0009 and 0010, call a <em>source</em> –
+that is simply an inconsistency, and one that can be removed by deciding.</p>
+<p>Terms like <em>monitoring location</em> and <em>collection</em> are different. The services
+name those things, and they do not agree with each other:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Concept</p></th>
+<th class="head"><p>NWIS</p></th>
+<th class="head"><p>WQP</p></th>
+<th class="head"><p>Water Data</p></th>
+<th class="head"><p>NGWMN</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>a place where measurements are recorded</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">site_no</span></code>, <code class="docutils literal notranslate"><span class="pre">sites=</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Station</span></code>, <code class="docutils literal notranslate"><span class="pre">siteid</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code></p></td>
+<td><p>the <code class="docutils literal notranslate"><span class="pre">sites</span></code> collection</p></td>
+</tr>
+<tr class="row-odd"><td><p>a named set of records</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">service=</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Result</span></code>, <code class="docutils literal notranslate"><span class="pre">Station</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">collection</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">collection</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>No decision here makes those agree. A caller who has read the WQP
+documentation looks for <code class="docutils literal notranslate"><span class="pre">Station</span></code>; one reading Water Data’s looks for
+<code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code>. An adapter that renamed either would be harder to
+use, not easier, and the parameter names are public surface besides.</p>
+<p>Treating both sets under one rule forces a choice between two bad options:
+abandon the glossary, and the shared modules lose the vocabulary that lets them
+be shared; or enforce it everywhere, and every adapter’s public surface drifts
+from the API it wraps.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p>The glossary holds two kinds of term, and they carry different obligations.</p>
+<p><strong>Core terms are ours.</strong> The package invented them and no service has a claim
+on them: everything under <em>Retrieval</em>, <em>Failure and resumption</em>, <em>Configuration</em>
+and <em>Boundaries</em>, plus <em>Collection family</em> and <em>Metadata</em>. One spelling,
+enforced everywhere it appears – prose, identifiers, tests. A second spelling
+of a core term is a defect, not a variation, and is fixed rather than recorded.
+This is what makes the lower-level modules shareable: transport, configuration
+and the OGC engine can be written once because the words they are written in
+answer to nothing outside this package.</p>
+<p><strong>Domain terms belong to the services.</strong> <em>Monitoring location</em> and <em>collection</em>
+name things the services define and spell differently. For these the glossary
+chooses one term for <strong>prose</strong>, so that documents about the package are
+internally consistent. It does not choose for the wire, and it does not choose
+for an adapter’s public surface: each adapter keeps its own service’s spelling
+in its parameters, and reproduces that service’s vocabulary faithfully where it
+appears in returned data.</p>
+<p>An adapter is where the two meet. Its public surface speaks its service’s
+language; what it hands to the shared modules speaks the core’s. The
+translation is the adapter’s job, and a divergence at that boundary is the
+design working rather than debt.</p>
+<p>Two rules follow:</p>
+<ul class="simple">
+<li><p><strong>A term the glossary does not define is not used in the glossary.</strong> A word
+that earns a place in <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code>’s prose earns an entry. Naming a term
+only to say what an ADR calls it is a cross-reference, not a definition, and
+does not license using the word elsewhere.</p></li>
+<li><p><strong>Only core misnamings are legacy.</strong> <em>Known legacy names</em> records a core term
+the code spells wrongly and cannot be renamed. A domain term at an adapter’s
+surface is not a legacy name; it is that adapter speaking its service’s
+language, and belongs with the term’s own entry.</p></li>
+</ul>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>The recurring question – may this docstring say <em>site</em>? – has an answer that
+does not depend on who is reviewing. In <code class="docutils literal notranslate"><span class="pre">nwis</span></code> it may, because that is the
+spelling its service and its parameters use. In <code class="docutils literal notranslate"><span class="pre">transport</span></code> it may not,
+because nothing there is about NWIS.</p></li>
+<li><p>Enforcement splits. A core term can be checked mechanically, since one
+spelling is correct everywhere. A domain term cannot: the correct spelling
+depends on which adapter the prose is about, so it stays a review judgement.</p></li>
+<li><p><em>Known legacy names</em> becomes shorter and means something narrower. The entries
+it loses are not resolved; they move to the term they belong to, as part of
+its definition rather than a list of exceptions.</p></li>
+<li><p>A glossary entry now carries an obligation to say which kind it is. That is a
+small cost per term and the reason the distinction is usable at all.</p></li>
+<li><p>The package’s own inconsistencies in core vocabulary become defects with a
+deadline rather than curiosities. The resolution chain’s <code class="docutils literal notranslate"><span class="pre">tier</span></code>-for-<em>source</em>
+identifiers are the standing example.</p></li>
+</ul>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> marks each domain term as such and names the per-service
+spellings in the entry itself, so a reader who needs to know whether a word is
+negotiable can see it without asking.</p>
+<p>The mechanical part is that the glossary must define what it uses:
+<code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> asserts every <code class="docutils literal notranslate"><span class="pre">ADR</span> <span class="pre">NNNN</span></code> citation resolves, and
+the same file is where a check that <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> defines its own vocabulary
+would go. None is proposed yet – a word-list check over prose has a poor
+precision record in this repository, and the failure it would catch is one a
+reader notices immediately.</p>
+<p>Whether a given adapter docstring should say <em>site</em> or <em>monitoring location</em>
+remains a review judgement, and is meant to.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>Prompted by review of <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>, where a reviewer found
+<code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> using <em>tier</em> in its own prose without defining it. The word was
+already there before that record was written; recording each explanation once
+made the gap visible rather than creating it.</p>
+<p>The per-service spellings in the table above were read from the adapters on
+2026-09-01.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="0012-deprecation-horizons.html" class="btn btn-neutral float-left" title="ADR 0012: Announce every removal through one advisory with a published horizon" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="template.html" class="btn btn-neutral float-right" title="ADR template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
