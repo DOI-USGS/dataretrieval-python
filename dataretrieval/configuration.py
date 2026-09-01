@@ -19,7 +19,8 @@ Sources, highest precedence first:
 4. The built-in default.
 
 Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the
-same order in finer grain, splitting three of them into the scopes they contain.
+same order in finer grain, as seven rungs -- three of these sources hold two
+apiece.
 An adapter's own default is not one of the four: a read site such as
 :func:`concurrency` passes it in as the ``default`` argument.
 

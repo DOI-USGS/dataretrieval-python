@@ -359,10 +359,10 @@ def test_several_named_profiles_are_selected_independently(config_file):
 
 
 def test_a_named_profile_layers_per_key_over_the_rungs_below(config_file):
-    """Selecting a profile replaces keys, never whole sources.
+    """Selecting a profile replaces keys, never whole rungs.
 
-    Every level of the file overrides the one below it *per key* (ADR 0011), so
-    one adapter-scoped read here draws each of its four settings from a
+    Every rung overrides the one below it *per key* (ADR 0011), so one
+    adapter-scoped read here draws each of its four settings from a
     different table.
     """
     config_file(
