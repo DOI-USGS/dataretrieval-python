@@ -1025,9 +1025,9 @@ def test_broken_config_does_not_break_unrelated_services(config_file):
 def test_default_config_path_follows_a_changed_home(tmp_path, monkeypatch):
     """The default path derives from the home variable, so the memo watches it.
 
-    Which variable that is is platform-specific: ``ntpath.expanduser`` reads
-    ``USERPROFILE`` and ignores ``HOME``, so setting ``HOME`` on Windows moves
-    nothing and this asserted against the runner's real home directory.
+    Which variable that is depends on the platform: ``ntpath.expanduser``
+    reads ``USERPROFILE`` and ignores ``HOME``, so setting ``HOME`` on Windows
+    moves nothing and this asserted against the runner's real home directory.
     """
     home_var = "USERPROFILE" if os.name == "nt" else "HOME"
     monkeypatch.delenv(configuration.CONFIG_PATH_ENV, raising=False)
