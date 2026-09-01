@@ -85,10 +85,6 @@ the start.
 Each is an external system this package retrieves from. They are separate
 services with separate conventions, not one API with modes.
 
-A **portal** is the human-facing site fronting one or more services —
-`waterdata.usgs.gov`, `waterqualitydata.us`. The package talks to services; the
-user guide points people at portals. The two words are not interchangeable.
-
 **Water Data** — The modern USGS API at `api.waterdata.usgs.gov`, covering
 monitoring locations, time series, field measurements, samples, ratings, and
 statistics. The package's primary target.
