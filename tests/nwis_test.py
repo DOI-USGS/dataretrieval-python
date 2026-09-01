@@ -502,6 +502,26 @@ class TestFormatResponseArgument:
         assert isinstance(out.index, expected_index), "the result must be indexed"
         pd.testing.assert_frame_equal(df, before)
 
+    def test_the_peaks_path_keeps_them_too(self):
+        """The peaks arm derives ``datetime`` from ``peak_dt``, and the derived
+        column belongs to the result rather than to the frame it was handed.
+        ``preformat_peaks_response`` is public, so a caller reaches that
+        derivation without going through ``format_response`` at all.
+        """
+        df = pd.DataFrame(
+            {
+                "site_no": ["01", "01"],
+                "peak_dt": ["2020-01-01", "2020-01-02"],
+                "peak_va": [1.0, 2.0],
+            }
+        )
+        before = df.copy(deep=True)
+
+        out = format_response(df, service="peaks")
+
+        assert isinstance(out.index, pd.DatetimeIndex), "the result must be indexed"
+        pd.testing.assert_frame_equal(df, before)
+
 
 class TestGetRecordDispatch:
     """``get_record`` is a router; each service must reach its own getter.
@@ -593,12 +613,9 @@ def test_utc_localization_of_a_single_datetime_index():
     """NWIS returns naive local timestamps; a frame whose index is a plain
     DatetimeIndex must still come back tz-aware, or two services' frames
     cannot be concatenated."""
-    df = pd.DataFrame(
-        {"x": [1, 2]},
-        index=pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"]),
-    )
-    out = nwis._localize_datetime_index(df)
-    assert str(out.index.tz) == "UTC"
+    index = pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"])
+    out = nwis._localized_datetime_index(index)
+    assert str(out.tz) == "UTC"
 
 
 def test_metadata_site_info_is_none_when_no_site_filter_was_used():
@@ -620,8 +637,8 @@ def test_utc_localization_of_a_multi_index_datetime_level():
         ],
         names=["site_no", "datetime"],
     )
-    out = nwis._localize_datetime_index(pd.DataFrame({"x": [1, 2]}, index=idx))
-    assert str(out.index.levels[1].tz) == "UTC"
+    out = nwis._localized_datetime_index(idx)
+    assert str(out.levels[1].tz) == "UTC"
 
 
 class TestGetInfoSeriesCatalog:

@@ -146,24 +146,15 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
         raise
 
 
-def _localize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
+def _localized_datetime_index(index: pd.Index) -> pd.Index:
     """Localize a naive datetime index (or multi-index level) to UTC."""
-    index = df.index
     if hasattr(index, "levels"):
         # Multi-index: localize the datetime level (level 1)
         if hasattr(index.levels[1], "tzinfo") and index.levels[1].tzinfo is None:
-            index = index.set_levels(index.levels[1].tz_localize("UTC"), level=1)
+            return index.set_levels(index.levels[1].tz_localize("UTC"), level=1)
     elif hasattr(index, "tzinfo") and index.tzinfo is None:
-        index = index.tz_localize("UTC")
-
-    if index is df.index:
-        return df
-
-    # Retag the index alone. ``DataFrame.tz_localize`` relabels one axis by
-    # duplicating every column, which pandas does whenever copy-on-write is off.
-    localized = df.copy(deep=False)
-    localized.index = index
-    return localized
+        return index.tz_localize("UTC")
+    return index
 
 
 def format_response(
@@ -215,7 +206,9 @@ def format_response(
     df = df.copy(deep=False)
     df.set_index(keys, inplace=True)  # noqa: PD002 # our copy, not the caller's
 
-    df = _localize_datetime_index(df)
+    # Retag the index alone; ``DataFrame.tz_localize`` relabels the axis by
+    # duplicating every column whenever copy-on-write is off.
+    df.index = _localized_datetime_index(df.index)
     return df.sort_index()
 
 
@@ -251,6 +244,8 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         # still raise.
         return df
 
+    # Derive the column on our own frame, never the caller's.
+    df = df.copy(deep=False)
     df["datetime"] = pd.to_datetime(df["peak_dt"], errors="coerce")
     return df
 
@@ -983,7 +978,7 @@ def get_record(
     datetime_index : bool, optional
         (defunct) Shaped the output of the retired 'qwdata' and 'gwlevels'
         services. Ignored; passing `False` warns. Use `waterdata.get_continuous`
-        or `waterdata.get_daily`, which index by datetime.
+        or `waterdata.get_daily`, which return `time` as a column.
     state: string, optional, default is None
         (defunct) Selected sites for the retired 'water_use' service. Ignored;
         passing a state warns. Use `nwdc.get_wateruse`, which takes `state`.
