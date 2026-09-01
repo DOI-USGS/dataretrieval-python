@@ -223,6 +223,12 @@ its identifiers as well as its prose. Where the chain's identifiers have said
 correct — ADR 0010's scope word misapplied to a different axis — not a second
 spelling to work around.
 
+**Precedence ladder** — The one linear order resolution walks, highest first:
+sources in their order and, within each source, scopes. Each position is a
+**rung**; ADR 0011 states the ladder in seven. A rung is finer than a source —
+one source can span several rungs — so prose that means a whole category says
+*source*, reserving *rung* for when the position itself matters.
+
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
 set of profiles in a file is inert until something asks for one.

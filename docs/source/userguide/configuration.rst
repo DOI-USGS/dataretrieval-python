@@ -316,7 +316,7 @@ So one file can hold an overnight bulk shape beside a polite daytime one, and
 name as many of each as an adapter has uses for.
 
 A named profile states only what differs: everything it does not name still
-comes from the adapter's default profile, the package-wide keys, and the tiers
+comes from the adapter's default profile, the package-wide keys, and the rungs
 below — per setting.
 
 ``load`` reads the table and hands you a configuration object, so a name the
