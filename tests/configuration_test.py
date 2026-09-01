@@ -358,7 +358,7 @@ def test_several_named_profiles_are_selected_independently(config_file):
         assert configuration.concurrency(adapter="ngwmn") == 4
 
 
-def test_a_named_profile_layers_per_key_over_the_tiers_below(config_file):
+def test_a_named_profile_layers_per_key_over_the_rungs_below(config_file):
     """Selecting a profile replaces keys, never whole sources.
 
     Every level of the file overrides the one below it *per key* (ADR 0011), so
