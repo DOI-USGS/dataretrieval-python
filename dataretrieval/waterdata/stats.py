@@ -2,10 +2,9 @@
 
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
-*separate*, non-OGC API: it has no chunkable multi-value axes, so it drives
-:func:`dataretrieval.transport.pagination.paginate` as a one-item
-:class:`~dataretrieval.transport.fanout.FanOut` rather than going through
-``multi_value_chunked``. The typed getters
+*separate*, non-OGC API with no chunkable multi-value axes, so it runs as a
+one-item :class:`~dataretrieval.transport.fanout.FanOut` rather than going
+through ``multi_value_chunked`` (ADR 0008). The typed getters
 ``get_stats_por`` and
 ``get_stats_date_range`` in :mod:`dataretrieval.waterdata.api` call
 :func:`get_data` here.
@@ -212,13 +211,6 @@ def get_data(
     processes results, and formats output according to the specified
     parameters.
 
-    The stats path doesn't go through ``multi_value_chunked`` (its query
-    shape has no chunkable list axes), so it drives transport pagination as a
-    one-item :class:`~dataretrieval.transport.fanout.FanOut`. The executor
-    runs the pagination loop in a short-lived worker thread, so this works
-    whether or not the caller is already inside an event loop, and the single
-    request gets the same retry and resume semantics as every other getter.
-
     Parameters
     ----------
     args : Dict[str, Any]
@@ -250,7 +242,7 @@ def get_data(
         The typed subclass for an HTTP error response (see
         :func:`transport.pagination.paginate`);
         or :class:`~dataretrieval.exceptions.NetworkError` if the request
-        can't reach the service in a way retrying cannot fix (bad scheme,
+        can't reach the service in a way retrying cannot fix (unsupported scheme,
         a hostname that does not resolve), the ``httpx`` exception chained
         on ``__cause__``.
     FanOutInterrupted

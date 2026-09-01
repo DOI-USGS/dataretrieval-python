@@ -453,7 +453,8 @@ def test_a_non_html_parse_failure_is_re_raised_unchanged():
 def test_deprecating_a_getter_with_no_named_replacement_is_refused():
     """``@_deprecated`` promises the caller a replacement, so the decorator
     refuses to be applied to a function whose replacement nobody recorded --
-    a deprecation warning naming nothing is worse than none."""
+    a deprecation warning naming nothing leaves the caller with nothing to
+    migrate to."""
     with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
 
         @nwis._deprecated
@@ -476,7 +477,7 @@ def test_utc_localization_of_a_single_datetime_index():
 def test_metadata_site_info_is_none_when_no_site_filter_was_used():
     """``site_info`` fetches the sites a query named. A query filtered by
     something else (a parameter code alone) has no sites to describe, and
-    guessing one would describe the wrong thing."""
+    guessing one would describe a site the query never named."""
     md = NWIS_Metadata(mock.MagicMock(), parameterCd="00060")
     assert md.site_info is None
 

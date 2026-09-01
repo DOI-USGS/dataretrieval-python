@@ -1,32 +1,22 @@
 """Bounded, resumable fan-out execution over a plan of chunks.
 
-A fan-out is one logical query the service forces into several requests. Two
-unrelated reasons produce one:
+A fan-out executes the chunks one logical query was split into: a Water Data /
+NGWMN query whose URL exceeds the server's byte limit, split along its
+multi-value axes by :class:`dataretrieval.ogc.planning.ChunkPlan`; or a Water
+Use query naming several locations, which the NWDC accepts only one at a time.
 
-- a Water Data / NGWMN query whose URL exceeds the server's byte limit, split
-  along its multi-value axes by :class:`dataretrieval.ogc.planning.ChunkPlan`;
-- a Water Use query naming several locations, which the NWDC accepts only one
-  at a time.
-
-Chunking is how you divide the data structurally; fan-out is how you distribute
-the work operationally. The two are orthogonal, and only the first is protocol
-knowledge: dividing a query needs the byte budget, the CQL2 grammar, and which
-parameters are list-valued, while distributing the pieces needs none of it. Only
-the Water Data / NGWMN case above involves chunking at all — Water Use fans out
-without dividing anything, because the caller's locations were never one body to
-split.
-
-So this module owns distribution and nothing else: concurrency bounded by a
+This module owns distribution and nothing else: concurrency bounded by a
 semaphore, per-attempt retry, deterministic failure precedence, sparse
-completion tracking, and resume. It names no protocol concept — an adapter
+completion tracking, and resume. It names no protocol concept -- an adapter
 supplies a :class:`FanOutPlan` (whatever structure it divided into, if any) and
-an ``async def fetch(item) -> (df, response)``.
+an ``async def fetch(item) -> (df, response)``. Dividing a query is protocol
+knowledge and stays in OGC; distributing the pieces is protocol-neutral and
+lives here. That split is ADR 0008.
 
 Concurrency: :meth:`FanOut._run` dispatches every pending chunk under one
 ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
 ``asyncio.Semaphore`` -- not the client's connection pool, which is merely sized
-to match -- caps the chunks in flight at ``N``; see :meth:`FanOut._run`
-for why the gate must be the semaphore rather than the pool.
+to match -- caps the chunks in flight at ``N`` (ADR 0008).
 The ``concurrency`` setting resolves ``N`` -- a ``configure()`` block, then
 ``API_USGS_CONCURRENT``, then the config file, and per adapter as well as
 package-wide: an integer N > 1 allows N chunks in flight; ``1`` forces
@@ -94,8 +84,7 @@ _ChunkCo = TypeVar("_ChunkCo", covariant=True)
 # :func:`dataretrieval.configuration.concurrency`, which owns the setting's name, its
 # grammar (``1`` sequential, >1 bounded, ``unbounded`` uncapped) and its
 # built-in default. Naming any of those here too would let this module and the
-# chain disagree about what a value means. The concurrency model -- why the cap
-# is a semaphore rather than the connection pool -- is in the module docstring.
+# chain disagree about what a value means.
 
 
 # ---------------------------------------------------------------------------
@@ -108,35 +97,18 @@ class FanOutPlan(Protocol[_ChunkCo]):
     The contract a plan satisfies for a fan-out to execute it.
 
     A **plan** is defined in ``CONTEXT.md``. This protocol is that enumeration
-    and nothing more, which is why it is named for the role it plays here
-    rather than for its contents:
+    and nothing more: ``len`` must agree with the number of items iteration
+    yields, and iteration must repeat the same items in the same order, since
+    :meth:`FanOut.resume` keys completed work by position. The item type is
+    whatever an adapter's own ``fetch`` accepts -- this executor passes each
+    item through untouched and never inspects it, so the OGC getters yield
+    kwargs dicts while Water Use yields ready :class:`httpx.Request` objects.
+    The query's ``canonical_url`` is not part of the plan; it is an argument to
+    :class:`FanOut`.
+
     :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and so is a
-    plain list of requests.
-
-    Deliberately the two standard protocols rather than bespoke members, since
-    an enumeration of chunks is exactly ``__len__`` + ``__iter__`` -- so a
-    plain ``list`` of pre-built
-    requests satisfies this with no adapter class, and a real planner
-    satisfies it by delegating (see
-    :class:`~dataretrieval.ogc.planning.ChunkPlan`, whose domain vocabulary is
-    ``total`` / ``iter_chunk_args``). Naming them ``total`` and
-    ``iter_chunk_args`` here would mean two names for ``len`` that could report
-    different counts, and a shim class for every adapter whose chunks
-    are already a list.
-
-    The item type is whatever an adapter's own ``fetch`` accepts: this executor
-    passes each item through untouched and never inspects it, so the OGC
-    getters yield kwargs dicts while Water Use yields ready
-    :class:`httpx.Request` objects.
-
-    Iteration order is load-bearing: :meth:`FanOut.resume` keys completed work
-    by position, so a plan that yielded a different order on a second pass
-    would resume the wrong chunks. ``len`` must agree with the number of
-    items iteration yields — the usual contract for a sized collection.
-
-    The identity of the query as a whole is *not* here: it is a value stamped
-    on the combined response, not a property of how the work divides, so it is
-    the ``canonical_url`` argument to :class:`FanOut`.
+    plain ``list`` of requests. Standard protocols rather than custom
+    members: ADR 0008.
     """
 
     def __len__(self) -> int: ...
@@ -473,7 +445,7 @@ class FanOut(Generic[_Chunk]):
         Idempotent: only chunks whose index isn't already in
         ``self._chunks`` are re-issued. Item order is the plan's own and
         is deterministic, so a partial completion (sparse indices)
-        resumes correctly.
+        resumes onto the same items.
 
         Returns
         -------
@@ -592,17 +564,9 @@ class FanOut(Generic[_Chunk]):
         (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)
         so the in-flight fetches reuse keepalive connections.
 
-        The semaphore, not the pool, is deliberately the throttle. If the
-        pool throttled instead, the excess chunks would queue
-        *inside* httpx waiting for a connection, and that wait counts
-        against the pool-acquire timeout (60 s, from ``HTTPX_ASYNC_DEFAULTS``).
-        A batch of slow pages that keeps every connection busy past that
-        window would then trip ``httpx.PoolTimeout`` on the queued tail —
-        a purely client-side failure that consumes the retry budget and
-        surfaces as a spurious resumable ``ServiceInterrupted``. Holding
-        chunks at the semaphore keeps them out of the pool until a
-        slot frees, so the pool timeout only fires for a genuinely stuck
-        connection.
+        The semaphore, not the pool, is the throttle (ADR 0008); holding
+        chunks at the semaphore keeps them out of the pool, so the pool
+        timeout only fires for a genuinely stuck connection.
 
         The shared client is published on :data:`_active_client` so
         the paginated-loop helpers reuse its connection pool.
@@ -630,11 +594,9 @@ class FanOut(Generic[_Chunk]):
             holding the sparse completed chunks; ``.call.resume()``
             re-issues the unfinished ones.
         """
-        # The semaphore is the throttle; the pool is merely sized to match
-        # it. Left at httpx's default client limits (``max_connections=100``,
-        # keepalive 20) the pool would bottleneck a wider cap or churn
-        # connections by keeping too few alive. See the method docstring for
-        # why the gate can't be the pool itself. ``unbounded``
+        # At httpx's default client limits (``max_connections=100``,
+        # keepalive 20), the pool would bottleneck a wider cap or churn
+        # connections by keeping too few alive. ``unbounded``
         # (``max_concurrent=None``) is a degenerate cap at the plan total — a
         # semaphore that can never block — so gated is the only code path.
         limits = httpx.Limits(

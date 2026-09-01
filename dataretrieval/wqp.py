@@ -680,10 +680,7 @@ def _service_base() -> str:
 
     The portal serves the legacy and WQX3 interfaces from one root under
     different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
-    both follow it. Redirecting only the interface a caller happened to use
-    first would leave the other pointed at the service they were trying not to
-    talk to. Resolved per call, because a ``configure`` block is scoped to a
-    ``with`` statement.
+    both follow it (ADR 0011).
     """
     return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
 
@@ -848,10 +845,8 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     No fan-out dials: a WQP query is answered by a single request, so a
     concurrency cap could only report a number nothing honours.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -867,9 +862,6 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         the environment refuse it.
     """
 
-    # One request per call, so this service reads the retry dials and a
-    # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "wqp"
 
 

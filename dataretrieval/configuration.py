@@ -18,23 +18,16 @@ Sources, highest precedence first:
    selects it with ``<Adapter>Configuration.load("<name>")``.
 4. The built-in default.
 
-Those are the four *sources*, which is the decomposition this module is built
-around -- one branch each in :func:`_resolve`. ADR 0011 states the same order
-as seven rungs by splitting three of them into the scopes inside: source 1 into
-a configuration instance and a selected profile, which cannot disagree because
-both name one adapter and two configurations for one adapter raise; source 3
-into the ``[<adapter>]`` table above the top-level keys; and source 4 into an
-adapter's own built-in preference above the package default. That last scope is
-invisible here because this module never supplies it -- it arrives as the
-``default`` a read site like :func:`concurrency` passes for its own service.
+Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the
+same order in finer grain, splitting three of them into the scopes they contain.
+An adapter's own default is not one of the four: a read site such as
+:func:`concurrency` passes it in as the ``default`` argument.
 
 Precedence applies **per setting**, not per source: an environment that sets only
-``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. Putting
-the environment above the file follows common deployment conventions and keeps
-the original environment-variable interface authoritative (see ADR 0009) -- with
-one exception ADR 0011 carves out: a profile named *in code* is a more
-deliberate act than a variable inherited from a shell, and a profile reaches the
-chain by being passed to :func:`configure`, which is above the environment.
+``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. The
+environment ranks above the file (ADR 0009). ADR 0011 makes one exception: a
+profile named *in code* reaches the chain through :func:`configure`, above the
+environment.
 
 A caller configures by passing configuration objects, at most one per adapter::
 
@@ -46,24 +39,18 @@ A caller configures by passing configuration objects, at most one per adapter::
         ...
 
 Settings are scoped **per adapter** (ADR 0010): a ``[ngwmn]`` table in the file,
-or an ``NgwmnConfiguration``, applies to NGWMN calls and no others, so one block
-can be gentle with one service while leaving the rest alone. Precedence stays
-*source-major*: the chain still walks block, then environment, then file, and an
-adapter-scoped value outranks a package-wide one only *within* the same source.
-So a variable exported for one run still beats a stale adapter table. Within the
-block source that tie-break applies per block: an adapter configuration outranks
-a package-wide value set by the same ``configure`` call, while a value set by a
-block nested inside it wins over both, so the innermost block still decides.
+or an ``NgwmnConfiguration``, applies to NGWMN calls and no others. Precedence
+stays *source-major* (ADR 0010): an adapter-scoped value outranks a package-wide
+one only *within* the same source, and within the block source the innermost
+block decides.
 
-Which settings an adapter accepts is its own vocabulary -- ``concurrency`` means
-nothing to an adapter that issues one request -- so each adapter declares them
-on its own :class:`BaseConfiguration` subclass, defined in the module that
-*reads* them. The API key is not among them: it belongs to the gateway fronting
-a host, which Water Data and NGWMN share.
+Each adapter declares the settings it accepts on its own
+:class:`BaseConfiguration` subclass, defined in the module that *reads* them
+(ADR 0011). The API key is not among them -- it belongs to the gateway fronting
+a host, not to an adapter (ADR 0010).
 
 This module is a leaf: it imports only the standard library plus the Python 3.10
-``tomli`` backport, so any module can depend on it without an import cycle or
-pulling in httpx or pandas. That is also why it holds the adapter *names* but
+``tomli`` backport (ADR 0009). That is also why it holds the adapter *names* but
 never imports an adapter -- see :data:`ADAPTERS`. It centralizes each setting's
 parser while retaining legacy environment behavior and stricter validation for
 the new Python/TOML surfaces.
@@ -195,8 +182,8 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
     ------
     ConfigurationError
         If an argument is not a configuration, or two of them target the same
-        adapter. Raised on entry, before any request. A bad *value* raises
-        earlier still, where the configuration was constructed.
+        adapter. Raised on entry, before any request. An invalid *value*
+        raises earlier still, where the configuration was constructed.
 
     Examples
     --------
@@ -355,7 +342,7 @@ class _ErrorDeduplicatingCell:
     most in need of explaining are the broken ones -- an unparseable file, a
     value that fails its grammar, a profile that no longer exists. Nothing
     here raises: each distinct failure is printed once, in the first place
-    it shows up; a repeat is collapsed, so one bad file does not bury the
+    it shows up; a repeat is collapsed, so one invalid file does not bury the
     rows that did resolve under ten copies of the same message.
     """
 
@@ -383,8 +370,8 @@ def _show_file_status(
     """Probe and print the config file status line, returning the parsed file.
 
     Probing the file once here means a whole-file problem -- unparseable TOML,
-    a bad value at the top level -- is reported on the file row rather than
-    repeated in every setting's row below.
+    an invalid value at the top level -- is reported on the file row rather
+    than repeated in every setting's row below.
     """
     parsed = _NO_FILE
     try:
@@ -526,8 +513,8 @@ def _show_unimported_adapters(out: TextIO) -> None:
     vocabulary has been imported, and NLDI is deliberately imported on demand
     for the geopandas extra. So the rows above cannot cover it. Omitting it
     silently would read as "nothing is configured for nldi", which is a
-    different claim and the wrong one -- this is the honest cost of validating
-    an adapter's keys lazily (ADR 0011).
+    different claim and an incorrect one -- this is the cost of validating an
+    adapter's keys lazily (ADR 0011).
     """
     unimported = [a for a in ADAPTERS if settings_for(a) is None]
     if unimported:
@@ -681,8 +668,10 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
     Precedence is *source-major*: the chain walks block, then environment, then
     file, exactly as ADR 0009 defines it -- and *within* each source an
     adapter-scoped value outranks a package-wide one. So a variable exported
-    for one run still beats a stale ``[wqp]`` table in the config file, which
-    scope-major ordering would have quietly inverted (ADR 0010).
+    for one run still beats a stale ``[wqp]`` table in the config file --
+    ordering by scope first, putting every adapter-scoped value ahead of every
+    package-wide one whatever its source, would have quietly inverted that
+    (ADR 0010).
 
     ``adapter`` names the adapter on whose behalf the setting is being read.
     ``None`` resolves the package-wide value, which is also what an adapter
@@ -737,11 +726,9 @@ def _check_env_not_refused(name: str) -> None:
     """Raise if an environment variable is set for a code-only setting.
 
     Refused before anything is consulted, not at the environment's turn in
-    the chain. The file refuses ``base_url`` whether or not a block also set
-    one -- it raises while the file is read -- and the two surfaces are one
-    rule, so a variable that cannot work must not be silently outranked by a
-    block that happens to work. Unsetting it is the only fix, and the message
-    says so.
+    the chain. The file and the environment refuse ``base_url`` as one rule
+    (ADR 0011), so a variable that cannot work is not silently outranked by a
+    block that happens to work.
     """
     refused = _REFUSED_ENV_VARS.get(name)
     if refused is not None and refused in os.environ:
@@ -789,10 +776,7 @@ def _resolve_from_env(name: str) -> tuple[str | None, str, str] | None:
 def _resolve_from_file(name: str, scoped: str | None) -> tuple[str | None, str, str]:
     """Fall through to the configuration file, then the built-in default.
 
-    One load serves both file tiers. Reading the file twice -- once for the
-    adapter table, once for the top level -- cost a second stat on every
-    adapter-scoped resolution, and the common case (no table for this adapter)
-    is the one that paid it.
+    One load serves both file tiers.
     """
     path, parsed = _current_file()
 

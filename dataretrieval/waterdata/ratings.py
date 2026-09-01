@@ -385,7 +385,7 @@ def _download_all(
     The plan is the feature list itself -- ``FanOut`` asks a plan only to be
     sized and iterable -- so the downloads get bounded concurrency,
     per-attempt retry, the progress line, and the resumable interruption
-    taxonomy in place of the previous serial loop, which had none of them.
+    taxonomy.
 
     Failure policy (rationale on
     :class:`~dataretrieval.exceptions.SkippedItemWarning`): a *transient*

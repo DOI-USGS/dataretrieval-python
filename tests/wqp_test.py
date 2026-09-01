@@ -341,7 +341,8 @@ def test_what_query(httpx_mock, func, service, fixture, profile_column):
 
 
 def test_check_kwargs():
-    """Tests that correct errors are raised for invalid mimetypes."""
+    """An unsupported mimetype raises ``NotImplementedError``; an unknown one
+    raises ``ValueError``."""
     kwargs = {"mimeType": "geojson"}
     with pytest.raises(NotImplementedError):
         kwargs = _check_kwargs(kwargs)

@@ -276,8 +276,8 @@ def test_chunk_plan_minimizes_total_chunks():
     }
     # Tight limit forces both axes to participate.
     plan = ChunkPlan(args, _fake_build, url_limit=380)
-    # Plan must beat the bail-floor-style worst case (8 singletons × 16
-    # filter chunks = 128 chunks) by a healthy margin.
+    # Plan must stay under the all-singleton worst case (8 singletons × 16
+    # filter chunks = 128 chunks).
     assert plan.total < 128
 
 
@@ -296,7 +296,7 @@ def test_chunk_plan_raises_when_smallest_plan_doesnt_fit():
 
 
 def test_chunk_plan_passthrough_when_request_fits():
-    """URL under limit → trivial passthrough plan (no axes, total=1),
+    """URL under limit → single-chunk passthrough plan (no axes, total=1),
     and ``iter_chunk_args`` yields exactly one sub-args dict equal to
     the original args."""
     args = {"monitoring_location_id": ["A", "B", "C"], "limit": 100}
@@ -588,7 +588,7 @@ def test_quota_exhausted_resume_can_reraise_on_persistent_429():
     """If the window is still empty when the caller resumes,
     ``call.resume()`` raises ``QuotaExhausted`` again — the
     ``ChunkedCall``'s in-flight state carries forward, so a
-    subsequent resume after a longer wait still picks up cleanly."""
+    subsequent resume after a longer wait still picks up from the pending chunk."""
     # Key the failure on the chunk's CONTENT (one persistently-429ing
     # site) rather than a global call counter: under the async fan-out
     # every other chunk completes, and the same still-pending
@@ -1346,8 +1346,8 @@ def test_extract_axes_skips_filter_passed_as_list():
 def test_extract_axes_skips_scalar_contract_params():
     """``limit`` and ``skip_geometry`` are scalars by contract
     (``int | None`` and ``bool | None`` respectively). If a caller smuggles
-    a list through type erasure (e.g. ``limit=["100","200"]`` after a
-    bad cast), ``_extract_axes`` must NOT treat it as a multi-value
+    a list through type erasure (e.g. ``limit=["100","200"]`` after an
+    incorrect cast), ``_extract_axes`` must NOT treat it as a multi-value
     axis. Chunking ``limit`` would silently fan into separate
     paginated queries with different per-request caps; chunking
     ``skip_geometry`` would emit chunks with conflicting
@@ -1364,9 +1364,9 @@ def test_extract_axes_skips_scalar_contract_params():
 def test_joint_planner_url_construction_long_filter_and_long_sites():
     """Realistic stress: 20 datetime OR-clauses combined with 100 USGS
     site IDs. Every chunk URL built from the plan must fit the
-    8000-byte limit, the joint planner must beat the naive "filter at
-    bail-floor, chunk lists" approach, and the partitioned filters
-    must union to the user's original filter expression.
+    8000-byte limit, the joint planner must emit fewer chunks than splitting
+    the filter to singletons and chunking the lists separately, and the
+    partitioned filters must union to the user's original filter expression.
 
     Uses the real ``_construct_api_requests`` builder so the test
     catches URL-encoding surprises that a fake builder would miss.
@@ -1393,7 +1393,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
     url_limit = 8000
 
     plan = ChunkPlan(args, _construct_api_requests, url_limit)
-    assert plan.total > 1, "expected non-trivial plan for over-limit request"
+    assert plan.total > 1, "expected a multi-chunk plan for over-limit request"
 
     # Walk every chunk the plan would issue and assert URL fits.
     over_limit = []
@@ -1414,7 +1414,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
             f"axis {axis.arg_key} partition lost or duplicated atoms"
         )
 
-    # Plan must beat the bail-floor-style worst case (singleton sites
+    # Plan must stay under the all-singleton worst case (singleton sites
     # × all filter clauses singleton = 500 * 20 = 10,000) — uniform
     # greedy halving of these inputs cuts that by at least 20×.
     assert plan.total < 500, f"joint plan emitted {plan.total} chunks (expected <500)"
@@ -1734,7 +1734,7 @@ def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
             self.end_headers()
             self.wfile.write(body)
 
-        def log_message(self, *args):  # keep pytest output clean
+        def log_message(self, *args):  # silence the server's request log
             pass
 
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _SlowHandler)
@@ -2248,7 +2248,7 @@ def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
 
 def test_default_preserves_passthrough():
     """The default ``max_chunks`` (1 = off) must not perturb the existing
-    plan: a multi-value request that fits the byte limit is still the trivial
+    plan: a multi-value request that fits the byte limit is still the single-chunk
     passthrough (no axes, ``total == 1``), byte-for-byte the pre-feature
     behavior."""
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
@@ -2260,7 +2260,7 @@ def test_default_preserves_passthrough():
 
 def test_unit_cap_preserves_passthrough():
     """``max_chunks=1`` means "no extra fan-out", so a fitting multi-value
-    request stays the trivial passthrough (no axes, ``total == 1``,
+    request stays the single-chunk passthrough (no axes, ``total == 1``,
     ``iter_chunk_args`` yields the original args verbatim) — identical to the
     default (off), not a materialized one-chunk-per-axis plan."""
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
@@ -2339,7 +2339,7 @@ def test_cap_below_byte_split_does_not_reduce_fan_out():
 
 
 def test_cap_never_exceeds_the_byte_budget():
-    """Refining on top of an over-budget request keeps the hard invariant:
+    """Refining on top of an over-budget request keeps the invariant:
     every chunk still fits ``url_limit`` (splitting only ever shrinks
     a chunk), and the fan-out is at least what the byte pass required."""
     args = {"monitoring_location_id": ["X" * 30, "Y" * 30, "Z" * 30, "W" * 30]}
@@ -2388,10 +2388,9 @@ def test_cap_bounds_fan_out_across_many_axes():
     a cap of 30 fan out to *at most* 30 chunks total — never the
     ``30 ** 3`` a per-axis cap would allow, and never *over* the cap either.
     30 is deliberately not evenly reachable by these axes: a single split
-    multiplies the plan by more than one, so the naive ``while total < cap``
+    multiplies the plan by more than one, so the ``while total < cap`` loop
     the first refine used stepped past 30 (to 32). The cap is a hard ceiling —
-    the property neither the single-axis-only cap nor that naive loop
-    guaranteed."""
+    the property neither the single-axis-only cap nor that loop guaranteed."""
     cap = 30
     # Three chunkable axes (two list axes + the filter OR-axis), each with 10
     # atoms — under the old per-axis cap this would have been cap**3.
@@ -2415,7 +2414,7 @@ def test_cap_bounds_fan_out_across_many_axes():
 def test_cap_is_a_hard_ceiling_never_overshoots(atoms_per_axis, cap):
     """The cap is a hard ceiling, not a soft target. With two multi-value axes
     a single split multiplies the plan by ``(k+1)/k`` for the split axis —
-    adding the product of the *other* axes, not one — so a naive
+    adding the product of the *other* axes, not one — so a
     ``while total < cap`` loop steps *past* the cap. These are exactly the
     (atoms, cap) combos that loop overshot (5->6, 10->12, 7->8). The plan must
     fan out and cover every atom once, but never exceed the cap, landing below
@@ -2435,7 +2434,7 @@ def test_cap_is_a_hard_ceiling_never_overshoots(atoms_per_axis, cap):
 def test_cap_does_not_mask_unchunkable():
     """A request with nothing to split that still busts the byte limit must
     raise ``Unchunkable`` regardless of the cap — the soft pass has no axis to
-    act on and must not swallow the hard failure."""
+    act on and must not swallow the raise."""
     args = {"monitoring_location_id": "one-huge-scalar"}
     with pytest.raises(Unchunkable):
         ChunkPlan(args, _fake_build, url_limit=10, max_chunks=32)
@@ -2443,7 +2442,7 @@ def test_cap_does_not_mask_unchunkable():
 
 def test_parallel_chunks_publishes_n_as_the_effective_setting():
     """The context manager sets ``n`` for the block and restores the previous
-    value on exit — including proper nesting.
+    value on exit — including across nested blocks.
 
     ``parallel_chunks(n)`` is sugar for ``configure(parallel_chunks=n)``, so
     both forms share one scoping mechanism and the innermost block wins.
@@ -2472,7 +2471,7 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
         "8",  # a string, even a numeric one
         "high",  # the old level names are gone
         None,  # None not accepted
-        True,  # bool is an int subclass but nonsensical here
+        True,  # bool is an int subclass but not a chunk count
         ["8"],  # a list
     ],
 )

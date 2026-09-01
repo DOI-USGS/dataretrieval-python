@@ -13,6 +13,9 @@ refusal of a configuration object, which ADR 0010 had already narrowed to a
 preference about the payload's shape. The chain, the ``ContextVar`` delivery,
 host-scoped credentials and the leaf constraint stand.
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -20,10 +23,10 @@ ADR 0010 gave each adapter its own slice of the chain, so ``[ngwmn]`` narrows a
 setting to NGWMN. That covers "tune one service" but not the case a
 multi-service caller actually has:
 
-- **Several named configurations per adapter.** A caller with an overnight
-  bulk shape and a polite daytime shape for Water Data cannot store both. The
-  only named construct is ``[profiles.<name>]``, which switches *every*
-  service at once.
+- **Several named configurations per adapter.** A caller with an overnight bulk
+  configuration profile and a lower-rate daytime one for Water Data cannot
+  store both. The only named construct is ``[profiles.<name>]``, which switches
+  *every* service at once.
 - **Composing them.** The two mechanisms do not compose:
   ``[profiles.bulk.ngwmn]`` raises, so a profile cannot carry per-service
   detail. That refusal was recorded in ADR 0010 on the grounds that layering
@@ -71,12 +74,13 @@ adapter, and nothing else::
 
 The adapter an instance targets is a property of its class, so the caller
 never restates it -- which is what removes the roster duplication. Naming two
-configurations for one adapter raises: they would be the one pairing with no
-defined order.
+configurations for one adapter raises: they would be the one pairing the
+precedence rules do not order.
 
 Keyword settings are removed, so ``configure(api_key=...)`` no longer works.
 This is the most-typed line the feature exists to enable, and making it wordier
-is a real cost, accepted deliberately for one shape everywhere.
+is a real cost, accepted deliberately so that every setting is passed the same
+way.
 
 **Schemas live with their adapter; names live centrally.** ``configuration``
 is a standard-library-only leaf every adapter may import, so it cannot import
@@ -108,9 +112,9 @@ means they cannot tie.
 
 Position 2 above 3 inverts ADR 0009's environment-above-file rule for this one
 case. A profile named in code is a more deliberate act than a variable
-inherited from a shell, and losing to that variable is the behaviour a caller
-would file a bug about. Everything the caller did *not* name in code still
-follows the original rule.
+inherited from a shell, which would otherwise override a selection the caller
+made explicitly. Everything the caller did *not* name in code still follows the
+original rule.
 
 **Validation is lazy.** A file's structure is checked when it is parsed; a
 table's keys are checked when that adapter first resolves a setting. This
@@ -121,8 +125,8 @@ live in a module the parser cannot import.
 **Base URLs may be configured, from code only.** An adapter's configuration
 may carry its base URL, settable in a ``configure()`` block and rejected from
 the file and the environment. A file that silently redirects a data-retrieval
-library to another host is a supply-chain-shaped hazard; an in-code block
-keeps the redirect where a reader sees it.
+library to another host is a supply-chain hazard; an in-code block keeps the
+redirect where a reader sees it.
 
 **The module is renamed** ``dataretrieval.config`` to
 ``dataretrieval.configuration``,
@@ -140,7 +144,7 @@ the live services:
    * - Host
      - No key
      - With key
-     - Bad key
+     - Invalid key
    * - ``api.waterdata.usgs.gov`` (waterdata, ngwmn)
      - no limit header
      - ``x-ratelimit-limit: 4000``
@@ -160,12 +164,22 @@ gain nothing and would turn a stale key into 403s on calls that work
 anonymously today. The three hosts also keep independent counters, so ADR
 0010's "one key, one quota pool" is true of waterdata and ngwmn only.
 
+**An adapter composes shared setting groups; it does not respell their
+fields.** Which settings an adapter reads is the adapter's own knowledge, but
+what each setting *means* is shared, so the fields come from frozen mixin
+groups declared once beside their grammar. An adapter's configuration class
+names the groups it composes and adds only what is genuinely its own. Spelling
+``retries: int | None = _UNSET`` directly in an adapter module satisfies this
+record's letter while losing what it protects: the annotation would enforce
+nothing, could drift from the shared parser, and ``mypy --strict`` would not
+notice, because it checks the annotation, not whether the field still matches
+the shared group.
+
 Consequences
 ------------
 
-- **The multi-service case gets a spelling**, which is the point. One block,
-  several adapters, at most one configuration each, any of them from the file
-  or from code.
+- **The multi-service case gets a spelling.** One block, several adapters, at
+  most one configuration each, any of them from the file or from code.
 - **The roster stops being duplicated.** An adapter declares itself once. The
   failure mode where a schema exists that nothing passes becomes impossible by
   construction rather than caught by a fitness test.
@@ -176,14 +190,14 @@ Consequences
   the same commit.
 - **``show_configuration()`` can only resolve the settings an adapter accepts
   once that adapter has been imported.** It names the adapters it could not
-  check rather than omitting them silently, which is the honest cost of lazy
+  check rather than omitting them silently, which is the cost of lazy
   validation. The *profile list* is not import-limited: what a profile is
   called is a fact about the file, so every ``[<adapter>.<name>]`` table it
   defines is listed, imported or not -- withholding one would make the
   section's answer depend on which optional extras happened to be installed.
 - **Two names differ only by case** -- the ``configuration`` module and the
   ``Configuration`` class. The module stays out of the package's public
-  exports so the confusing import line cannot arise.
+  exports, so ``from dataretrieval import configuration, Configuration`` cannot arise.
 - **Separate quota pools are still not modelled.** Three exist. Nothing in the
   library needs to know yet.
 - **``ssl_check`` is unaffected** and remains a per-call argument, for the
@@ -213,9 +227,9 @@ Satisfied. In ``tests/configuration_test.py``:
   ``test_base_url_is_refused_from_the_environment`` for the other source, and
   ``test_a_code_base_url_redirects_every_water_data_endpoint_family`` -- one
   public-getter contract covering OGC, Samples, Statistics, and Ratings. The
-  endpoint module exposes request-time acquisition functions rather than raw
-  usable endpoints, so a family module gets the active scoped root without a
-  wrapper obligation at every use site.
+  endpoint module exposes functions that build each URL at request time rather
+  than ready-made endpoint constants, so a family module gets the root in effect
+  for the call without wrapping every use site.
 - ``test_adapter_roster_names_real_modules_that_register_themselves`` and
   ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
   resolves, and no configuration exists that nothing reads. An adapter name
@@ -239,3 +253,6 @@ Notes
   ``parallel_chunks`` asks the planner to *divide* more finely. ADR 0009
   rejected ``parallelism`` and ``chunk_parallelism`` for the same conflation.
   ``chunk_count`` or ``target_chunks`` would stay on the correct side of it.
+- The setting-group clause was added after the original decision, consolidating
+  under ADR 0000 a rule the configuration core was carrying in prose. It does
+  not change behavior.

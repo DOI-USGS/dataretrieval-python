@@ -10,13 +10,9 @@ replacement for the defunct legacy NWIS water-use service
 
 Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
-an OGC API Features collection. This module supplies the NWDC-specific bits —
+an OGC API Features collection. This module supplies the NWDC-specific bits --
 request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope. The service-neutral transport layer supplies cursor pagination,
-response aggregation, client lifecycle, and sync-from-async dispatch. The module
-follows the same conventions: host-scoped request headers, the typed
-:class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a
-``(DataFrame, BaseMetadata)`` return.
+error envelope -- over the service-neutral transport layer (ADR 0006).
 
 See https://api.water.usgs.gov/docs/nwaa-data/ for the API reference and
 https://water.usgs.gov/nwaa-data/ for the catalog of available models and
@@ -251,9 +247,8 @@ def get_wateruse(
     base_params = {k: v for k, v in base_params.items() if v is not None}
 
     # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
-    # service's own endpoint. Resolved once per call -- the block is scoped to
-    # a ``with`` statement -- and threaded through every request and the page
-    # walk, so a redirected call cannot half-follow the redirect.
+    # service's own endpoint, threaded through every request and the page walk
+    # (ADR 0011).
     service_url = _configuration.base_url(adapter="nwdc", default=WATERUSE_URL)
 
     # The NWDC queries one location per request, so fan a multi-value selector
@@ -359,12 +354,10 @@ def _fan_out(
     carrying the NWDC ``detail``, and shape the result.
     :func:`~dataretrieval.transport.pagination.run_paginated` owns the rest.
 
-    The plan is the request list itself. The executor asks a plan only to be
-    sized and iterable, and the NWDC accepts one ``location=`` per request, so
-    the caller's locations arrive already separate -- there is nothing to
-    divide and so nothing for a plan class to hold.
+    The plan is the request list itself: the NWDC accepts one ``location=``
+    per request, so the caller's locations arrive already separate (ADR 0008).
 
-    The broad retry status set is on purpose: NWDC reports a bad query as a 400
+    The broad retry status set is on purpose: NWDC reports an invalid query as a 400
     with a ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx
     really is an upstream fault worth re-sending.
     """
@@ -478,10 +471,8 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
     fans out per location rather than being divided along a URL byte
     budget. There is nothing for the planner to divide more finely.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -499,9 +490,6 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     """
 
-    # One request per location, fanned out but never chunked, so this service
-    # reads the retry dials, a redirectable base and ``concurrency`` -- but not
-    # ``parallel_chunks``, which divides a query it never divides.
     adapter: ClassVar[str] = "nwdc"
 
 

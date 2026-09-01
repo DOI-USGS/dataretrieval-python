@@ -49,12 +49,8 @@ __all__ = [
 ]
 
 
-# The Water Data API base URL, from the credentials leaf rather than OGC policy
-# internals: it names the same authority the API key is scoped to. Spelling the
-# host out here instead would put a second copy of it in the package, which
-# ``tests/architecture_test.py::test_credential_policy_has_one_definition``
-# rejects: the code that attaches the API key and the code that strips it at
-# redirect time must not be able to disagree about which host is authorized.
+# The Water Data API base URL, from the credentials leaf -- the one place the
+# API-key host is named (ADR 0006).
 BASE_URL = WATERDATA_BASE_URL
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
@@ -116,9 +112,8 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         service,
         output_id=_NGWMN_OUTPUT_ID,
         # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
-        # this service's own base. Resolved per call because the block is
-        # scoped to a ``with`` statement, and read here because this is the one
-        # place the NGWMN base is named.
+        # this service's own base. Read here because this is the one place the
+        # NGWMN base is named (ADR 0011).
         base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
         spatial=service == "sites",
         dialect=NGWMN_DIALECT,
@@ -459,10 +454,8 @@ class NgwmnConfiguration(
     dials. The API key is not among them: one gateway fronts both
     adapters, so one key and one quota pool serve them (ADR 0010).
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -483,10 +476,6 @@ class NgwmnConfiguration(
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
-    # NGWMN rides the same OGC engine as Water Data, so it reads the same
-    # groups: retry dials, a redirectable base, and both fan-out dials. The
-    # settings themselves are declared once in
-    # :mod:`dataretrieval.configuration`, beside the grammar that parses them.
     adapter: ClassVar[str] = "ngwmn"
 
 

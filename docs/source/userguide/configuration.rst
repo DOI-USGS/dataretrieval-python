@@ -492,7 +492,7 @@ The value limits optional refinement only. URL-byte safety can require more
 sub-requests than the configured value, and an input with nothing to split
 stays a single request.
 
-``parallel_chunks(n)`` is sugar for
+``parallel_chunks(n)`` is shorthand for
 ``configure(Configuration(parallel_chunks=n))``: one scoping mechanism, so the
 innermost block wins whichever spelling set it, and ``show_configuration()``
 always reports the value the chunker will actually use.

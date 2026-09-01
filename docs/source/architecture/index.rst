@@ -7,7 +7,7 @@ Purpose and scope
 ``dataretrieval`` is a Python client library for discovering and retrieving
 hydrologic data from several independently operated USGS and partner services.
 It is a modular monolith: one installable distribution with public service
-facades, service- and protocol-specific adapters, and shared infrastructure.
+adapters, protocol subsystems, and shared infrastructure.
 The architecture favors incremental evolution and stable user-facing functions
 over a framework that forces unlike upstream APIs into one shape.
 
@@ -63,25 +63,25 @@ contracts but does not hide meaningful service-specific behavior.
 Composition and dependency view
 -------------------------------
 
-Public service facades
-^^^^^^^^^^^^^^^^^^^^^^
+Public service adapters
+^^^^^^^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.waterdata``
-    Modern USGS Water Data API facade. ``waterdata.api`` is a logic-free
+    Modern USGS Water Data API adapter. ``waterdata.api`` is a logic-free
     compatibility facade over collection-family modules: ``time_series``,
     ``metadata``, ``measurements``, ``reference``, ``samples``, and ``cql``.
-    Focused modules own ratings, nearest-value selection, statistics execution,
+    Separate modules own ratings, nearest-value selection, statistics execution,
     shared service policy, and type vocabularies. Internal modules import
     protocol helpers from their canonical OGC modules rather than re-exporting
     them through Water Data utilities.
 
 ``dataretrieval.ngwmn``
-    NGWMN facade. Its only OGC dependency is the public OGC facade, which it
+    NGWMN adapter. Its only OGC dependency is the public OGC facade, which it
     configures with an NGWMN-specific base URL, output identifiers, state
     translation, and :class:`OgcDialect`.
 
 ``dataretrieval.nwdc``
-    NWDC Water Use facade. Builds CSV requests, follows ``Link`` headers, and
+    NWDC Water Use adapter. Builds CSV requests, follows ``Link`` headers, and
     uses service-neutral transport for bounded fan-out, retry, pagination, response
     aggregation, and synchronous dispatch. It does not depend on OGC modules.
 
@@ -90,25 +90,25 @@ Public service facades
     policy. Their return types intentionally reflect their upstream data models.
 
 ``dataretrieval.nwis``
-    Deprecated legacy NWIS facade, scheduled for removal on or after
+    Deprecated legacy NWIS adapter, scheduled for removal on or after
     2027-05-06. Modern code must not depend on it.
 
 Shared components
 ^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.configuration``
-    Lightweight configuration leaf: standard library plus the ``tomli``
-    backport on Python 3.10. It resolves scoped overrides, environment
-    variables, a TOML file with optional profiles, and built-in defaults in
-    that order. Service and protocol modules may depend on it; it must not
-    depend back on them. Scoped overrides use ``ContextVar`` so concurrent
-    threads and asyncio tasks can carry distinct credentials.
+    Configuration leaf: standard library plus the ``tomli`` backport on
+    Python 3.10. It resolves scoped overrides, environment variables, a TOML
+    file with optional profiles, and built-in defaults in that order. Service
+    and protocol modules may depend on it; it must not depend back on them.
+    Scoped overrides use ``ContextVar`` so concurrent threads and asyncio
+    tasks can carry distinct credentials.
 
 ``dataretrieval.ogc``
-    Protocol subsystem for Water Data and NGWMN. A small facade
-    (``__init__.py``) exposes the service-adapter seam: ``OgcDialect``,
-    ``prepare_request_args``, and ``get_ogc_data`` (whose ``cql_body``
-    parameter covers verbatim-CQL2 queries).
+    Protocol subsystem for Water Data and NGWMN. A facade (``__init__.py``)
+    exposes the service-adapter seam: ``OgcDialect``, ``prepare_request_args``,
+    and ``get_ogc_data`` (whose ``cql_body`` parameter covers verbatim-CQL2
+    queries).
     Internally, ``policy`` defines the dialect type, control validation, and
     endpoint constants; ``requests`` owns argument normalization and HTTP
     request construction, taking the target ``base_url`` and ``dialect`` as
@@ -118,9 +118,9 @@ Shared components
     ``planning`` determines chunk boundaries; ``chunking`` connects those plans
     to the shared fan-out executor and retains compatibility aliases;
     ``interruptions`` retains its deprecated public import path; and
-    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate
-    their named protocol concerns. The full runtime OGC graph, including the
-    facade, is acyclic -- enforced by the package-wide fitness function in
+    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
+    protocol concerns. The full runtime OGC graph, including the facade, is
+    acyclic -- enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 
 ``dataretrieval.transport``
@@ -152,7 +152,7 @@ Shared components
     ``BaseMetadata``, the second half of every getter's ``(DataFrame,
     metadata)`` return contract. A dependency-free leaf: nearly every service
     module needs this class, and while it lived in ``utils`` beside the legacy
-    query machinery, importing it pulled that module's whole HTTP stack in
+    query machinery, importing it pulled in that module's whole HTTP stack
     transitively. The implementation module is private; the established public
     class path remains ``dataretrieval.utils.BaseMetadata``.
 
@@ -183,9 +183,9 @@ Shared components
 
 The intended direction is::
 
-    public facade -> service/protocol adapter -> service-neutral transport
-                                             -> stable policy/infrastructure
-                                             -> third-party library / network
+    public service adapter -> protocol subsystem -> service-neutral transport
+                                                 -> stable policy/infrastructure
+                                                 -> third-party library / network
 
 Dependencies must not point from shared infrastructure back to a public service
 adapter. ``.importlinter`` declares this as a layer stack and ``lint-imports``
@@ -205,7 +205,7 @@ Interface view
 The primary API is a collection of synchronous functions grouped by data
 portal. Most tabular download functions return ``(DataFrame, metadata)``.
 NLDI and StreamStats retain service-specific geospatial or response-object
-contracts; consistency alone is not sufficient reason for a breaking change.
+contracts.
 
 Failed requests derive from ``dataretrieval.DataRetrievalError``. Callers can
 inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
@@ -304,8 +304,8 @@ architecturally is the behavior around them:
     the failure surfaces; defaults to 60, and ``0`` disables the bound. It
     complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
     time: without this bound, four retries of a request that times out after a
-    minute add up to four silent minutes. Progress restarts the budget — a page
-    received, or a queued chunk acquiring its concurrency slot. Neither a
+    minute add up to four silent minutes. Progress restarts the budget -- a
+    page received, or a queued chunk acquiring its concurrency slot. Neither a
     slow but productive download nor the tail of a wide fan-out is cut short,
     and an attempt already in flight is never interrupted. This bound never
     withholds the first retry, so one slow attempt cannot disable retry by
@@ -316,23 +316,21 @@ architecturally is the behavior around them:
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
     retrieval results.
+
 * The API token is attached only to requests for ``api.waterdata.usgs.gov``.
   Shared synchronous and asynchronous clients re-check every redirected request
   and strip the token before following a link to any other host, including
   external rating assets.
 * A semaphore, not connection-pool waiting, is the execution throttle for
   sub-request concurrency.
-* Retry backoff is exponential with full jitter and honors bounded
-  ``Retry-After`` values.
-* Progress reporting is best-effort: a reporting failure must never change
-  retrieval results.
-* ``dataretrieval.configuration`` is a stdlib-only leaf, so any module may depend on
-  it without an import cycle.
+* ``dataretrieval.configuration`` is a stdlib-only leaf, so any module may
+  depend on it without an import cycle.
 
 ``dataretrieval.transport`` centralizes HTTP timeout, redirect, and
-authentication policy. OGC chunk fan-out and Water Use location
-fan-out retain separate explicit concurrency caps because their upstream costs
-and request shapes differ.
+authentication policy. OGC chunk fan-out and Water Use location fan-out share
+one ``concurrency`` setting with per-adapter defaults, because their upstream
+costs and request shapes differ but a caller's instruction should not (ADR
+0008).
 
 Known architectural debt
 ------------------------

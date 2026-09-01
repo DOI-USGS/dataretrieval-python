@@ -3,18 +3,13 @@
 One leaf owns every answer about the ``API_USGS_PAT`` credential: the host that
 accepts it, whether a given destination qualifies, how it is stripped back off a
 request bound somewhere else, and which keyword names are a caller *asking* to
-send it. Splitting those answers across the layers that happen to need them is
-how a credential reaches a host nobody authorized: the code that attaches a key
-and the code that removes it have to agree, and the only way to guarantee they
-agree is to have them read the same predicate.
+send it. ADR 0006 assigns that sole ownership, and ADR 0010 keeps the key out
+of every adapter's settings.
 
-This sits below HTTP mechanics (which attaches the header) and below progress
-reporting (which tells an unauthenticated caller where to register), so neither
-has to depend on the other to learn the same fact. Its only first-party
-dependency is :mod:`dataretrieval.configuration`, which is itself a
-standard-library-only leaf and sits directly beneath this module in the layers
-contract -- it supplies the key's *value*, while the questions this module
-owns are which host may receive it and how it is withheld from every other.
+This sits below HTTP mechanics and below progress reporting in the layers
+contract. Its only first-party dependency is
+:mod:`dataretrieval.configuration` -- itself a standard-library-only leaf --
+which supplies the key's *value*.
 """
 
 from __future__ import annotations
@@ -58,12 +53,9 @@ def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
     when deciding whether "get an API key" is useful advice rather than noise, so
     the three can't drift apart.
 
-    The scheme has to be ``https``, not just the host. A bearer token sent over
-    cleartext is readable by anything on the path, and the destination that would
-    receive it is reachable through data we do not control: a redirect, or a
-    server-supplied next-page link naming ``http://`` on the very host that is
-    otherwise authorized. Matching on the host alone would hand the key over in
-    the clear on the strength of a hostname the attacker chose to keep.
+    The scheme has to be ``https``, not just the host (ADR 0009): a redirect or
+    a server-supplied next-page link can name ``http://`` on the very host that
+    is otherwise authorized.
     """
     if target_url is None:
         return False
@@ -77,26 +69,20 @@ def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
 def without_embedded_credentials(url: httpx.URL) -> httpx.URL:
     """Drop any ``user:pass@`` from a URL we were *handed* rather than built.
 
-    A next-page link is data, not configuration. ``httpx`` derives an
-    ``Authorization: Basic`` header from userinfo in a URL, so a poisoned link
-    carrying ``user:pass@`` mints a credential the caller never configured and
-    sends it onward -- next to the real API key, when the host still checks out
-    and the host check therefore raises nothing. No USGS service authenticates
-    that way, so stripping it costs a legitimate caller nothing.
+    A next-page link is data, not configuration, and ``httpx`` derives an
+    ``Authorization: Basic`` header from userinfo in a URL (ADR 0009). No USGS
+    service authenticates that way, so stripping it costs a caller nothing.
     """
     return url.copy_with(userinfo=b"") if url.userinfo else url
 
 
 # Credential-shaped keyword names must never reach a getter's generic query
 # passthrough: URLs are retained by clients, proxies, logs, and response
-# metadata. Kept here rather than in the adapter that first needed it, because
-# the fact that motivates the check is package-wide -- ``configure()`` now takes
-# ``Configuration(api_key=...)``, so a caller who has not read that far reaches
-# for ``api_key=`` on whichever getter they are already calling, and every
-# adapter with a ``**kwargs`` passthrough is that getter.
+# metadata. The predicate lives in this leaf rather than in any one adapter so
+# that ten getters cannot drift into ten spellings of it (ADR 0006).
 #
 # Matched as *substrings* of the separator-stripped name, not as exact names:
-# an exact-match list missed the spelling the library's own docs make most
+# an exact-match list misses the spelling the library's own docs make most
 # tempting -- ``x_api_key``, after the ``X-Api-Key`` header.
 _CREDENTIAL_MARKERS = (
     "apikey",
@@ -112,9 +98,9 @@ _CREDENTIAL_MARKERS = (
 # substrings without catching legitimate query parameters.
 #
 # ``session`` is deliberately absent from both lists: it carries no secret, so
-# rejecting it with a credentials message told users the wrong thing, and as a
-# substring it claimed part of a namespace the *server* owns -- any future
-# query parameter containing it would have been unreachable behind that message.
+# rejecting it with a credentials message reports an incorrect reason, and as a
+# substring it claims part of a namespace the *server* owns -- any future query
+# parameter containing it would be unreachable behind that message.
 _CREDENTIAL_NAMES = frozenset({"auth", "key", "pat", "pw"})
 
 
@@ -127,14 +113,11 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
     own list, so a spelling learned from one adapter's mistake is refused by
     the other on the same day.
 
-    This catches the plausible mistake; it is not a security control. Nothing
-    inspects *values*, so a secret pasted into ``state_name=`` travels just the
-    same, and the name space belongs to the server (``get_queryables``) rather
-    than to us. The point is to answer the caller who reasonably guesses that a
-    credential goes here, with a ``TypeError`` naming
-    ``with configure(Configuration(api_key=...)):`` instead of a token in a
-    URL (the bare call is a no-op -- ``configure`` is a context manager). It
-    errs toward rejecting for that reason.
+    A usability check, not a security control (ADR 0009). It answers the
+    caller who reasonably guesses that a credential goes here, with a
+    ``TypeError`` naming ``with configure(Configuration(api_key=...)):``
+    instead of a token in a URL -- the bare call is a no-op, since
+    ``configure`` is a context manager.
     """
     forbidden = set()
     for name in names:
