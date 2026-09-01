@@ -12,11 +12,13 @@ links back to the old record. Keep records concise and commit them with the
 change that makes the decision effective.
 
 Use :doc:`template` when proposing a decision. Number accepted and proposed
-records sequentially.
+records sequentially. :doc:`0000-documenting-decisions` says which explanations
+belong here rather than in a docstring, an inline comment, or a commit message.
 
 .. toctree::
    :maxdepth: 1
 
+   0000-documenting-decisions
    0001-modular-monolith
    0002-sync-api-async-internals
    0003-dependency-direction
@@ -28,4 +30,5 @@ records sequentially.
    0009-layered-configuration
    0010-adapter-scoped-settings
    0011-configuration-profiles
+   0012-deprecation-horizons
    template

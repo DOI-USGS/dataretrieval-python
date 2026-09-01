@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -136,22 +136,15 @@ a <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.
 selects it with <code class="docutils literal notranslate"><span class="pre">&lt;Adapter&gt;Configuration.load(&quot;&lt;name&gt;&quot;)</span></code>.</p></li>
 <li><p>The built-in default.</p></li>
 </ol>
-<p>Those are the four <em>sources</em>, which is the decomposition this module is built
-around – one branch each in <code class="xref py py-func docutils literal notranslate"><span class="pre">_resolve()</span></code>. ADR 0011 states the same order
-as seven rungs by splitting three of them into the scopes inside: source 1 into
-a configuration instance and a selected profile, which cannot disagree because
-both name one adapter and two configurations for one adapter raise; source 3
-into the <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table above the top-level keys; and source 4 into an
-adapter’s own built-in preference above the package default. That last scope is
-invisible here because this module never supplies it – it arrives as the
-<code class="docutils literal notranslate"><span class="pre">default</span></code> a read site like <code class="xref py py-func docutils literal notranslate"><span class="pre">concurrency()</span></code> passes for its own service.</p>
+<p>Each of those four sources is one branch of <code class="xref py py-func docutils literal notranslate"><span class="pre">_resolve()</span></code>; ADR 0011 lists the
+same order in finer grain, splitting three of them into the scopes they contain.
+An adapter’s own default is not one of the four: a read site such as
+<code class="xref py py-func docutils literal notranslate"><span class="pre">concurrency()</span></code> passes it in as the <code class="docutils literal notranslate"><span class="pre">default</span></code> argument.</p>
 <p>Precedence applies <strong>per setting</strong>, not per source: an environment that sets only
-<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> fully in effect. Putting
-the environment above the file follows common deployment conventions and keeps
-the original environment-variable interface authoritative (see ADR 0009) – with
-one exception ADR 0011 carves out: a profile named <em>in code</em> is a more
-deliberate act than a variable inherited from a shell, and a profile reaches the
-chain by being passed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a>, which is above the environment.</p>
+<code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> fully in effect. The
+environment ranks above the file (ADR 0009). ADR 0011 makes one exception: a
+profile named <em>in code</em> reaches the chain through <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a>, above the
+environment.</p>
 <p>A caller configures by passing configuration objects, at most one per adapter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
     <span class="n">Configuration</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">vault</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">"usgs/pat"</span><span class="p">)),</span>
@@ -162,22 +155,16 @@ chain by being passed to <a class="reference internal" href="#dataretrieval.conf
 </pre></div>
 </div>
 <p>Settings are scoped <strong>per adapter</strong> (ADR 0010): a <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> table in the file,
-or an <code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration</span></code>, applies to NGWMN calls and no others, so one block
-can be gentle with one service while leaving the rest alone. Precedence stays
-<em>source-major</em>: the chain still walks block, then environment, then file, and an
-adapter-scoped value outranks a package-wide one only <em>within</em> the same source.
-So a variable exported for one run still beats a stale adapter table. Within the
-block source that tie-break applies per block: an adapter configuration outranks
-a package-wide value set by the same <code class="docutils literal notranslate"><span class="pre">configure</span></code> call, while a value set by a
-block nested inside it wins over both, so the innermost block still decides.</p>
-<p>Which settings an adapter accepts is its own vocabulary – <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> means
-nothing to an adapter that issues one request – so each adapter declares them
-on its own <a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval.configuration.BaseConfiguration"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a> subclass, defined in the module that
-<em>reads</em> them. The API key is not among them: it belongs to the gateway fronting
-a host, which Water Data and NGWMN share.</p>
+or an <code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration</span></code>, applies to NGWMN calls and no others. Precedence
+stays <em>source-major</em> (ADR 0010): an adapter-scoped value outranks a package-wide
+one only <em>within</em> the same source, and within the block source the innermost
+block decides.</p>
+<p>Each adapter declares the settings it accepts on its own
+<a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration" title="dataretrieval.configuration.BaseConfiguration"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a> subclass, defined in the module that <em>reads</em> them
+(ADR 0011). The API key is not among them – it belongs to the gateway fronting
+a host, not to an adapter (ADR 0010).</p>
 <p>This module is a leaf: it imports only the standard library plus the Python 3.10
-<code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport, so any module can depend on it without an import cycle or
-pulling in httpx or pandas. That is also why it holds the adapter <em>names</em> but
+<code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport (ADR 0009). That is also why it holds the adapter <em>names</em> but
 never imports an adapter – see <code class="xref py py-data docutils literal notranslate"><span class="pre">ADAPTERS</span></code>. It centralizes each setting’s
 parser while retaining legacy environment behavior and stricter validation for
 the new Python/TOML surfaces.</p>
@@ -193,8 +180,8 @@ an empty configuration is legal and one can be built up conditionally.</p>
 interchangeable, and one already handed to <a class="reference internal" href="#dataretrieval.configuration.configure" title="dataretrieval.configuration.configure"><code class="xref py py-func docutils literal notranslate"><span class="pre">configure()</span></code></a> must not
 change under the block that entered it.</p>
 <p>Values are checked when the configuration is <em>constructed</em>, so a typo
-raises where it was written rather than at a later <code class="docutils literal notranslate"><span class="pre">with</span></code> statement or,
-worse, inside a request.</p>
+raises where it was written rather than at a later <code class="docutils literal notranslate"><span class="pre">with</span></code> statement or
+inside a request.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._provenance">
 <span class="sig-name descname"><span class="pre">_provenance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._provenance" title="Link to this definition"></a></dt>
@@ -332,10 +319,9 @@ seconds. Progress resets the clock; <code class="docutils literal notranslate"><
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">config_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#config_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.config_path" title="Link to this definition"></a></dt>
 <dd><p>Path to the configuration file, honoring <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>.</p>
 <p>Memoized on the raw <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code> value, because this sits on
-the per-request path via <code class="xref py py-func docutils literal notranslate"><span class="pre">api_key()</span></code> and building the default costs
-more than the <code class="docutils literal notranslate"><span class="pre">stat</span></code> it leads to (<code class="docutils literal notranslate"><span class="pre">Path.home()</span></code> alone dominates the
-whole resolution). Returning a stable object also lets <code class="xref py py-func docutils literal notranslate"><span class="pre">_load_file()</span></code>
-check its cache by identity instead of re-normalizing a fresh <code class="docutils literal notranslate"><span class="pre">Path</span></code>.</p>
+the per-request path via <code class="xref py py-func docutils literal notranslate"><span class="pre">api_key()</span></code>. Returning a stable object also
+lets <code class="xref py py-func docutils literal notranslate"><span class="pre">_load_file()</span></code> check its cache by identity instead of
+re-normalizing a fresh <code class="docutils literal notranslate"><span class="pre">Path</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The explicit path from <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code> if set, otherwise
@@ -386,8 +372,8 @@ module – <code class="docutils literal notranslate"><span class="pre">Waterdat
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="exceptions.html#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><strong>ConfigurationError</strong></a> – If an argument is not a configuration, or two of them target the same
-    adapter. Raised on entry, before any request. A bad <em>value</em> raises
-    earlier still, where the configuration was constructed.</p>
+    adapter. Raised on entry, before any request. An invalid <em>value</em>
+    raises earlier still, where the configuration was constructed.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>

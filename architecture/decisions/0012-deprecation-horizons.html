@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture Decision Records &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
+  <title>ADR 0012: Announce every removal through one advisory with a published horizon &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
@@ -20,8 +20,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ADR 0000: Record each explanation once, in the place that owns it" href="0000-documenting-decisions.html" />
-    <link rel="prev" title="Architecture" href="../index.html" /> 
+    <link rel="next" title="ADR template" href="template.html" />
+    <link rel="prev" title="ADR 0011: Configuration profiles, scoped to one adapter" href="0011-configuration-profiles.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -58,7 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#resource-and-configuration-view">Resource and configuration view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Architecture Decision Records</a><ul>
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
@@ -71,7 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -99,9 +99,10 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Architecture</a></li>
-      <li class="breadcrumb-item active">Architecture Decision Records</li>
+          <li class="breadcrumb-item"><a href="index.html">Architecture Decision Records</a></li>
+      <li class="breadcrumb-item active">ADR 0012: Announce every removal through one advisory with a published horizon</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/architecture/decisions/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/architecture/decisions/0012-deprecation-horizons.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -109,45 +110,89 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="architecture-decision-records">
-<h1>Architecture Decision Records<a class="headerlink" href="#architecture-decision-records" title="Link to this heading"></a></h1>
-<p>Architecture Decision Records (ADRs) capture why a significant structural or
-cross-cutting choice was made, the trade-offs it accepts, and how compliance is
-checked. They complement code and API documentation rather than repeating
-implementation details.</p>
-<p>Statuses are <code class="docutils literal notranslate"><span class="pre">Proposed</span></code>, <code class="docutils literal notranslate"><span class="pre">Accepted</span></code>, <code class="docutils literal notranslate"><span class="pre">Superseded</span></code>, or <code class="docutils literal notranslate"><span class="pre">Rejected</span></code>. Do not
-edit an accepted decision to reverse its meaning; a later ADR supersedes it and
-links back to the old record. Keep records concise and commit them with the
-change that makes the decision effective.</p>
-<p>Use <a class="reference internal" href="template.html"><span class="doc">ADR template</span></a> when proposing a decision. Number accepted and proposed
-records sequentially. <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a> says which explanations
-belong here rather than in a docstring, an inline comment, or a commit message.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0004-error-retry-resume.html">ADR 0004: Use typed failures and bounded recovery</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0005-legacy-nwis.html">ADR 0005: Quarantine and retire legacy NWIS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0006-service-neutral-transport.html">ADR 0006: Use a service-neutral transport layer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0007-adapter-facades.html">ADR 0007: Organize service adapters behind stable facades</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0008-fan-out-execution.html">ADR 0008: Separate fan-out execution from chunk planning</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
-<li class="toctree-l1"><a class="reference internal" href="template.html">ADR template</a></li>
+  <section id="adr-0012-announce-every-removal-through-one-advisory-with-a-published-horizon">
+<h1>ADR 0012: Announce every removal through one advisory with a published horizon<a class="headerlink" href="#adr-0012-announce-every-removal-through-one-advisory-with-a-published-horizon" title="Link to this heading"></a></h1>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
+<p>Accepted</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
+<p>This package’s value is that established calls keep working. Public API
+compatibility is its first architecture characteristic after artifact integrity.
+Names therefore leave slowly: a renamed argument, a retired module, a getter
+whose service no longer exists.</p>
+<p>Four spellings of “tell the caller something is going away” grew up
+independently, and only one carried a date. A caller could not tell how long
+they had, a maintainer could not audit what was due, and the warning category
+was a per-author choice – which matters, because downstream projects run their
+suites under <code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code>.</p>
+<p>ADR 0005 sets a removal date for legacy NWIS, but it is scoped to that adapter.
+Nothing recorded the general rule, and the deprecations kept accumulating.</p>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
+<p>Every deprecation is announced through the shared mechanism in
+<code class="docutils literal notranslate"><span class="pre">dataretrieval._deprecation</span></code>, and every one has a published removal horizon
+recorded in <code class="docutils literal notranslate"><span class="pre">REMOVALS</span></code>.</p>
+<p>A deprecation advisory names three things: what is going away, what to use
+instead, and the date on or after which it may be removed. The mechanism
+tolerates an advisory with no date – it then promises nothing specific rather
+than implying a schedule it does not have. A deprecation of a public name is
+expected to carry one, and an advisory naming a replacement the caller cannot
+yet use is not finished.</p>
+<p><code class="docutils literal notranslate"><span class="pre">REMOVALS</span></code> is the single table of horizons. One table is auditable – what is
+due can be listed, and a horizon can be extended in one place – whereas four
+hand-rolled shims could only be found by grep. A renamed public argument keeps
+working under its old name through one shared decorator rather than a shim
+written for each getter.</p>
+<p>The <em>warning category</em> an advisory carries is not the author’s choice, but the
+rule setting it is not this record’s. <a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a> decides
+when an advisory is a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> (a name in this package is going
+away) and when it is a <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> (an upstream dataset has stopped
+being updated). This record governs the mechanism and the horizon.</p>
+<p>A horizon is a floor, not a schedule. Passing it permits removal; it does not
+require one, and removal remains a deliberate change with its own release note.</p>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>A caller can see, from the warning alone, how long they have and what to move
+to.</p></li>
+<li><p>Horizons can be audited and extended centrally, so a removal date cannot
+arrive unnoticed in a module nobody is reading.</p></li>
+<li><p>Deprecating something costs more than adding a <code class="docutils literal notranslate"><span class="pre">warnings.warn</span></code> call: the
+replacement must exist and a date must be chosen. That is the intended cost.</p></li>
+<li><p>The package accumulates long-lived compatibility shims. This is accepted –
+it is what the compatibility characteristic buys, and the table makes the
+accumulation visible rather than hidden.</p></li>
+<li><p>Nothing is removed on the horizon alone. A removal still needs a release that
+says so.</p></li>
 </ul>
-</div>
+</section>
+<section id="compliance">
+<h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tests/deprecation_test.py</span></code> covers the shared mechanism: that an advisory
+names its replacement, and that the horizon it prints is the one in
+<code class="docutils literal notranslate"><span class="pre">REMOVALS</span></code>. Per-surface tests assert the individual advisories, including that
+a renamed argument still works under its old name. The <em>warning category</em>
+assertions – that <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> is not a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>
+subclass – belong to <a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a>.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>ADR 0005 remains the record for legacy NWIS specifically, including its
+2027-05-06 date. This record generalizes the mechanism without changing that
+decision.</p>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../index.html" class="btn btn-neutral float-left" title="Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="0000-documenting-decisions.html" class="btn btn-neutral float-right" title="ADR 0000: Record each explanation once, in the place that owns it" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="0011-configuration-profiles.html" class="btn btn-neutral float-left" title="ADR 0011: Configuration profiles, scoped to one adapter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="template.html" class="btn btn-neutral float-right" title="ADR template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

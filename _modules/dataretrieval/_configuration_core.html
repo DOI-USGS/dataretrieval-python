@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -115,7 +115,7 @@
 <span class="c1">#: fans a query into more sub-requests, each of which spends rate-limit quota,</span>
 <span class="c1">#: and ``dataretrieval.parallel_chunks`` documents why that must stay a</span>
 <span class="c1">#: deliberate choice rather than a process-wide default. An environment</span>
-<span class="c1">#: variable is the wrong shape for it -- exported once in a shell profile,</span>
+<span class="c1">#: variable is process-wide and implicit -- exported once in a shell profile,</span>
 <span class="c1">#: inherited by every subprocess, invisible at the call site. A config-file</span>
 <span class="c1">#: entry is written deliberately and shows up in :func:`show_configuration`, so the</span>
 <span class="c1">#: file and :func:`configure` block are the only sources for it.</span>
@@ -128,21 +128,14 @@
 <span class="p">}</span>
 
 <span class="c1">#: Variables the environment is *refused* for, by setting. Named rather than</span>
-<span class="c1">#: simply left out of :data:`ENV_VARS`, because leaving them out only makes the</span>
-<span class="c1">#: environment silent: a caller who exports ``API_USGS_BASE_URL`` -- the</span>
-<span class="c1">#: spelling every other setting's variable predicts -- has redirected nothing</span>
-<span class="c1">#: and would learn that from the traffic rather than from us. The file refuses</span>
-<span class="c1">#: the same key in the same words (:func:`_accepted_keys`), for the reason ADR</span>
-<span class="c1">#: 0011 gives: a redirect a shell profile or a config file can set is one no</span>
-<span class="c1">#: reader of the script can see.</span>
+<span class="c1">#: left out of :data:`ENV_VARS`, so a caller who exports ``API_USGS_BASE_URL``</span>
+<span class="c1">#: gets an error instead of a silently ignored variable. The file refuses the</span>
+<span class="c1">#: same key in the same words (:func:`_accepted_keys`): a base URL arriving</span>
+<span class="c1">#: from outside the code could redirect the library to another host without a</span>
+<span class="c1">#: reader of the script seeing it (ADR 0011).</span>
 <span class="c1">#:</span>
-<span class="c1">#: Derived from :data:`ADAPTER_ONLY_SETTINGS` rather than written out beside it,</span>
-<span class="c1">#: because the two would be spelling one fact -- "this setting is code-only" --</span>
-<span class="c1">#: in two tables with nothing keeping them in step. A second adapter-only</span>
-<span class="c1">#: setting added to the roster alone would be refused by the file (which reads</span>
-<span class="c1">#: that roster) and *silently ignored* from the environment, which is exactly</span>
-<span class="c1">#: the defect this table exists to prevent. The predicted spelling is the one</span>
-<span class="c1">#: the comment above names, so deriving it changes nothing today.</span>
+<span class="c1">#: Derived from :data:`ADAPTER_ONLY_SETTINGS` so the file and the environment</span>
+<span class="c1">#: cannot drift apart on which settings are code-only.</span>
 <span class="n">_REFUSED_ENV_VARS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"API_USGS_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span>
 <span class="p">}</span>
@@ -236,21 +229,16 @@
 <span class="c1"># nesting, per-key inheritance, and restore-on-exit keep falling out of a</span>
 <span class="c1"># single merge, whichever scope a block sets.</span>
 <span class="n">_ScopeKey</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-<span class="c1"># One frame per ``configure`` block, stacked outermost-first. Frames rather than</span>
-<span class="c1"># a merged mapping are what makes "the innermost block wins" true across *both*</span>
-<span class="c1"># scopes: an adapter-scoped value outranks a package-wide one only within the</span>
-<span class="c1"># same frame. Merged, an outer ``configure(WaterdataConfiguration(...))`` would</span>
-<span class="c1"># beat an inner ``configure(Configuration(concurrency=1))`` -- inverting</span>
-<span class="c1"># nesting, and silently discarding the per-call ``parallel_chunks(n)`` block.</span>
+<span class="c1"># One frame per ``configure`` block, stacked outermost-first. Frames rather</span>
+<span class="c1"># than a merged mapping: merged, an outer adapter-scoped block would beat an</span>
+<span class="c1"># inner package-wide one, inverting the nesting rule ADR 0011 states.</span>
 <span class="c1">#</span>
 <span class="c1"># Each entry pairs the raw value with the label naming where it came from, the</span>
-<span class="c1"># same shape the file tier returns (:func:`_adapter_file_settings`). The label</span>
-<span class="c1"># is built while the configuration object is still in hand, because that is the</span>
-<span class="c1"># only place the *profile* is known: a value from</span>
-<span class="c1"># ``WaterdataConfiguration.load("bulk")`` and one from</span>
-<span class="c1"># ``WaterdataConfiguration(...)`` are indistinguishable by the time they reach</span>
-<span class="c1"># the frame, so a label rebuilt at resolution time could only ever say</span>
-<span class="c1"># "some block", never which profile.</span>
+<span class="c1"># same shape the file tier returns (:func:`_adapter_file_settings`). The</span>
+<span class="c1"># label is built while the configuration object is still in hand, the only</span>
+<span class="c1"># point where the *profile* is known -- by the time a value reaches the frame,</span>
+<span class="c1"># one from ``WaterdataConfiguration.load("bulk")`` and one from</span>
+<span class="c1"># ``WaterdataConfiguration(...)`` are indistinguishable.</span>
 <span class="n">_Frame</span> <span class="o">=</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">_ScopeKey</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">_SettingValue</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span>
 <span class="n">_scope</span><span class="p">:</span> <span class="n">Ambient</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">_Frame</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Ambient</span><span class="p">(</span><span class="s2">"dataretrieval_configuration"</span><span class="p">,</span> <span class="p">())</span>
 
@@ -287,8 +275,8 @@
     <span class="n">base</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="c1">#: Raw, *unvalidated* ``[&lt;adapter&gt;]`` tables, keyed by adapter name. Each</span>
     <span class="c1">#: holds that adapter's default-profile keys and, as sub-tables, its named</span>
-    <span class="c1">#: profiles. Left unvalidated because a bad value in ``[nldi]`` must not</span>
-    <span class="c1">#: fail a Water Data call that never reads it.</span>
+    <span class="c1">#: profiles. Left unvalidated because an invalid value in ``[nldi]`` must</span>
+    <span class="c1">#: not fail a Water Data call that never reads it.</span>
     <span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
     <span class="n">exists</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -304,21 +292,14 @@
 <span class="c1"># A setting means the same thing wherever it applies, but it does not apply</span>
 <span class="c1"># everywhere (ADR 0010). Each adapter declares the settings it accepts as the</span>
 <span class="c1"># fields of a ``BaseConfiguration`` subclass, defined *in the adapter's own</span>
-<span class="c1"># module* so a setting's definition sits with the code that reads it -- adding</span>
-<span class="c1"># a Water Data setting no longer edits a service-neutral file (ADR 0011). The</span>
-<span class="c1"># *which* is the adapter's own knowledge; the setting itself is drawn from the</span>
-<span class="c1"># shared groups below, so ``retries`` is declared once rather than six times.</span>
+<span class="c1"># module* (ADR 0011). Which settings an adapter accepts is the adapter's own</span>
+<span class="c1"># knowledge; the setting itself is drawn from the shared groups below, so</span>
+<span class="c1"># ``retries`` is declared once.</span>
 <span class="c1">#</span>
-<span class="c1"># Two settings are deliberately absent from every adapter:</span>
-<span class="c1">#</span>
-<span class="c1"># ``api_key``     belongs to the gateway fronting a host, not to an adapter.</span>
-<span class="c1">#                 Water Data and NGWMN are two adapters on one host sharing</span>
-<span class="c1">#                 one key and one quota pool -- measured, see ADR 0010 -- so</span>
-<span class="c1">#                 a per-adapter key would model a distinction that does not</span>
-<span class="c1">#                 exist. ``credentials`` keeps sole ownership of it.</span>
-<span class="c1"># ``progress``    describes the caller's terminal, not a service. There is one</span>
-<span class="c1">#                 progress line per call, so scoping it per adapter could only</span>
-<span class="c1">#                 produce a contradiction.</span>
+<span class="c1"># Two settings are deliberately absent from every adapter (ADR 0010):</span>
+<span class="c1"># ``api_key`` belongs to the gateway fronting a host and stays solely owned by</span>
+<span class="c1"># ``credentials``; ``progress`` describes the caller's terminal rather than a</span>
+<span class="c1"># service.</span>
 
 <span class="c1">#: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is</span>
 <span class="c1">#: typed as a ``WaterdataConfiguration`` rather than the base. ``typing.Self``</span>
@@ -338,11 +319,7 @@
 
 <span class="sd">    A class constant in everything but spelling: the fields cannot change after</span>
 <span class="sd">    the class is created, and every adapter-scoped read asks for it -- through</span>
-<span class="sd">    :func:`_accepts`, before the frame walk and before the file, so the cost is</span>
-<span class="sd">    paid even when a ``configure`` block answers. Rebuilding the frozenset per</span>
-<span class="sd">    read measured as a fifth of an adapter-scoped resolution: two generator</span>
-<span class="sd">    passes over :func:`~dataclasses.fields` to rebuild six strings that cannot</span>
-<span class="sd">    have changed.</span>
+<span class="sd">    :func:`_accepts`, before the frame walk and before the file.</span>
 
 <span class="sd">    Keyed on the *class* rather than on the adapter name because tests replace a</span>
 <span class="sd">    registry entry to stand in for an unimported adapter; a name-keyed memo</span>
@@ -369,8 +346,8 @@
 <span class="sd">    change under the block that entered it.</span>
 
 <span class="sd">    Values are checked when the configuration is *constructed*, so a typo</span>
-<span class="sd">    raises where it was written rather than at a later ``with`` statement or,</span>
-<span class="sd">    worse, inside a request.</span>
+<span class="sd">    raises where it was written rather than at a later ``with`` statement or</span>
+<span class="sd">    inside a request.</span>
 <span class="sd">    """</span>
 
     <span class="c1">#: The adapter this configuration targets, by the name of the module a</span>
@@ -508,35 +485,17 @@
 
 <span class="c1"># --- shared setting groups -----------------------------------------------</span>
 <span class="c1">#</span>
-<span class="c1"># Which settings an adapter accepts is the adapter's own knowledge, and it says</span>
-<span class="c1"># so by naming the groups below. What a setting *is* -- its type, its default,</span>
-<span class="c1"># the fact that ``None`` suppresses the tiers under it -- is not: that is this</span>
-<span class="c1"># module's, and it already was, since :func:`_coerce_typed` keys the type check</span>
-<span class="c1"># by setting *name* and :data:`_VALIDATORS` holds the grammar. Spelling</span>
-<span class="c1"># ``retries: int | None = _UNSET`` in six adapter modules therefore bought</span>
-<span class="c1"># nothing and cost a guarantee: the annotations are decorative, so an adapter</span>
-<span class="c1"># that drifted to ``retries: str | None`` would type-check clean under</span>
-<span class="c1"># ``mypy --strict`` and fail only when a value reached the chain.</span>
-<span class="c1">#</span>
-<span class="c1"># So each group declares one shared setting once, and an adapter composes the</span>
-<span class="c1"># groups it reads::</span>
-<span class="c1">#</span>
-<span class="c1">#     class NgwmnConfiguration(</span>
-<span class="c1">#         _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration</span>
-<span class="c1">#     ):</span>
-<span class="c1">#         adapter: ClassVar[str] = "ngwmn"</span>
-<span class="c1">#</span>
-<span class="c1"># Widening a shared setting's accepted type, or adding one, is now one edit</span>
-<span class="c1"># rather than six. Each adapter still documents the settings it takes in its own</span>
+<span class="c1"># Each group declares one shared setting once; an adapter composes the groups</span>
+<span class="c1"># it reads (ADR 0011). Each still documents the settings it takes in its own</span>
 <span class="c1"># ``Parameters`` section, because that is the signature a caller writes and</span>
 <span class="c1"># ``base_url`` means something different for every service.</span>
 <span class="c1">#</span>
-<span class="c1"># Plain mixins rather than ``BaseConfiguration`` subclasses: a group is not a</span>
-<span class="c1"># configuration -- it has no adapter and cannot be passed to :func:`configure`</span>
-<span class="c1"># -- and keeping them off that branch of the tree leaves one linear base for the</span>
-<span class="c1"># behavior. Frozen because a dataclass may not mix frozen and non-frozen bases.</span>
-<span class="c1"># Fields are collected in reverse MRO order, so an adapter composing all four</span>
-<span class="c1"># reads ``retries, stall_timeout, base_url, concurrency, parallel_chunks``.</span>
+<span class="c1"># Plain mixins rather than ``BaseConfiguration`` subclasses: a group has no</span>
+<span class="c1"># adapter and cannot be passed to :func:`configure`, so keeping it off that</span>
+<span class="c1"># branch leaves one linear base for the behavior. Frozen because a dataclass</span>
+<span class="c1"># may not mix frozen and non-frozen bases; fields collect in reverse MRO order,</span>
+<span class="c1"># so an adapter composing all four reads ``retries, stall_timeout, base_url,</span>
+<span class="c1"># concurrency, parallel_chunks``.</span>
 
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -641,9 +600,9 @@
 <span class="c1">#: what the adapter side already does (:func:`settings_for`); only the</span>
 <span class="c1">#: package-wide side was hand-maintained.</span>
 <span class="c1">#:</span>
-<span class="c1">#: Declared here, below the class, for the obvious reason: it cannot be derived</span>
-<span class="c1">#: before the class exists. Every reader is a call-time lookup or a ``def``</span>
-<span class="c1">#: default evaluated further down the module.</span>
+<span class="c1">#: Declared here, below the class, because it cannot be derived before the</span>
+<span class="c1">#: class exists. Every reader is a call-time lookup or a ``def`` default</span>
+<span class="c1">#: evaluated further down the module.</span>
 <span class="n">SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">Configuration</span><span class="p">))</span>
 
 <span class="c1">#: Every setting name this module knows a grammar for.</span>
@@ -656,9 +615,9 @@
 <span class="c1">#:</span>
 <span class="c1">#: Holding the names here rather than deriving them from the registry below is</span>
 <span class="c1">#: what lets a ``[nldi]`` table stay valid in a file: NLDI is imported on demand</span>
-<span class="c1">#: for the geopandas extra, so a roster built from imports would reject a</span>
-<span class="c1">#: perfectly good table until something happened to import that module, and the</span>
-<span class="c1">#: verdict would vary by what a caller had touched.</span>
+<span class="c1">#: for the geopandas extra, so a roster built from imports would reject a valid</span>
+<span class="c1">#: table until something happened to import that module, and the verdict would</span>
+<span class="c1">#: vary by what a caller had touched.</span>
 <span class="n">ADAPTERS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"waterdata"</span><span class="p">,</span>
     <span class="s2">"ngwmn"</span><span class="p">,</span>
@@ -718,8 +677,6 @@
 
 <span class="sd">    ``import dataretrieval`` imports this module, but the parser is reachable</span>
 <span class="sd">    only once a configuration file actually exists -- the minority case.</span>
-<span class="sd">    Importing it eagerly costs every caller ~4 ms of ``tomllib`` regex</span>
-<span class="sd">    compilation for a file most of them do not have.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">tomllib</span>
@@ -734,10 +691,9 @@
 <span class="w">    </span><span class="sd">"""Path to the configuration file, honoring ``DATARETRIEVAL_CONFIG``.</span>
 
 <span class="sd">    Memoized on the raw ``DATARETRIEVAL_CONFIG`` value, because this sits on</span>
-<span class="sd">    the per-request path via :func:`api_key` and building the default costs</span>
-<span class="sd">    more than the ``stat`` it leads to (``Path.home()`` alone dominates the</span>
-<span class="sd">    whole resolution). Returning a stable object also lets :func:`_load_file`</span>
-<span class="sd">    check its cache by identity instead of re-normalizing a fresh ``Path``.</span>
+<span class="sd">    the per-request path via :func:`api_key`. Returning a stable object also</span>
+<span class="sd">    lets :func:`_load_file` check its cache by identity instead of</span>
+<span class="sd">    re-normalizing a fresh ``Path``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -758,9 +714,7 @@
         <span class="c1"># is anchored to the working directory (a later ``os.chdir`` in a</span>
         <span class="c1"># per-job notebook or scheduler must not keep reading the previous</span>
         <span class="c1"># job's file); the default branch is anchored to ``$HOME``. An absolute</span>
-        <span class="c1"># override depends on neither and guards with ``None``. ``stat(".")``</span>
-        <span class="c1"># identifies the directory ~17x cheaper than ``getcwd()``, which</span>
-        <span class="c1"># reifies the whole path string.</span>
+        <span class="c1"># override depends on neither and guards with ``None``.</span>
         <span class="k">if</span> <span class="n">cached_guard</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cached_guard</span> <span class="o">==</span> <span class="n">_path_guard</span><span class="p">(</span><span class="n">cached_guard</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">return</span> <span class="n">path</span>
 
@@ -788,8 +742,8 @@
 <span class="sd">    ``Path.home()`` raises ``RuntimeError`` where no home can be resolved at all</span>
 <span class="sd">    -- a rootless container running as an arbitrary UID with no passwd entry and</span>
 <span class="sd">    no ``HOME``. That is not a misconfiguration to report: such a deployment</span>
-<span class="sd">    simply has no config file, and before settings were layered it worked fine</span>
-<span class="sd">    on the environment alone. So the unexpanded ``~/...`` form is returned</span>
+<span class="sd">    has no config file, and before settings were layered it worked on the</span>
+<span class="sd">    environment alone. So the unexpanded ``~/...`` form is returned</span>
 <span class="sd">    instead: it does not exist, which keeps the whole file layer inert rather</span>
 <span class="sd">    than failing every request from inside the header builder, and it still</span>
 <span class="sd">    reads correctly in :func:`show_configuration` output.</span>
@@ -850,8 +804,8 @@
 <span class="sd">    the path.</span>
 
 <span class="sd">    Which variable that is differs by platform, and the memo has to agree with</span>
-<span class="sd">    the resolver or it watches the wrong thing. ``posixpath.expanduser`` reads</span>
-<span class="sd">    ``HOME``; ``ntpath.expanduser`` reads ``USERPROFILE`` (then</span>
+<span class="sd">    the resolver or it watches a different variable. ``posixpath.expanduser``</span>
+<span class="sd">    reads ``HOME``; ``ntpath.expanduser`` reads ``USERPROFILE`` (then</span>
 <span class="sd">    ``HOMEDRIVE``/``HOMEPATH``) and ignores ``HOME`` outright. Preferring</span>
 <span class="sd">    ``HOME`` everywhere means that on Windows -- where Git Bash and MSYS do set</span>
 <span class="sd">    it -- the memo invalidates on a variable that cannot move the path, and</span>
@@ -1190,7 +1144,7 @@
 <span class="sd">    one. The table's sub-tables are its named profiles, which are inert until a</span>
 <span class="sd">    caller selects one, so they are skipped here (see :func:`_accepted_keys`).</span>
 
-<span class="sd">    Validated on first use, not at parse time, so a bad value in ``[nldi]``</span>
+<span class="sd">    Validated on first use, not at parse time, so an invalid value in ``[nldi]``</span>
 <span class="sd">    cannot fail a Water Data call -- the blast-radius rule ADR 0010 set.</span>
 <span class="sd">    """</span>
     <span class="n">table</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
@@ -1265,10 +1219,10 @@
 <span class="sd">    POSIX ``st_ctime_ns`` advances on any inode change, so the metadata stamp</span>
 <span class="sd">    catches even a rewrite that restores the original mtime. Windows ctime is</span>
 <span class="sd">    *creation* time, so there the stamp cannot see that class of edit and the</span>
-<span class="sd">    content compare in :func:`_parse_or_reuse_cache` is the only correct check</span>
-<span class="sd">    -- the re-read it forces is deliberate, and ``test_file_edit_is_picked_up``</span>
-<span class="sd">    pins it. Do not drop the ctime gate (or extend the stamp to Windows)</span>
-<span class="sd">    without a Windows-safe change detector.</span>
+<span class="sd">    content compare in :func:`_parse_or_reuse_cache` is the only check that</span>
+<span class="sd">    catches it -- the re-read it forces is deliberate, and</span>
+<span class="sd">    ``test_file_edit_is_picked_up`` pins it. Do not drop the ctime gate (or</span>
+<span class="sd">    extend the stamp to Windows) without a Windows-safe change detector.</span>
 <span class="sd">    """</span>
     <span class="n">cached</span> <span class="o">=</span> <span class="n">_file_cache</span>
     <span class="k">if</span> <span class="p">(</span>
@@ -1324,10 +1278,10 @@
 
 <span class="sd">    Only the top-level table is validated here, because it always applies. An</span>
 <span class="sd">    adapter's table is kept raw and validated when that adapter first resolves a</span>
-<span class="sd">    setting: a bad value in ``[nldi]`` must not fail a Water Data call, the same</span>
-<span class="sd">    blast-radius rule :func:`~dataretrieval.utils._default_headers` follows for</span>
-<span class="sd">    the key itself. It is also what lets an adapter's vocabulary live in the</span>
-<span class="sd">    adapter, which this module cannot import.</span>
+<span class="sd">    setting: an invalid value in ``[nldi]`` must not fail a Water Data call,</span>
+<span class="sd">    the same blast-radius rule :func:`~dataretrieval.utils._default_headers`</span>
+<span class="sd">    follows for the key itself. It is also what lets an adapter's vocabulary</span>
+<span class="sd">    live in the adapter, which this module cannot import.</span>
 <span class="sd">    """</span>
     <span class="n">top</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1399,10 +1353,10 @@
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">SETTINGS</span><span class="p">:</span>
                 <span class="c1"># A real setting, in a table that does not read it. Unlike an</span>
-                <span class="c1"># unrecognized name -- which may simply belong to a newer</span>
-                <span class="c1"># release -- this cannot become meaningful later, and silently</span>
-                <span class="c1"># ignoring it would leave a caller believing they had tuned</span>
-                <span class="c1"># something. See ADR 0010.</span>
+                <span class="c1"># unrecognized name -- which may belong to a newer release --</span>
+                <span class="c1"># this cannot become meaningful later, and silently ignoring it</span>
+                <span class="c1"># would leave a caller believing they had tuned something. See</span>
+                <span class="c1"># ADR 0010.</span>
                 <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is not a setting that table "</span>
                     <span class="sa">f</span><span class="s2">"accepts. It accepts: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>

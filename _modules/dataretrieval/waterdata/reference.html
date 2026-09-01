@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,9 +133,9 @@
 <span class="sd">        call.</span>
 <span class="sd">    max_rows : int, optional</span>
 <span class="sd">        Cap the total number of rows returned, stopping pagination early</span>
-<span class="sd">        instead of downloading the whole table. Useful for cheaply</span>
-<span class="sd">        previewing large tables (e.g. ``hydrologic-unit-codes`` has ~125k</span>
-<span class="sd">        rows). Unlike ``limit`` (the per-page size), this bounds the total</span>
+<span class="sd">        instead of downloading the whole table. Useful for previewing</span>
+<span class="sd">        large tables in a few requests (e.g. ``hydrologic-unit-codes`` has</span>
+<span class="sd">        ~125k rows). Unlike ``limit`` (the per-page size), this bounds the total</span>
 <span class="sd">        result. The default (None) downloads every page.</span>
 
 <span class="sd">    Returns</span>
@@ -176,7 +176,8 @@
 
     <span class="c1"># Give the ID column the collection name, singularized and underscored.</span>
     <span class="c1"># ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm</span>
-    <span class="c1"># was unreachable and would stay correct if a singular collection appeared.</span>
+    <span class="c1"># was unreachable; ``removesuffix`` returns a singular collection name</span>
+    <span class="c1"># unchanged if one appears.</span>
     <span class="k">if</span> <span class="n">collection</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"counties"</span><span class="p">,</span> <span class="s2">"countries"</span><span class="p">):</span>
         <span class="n">output_id</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">"ies"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"y"</span>
     <span class="k">else</span><span class="p">:</span>

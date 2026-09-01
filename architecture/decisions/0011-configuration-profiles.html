@@ -6,21 +6,21 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ADR template" href="template.html" />
+    <link rel="next" title="ADR 0012: Announce every removal through one advisory with a published horizon" href="0012-deprecation-horizons.html" />
     <link rel="prev" title="ADR 0010: Adapter-scoped settings" href="0010-adapter-scoped-settings.html" /> 
 </head>
 
@@ -59,6 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
@@ -70,6 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -120,6 +122,8 @@ environment-above-file rule, inverted for a profile selected in code; and the
 refusal of a configuration object, which ADR 0010 had already narrowed to a
 preference about the payload’s shape. The chain, the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> delivery,
 host-scoped credentials and the leaf constraint stand.</p>
+<p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
@@ -127,10 +131,10 @@ host-scoped credentials and the leaf constraint stand.</p>
 setting to NGWMN. That covers “tune one service” but not the case a
 multi-service caller actually has:</p>
 <ul class="simple">
-<li><p><strong>Several named configurations per adapter.</strong> A caller with an overnight
-bulk shape and a polite daytime shape for Water Data cannot store both. The
-only named construct is <code class="docutils literal notranslate"><span class="pre">[profiles.&lt;name&gt;]</span></code>, which switches <em>every</em>
-service at once.</p></li>
+<li><p><strong>Several named configurations per adapter.</strong> A caller with an overnight bulk
+configuration profile and a lower-rate daytime one for Water Data cannot
+store both. The only named construct is <code class="docutils literal notranslate"><span class="pre">[profiles.&lt;name&gt;]</span></code>, which switches
+<em>every</em> service at once.</p></li>
 <li><p><strong>Composing them.</strong> The two mechanisms do not compose:
 <code class="docutils literal notranslate"><span class="pre">[profiles.bulk.ngwmn]</span></code> raises, so a profile cannot carry per-service
 detail. That refusal was recorded in ADR 0010 on the grounds that layering
@@ -176,11 +180,12 @@ adapter, and nothing else:</p>
 </div>
 <p>The adapter an instance targets is a property of its class, so the caller
 never restates it – which is what removes the roster duplication. Naming two
-configurations for one adapter raises: they would be the one pairing with no
-defined order.</p>
+configurations for one adapter raises: they would be the one pairing the
+precedence rules do not order.</p>
 <p>Keyword settings are removed, so <code class="docutils literal notranslate"><span class="pre">configure(api_key=...)</span></code> no longer works.
 This is the most-typed line the feature exists to enable, and making it wordier
-is a real cost, accepted deliberately for one shape everywhere.</p>
+is a real cost, accepted deliberately so that every setting is passed the same
+way.</p>
 <p><strong>Schemas live with their adapter; names live centrally.</strong> <code class="docutils literal notranslate"><span class="pre">configuration</span></code>
 is a standard-library-only leaf every adapter may import, so it cannot import
 adapters. It holds the tuple of adapter <em>names</em>, which is what parsing a file
@@ -208,9 +213,9 @@ and 2 are both code and both target one adapter, so the same-adapter rule
 means they cannot tie.</p>
 <p>Position 2 above 3 inverts ADR 0009’s environment-above-file rule for this one
 case. A profile named in code is a more deliberate act than a variable
-inherited from a shell, and losing to that variable is the behaviour a caller
-would file a bug about. Everything the caller did <em>not</em> name in code still
-follows the original rule.</p>
+inherited from a shell, which would otherwise override a selection the caller
+made explicitly. Everything the caller did <em>not</em> name in code still follows the
+original rule.</p>
 <p><strong>Validation is lazy.</strong> A file’s structure is checked when it is parsed; a
 table’s keys are checked when that adapter first resolves a setting. This
 keeps the blast-radius rule ADR 0010 established – a malformed <code class="docutils literal notranslate"><span class="pre">[nldi]</span></code>
@@ -219,8 +224,8 @@ live in a module the parser cannot import.</p>
 <p><strong>Base URLs may be configured, from code only.</strong> An adapter’s configuration
 may carry its base URL, settable in a <code class="docutils literal notranslate"><span class="pre">configure()</span></code> block and rejected from
 the file and the environment. A file that silently redirects a data-retrieval
-library to another host is a supply-chain-shaped hazard; an in-code block
-keeps the redirect where a reader sees it.</p>
+library to another host is a supply-chain hazard; an in-code block keeps the
+redirect where a reader sees it.</p>
 <p><strong>The module is renamed</strong> <code class="docutils literal notranslate"><span class="pre">dataretrieval.config</span></code> to
 <code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code>,
 and ADR 0009’s rule reserving <code class="docutils literal notranslate"><span class="pre">config</span></code> as an abbreviation for the module and
@@ -234,7 +239,7 @@ the live services:</p>
 <tr class="row-odd"><th class="head"><p>Host</p></th>
 <th class="head"><p>No key</p></th>
 <th class="head"><p>With key</p></th>
-<th class="head"><p>Bad key</p></th>
+<th class="head"><p>Invalid key</p></th>
 </tr>
 </thead>
 <tbody>
@@ -260,13 +265,22 @@ key; the gateway validates one only if present. Sending the key there would
 gain nothing and would turn a stale key into 403s on calls that work
 anonymously today. The three hosts also keep independent counters, so ADR
 0010’s “one key, one quota pool” is true of waterdata and ngwmn only.</p>
+<p><strong>An adapter composes shared setting groups; it does not respell their
+fields.</strong> Which settings an adapter reads is the adapter’s own knowledge, but
+what each setting <em>means</em> is shared, so the fields come from frozen mixin
+groups declared once beside their grammar. An adapter’s configuration class
+names the groups it composes and adds only what is genuinely its own. Spelling
+<code class="docutils literal notranslate"><span class="pre">retries:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">_UNSET</span></code> directly in an adapter module satisfies this
+record’s letter while losing what it protects: the annotation would enforce
+nothing, could drift from the shared parser, and <code class="docutils literal notranslate"><span class="pre">mypy</span> <span class="pre">--strict</span></code> would not
+notice, because it checks the annotation, not whether the field still matches
+the shared group.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><strong>The multi-service case gets a spelling</strong>, which is the point. One block,
-several adapters, at most one configuration each, any of them from the file
-or from code.</p></li>
+<li><p><strong>The multi-service case gets a spelling.</strong> One block, several adapters, at
+most one configuration each, any of them from the file or from code.</p></li>
 <li><p><strong>The roster stops being duplicated.</strong> An adapter declares itself once. The
 failure mode where a schema exists that nothing passes becomes impossible by
 construction rather than caught by a fitness test.</p></li>
@@ -277,14 +291,14 @@ the PR description and ADR 0009’s examples all use it and all must change in
 the same commit.</p></li>
 <li><p><strong>``show_configuration()`` can only resolve the settings an adapter accepts
 once that adapter has been imported.</strong> It names the adapters it could not
-check rather than omitting them silently, which is the honest cost of lazy
+check rather than omitting them silently, which is the cost of lazy
 validation. The <em>profile list</em> is not import-limited: what a profile is
 called is a fact about the file, so every <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table it
 defines is listed, imported or not – withholding one would make the
 section’s answer depend on which optional extras happened to be installed.</p></li>
 <li><p><strong>Two names differ only by case</strong> – the <code class="docutils literal notranslate"><span class="pre">configuration</span></code> module and the
 <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> class. The module stays out of the package’s public
-exports so the confusing import line cannot arise.</p></li>
+exports, so <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">dataretrieval</span> <span class="pre">import</span> <span class="pre">configuration,</span> <span class="pre">Configuration</span></code> cannot arise.</p></li>
 <li><p><strong>Separate quota pools are still not modelled.</strong> Three exist. Nothing in the
 library needs to know yet.</p></li>
 <li><p><strong>``ssl_check`` is unaffected</strong> and remains a per-call argument, for the
@@ -314,9 +328,9 @@ blast-radius rule under lazy validation.</p></li>
 <code class="docutils literal notranslate"><span class="pre">test_base_url_is_refused_from_the_environment</span></code> for the other source, and
 <code class="docutils literal notranslate"><span class="pre">test_a_code_base_url_redirects_every_water_data_endpoint_family</span></code> – one
 public-getter contract covering OGC, Samples, Statistics, and Ratings. The
-endpoint module exposes request-time acquisition functions rather than raw
-usable endpoints, so a family module gets the active scoped root without a
-wrapper obligation at every use site.</p></li>
+endpoint module exposes functions that build each URL at request time rather
+than ready-made endpoint constants, so a family module gets the root in effect
+for the call without wrapping every use site.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">test_adapter_roster_names_real_modules_that_register_themselves</span></code> and
 <code class="docutils literal notranslate"><span class="pre">test_every_adapter_is_actually_wired_to_a_read_site</span></code> – the roster
 resolves, and no configuration exists that nothing reads. An adapter name
@@ -340,6 +354,9 @@ chunks concurrently – which <code class="docutils literal notranslate"><span c
 <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> asks the planner to <em>divide</em> more finely. ADR 0009
 rejected <code class="docutils literal notranslate"><span class="pre">parallelism</span></code> and <code class="docutils literal notranslate"><span class="pre">chunk_parallelism</span></code> for the same conflation.
 <code class="docutils literal notranslate"><span class="pre">chunk_count</span></code> or <code class="docutils literal notranslate"><span class="pre">target_chunks</span></code> would stay on the correct side of it.</p></li>
+<li><p>The setting-group clause was added after the original decision, consolidating
+under ADR 0000 a rule the configuration core was carrying in prose. It does
+not change behavior.</p></li>
 </ul>
 </section>
 </section>
@@ -349,7 +366,7 @@ rejected <code class="docutils literal notranslate"><span class="pre">parallelis
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="0010-adapter-scoped-settings.html" class="btn btn-neutral float-left" title="ADR 0010: Adapter-scoped settings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="template.html" class="btn btn-neutral float-right" title="ADR template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="0012-deprecation-horizons.html" class="btn btn-neutral float-right" title="ADR 0012: Announce every removal through one advisory with a published horizon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

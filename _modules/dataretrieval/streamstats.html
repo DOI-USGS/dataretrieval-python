@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -115,8 +115,7 @@
 
 <span class="sd">    Both endpoints below hang off this, so a</span>
 <span class="sd">    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather</span>
-<span class="sd">    than the one endpoint a caller happened to reach first. Resolved per call,</span>
-<span class="sd">    because a ``configure`` block is scoped to a ``with`` statement.</span>
+<span class="sd">    than one endpoint (ADR 0011).</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"streamstats"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">STREAMSTATS_URL</span><span class="p">)</span>
 
@@ -349,10 +348,8 @@
 <span class="sd">    No fan-out dials: a StreamStats query is answered by a single</span>
 <span class="sd">    request.</span>
 
-<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
-<span class="sd">    *which* settings a service reads is the service's own knowledge (ADR</span>
-<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
-<span class="sd">    setting groups declared beside their grammar.</span>
+<span class="sd">    Declared here rather than in :mod:`dataretrieval.configuration`</span>
+<span class="sd">    (ADR 0011).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -367,9 +364,6 @@
 <span class="sd">        the file and the environment refuse it.</span>
 <span class="sd">    """</span>
 
-    <span class="c1"># One request per call, so this service reads the retry dials and a</span>
-    <span class="c1"># redirectable base and no fan-out dial. Each setting is declared once,</span>
-    <span class="c1"># in :mod:`dataretrieval.configuration`, beside its grammar.</span>
     <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"streamstats"</span></div>
 
 

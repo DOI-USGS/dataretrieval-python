@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -59,6 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
@@ -70,6 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -112,15 +114,19 @@
 <h1>ADR 0004: Use typed failures and bounded recovery<a class="headerlink" href="#adr-0004-use-typed-failures-and-bounded-recovery" title="Link to this heading"></a></h1>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Accepted</p>
+<p>Accepted. The clause assigning resumable partial state to OGC is superseded by
+<a class="reference internal" href="0008-fan-out-execution.html"><span class="doc">ADR 0008: Separate fan-out execution from chunk planning</span></a>, which moves fan-out <em>execution</em> into transport
+and gives every fanned-out service resume. The rest stands.</p>
+<p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p>Remote hydrologic services fail through HTTP statuses, rate limits, timeouts,
 invalid payloads, and mid-pagination interruptions. Returning partial data after
-an undetected page failure is worse than raising. At the same time, retrying
-without limits can stall callers, multiply quota usage, or hide persistent
-faults.</p>
+an undetected page failure leaves the caller a truncated result they cannot tell
+from a complete one. At the same time, retrying without limits can stall
+callers, multiply quota usage, or hide persistent faults.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
@@ -136,15 +142,46 @@ unknown failures are not disguised as resumable transients.</p>
 pagination, but each adapter opts in only where its requests are idempotent and
 its protocol exposes a cursor. Chunk planning and resumable partial state remain
 OGC-specific capabilities rather than assumptions imposed on every service.</p>
+<p><strong>Warnings carry the advisories that are not failures.</strong> The taxonomy above
+covers what stops a call; two things that do not stop one are decided here as
+well, because getting either wrong turns a condition that should not stop a call
+into one that does.</p>
+<p>A fan-out over <em>independent</em> items may skip one. Where a query asks for many
+items that do not compose into a single answer, an item failing
+deterministically is dropped under a warning naming it, and counts as complete
+so a resume does not re-attempt it. A transient failure is never skipped: it
+retries, and exhausts into a resumable interruption like any other. This is the
+deliberate exception to the rule that a failed fan-out raises rather than
+returning successful siblings; it applies only where the items are independent,
+never to the pages of one query.</p>
+<p>An advisory about <em>upstream data</em> – a dataset the service has stopped updating
+– is a <code class="docutils literal notranslate"><span class="pre">UserWarning</span></code>, never a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>. Downstream projects run
+their suites under <code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code>, and spelling “this data is
+stale” as a deprecation makes their build fail over something no code change of
+theirs can fix. <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> means <em>this package’s</em> API is going away.</p>
+<p><strong>A ``Retry-After`` hint is honored as information even when it is not
+actionable.</strong> A hint too long to wait for, or expressed as a date, is parsed and
+surfaced on the failure rather than discarded, so a caller can see what the
+service asked for; the retry policy separately declines to wait beyond its cap.
+A date already in the past yields no hint at all rather than a zero-second one,
+which would read as “retry immediately” – the opposite of what the header said.</p>
+<p><strong>Every error must survive a process boundary.</strong> Reconstruction goes through
+<code class="docutils literal notranslate"><span class="pre">__new__</span></code> plus <code class="docutils literal notranslate"><span class="pre">__getstate__</span></code>/<code class="docutils literal notranslate"><span class="pre">__setstate__</span></code> rather than <code class="docutils literal notranslate"><span class="pre">cls(*args)</span></code>,
+because these errors carry fields whose values are not the constructor’s
+arguments. A subclass holding an unpicklable handle – a client, a task – must
+shed it in <code class="docutils literal notranslate"><span class="pre">__getstate__</span></code>. Without this a failure raised inside a worker
+process is replaced by a pickling error on the way out, losing the diagnosis
+exactly when it is hardest to reproduce.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Callers can catch one stable base error and still branch on useful fields.</p></li>
+<li><p>Callers can catch one stable base error and still branch on <code class="docutils literal notranslate"><span class="pre">status_code</span></code>,
+<code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and <code class="docutils literal notranslate"><span class="pre">retryable</span></code>.</p></li>
 <li><p>Mid-pagination failure cannot silently look like a complete dataset.</p></li>
 <li><p>Retry can increase latency and request quota, so policy and defaults are part
 of observable behavior.</p></li>
-<li><p>Partial OGC state requires careful serialization and finalization tests.</p></li>
+<li><p>Partial OGC state requires serialization and finalization tests.</p></li>
 <li><p>Expanding retry to another service requires service-specific idempotency and
 failure-contract tests.</p></li>
 </ul>
@@ -154,7 +191,23 @@ failure-contract tests.</p></li>
 <p>Tests cover status-to-type mapping, uniform fields, transport wrapping,
 pagination failure, retry exhaustion and jitter bounds, <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> limits,
 resume equivalence, partial-state stability, pickling, and cancellation
-precedence.</p>
+precedence. The skip policy is covered by
+<code class="docutils literal notranslate"><span class="pre">tests/waterdata_ratings_test.py::test_get_ratings_deterministic_download_failure_warns_and_skips</span></code>
+and its sibling for a feature with no asset; the warning categories by
+<code class="docutils literal notranslate"><span class="pre">tests/deprecation_test.py</span></code>, which asserts <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> is not a
+subclass of <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>; the hint-parsing rules by the
+<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> date and over-cap cases; and the process boundary by
+round-tripping error subclasses through <code class="docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>The warning, hint-parsing, and pickling clauses were added after the original
+decision. They record, under ADR 0000, rules the code was carrying in prose. The
+skip clause records a carve-out that previously read as contradicting this
+record and <a class="reference internal" href="0006-service-neutral-transport.html"><span class="doc">ADR 0006: Use a service-neutral transport layer</span></a>; 0006 now points here for it.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Status</span></code> line was also annotated retroactively: this record assigned
+resumable partial state to OGC, which <a class="reference internal" href="0008-fan-out-execution.html"><span class="doc">ADR 0008: Separate fan-out execution from chunk planning</span></a> superseded
+without noting it here. The supersession is 0008’s; only the backlink is new.</p>
 </section>
 </section>
 

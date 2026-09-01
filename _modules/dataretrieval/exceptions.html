@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -374,7 +374,7 @@
 
 
 
-<span class="c1"># --- Bad configuration ---------------------------------------------------</span>
+<span class="c1"># --- Invalid configuration -----------------------------------------------</span>
 
 
 <div class="viewcode-block" id="ConfigurationError">
@@ -384,14 +384,9 @@
 <span class="sd">    request was issued -- an environment variable, a policy field, a malformed</span>
 <span class="sd">    ``config.toml``, or a profile the file does not define.</span>
 
-<span class="sd">    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches</span>
-<span class="sd">    it rather than letting a bare ``ValueError`` escape a request path. That</span>
-<span class="sd">    matters because settings resolve lazily, on the request path: a broken</span>
-<span class="sd">    config file surfaces from inside whichever getter runs first, and belongs in</span>
-<span class="sd">    the same handler as any other failure of that call. It is *also* a</span>
-<span class="sd">    :class:`ValueError`, so code that already treats a bad setting as one keeps</span>
-<span class="sd">    working whether the value came from the environment, a file, or a</span>
-<span class="sd">    :func:`dataretrieval.configure` block.</span>
+<span class="sd">    Both bases matter: ``except DataRetrievalError`` around a retrieval</span>
+<span class="sd">    catches it, and code that already treats an invalid setting as a</span>
+<span class="sd">    :class:`ValueError` keeps working. The dual base is ADR 0009.</span>
 <span class="sd">    """</span></div>
 
 
@@ -430,7 +425,7 @@
 
 <span class="sd">    Distinct from ``DeprecationWarning``, which promises that a *name in this</span>
 <span class="sd">    package* is going away and gives the caller something to migrate to. Here</span>
-<span class="sd">    the API is fine and there is nothing to migrate: the service's own data</span>
+<span class="sd">    the API is unchanged and there is nothing to migrate: the service's own data</span>
 <span class="sd">    has stopped moving, and only the caller can judge whether that matters.</span>
 
 <span class="sd">    It is a ``UserWarning`` for that reason. Emitting it as a</span>
@@ -452,7 +447,7 @@
 <span class="sd">    The policy for batch getters whose items are independent documents: an</span>
 <span class="sd">    item that fails *deterministically* -- so retrying would reproduce the</span>
 <span class="sd">    failure -- is dropped from the result under a warning naming it, because</span>
-<span class="sd">    aborting would discard every other item's data over one bad entry.</span>
+<span class="sd">    aborting would discard every other item's data over one failing entry.</span>
 <span class="sd">    Transient failures (429 / 5xx / timeouts / connection drops) are never</span>
 <span class="sd">    skipped -- they are retried and, if retries run out, raised as a</span>
 <span class="sd">    resumable interruption. Rate limiting in particular is systematic, so</span>
@@ -557,7 +552,7 @@
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># ``inf``/``nan`` parse cleanly but poison every later comparison: an</span>
+        <span class="c1"># ``inf``/``nan`` parse without error but poison every later comparison: an</span>
         <span class="c1"># infinite hint would refuse retry forever and travel to the caller on</span>
         <span class="c1"># ``.retry_after``. Treat them as no hint at all.</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>

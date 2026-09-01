@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,23 +95,16 @@
 <span class="sd">   selects it with ``&lt;Adapter&gt;Configuration.load("&lt;name&gt;")``.</span>
 <span class="sd">4. The built-in default.</span>
 
-<span class="sd">Those are the four *sources*, which is the decomposition this module is built</span>
-<span class="sd">around -- one branch each in :func:`_resolve`. ADR 0011 states the same order</span>
-<span class="sd">as seven rungs by splitting three of them into the scopes inside: source 1 into</span>
-<span class="sd">a configuration instance and a selected profile, which cannot disagree because</span>
-<span class="sd">both name one adapter and two configurations for one adapter raise; source 3</span>
-<span class="sd">into the ``[&lt;adapter&gt;]`` table above the top-level keys; and source 4 into an</span>
-<span class="sd">adapter's own built-in preference above the package default. That last scope is</span>
-<span class="sd">invisible here because this module never supplies it -- it arrives as the</span>
-<span class="sd">``default`` a read site like :func:`concurrency` passes for its own service.</span>
+<span class="sd">Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the</span>
+<span class="sd">same order in finer grain, splitting three of them into the scopes they contain.</span>
+<span class="sd">An adapter's own default is not one of the four: a read site such as</span>
+<span class="sd">:func:`concurrency` passes it in as the ``default`` argument.</span>
 
 <span class="sd">Precedence applies **per setting**, not per source: an environment that sets only</span>
-<span class="sd">``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. Putting</span>
-<span class="sd">the environment above the file follows common deployment conventions and keeps</span>
-<span class="sd">the original environment-variable interface authoritative (see ADR 0009) -- with</span>
-<span class="sd">one exception ADR 0011 carves out: a profile named *in code* is a more</span>
-<span class="sd">deliberate act than a variable inherited from a shell, and a profile reaches the</span>
-<span class="sd">chain by being passed to :func:`configure`, which is above the environment.</span>
+<span class="sd">``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. The</span>
+<span class="sd">environment ranks above the file (ADR 0009). ADR 0011 makes one exception: a</span>
+<span class="sd">profile named *in code* reaches the chain through :func:`configure`, above the</span>
+<span class="sd">environment.</span>
 
 <span class="sd">A caller configures by passing configuration objects, at most one per adapter::</span>
 
@@ -123,24 +116,18 @@
 <span class="sd">        ...</span>
 
 <span class="sd">Settings are scoped **per adapter** (ADR 0010): a ``[ngwmn]`` table in the file,</span>
-<span class="sd">or an ``NgwmnConfiguration``, applies to NGWMN calls and no others, so one block</span>
-<span class="sd">can be gentle with one service while leaving the rest alone. Precedence stays</span>
-<span class="sd">*source-major*: the chain still walks block, then environment, then file, and an</span>
-<span class="sd">adapter-scoped value outranks a package-wide one only *within* the same source.</span>
-<span class="sd">So a variable exported for one run still beats a stale adapter table. Within the</span>
-<span class="sd">block source that tie-break applies per block: an adapter configuration outranks</span>
-<span class="sd">a package-wide value set by the same ``configure`` call, while a value set by a</span>
-<span class="sd">block nested inside it wins over both, so the innermost block still decides.</span>
+<span class="sd">or an ``NgwmnConfiguration``, applies to NGWMN calls and no others. Precedence</span>
+<span class="sd">stays *source-major* (ADR 0010): an adapter-scoped value outranks a package-wide</span>
+<span class="sd">one only *within* the same source, and within the block source the innermost</span>
+<span class="sd">block decides.</span>
 
-<span class="sd">Which settings an adapter accepts is its own vocabulary -- ``concurrency`` means</span>
-<span class="sd">nothing to an adapter that issues one request -- so each adapter declares them</span>
-<span class="sd">on its own :class:`BaseConfiguration` subclass, defined in the module that</span>
-<span class="sd">*reads* them. The API key is not among them: it belongs to the gateway fronting</span>
-<span class="sd">a host, which Water Data and NGWMN share.</span>
+<span class="sd">Each adapter declares the settings it accepts on its own</span>
+<span class="sd">:class:`BaseConfiguration` subclass, defined in the module that *reads* them</span>
+<span class="sd">(ADR 0011). The API key is not among them -- it belongs to the gateway fronting</span>
+<span class="sd">a host, not to an adapter (ADR 0010).</span>
 
 <span class="sd">This module is a leaf: it imports only the standard library plus the Python 3.10</span>
-<span class="sd">``tomli`` backport, so any module can depend on it without an import cycle or</span>
-<span class="sd">pulling in httpx or pandas. That is also why it holds the adapter *names* but</span>
+<span class="sd">``tomli`` backport (ADR 0009). That is also why it holds the adapter *names* but</span>
 <span class="sd">never imports an adapter -- see :data:`ADAPTERS`. It centralizes each setting's</span>
 <span class="sd">parser while retaining legacy environment behavior and stricter validation for</span>
 <span class="sd">the new Python/TOML surfaces.</span>
@@ -274,8 +261,8 @@
 <span class="sd">    ------</span>
 <span class="sd">    ConfigurationError</span>
 <span class="sd">        If an argument is not a configuration, or two of them target the same</span>
-<span class="sd">        adapter. Raised on entry, before any request. A bad *value* raises</span>
-<span class="sd">        earlier still, where the configuration was constructed.</span>
+<span class="sd">        adapter. Raised on entry, before any request. An invalid *value*</span>
+<span class="sd">        raises earlier still, where the configuration was constructed.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -438,7 +425,7 @@
 <span class="sd">    most in need of explaining are the broken ones -- an unparseable file, a</span>
 <span class="sd">    value that fails its grammar, a profile that no longer exists. Nothing</span>
 <span class="sd">    here raises: each distinct failure is printed once, in the first place</span>
-<span class="sd">    it shows up; a repeat is collapsed, so one bad file does not bury the</span>
+<span class="sd">    it shows up; a repeat is collapsed, so one invalid file does not bury the</span>
 <span class="sd">    rows that did resolve under ten copies of the same message.</span>
 <span class="sd">    """</span>
 
@@ -466,8 +453,8 @@
 <span class="w">    </span><span class="sd">"""Probe and print the config file status line, returning the parsed file.</span>
 
 <span class="sd">    Probing the file once here means a whole-file problem -- unparseable TOML,</span>
-<span class="sd">    a bad value at the top level -- is reported on the file row rather than</span>
-<span class="sd">    repeated in every setting's row below.</span>
+<span class="sd">    an invalid value at the top level -- is reported on the file row rather</span>
+<span class="sd">    than repeated in every setting's row below.</span>
 <span class="sd">    """</span>
     <span class="n">parsed</span> <span class="o">=</span> <span class="n">_NO_FILE</span>
     <span class="k">try</span><span class="p">:</span>
@@ -609,8 +596,8 @@
 <span class="sd">    vocabulary has been imported, and NLDI is deliberately imported on demand</span>
 <span class="sd">    for the geopandas extra. So the rows above cannot cover it. Omitting it</span>
 <span class="sd">    silently would read as "nothing is configured for nldi", which is a</span>
-<span class="sd">    different claim and the wrong one -- this is the honest cost of validating</span>
-<span class="sd">    an adapter's keys lazily (ADR 0011).</span>
+<span class="sd">    different claim and an incorrect one -- this is the cost of validating an</span>
+<span class="sd">    adapter's keys lazily (ADR 0011).</span>
 <span class="sd">    """</span>
     <span class="n">unimported</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ADAPTERS</span> <span class="k">if</span> <span class="n">settings_for</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">unimported</span><span class="p">:</span>
@@ -764,8 +751,10 @@
 <span class="sd">    Precedence is *source-major*: the chain walks block, then environment, then</span>
 <span class="sd">    file, exactly as ADR 0009 defines it -- and *within* each source an</span>
 <span class="sd">    adapter-scoped value outranks a package-wide one. So a variable exported</span>
-<span class="sd">    for one run still beats a stale ``[wqp]`` table in the config file, which</span>
-<span class="sd">    scope-major ordering would have quietly inverted (ADR 0010).</span>
+<span class="sd">    for one run still beats a stale ``[wqp]`` table in the config file --</span>
+<span class="sd">    ordering by scope first, putting every adapter-scoped value ahead of every</span>
+<span class="sd">    package-wide one whatever its source, would have quietly inverted that</span>
+<span class="sd">    (ADR 0010).</span>
 
 <span class="sd">    ``adapter`` names the adapter on whose behalf the setting is being read.</span>
 <span class="sd">    ``None`` resolves the package-wide value, which is also what an adapter</span>
@@ -820,11 +809,9 @@
 <span class="w">    </span><span class="sd">"""Raise if an environment variable is set for a code-only setting.</span>
 
 <span class="sd">    Refused before anything is consulted, not at the environment's turn in</span>
-<span class="sd">    the chain. The file refuses ``base_url`` whether or not a block also set</span>
-<span class="sd">    one -- it raises while the file is read -- and the two surfaces are one</span>
-<span class="sd">    rule, so a variable that cannot work must not be silently outranked by a</span>
-<span class="sd">    block that happens to work. Unsetting it is the only fix, and the message</span>
-<span class="sd">    says so.</span>
+<span class="sd">    the chain. The file and the environment refuse ``base_url`` as one rule</span>
+<span class="sd">    (ADR 0011), so a variable that cannot work is not silently outranked by a</span>
+<span class="sd">    block that happens to work.</span>
 <span class="sd">    """</span>
     <span class="n">refused</span> <span class="o">=</span> <span class="n">_REFUSED_ENV_VARS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">refused</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">refused</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
@@ -872,10 +859,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_from_file</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scoped</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Fall through to the configuration file, then the built-in default.</span>
 
-<span class="sd">    One load serves both file tiers. Reading the file twice -- once for the</span>
-<span class="sd">    adapter table, once for the top level -- cost a second stat on every</span>
-<span class="sd">    adapter-scoped resolution, and the common case (no table for this adapter)</span>
-<span class="sd">    is the one that paid it.</span>
+<span class="sd">    One load serves both file tiers.</span>
 <span class="sd">    """</span>
     <span class="n">path</span><span class="p">,</span> <span class="n">parsed</span> <span class="o">=</span> <span class="n">_current_file</span><span class="p">()</span>
 

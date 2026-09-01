@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -87,13 +87,9 @@
 
 <span class="sd">Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN</span>
 <span class="sd">(:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than</span>
-<span class="sd">an OGC API Features collection. This module supplies the NWDC-specific bits —</span>
+<span class="sd">an OGC API Features collection. This module supplies the NWDC-specific bits --</span>
 <span class="sd">request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``</span>
-<span class="sd">error envelope. The service-neutral transport layer supplies cursor pagination,</span>
-<span class="sd">response aggregation, client lifecycle, and sync-from-async dispatch. The module</span>
-<span class="sd">follows the same conventions: host-scoped request headers, the typed</span>
-<span class="sd">:class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a</span>
-<span class="sd">``(DataFrame, BaseMetadata)`` return.</span>
+<span class="sd">error envelope -- over the service-neutral transport layer (ADR 0006).</span>
 
 <span class="sd">See https://api.water.usgs.gov/docs/nwaa-data/ for the API reference and</span>
 <span class="sd">https://water.usgs.gov/nwaa-data/ for the catalog of available models and</span>
@@ -330,9 +326,8 @@
     <span class="n">base_params</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">base_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
 
     <span class="c1"># An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this</span>
-    <span class="c1"># service's own endpoint. Resolved once per call -- the block is scoped to</span>
-    <span class="c1"># a ``with`` statement -- and threaded through every request and the page</span>
-    <span class="c1"># walk, so a redirected call cannot half-follow the redirect.</span>
+    <span class="c1"># service's own endpoint, threaded through every request and the page walk</span>
+    <span class="c1"># (ADR 0011).</span>
     <span class="n">service_url</span> <span class="o">=</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"nwdc"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">WATERUSE_URL</span><span class="p">)</span>
 
     <span class="c1"># The NWDC queries one location per request, so fan a multi-value selector</span>
@@ -439,12 +434,10 @@
 <span class="sd">    carrying the NWDC ``detail``, and shape the result.</span>
 <span class="sd">    :func:`~dataretrieval.transport.pagination.run_paginated` owns the rest.</span>
 
-<span class="sd">    The plan is the request list itself. The executor asks a plan only to be</span>
-<span class="sd">    sized and iterable, and the NWDC accepts one ``location=`` per request, so</span>
-<span class="sd">    the caller's locations arrive already separate -- there is nothing to</span>
-<span class="sd">    divide and so nothing for a plan class to hold.</span>
+<span class="sd">    The plan is the request list itself: the NWDC accepts one ``location=``</span>
+<span class="sd">    per request, so the caller's locations arrive already separate (ADR 0008).</span>
 
-<span class="sd">    The broad retry status set is on purpose: NWDC reports a bad query as a 400</span>
+<span class="sd">    The broad retry status set is on purpose: NWDC reports an invalid query as a 400</span>
 <span class="sd">    with a ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx</span>
 <span class="sd">    really is an upstream fault worth re-sending.</span>
 <span class="sd">    """</span>
@@ -560,10 +553,8 @@
 <span class="sd">    fans out per location rather than being divided along a URL byte</span>
 <span class="sd">    budget. There is nothing for the planner to divide more finely.</span>
 
-<span class="sd">    Lives here rather than in :mod:`dataretrieval.configuration` because</span>
-<span class="sd">    *which* settings a service reads is the service's own knowledge (ADR</span>
-<span class="sd">    0011); what each of them means is shared, so the fields come from the</span>
-<span class="sd">    setting groups declared beside their grammar.</span>
+<span class="sd">    Declared here rather than in :mod:`dataretrieval.configuration`</span>
+<span class="sd">    (ADR 0011).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -581,9 +572,6 @@
 <span class="sd">        Cap on simultaneous sub-requests, or ``"unbounded"``.</span>
 <span class="sd">    """</span>
 
-    <span class="c1"># One request per location, fanned out but never chunked, so this service</span>
-    <span class="c1"># reads the retry dials, a redirectable base and ``concurrency`` -- but not</span>
-    <span class="c1"># ``parallel_chunks``, which divides a query it never divides.</span>
     <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"nwdc"</span></div>
 
 

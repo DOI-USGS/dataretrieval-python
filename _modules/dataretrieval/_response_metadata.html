@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -77,12 +77,9 @@
   <h1>Source code for dataretrieval._response_metadata</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""The metadata object every getter returns alongside its DataFrame.</span>
 
-<span class="sd">A dependency-free leaf on purpose. This class is the second half of the</span>
-<span class="sd">``(DataFrame, metadata)`` return contract, so nearly every service module needs</span>
-<span class="sd">it -- and while it lived in :mod:`dataretrieval.utils` beside the legacy query</span>
-<span class="sd">machinery, needing it meant inheriting that module's whole HTTP stack</span>
-<span class="sd">(transport, credentials, error policy) transitively. Here it costs its</span>
-<span class="sd">consumers nothing but ``httpx``.</span>
+<span class="sd">A dependency-free leaf on purpose (ADR 0003). This class is the second half of</span>
+<span class="sd">the ``(DataFrame, metadata)`` return contract (ADR 0007), so nearly every</span>
+<span class="sd">service module needs it; importing it pulls in nothing but ``httpx``.</span>
 
 <span class="sd">``dataretrieval.utils.BaseMetadata`` remains the public import.</span>
 <span class="sd">"""</span>

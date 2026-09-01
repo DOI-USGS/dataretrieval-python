@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>Configuration &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -559,7 +559,7 @@ months later. <code class="docutils literal notranslate"><span class="pre">datar
 <p>The value limits optional refinement only. URL-byte safety can require more
 sub-requests than the configured value, and an input with nothing to split
 stays a single request.</p>
-<p><code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> is sugar for
+<p><code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> is shorthand for
 <code class="docutils literal notranslate"><span class="pre">configure(Configuration(parallel_chunks=n))</span></code>: one scoping mechanism, so the
 innermost block wins whichever spelling set it, and <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code>
 always reports the value the chunker will actually use.</p>

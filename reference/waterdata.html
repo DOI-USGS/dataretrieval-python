@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2298,9 +2298,9 @@ number if your internet connection is spotty.</p></li>
 <li><p><strong>query</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – A dictionary of extra query parameters to pass to the collection API
 call.</p></li>
 <li><p><strong>max_rows</strong> (<em>int</em><em>, </em><em>optional</em>) – Cap the total number of rows returned, stopping pagination early
-instead of downloading the whole table. Useful for cheaply
-previewing large tables (e.g. <code class="docutils literal notranslate"><span class="pre">hydrologic-unit-codes</span></code> has ~125k
-rows). Unlike <code class="docutils literal notranslate"><span class="pre">limit</span></code> (the per-page size), this bounds the total
+instead of downloading the whole table. Useful for previewing
+large tables in a few requests (e.g. <code class="docutils literal notranslate"><span class="pre">hydrologic-unit-codes</span></code> has
+~125k rows). Unlike <code class="docutils literal notranslate"><span class="pre">limit</span></code> (the per-page size), this bounds the total
 result. The default (None) downloads every page.</p></li>
 </ul>
 </dd>
@@ -2963,7 +2963,7 @@ collection supports.</p></li>
 <dd><p>Fan the OGC getters’ multi-value requests out into <code class="docutils literal notranslate"><span class="pre">n</span></code> parallel chunks.</p>
 <p>By default the Water Data / NGWMN getters chunk a request only as much as
 the server’s ~8 KB URL-byte limit forces — the fewest chunks that
-fit. That is the safe default, but it can be <em>needlessly</em> conservative.
+fit. That default can be more conservative than a large pull needs.
 Because every chunk paginates, splitting a large result further costs
 little or no extra quota <em>as long as each chunk still spans many
 pages</em> — rows-per-chunk far exceeding the page size (ten states pulled as
@@ -2974,14 +2974,10 @@ lets a caller who <em>knows</em> their pull is large ask for that finer split. T
 trade is roughly the same pages for more, smaller chunks, which gives
 smoother progress, more even concurrency, and a smaller unit of
 retry/resume.</p>
-<p>This is a <em>deliberate</em> per-call knob rather than an automatic behavior or a
-process-wide environment variable, because the library can’t tell in
-advance whether a query is large (ten states over a short window might fit
-in a single page, where extra chunks would only burn quota). Scoping it to
-a <code class="docutils literal notranslate"><span class="pre">with</span></code> block keeps an aggressive setting from leaking into unrelated
-calls and accidentally spending quota. Outside any block the getters use
-the conservative default. Only the OGC getters (Water Data, NGWMN) read
-this; wrapping a legacy NWIS call in the block is a harmless no-op.</p>
+<p>A per-call knob rather than an environment variable, and scoped to a
+<code class="docutils literal notranslate"><span class="pre">with</span></code> block: ADR 0009. Outside any block the getters use the
+conservative default. Only the OGC getters (Water Data, NGWMN) read this;
+wrapping a legacy NWIS call in the block is a no-op.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – <p>The number of chunks to fan the whole call out into — a positive
@@ -2991,7 +2987,7 @@ argument combined, not per argument), so several multi-value arguments
 cannot multiply past it. The cap is a ceiling, never exceeded: the
 actual count is bounded below by what the ~8 KB URL limit already
 forces and above by <code class="docutils literal notranslate"><span class="pre">n</span></code>. So an <code class="docutils literal notranslate"><span class="pre">n</span></code> larger than the input allows
-simply yields one chunk per value, and with several multi-value
+yields one chunk per value, and with several multi-value
 arguments the total may land somewhat below <code class="docutils literal notranslate"><span class="pre">n</span></code> because splits are
 whole (the plan can’t always divide evenly onto <code class="docutils literal notranslate"><span class="pre">n</span></code>). <code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks
 for no extra fan-out.</p>
@@ -3008,7 +3004,7 @@ adds quota without adding parallelism; the useful range is roughly
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">n</span></code> is not a positive integer — raised on <code class="docutils literal notranslate"><span class="pre">with</span></code> entry, before
-    any request is issued, so a bad value fails loudly rather than silently
+    any request is issued, so an invalid value fails loudly rather than silently
     doing nothing.</p>
 </dd>
 </dl>

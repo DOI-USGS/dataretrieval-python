@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -52,7 +52,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#architecture-characteristics">Architecture characteristics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#context-view">Context view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#composition-and-dependency-view">Composition and dependency view</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#public-service-facades">Public service facades</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#public-service-adapters">Public service adapters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shared-components">Shared components</a></li>
 </ul>
 </li>
@@ -103,7 +103,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> is a Python client library for discovering and retrieving
 hydrologic data from several independently operated USGS and partner services.
 It is a modular monolith: one installable distribution with public service
-facades, service- and protocol-specific adapters, and shared infrastructure.
+adapters, protocol subsystems, and shared infrastructure.
 The architecture favors incremental evolution and stable user-facing functions
 over a framework that forces unlike upstream APIs into one shape.</p>
 <p>This document records the current structure, the rules contributors should
@@ -156,29 +156,29 @@ contracts but does not hide meaningful service-specific behavior.</p>
 </section>
 <section id="composition-and-dependency-view">
 <h2>Composition and dependency view<a class="headerlink" href="#composition-and-dependency-view" title="Link to this heading"></a></h2>
-<section id="public-service-facades">
-<h3>Public service facades<a class="headerlink" href="#public-service-facades" title="Link to this heading"></a></h3>
+<section id="public-service-adapters">
+<h3>Public service adapters<a class="headerlink" href="#public-service-adapters" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></dt><dd><p>Modern USGS Water Data API facade. <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> is a logic-free
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></dt><dd><p>Modern USGS Water Data API adapter. <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> is a logic-free
 compatibility facade over collection-family modules: <code class="docutils literal notranslate"><span class="pre">time_series</span></code>,
 <code class="docutils literal notranslate"><span class="pre">metadata</span></code>, <code class="docutils literal notranslate"><span class="pre">measurements</span></code>, <code class="docutils literal notranslate"><span class="pre">reference</span></code>, <code class="docutils literal notranslate"><span class="pre">samples</span></code>, and <code class="docutils literal notranslate"><span class="pre">cql</span></code>.
-Focused modules own ratings, nearest-value selection, statistics execution,
+Separate modules own ratings, nearest-value selection, statistics execution,
 shared service policy, and type vocabularies. Internal modules import
 protocol helpers from their canonical OGC modules rather than re-exporting
 them through Water Data utilities.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></dt><dd><p>NGWMN facade. Its only OGC dependency is the public OGC facade, which it
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></dt><dd><p>NGWMN adapter. Its only OGC dependency is the public OGC facade, which it
 configures with an NGWMN-specific base URL, output identifiers, state
 translation, and <code class="xref py py-class docutils literal notranslate"><span class="pre">OgcDialect</span></code>.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwdc</span></code></dt><dd><p>NWDC Water Use facade. Builds CSV requests, follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers, and
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwdc</span></code></dt><dd><p>NWDC Water Use adapter. Builds CSV requests, follows <code class="docutils literal notranslate"><span class="pre">Link</span></code> headers, and
 uses service-neutral transport for bounded fan-out, retry, pagination, response
 aggregation, and synchronous dispatch. It does not depend on OGC modules.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">dataretrieval.nldi</span></code>, and <code class="docutils literal notranslate"><span class="pre">dataretrieval.streamstats</span></code></dt><dd><p>Service-specific adapters over shared synchronous HTTP and bounded retry
 policy. Their return types intentionally reflect their upstream data models.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code></dt><dd><p>Deprecated legacy NWIS facade, scheduled for removal on or after
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code></dt><dd><p>Deprecated legacy NWIS adapter, scheduled for removal on or after
 2027-05-06. Modern code must not depend on it.</p>
 </dd>
 </dl>
@@ -186,17 +186,17 @@ policy. Their return types intentionally reflect their upstream data models.</p>
 <section id="shared-components">
 <h3>Shared components<a class="headerlink" href="#shared-components" title="Link to this heading"></a></h3>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></dt><dd><p>Lightweight configuration leaf: standard library plus the <code class="docutils literal notranslate"><span class="pre">tomli</span></code>
-backport on Python 3.10. It resolves scoped overrides, environment
-variables, a TOML file with optional profiles, and built-in defaults in
-that order. Service and protocol modules may depend on it; it must not
-depend back on them. Scoped overrides use <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> so concurrent
-threads and asyncio tasks can carry distinct credentials.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></dt><dd><p>Configuration leaf: standard library plus the <code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport on
+Python 3.10. It resolves scoped overrides, environment variables, a TOML
+file with optional profiles, and built-in defaults in that order. Service
+and protocol modules may depend on it; it must not depend back on them.
+Scoped overrides use <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> so concurrent threads and asyncio
+tasks can carry distinct credentials.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code></dt><dd><p>Protocol subsystem for Water Data and NGWMN. A small facade
-(<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>) exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>,
-<code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>, and <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code> (whose <code class="docutils literal notranslate"><span class="pre">cql_body</span></code>
-parameter covers verbatim-CQL2 queries).
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code></dt><dd><p>Protocol subsystem for Water Data and NGWMN. A facade (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>)
+exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>, <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">get_ogc_data</span></code> (whose <code class="docutils literal notranslate"><span class="pre">cql_body</span></code> parameter covers verbatim-CQL2
+queries).
 Internally, <code class="docutils literal notranslate"><span class="pre">policy</span></code> defines the dialect type, control validation, and
 endpoint constants; <code class="docutils literal notranslate"><span class="pre">requests</span></code> owns argument normalization and HTTP
 request construction, taking the target <code class="docutils literal notranslate"><span class="pre">base_url</span></code> and <code class="docutils literal notranslate"><span class="pre">dialect</span></code> as
@@ -206,9 +206,9 @@ pagination and binds per-call state into its fetch closures;
 <code class="docutils literal notranslate"><span class="pre">planning</span></code> determines chunk boundaries; <code class="docutils literal notranslate"><span class="pre">chunking</span></code> connects those plans
 to the shared fan-out executor and retains compatibility aliases;
 <code class="docutils literal notranslate"><span class="pre">interruptions</span></code> retains its deprecated public import path; and
-<code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate
-their named protocol concerns. The full runtime OGC graph, including the
-facade, is acyclic – enforced by the package-wide fitness function in
+<code class="docutils literal notranslate"><span class="pre">shaping</span></code>, <code class="docutils literal notranslate"><span class="pre">dates</span></code>, <code class="docutils literal notranslate"><span class="pre">filters</span></code>, and <code class="docutils literal notranslate"><span class="pre">errors</span></code> isolate their named
+protocol concerns. The full runtime OGC graph, including the facade, is
+acyclic – enforced by the package-wide fitness function in
 <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -236,7 +236,7 @@ every service can import it without creating an infrastructure cycle.</p>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._response_metadata</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, the second half of every getter’s <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
 <span class="pre">metadata)</span></code> return contract. A dependency-free leaf: nearly every service
 module needs this class, and while it lived in <code class="docutils literal notranslate"><span class="pre">utils</span></code> beside the legacy
-query machinery, importing it pulled that module’s whole HTTP stack in
+query machinery, importing it pulled in that module’s whole HTTP stack
 transitively. The implementation module is private; the established public
 class path remains <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code>.</p>
 </dd>
@@ -263,9 +263,9 @@ function paths remain <code class="docutils literal notranslate"><span class="pr
 </dd>
 </dl>
 <p>The intended direction is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span> <span class="n">facade</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">/</span><span class="n">protocol</span> <span class="n">adapter</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">-</span><span class="n">neutral</span> <span class="n">transport</span>
-                                         <span class="o">-&gt;</span> <span class="n">stable</span> <span class="n">policy</span><span class="o">/</span><span class="n">infrastructure</span>
-                                         <span class="o">-&gt;</span> <span class="n">third</span><span class="o">-</span><span class="n">party</span> <span class="n">library</span> <span class="o">/</span> <span class="n">network</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">public</span> <span class="n">service</span> <span class="n">adapter</span> <span class="o">-&gt;</span> <span class="n">protocol</span> <span class="n">subsystem</span> <span class="o">-&gt;</span> <span class="n">service</span><span class="o">-</span><span class="n">neutral</span> <span class="n">transport</span>
+                                             <span class="o">-&gt;</span> <span class="n">stable</span> <span class="n">policy</span><span class="o">/</span><span class="n">infrastructure</span>
+                                             <span class="o">-&gt;</span> <span class="n">third</span><span class="o">-</span><span class="n">party</span> <span class="n">library</span> <span class="o">/</span> <span class="n">network</span>
 </pre></div>
 </div>
 <p>Dependencies must not point from shared infrastructure back to a public service
@@ -285,7 +285,7 @@ than be forbidden, and full-graph cycle detection (see ADR 0003).</p>
 <p>The primary API is a collection of synchronous functions grouped by data
 portal. Most tabular download functions return <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">metadata)</span></code>.
 NLDI and StreamStats retain service-specific geospatial or response-object
-contracts; consistency alone is not sufficient reason for a breaking change.</p>
+contracts.</p>
 <p>Failed requests derive from <code class="docutils literal notranslate"><span class="pre">dataretrieval.DataRetrievalError</span></code>. Callers can
 inspect <code class="docutils literal notranslate"><span class="pre">status_code</span></code>, <code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and <code class="docutils literal notranslate"><span class="pre">retryable</span></code> without knowing the
 concrete subtype. A fanned-out call – an over-large OGC request, or a Water Use
@@ -375,8 +375,8 @@ host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.</p
 the failure surfaces; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It
 complements <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>, which caps attempts rather than elapsed
 time: without this bound, four retries of a request that times out after a
-minute add up to four silent minutes. Progress restarts the budget — a page
-received, or a queued chunk acquiring its concurrency slot. Neither a
+minute add up to four silent minutes. Progress restarts the budget – a
+page received, or a queued chunk acquiring its concurrency slot. Neither a
 slow but productive download nor the tail of a wide fan-out is cut short,
 and an attempt already in flight is never interrupted. This bound never
 withholds the first retry, so one slow attempt cannot disable retry by
@@ -395,17 +395,14 @@ and strip the token before following a link to any other host, including
 external rating assets.</p></li>
 <li><p>A semaphore, not connection-pool waiting, is the execution throttle for
 sub-request concurrency.</p></li>
-<li><p>Retry backoff is exponential with full jitter and honors bounded
-<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values.</p></li>
-<li><p>Progress reporting is best-effort: a reporting failure must never change
-retrieval results.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code> is a stdlib-only leaf, so any module may depend on
-it without an import cycle.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code> is a stdlib-only leaf, so any module may
+depend on it without an import cycle.</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code> centralizes HTTP timeout, redirect, and
-authentication policy. OGC chunk fan-out and Water Use location
-fan-out retain separate explicit concurrency caps because their upstream costs
-and request shapes differ.</p>
+authentication policy. OGC chunk fan-out and Water Use location fan-out share
+one <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> setting with per-adapter defaults, because their upstream
+costs and request shapes differ but a caller’s instruction should not (ADR
+0008).</p>
 </section>
 <section id="known-architectural-debt">
 <h2>Known architectural debt<a class="headerlink" href="#known-architectural-debt" title="Link to this heading"></a></h2>

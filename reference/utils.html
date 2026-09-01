@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -113,15 +113,14 @@
              
   <section id="module-dataretrieval.utils">
 <span id="dataretrieval-utils"></span><span id="utils"></span><h1>dataretrieval.utils<a class="headerlink" href="#module-dataretrieval.utils" title="Link to this heading"></a></h1>
-<p>Data-shaping helpers, and the historical home of the legacy query path.</p>
+<p>Data-shaping helpers, plus re-exports for names documented at this path.</p>
 <p>What is <em>defined</em> here is frame munging that names no service: building a UTC
 datetime column out of the separate date/time/zone columns a caller points at.
-The one-shot HTTP query path that used to sit alongside it now lives in
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code>, and the WQX3 / legacy-WQP column conventions
-live in <code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval._wqx</span></code>; nothing here depends on either – the names
-below are re-exported so their documented <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code> paths keep
-resolving.</p>
-<p>By default, do not add new service-specific behavior here.</p>
+The one-shot HTTP query path lives in <code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code> and the
+WQX3 / legacy-WQP column conventions in <code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval._wqx</span></code>; nothing here
+depends on either – the names below are re-exported so their documented
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code> paths keep resolving.</p>
+<p>By default, do not add new service-specific behavior here (ADR 0001).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dataretrieval.utils.Ambient">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">Ambient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dataretrieval.utils.Ambient" title="Link to this definition"></a></dt>

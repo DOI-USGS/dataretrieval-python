@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -59,6 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#known-architectural-debt">Known architectural debt</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html#change-process">Change process</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Architecture Decision Records</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="0000-documenting-decisions.html">ADR 0000: Record each explanation once, in the place that owns it</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0001-modular-monolith.html">ADR 0001: Retain a modular monolith with service adapters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0002-sync-api-async-internals.html">ADR 0002: Keep synchronous public APIs over async internals</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0003-dependency-direction.html">ADR 0003: Direct dependencies toward stable policy</a></li>
@@ -70,6 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="0009-layered-configuration.html">ADR 0009: Layered configuration resolution</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0010-adapter-scoped-settings.html">ADR 0010: Adapter-scoped settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="0011-configuration-profiles.html">ADR 0011: Configuration profiles, scoped to one adapter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="0012-deprecation-horizons.html">ADR 0012: Announce every removal through one advisory with a published horizon</a></li>
 <li class="toctree-l4"><a class="reference internal" href="template.html">ADR template</a></li>
 </ul>
 </li>
@@ -113,15 +115,18 @@
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
 <p>Accepted</p>
+<p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p>A service facade can remain stable while its implementation grows for unrelated
 upstream collections. Keeping every Water Data getter in one module coupled
-changes to time series, monitoring metadata, field measurements, reference
-catalogs, Samples, statistics, and generalized CQL queries. Active service
-modules also relied on Python’s implicit wildcard-export behavior, making their
-intended public surfaces difficult to distinguish from imported helpers.</p>
+together changes to time series, monitoring metadata, field measurements,
+reference catalogs, Samples, statistics, and generalized CQL queries. Active
+service modules also relied on Python’s implicit wildcard-export behavior,
+making their intended public surfaces difficult to distinguish from imported
+helpers.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
@@ -132,15 +137,37 @@ logic. Implementation functions are grouped by collection family in
 selection, Statistics API execution, shared Water Data policy, and type
 vocabularies.</p>
 <p>The facade re-exports the established functions and preserves their signatures,
-their identity at <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code>, and the private Samples constants
-compatibility tests rely on. It does not rewrite their <code class="docutils literal notranslate"><span class="pre">__module__</span></code>: each
-function reports the family module that defines it, so a traceback names a file
-that contains code. Collection-family modules do not
+their identity at <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code>, and the private Samples
+constants that compatibility tests rely on. It does not rewrite their
+<code class="docutils literal notranslate"><span class="pre">__module__</span></code>: each function reports the family module that defines it, so a
+traceback names a file that contains code. Collection-family modules do not
 import one another; shared behavior belongs in Water Data policy, OGC, or
 transport modules.</p>
 <p>Active service and focused implementation modules declare explicit <code class="docutils literal notranslate"><span class="pre">__all__</span></code>
 exports. Deprecated NWIS remains outside this modernization. Service adapters do
 not import another adapter’s implementation to obtain transport behavior.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">__module__</span></code> rule above is scoped to this facade, where the family module
+is a real file a traceback can name. It is not a package-wide prohibition: the
+legacy <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code> names are split across private modules by
+dependency and <em>do</em> report the documented path, because there the alternative is
+a public, documented import location pointing at a private module.</p>
+<p><strong>Typed getters are the surface; exactly one generic escape hatch sits beside
+them.</strong> <code class="docutils literal notranslate"><span class="pre">cql</span></code> is the only untyped member of the collection families, and
+deliberately so. The alternative in one direction – a single generic query
+function replacing the typed getters – gives up the parameter documentation
+and validation that are most of these getters’ value. The alternative in the
+other – a <code class="docutils literal notranslate"><span class="pre">cql=</span></code> passthrough on every family – multiplies the escape hatch
+by the number of collections while making each family’s surface partly untyped.
+One hatch, named as such, keeps both properties.</p>
+<p><strong>Identifier columns are parsed as text.</strong> This one clause applies
+package-wide, legacy NWIS included: it is about what an adapter hands back, not
+how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
+identifiers (<code class="docutils literal notranslate"><span class="pre">site_no</span></code> in NWIS) carry significant leading zeros, and a bare
+<code class="docutils literal notranslate"><span class="pre">read_csv</span></code> infers them as integers and
+drops those zeros – <code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">60</span></code>, so the value is silently wrong
+rather than missing. Every adapter reading a USGS tabular response names its
+identifier columns as <code class="docutils literal notranslate"><span class="pre">str</span></code> before parsing, which is why a two-pass header
+read is not a redundancy to be optimized away.</p>
 <p>Return contracts remain service-specific. Tabular services generally return a
 <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">metadata)</span></code> pair, while NLDI returns geospatial values directly,
 StreamStats exposes response/domain objects, and ratings return parsed tables or
@@ -150,14 +177,13 @@ contracts.</p>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Collection changes have a smaller implementation and test blast radius.</p></li>
+<li><p>Collection changes touch fewer implementation and test files.</p></li>
 <li><p>Existing package and <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> import paths remain stable.</p></li>
 <li><p>Explicit exports make accidental public-surface growth reviewable.</p></li>
-<li><p>More modules require a maintained facade and executable signature/export
+<li><p>More modules mean a facade to maintain, plus executable signature and export
 snapshots.</p></li>
 <li><p>Tests are described as public-contract, adapter-contract, component, or
-cross-component layers without forcing a disruptive move of established
-files.</p></li>
+cross-component layers without moving established files.</p></li>
 </ul>
 </section>
 <section id="compliance">
@@ -167,8 +193,18 @@ facade identity, and compatibility names. <code class="docutils literal notransl
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> keeps the
 collection families independent of each other, holds the facade-only consumers
-(NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code>) to the OGC facade, and prevents lateral adapter
-reach-through.</p>
+(NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code>) to the OGC facade, and prevents one adapter from
+importing another. The identifier-column rule is covered by
+<code class="docutils literal notranslate"><span class="pre">tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero</span></code> and the equivalent
+leading-zero assertions in the WQP and NWIS adapter tests.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">__module__</span></code> scoping note and the escape-hatch and identifier-column
+clauses were added after the original decision; the rest of the record is
+unchanged. They consolidate under ADR 0000 the rules the code was carrying in
+prose. The scoping note in particular records why <code class="docutils literal notranslate"><span class="pre">_querying.py</span></code> reassigning
+<code class="docutils literal notranslate"><span class="pre">__module__</span></code> is not a violation of this record, a question an audit raised.</p>
 </section>
 </section>
 

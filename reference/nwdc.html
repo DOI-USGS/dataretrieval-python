@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g013d3fcde documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g0a7d47497 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=cb799626"></script>
+      <script src="../_static/documentation_options.js?v=3f557a2e"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -115,13 +115,9 @@ replacement for the defunct legacy NWIS water-use service
 (<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
 <p>Unlike the main Water Data getters (<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>) and NGWMN
 (<a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>), the NWDC is a plain CSV REST service rather than
-an OGC API Features collection. This module supplies the NWDC-specific bits —
+an OGC API Features collection. This module supplies the NWDC-specific bits –
 request building, CSV parsing, the <code class="docutils literal notranslate"><span class="pre">Link</span></code>-header cursor, and the <code class="docutils literal notranslate"><span class="pre">{detail}</span></code>
-error envelope. The service-neutral transport layer supplies cursor pagination,
-response aggregation, client lifecycle, and sync-from-async dispatch. The module
-follows the same conventions: host-scoped request headers, the typed
-<a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> taxonomy, and a
-<code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">BaseMetadata)</span></code> return.</p>
+error envelope – over the service-neutral transport layer (ADR 0006).</p>
 <p>See <a class="reference external" href="https://api.water.usgs.gov/docs/nwaa-data/">https://api.water.usgs.gov/docs/nwaa-data/</a> for the API reference and
 <a class="reference external" href="https://water.usgs.gov/nwaa-data/">https://water.usgs.gov/nwaa-data/</a> for the catalog of available models and
 variables.</p>
@@ -164,10 +160,8 @@ general setting outranks a module’s default rather than the reverse.</p>
 <p>No <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>: the NWDC is a plain CSV service, so a query
 fans out per location rather than being divided along a URL byte
 budget. There is nothing for the planner to divide more finely.</p>
-<p>Lives here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a> because
-<em>which</em> settings a service reads is the service’s own knowledge (ADR
-0011); what each of them means is shared, so the fields come from the
-setting groups declared beside their grammar.</p>
+<p>Declared here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a>
+(ADR 0011).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
