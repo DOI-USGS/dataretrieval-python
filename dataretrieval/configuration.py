@@ -803,7 +803,7 @@ def _accepts(adapter: str, name: str) -> bool:
     return name in _ALL_SETTINGS if accepted is None else name in accepted
 
 
-def _display_api_key(adapter: str | None = None) -> str:
+def _display_api_key(_adapter: str | None = None) -> str:
     """Render the key's presence, never its value."""
     return "<set>" if api_key() else "<not set>"
 
@@ -813,7 +813,7 @@ def _display_concurrency(adapter: str | None = None) -> str:
     return CONCURRENCY_UNBOUNDED if value is None else str(value)
 
 
-def _display_progress(adapter: str | None = None) -> str:
+def _display_progress(_adapter: str | None = None) -> str:
     setting = progress()
     return "auto" if setting is None else ("on" if setting else "off")
 

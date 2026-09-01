@@ -2173,7 +2173,7 @@ def test_transport_context_does_not_mask_fatal_error():
         try:
             raise httpx.ConnectError("name not known")
         except httpx.ConnectError:
-            raise ValueError("deterministic bug")  # noqa: B904 - regression shape
+            raise ValueError("deterministic bug")  # noqa: B904 # regression shape
 
     with pytest.raises(ValueError, match="deterministic bug"):
         fetch({"sites": ["S1"]})

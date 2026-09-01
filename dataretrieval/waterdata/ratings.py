@@ -14,6 +14,7 @@ import warnings
 from collections.abc import Iterable
 from typing import Any, Literal, get_args
 
+import anyio
 import httpx
 import pandas as pd
 
@@ -340,6 +341,16 @@ def _inert_response(
     return httpx.Response(status, headers=headers, request=httpx.Request("GET", url))
 
 
+def _write_rating(path: str, body: str) -> None:
+    """Persist one rating to disk, off the event loop.
+
+    ``_fetch_rating`` runs concurrently under a fan-out drive, so a blocking
+    write here would stall every other in-flight download for its duration.
+    """
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write(body)
+
+
 async def _fetch_rating(
     feature: dict[str, Any], file_path: str | None
 ) -> tuple[pd.DataFrame, httpx.Response]:
@@ -366,8 +377,9 @@ async def _fetch_rating(
     _raise_for_non_200(response)
 
     if file_path is not None:
-        with open(os.path.join(file_path, fid), "w") as f:
-            f.write(response.text)
+        await anyio.to_thread.run_sync(
+            _write_rating, os.path.join(file_path, fid), response.text
+        )
 
     df = read_rdb(response.text)
     df.attrs["comment"] = extract_rdb_comment(response.text)

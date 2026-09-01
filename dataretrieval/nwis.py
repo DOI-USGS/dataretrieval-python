@@ -148,13 +148,22 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
 
 def _localize_datetime_index(df: pd.DataFrame) -> pd.DataFrame:
     """Localize a naive datetime index (or multi-index level) to UTC."""
-    if hasattr(df.index, "levels"):
+    index = df.index
+    if hasattr(index, "levels"):
         # Multi-index: localize the datetime level (level 1)
-        if hasattr(df.index.levels[1], "tzinfo") and df.index.levels[1].tzinfo is None:
-            df = df.tz_localize("UTC", level=1)
-    elif hasattr(df.index, "tzinfo") and df.index.tzinfo is None:
-        df = df.tz_localize("UTC")
-    return df
+        if hasattr(index.levels[1], "tzinfo") and index.levels[1].tzinfo is None:
+            index = index.set_levels(index.levels[1].tz_localize("UTC"), level=1)
+    elif hasattr(index, "tzinfo") and index.tzinfo is None:
+        index = index.tz_localize("UTC")
+
+    if index is df.index:
+        return df
+
+    # Retag the index alone. ``DataFrame.tz_localize`` relabels one axis by
+    # duplicating every column, which pandas does whenever copy-on-write is off.
+    localized = df.copy(deep=False)
+    localized.index = index
+    return localized
 
 
 def format_response(
@@ -196,9 +205,15 @@ def format_response(
         return df
 
     if len(df["site_no"].unique()) > 1 and mi:
-        df.set_index(["site_no", "datetime"], inplace=True)
+        keys = ["site_no", "datetime"]
     else:
-        df.set_index(["datetime"], inplace=True)
+        keys = ["datetime"]
+
+    # Index our own frame, never the caller's. The shallow copy shares the
+    # columns; ``set_index`` without ``inplace`` duplicates them, because
+    # pandas deep-copies the frame whenever copy-on-write is off.
+    df = df.copy(deep=False)
+    df.set_index(keys, inplace=True)  # noqa: PD002 # our copy, not the caller's
 
     df = _localize_datetime_index(df)
     return df.sort_index()
@@ -895,6 +910,41 @@ def what_sites(
     return df, NWIS_Metadata(response, **kwargs)
 
 
+# The value that means "not passed" -- which must stay in step with
+# ``get_record``'s declared default -- and the replacement to name.
+_DEFUNCT_RECORD_OPTIONS: dict[str, tuple[object, str]] = {
+    "wide_format": (True, "`waterdata.get_samples()`"),
+    "datetime_index": (
+        True,
+        "`waterdata.get_continuous()` or `waterdata.get_daily()`",
+    ),
+    "state": (None, "`nwdc.get_wateruse(state=...)`"),
+}
+
+
+def _warn_defunct_record_options(**given: object) -> None:
+    """Advise on each ``get_record`` option asked to do something it cannot.
+
+    Naming an option at its declared default is silent: the caller is asking
+    for what the dead default already gave them.
+    """
+    for name, value in given.items():
+        unset, replacement = _DEFUNCT_RECORD_OPTIONS[name]
+        if value != unset:
+            warn_deprecated(
+                f"`nwis.get_record`'s `{name}` argument",
+                replacement=replacement,
+                removal=_NWIS_REMOVAL_DATE,
+                detail=(
+                    "It is ignored, and has been since the service that read "
+                    "it was retired."
+                ),
+                # _warn_defunct_record_options -> get_record -> @_deprecated
+                # wrapper -> the caller's own line.
+                stacklevel=4,
+            )
+
+
 @_deprecated
 def get_record(
     sites: list[str] | str | None = None,
@@ -927,12 +977,16 @@ def get_record(
         If False, return a dataframe with a single-level index (datetime).
         Default is True.
     wide_format : bool, optional
-        If True, return data in wide format, with multiple samples per row and
-        one row per time. Default is True.
+        (defunct) Shaped the output of the retired 'qwdata' service. Ignored;
+        passing `False` warns. Use `waterdata.get_samples`, which returns one
+        row per result.
     datetime_index : bool, optional
-        If True, create a datetime index. Default is True.
+        (defunct) Shaped the output of the retired 'qwdata' and 'gwlevels'
+        services. Ignored; passing `False` warns. Use `waterdata.get_continuous`
+        or `waterdata.get_daily`, which index by datetime.
     state: string, optional, default is None
-        State full name, abbreviation, or id.
+        (defunct) Selected sites for the retired 'water_use' service. Ignored;
+        passing a state warns. Use `nwdc.get_wateruse`, which takes `state`.
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data
@@ -1009,6 +1063,10 @@ def get_record(
             "New work should use the dataretrieval.waterdata getters instead; "
             "NWIS is deprecated."
         ),
+    )
+
+    _warn_defunct_record_options(
+        wide_format=wide_format, datetime_index=datetime_index, state=state
     )
 
     if service == "iv":
@@ -1097,15 +1155,13 @@ def _parse_parameter_record(
     record_df["qualifiers"] = (
         record_df["qualifiers"].astype(str).str.strip("[]").str.replace("'", "")
     )
-    record_df.rename(
+    return record_df.rename(
         columns={
             "value": col_name,
             "dateTime": "datetime",
             "qualifiers": col_name + "_cd",
-        },
-        inplace=True,
+        }
     )
-    return record_df
 
 
 def _parse_site_block(site_block: list[dict[str, Any]]) -> pd.DataFrame:

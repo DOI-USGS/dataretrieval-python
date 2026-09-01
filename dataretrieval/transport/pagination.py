@@ -115,7 +115,7 @@ async def paginate(
 
         try:
             frame, cursor = parse_response(response)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("Initial response parse failed.")
             raise DataRetrievalError(
                 paginated_failure_message(0, exc, response.url)
@@ -140,7 +140,7 @@ async def paginate(
                 nrows += len(frame)
                 total_elapsed += _safe_elapsed(response)
                 report_page(response, frame)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.", cursor
                 )

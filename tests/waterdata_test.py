@@ -78,7 +78,7 @@ _construct_cql_request = functools.partial(
 
 def mock_request(httpx_mock, request_url, file_path):
     """Mock request code"""
-    with open(file_path) as text:
+    with open(file_path, encoding="utf-8") as text:
         httpx_mock.add_response(
             method="GET",
             url=request_url,
@@ -291,7 +291,7 @@ def test_legacy_camelcase_kwargs_return_identical_to_snake_case(httpx_mock):
             return [-90.0, 30.0, -89.0, 31.0]
         return "x"
 
-    with open("tests/data/samples_results.txt") as fh:
+    with open("tests/data/samples_results.txt", encoding="utf-8") as fh:
         body = fh.read()
     # one mocked response per call; match any URL so both requests are captured.
     httpx_mock.add_response(text=body, headers={"mock_header": "v"})
@@ -1341,7 +1341,7 @@ def test_get_stats_por(httpx_mock):
     }
     assert len(df) == 11
     assert df.loc[df["computation"] == "minimum", "percentile"].tolist() == [0.0]
-    assert df.loc[df["computation"] == "arithmetic_mean", "percentile"].isnull().all()
+    assert df.loc[df["computation"] == "arithmetic_mean", "percentile"].isna().all()
 
 
 def test_get_stats_por_expanded_false(httpx_mock):

@@ -367,7 +367,7 @@ def test_get_stats_site_value_types(httpx_mock, site_input_type_list):
 
 
 def mock_request(httpx_mock, request_url, file_path):
-    with open(file_path) as text:
+    with open(file_path, encoding="utf-8") as text:
         httpx_mock.add_response(
             method="GET",
             url=request_url,
@@ -384,7 +384,7 @@ def assert_metadata(httpx_mock, request_url, md, site, parameter_cd, format):
         site_request_url = (
             f"https://waterservices.usgs.gov/nwis/site?sites={site}&format=rdb"
         )
-        with open("tests/data/waterservices_site.txt") as text:
+        with open("tests/data/waterservices_site.txt", encoding="utf-8") as text:
             httpx_mock.add_response(
                 method="GET", url=site_request_url, text=text.read()
             )
