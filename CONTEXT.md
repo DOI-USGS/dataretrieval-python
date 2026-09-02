@@ -217,10 +217,9 @@ parser names when it rejects one. A source is the category; an origin label is
 the instance within it.
 
 *Core terms.* The configuration chain is shared machinery, so one spelling binds
-its identifiers as well as its prose. Where the chain's identifiers have said
-`tier` for the source and `source` for the origin label, that is a defect to
-correct — ADR 0010's scope word misapplied to a different axis — not a second
-spelling to work around.
+its identifiers as well as its prose. The code uses both names: `_resolve`
+returns `(raw, label, source)`, and the parsers take the `label` as the subject
+of any error message they raise.
 
 **Precedence ladder** — The one linear order resolution walks, highest first:
 sources in their order and, within each source, scopes. Each position is a

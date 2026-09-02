@@ -19,8 +19,8 @@ Sources, highest precedence first:
 4. The built-in default.
 
 Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the
-same order in finer grain, splitting three of them into the scopes they contain.
-An adapter's own default is not one of the four: a read site such as
+same order in finer grain, as seven rungs -- three of these sources hold two
+apiece. An adapter's own default is not one of the four: a read site such as
 :func:`concurrency` passes it in as the ``default`` argument.
 
 Precedence applies **per setting**, not per source: an environment that sets only
@@ -90,7 +90,7 @@ from dataretrieval._configuration_core import (
     _coerce_typed as _coerce_typed,
     _Concurrent as _Concurrent,
     _current_file as _current_file,
-    _env_source_label as _env_source_label,
+    _env_label as _env_label,
     _Frame as _Frame,
     _named_profiles as _named_profiles,
     _NO_FILE as _NO_FILE,
@@ -260,17 +260,17 @@ def _configuration_overrides(
         raw = (
             None
             if value is None
-            else _coerce_typed(name, value, configuration._source(name))
+            else _coerce_typed(name, value, configuration._label(name))
         )
         overrides[key] = (raw, label)
     return overrides
 
 
 def show_configuration(*, stream: TextIO | None = None) -> None:
-    """Print the effective configuration and the source of each setting.
+    """Print the effective configuration and where each setting came from.
 
     A debugging aid for "why is this using my old key?". Every value is
-    reported with the source that supplied it, named exactly: which variable,
+    reported with the origin that supplied it, named exactly: which variable,
     which table of the file, and -- when a caller selected one -- which
     profile. The API key is never printed, only whether one is set.
 
@@ -325,12 +325,12 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
     parsed = _show_file_status(out, path, cell)
 
     rows = [
-        (name, cell(partial(_DISPLAYS[name], None)), cell(partial(_source_label, name)))
+        (name, cell(partial(_DISPLAYS[name], None)), cell(partial(_origin_label, name)))
         for name in SETTINGS
     ]
     _print_setting_rows(out, rows)
     _show_built_in_default_note(out, rows)
-    _show_adapter_overrides(out, cell, {name: source for name, _value, source in rows})
+    _show_adapter_overrides(out, cell, {name: label for name, _value, label in rows})
     _show_profiles(out, parsed)
     _show_unimported_adapters(out)
 
@@ -386,15 +386,15 @@ def _show_file_status(
 
 def _print_setting_rows(out: TextIO, rows: list[tuple[str, str, str]]) -> None:
     """Print the package-wide setting rows in aligned columns."""
-    name_width = max(len(name) for name, _value, _source in rows)
-    value_width = max(len(value) for _name, value, _source in rows)
-    for name, value, source in rows:
-        print(f"{name:<{name_width}}  {value:<{value_width}}  {source}", file=out)
+    name_width = max(len(name) for name, _value, _label in rows)
+    value_width = max(len(value) for _name, value, _label in rows)
+    for name, value, label in rows:
+        print(f"{name:<{name_width}}  {value:<{value_width}}  {label}", file=out)
 
 
 def _show_built_in_default_note(out: TextIO, rows: list[tuple[str, str, str]]) -> None:
     """Print the built-in default footnote when at least one row uses it."""
-    if any(source == _BUILT_IN for _name, _value, source in rows):
+    if any(label == _BUILT_IN for _name, _value, label in rows):
         print(
             "\nA built-in default is package-wide. An adapter may prefer its own "
             "for\nits own calls; a value from any source above overrides both.",
@@ -413,7 +413,7 @@ def _show_adapter_overrides(
     full adapter-by-setting grid would be mostly inherited values, burying the
     answer to "what will this call use" under the rows that change nothing.
 
-    Each row names its source exactly, which for a selected profile is the
+    Each row names its origin exactly, which for a selected profile is the
     profile: ``configure() block [waterdata.bulk]`` rather than a bare block,
     so the report answers *which* profile put that value there.
 
@@ -428,9 +428,9 @@ def _show_adapter_overrides(
     a_width = max(len(a) for a, _n, _v, _s in overrides)
     n_width = max(len(n) for _a, n, _v, _s in overrides)
     v_width = max(len(v) for _a, _n, v, _s in overrides)
-    for adapter, name, value, source in overrides:
+    for adapter, name, value, label in overrides:
         print(
-            f"  {adapter:<{a_width}}  {name:<{n_width}}  {value:<{v_width}}  {source}",
+            f"  {adapter:<{a_width}}  {name:<{n_width}}  {value:<{v_width}}  {label}",
             file=out,
         )
 
@@ -469,9 +469,9 @@ def _overrides_for_adapter(
     for name in _ALL_SETTINGS:
         if name not in accepted:
             continue
-        scoped = cell(partial(_source_label, name, adapter))
+        scoped = cell(partial(_origin_label, name, adapter))
         if scoped == package_wide.get(name, _BUILT_IN):
-            continue  # inherited from the package-wide tier
+            continue  # inherited from the package-wide value
         value = cell(partial(_DISPLAYS[name], adapter))
         overrides.append((adapter, name, value, scoped))
     return overrides
@@ -525,8 +525,8 @@ def _show_unimported_adapters(out: TextIO) -> None:
         )
 
 
-def _source_label(name: str, adapter: str | None = None) -> str:
-    """The provenance label for one setting, for :func:`show_configuration`."""
+def _origin_label(name: str, adapter: str | None = None) -> str:
+    """The origin label for one setting, for :func:`show_configuration`."""
     return _resolve(name, adapter)[1]
 
 
@@ -539,7 +539,7 @@ def api_key() -> str | None:
     Surrounding whitespace is stripped, so a key read from a file with a
     trailing newline works; a blank value resolves to ``None``.
     """
-    raw, _source, _tier = _resolve("api_key")
+    raw, _label, _source = _resolve("api_key")
     return raw.strip() or None if raw is not None else None
 
 
@@ -554,18 +554,18 @@ def concurrency(
     wins over it: a service able to override an explicit setting would make
     ``concurrency=1`` a lie.
     """
-    raw, source, _tier = _resolve("concurrency", adapter)
+    raw, label, _source = _resolve("concurrency", adapter)
     if raw is None:
         return default
-    return _parse_concurrency(raw, source)
+    return _parse_concurrency(raw, label)
 
 
 def retries(*, adapter: str | None = None) -> int:
     """Retries attempted after the first try; ``0`` disables retrying."""
-    raw, source, _tier = _resolve("retries", adapter)
+    raw, label, _source = _resolve("retries", adapter)
     if raw is None:
         return DEFAULT_RETRIES
-    return _parse_retries(raw, source)
+    return _parse_retries(raw, label)
 
 
 def progress() -> bool | None:
@@ -575,12 +575,12 @@ def progress() -> bool | None:
     default (a TTY or Jupyter kernel gets the line, redirected output
     doesn't).
     """
-    raw, source, tier = _resolve("progress")
+    raw, label, source = _resolve("progress")
     if raw is None:
         return None
     # Preserve the legacy environment behavior (any value outside the false
     # set enables progress), while new block/file values are validated strictly.
-    return _parse_progress(raw, source, strict=tier != _ENV)
+    return _parse_progress(raw, label, strict=source != _ENV)
 
 
 def parallel_chunks(*, adapter: str | None = None) -> int:
@@ -592,10 +592,10 @@ def parallel_chunks(*, adapter: str | None = None) -> int:
     the name of that context manager because it is the same setting -- this
     is the resolved value, not the scoping block.
     """
-    raw, source, _tier = _resolve("parallel_chunks", adapter)
+    raw, label, _source = _resolve("parallel_chunks", adapter)
     if raw is None:
         return DEFAULT_PARALLEL_CHUNKS
-    return _parse_parallel_chunks(raw, source)
+    return _parse_parallel_chunks(raw, label)
 
 
 def stall_timeout(*, adapter: str | None = None) -> float:
@@ -605,10 +605,10 @@ def stall_timeout(*, adapter: str | None = None) -> float:
     connection, which the retry *count* does not: it counts attempts, not
     seconds. See :attr:`dataretrieval.transport.retry.RetryPolicy.stall_timeout`.
     """
-    raw, source, _tier = _resolve("stall_timeout", adapter)
+    raw, label, _source = _resolve("stall_timeout", adapter)
     if raw is None:
         return DEFAULT_STALL_TIMEOUT
-    return _parse_seconds(raw, source)
+    return _parse_seconds(raw, label)
 
 
 @overload
@@ -647,23 +647,23 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
         the answer is ``None`` -- which is what :func:`show_configuration` asks
         for, having no service default to name.
     """
-    raw, source, _tier = _resolve("base_url", adapter)
+    raw, label, _source = _resolve("base_url", adapter)
     if raw is None:
         return default
-    return _parse_base_url(raw, source)
+    return _parse_base_url(raw, label)
 
 
 # --- resolution ----------------------------------------------------------
 
-#: Which tier of the chain answered a resolution. Machine-readable so a
-#: per-tier rule reads the tier, never the display label -- :func:`progress`
+#: Which source of the chain answered a resolution. Machine-readable so a
+#: per-source rule reads the source, never the display label -- :func:`progress`
 #: keys its legacy-lenient parsing on ``_ENV``, and the label stays purely
 #: presentational.
 _BLOCK, _ENV, _FILE, _DEFAULT = "block", "environment", "file", "built-in"
 
 
 def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, str]:
-    """Return the raw value for *name*, a source label, and the tier.
+    """Return the raw value for *name*, its origin label, and its source.
 
     Precedence is *source-major*: the chain walks block, then environment, then
     file, exactly as ADR 0009 defines it -- and *within* each source an
@@ -681,8 +681,8 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
     -------
     tuple[str or None, str, str]
         The raw string as written (parsing happens per setting, so each keeps
-        its own blank-value rule), the human-readable source label, and which
-        tier answered (one of the constants above) -- ``None`` with
+        its own blank-value rule), the human-readable origin label, and which
+        source answered (one of the constants above) -- ``None`` with
         ``_BUILT_IN`` / ``_DEFAULT`` when nothing configured it.
     """
     _check_adapter_known(adapter)
@@ -733,7 +733,7 @@ def _check_env_not_refused(name: str) -> None:
     refused = _REFUSED_ENV_VARS.get(name)
     if refused is not None and refused in os.environ:
         raise ConfigurationError(
-            f"{_env_source_label(refused)} is set, but {name!r} may only be set "
+            f"{_env_label(refused)} is set, but {name!r} may only be set "
             "in code, in a configure() block, never from the environment. Unset "
             f"it and pass the value on the adapter's configuration, e.g. "
             f"WaterdataConfiguration({name}=...)."
@@ -769,14 +769,14 @@ def _resolve_from_env(name: str) -> tuple[str | None, str, str] | None:
         return None
     raw = os.environ.get(env)
     if raw is not None and (raw.strip() or name in _BLANK_MEANS_SET):
-        return raw, _env_source_label(env), _ENV
+        return raw, _env_label(env), _ENV
     return None
 
 
 def _resolve_from_file(name: str, scoped: str | None) -> tuple[str | None, str, str]:
     """Fall through to the configuration file, then the built-in default.
 
-    One load serves both file tiers.
+    One load serves both scopes within the file.
     """
     path, parsed = _current_file()
 

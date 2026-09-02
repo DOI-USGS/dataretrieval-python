@@ -210,7 +210,8 @@ Satisfied. In ``tests/configuration_test.py``:
 
 - ``test_several_named_profiles_are_selected_independently`` -- one block,
   a different profile per adapter.
-- ``test_a_named_profile_layers_per_key_over_the_tiers_below`` -- a profile
+- ``test_a_named_profile_layers_per_key_over_the_rungs_below`` (named
+  ``..._the_tiers_below`` when this decision was taken) -- a profile
   inherits its adapter's default profile and the package-wide keys per key.
 - ``test_adding_a_named_profile_changes_nothing_until_it_is_selected`` -- a
   named profile is inert until something selects it.
