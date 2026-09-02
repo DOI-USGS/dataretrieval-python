@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+gb146c0e60 documentation</title>
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8d871f54"></script>
+      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -96,8 +96,8 @@
 <span class="sd">4. The built-in default.</span>
 
 <span class="sd">Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the</span>
-<span class="sd">same order in finer grain, splitting three of them into the scopes they contain.</span>
-<span class="sd">An adapter's own default is not one of the four: a read site such as</span>
+<span class="sd">same order in finer grain, as seven rungs -- three of these sources hold two</span>
+<span class="sd">apiece. An adapter's own default is not one of the four: a read site such as</span>
 <span class="sd">:func:`concurrency` passes it in as the ``default`` argument.</span>
 
 <span class="sd">Precedence applies **per setting**, not per source: an environment that sets only</span>
@@ -167,7 +167,7 @@
     <span class="n">_coerce_typed</span> <span class="k">as</span> <span class="n">_coerce_typed</span><span class="p">,</span>
     <span class="n">_Concurrent</span> <span class="k">as</span> <span class="n">_Concurrent</span><span class="p">,</span>
     <span class="n">_current_file</span> <span class="k">as</span> <span class="n">_current_file</span><span class="p">,</span>
-    <span class="n">_env_source_label</span> <span class="k">as</span> <span class="n">_env_source_label</span><span class="p">,</span>
+    <span class="n">_env_label</span> <span class="k">as</span> <span class="n">_env_label</span><span class="p">,</span>
     <span class="n">_Frame</span> <span class="k">as</span> <span class="n">_Frame</span><span class="p">,</span>
     <span class="n">_named_profiles</span> <span class="k">as</span> <span class="n">_named_profiles</span><span class="p">,</span>
     <span class="n">_NO_FILE</span> <span class="k">as</span> <span class="n">_NO_FILE</span><span class="p">,</span>
@@ -340,7 +340,7 @@
         <span class="n">raw</span> <span class="o">=</span> <span class="p">(</span>
             <span class="kc">None</span>
             <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">_source</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">else</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">configuration</span><span class="o">.</span><span class="n">_label</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
         <span class="p">)</span>
         <span class="n">overrides</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">overrides</span>
@@ -349,10 +349,10 @@
 <div class="viewcode-block" id="show_configuration">
 <a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.show_configuration">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_configuration</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Print the effective configuration and the source of each setting.</span>
+<span class="w">    </span><span class="sd">"""Print the effective configuration and where each setting came from.</span>
 
 <span class="sd">    A debugging aid for "why is this using my old key?". Every value is</span>
-<span class="sd">    reported with the source that supplied it, named exactly: which variable,</span>
+<span class="sd">    reported with the origin that supplied it, named exactly: which variable,</span>
 <span class="sd">    which table of the file, and -- when a caller selected one -- which</span>
 <span class="sd">    profile. The API key is never printed, only whether one is set.</span>
 
@@ -407,12 +407,12 @@
     <span class="n">parsed</span> <span class="o">=</span> <span class="n">_show_file_status</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
 
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_DISPLAYS</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="kc">None</span><span class="p">)),</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_source_label</span><span class="p">,</span> <span class="n">name</span><span class="p">)))</span>
+        <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_DISPLAYS</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="kc">None</span><span class="p">)),</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_origin_label</span><span class="p">,</span> <span class="n">name</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">SETTINGS</span>
     <span class="p">]</span>
     <span class="n">_print_setting_rows</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
     <span class="n">_show_built_in_default_note</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
-    <span class="n">_show_adapter_overrides</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">source</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
+    <span class="n">_show_adapter_overrides</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">cell</span><span class="p">,</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">label</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">})</span>
     <span class="n">_show_profiles</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">parsed</span><span class="p">)</span>
     <span class="n">_show_unimported_adapters</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
 
@@ -469,15 +469,15 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_print_setting_rows</span><span class="p">(</span><span class="n">out</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Print the package-wide setting rows in aligned columns."""</span>
-    <span class="n">name_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">_source</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
-    <span class="n">value_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">_source</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">name_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">value_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+    <span class="n">name_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">_label</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
+    <span class="n">value_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">_label</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">name_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">value_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_show_built_in_default_note</span><span class="p">(</span><span class="n">out</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Print the built-in default footnote when at least one row uses it."""</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">source</span> <span class="o">==</span> <span class="n">_BUILT_IN</span> <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">label</span> <span class="o">==</span> <span class="n">_BUILT_IN</span> <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="s2">"</span><span class="se">\n</span><span class="s2">A built-in default is package-wide. An adapter may prefer its own "</span>
             <span class="s2">"for</span><span class="se">\n</span><span class="s2">its own calls; a value from any source above overrides both."</span><span class="p">,</span>
@@ -496,7 +496,7 @@
 <span class="sd">    full adapter-by-setting grid would be mostly inherited values, burying the</span>
 <span class="sd">    answer to "what will this call use" under the rows that change nothing.</span>
 
-<span class="sd">    Each row names its source exactly, which for a selected profile is the</span>
+<span class="sd">    Each row names its origin exactly, which for a selected profile is the</span>
 <span class="sd">    profile: ``configure() block [waterdata.bulk]`` rather than a bare block,</span>
 <span class="sd">    so the report answers *which* profile put that value there.</span>
 
@@ -511,9 +511,9 @@
     <span class="n">a_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">_n</span><span class="p">,</span> <span class="n">_v</span><span class="p">,</span> <span class="n">_s</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">)</span>
     <span class="n">n_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">_a</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_v</span><span class="p">,</span> <span class="n">_s</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">)</span>
     <span class="n">v_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">_a</span><span class="p">,</span> <span class="n">_n</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_s</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">adapter</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">adapter</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">overrides</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">adapter</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">a_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">n_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">v_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">adapter</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">a_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">n_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">v_width</span><span class="si">}}</span><span class="s2">  </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -552,9 +552,9 @@
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_ALL_SETTINGS</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">accepted</span><span class="p">:</span>
             <span class="k">continue</span>
-        <span class="n">scoped</span> <span class="o">=</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_source_label</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">adapter</span><span class="p">))</span>
+        <span class="n">scoped</span> <span class="o">=</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_origin_label</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">adapter</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">scoped</span> <span class="o">==</span> <span class="n">package_wide</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">_BUILT_IN</span><span class="p">):</span>
-            <span class="k">continue</span>  <span class="c1"># inherited from the package-wide tier</span>
+            <span class="k">continue</span>  <span class="c1"># inherited from the package-wide value</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">cell</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">_DISPLAYS</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">adapter</span><span class="p">))</span>
         <span class="n">overrides</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">adapter</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">scoped</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">overrides</span>
@@ -608,8 +608,8 @@
         <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_source_label</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""The provenance label for one setting, for :func:`show_configuration`."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_origin_label</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The origin label for one setting, for :func:`show_configuration`."""</span>
     <span class="k">return</span> <span class="n">_resolve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 
 
@@ -622,7 +622,7 @@
 <span class="sd">    Surrounding whitespace is stripped, so a key read from a file with a</span>
 <span class="sd">    trailing newline works; a blank value resolves to ``None``.</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">_source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"api_key"</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">_label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"api_key"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
 
@@ -637,18 +637,18 @@
 <span class="sd">    wins over it: a service able to override an explicit setting would make</span>
 <span class="sd">    ``concurrency=1`` a lie.</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"concurrency"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"concurrency"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
-    <span class="k">return</span> <span class="n">_parse_concurrency</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_concurrency</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">retries</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Retries attempted after the first try; ``0`` disables retrying."""</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"retries"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"retries"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DEFAULT_RETRIES</span>
-    <span class="k">return</span> <span class="n">_parse_retries</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_retries</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">progress</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
@@ -658,12 +658,12 @@
 <span class="sd">    default (a TTY or Jupyter kernel gets the line, redirected output</span>
 <span class="sd">    doesn't).</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"progress"</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"progress"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="c1"># Preserve the legacy environment behavior (any value outside the false</span>
     <span class="c1"># set enables progress), while new block/file values are validated strictly.</span>
-    <span class="k">return</span> <span class="n">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">tier</span> <span class="o">!=</span> <span class="n">_ENV</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">source</span> <span class="o">!=</span> <span class="n">_ENV</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">parallel_chunks</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -675,10 +675,10 @@
 <span class="sd">    the name of that context manager because it is the same setting -- this</span>
 <span class="sd">    is the resolved value, not the scoping block.</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"parallel_chunks"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"parallel_chunks"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DEFAULT_PARALLEL_CHUNKS</span>
-    <span class="k">return</span> <span class="n">_parse_parallel_chunks</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_parallel_chunks</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">stall_timeout</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -688,10 +688,10 @@
 <span class="sd">    connection, which the retry *count* does not: it counts attempts, not</span>
 <span class="sd">    seconds. See :attr:`dataretrieval.transport.retry.RetryPolicy.stall_timeout`.</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"stall_timeout"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"stall_timeout"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DEFAULT_STALL_TIMEOUT</span>
-    <span class="k">return</span> <span class="n">_parse_seconds</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_seconds</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="nd">@overload</span>
@@ -730,23 +730,23 @@
 <span class="sd">        the answer is ``None`` -- which is what :func:`show_configuration` asks</span>
 <span class="sd">        for, having no service default to name.</span>
 <span class="sd">    """</span>
-    <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">_tier</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"base_url"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">_source</span> <span class="o">=</span> <span class="n">_resolve</span><span class="p">(</span><span class="s2">"base_url"</span><span class="p">,</span> <span class="n">adapter</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
-    <span class="k">return</span> <span class="n">_parse_base_url</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse_base_url</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="c1"># --- resolution ----------------------------------------------------------</span>
 
-<span class="c1">#: Which tier of the chain answered a resolution. Machine-readable so a</span>
-<span class="c1">#: per-tier rule reads the tier, never the display label -- :func:`progress`</span>
+<span class="c1">#: Which source of the chain answered a resolution. Machine-readable so a</span>
+<span class="c1">#: per-source rule reads the source, never the display label -- :func:`progress`</span>
 <span class="c1">#: keys its legacy-lenient parsing on ``_ENV``, and the label stays purely</span>
 <span class="c1">#: presentational.</span>
 <span class="n">_BLOCK</span><span class="p">,</span> <span class="n">_ENV</span><span class="p">,</span> <span class="n">_FILE</span><span class="p">,</span> <span class="n">_DEFAULT</span> <span class="o">=</span> <span class="s2">"block"</span><span class="p">,</span> <span class="s2">"environment"</span><span class="p">,</span> <span class="s2">"file"</span><span class="p">,</span> <span class="s2">"built-in"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Return the raw value for *name*, a source label, and the tier.</span>
+<span class="w">    </span><span class="sd">"""Return the raw value for *name*, its origin label, and its source.</span>
 
 <span class="sd">    Precedence is *source-major*: the chain walks block, then environment, then</span>
 <span class="sd">    file, exactly as ADR 0009 defines it -- and *within* each source an</span>
@@ -764,8 +764,8 @@
 <span class="sd">    -------</span>
 <span class="sd">    tuple[str or None, str, str]</span>
 <span class="sd">        The raw string as written (parsing happens per setting, so each keeps</span>
-<span class="sd">        its own blank-value rule), the human-readable source label, and which</span>
-<span class="sd">        tier answered (one of the constants above) -- ``None`` with</span>
+<span class="sd">        its own blank-value rule), the human-readable origin label, and which</span>
+<span class="sd">        source answered (one of the constants above) -- ``None`` with</span>
 <span class="sd">        ``_BUILT_IN`` / ``_DEFAULT`` when nothing configured it.</span>
 <span class="sd">    """</span>
     <span class="n">_check_adapter_known</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
@@ -816,7 +816,7 @@
     <span class="n">refused</span> <span class="o">=</span> <span class="n">_REFUSED_ENV_VARS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">refused</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">refused</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_env_source_label</span><span class="p">(</span><span class="n">refused</span><span class="p">)</span><span class="si">}</span><span class="s2"> is set, but </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> may only be set "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_env_label</span><span class="p">(</span><span class="n">refused</span><span class="p">)</span><span class="si">}</span><span class="s2"> is set, but </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> may only be set "</span>
             <span class="s2">"in code, in a configure() block, never from the environment. Unset "</span>
             <span class="sa">f</span><span class="s2">"it and pass the value on the adapter's configuration, e.g. "</span>
             <span class="sa">f</span><span class="s2">"WaterdataConfiguration(</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=...)."</span>
@@ -852,14 +852,14 @@
         <span class="k">return</span> <span class="kc">None</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_BLANK_MEANS_SET</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">_env_source_label</span><span class="p">(</span><span class="n">env</span><span class="p">),</span> <span class="n">_ENV</span>
+        <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">_env_label</span><span class="p">(</span><span class="n">env</span><span class="p">),</span> <span class="n">_ENV</span>
     <span class="k">return</span> <span class="kc">None</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_from_file</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">scoped</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Fall through to the configuration file, then the built-in default.</span>
 
-<span class="sd">    One load serves both file tiers.</span>
+<span class="sd">    One load serves both scopes within the file.</span>
 <span class="sd">    """</span>
     <span class="n">path</span><span class="p">,</span> <span class="n">parsed</span> <span class="o">=</span> <span class="n">_current_file</span><span class="p">()</span>
 

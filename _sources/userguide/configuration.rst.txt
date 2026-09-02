@@ -437,7 +437,7 @@ the ``bulk`` profile selected for the block:
 
    not reported: nldi (not imported, so the settings each accepts are unknown here)
 
-Each line names the exact source, including which table inside the file, which
+Each line names the exact origin, including which table inside the file, which
 is usually enough to answer "why is it still using my old key?". A value that
 came from a profile names the profile — ``configure() block
 [waterdata.bulk]``, not merely "a block" — so a report taken from inside a

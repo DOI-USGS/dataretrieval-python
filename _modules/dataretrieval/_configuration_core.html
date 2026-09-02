@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+gb146c0e60 documentation</title>
+  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8d871f54"></script>
+      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -143,7 +143,7 @@
 <span class="c1">#: Environment variable holding an explicit path to the configuration file.</span>
 <span class="n">CONFIG_PATH_ENV</span> <span class="o">=</span> <span class="s2">"DATARETRIEVAL_CONFIG"</span>
 
-<span class="c1">#: Source label for a setting no source supplied.</span>
+<span class="c1">#: Origin label for a setting no source supplied.</span>
 <span class="n">_BUILT_IN</span> <span class="o">=</span> <span class="s2">"built-in default"</span>
 
 <span class="c1">#: The table ADR 0011 retired. Named here only so a file written against the</span>
@@ -194,7 +194,7 @@
 <span class="c1"># is absent on a fork), so treating it as configured would let it shadow the</span>
 <span class="c1"># config file and silently drop the user's API key. Keeping this a property of</span>
 <span class="c1"># the setting -- rather than a second, lower visit to the environment -- keeps</span>
-<span class="c1"># the chain at the three tiers the docstring and ADR 0009 describe.</span>
+<span class="c1"># the chain in the shape the docstring and ADR 0009 describe.</span>
 <span class="n">_BLANK_MEANS_SET</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"progress"</span><span class="p">})</span>
 
 <span class="c1"># Warnings about the config file report the file, not a call site: settings are</span>
@@ -234,7 +234,7 @@
 <span class="c1"># inner package-wide one, inverting the nesting rule ADR 0011 states.</span>
 <span class="c1">#</span>
 <span class="c1"># Each entry pairs the raw value with the label naming where it came from, the</span>
-<span class="c1"># same shape the file tier returns (:func:`_adapter_file_settings`). The</span>
+<span class="c1"># same shape the file source returns (:func:`_adapter_file_settings`). The</span>
 <span class="c1"># label is built while the configuration object is still in hand, the only</span>
 <span class="c1"># point where the *profile* is known -- by the time a value reaches the frame,</span>
 <span class="c1"># one from ``WaterdataConfiguration.load("bulk")`` and one from</span>
@@ -374,7 +374,7 @@
             <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># ``None`` is not a value to check: it means "suppress the</span>
                 <span class="c1"># lower sources", which every setting accepts.</span>
-                <span class="n">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">optional</span><span class="o">=</span><span class="s2">", or None"</span><span class="p">)</span>
+                <span class="n">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">optional</span><span class="o">=</span><span class="s2">", or None"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 
 <div class="viewcode-block" id="BaseConfiguration.validate">
@@ -422,7 +422,7 @@
 
 <span class="sd">        ``[&lt;adapter&gt;.&lt;profile&gt;]``. Only the keys that table names are carried,</span>
 <span class="sd">        so the profile still inherits the adapter's default profile and the</span>
-<span class="sd">        package-wide keys per setting from the tiers below.</span>
+<span class="sd">        package-wide keys per setting from the rungs below.</span>
 
 <span class="sd">        Selecting a profile the file does not define raises: a name a caller</span>
 <span class="sd">        just typed is a typo worth reporting, not a silent fall-through to</span>
@@ -455,9 +455,9 @@
         <span class="k">return</span> <span class="n">loaded</span></div>
 
 
-<div class="viewcode-block" id="BaseConfiguration._source">
-<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration._source">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseConfiguration._label">
+<a class="viewcode-back" href="../../reference/config.html#dataretrieval.configuration.BaseConfiguration._label">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""How one of this configuration's settings is named in an error."""</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">= in </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">()"</span></div>
 
@@ -667,8 +667,8 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_env_source_label</span><span class="p">(</span><span class="n">env_var</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""How a value read from ``env_var`` is reported as a source."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_env_label</span><span class="p">(</span><span class="n">env_var</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""How a value read from ``env_var`` is reported as an origin label."""</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">"$</span><span class="si">{</span><span class="n">env_var</span><span class="si">}</span><span class="s2">"</span>
 
 
@@ -827,46 +827,46 @@
 <span class="c1"># TOML types and reject Python API type errors before producing raw strings.</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationError</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigurationError</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Build a type error without rendering a possibly secret value."""</span>
     <span class="k">return</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">)."</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">)."</span>
     <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_string</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_string</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"a string"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="s2">"a string"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">value</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_progress</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_progress</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">value</span>
-    <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"a bool or recognized string"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="s2">"a bool or recognized string"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_concurrency</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_concurrency</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"an integer or 'unbounded'"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="s2">"an integer or 'unbounded'"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="n">CONCURRENCY_UNBOUNDED</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be an integer or 'unbounded'."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be an integer or 'unbounded'."</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="c1"># Seconds, so a fractional value is meaningful -- unlike the counts, which</span>
     <span class="c1"># are whole by nature.</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"a number of seconds"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="s2">"a number of seconds"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_count</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_count</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Integral</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"an integer"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_type_error</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="s2">"an integer"</span> <span class="o">+</span> <span class="n">optional</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
@@ -898,7 +898,7 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Type-check one source-level value and render it as a raw string.</span>
 
 <span class="sd">    Shared by the two *typed* surfaces -- a configuration's fields and TOML</span>
@@ -909,19 +909,19 @@
 <span class="sd">    ``optional`` is the only thing that differs between them: the Python</span>
 <span class="sd">    surface accepts ``None`` and says so in its messages.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_TYPES</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_TYPES</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validated_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">optional</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Type-check, render and grammar-check one typed value."""</span>
-    <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="n">optional</span><span class="p">)</span>
-    <span class="n">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">optional</span><span class="o">=</span><span class="n">optional</span><span class="p">)</span>
+    <span class="n">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">raw</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_int</span><span class="p">(</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">default</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">minimum</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -933,8 +933,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    raw : str</span>
 <span class="sd">        The value as written, from whichever source supplied it.</span>
-<span class="sd">    source : str</span>
-<span class="sd">        Human-readable origin, used as the subject of any error message.</span>
+<span class="sd">    label : str</span>
+<span class="sd">        Human-readable origin label, used as the subject of any error message.</span>
 <span class="sd">    default : int</span>
 <span class="sd">        Returned for a blank value, matching the environment-variable</span>
 <span class="sd">        behavior this replaced.</span>
@@ -950,13 +950,13 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">parsed</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
     <span class="k">if</span> <span class="n">parsed</span> <span class="o">&lt;</span> <span class="n">minimum</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parsed</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_seconds</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_seconds</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Parse a non-negative duration in seconds; blank falls through.</span>
 
 <span class="sd">    Seconds rather than a count, so fractional values are accepted. ``0``</span>
@@ -970,29 +970,29 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">parsed</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
     <span class="c1"># ``inf`` and ``nan`` both parse as floats and both defeat the bound they</span>
     <span class="c1"># are meant to set: ``inf`` makes every wait allowed, and ``nan`` compares</span>
     <span class="c1"># false against every threshold. TOML has literal ``inf``/``nan``, so this</span>
     <span class="c1"># is reachable from the file as well as from Python.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span> <span class="ow">or</span> <span class="n">parsed</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">parsed</span><span class="si">}</span><span class="s2">)."</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parsed</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_concurrency</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_concurrency</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Parse a concurrency cap: a positive int, or ``unbounded`` -&gt; ``None``."""</span>
     <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">CONCURRENCY_UNBOUNDED</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_parse_int</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENCY</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parse_int</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_CONCURRENCY</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">ConfigurationError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2"> Use '</span><span class="si">{</span><span class="n">CONCURRENCY_UNBOUNDED</span><span class="si">}</span><span class="s2">' to disable the cap."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_base_url</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_base_url</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Parse a service base URL: an absolute ``http``/``https`` origin.</span>
 
 <span class="sd">    Only the scheme is checked, and deliberately so. This module cannot know</span>
@@ -1003,16 +1003,16 @@
     <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"http://"</span><span class="p">,</span> <span class="s2">"https://"</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be an absolute http:// or https:// URL (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be an absolute http:// or https:// URL (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">value</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Parse a progress toggle, optionally preserving legacy env truthiness."""</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">strict</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must not be blank."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must not be blank."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_PROGRESS_FALSEY</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_PROGRESS_TRUTHY</span><span class="p">:</span>
@@ -1020,7 +1020,7 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">strict</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="n">expected</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_PROGRESS_TRUTHY</span> <span class="o">|</span> <span class="n">_PROGRESS_FALSEY</span><span class="p">))</span>
-    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2"> (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span><span class="p">)</span>
 
 
 <span class="c1"># Each integer setting's grammar, named once. The accessor and the eager</span>
@@ -1043,11 +1043,11 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_raw</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run a setting's grammar validator when it has one."""</span>
     <span class="n">validate</span> <span class="o">=</span> <span class="n">_VALIDATORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">validate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">validate</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="n">validate</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_named_profiles</span><span class="p">(</span><span class="n">parsed</span><span class="p">:</span> <span class="n">_ParsedFile</span><span class="p">,</span> <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
@@ -1079,7 +1079,7 @@
 <span class="sd">    Returns the TOML scalars as written rather than raw strings, because the</span>
 <span class="sd">    caller is :meth:`BaseConfiguration.load`, which feeds them straight back</span>
 <span class="sd">    into the configuration's own typed fields. Values are still checked here,</span>
-<span class="sd">    with a source that names the file and the table: a grammar error found on</span>
+<span class="sd">    with a label that names the file and the table: a grammar error found on</span>
 <span class="sd">    the way *out* of the file should say which line to fix, not merely which</span>
 <span class="sd">    field of which class ended up holding it.</span>
 <span class="sd">    """</span>
@@ -1126,8 +1126,8 @@
 <span class="w">    </span><span class="sd">"""The config file as currently loaded: its path and its parsed form.</span>
 
 <span class="sd">    One helper so the two always travel together. They are a single fact, and</span>
-<span class="sd">    handing the top-level tier a different ``_ParsedFile`` than the adapter</span>
-<span class="sd">    tier saw in the same resolution is exactly the drift that made an</span>
+<span class="sd">    handing the top-level scope a different ``_ParsedFile`` than the</span>
+<span class="sd">    adapter scope saw in the same resolution is exactly the drift that made an</span>
 <span class="sd">    adapter-scoped read load the file twice.</span>
 <span class="sd">    """</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">config_path</span><span class="p">()</span>
@@ -1140,7 +1140,7 @@
 <span class="w">    </span><span class="sd">"""The ``[&lt;adapter&gt;]`` table's own keys -- its default profile.</span>
 
 <span class="sd">    Layers *above* the file's top-level keys rather than being merged into</span>
-<span class="sd">    them: within the file tier an adapter's own value outranks the package-wide</span>
+<span class="sd">    them: within the file source an adapter's own value outranks the package-wide</span>
 <span class="sd">    one. The table's sub-tables are its named profiles, which are inert until a</span>
 <span class="sd">    caller selects one, so they are skipped here (see :func:`_accepted_keys`).</span>
 
@@ -1406,9 +1406,9 @@
                 <span class="ne">UserWarning</span><span class="p">,</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="n">_WARN_STACKLEVEL</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">"</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
-        <span class="n">_validate_raw</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">_coerce_typed</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">_validate_raw</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">checked</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">checked</span>
 

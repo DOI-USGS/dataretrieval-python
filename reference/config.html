@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+gb146c0e60 documentation</title>
+  <title>dataretrieval.configuration &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=8d871f54"></script>
+      <script src="../_static/documentation_options.js?v=e48bccd0"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -53,8 +53,8 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration._label"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration._label()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration._provenance"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration._provenance()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration._source"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration._source()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.adapter"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.adapter</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.load"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.load()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.configuration.BaseConfiguration.profile"><code class="docutils literal notranslate"><span class="pre">BaseConfiguration.profile</span></code></a></li>
@@ -137,8 +137,8 @@ selects it with <code class="docutils literal notranslate"><span class="pre">&lt
 <li><p>The built-in default.</p></li>
 </ol>
 <p>Each of those four sources is one branch of <code class="xref py py-func docutils literal notranslate"><span class="pre">_resolve()</span></code>; ADR 0011 lists the
-same order in finer grain, splitting three of them into the scopes they contain.
-An adapter’s own default is not one of the four: a read site such as
+same order in finer grain, as seven rungs – three of these sources hold two
+apiece. An adapter’s own default is not one of the four: a read site such as
 <code class="xref py py-func docutils literal notranslate"><span class="pre">concurrency()</span></code> passes it in as the <code class="docutils literal notranslate"><span class="pre">default</span></code> argument.</p>
 <p>Precedence applies <strong>per setting</strong>, not per source: an environment that sets only
 <code class="docutils literal notranslate"><span class="pre">API_USGS_PAT</span></code> leaves a file-provided <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> fully in effect. The
@@ -183,6 +183,12 @@ change under the block that entered it.</p>
 raises where it was written rather than at a later <code class="docutils literal notranslate"><span class="pre">with</span></code> statement or
 inside a request.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._label">
+<span class="sig-name descname"><span class="pre">_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._label" title="Link to this definition"></a></dt>
+<dd><p>How one of this configuration’s settings is named in an error.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._provenance">
 <span class="sig-name descname"><span class="pre">_provenance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._provenance" title="Link to this definition"></a></dt>
 <dd><p>How <a class="reference internal" href="#dataretrieval.configuration.show_configuration" title="dataretrieval.configuration.show_configuration"><code class="xref py py-func docutils literal notranslate"><span class="pre">show_configuration()</span></code></a> reports a value this supplied.</p>
@@ -191,12 +197,6 @@ inside a request.</p>
 “a block did”, and the answer is greppable in the file that holds it.
 A configuration written in code has no profile, so it names its adapter
 alone; the package-wide one narrows to nothing and names neither.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dataretrieval.configuration.BaseConfiguration._source">
-<span class="sig-name descname"><span class="pre">_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/dataretrieval/_configuration_core.html#BaseConfiguration._source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.BaseConfiguration._source" title="Link to this definition"></a></dt>
-<dd><p>How one of this configuration’s settings is named in an error.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -215,7 +215,7 @@ every call site and stops the roster being spelled twice.</p>
 <dd><p>Read a named profile for this adapter from the configuration file.</p>
 <p><code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;profile&gt;]</span></code>. Only the keys that table names are carried,
 so the profile still inherits the adapter’s default profile and the
-package-wide keys per setting from the tiers below.</p>
+package-wide keys per setting from the rungs below.</p>
 <p>Selecting a profile the file does not define raises: a name a caller
 just typed is a typo worth reporting, not a silent fall-through to
 settings they did not ask for.</p>
@@ -411,9 +411,9 @@ and the adapter cannot be misreading a setting it has not loaded.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.configuration.show_configuration">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.configuration.</span></span><span class="sig-name descname"><span class="pre">show_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TextIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/configuration.html#show_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.configuration.show_configuration" title="Link to this definition"></a></dt>
-<dd><p>Print the effective configuration and the source of each setting.</p>
+<dd><p>Print the effective configuration and where each setting came from.</p>
 <p>A debugging aid for “why is this using my old key?”. Every value is
-reported with the source that supplied it, named exactly: which variable,
+reported with the origin that supplied it, named exactly: which variable,
 which table of the file, and – when a caller selected one – which
 profile. The API key is never printed, only whether one is set.</p>
 <dl class="field-list simple">
