@@ -4,7 +4,7 @@ See https://waterqualitydata.us/webservices_documentation for the API reference.
 
 .. todo::
 
-    - implement other services like Organization, Activity, etc.
+    - implement other collections like Organization, Activity, etc.
 
 """
 
@@ -155,14 +155,14 @@ def _query_wqp(
     legacy: bool,
     **kwargs: Any,
 ) -> tuple[DataFrame, WQP_Metadata]:
-    """Run one WQP getter query against the selected service.
+    """Run one WQP getter query against the selected collection.
 
-    Services with a WQX3.0 equivalent (those in :data:`services_wqx3`) use
-    :func:`wqx3_url` when ``legacy=False`` and :func:`wqp_url` otherwise.
-    Legacy-only services route through :func:`_legacy_only_url`, which warns
-    and falls back to the legacy profile. ``dataProfile`` is validated against
-    :data:`_PROFILE_RULES`, and the CSV response is parsed via
-    :func:`_read_wqp_csv`.
+    Collections with a WQX3.0 equivalent (those in :data:`services_wqx3`,
+    which keeps its legacy name) use :func:`wqx3_url` when ``legacy=False``
+    and :func:`wqp_url` otherwise. Legacy-only collections route through
+    :func:`_legacy_only_url`, which warns and falls back to the legacy
+    profile. ``dataProfile`` is validated against :data:`_PROFILE_RULES`, and
+    the CSV response is parsed via :func:`_read_wqp_csv`.
     """
     kwargs = _check_kwargs(kwargs)
     kwargs = _resolve_profile(service, legacy, kwargs)
@@ -184,7 +184,7 @@ def _query_wqp(
     )
     df = _read_wqp_csv(response.text)
     # Only get_results documents the appended DateTime columns and the
-    # activity-start sort, so the other services keep their parsed shape.
+    # activity-start sort, so the other collections keep their parsed shape.
     if service == "Result":
         df = _attach_datetime_columns(df)
     return df, WQP_Metadata(response, **kwargs)

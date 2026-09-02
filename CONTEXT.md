@@ -123,7 +123,10 @@ service differs.
 `service=` (`'dv'`, `'peaks'`); WQP names its collections as profiles
 (`Result`, `Station`, `Activity`). Those parameters are frozen public surface
 and keep their spelling. Prose says *collection*, including prose about the
-adapters that spell it otherwise.
+adapters that spell it otherwise — with one exception: deprecated NWIS keeps
+`service` in its docstrings as well as its parameters. Describing a parameter
+in a term its own module never uses helps nobody, and a module being retired is
+not where new vocabulary should land.
 
 **Collection family** — A group of collections sharing a shape and therefore a
 getter signature. Their getters deliberately resemble one another; the

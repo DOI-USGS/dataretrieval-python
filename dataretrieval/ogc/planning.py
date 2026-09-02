@@ -202,8 +202,9 @@ class _Axis:
         The args-dict key this axis substitutes back into when a
         chunk is rendered.
     atoms : tuple of str
-        The smallest indivisible units along this axis (one site, one
-        OR-clause, …). A "chunk" is a contiguous slice of ``atoms``.
+        The smallest indivisible units along this axis (one monitoring
+        location, one OR-clause, …). A "chunk" is a contiguous slice of
+        ``atoms``.
     joiner : str
         Separator placed between atoms when they are joined back into
         URL text — ``","`` for list axes, ``" OR "`` for the filter
