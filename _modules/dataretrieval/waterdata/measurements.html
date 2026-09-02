@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g08e143c51 documentation</title>
+  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g9322ab0bd documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=6ae09fef"></script>
+      <script src="../../../_static/documentation_options.js?v=ed051d30"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -334,10 +334,11 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get the annual peak streamflow / stage record for a monitoring location.</span>
 
-<span class="sd">    Peaks are the largest values observed at a site each water year and are</span>
-<span class="sd">    the standard input to flood-frequency analysis (e.g. log-Pearson Type III</span>
-<span class="sd">    fits). The endpoint returns one row per (monitoring location, parameter,</span>
-<span class="sd">    water year), with the peak ``value`` and the ``time`` it occurred.</span>
+<span class="sd">    Peaks are the largest values observed at a monitoring location each water</span>
+<span class="sd">    year and are the standard input to flood-frequency analysis (e.g.</span>
+<span class="sd">    log-Pearson Type III fits). The endpoint returns one row per (monitoring</span>
+<span class="sd">    location, parameter, water year), with the peak ``value`` and the ``time``</span>
+<span class="sd">    it occurred.</span>
 
 <span class="sd">    The collection covers both stage (parameter ``"00065"``, ``ft``) and</span>
 <span class="sd">    discharge (parameter ``"00060"``, ``ft^3/s``); a typical streamgage has a</span>
@@ -420,7 +421,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    .. code::</span>
 
-<span class="sd">        &gt;&gt;&gt; # Full annual peak record at one site (both stage and discharge)</span>
+<span class="sd">        &gt;&gt;&gt; # Full annual peak record at one location (stage and discharge)</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_peaks(</span>
 <span class="sd">        ...     monitoring_location_id="USGS-02238500"</span>
 <span class="sd">        ... )</span>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g08e143c51 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g9322ab0bd documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6ae09fef"></script>
+      <script src="../../_static/documentation_options.js?v=ed051d30"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -81,7 +81,7 @@
 
 <span class="sd">.. todo::</span>
 
-<span class="sd">    - implement other services like Organization, Activity, etc.</span>
+<span class="sd">    - implement other collections like Organization, Activity, etc.</span>
 
 <span class="sd">"""</span>
 
@@ -232,14 +232,14 @@
     <span class="n">legacy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Run one WQP getter query against the selected service.</span>
+<span class="w">    </span><span class="sd">"""Run one WQP getter query against the selected collection.</span>
 
-<span class="sd">    Services with a WQX3.0 equivalent (those in :data:`services_wqx3`) use</span>
-<span class="sd">    :func:`wqx3_url` when ``legacy=False`` and :func:`wqp_url` otherwise.</span>
-<span class="sd">    Legacy-only services route through :func:`_legacy_only_url`, which warns</span>
-<span class="sd">    and falls back to the legacy profile. ``dataProfile`` is validated against</span>
-<span class="sd">    :data:`_PROFILE_RULES`, and the CSV response is parsed via</span>
-<span class="sd">    :func:`_read_wqp_csv`.</span>
+<span class="sd">    Collections with a WQX3.0 equivalent (those in :data:`services_wqx3`,</span>
+<span class="sd">    which keeps its legacy name) use :func:`wqx3_url` when ``legacy=False``</span>
+<span class="sd">    and :func:`wqp_url` otherwise. Legacy-only collections route through</span>
+<span class="sd">    :func:`_legacy_only_url`, which warns and falls back to the legacy</span>
+<span class="sd">    profile. ``dataProfile`` is validated against :data:`_PROFILE_RULES`, and</span>
+<span class="sd">    the CSV response is parsed via :func:`_read_wqp_csv`.</span>
 <span class="sd">    """</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_check_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">_resolve_profile</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">legacy</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
@@ -261,7 +261,7 @@
     <span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">_read_wqp_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="c1"># Only get_results documents the appended DateTime columns and the</span>
-    <span class="c1"># activity-start sort, so the other services keep their parsed shape.</span>
+    <span class="c1"># activity-start sort, so the other collections keep their parsed shape.</span>
     <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">"Result"</span><span class="p">:</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">_attach_datetime_columns</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">WQP_Metadata</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
