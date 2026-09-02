@@ -452,7 +452,8 @@ def test_bad_retry_environment_raises_a_catchable_error(monkeypatch) -> None:
 
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "10")
     assert retry.RetryPolicy.from_configuration().stall_timeout == 10.0
-    # Still a ValueError, so existing handling of a bad setting keeps working.
+    # Still a ValueError, so existing handling of an unparseable setting keeps
+    # working.
     assert issubclass(ConfigurationError, ValueError)
 
 
@@ -628,8 +629,8 @@ def test_an_unusable_next_page_link_is_reported_not_swallowed():
 class TestErrorForStatus:
     def test_a_success_status_is_a_usage_error(self):
         """``error_for_status`` builds an exception for a failure. Handing it a
-        200 means the caller's branch is wrong, and returning some default
-        exception would hide that."""
+        200 means the caller took the error branch on a success status, and
+        returning some default exception would hide that."""
         with pytest.raises(ValueError, match="expects an HTTP error status"):
             exceptions.error_for_status(200, "not an error")
 

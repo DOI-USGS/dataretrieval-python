@@ -1,15 +1,9 @@
 """Every Water Data endpoint this package talks to, in one place.
 
-"Which services does Water Data reach, and at what URL" is a single question
-with a single answer, so the answer lives in one file rather than being spelled
-out again in each family module. The host is the authority of the credentials
-leaf -- the host that serves these endpoints is the host that honors the API
-key -- while the paths below stay here rather than importing OGC policy
-internals.
-
-This module imports only leaves -- the credentials host and the configuration
-chain -- so a family module can name its endpoint, and honor a caller's
-redirect, without also taking on an OGC or transport edge.
+The host is the authority of the credentials leaf -- the host that serves
+these endpoints is the host that honors the API key -- while the paths below
+stay here rather than importing OGC policy internals. This module imports only
+leaves: the credentials host and the configuration chain (ADR 0003).
 """
 
 from __future__ import annotations
@@ -18,9 +12,8 @@ from dataretrieval import configuration as _configuration
 from dataretrieval.credentials import WATERDATA_BASE_URL
 
 #: Canonical paths below the Water Data root. They are not endpoints on their
-#: own: callers obtain complete destinations through the functions below, which
-#: makes scoped redirection part of endpoint acquisition rather than a wrapper
-#: every use site must remember.
+#: own: callers obtain complete destinations through the request-time functions
+#: below (ADR 0011).
 _OGC_API_PATH = "/ogcapi/v0"
 _SAMPLES_PATH = "/samples-data"
 _STATISTICS_API_PATH = "/statistics/v0"

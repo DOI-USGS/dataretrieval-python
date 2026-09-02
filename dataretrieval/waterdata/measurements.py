@@ -252,10 +252,11 @@ def get_peaks(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get the annual peak streamflow / stage record for a monitoring location.
 
-    Peaks are the largest values observed at a site each water year and are
-    the standard input to flood-frequency analysis (e.g. log-Pearson Type III
-    fits). The endpoint returns one row per (monitoring location, parameter,
-    water year), with the peak ``value`` and the ``time`` it occurred.
+    Peaks are the largest values observed at a monitoring location each water
+    year and are the standard input to flood-frequency analysis (e.g.
+    log-Pearson Type III fits). The endpoint returns one row per (monitoring
+    location, parameter, water year), with the peak ``value`` and the ``time``
+    it occurred.
 
     The collection covers both stage (parameter ``"00065"``, ``ft``) and
     discharge (parameter ``"00060"``, ``ft^3/s``); a typical streamgage has a
@@ -338,7 +339,7 @@ def get_peaks(
     --------
     .. code::
 
-        >>> # Full annual peak record at one site (both stage and discharge)
+        >>> # Full annual peak record at one location (stage and discharge)
         >>> df, md = dataretrieval.waterdata.get_peaks(
         ...     monitoring_location_id="USGS-02238500"
         ... )

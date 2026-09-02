@@ -218,7 +218,7 @@ def test_get_features_rejects_ambiguous_origins(kwargs, problem, remedy):
     """Origin validation runs ahead of the request, and names the way out.
 
     Both halves are asserted because the caller is usually a program: the
-    problem alone tells it something is wrong, and only the remedy tells it
+    problem alone tells it the call is invalid, and only the remedy tells it
     what to send instead.
     """
     with pytest.raises(ValueError) as excinfo:
@@ -566,7 +566,7 @@ def test_navigation_without_a_data_source_says_what_to_add(kwargs, monkeypatch):
 
 
 def test_a_bad_navigation_mode_is_reported_before_the_missing_data_source():
-    """Both arguments are wrong; the mode is the one the caller typed.
+    """Both arguments are invalid; the mode is the one the caller typed.
 
     Requiring ``data_source`` ahead of validating the mode would answer a
     mistyped ``navigation_mode`` with a message about a different argument,
@@ -604,7 +604,7 @@ def test_a_200_with_a_non_json_body_becomes_an_empty_frame(httpx_mock):
 
     This is the one place the package returns an empty frame rather than
     raising on a malformed response. Pinned because it is deliberate: the
-    swallow is easy to mistake for an oversight and 'fix' into a raise, which
+    swallow reads as an oversight and could be 'fixed' into a raise, which
     would turn a legitimate empty navigation into a crash.
     """
     mock_request_data_sources(httpx_mock)

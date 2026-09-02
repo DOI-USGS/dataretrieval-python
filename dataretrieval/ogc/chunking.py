@@ -5,17 +5,16 @@ parameter (sites, parameter codes, …) plus the cql-text ``filter``,
 which splits along its top-level OR clauses. Any of them can fan the
 URL past the server's ~8 KB byte limit. ``ChunkPlan`` picks a fan-out
 for each axis that minimizes total chunks while keeping every
-chunk URL under the budget. Requests that already fit get a
-trivial single-step plan — the executor has one code path either way.
+chunk URL under the budget. Requests that already fit get a single-chunk
+plan — the executor has one code path either way.
 
 This module owns the OGC-specific half: the byte budget, the
 ``parallel_chunks`` dial, and the ``multi_value_chunked`` decorator that
-ties a plan to a fetcher. Driving the resulting chunks to
-completion — bounded concurrency, retry, failure precedence, resume — is
-API-neutral and belongs to
-:class:`dataretrieval.transport.fanout.FanOut`, which this module hands
-its plan to. :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
-:class:`~dataretrieval.transport.fanout.FanOutPlan` structurally.
+ties a plan to a fetcher. It hands the plan to
+:class:`dataretrieval.transport.fanout.FanOut`, which drives the chunks to
+completion; :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
+:class:`~dataretrieval.transport.fanout.FanOutPlan` structurally. That split
+is ADR 0008.
 
 Parallel chunks: the planner is conservative by default — it splits only as
 far as the byte limit forces. A caller who knows their result is large can opt
@@ -58,14 +57,9 @@ from dataretrieval.transport.retry import RetryPolicy
 
 from .planning import ChunkPlan
 
-# Compatibility aliases. ``ChunkedCall`` was this module's executor before it
-# moved down to transport as the API-neutral ``FanOut``; ``get_active_client``
-# and ``_chunked_client`` named its shared per-call client. Only the
-# chunking/progress test modules still use these names, and the rename is not
-# worth churning them over -- package code imports the canonical spellings from
-# :mod:`dataretrieval.transport.fanout`. They are aliases, not copies: the
-# ambient in particular must be the *same* object transport publishes, or a
-# test reading it here would never see the running client.
+# Compatibility aliases for the chunking/progress test modules. The client
+# names bind the *same* objects transport publishes, not copies -- a test
+# reading a copy here would never see the running client.
 ChunkedCall = FanOut
 get_active_client = active_client
 _chunked_client = _active_client
@@ -85,7 +79,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
 
     By default the Water Data / NGWMN getters chunk a request only as much as
     the server's ~8 KB URL-byte limit forces — the fewest chunks that
-    fit. That is the safe default, but it can be *needlessly* conservative.
+    fit. That default can be more conservative than a large pull needs.
     Because every chunk paginates, splitting a large result further costs
     little or no extra quota *as long as each chunk still spans many
     pages* — rows-per-chunk far exceeding the page size (ten states pulled as
@@ -97,14 +91,10 @@ def parallel_chunks(n: int) -> Iterator[None]:
     smoother progress, more even concurrency, and a smaller unit of
     retry/resume.
 
-    This is a *deliberate* per-call knob rather than an automatic behavior or a
-    process-wide environment variable, because the library can't tell in
-    advance whether a query is large (ten states over a short window might fit
-    in a single page, where extra chunks would only burn quota). Scoping it to
-    a ``with`` block keeps an aggressive setting from leaking into unrelated
-    calls and accidentally spending quota. Outside any block the getters use
-    the conservative default. Only the OGC getters (Water Data, NGWMN) read
-    this; wrapping a legacy NWIS call in the block is a harmless no-op.
+    A per-call knob rather than an environment variable, and scoped to a
+    ``with`` block: ADR 0009. Outside any block the getters use the
+    conservative default. Only the OGC getters (Water Data, NGWMN) read this;
+    wrapping a legacy NWIS call in the block is a no-op.
 
     Parameters
     ----------
@@ -116,7 +106,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
         cannot multiply past it. The cap is a ceiling, never exceeded: the
         actual count is bounded below by what the ~8 KB URL limit already
         forces and above by ``n``. So an ``n`` larger than the input allows
-        simply yields one chunk per value, and with several multi-value
+        yields one chunk per value, and with several multi-value
         arguments the total may land somewhat below ``n`` because splits are
         whole (the plan can't always divide evenly onto ``n``). ``n=1`` asks
         for no extra fan-out.
@@ -136,7 +126,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     ------
     ValueError
         If ``n`` is not a positive integer — raised on ``with`` entry, before
-        any request is issued, so a bad value fails loudly rather than silently
+        any request is issued, so an invalid value fails loudly rather than silently
         doing nothing.
 
     Notes
@@ -174,22 +164,13 @@ def parallel_chunks(n: int) -> Iterator[None]:
     --------
     ChunkPlan._refine : the planning-side effect of ``n``.
     """
-    # Fail loudly on a bad ``n`` at ``with`` entry, before any request -- and
-    # fail by the *setting's* grammar, not a second one written here. ``n`` is
-    # ``parallel_chunks``: the same bool/Integral rejection and the same lower
-    # bound, from the table that owns them, so raising the floor there cannot
-    # leave this block accepting a value the chain would then refuse. Spelled
-    # with the source label this block is written as, so the message names
-    # ``parallel_chunks(n)`` rather than the ``Configuration`` built below.
-    # ``ConfigurationError`` is a ``ValueError``, so callers catching that
-    # still catch this.
+    # Validate at ``with`` entry, before any request, through the setting's
+    # own parser -- one grammar, ADR 0009. The source label makes the message
+    # name ``parallel_chunks(n)`` rather than the ``Configuration`` built
+    # below.
     _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
-    # Sugar for a package-wide ``Configuration`` rather than a second scope of
-    # its own: two competing ContextVars would let ``show_configuration()`` report a
-    # value the chunker does not use. Sharing one means the innermost block
-    # wins, whichever spelling opened it -- and package-wide rather than scoped
-    # to one adapter, because this block is a per-call request that must reach
-    # whichever adapter the call goes to.
+    # Reuses the one package-wide ``Configuration`` ContextVar rather than
+    # opening a second scope of its own (ADR 0009).
     with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
         yield
 

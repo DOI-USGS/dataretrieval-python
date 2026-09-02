@@ -503,7 +503,7 @@ class Test_to_state:
             "Ohio",
         ]
         assert to_state(["WI", "CA"], "fips_us") == ["US:55", "US:06"]
-        # A bad element fails the whole call (fail-fast).
+        # An unrecognized element fails the whole call (fail-fast).
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
 
@@ -628,8 +628,9 @@ class TestFormatDatetime:
 
     def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
         """An unparseable row becomes NaT rather than failing the whole frame,
-        but silently dropping timestamps would be a wrong answer -- so it
-        warns, and names the switch that avoids the loss."""
+        but silently dropping timestamps would return an incomplete frame with
+        nothing to mark the gap -- so it warns, and names the switch that
+        avoids the loss."""
         df = pd.DataFrame(
             {
                 # A missing date field, as an RDB row with an unrecorded

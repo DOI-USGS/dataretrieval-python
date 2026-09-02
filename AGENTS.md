@@ -4,8 +4,14 @@
 - **`CONTEXT.md` is the shared vocabulary** — getter, query, chunk, plan, fan-out,
   page, adapter, facade, leaf, transport, collection, profile, effective
   configuration, and the legacy names that are deliberately not renamed. Read it
-  before writing code, docstrings, or commit messages; when a term there
-  conflicts with a name in the code, the term wins.
+  before writing code, docstrings, or commit messages. Two kinds of term live
+  there and they bind differently (ADR 0013). A **core** term is ours and takes
+  one spelling everywhere *including identifiers*, so a name in the code that
+  conflicts with it is a defect. A **domain** term -- *monitoring location*,
+  *collection* -- is fixed for prose only: each adapter keeps its own service's
+  spelling in its parameters, so `nwis.get_record(service="dv")` and WQP's
+  `Station` are that service's language rather than drift. Each entry states
+  which kind it is.
 - Architectural decisions and their rationale: `docs/source/architecture/decisions/`
   (ADRs, referenced by number throughout the code and by `.importlinter`).
 - Contributor workflow, style, and the quality gates in detail: `CONTRIBUTING.md`.

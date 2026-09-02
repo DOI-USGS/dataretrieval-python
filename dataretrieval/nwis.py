@@ -125,7 +125,7 @@ def _deprecated(func: F) -> F:
 
 
 def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
-    """Parse a JSON NWIS response, raising a helpful error on HTML responses."""
+    """Parse a JSON NWIS response, raising an error that names an HTML body."""
     try:
         return _read_json(response.json())
     except (ValueError, JSONDecodeError) as e:
@@ -219,20 +219,24 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
 
     Notes
     -----
-    An empty frame with no ``peak_dt`` column is returned unchanged, so that
-    an empty peaks response reaches :func:`format_response`'s empty-frame path
-    rather than raising ``KeyError``.
+    An empty frame with no ``peak_dt`` column is returned unchanged, so an
+    empty peaks response reaches :func:`format_response`'s empty-frame path
+    instead of raising ``KeyError``.
+
+    NWIS zero-fills the unknown part of a historical peak's date --
+    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
+    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks
+    rather than a date NWIS does not have. The peak is kept regardless, and
+    ``peak_dt`` is left in the frame: the response carries no ``water_yr``, so
+    it is the only column holding a censored peak's year.
 
     """
     if df.empty and "peak_dt" not in df.columns:
-        # An empty response parses to a column-less frame; return it so
-        # format_response's empty-frame path handles it like every other
-        # service. A non-empty frame missing peak_dt is malformed, not empty,
-        # and still raises.
+        # A non-empty frame missing peak_dt is malformed, not empty, and must
+        # still raise.
         return df
 
-    df["datetime"] = pd.to_datetime(df.pop("peak_dt"), errors="coerce")
-    df.dropna(subset=["datetime"], inplace=True)
+    df["datetime"] = pd.to_datetime(df["peak_dt"], errors="coerce")
     return df
 
 

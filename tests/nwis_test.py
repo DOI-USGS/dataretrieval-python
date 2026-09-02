@@ -11,7 +11,6 @@ import pytest
 from dataretrieval import nwis
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.nwis import (
-    _NWIS_RDB_DTYPES,
     NWIS_Metadata,
     _read_rdb,
     format_response,
@@ -82,17 +81,63 @@ def test_iv_service_answer(httpx_mock):
     ], f"iv service returned incorrect index: {df.index.names}"
 
 
-def test_preformat_peaks_response():
-    # make a data frame with a "peak_dt" datetime column
-    # it will have some nan and none values
-    data = {"peak_dt": ["2000-03-22", np.nan, None], "peak_va": [1000, 2000, 3000]}
-    # turn data into dataframe
-    df = pd.DataFrame(data)
-    # run preformat function
+@pytest.mark.parametrize(
+    "peak_dt, expected",
+    [
+        ("1878-06-12", "1878-06-12"),  # fully known
+        ("1844-06-00", None),  # day unknown (peak_cd Bd)
+        ("1858-00-00", None),  # month unknown (peak_cd Bm)
+        ("", None),  # no date at all
+        (np.nan, None),
+    ],
+)
+def test_preformat_peaks_response_keeps_every_peak(peak_dt, expected):
+    """A peak is never dropped for want of a parseable date.
+
+    NWIS zero-fills the unknown part of a historical peak's date --
+    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
+    not either (the ``Bd`` and ``Bm`` ``peak_cd`` qualifiers). Those are real
+    peaks, often a site's largest, and dropping them loses the discharge value
+    with the date. A date NWIS only partly knows stays ``NaT`` rather than
+    being completed into one it does not have.
+    """
+    df = pd.DataFrame({"peak_dt": [peak_dt], "peak_va": [563000]})
+
     df = preformat_peaks_response(df)
-    # assertions
-    assert "datetime" in df.columns
-    assert df["datetime"].isna().sum() == 0
+
+    assert len(df) == 1, f"{peak_dt!r} was dropped"
+    assert df["peak_va"].iloc[0] == 563000
+    if expected is None:
+        assert pd.isna(df["datetime"].iloc[0])
+    else:
+        assert df["datetime"].iloc[0] == pd.Timestamp(expected)
+
+
+def test_preformat_peaks_response_preserves_peak_dt():
+    """``peak_dt`` must survive the reformat.
+
+    The peaks response carries no ``water_yr``, so ``peak_dt`` is the only
+    column holding the year of a censored peak -- and the only way a caller can
+    tell an unknown day from a known one, since ``peak_cd`` does not always
+    carry the qualifier.
+    """
+    df = pd.DataFrame({"peak_dt": ["1858-00-00"], "peak_va": [563000]})
+
+    df = preformat_peaks_response(df)
+
+    assert df["peak_dt"].iloc[0] == "1858-00-00"
+
+
+def test_preformat_peaks_response_malformed_frame_still_raises():
+    """Only an *empty* peaks frame is a legitimate empty result. A non-empty
+    frame with no ``peak_dt`` column is a malformed response -- a truncated or
+    altered RDB header -- and must stay loud rather than be returned silently
+    without its datetime index.
+    """
+    df = pd.DataFrame({"peak_va": [1000]})
+
+    with pytest.raises(KeyError, match="peak_dt"):
+        format_response(df, service="peaks")
 
 
 class TestDeprecationWarnings:
@@ -290,10 +335,16 @@ class TestReadRdb:
     """Tests for the NWIS-specific parse-then-format path.
 
     The format-agnostic parser is exercised in tests/rdb_test.py; this
-    class pins the NWIS-specific contract — that an empty parser result
-    flows through format_response without crashing (issue #171), on the
-    plain arm via _read_rdb and on the peaks arm via format_response.
+    class pins the wrapper-specific contract — that an empty parser
+    result flows through format_response without crashing (issue #171),
+    on the plain arm and on the peaks arm alike.
     """
+
+    NO_RESULTS_RDB = (
+        "# //Output-Format: RDB\n"
+        "# //Response-Status: OK\n"
+        "# //Response-Message: No sites found matching all criteria\n"
+    )
 
     def test_no_sites_flows_through_format_response(self):
         """A "No sites found" response is a legitimate empty result, not an
@@ -301,12 +352,7 @@ class TestReadRdb:
         exception. Regression for issue #171 (previously raised IndexError),
         which now also covers the empty-frame path through ``format_response``.
         """
-        no_sites_rdb = (
-            "# //Output-Format: RDB\n"
-            "# //Response-Status: OK\n"
-            "# //Response-Message: No sites found matching all criteria\n"
-        )
-        df = _read_rdb(no_sites_rdb)
+        df = _read_rdb(self.NO_RESULTS_RDB)
         assert isinstance(df, pd.DataFrame)
         assert df.empty
 
@@ -319,19 +365,11 @@ class TestReadRdb:
         other service returned an empty frame (issue #171's contract).
 
         Both functions are public API, so any caller parsing a peaks RDB
-        reaches this. It is not dead code guarded by ``NoSitesError``: that
-        check in ``_querying`` fires only on a body starting "No sites/data",
-        which is what the live service happens to send today -- a comment-only
-        RDB reaches the guarded line instead.
+        reaches this -- it is not unreachable behind ``NoSitesError``.
         """
-        no_peaks_rdb = (
-            "# //Output-Format: RDB\n"
-            "# //Response-Status: OK\n"
-            "# //Response-Message: No sites found matching all criteria\n"
-        )
-        # Mirror get_discharge_peaks: raw read_rdb with the NWIS dtype hints,
-        # then the peaks-specific format_response.
-        df = read_rdb(no_peaks_rdb, dtypes=_NWIS_RDB_DTYPES)
+        # Mirror get_discharge_peaks: raw read_rdb, then the peaks-specific
+        # format_response.
+        df = read_rdb(self.NO_RESULTS_RDB)
         df = format_response(df, service="peaks")
         assert isinstance(df, pd.DataFrame)
         assert df.empty
@@ -426,7 +464,8 @@ def test_a_non_html_parse_failure_is_re_raised_unchanged():
 def test_deprecating_a_getter_with_no_named_replacement_is_refused():
     """``@_deprecated`` promises the caller a replacement, so the decorator
     refuses to be applied to a function whose replacement nobody recorded --
-    a deprecation warning naming nothing is worse than none."""
+    a deprecation warning naming nothing leaves the caller with nothing to
+    migrate to."""
     with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
 
         @nwis._deprecated
@@ -449,7 +488,7 @@ def test_utc_localization_of_a_single_datetime_index():
 def test_metadata_site_info_is_none_when_no_site_filter_was_used():
     """``site_info`` fetches the sites a query named. A query filtered by
     something else (a parameter code alone) has no sites to describe, and
-    guessing one would describe the wrong thing."""
+    guessing one would describe a site the query never named."""
     md = NWIS_Metadata(mock.MagicMock(), parameterCd="00060")
     assert md.site_info is None
 

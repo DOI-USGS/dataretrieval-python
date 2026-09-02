@@ -242,7 +242,7 @@ def test_get_discharge_peaks(httpx_mock):
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
-    assert df.size == 240
+    assert df.shape == (20, 13)
     assert_metadata(httpx_mock, request_url, md, site, None, format)
 
 
@@ -267,7 +267,7 @@ def test_get_discharge_peaks_sites_value_types(httpx_mock, site_input_type_list)
     if not isinstance(df, DataFrame):
         raise TypeError(f"{type(df)} is not DataFrame base class type")
 
-    assert df.size == 240
+    assert df.shape == (20, 13)
 
 
 def test_get_ratings_validation():

@@ -300,8 +300,8 @@ def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
 
 def test_walk_pages_raises_on_5xx_mid_pagination():
     """A 5xx mid-pagination must raise — partial data is no longer returned
-    because the API has no resume cursor, so silently truncating is the
-    wrong default."""
+    because the API has no resume cursor, so silently truncating would return
+    an incomplete frame the caller cannot tell from a complete one."""
     page2_503 = mock.MagicMock()
     page2_503.status_code = 503
     page2_503.json.return_value = {
@@ -504,7 +504,7 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     same ``_paginate`` strategy helper, so error-routing behaviour is
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_data`` mid-pagination case proves the stats-specific
-    follow-up callback is wired into ``_paginate`` correctly.
+    follow-up callback is wired into ``_paginate``.
 
     Statistics drives that page walk as a one-item ``FanOut``, the same
     executor every other getter uses, so a transient mid-walk failure is
@@ -1398,7 +1398,8 @@ def test_real_queryables_still_pass_through(name):
 class TestWireIdSwitch:
     """The API keys every collection on ``id``; callers spell it after the
     collection (``monitoring_location_id``). The switch happens here, and
-    dropping the wrong key silently sends an unfiltered query."""
+    dropping an alias without carrying its value to ``id`` silently sends an
+    unfiltered query."""
 
     def test_the_collection_scoped_spelling_becomes_id(self):
         from dataretrieval.ogc.requests import _switch_arg_id

@@ -1,11 +1,8 @@
 """The metadata object every getter returns alongside its DataFrame.
 
-A dependency-free leaf on purpose. This class is the second half of the
-``(DataFrame, metadata)`` return contract, so nearly every service module needs
-it -- and while it lived in :mod:`dataretrieval.utils` beside the legacy query
-machinery, needing it meant inheriting that module's whole HTTP stack
-(transport, credentials, error policy) transitively. Here it costs its
-consumers nothing but ``httpx``.
+A dependency-free leaf on purpose (ADR 0003). This class is the second half of
+the ``(DataFrame, metadata)`` return contract (ADR 0007), so nearly every
+service module needs it; importing it pulls in nothing but ``httpx``.
 
 ``dataretrieval.utils.BaseMetadata`` remains the public import.
 """

@@ -46,8 +46,7 @@ async def _client_for(
     """Borrow a client: the caller's, else the running drive's, else a new one.
 
     Preferring the executor's published client over a fresh one keeps every
-    page of every request on one connection pool. Both callers wanted that and
-    each spelled it itself before it moved here.
+    page of every request on one connection pool.
     """
     borrowed = client if client is not None else active_client()
     if borrowed is not None:
@@ -178,8 +177,8 @@ def run_paginated(
 
     The adapter supplies its strategies (``parse_response``, ``follow_up``,
     ``raise_for_status``, and optionally ``finalize``); this driver owns the
-    composition three adapters used to copy -- each request paginated on the
-    client the executor publishes unless ``client`` is injected, the retry
+    composition -- each request paginated on the client the executor publishes
+    unless ``client`` is injected, the retry
     policy, bounded concurrency, and the canonical URL the aggregate reports
     (the first request's, unless overridden).
 

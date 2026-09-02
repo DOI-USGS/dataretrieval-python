@@ -20,6 +20,15 @@ repos:
       - id: check-yaml
       - id: debug-statements
 
+  - repo: local
+    hooks:
+      - id: doubled-word
+        name: doubled word
+        language: pygrep
+        entry: \b([A-Za-z]+)[ \t]+\1\b
+        types: [text]
+        exclude: ^tests/data/
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.1
     hooks:
