@@ -135,9 +135,9 @@ def get_ratings(
         One feature of the batch failed *deterministically* -- a stale
         catalog entry (404 on its data asset), a feature with no data asset,
         a malformed RDB file. That feature is skipped and its id is absent
-        from the returned dict; the rest of the batch is unaffected. A site
-        with no published rating never warns -- it matches no feature in the
-        search, so there is nothing to skip. See
+        from the returned dict; the rest of the batch is unaffected. A
+        monitoring location with no published rating never warns -- it
+        matches no feature in the search, so there is nothing to skip. See
         :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy
         (transients never skip) and the ``filterwarnings`` recipe that makes
         a skip fatal.
