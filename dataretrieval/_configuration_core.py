@@ -332,7 +332,7 @@ class BaseConfiguration:
 
         ``[<adapter>.<profile>]``. Only the keys that table names are carried,
         so the profile still inherits the adapter's default profile and the
-        package-wide keys per setting from the sources below.
+        package-wide keys per setting from the rungs below.
 
         Selecting a profile the file does not define raises: a name a caller
         just typed is a typo worth reporting, not a silent fall-through to

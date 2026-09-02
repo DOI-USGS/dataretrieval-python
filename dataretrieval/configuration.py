@@ -20,8 +20,7 @@ Sources, highest precedence first:
 
 Each of those four sources is one branch of :func:`_resolve`; ADR 0011 lists the
 same order in finer grain, as seven rungs -- three of these sources hold two
-apiece.
-An adapter's own default is not one of the four: a read site such as
+apiece. An adapter's own default is not one of the four: a read site such as
 :func:`concurrency` passes it in as the ``default`` argument.
 
 Precedence applies **per setting**, not per source: an environment that sets only
