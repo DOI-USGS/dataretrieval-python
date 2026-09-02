@@ -332,7 +332,7 @@ class TestMetaData:
 
 
 class TestReadRdb:
-    """Tests for the NWIS-specific _read_rdb wrapper.
+    """Tests for the NWIS-specific parse-then-format path.
 
     The format-agnostic parser is exercised in tests/rdb_test.py; this
     class pins the wrapper-specific contract — that an empty parser
@@ -373,6 +373,17 @@ class TestReadRdb:
         df = format_response(df, service="peaks")
         assert isinstance(df, pd.DataFrame)
         assert df.empty
+
+    def test_malformed_peaks_frame_still_raises(self):
+        """Only an *empty* peaks frame is a legitimate empty result. A
+        non-empty frame with no ``peak_dt`` column is a malformed response --
+        a truncated or altered RDB header -- and must stay loud rather than be
+        returned silently without its datetime index.
+        """
+        df = pd.DataFrame({"peak_va": [1000]})
+
+        with pytest.raises(KeyError, match="peak_dt"):
+            format_response(df, service="peaks")
 
 
 class TestGetRecordDispatch:
