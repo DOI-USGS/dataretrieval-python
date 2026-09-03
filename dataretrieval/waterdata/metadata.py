@@ -215,7 +215,7 @@ def get_monitoring_locations(
     construction_date : string or iterable of strings, optional
         Date the well was completed.
     aquifer_code : string or iterable of strings, optional
-        Local aquifers in the USGS water resources data base are identified by a
+        Local aquifers in the USGS database of water resources are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
         formation, followed by a 4 or 5 character abbreviation for the geologic
         unit or aquifer name). Additional information is available
