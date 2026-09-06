@@ -96,7 +96,7 @@ Before you submit a pull request, check that it meets these guidelines:
 test run neither depends on USGS uptime nor spends anyone's rate limit.
 
 The exception is a small set of tests marked `live`, which query the real
-services to notice when an upstream API changes shape -- something a mock cannot
+services to notice when an upstream API changes -- something a mock cannot
 tell us, because the mock is what would need updating. They are deselected by
 default and run on a nightly schedule
 ([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
@@ -106,7 +106,7 @@ Run them locally with:
 pytest tests/ -m live
 ```
 
-New tests should be offline. Reach for `live` only when the assertion is a claim
+New tests should be offline. Use `live` only when the assertion is a claim
 about the upstream service rather than about this package.
 
 ### Coding Standards and Style
@@ -120,9 +120,9 @@ it, and it is the only module that reads the environment for a setting),
 been re-implemented at least once by someone who did not know it was there, and
 the copies drift: the same question gets a different cycle guard, a different
 error message, a different edge case. None of the automated checks catch it,
-because two eight-line helpers are below the clone detector's floor and neither
-one couples nor complicates anything. A grep for the mechanism you are about to
-write is the only thing that does.
+because two eight-line helpers are below the clone detector's minimum size and
+neither one couples nor complicates anything. A grep for the mechanism you are
+about to write is the only thing that does.
 
 The continuous integration and pre-commit configurations enforce formatting,
 linting, and strict type checking. Run the relevant checks before opening a PR:
@@ -141,17 +141,17 @@ lint-imports
 The last three come from `pip install -e '.[metrics]'`, and each has a pre-commit
 hook running the identical check, so a clean pre-commit run means CI agrees.
 
-`coverage report` is a ratchet too. The threshold lives in
-`[tool.coverage.report]` in `pyproject.toml` and sits at the measured value, so
-it fails on regression rather than demanding new tests of a change that added
-none. Raise it when coverage rises; lower it only deliberately, and say why in
-the commit.
+`coverage report` is a ratchet too. The threshold is in
+`[tool.coverage.report]` in `pyproject.toml` and is set to the measured value,
+so it fails on regression rather than demanding new tests of a change that
+added none. Raise it when coverage rises; lower it only deliberately, and say
+why in the commit.
 
 Coverage is measured with branches on, because most of what this package gets
 wrong is a branch rather than a line -- a dispatch arm routing to the wrong
-getter, an error path that never fires, a fallback that quietly becomes the
-norm. Chase the *uncovered branch*, not the percentage: a test written only to
-turn a line green adds maintenance and catches nothing. If a path cannot be
+getter, an error path that never executes, a fallback that quietly becomes the
+norm. Cover the *uncovered branch*, not the percentage: a test written only to
+mark a line as covered adds maintenance and catches nothing. If a path cannot be
 reached without contorting the code, exclude it in
 `[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
 it is. Either costs less than a test that adds maintenance and catches nothing.
@@ -163,13 +163,13 @@ Windows run genuinely measures a smaller suite.
 For the same reason, the threshold assumes the whole suite: on Windows, or
 without the `nldi` extra installed, some tests skip and the local number comes
 in under the gate through no fault of your change. Run
-`coverage report --fail-under=0` in that situation and let CI grade the
+`coverage report --fail-under=0` in that situation and let CI evaluate the
 ratchet.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
 tightest the package passes today, so they fail only when a change pushes a
 score above today's. They disagree because they count different things. `xenon` counts
-branches (cyclomatic complexity), so a wide flat dispatch scores high;
+branches (cyclomatic complexity), so a large flat dispatch scores high;
 `complexipy` counts how hard the control flow is to follow (cognitive
 complexity), so it scores that dispatch lower and nesting higher. Both name the
 offending block, so the fix is local -- usually extracting a branch rather than
@@ -182,8 +182,8 @@ quarantine, and collection-family independence.
 
 **That file is the only place dependency direction is enforced.** These rules
 were once asserted a second time in `tests/architecture_test.py` by hand-parsing
-the AST; that duplication is gone, and re-adding it would mean one rule with two
-homes that drift apart. What the tests still own is everything an import graph
+the AST; that duplication is gone, and re-adding it would mean one rule in two
+places that drift apart. What the tests still own is everything an import graph
 cannot see -- which *symbols* cross a seam, declared `__all__` surfaces, the AST
 shape of a facade, boundaries that must be asserted positively (`lint-imports`
 can forbid an edge, never require one), and package-wide cycle detection (see
@@ -197,7 +197,7 @@ history:
 
 ```bash
 wily build dataretrieval --max-revisions 50   # index recent commits (slow, once)
-wily report dataretrieval                     # how the package moved over time
+wily report dataretrieval                     # how metrics changed over time
 wily diff dataretrieval --revision main       # what your branch changed
 wily rank dataretrieval maintainability.mi    # worst-maintained files today
 ```
@@ -205,7 +205,7 @@ wily rank dataretrieval maintainability.mi    # worst-maintained files today
 `wily` is advisory and is never a merge gate -- rising complexity in a file that
 gained a complex feature is information, not a failure.
 
-#### The periodic deep sweep
+#### The periodic whole-package analysis
 
 Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 [`pyscn`](https://github.com/ludo-technologies/pyscn) on a weekly schedule
@@ -215,7 +215,7 @@ measures move over months rather than commits.
 
 You do not need it to contribute. It answers "what should we clean up next?" --
 including for an agent working on this repo, which gets a whole-package
-structural picture from one command:
+structural overview from one command:
 
 ```bash
 pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64, Windows x86-64
@@ -223,10 +223,10 @@ pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64, Windows x86-64
 pyscn analyze dataretrieval  # HTML report, or --json for the numbers
 ```
 
-Read its findings as leads, not verdicts. Its clone detector flags this
+Read its findings as suggestions, not conclusions. Its clone detector flags this
 package's per-collection getters -- thin, heavily documented wrappers whose
 bodies are necessarily similar -- and collapsing them into one parameterized
-function would trade the documented public surface for a metric. Its
+function would sacrifice the documented public surface for a metric. Its
 dependency-injection heuristics expect a class-oriented design this package
 deliberately does not have.
 
@@ -328,7 +328,7 @@ link checking.
 
 The package version is derived automatically from Git tags by
 `setuptools_scm` (see `[tool.setuptools_scm]` in `pyproject.toml`), so there is
-no version string to edit by hand. To cut a release, tag the commit (for
+no version string to edit by hand. To make a release, tag the commit (for
 example, `git tag v1.2.3`) and push the tag; both the installed package version
 and the documentation's `version` and `release` values follow from it.
 
@@ -348,7 +348,7 @@ locally, and describe what they add or fix.
 
 ### Adding Examples to the Documentation
 
-The documentation includes examples as Jupyter notebooks, all of which live in
+The documentation includes examples as Jupyter notebooks, all of which are in
 the `demos/` subdirectory. To add one that the documentation runs and renders,
 do the following in a separate branch of the repository:
 
