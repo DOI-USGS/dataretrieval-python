@@ -236,7 +236,11 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         # still raise.
         return df
 
-    df["datetime"] = pd.to_datetime(df["peak_dt"], errors="coerce")
+    # RDB types ``peak_dt`` as ``10d`` and carries any time in ``peak_tm``, so
+    # the format is fixed. Naming it also keeps pandas from warning that it
+    # could not infer one, which zero-filled dates otherwise provoke on every
+    # long historical record.
+    df["datetime"] = pd.to_datetime(df["peak_dt"], format="%Y-%m-%d", errors="coerce")
     return df
 
 
