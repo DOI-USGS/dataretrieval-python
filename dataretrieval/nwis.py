@@ -10,7 +10,6 @@ import functools
 import threading
 import warnings
 from collections.abc import Callable
-from json import JSONDecodeError
 from typing import Any, NoReturn, TypeVar, cast
 
 import httpx
@@ -128,7 +127,7 @@ def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
     """Parse a JSON NWIS response, raising an error that names an HTML body."""
     try:
         return _read_json(response.json())
-    except (ValueError, JSONDecodeError) as e:
+    except ValueError as e:
         text_lower = response.text.lower()
         content_type = response.headers.get("Content-Type", "").lower()
         if (

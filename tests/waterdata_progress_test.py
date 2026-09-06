@@ -473,13 +473,6 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
     )
     resp2 = _resp([{"id": "2", "properties": {"v": "b"}}], rate_remaining="4998")
 
-    async def parse_response(resp):
-        body = resp.json()
-        nxt = next(
-            (link["href"] for link in body["links"] if link["rel"] == "next"), None
-        )
-        return mock.MagicMock(empty=False, __len__=lambda self: 1), nxt
-
     # parse_response is sync (like the page parsers).
     def parse_sync(resp):
         body = resp.json()
