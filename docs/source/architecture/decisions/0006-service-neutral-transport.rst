@@ -46,7 +46,7 @@ Three concerns are deliberately *outside* it, as top-level leaves, because they
 are not HTTP execution policy and every adapter needs them whether or not it goes
 through transport:
 
-- ``dataretrieval.credentials`` -- which host honors the key, whether a
+- ``dataretrieval.credentials`` -- which host accepts the key, whether a
   destination qualifies, and how the key is withheld. One definition, so the code
   that attaches a credential and the code that removes it cannot disagree.
 - ``dataretrieval.progress`` -- terminal rendering. Transport reports *into* it.
@@ -70,8 +70,8 @@ at import time without affecting the policy that reads it, so
 Automatic retry is enabled only on active, idempotent request paths, and only
 for failures that may not recur on a later attempt -- rate limiting, server
 errors, and transport failures that are not deterministic. Which server errors
-qualify is per adapter: a fanned-out call re-sends any 5xx, to wait out a
-transient upstream failure, while a single-shot adapter re-sends only the
+qualify is per adapter: a fanned-out call re-sends any 5xx, since a transient
+upstream failure may have ended, while a single-shot adapter re-sends only the
 gateway statuses, because its service responds to a *rejected query* with a
 500, and re-sending that would spend a caller's quota on a request that
 cannot succeed. Both sets are narrower than ``DataRetrievalError.retryable``,
@@ -90,20 +90,20 @@ the budget, and an attempt already in flight is never interrupted.
 
 **Time spent waiting is not time without progress.** The budget bounds time
 the *service* left the caller with nothing, so time the package chose to spend
-is credited back by the measured amount: a wait the server named in
+is excluded by the measured amount: a wait the server named in
 ``Retry-After``, and time a chunk spent waiting for the concurrency semaphore.
 The first retry is exempt outright. Without these exemptions a policy that
-honors a server's hint would spend its own budget obeying it, and a call would
-lose retries for being throttled by settings the caller chose. A credit never
-sets the reference time later than now: a timestamp ahead of now would make
-the elapsed no-progress time negative and silently disable the bound. Because
-half of that accounting is the retry driver's, the concurrency semaphore is
-acquired *per attempt* inside the retry driver rather than held by the caller
-across one.
+follows a server's ``Retry-After`` would spend its own budget doing so, and a
+call would lose retries for being throttled by settings the caller chose. An
+exclusion never sets the reference time later than now: a timestamp ahead of
+now would make the elapsed no-progress time negative and silently disable the
+bound. Because half of that exclusion is the retry driver's, the concurrency
+semaphore is acquired *per attempt* inside the retry driver rather than held
+by the caller across one.
 
 **A server-supplied next-page link is untrusted response data.** One shared
 policy parses it, resolves it against the request, refuses a host the caller
-did not ask for, and strips embedded credentials (ADR 0009) before it becomes a
+did not request, and strips embedded credentials (ADR 0009) before it becomes a
 request; a page walk injects only which hosts are acceptable. Three walks
 follow such links -- OGC ``links``, the ratings STAC search, and Water Use's
 ``Link`` header -- and a link is the same attacker-influenced input in all
@@ -113,7 +113,7 @@ variation.
 **Refusing credential-shaped keywords belongs to the credentials leaf.** ADR
 0009 owns the rule that a general ``**kwargs`` or ``**queryables`` passthrough
 refuses such names; what belongs here is where the predicate is defined. It is
-the fourth question that leaf answers, alongside which host honors the key,
+the fourth question that leaf answers, alongside which host accepts the key,
 whether a destination qualifies, and how the key is withheld -- one definition,
 so ten getters cannot drift into ten versions of the same check.
 
@@ -128,10 +128,10 @@ Consequences
 - Retry can increase latency and quota consumption, so attempt counts, waits,
   and total no-progress time remain bounded, and cancellation signals are never
   wrapped.
-- Guidance the progress reporter prints is gated on the host it applies to, so a
+- Guidance the progress reporter prints depends on the host it applies to, so a
   service that cannot use an API key is not told to obtain one.
 - The transport package is internal infrastructure, not a new public API
-  promise.
+  contract.
 - Keeping presentation and frame assembly out means transport is roughly 570
   lines across five modules, each recognizably HTTP execution policy. Retry is
   the one complex module, because two independent bounds are what make retry
@@ -148,7 +148,7 @@ Component and adapter tests cover cursor termination, row caps, response
 aggregation, retry exhaustion, ``Retry-After`` limits, the no-progress budget,
 which failures are re-sent, cancellation, no-partial fan-out behavior, and
 credential host scoping. The exemptions above are covered by the liveness and
-retry tests over credited waits and the first-attempt case. Next-page link
+retry tests over excluded waits and the first-attempt case. Next-page link
 validation is covered by the shared link-policy tests over foreign hosts and
 embedded userinfo.
 

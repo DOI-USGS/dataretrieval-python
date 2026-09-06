@@ -12,7 +12,7 @@ section records the clause added.
 Context
 -------
 
-This package documents itself heavily and deliberately. Its public getters are
+This package is documented heavily and deliberately. Its public getters are
 thin wrappers whose numpydoc parameter tables *are* the deliverable: 55% of all
 docstring lines in ``dataretrieval/`` are in the service adapters, at a ratio of
 2.5 prose lines per line of code. CONTRIBUTING already requires those tables.

@@ -67,7 +67,7 @@ planner, NGWMN runs two requests at a time, and WQP retries twice. Everything a
 configuration does *not* name still comes from below it, per setting: Water
 Data and NGWMN both retry six times and both send the ``api_key``, written once
 at the top of the file, because a configuration contributes what it names and
-inherits the rest. Only WQP named ``retries``, so only WQP departs from the
+inherits the rest. Only WQP named ``retries``, so only WQP differs from the
 file's six.
 
 Outside the block nothing has changed, and putting those two profiles in the
@@ -233,8 +233,8 @@ useful for a container or a job scheduler that mounts secrets elsewhere.
 Per-adapter settings
 ~~~~~~~~~~~~~~~~~~~~
 
-To tune one service and leave the rest alone, name the adapter — the same name
-you import:
+To tune one service and leave the rest unchanged, name the adapter — the same
+name you import:
 
 .. code-block:: toml
 
@@ -391,7 +391,7 @@ keeps the rest:
            ...
 
 Values are validated when the configuration is *constructed*, so a typo raises
-on the line you wrote it on rather than deep inside a later request.
+on the line you wrote it on rather than inside a later request.
 
 Omitted settings inherit from an outer block or a lower-precedence source.
 Passing ``None`` explicitly suppresses those sources and restores built-in
@@ -541,7 +541,7 @@ for the same reason — a variable that was quietly ignored would leave you
 believing you had redirected something.
 
 **The API key is not sent to the new host.** It is scoped to the one host that
-honors it (:ref:`below <configuration-secret-store>`), so a redirected call
+accepts it (:ref:`below <configuration-secret-store>`), so a redirected call
 goes out without it. That is deliberate: the host you redirected to is not the
 host you gave a credential to. If the mirror needs its own credential, it needs
 its own mechanism.
@@ -584,7 +584,7 @@ organization's CA bundle:
    # or, for a directory of hashed certificates:
    export SSL_CERT_DIR=/etc/ssl/certs
 
-``httpx`` honors these natively, so they apply to **every** getter in the
+``httpx`` reads these natively, so they apply to **every** getter in the
 package — including the OGC collection getters (``get_daily``,
 ``get_continuous``, and the rest), which take no SSL parameter of their own.
 

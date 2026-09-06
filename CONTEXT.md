@@ -96,7 +96,7 @@ covering sites, water levels, lithology, well construction, and providers.
 **NWDC** — The National Water Availability Assessment Data Companion. Serves
 ten modeled national-scale datasets, of which the water-use models are five;
 the rest are hydrologic, atmospheric-forcing, and assessment outputs. The
-package reaches it through the `nwdc` adapter, named for the service like every
+package accesses it through the `nwdc` adapter, named for the service like every
 other adapter. Legacy: that module was `wateruse`, which named one subset of
 what the service offers.
 
@@ -106,7 +106,7 @@ what the service offers.
 from an origin to connected features, flowlines, or basins.
 
 **NWIS** — The legacy USGS waterservices interface. Deprecated: it is retained
-for compatibility and is not where new work goes.
+for compatibility and should receive no new work.
 
 **StreamStats** — Basin characteristics and delineation for a point on a stream.
 
@@ -183,12 +183,12 @@ scopes within them. ADR 0010's word for a scope level is *tier* — the top-leve
 tier that remains, the host or gateway tier it defers.
 
 **Package-wide setting** — A setting that applies to every adapter: the retry
-count, the progress line, the stall timeout. Set once, honored everywhere.
+count, the progress line, the stall timeout. Set once, applied everywhere.
 
 **Adapter-scoped setting** — A setting named under one adapter, applying to
 that adapter and no other. It overrides the package-wide value for that adapter
-alone, leaving that value standing for every other adapter. An adapter rejects a setting
-it has no use for, rather than accepting and ignoring it.
+alone, leaving that value in effect for every other adapter. An adapter
+rejects a setting it has no use for, rather than accepting and ignoring it.
 
 The scope is the *adapter*, not the service and not the host, because the
 adapter is what owns the conventions being tuned. The API key shows where the
@@ -222,11 +222,11 @@ its identifiers as well as its prose. The code uses both names: `_resolve`
 returns `(raw, label, source)`, and the parsers take the `label` as the subject
 of any error message they raise.
 
-**Precedence ladder** — The one linear order resolution walks, highest first:
-sources in their order and, within each source, scopes. Each position is a
-**rung**; ADR 0011 states the ladder in seven. A rung is finer than a source —
-one source can span several rungs — so prose that means a whole category says
-*source*, reserving *rung* for when the position itself matters.
+**Precedence ladder** — The one linear order resolution follows, highest
+first: sources in their order and, within each source, scopes. Each position
+is a **rung**; ADR 0011 states the ladder in seven. A rung is finer than a
+source — one source can span several rungs — so prose that means a whole
+category says *source*, reserving *rung* for when the position itself matters.
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
@@ -269,8 +269,8 @@ vocabulary. NWDC is not one: its query fans out per location even though it
 never chunks by bytes.
 
 **Fitness function** — An executable check that an architectural rule still
-holds, living in `tests/architecture_test.py`. ADR 0003 divides the work between
-these and `.importlinter`.
+holds, defined in `tests/architecture_test.py`. ADR 0003 divides the work
+between these and `.importlinter`.
 
 **Facade** — A module that re-exports a subsystem's public surface and contains
 no logic of its own, so callers depend on a stable name rather than on internal
@@ -288,7 +288,7 @@ and is not public API.
 ## Known legacy names
 
 Core-term spellings recorded so they are not mistaken for drift, and not
-re-litigated: frozen misnamings, permanent aliases, and names that agree with
+reopened: frozen misnamings, permanent aliases, and names that agree with
 this glossary by more than coincidence. A domain term at an adapter's surface
 is not a legacy name and is not listed here; it belongs with that term's own
 entry (ADR 0013).

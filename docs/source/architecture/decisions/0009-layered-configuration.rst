@@ -44,8 +44,8 @@ could report the effective configuration, and what those parsers accepted was
 free to drift apart.
 
 That mechanism cannot express a per-call credential. An application holding
-keys in a secret store, a notebook pulling for two accounts, or a server
-handling concurrent users must assign to ``os.environ`` -- which is
+keys in a secret store, a notebook retrieving data for two accounts, or a
+server handling concurrent users must assign to ``os.environ`` -- which is
 process-global, so it races across threads and tasks (issue #352).
 
 An ``api_key=`` parameter on the public getters is where a per-call value would
@@ -93,7 +93,7 @@ Supporting decisions:
   programmatic path, and a fitness function asserts no getter accepts
   ``api_key`` / ``session`` / ``token``. The generic ``**queryables`` path also
   refuses credential-shaped names before request construction so they cannot
-  enter a URL. That refusal covers names that hold a secret; ``session`` is
+  appear in a URL. That refusal covers names that hold a secret; ``session`` is
   deliberately not among them (see Notes).
 - **The module owns each setting's parser.** ``unbounded``, bounds, and
   rejection messages are defined in one place. ``tomllib`` returns typed
@@ -141,11 +141,11 @@ Supporting decisions:
 - **Names distinguish execution capacity from planning granularity.**
   ``concurrency`` names the maximum chunks in flight and maps to the existing
   ``API_USGS_CONCURRENT`` variable. ``parallel_chunks`` requests optional
-  extra chunks from the planner; it does not promise that many execute
+  extra chunks from the planner; it does not guarantee that many execute
   simultaneously.
   The name is retained because the context manager is already public.
   ``parallelism`` and ``chunk_parallelism`` were rejected because they would
-  conflate this planning hint with ``concurrency``.
+  conflate this planning setting with ``concurrency``.
 - **Configuration errors are in the error taxonomy.** ``ConfigurationError`` is a
   ``DataRetrievalError`` *and* a ``ValueError``. Configuration resolves lazily
   on the request path, so an invalid file raises from inside whichever getter
@@ -160,13 +160,13 @@ Supporting decisions:
 - **``dataretrieval.configuration`` is a lightweight leaf.** It uses only the
   standard library, the ``tomli`` backport on Python 3.10, and
   ``dataretrieval.exceptions`` -- itself a dependency-free leaf, so this adds no
-  weight and cannot create an import cycle. It is read by ``utils`` (headers),
-  ``ogc.chunking``, ``ogc.retry``, and ``ogc.progress``, so under ADR 0003 it
-  must import none of them. The public callable is named ``configure`` rather
-  than ``config`` so it does not shadow the module. It is a scoped action, not a
-  ``Configuration`` dataclass: a value object would imply snapshot, equality,
-  serialization, and representation contracts while risking disclosure of the
-  API key through generated helpers.
+  dependencies and cannot create an import cycle. It is read by ``utils``
+  (headers), ``ogc.chunking``, ``ogc.retry``, and ``ogc.progress``, so under
+  ADR 0003 it must import none of them. The public callable is named
+  ``configure`` rather than ``config`` so it does not shadow the module. It is
+  a scoped action, not a ``Configuration`` dataclass: a value object would imply
+  snapshot, equality, serialization, and representation contracts while risking
+  disclosure of the API key through generated helpers.
 
 - **One flat set of setting names, shared by every service.** ``concurrency``
   means the same thing to every adapter, so the chain resolves one name rather
@@ -183,7 +183,7 @@ Supporting decisions:
 - **Per-service overrides are deferred, not refused.** One ``configure()``
   block cannot currently set one value for Water Use and another for Water Data.
   Every known service difference is a default, which the caller already
-  supplies, so nothing needs it yet. If something does, the shape is a namespace
+  supplies, so nothing needs it yet. If something does, the form is a namespace
   inside this chain -- a ``[wateruse]`` table beside the top-level keys, read as
   ``configuration.concurrency(default, service=...)``. It costs a second
   dimension in resolution, which ``show_configuration()`` must then render as a
@@ -192,12 +192,12 @@ Supporting decisions:
 
 - **A configuration object would have no way to reach the call.** The public
   surface is free functions -- ``waterdata.get_daily(...)``, not a client with
-  methods. An instance would therefore arrive either as a parameter on every
+  methods. An instance would therefore be passed either as a parameter on every
   getter, which is the per-call passing the ``ContextVar`` exists to remove and
   which the ``**queryables`` catch-all makes unsafe, or through a module-level
   global, which restores the cross-thread and cross-task leakage this ADR
-  exists to end. A library entered through a constructed client can hold
-  settings on that client; one entered through free functions cannot, and the
+  exists to end. A library used through a constructed client can hold
+  settings on that client; one used through free functions cannot, and the
   scoped block follows from that.
 
 Consequences

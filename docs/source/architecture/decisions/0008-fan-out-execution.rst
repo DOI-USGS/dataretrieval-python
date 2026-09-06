@@ -32,7 +32,7 @@ siblings, and ADR 0006 grouped them together deliberately. That grouping was
 correct while a byte plan was the only thing anyone fanned out over. It stopped
 being correct once Water Use fanned out too: unable to import an OGC-internal
 executor, ``wateruse._fan_out`` re-implemented the semaphore, the
-``asyncio.gather``, and the cancellation-beats-HTTP-error failure precedence,
+``asyncio.gather``, and the cancellation-before-HTTP-error failure precedence,
 with a comment naming ``ChunkedCall._run`` as the original. One rule, two
 copies, kept in agreement by that comment.
 
@@ -133,7 +133,7 @@ Consequences
 
 - Water Use gains resume, progress reporting, and the shared concurrency
   setting, and removes roughly 75 lines of duplicated orchestration.
-- One implementation of failure precedence, so cancellation-beats-error and
+- One implementation of failure precedence, so cancellation-before-error and
   deterministic failure ordering cannot drift between services.
 - **Breaking:** a Water Use fan-out interrupted by a 5xx, 429, or recoverable
   connection failure now raises ``ServiceInterrupted`` / ``QuotaExhausted``
@@ -146,7 +146,8 @@ Consequences
   ``API_USGS_CONCURRENT`` and ``wateruse.DEFAULT_CONCURRENT_REQUESTS``.
 - Resume re-issues a failed location's entire page walk, so pages fetched before
   the failure are fetched again. This already applied to OGC -- a partial walk
-  never enters the completion map -- and is a cost, not a correctness problem.
+  is never recorded in the completion map -- and is a cost, not a correctness
+  problem.
 - Water Use frames have ``huc12_id``, not ``id``, so ``_combine_chunk_frames``
   concatenates them without deduplicating. Correct, because locations partition
   by construction, but the executor's deduplication does not apply there.

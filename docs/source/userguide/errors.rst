@@ -55,7 +55,7 @@ Retry transient failures with backoff
 
 ``.retryable`` and ``.retry_after`` make a backoff loop type-agnostic: one loop
 covers rate limits (429), server errors (5xx), and connection failures alike,
-and honors the server's ``Retry-After`` hint when present:
+and uses the server's ``Retry-After`` value when present:
 
 .. code-block:: python
 

@@ -292,12 +292,12 @@ architecturally is the behavior around them:
 
 ``API_USGS_RETRIES``
     Number of retries after the first attempt on supported active request paths;
-    defaults to four. Backoff is exponential with full jitter and honors bounded
-    ``Retry-After`` values. Only failures that may not recur on a later attempt
-    are re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and
-    not a transport failure that is settled before the request leaves
-    (unresolvable host, unsupported scheme). Deprecated NWIS compatibility paths
-    do not opt in.
+    defaults to four. Backoff is exponential with full jitter and waits for
+    bounded ``Retry-After`` values. Only failures that may not recur on a later
+    attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
+    itself, and not a transport failure that is settled before the request
+    leaves (unresolvable host, unsupported scheme). Deprecated NWIS
+    compatibility paths do not opt in.
 
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and
@@ -310,8 +310,8 @@ architecturally is the behavior around them:
     short, and an attempt already in flight is never interrupted. This bound
     never withholds the first retry, so one slow attempt cannot disable retry by
     itself; after that, the budget decides whether to continue. A dead
-    connection therefore costs about two read timeouts rather than five
-    attempts' worth.
+    connection therefore costs about two read timeouts rather than five full
+    attempts.
 
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
@@ -340,7 +340,7 @@ This view records categories and representative locations of debt.
 
 - ``ogc/engine.py`` retains a compatibility pagination wrapper alongside OGC
   orchestration. The sync-dispatch wrapper is gone: every retrieval path now
-  enters through ``transport.fanout.FanOut``.
+  goes through ``transport.fanout.FanOut``.
 - ``utils.py`` combines shaping with compatibility imports for metadata,
   ambient configuration, transport, and the query path.
 - ``waterdata/utils.py`` combines endpoint constants, argument normalization,

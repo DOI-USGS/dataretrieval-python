@@ -23,7 +23,7 @@ Decision
 Keep public service getters synchronous. Async-capable implementations may run
 inside a short-lived anyio blocking portal and use ``httpx.AsyncClient`` for
 pagination and bounded fan-out. Internal async functions are implementation
-details, not a second public API promise.
+details, not a second public API contract.
 
 Ambient per-call policy (the progress reporter) must propagate into the worker
 context. A resumable OGC call binds the state needed to rebuild its remaining

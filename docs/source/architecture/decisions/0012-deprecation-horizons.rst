@@ -32,7 +32,7 @@ recorded in ``REMOVALS``.
 
 A deprecation advisory names three things: what is being removed, what to use
 instead, and the date on or after which it may be removed. The mechanism
-tolerates an advisory with no date -- it then promises nothing specific rather
+tolerates an advisory with no date -- it then states no date rather
 than implying a schedule it does not have. A deprecation of a public name is
 expected to include one, and an advisory naming a replacement the caller cannot
 yet use is not finished.

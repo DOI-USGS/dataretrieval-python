@@ -109,16 +109,16 @@ raise states the problem and then the action that fixes it, in that order.
   failure the remedy is whether to retry, and `transport.pagination.
   paginated_failure_message()` is the model: cause, then `To recover: …`.
 - Don't invent a phrasing for a check that recurs. `dataretrieval/_validation.py`
-  owns the wording for the shared shapes — bad value in a closed vocabulary
+  owns the wording for the shared cases — bad value in a closed vocabulary
   (`require_one_of`), missing argument (`require_argument`), incomplete group
   (`require_together`), no filter at all (`require_any_of`), and conflicting
   arguments (`require_exactly_one`, `reject_together`). Use one before
   hand-writing a message. A service-specific pointer is not a reason to
   hand-write: every check takes a `remedy=` for the action it cannot derive.
   Every check raises `ValueError` -- one class for a bad argument value, so a
-  caller catches by shape rather than by which module rejected it.
+  caller catches by error class rather than by which module rejected it.
 - `require_argument` returns the narrowed value and `require_exactly_one` the
-  winning `(name, value)` pair, so use their results rather than re-testing for
+  selected `(name, value)` pair, so use their results rather than re-testing for
   `None` to satisfy mypy — a second, unreachable message beside the first is
   how the two drift apart.
 - **Paste the remedy back before trusting it.** Whatever a message names must be

@@ -96,7 +96,7 @@ Before you submit a pull request, check that it meets these guidelines:
 test run neither depends on USGS uptime nor spends anyone's rate limit.
 
 The exception is a small set of tests marked `live`, which query the real
-services to notice when an upstream API changes shape -- something a mock cannot
+services to notice when an upstream API changes -- something a mock cannot
 tell us, because the mock is what would need updating. They are deselected by
 default and run on a nightly schedule
 ([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
@@ -169,7 +169,7 @@ ratchet.
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
 tightest the package passes today, so they fail only when a change pushes a
 score above today's. They disagree because they count different things. `xenon` counts
-branches (cyclomatic complexity), so a wide flat dispatch scores high;
+branches (cyclomatic complexity), so a large flat dispatch scores high;
 `complexipy` counts how hard the control flow is to follow (cognitive
 complexity), so it scores that dispatch lower and nesting higher. Both name the
 offending block, so the fix is local -- usually extracting a branch rather than

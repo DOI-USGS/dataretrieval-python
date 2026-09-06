@@ -11,8 +11,8 @@ Context
 
 ``CONTEXT.md`` is one flat glossary. Every term in it reads as equally binding,
 and every place the code disagrees is filed under *Known legacy names* -- a
-list whose framing is that the disagreement is debt, tolerated until someone
-gets to it.
+list whose framing is that the disagreement is a defect, tolerated until
+someone corrects it.
 
 For most of the glossary that framing is right. But it is wrong for a small set
 of terms, and being wrong about those has produced the same review argument
@@ -85,15 +85,15 @@ faithfully where it appears in returned data.
 
 An adapter is where the two meet. Its public surface uses its service's
 terms; what it passes to the shared modules uses the core terms. The
-translation is the adapter's job, and a divergence at that boundary is the
-design working rather than debt.
+translation is the adapter's responsibility, and a divergence at that boundary
+is the design working as intended rather than a defect.
 
 Two rules follow:
 
 - **A term the glossary does not define is not used in the glossary.** A word
   used in ``CONTEXT.md``'s prose needs an entry. Naming a term
   only to say what an ADR calls it is a cross-reference, not a definition, and
-  does not license using the word elsewhere.
+  does not permit using the word elsewhere.
 - **Only core misnamings are legacy.** *Known legacy names* records a core term
   the code spells wrongly and cannot be renamed. A domain term at an adapter's
   surface is not a legacy name; it is that adapter using its service's
@@ -116,14 +116,14 @@ Consequences
   small cost per term and the reason the distinction is usable at all.
 - The package's own inconsistencies in core vocabulary become defects with a
   deadline rather than curiosities. The resolution chain's ``tier``-for-*source*
-  identifiers are the standing example.
+  identifiers are the current example.
 
 Compliance
 ----------
 
 ``CONTEXT.md`` marks each domain term as such and names the per-service
 spellings in the entry itself, so a reader who needs to know whether a word is
-negotiable can see it without asking.
+allowed to vary can see it without asking.
 
 The mechanical part is that the glossary must define what it uses:
 ``tests/architecture_test.py`` asserts every ``ADR NNNN`` citation resolves, and

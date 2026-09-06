@@ -58,9 +58,9 @@ file gains named profiles beside each adapter's default profile::
     [ngwmn.gentle]
     concurrency = 4
 
-A named profile never enters the chain unless a caller selects it. The global
-``[profiles.<name>]`` table and ``DATARETRIEVAL_PROFILE`` are retired; nothing
-has shipped, so nothing is deprecated.
+A named profile is never part of the chain unless a caller selects it. The
+global ``[profiles.<name>]`` table and ``DATARETRIEVAL_PROFILE`` are retired;
+nothing has shipped, so nothing is deprecated.
 
 **``configure()`` takes configuration objects.** Positionally, one per
 adapter, and nothing else::
@@ -135,7 +135,7 @@ the file is withdrawn. The path has never been released, so no alias is
 needed.
 
 **Credentials are unchanged, and measurement settled why.** The API key stays
-one package-wide setting scoped to the single host that honours it. Probing
+one package-wide setting scoped to the single host that accepts it. Probing
 the live services:
 
 .. list-table::
@@ -165,7 +165,7 @@ anonymously today. The three hosts also keep independent counters, so ADR
 0010's "one key, one quota pool" is true of waterdata and ngwmn only.
 
 **An adapter composes shared setting groups; it does not redeclare their
-fields.** Which settings an adapter reads is the adapter's own knowledge, but
+fields.** Which settings an adapter reads is the adapter's own concern, but
 what each setting *means* is shared, so the fields come from frozen mixin
 groups declared once beside their grammar. An adapter's configuration class
 names the groups it composes and adds only what is genuinely its own. Declaring

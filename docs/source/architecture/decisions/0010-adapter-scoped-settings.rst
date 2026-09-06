@@ -133,11 +133,11 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    caller's terminal, and there is one progress line per call, so scoping it
    per adapter could only produce a contradiction.
 
-3. **Precedence stays source-major.** Resolution walks block, then environment,
-   then file, as ADR 0009 defines; *within* each source an adapter-scoped value
-   outranks a top-level one. The environment therefore still outranks the file,
-   so a stale adapter table cannot quietly override a variable exported for one
-   run.
+3. **Precedence stays source-major.** Resolution checks the block, then the
+   environment, then the file, as ADR 0009 defines; *within* each source an
+   adapter-scoped value outranks a top-level one. The environment therefore
+   still outranks the file, so a stale adapter table cannot quietly override a
+   variable exported for one run.
 
 4. **Adapter-scoped settings get no environment variables.** Every entry in
    ``ENV_VARS`` stays package-wide, for the reason ``parallel_chunks`` already
@@ -158,7 +158,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    Data setting's definition in a module unrelated to Water Data.
 
 6. **The API key stays host-scoped and is not an adapter setting.**
-   ``credentials`` keeps sole ownership of which host honors the key. There is
+   ``credentials`` keeps sole ownership of which host accepts the key. There is
    no ``[ngwmn] api_key``.
 
 7. **Adapters are keyed by their service's name**, matching the module:
@@ -234,7 +234,7 @@ Consequences
   It is a defaulted keyword on 23 shipped getters across four adapters --
   ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it does
   reach ``httpx``'s ``verify``. It was added in 2023 to what were then the only
-  modules; the OGC getters arrived later and never adopted it, so its
+  modules; the OGC getters were added later and never adopted it, so its
   distribution records the package's history rather than a boundary.
 
   Three reasons not to promote it. It disables certificate verification, so as
@@ -243,10 +243,10 @@ Consequences
   invisible at the call site -- the opposite of the direction this chain
   narrows everything else. It does not respect adapter boundaries: within
   ``waterdata`` it applies only to the getters that bypass the OGC engine, so
-  ``[waterdata] ssl_check`` would be honored by three getters and silently
-  ignored by the rest, exactly the shape this ADR refuses elsewhere. And the
+  ``[waterdata] ssl_check`` would be applied by three getters and silently
+  ignored by the rest, exactly the pattern this ADR refuses elsewhere. And the
   need it serves is already met better: the legitimate case is a
-  TLS-intercepting corporate proxy, and ``httpx`` natively honors
+  TLS-intercepting corporate proxy, and ``httpx`` natively reads
   ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients --
   so that mechanism already covers *every* getter, including the OGC ones that
   have no ``ssl_check``, and it trusts the corporate CA rather than trusting
@@ -273,7 +273,7 @@ Consequences
 The two entries covering decision 8's ``**adapters`` catch-all
 (``test_a_misspelled_setting_is_not_taken_for_an_adapter``) and the central
 ``TypedDict`` registry (``test_adapter_schema_names_a_real_module``) went with
-the clauses ADR 0011 superseded; the checks they stood for are named above in
+the clauses ADR 0011 superseded; the checks they represented are named above in
 their current form.
 
 Notes
