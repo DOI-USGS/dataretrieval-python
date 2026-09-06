@@ -24,7 +24,7 @@ The two sets behave differently because their authority differs.
 
 Terms like *chunk*, *page*, *fan-out*, *plan*, *interruption*, *dialect* and
 *leaf* appear nowhere in any USGS API's vocabulary. They were invented here to
-describe machinery this package owns. Nothing external constrains them, so when
+describe mechanisms this package owns. Nothing external constrains them, so when
 the package spells one of them two ways -- the resolution chain's code said
 *tier* for what its founding records, ADRs 0009 and 0010, call a *source* --
 that is simply an inconsistency, and one that can be removed by deciding.
@@ -64,7 +64,7 @@ from the API it wraps.
 Decision
 --------
 
-The glossary holds two kinds of term, and they carry different obligations.
+The glossary holds two kinds of term, and they impose different obligations.
 
 **Core terms are ours.** The package invented them and no service has a claim
 on them: everything under *Retrieval*, *Failure and resumption*, *Configuration*
@@ -73,31 +73,31 @@ enforced everywhere it appears -- prose, identifiers, tests. A second spelling
 of a core term is a defect, not a variation, and is fixed rather than recorded.
 This is what makes the lower-level modules shareable: transport, configuration
 and the OGC engine can be written once because the words they are written in
-answer to nothing outside this package.
+are constrained by nothing outside this package.
 
 **Domain terms belong to the services.** *Monitoring location* and *collection*
 name things the services define and spell differently. For these the glossary
 chooses one term for **prose**, so that documents about the package are
-internally consistent. It does not choose for the wire, and it does not choose
-for an adapter's public surface: each adapter keeps its own service's spelling
-in its parameters, and reproduces that service's vocabulary faithfully where it
-appears in returned data.
+internally consistent. It does not choose the names used in requests, and it
+does not choose for an adapter's public surface: each adapter keeps its own
+service's spelling in its parameters, and reproduces that service's vocabulary
+faithfully where it appears in returned data.
 
-An adapter is where the two meet. Its public surface speaks its service's
-language; what it hands to the shared modules speaks the core's. The
+An adapter is where the two meet. Its public surface uses its service's
+terms; what it passes to the shared modules uses the core terms. The
 translation is the adapter's job, and a divergence at that boundary is the
 design working rather than debt.
 
 Two rules follow:
 
 - **A term the glossary does not define is not used in the glossary.** A word
-  that earns a place in ``CONTEXT.md``'s prose earns an entry. Naming a term
+  used in ``CONTEXT.md``'s prose needs an entry. Naming a term
   only to say what an ADR calls it is a cross-reference, not a definition, and
   does not license using the word elsewhere.
 - **Only core misnamings are legacy.** *Known legacy names* records a core term
   the code spells wrongly and cannot be renamed. A domain term at an adapter's
-  surface is not a legacy name; it is that adapter speaking its service's
-  language, and belongs with the term's own entry.
+  surface is not a legacy name; it is that adapter using its service's
+  terms, and belongs with the term's own entry.
 
 Consequences
 ------------
@@ -112,7 +112,7 @@ Consequences
 - *Known legacy names* becomes shorter and means something narrower. The entries
   it loses are not resolved; they move to the term they belong to, as part of
   its definition rather than a list of exceptions.
-- A glossary entry now carries an obligation to say which kind it is. That is a
+- A glossary entry now has an obligation to say which kind it is. That is a
   small cost per term and the reason the distinction is usable at all.
 - The package's own inconsistencies in core vocabulary become defects with a
   deadline rather than curiosities. The resolution chain's ``tier``-for-*source*

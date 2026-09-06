@@ -156,7 +156,7 @@ pull, that default is needlessly conservative: every sub-request pages through
 its own results, so dividing the query into more, smaller sub-requests lets
 those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
 into that finer split, fanning it out into `n` sub-requests. The finer split
-pays off only when the result is large enough to span many pages *and* the query
+helps only when the result is large enough to span many pages *and* the query
 has a multi-value argument to divide, such as a list of monitoring locations. On
 a small query — or one with nothing to split — it only adds requests, so
 `parallel_chunks` is a deliberate, scoped `with` block, never the default.
@@ -165,7 +165,7 @@ a small query — or one with nothing to split — it only adds requests, so
 from dataretrieval import waterdata
 
 # All stream gages in Ohio, then 20 years of their daily discharge — large
-# enough to span many pages, so it profits from a finer split.
+# enough to span many pages, so it benefits from a finer split.
 sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
 with waterdata.parallel_chunks(32):  # request up to 32 optional chunks

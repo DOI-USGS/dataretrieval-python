@@ -43,7 +43,7 @@ are necessary:
 Context view
 ------------
 
-The package sits between Python callers and remote hydrologic services::
+The package is the layer between Python callers and remote hydrologic services::
 
     Python user / notebook / batch process
                     |
@@ -102,7 +102,7 @@ Shared components
     file with optional profiles, and built-in defaults in that order. Service
     and protocol modules may depend on it; it must not depend back on them.
     Scoped overrides use ``ContextVar`` so concurrent threads and asyncio
-    tasks can carry distinct credentials.
+    tasks can use distinct credentials.
 
 ``dataretrieval.ogc``
     Protocol subsystem for Water Data and NGWMN. A facade (``__init__.py``)
@@ -127,7 +127,7 @@ Shared components
     Internal service-neutral execution layer. Owns guarded client lifecycle and
     timeouts, host-scoped authentication, cursor pagination, bounded retry,
     response aggregation, fan-out execution, progress integration, and
-    sync-over-async dispatch. ``fanout`` drives an injected plan and fetch
+    sync-over-async dispatch. ``fanout`` runs an injected plan and fetch
     callback, owning bounded concurrency, deterministic failure precedence,
     sparse completion state, resume, and the progress line. It is also the one
     entry point from synchronous getter code into the async internals: a query
@@ -151,8 +151,8 @@ Shared components
 ``dataretrieval._response_metadata``
     ``BaseMetadata``, the second half of every getter's ``(DataFrame,
     metadata)`` return contract. A dependency-free leaf: nearly every service
-    module needs this class, and while it lived in ``utils`` beside the legacy
-    query machinery, importing it pulled in that module's whole HTTP stack
+    module needs this class, and while it was in ``utils`` beside the legacy
+    query code, importing it pulled in that module's whole HTTP stack
     transitively. The implementation module is private; the established public
     class path remains ``dataretrieval.utils.BaseMetadata``.
 
@@ -210,8 +210,8 @@ Failed requests derive from ``dataretrieval.DataRetrievalError``. Callers can
 inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
 concrete subtype. A fanned-out call -- an over-large OGC request, or a Water Use
 query naming several locations -- may raise ``FanOutInterrupted`` subclasses
-(formerly, and still aliased as, ``ChunkInterrupted``) carrying a resumable call
-handle and completed partial state.
+(formerly, and still aliased as, ``ChunkInterrupted``) that hold a resumable
+call handle and completed partial state.
 
 Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
@@ -227,7 +227,7 @@ service into one return shape:
 - Water Data, NGWMN, and Water Use tabular getters return ``(DataFrame,
   BaseMetadata)``. Geometry-bearing Water Data and NGWMN results may use a
   ``GeoDataFrame`` in the first position when geopandas is installed.
-  ``BaseMetadata`` carries request URL, elapsed query time, response headers,
+  ``BaseMetadata`` holds request URL, elapsed query time, response headers,
   and comments where the upstream format provides them.
 - WQP getters return ``(DataFrame, WQP_Metadata)``; the service-specific
   metadata extends ``BaseMetadata`` with WQP query parameters and site lookup.
@@ -293,21 +293,22 @@ architecturally is the behavior around them:
 ``API_USGS_RETRIES``
     Number of retries after the first attempt on supported active request paths;
     defaults to four. Backoff is exponential with full jitter and honors bounded
-    ``Retry-After`` values. Only failures a later attempt could survive are
-    re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and not a
-    transport failure that is settled before the request leaves (unresolvable
-    host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.
+    ``Retry-After`` values. Only failures that may not recur on a later attempt
+    are re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and
+    not a transport failure that is settled before the request leaves
+    (unresolvable host, unsupported scheme). Deprecated NWIS compatibility paths
+    do not opt in.
 
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and
-    the failure surfaces; defaults to 60, and ``0`` disables the bound. It
+    the failure is raised; defaults to 60, and ``0`` disables the bound. It
     complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
     time: without this bound, four retries of a request that times out after a
-    minute add up to four silent minutes. Progress restarts the budget -- a
-    page received, or a queued chunk acquiring its concurrency slot. Neither a
-    slow but productive download nor the tail of a wide fan-out is cut short,
-    and an attempt already in flight is never interrupted. This bound never
-    withholds the first retry, so one slow attempt cannot disable retry by
+    minute add up to four minutes without data. Progress restarts the budget --
+    a page received, or a queued chunk acquiring its concurrency slot. Neither a
+    slow but productive download nor the last chunks of a large fan-out are cut
+    short, and an attempt already in flight is never interrupted. This bound
+    never withholds the first retry, so one slow attempt cannot disable retry by
     itself; after that, the budget decides whether to continue. A dead
     connection therefore costs about two read timeouts rather than five
     attempts' worth.
@@ -345,9 +346,9 @@ This view records categories and representative locations of debt.
 - ``waterdata/utils.py`` combines endpoint constants, argument normalization,
   and the OGC engine wrappers.
 
-These are documented so guardrails distinguish accepted current dependencies
-from new erosion. They should be removed through small, test-protected changes,
-not a rewrite.
+These are documented so the checks distinguish accepted current dependencies
+from new violations. They should be removed through small, test-protected
+changes, not a rewrite.
 
 Change process
 --------------

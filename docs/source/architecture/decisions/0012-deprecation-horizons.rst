@@ -11,11 +11,11 @@ Context
 
 This package's value is that established calls keep working. Public API
 compatibility is its first architecture characteristic after artifact integrity.
-Names therefore leave slowly: a renamed argument, a retired module, a getter
-whose service no longer exists.
+Names are therefore removed slowly: a renamed argument, a retired module, a
+getter whose service no longer exists.
 
-Four spellings of "tell the caller something is going away" grew up
-independently, and only one carried a date. A caller could not tell how long
+Four mechanisms for telling the caller something is being removed were written
+independently, and only one included a date. A caller could not tell how long
 they had, a maintainer could not audit what was due, and the warning category
 was a per-author choice -- which matters, because downstream projects run their
 suites under ``-W error::DeprecationWarning``.
@@ -30,39 +30,39 @@ Every deprecation is announced through the shared mechanism in
 ``dataretrieval._deprecation``, and every one has a published removal horizon
 recorded in ``REMOVALS``.
 
-A deprecation advisory names three things: what is going away, what to use
+A deprecation advisory names three things: what is being removed, what to use
 instead, and the date on or after which it may be removed. The mechanism
 tolerates an advisory with no date -- it then promises nothing specific rather
 than implying a schedule it does not have. A deprecation of a public name is
-expected to carry one, and an advisory naming a replacement the caller cannot
+expected to include one, and an advisory naming a replacement the caller cannot
 yet use is not finished.
 
 ``REMOVALS`` is the single table of horizons. One table is auditable -- what is
 due can be listed, and a horizon can be extended in one place -- whereas four
-hand-rolled shims could only be found by grep. A renamed public argument keeps
+hand-written shims could only be found by grep. A renamed public argument keeps
 working under its old name through one shared decorator rather than a shim
 written for each getter.
 
-The *warning category* an advisory carries is not the author's choice, but the
+The *warning category* an advisory uses is not the author's choice, but the
 rule setting it is not this record's. :doc:`0004-error-retry-resume` decides
-when an advisory is a ``DeprecationWarning`` (a name in this package is going
-away) and when it is a ``DataCurrencyWarning`` (an upstream dataset has stopped
-being updated). This record governs the mechanism and the horizon.
+when an advisory is a ``DeprecationWarning`` (a name in this package is being
+removed) and when it is a ``DataCurrencyWarning`` (an upstream dataset has
+stopped being updated). This record governs the mechanism and the horizon.
 
-A horizon is a floor, not a schedule. Passing it permits removal; it does not
+A horizon is a minimum, not a schedule. Passing it permits removal; it does not
 require one, and removal remains a deliberate change with its own release note.
 
 Consequences
 ------------
 
-- A caller can see, from the warning alone, how long they have and what to move
-  to.
+- A caller can see, from the warning alone, how long they have and what to
+  migrate to.
 - Horizons can be audited and extended centrally, so a removal date cannot
   arrive unnoticed in a module nobody is reading.
 - Deprecating something costs more than adding a ``warnings.warn`` call: the
   replacement must exist and a date must be chosen. That is the intended cost.
 - The package accumulates long-lived compatibility shims. This is accepted --
-  it is what the compatibility characteristic buys, and the table makes the
+  it is the cost of the compatibility characteristic, and the table makes the
   accumulation visible rather than hidden.
 - Nothing is removed on the horizon alone. A removal still needs a release that
   says so.

@@ -33,7 +33,7 @@ Branch without knowing the concrete type
 Every :class:`~dataretrieval.exceptions.DataRetrievalError` exposes three
 read-anywhere fields, so you rarely need to import the specific subclasses:
 
-* ``.status_code`` -- the HTTP status, or ``None`` when the failure carried no
+* ``.status_code`` -- the HTTP status, or ``None`` when the failure included no
   response (a connection error, an over-long URL, ...).
 * ``.retry_after`` -- seconds the server asked you to wait (its ``Retry-After``
   header), or ``None``.
@@ -46,7 +46,7 @@ read-anywhere fields, so you rarely need to import the specific subclasses:
         if e.status_code == 404:
             ...            # not found
         elif e.retryable:
-            ...            # transient -- see the retry recipe below
+            ...            # transient -- see the retry example below
         else:
             raise
 
@@ -79,7 +79,7 @@ Resume an interrupted request
 Some requests become several: the Water Data and NGWMN getters split an
 over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
-mid-stream, the work already completed is preserved: catch
+partway, the work already completed is preserved: catch
 ``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears
 -- only the unfinished chunks are re-issued.
 
@@ -115,10 +115,10 @@ extra quota *as long as each chunk still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
 would; a split that leaves each chunk only a page or two adds its partial
 final page.) So if you *know* your pull is large, ask for a finer split with
-``parallel_chunks(n)``: you trade roughly the same pages for more, smaller
+``parallel_chunks(n)``: you get roughly the same pages in more, smaller
 chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. ``parallel_chunks`` is a scoped ``with`` block, so
-an aggressive setting can't leak into unrelated calls and accidentally spend
+a high setting can't leak into unrelated calls and accidentally spend
 quota:
 
 .. code-block:: python
@@ -136,13 +136,13 @@ raises ``ValueError`` at the ``with``. ``n`` caps the *total* chunk count
 across every multi-value argument combined (not per argument), bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can't multiply past it, and
-``n=1`` asks for no extra fan-out. Each chunk costs a request against your
+``n=1`` requests no extra fan-out. Each chunk costs a request against your
 hourly rate limit. How many run *at once* is capped separately by
 ``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds quota without
 adding parallelism -- the useful range is roughly ``2`` up to
 ``API_USGS_CONCURRENT``. There is no "off" level: don't enter the block
 unless you already expect a large, multi-page result -- on a query that would
-have fit in a single page, extra chunks only burn quota.
+have fit in a single page, extra chunks only spend quota.
 
 The full taxonomy
 =================

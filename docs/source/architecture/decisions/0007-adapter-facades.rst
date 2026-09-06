@@ -48,19 +48,19 @@ legacy ``dataretrieval.utils`` names are split across private modules by
 dependency and *do* report the documented path, because there the alternative is
 a public, documented import location pointing at a private module.
 
-**Typed getters are the surface; exactly one generic escape hatch sits beside
+**Typed getters are the surface; exactly one generic query path accompanies
 them.** ``cql`` is the only untyped member of the collection families, and
 deliberately so. The alternative in one direction -- a single generic query
 function replacing the typed getters -- gives up the parameter documentation
 and validation that are most of these getters' value. The alternative in the
-other -- a ``cql=`` passthrough on every family -- multiplies the escape hatch
+other -- a ``cql=`` passthrough on every family -- multiplies the generic path
 by the number of collections while making each family's surface partly untyped.
-One hatch, named as such, keeps both properties.
+One generic path, named as such, keeps both properties.
 
 **Identifier columns are parsed as text.** This one clause applies
-package-wide, legacy NWIS included: it is about what an adapter hands back, not
+package-wide, legacy NWIS included: it is about what an adapter returns, not
 how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
-identifiers (``site_no`` in NWIS) carry significant leading zeros, and a bare
+identifiers (``site_no`` in NWIS) have significant leading zeros, and a bare
 ``read_csv`` infers them as integers and
 drops those zeros -- ``"00060"`` becomes ``60``, so the value is silently wrong
 rather than missing. Every adapter reading a USGS tabular response names its
@@ -76,7 +76,7 @@ contracts.
 Consequences
 ------------
 
-- Collection changes touch fewer implementation and test files.
+- Collection changes affect fewer implementation and test files.
 - Existing package and ``waterdata.api`` import paths remain stable.
 - Explicit exports make accidental public-surface growth reviewable.
 - More modules mean a facade to maintain, plus executable signature and export
@@ -91,17 +91,17 @@ Compliance
 facade identity, and compatibility names. ``tests/architecture_test.py``
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. ``.importlinter`` keeps the
-collection families independent of each other, holds the facade-only consumers
-(NGWMN and ``waterdata.cql``) to the OGC facade, and prevents one adapter from
-importing another. The identifier-column rule is covered by
+collection families independent of each other, restricts the facade-only
+consumers (NGWMN and ``waterdata.cql``) to the OGC facade, and prevents one
+adapter from importing another. The identifier-column rule is covered by
 ``tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero`` and the equivalent
 leading-zero assertions in the WQP and NWIS adapter tests.
 
 Notes
 -----
 
-The ``__module__`` scoping note and the escape-hatch and identifier-column
+The ``__module__`` scoping note and the generic-path and identifier-column
 clauses were added after the original decision; the rest of the record is
-unchanged. They consolidate under ADR 0000 the rules the code was carrying in
+unchanged. They consolidate under ADR 0000 the rules the code was stating in
 prose. The scoping note in particular records why ``_querying.py`` reassigning
 ``__module__`` is not a violation of this record, a question an audit raised.

@@ -47,7 +47,7 @@ them to any local timezone with the pandas ``.dt`` accessor.
     4   2024-02-29 20:00:00-05:00
     Name: time, dtype: datetime64[us, America/New_York]
 
-After conversion the timestamps carry New York's offset — ``-05:00`` during
+After conversion the timestamps have New York's offset — ``-05:00`` during
 standard time, or ``-04:00`` during daylight saving time, since New York is 4
 or 5 hours behind UTC depending on the time of year. The first midnight-UTC
 reading rolls back to the previous calendar day (``2024-02-29``) once shifted

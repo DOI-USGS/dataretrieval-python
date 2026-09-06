@@ -2,26 +2,27 @@
 
 The shared vocabulary for `dataretrieval`. This is a glossary, not a
 specification: it fixes what words mean so that code, docstrings, ADRs, and
-conversation use them the same way. Architectural decisions live in
+conversation use them the same way. Architectural decisions are recorded in
 `docs/source/architecture/decisions/`.
 
-Two kinds of term live here, and they carry different obligations (ADR 0013).
+Two kinds of term are defined here, and they impose different obligations
+(ADR 0013).
 
 **Core terms** are ours. The package invented them and no service has a claim on
 them — *chunk*, *page*, *fan-out*, *source*, *dialect*, *leaf*. One spelling,
 everywhere it appears: prose, identifiers, tests. Where a core term conflicts
-with a name in the code the term wins and the name is legacy, listed at the end.
-A second spelling is a defect, not a variation.
+with a name in the code the term is authoritative and the name is legacy,
+listed at the end. A second spelling is a defect, not a variation.
 
 **Domain terms** belong to the services, which name the same thing differently
 and will not be reconciled. For these the glossary fixes one word for *prose*,
-so that documents about the package read consistently. It does not fix the wire
-or an adapter's public surface: each adapter keeps its own service's spelling in
-its parameters. Such an entry names the per-service spellings itself; those are
-not legacy names.
+so that documents about the package read consistently. It does not fix the
+names used in requests or an adapter's public surface: each adapter keeps its
+own service's spelling in its parameters. Such an entry names the per-service
+spellings itself; those are not legacy names.
 
-A word carrying a package-wide meaning has an entry here, and one entry may
-name another; what no entry may do is lean on a word this document leaves
+A word with a package-wide meaning has an entry here, and one entry may
+name another; what no entry may do is rely on a word this document leaves
 undefined. Naming a word only to say what an ADR calls it is a cross-reference,
 not a use.
 
@@ -48,7 +49,7 @@ the reason is not part of the term.
 **Plan** — An enumeration of a query's chunks: how many there are, and what each
 one is. A plan says how a query divides; it does not execute. Computing a plan
 is protocol-specific — a byte budget, a per-location rule — while executing one
-is not, which is why the two live apart.
+is not, which is why the two are kept in separate modules.
 
 **Fan-out** — Executing a query's chunks concurrently. Chunking is how the work
 divides; fan-out is how it is distributed. The two are independent, and only
@@ -60,12 +61,12 @@ A chunk of a large query commonly spans many pages.
 
 ## Failure and resumption
 
-**Transient failure** — A failure a later attempt could survive: a rate limit, a
-service error, a timeout. Distinguished from a **deterministic failure**, which
-would fail identically every time — an unresolvable hostname, an unsupported
-scheme, a malformed request. Only transient failures are retried, and only
-transient failures produce a resumable interruption. Both answers follow from
-one judgement about what a failure means, and must agree.
+**Transient failure** — A failure that might not recur on a later attempt: a
+rate limit, a service error, a timeout. Distinguished from a **deterministic
+failure**, which would fail identically every time — an unresolvable hostname,
+an unsupported scheme, a malformed request. Only transient failures are
+retried, and only transient failures produce a resumable interruption. Both
+answers follow from one judgement about what a failure means, and must agree.
 
 **Stall timeout** — How long a call may receive nothing at all before retrying
 stops, measured from when data last arrived rather than from the call's start.
@@ -115,7 +116,7 @@ for compatibility and is not where new work goes.
 `monitoring-locations`, `time-series-metadata`. The unit a getter targets.
 
 A collection is not a service. Water Data is a service; `daily` is one of its
-collections. The distinction matters because the OGC machinery is shared: the
+collections. The distinction matters because the OGC code is shared: the
 same code path retrieves a Water Data collection and an NGWMN one, and only the
 service differs.
 
@@ -126,7 +127,7 @@ and keep their spelling. Prose says *collection*, including prose about the
 adapters that spell it otherwise — with one exception: deprecated NWIS keeps
 `service` in its docstrings as well as its parameters. Describing a parameter
 in a term its own module never uses helps nobody, and a module being retired is
-not where new vocabulary should land.
+not where new vocabulary should be introduced.
 
 **Collection family** — A group of collections sharing a shape and therefore a
 getter signature. Their getters deliberately resemble one another; the
@@ -173,13 +174,13 @@ vocabulary.
 
 A public keyword is not automatically a setting. `ssl_check` is a getter
 argument on four adapters and resolves through no chain at all; the settings are
-the roster the configuration system knows.
+the list the configuration system recognizes.
 
 **Scope** — How much of the package a setting's value applies to: the whole
 package, or one adapter. Orthogonal to source: the scope says who a value is
 for, the source says where it came from, and precedence orders sources first,
 scopes within them. ADR 0010's word for a scope level is *tier* — the top-level
-tier that survives, the host or gateway tier it defers.
+tier that remains, the host or gateway tier it defers.
 
 **Package-wide setting** — A setting that applies to every adapter: the retry
 count, the progress line, the stall timeout. Set once, honored everywhere.
@@ -216,7 +217,7 @@ selected. What `show_configuration()` prints beside each value, and what a
 parser names when it rejects one. A source is the category; an origin label is
 the instance within it.
 
-*Core terms.* The configuration chain is shared machinery, so one spelling binds
+*Core terms.* The configuration chain is shared code, so one spelling binds
 its identifiers as well as its prose. The code uses both names: `_resolve`
 returns `(raw, label, source)`, and the parsers take the `label` as the subject
 of any error message they raise.
@@ -229,17 +230,17 @@ one source can span several rungs — so prose that means a whole category says
 
 **Selection** — Naming which profile an adapter should use. Done in code; a
 profile is never selected by the environment or implied by the file, so the
-set of profiles in a file is inert until something asks for one.
+set of profiles in a file is inert until something selects one.
 
 **Built-in default** — The value a setting takes when no source supplies one.
 Package-wide.
 
 **Adapter default** — The value a *particular adapter* prefers when no source
-supplies one, because that adapter warrants a different figure — NWDC asks for
-4 concurrent requests where the OGC getters take 32. Supplied by the adapter in
-code, not by the user. It replaces the built-in default for calls through that
-adapter and nothing else. A value from any source outranks it: otherwise an
-adapter could discard a value the caller set explicitly.
+supplies one, because that adapter warrants a different figure — NWDC defaults
+to 4 concurrent requests where the OGC getters default to 32. Supplied by the
+adapter in code, not by the user. It replaces the built-in default for calls
+through that adapter and nothing else. A value from any source outranks it:
+otherwise an adapter could discard a value the caller set explicitly.
 
 Distinct from an **adapter-scoped setting**, which is the *user* naming a value
 for one adapter. Both narrow to a single adapter; only one of them is something
@@ -252,13 +253,13 @@ value. Where the distinction matters — reporting what a call will actually use
 ## Boundaries
 
 **Adapter** — A module owning one service's conventions: its URLs, parameters,
-error shapes, and response quirks. Adapters may use shared machinery; shared
-machinery may not know about adapters.
+error shapes, and response quirks. Adapters may use shared code; shared code
+may not reference adapters.
 
-**Dialect** — The per-API quirks the shared OGC machinery needs in order to
+**Dialect** — The per-API quirks the shared OGC code needs in order to
 serve two services from one code path: which collections must be POSTed as
 CQL2, which render dates date-only, which columns to coerce and sort by. An
-adapter supplies one and the machinery reads it, which is how protocol code
+adapter supplies one and the shared code reads it, which is how protocol code
 stays free of service names.
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
@@ -280,7 +281,7 @@ holding one general mechanism so that anything may use it without acquiring the
 rest of the package. Before writing a small helper, check whether a leaf already
 generalizes it.
 
-**Transport** — The service-neutral machinery for issuing requests: timeouts,
+**Transport** — The service-neutral code for issuing requests: timeouts,
 retry, pagination, fan-out, aggregation. It names no service and no protocol,
 and is not public API.
 
@@ -288,25 +289,25 @@ and is not public API.
 
 Core-term spellings recorded so they are not mistaken for drift, and not
 re-litigated: frozen misnamings, permanent aliases, and names that agree with
-this glossary by more than luck. A domain term at an adapter's surface is not a
-legacy name and is not listed here; it belongs with that term's own entry
-(ADR 0013).
+this glossary by more than coincidence. A domain term at an adapter's surface
+is not a legacy name and is not listed here; it belongs with that term's own
+entry (ADR 0013).
 
 - `completed_chunks` / `total_chunks` on interruptions, and `set_chunks()` /
   `start_chunk()` on the progress reporter, count chunks as defined above and
   are consistent with this glossary. They predate it; the agreement is real
   rather than coincidental.
 - `ChunkInterrupted` is a permanent alias of `FanOutInterrupted` — the same
-  class object under the name it was first published as. Both spellings are
+  class object under the name it was first published as. Both names are
   correct; neither is scheduled for removal.
 - *No-progress budget* is ADR 0006's name for the **stall timeout**. The
   record keeps its wording; prose outside it says *stall timeout*, and the
   setting is `stall_timeout`.
 - `ChunkedCall` is a permanent alias of `FanOut`, published on the OGC
-  compatibility path. Like `ChunkInterrupted`, both spellings are correct.
+  compatibility path. Like `ChunkInterrupted`, both names are correct.
 - `utils.query` is one *request*, not a query as defined above. It is a frozen
   public path (`dataretrieval.utils.query`) and predates this glossary.
-- `service` named a collection throughout the OGC machinery. Resolved: the
+- `service` named a collection throughout the OGC code. Resolved: the
   OGC internals, the Water Data wrappers, and all eleven typed getters now say
   `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
   `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
@@ -324,8 +325,8 @@ legacy name and is not listed here; it belongs with that term's own entry
   query rather than five sets of data, and the OGC definition of *collection*
   is scoped to "access mechanisms defined by OGC API standard(s)", which
   Samples does not implement. Kept as-is by decision: renaming a public
-  keyword costs a deprecation cycle, and no better-evidenced replacement is in
-  reach.
+  keyword costs a deprecation cycle, and no better-evidenced replacement is
+  available.
 - `waterdata.get_codes(code_service=)` is correct and stays. The Samples
   documentation calls it a "code service" in prose and serves it from
   `/codeservice/`, so this reproduces the service's own vocabulary, like
