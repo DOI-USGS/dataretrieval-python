@@ -70,6 +70,16 @@ def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
     response.request = httpx.Request(method=old.method, url=target, headers=old.headers)
 
 
+def _drop_body(response: httpx.Response) -> None:
+    """Free a response's fetched body, keeping status/headers/URL readable.
+
+    ``_content`` and ``_text`` are the slots httpx caches a read and a decoded
+    body in; both are emptied so the two accessors stay valid and agree.
+    """
+    response._content = b""
+    response.__dict__.pop("_text", None)
+
+
 def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
     """The response reporting the lowest ``x-ratelimit-remaining``.
 
@@ -102,13 +112,15 @@ def _merge_response(
 
     The copy's ``.headers`` are rebuilt as a fresh ``httpx.Headers`` from
     ``headers_from``, ``.elapsed`` is set to ``elapsed``, and ``.url`` is
-    overridden when ``url`` is given.  ``base`` and ``headers_from`` are never
+    overridden when ``url`` is given, and its body is emptied (ADR 0006).
+    ``base`` and ``headers_from`` are never
     mutated, and the fresh ``httpx.Headers`` means downstream mutations don't
     back-propagate into any underlying response — so callers may re-fold
     idempotently.  This is the one low-level merge behind both pagination
     (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
     fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
+    _drop_body(merged)
     merged.headers = httpx.Headers(headers_from.headers)
     merged.elapsed = elapsed
     if url is not None:

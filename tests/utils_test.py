@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from dataretrieval import _querying, _wqx, exceptions, nwis, utils
+from dataretrieval._deprecation import REMOVALS
 
 
 class Test_Ambient:
@@ -607,7 +608,13 @@ def test_retrying_get_maps_invalid_url(monkeypatch):
 class TestFormatDatetime:
     """``format_datetime`` joins the three columns NWIS RDB splits a
     timestamp across, and is the only place the package parses a local time
-    with a named zone."""
+    with a named zone. It is deprecated -- the qw services it shaped
+    responses for are retired -- so every call here also warns."""
+
+    def test_is_deprecated_with_the_published_horizon(self):
+        df = pd.DataFrame({"d": ["2020-01-01"], "t": ["12:00"], "z": ["EST"]})
+        with pytest.warns(DeprecationWarning, match=REMOVALS["utils.format_datetime"]):
+            utils.format_datetime(df, "d", "t", "z")
 
     def test_joins_date_time_and_zone_into_utc(self):
         df = pd.DataFrame(

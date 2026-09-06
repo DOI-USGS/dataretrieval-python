@@ -53,6 +53,13 @@ through transport:
 - ``dataretrieval.combining`` -- pandas frame and response assembly. Transport
   returns results *through* it.
 
+An aggregated response describes the call, not a page: its status, headers,
+URL, and elapsed are meaningful, and its body is empty. A page body belongs to
+one arbitrary request of many, so carrying it would invite callers to read it
+as the query's data, and holding it keeps the whole download resident for the
+life of a fan-out. Pages are freed as they are parsed, and the aggregate is
+built without one. Per-page responses handed to an adapter are untouched.
+
 Transport depends only on stable package leaves and third-party infrastructure.
 It must not import OGC modules or service adapters. Service adapters inject
 request construction, response parsing, cursor extraction, and API-specific
@@ -131,6 +138,9 @@ Consequences
   service that cannot use an API key is not told to obtain one.
 - The transport package is internal infrastructure, not a new public API
   promise.
+- Reading ``.content`` or ``.text`` off an aggregated response returns empty.
+  Callers wanting the payload use the returned frame; an adapter wanting bytes
+  reads them from the per-page response before it is aggregated.
 - Keeping presentation and frame assembly out means transport is roughly 570
   lines across five modules, each recognizably HTTP execution policy. Retry is
   the one complex module, because two independent bounds are what make retry
@@ -149,18 +159,25 @@ which failures are re-sent, cancellation, no-partial fan-out behavior, and
 credential host scoping. The exemptions above are covered by the liveness and
 retry tests over credited waits and the first-attempt case. Next-page link
 validation is covered by the shared link-policy tests over foreign hosts and
-embedded userinfo.
+embedded userinfo. ``test_merge_response_empties_the_body_but_keeps_the_rest``
+pins the empty-body contract and the metadata that must survive it.
 
 Notes
 -----
 
-The waiting-is-not-silence, next-page-link, and credentials-leaf clauses were
-added after the original decision, consolidating under ADR 0000 the rules the
-code was carrying in prose -- the budget exemptions were argued in five places
-across ``transport/retry.py``, ``transport/liveness.py``, and
+The waiting-is-not-silence, next-page-link, credentials-leaf, and empty-body
+clauses were added after the original decision, consolidating under ADR 0000 the
+rules the code was carrying in prose -- the budget exemptions were argued in five
+places across ``transport/retry.py``, ``transport/liveness.py``, and
 ``transport/fanout.py``.
 
 One sentence of the original Decision was also corrected rather than added to:
 it scoped automatic retry to "gateway 5xx", which was never true of a fanned-out
 call -- those re-send any 5xx, and only the single-shot adapters are limited to
 the gateway statuses. The decision is unchanged; the sentence now describes it.
+
+Freeing pages as they are parsed measured 434 MB -> 306 MB peak heap on a live
+seven-page, 303k-row Water Data walk (2026-08-26). Note when re-measuring that
+only network-built responses are freed: an ``httpx.Response(content=...)`` test
+double keeps its bytes in ``response.stream``, so a ``MockTransport`` benchmark
+shows no gain.
