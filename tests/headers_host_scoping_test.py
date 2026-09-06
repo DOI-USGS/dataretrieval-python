@@ -80,7 +80,7 @@ class TestDefaultHeadersHostScoping:
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_over_cleartext_on_the_authorized_host(self):
-        """The right host over plain http is still the wrong destination.
+        """The authorized host over plain http is still an unauthorized destination.
 
         Matching on the host alone would send a bearer token in the clear on
         the strength of a hostname an attacker chose to keep -- reachable via a

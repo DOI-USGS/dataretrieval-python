@@ -270,7 +270,7 @@ class NetworkError(DataRetrievalError):
     retryable: ClassVar[bool] = True
 
 
-# --- Bad configuration ---------------------------------------------------
+# --- Invalid configuration -----------------------------------------------
 
 
 class ConfigurationError(DataRetrievalError, ValueError):
@@ -278,14 +278,9 @@ class ConfigurationError(DataRetrievalError, ValueError):
     request was issued -- an environment variable, a policy field, a malformed
     ``config.toml``, or a profile the file does not define.
 
-    It is a :class:`DataRetrievalError` so ``except`` around a retrieval catches
-    it rather than letting a bare ``ValueError`` escape a request path. That
-    matters because settings resolve lazily, on the request path: a broken
-    config file surfaces from inside whichever getter runs first, and belongs in
-    the same handler as any other failure of that call. It is *also* a
-    :class:`ValueError`, so code that already treats a bad setting as one keeps
-    working whether the value came from the environment, a file, or a
-    :func:`dataretrieval.configure` block.
+    Both bases matter: ``except DataRetrievalError`` around a retrieval
+    catches it, and code that already treats an invalid setting as a
+    :class:`ValueError` keeps working. The dual base is ADR 0009.
     """
 
 
@@ -318,7 +313,7 @@ class DataCurrencyWarning(UserWarning):
 
     Distinct from ``DeprecationWarning``, which promises that a *name in this
     package* is going away and gives the caller something to migrate to. Here
-    the API is fine and there is nothing to migrate: the service's own data
+    the API is unchanged and there is nothing to migrate: the service's own data
     has stopped moving, and only the caller can judge whether that matters.
 
     It is a ``UserWarning`` for that reason. Emitting it as a
@@ -337,7 +332,7 @@ class SkippedItemWarning(UserWarning):
     The policy for batch getters whose items are independent documents: an
     item that fails *deterministically* -- so retrying would reproduce the
     failure -- is dropped from the result under a warning naming it, because
-    aborting would discard every other item's data over one bad entry.
+    aborting would discard every other item's data over one failing entry.
     Transient failures (429 / 5xx / timeouts / connection drops) are never
     skipped -- they are retried and, if retries run out, raised as a
     resumable interruption. Rate limiting in particular is systematic, so
@@ -433,7 +428,7 @@ def parse_retry_after(value: str | None) -> float | None:
     except ValueError:
         pass
     else:
-        # ``inf``/``nan`` parse cleanly but poison every later comparison: an
+        # ``inf``/``nan`` parse without error but poison every later comparison: an
         # infinite hint would refuse retry forever and travel to the caller on
         # ``.retry_after``. Treat them as no hint at all.
         return max(0.0, seconds) if math.isfinite(seconds) else None

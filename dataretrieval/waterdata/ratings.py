@@ -135,9 +135,9 @@ def get_ratings(
         One feature of the batch failed *deterministically* -- a stale
         catalog entry (404 on its data asset), a feature with no data asset,
         a malformed RDB file. That feature is skipped and its id is absent
-        from the returned dict; the rest of the batch is unaffected. A site
-        with no published rating never warns -- it matches no feature in the
-        search, so there is nothing to skip. See
+        from the returned dict; the rest of the batch is unaffected. A
+        monitoring location with no published rating never warns -- it
+        matches no feature in the search, so there is nothing to skip. See
         :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy
         (transients never skip) and the ``filterwarnings`` recipe that makes
         a skip fatal.
@@ -385,7 +385,7 @@ def _download_all(
     The plan is the feature list itself -- ``FanOut`` asks a plan only to be
     sized and iterable -- so the downloads get bounded concurrency,
     per-attempt retry, the progress line, and the resumable interruption
-    taxonomy in place of the previous serial loop, which had none of them.
+    taxonomy.
 
     Failure policy (rationale on
     :class:`~dataretrieval.exceptions.SkippedItemWarning`): a *transient*

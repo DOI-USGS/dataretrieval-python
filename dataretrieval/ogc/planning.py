@@ -164,8 +164,8 @@ def _check_unchunkable_request(
     """Enforce the byte budget on a request with no chunkable axis.
 
     Passthrough when the single request fits or when the filter is in a
-    language the chunker doesn't manage (cql-json) — the server, not us,
-    judges that one. Raises
+    language the chunker doesn't manage (cql-json) — the server, not the
+    chunker, judges that request. Raises
     :class:`~dataretrieval.exceptions.Unchunkable` when the request is
     over budget and has nothing to split.
     """
@@ -202,8 +202,9 @@ class _Axis:
         The args-dict key this axis substitutes back into when a
         chunk is rendered.
     atoms : tuple of str
-        The smallest indivisible units along this axis (one site, one
-        OR-clause, …). A "chunk" is a contiguous slice of ``atoms``.
+        The smallest indivisible units along this axis (one monitoring
+        location, one OR-clause, …). A "chunk" is a contiguous slice of
+        ``atoms``.
     joiner : str
         Separator placed between atoms when they are joined back into
         URL text — ``","`` for list axes, ``" OR "`` for the filter
@@ -333,7 +334,7 @@ class ChunkPlan:
     all axes, and stores the result.
 
     Passthrough requests (no chunkable axes, or already fitting) are
-    represented as a trivial plan with empty ``axes`` / ``chunks`` and
+    represented as a single-chunk plan with empty ``axes`` / ``chunks`` and
     ``total == 1``; :meth:`iter_chunk_args` yields the original args
     unchanged so the ``ChunkedCall`` loop is the same shape either
     way.
@@ -549,7 +550,7 @@ class ChunkPlan:
     def _best_refine_candidate(
         self, total: int, max_chunks: int
     ) -> tuple[_Axis, int] | None:
-        """Find the best chunk to split during the refine pass.
+        """Choose the next chunk to split during the refine pass.
 
         Returns the largest splittable chunk (by atom count) among axes whose
         split stays within the ``max_chunks`` cap, or ``None`` when no
@@ -621,11 +622,10 @@ class ChunkPlan:
                 chunk_args[axis.arg_key] = axis.render(chunk)
             yield chunk_args
 
-    # ``total`` and ``iter_chunk_args`` are this class's domain vocabulary and
-    # stay as they are. The dunders are how a plan satisfies
-    # :class:`~dataretrieval.transport.fanout.FanOutPlan`, which asks for a
-    # sized iterable and nothing chunking-specific. They delegate rather than
-    # duplicate, so ``len(plan)`` cannot disagree with what iterating yields.
+    # ``__len__`` and ``__iter__`` delegate to ``total`` and
+    # ``iter_chunk_args`` so a plan satisfies
+    # :class:`~dataretrieval.transport.fanout.FanOutPlan` without a second
+    # count of its own. ADR 0008.
     def __len__(self) -> int:
         return self.total
 

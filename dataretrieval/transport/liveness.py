@@ -1,7 +1,7 @@
 """When data last arrived, shared by the loops that produce and consume it.
 
 A retrieval can be slow for two very different reasons: it is downloading a lot
-(fine, however long it takes) or it is receiving nothing at all (worth giving up
+(progressing, however long it takes) or it is receiving nothing at all (worth giving up
 on). Telling those apart needs one fact -- when data last arrived -- that the
 page-walking loop knows and the retry loop acts on. Keeping it in this leaf lets
 both point *down* at it rather than at each other, and leaves any future producer

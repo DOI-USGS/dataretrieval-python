@@ -1,16 +1,15 @@
 """Deprecated alias for :mod:`dataretrieval.interruptions`.
 
-The resume contract is no longer OGC-specific -- Water Use raises it too -- so
-the classes live in :mod:`dataretrieval.interruptions`, where the base class is
-named :class:`~dataretrieval.interruptions.FanOutInterrupted`. This path is the
-one v1.2.0 published, when the classes were defined here.
+The classes live in :mod:`dataretrieval.interruptions`, where the base class is
+named :class:`~dataretrieval.interruptions.FanOutInterrupted`. That move, and
+``ChunkInterrupted`` staying a permanent alias rather than a shim, are ADR 0008.
+This path is the one v1.2.0 published, when the classes were defined here.
 
 Importing this module emits a :class:`DeprecationWarning` and re-exports the
 taxonomy. The re-exported objects are the *same objects*, not copies, so
 ``ogc.interruptions.ChunkInterrupted is dataretrieval.ChunkInterrupted`` and
 ``except`` clauses behave identically through either spelling. Only the module
-*path* is deprecated: ``ChunkInterrupted`` itself remains a permanent alias of
-``FanOutInterrupted``.
+*path* is deprecated.
 
 ``dataretrieval.ogc.__init__`` deliberately does not import this module, so
 ``import dataretrieval`` and ``import dataretrieval.ogc`` stay silent. The

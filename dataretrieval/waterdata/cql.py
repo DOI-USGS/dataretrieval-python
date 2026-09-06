@@ -3,7 +3,7 @@
 The other families expose a fixed argument per filter, which covers the common
 cases and keeps them discoverable. This is the escape hatch: an arbitrary CQL2
 filter against any collection, for the query nobody anticipated. Prefer a typed
-getter when one fits -- it validates more and reads better.
+getter when one fits -- it validates more and names its filters.
 """
 
 from __future__ import annotations

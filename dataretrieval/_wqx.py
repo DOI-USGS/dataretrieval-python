@@ -3,9 +3,8 @@
 The Samples database and the Water Quality Portal both split an instant across
 three columns -- a date, a time, and a time-zone abbreviation -- and they spell
 the trio two different ways. Recognizing either spelling and folding it into one
-UTC column is knowledge about those response formats, so it lives in its own
-leaf rather than in :mod:`dataretrieval.utils`, whose docstring reserves that
-module for shaping that is not service-specific.
+UTC column is service-specific knowledge, so it lives in its own leaf rather
+than in :mod:`dataretrieval.utils` (ADR 0001).
 
 Depends on pandas and the time-zone table only; nothing here issues a request.
 """

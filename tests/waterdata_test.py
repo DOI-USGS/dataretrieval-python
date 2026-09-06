@@ -318,7 +318,7 @@ def test_legacy_camelcase_kwargs_return_identical_to_snake_case(httpx_mock):
 
 
 def test_check_profiles():
-    """Tests that correct errors are raised for invalid profiles."""
+    """Tests that ``ValueError`` is raised for invalid profiles."""
     with pytest.raises(ValueError):
         _check_profiles(service="foo", profile="bar")
     with pytest.raises(ValueError):
@@ -1183,7 +1183,7 @@ def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mo
     """The rejection names ``collection`` -- the parameter actually passed.
 
     Regression: this check was copied from ``get_codes``, message and local
-    variable name included, so a bad ``collection=`` was reported as an
+    variable name included, so an unknown ``collection=`` was reported as an
     invalid *code service* -- a parameter this function does not have.
     """
     with pytest.raises(ValueError, match="Invalid collection: 'agency-codez'"):
@@ -1192,7 +1192,8 @@ def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mo
 
 
 def test_get_reference_table_serves_countries(httpx_mock):
-    """``countries`` is a real reference collection and singularizes correctly.
+    """``countries`` is a real reference collection and singularizes to
+    ``country``.
 
     It sits beside ``counties`` in the service catalog but was missing from the
     accepted vocabulary, so the rejection told a caller asking for a real
@@ -1257,7 +1258,7 @@ def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
     """``get_cql`` caps the total like every other Water Data getter.
 
     It was the only one without ``max_rows``, and its ``limit`` is the page
-    size -- so the obvious way to ask for a few rows instead paged the whole
+    size -- so asking for a few rows through ``limit`` instead paged the whole
     match a few rows at a time. A bounded probe written that way spent ~400
     requests of an hourly quota of 1000 before the service refused it.
     """

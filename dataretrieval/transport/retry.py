@@ -26,16 +26,11 @@ from dataretrieval.transport.liveness import (
 )
 
 # Which error statuses a request may be re-sent for. Both are narrower than
-# :attr:`~dataretrieval.exceptions.DataRetrievalError.retryable`, deliberately:
-# that field tells a caller re-issuing *might* work, while spending someone's
-# quota unasked needs a stricter bar.
-#
-# The default keeps every 5xx, because for a query interface like the Water Data
-# OGC API a 500 is an upstream hiccup and re-sending is how a chunked call rides
-# one out. The gateway-only set is for the single-shot adapters whose services
-# answer a *bad query* with a 500 -- WQP does that for an over-large request,
-# StreamStats for out-of-network coordinates -- where re-sending multiplies load
-# on a request that can never succeed and delays the caller's error.
+# :attr:`~dataretrieval.exceptions.DataRetrievalError.retryable`. The default
+# keeps every 5xx, for chunked calls riding out a transient upstream failure;
+# the gateway-only set is for the single-shot adapters whose service answers a
+# *rejected query* with a 500 -- WQP for an over-large request, StreamStats for
+# out-of-network coordinates. Which failures may be re-sent is ADR 0006.
 _RETRYABLE_STATUSES = frozenset({429, *range(500, 600)})
 _GATEWAY_STATUSES = frozenset({429, 502, 503, 504})
 _RETRY_BASE_BACKOFF = 0.5
@@ -275,7 +270,7 @@ async def retry_async(
     holding one while it isn't touching the server, and the time spent waiting
     for it is credited back to the no-progress budget rather than counted as
     silence. A caller that gated its own body would have to rediscover both, and
-    nothing would catch it getting them wrong.
+    nothing would flag a caller that broke either.
     """
     policy = RetryPolicy.from_configuration() if policy is None else policy
     attempt = 0

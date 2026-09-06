@@ -136,7 +136,7 @@ def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
 
     These services answer a rejected query with a 500, so only the gateway
     statuses are worth re-sending; the Water Data chunker keeps the broader
-    default, where a 5xx is an upstream hiccup worth riding out.
+    default, where a 5xx is a transient upstream failure worth riding out.
 
     ``adapter`` names which settings table supplies ``retries`` and
     ``stall_timeout`` -- these three services share a retry *shape* but not

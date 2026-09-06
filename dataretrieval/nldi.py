@@ -71,14 +71,7 @@ def _api_base() -> str:
 
     Every URL below is built from this rather than from
     :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
-    reaches every navigation, basin, and catalog request alike -- a redirect
-    that covered only some of them would leave the library asking the real
-    service about the mirror's data. Resolved per call, because a ``configure``
-    block is scoped to a ``with`` statement rather than to the process.
-
-    Six call sites, which is what this seam is for; choosing between the
-    redirect and the service's own base is the accessor's job, not each
-    service's.
+    reaches every navigation, basin, and catalog request alike (ADR 0011).
     """
     return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
 
@@ -108,7 +101,7 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response
     carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases
     (there's no geometry column to attach the CRS to), so return an empty
-    GeoDataFrame with the correct CRS instead of crashing.
+    GeoDataFrame carrying ``_CRS`` instead of crashing.
     """
     features = feature_collection.get("features") if feature_collection else None
     if not features:
@@ -722,10 +715,8 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
     rather than being derived from what has been imported.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -741,9 +732,6 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         environment refuse it.
     """
 
-    # One request per call, so this service reads the retry dials and a
-    # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "nldi"
 
 

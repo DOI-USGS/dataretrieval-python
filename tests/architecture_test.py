@@ -28,6 +28,7 @@ from __future__ import annotations
 import ast
 import configparser
 import functools
+import re
 import sys
 from graphlib import CycleError, TopologicalSorter
 from importlib.util import resolve_name
@@ -372,11 +373,11 @@ def test_credential_policy_has_one_definition() -> None:
     """
     host = "api.waterdata.usgs.gov"
     # Walked as AST string *values*, not as source text. A line-substring match
-    # is wrong in both directions: it missed the ``"https://…"`` form three
-    # modules use to spell the same authority, and it flagged docstring prose
-    # that merely names the service. Docstrings are excluded here (they are
-    # documentation, not a second source of truth) while every other literal --
-    # bare host or full base URL -- counts.
+    # produces both false negatives and false positives: it missed the
+    # ``"https://…"`` form three modules use to spell the same authority, and it
+    # flagged docstring prose that merely names the service. Docstrings are
+    # excluded here (they are documentation, not a second source of truth)
+    # while every other literal -- bare host or full base URL -- counts.
     offenders: list[str] = []
     for path in sorted(PACKAGE_ROOT.rglob("*.py")):
         if path.name == "credentials.py":
@@ -608,8 +609,8 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     protocol would prove only that the methods exist. What is actually
     load-bearing and *not* guaranteed by the type is repeatability: resume
     keys completed work by position, so a plan whose second pass differed --
-    a generator mistaken for a collection, say -- would re-issue the wrong
-    chunks.
+    a generator mistaken for a collection, say -- would re-issue chunks that
+    no longer match the completed positions.
     """
     import httpx
 
@@ -630,3 +631,41 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
             f"{name} yielded {len(first)} items but reports len {len(plan)}"
         )
         assert list(plan) == first, f"{name} is not repeatably iterable"
+
+
+def test_adr_references_resolve_to_a_record() -> None:
+    """Every ``ADR NNNN`` citation names a record that exists, in every venue.
+
+    ADR 0000 routes cross-cutting rationale into the decision records and asks
+    the code to cite rather than restate. A renumbered or deleted record has to
+    fail here rather than leave a dangling pointer for a reader to chase.
+
+    Scoped to every venue ADR 0000 names, not just the package: the glossary,
+    the contributor guide, and the architecture docs cite records too, and a
+    pointer rots there too.
+    """
+    repo_root = PACKAGE_ROOT.parent
+    decisions = repo_root / "docs" / "source" / "architecture" / "decisions"
+    recorded = {path.name[:4] for path in decisions.glob("[0-9][0-9][0-9][0-9]-*.rst")}
+    assert recorded, f"no ADR records found under {decisions}"
+
+    cited: list[Path] = sorted(PACKAGE_ROOT.rglob("*.py"))
+    cited += sorted((repo_root / "docs" / "source").rglob("*.rst"))
+    cited += [repo_root / "CONTEXT.md", repo_root / "CONTRIBUTING.md"]
+    cited += [repo_root / "AGENTS.md"]
+
+    pattern = re.compile(r"ADR\s+(\d{4})")
+    dangling: list[str] = []
+    for path in cited:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for number in pattern.findall(line):
+                if number not in recorded:
+                    rel = path.relative_to(repo_root)
+                    dangling.append(f"{rel}:{lineno} cites ADR {number}")
+
+    assert not dangling, "citations name no such decision record:\n  " + "\n  ".join(
+        dangling
+    )

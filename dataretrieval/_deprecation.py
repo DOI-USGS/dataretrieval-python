@@ -1,19 +1,10 @@
 """One advisory mechanism, and one place to read the removal horizons.
 
-Four spellings of "tell the caller something is going away" had grown up
-independently -- a dated decorator in :mod:`~dataretrieval.nwis`, an undated
-kwarg shim in :mod:`~dataretrieval.waterdata.utils`, an undated module-level
-notice in :mod:`~dataretrieval.wqp`, and one bare :func:`warnings.warn` with
-no category at all. Only one carried a date, so the horizons could not be
-audited or bumped in one place, and the category was a per-author choice.
-
-The category matters more than the wording. A ``DeprecationWarning`` is a
-promise that a *name in this package* is going away, so a downstream project
-running ``-W error::DeprecationWarning`` is right to fail on it. An advisory
-that an upstream *dataset* has stopped being updated is not that -- the API is
-fine and the caller has nothing to migrate to -- and it belongs under
-:class:`~dataretrieval.exceptions.DataCurrencyWarning` instead. See
-:data:`REMOVALS` for the horizons this package has published.
+Every deprecation is announced through this module, with a horizon in
+:data:`REMOVALS` (ADR 0012). A ``DeprecationWarning`` promises that a *name in
+this package* is going away, while an advisory that an upstream *dataset* has
+stopped being updated belongs under
+:class:`~dataretrieval.exceptions.DataCurrencyWarning` (ADR 0004).
 """
 
 from __future__ import annotations

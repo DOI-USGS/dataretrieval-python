@@ -51,27 +51,25 @@ When reporting a bug, please include:
 ### Fixing Bugs
 
 Look through the GitHub [issues](https://github.com/DOI-USGS/dataretrieval-python/issues)
-for known and unresolved bugs. Any issues labeled "bug" that are unassigned,
-are open for resolution. You are welcome to comment in the relevant issue to
-state your intention to resolve the bug, which will help ensure there is no
-duplication of the same work by multiple contributors.
+for known and unresolved bugs. Any unassigned issue labeled "bug" is open for
+resolution. Comment on the issue to state that you intend to fix it, so that
+two contributors do not do the same work.
 
 ---
 
 ## Code Contributions
 
 Code contributions should be made following a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
-This means that first, one should *fork* the repository, essentially creating a
-personal mirror of the project. Next, you will want to create a *feature branch*
-in your fork, which you can push code changes to. Once you have completed your
-modifications and additions, open a pull request from the *feature branch* in
-your fork, to the original upstream repository.
+First *fork* the repository, creating a personal mirror of the project. Next,
+create a *feature branch* in your fork and push your code changes to it. Once
+your modifications and additions are complete, open a pull request from the
+*feature branch* in your fork to the original upstream repository.
 
 ### Implementing Features
 
 Look through the GitHub [issues](https://github.com/DOI-USGS/dataretrieval-python/issues)
 for outstanding feature requests. Anything tagged with "enhancement"
-and "please-help" is open to whomever wants to implement it.
+and "please-help" is open to whoever wants to implement it.
 
 Please do not combine multiple feature enhancements into a single pull request.
 
@@ -117,13 +115,14 @@ about the upstream service rather than about this package.
 This package keeps its general mechanisms in dependency-free leaves --
 `_ambient.Ambient` for scoped context values, `config` for every setting
 (`API_USGS_*`, the config file, and `configure()` blocks all resolve through
-it, and it is the only module that reads the environment for one),
-`transport.links.resolve_next_url` for pagination cursors. Each of those has been re-implemented at least once by someone who
-did not know it was there, and the copies drift: the same question gets a
-different cycle guard, a different error message, a different edge case. None
-of the automated checks catch it, because two eight-line helpers are below the
-clone detector's floor and neither one couples or complicates anything. A grep
-for the mechanism you are about to write is the only thing that does.
+it, and it is the only module that reads the environment for a setting),
+`transport.links.resolve_next_url` for pagination cursors. Each of those has
+been re-implemented at least once by someone who did not know it was there, and
+the copies drift: the same question gets a different cycle guard, a different
+error message, a different edge case. None of the automated checks catch it,
+because two eight-line helpers are below the clone detector's floor and neither
+one couples nor complicates anything. A grep for the mechanism you are about to
+write is the only thing that does.
 
 The continuous integration and pre-commit configurations enforce formatting,
 linting, and strict type checking. Run the relevant checks before opening a PR:
@@ -152,28 +151,29 @@ Coverage is measured with branches on, because most of what this package gets
 wrong is a branch rather than a line -- a dispatch arm routing to the wrong
 getter, an error path that never fires, a fallback that quietly becomes the
 norm. Chase the *uncovered branch*, not the percentage: a test written only to
-colour a line green costs a real maintenance slot and catches nothing. If a
-path cannot be reached without contorting the code, exclude it in
+turn a line green adds maintenance and catches nothing. If a path cannot be
+reached without contorting the code, exclude it in
 `[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
-it is. Both are better than a hollow test.
+it is. Either costs less than a test that adds maintenance and catches nothing.
 
 The blocking run is a single Linux job. The OS/Python matrix reports its own
 number with `--fail-under=0`, because several tests are POSIX-only and a
 Windows run genuinely measures a smaller suite.
 
-For the same reason the threshold assumes the whole suite: on Windows, or
+For the same reason, the threshold assumes the whole suite: on Windows, or
 without the `nldi` extra installed, some tests skip and the local number comes
 in under the gate through no fault of your change. Run
 `coverage report --fail-under=0` in that situation and let CI grade the
 ratchet.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
-tightest the package passes today, so they fail only when a change makes things
-worse. They disagree usefully. `xenon` counts branches (cyclomatic complexity),
-so a wide flat dispatch scores badly; `complexipy` counts how hard the control
-flow is to follow (cognitive complexity), so it forgives the dispatch and
-punishes nesting. Both name the offending block, so the fix is local -- usually
-extracting a branch rather than restructuring.
+tightest the package passes today, so they fail only when a change pushes a
+score above today's. They disagree because they count different things. `xenon` counts
+branches (cyclomatic complexity), so a wide flat dispatch scores high;
+`complexipy` counts how hard the control flow is to follow (cognitive
+complexity), so it scores that dispatch lower and nesting higher. Both name the
+offending block, so the fix is local -- usually extracting a branch rather than
+restructuring.
 
 `lint-imports` checks the dependency contracts declared in
 [`.importlinter`](.importlinter) against the *transitive* import graph: the layer
@@ -203,7 +203,7 @@ wily rank dataretrieval maintainability.mi    # worst-maintained files today
 ```
 
 `wily` is advisory and is never a merge gate -- rising complexity in a file that
-gained a genuinely complex feature is information, not a failure.
+gained a complex feature is information, not a failure.
 
 #### The periodic deep sweep
 
@@ -211,12 +211,11 @@ Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 [`pyscn`](https://github.com/ludo-technologies/pyscn) on a weekly schedule
 ([code-health.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/code-health.yml)),
 which attaches an HTML and a JSON report to each run. Nothing gates on it. These
-measures move over months rather than commits, and a threshold nobody agreed to
-is either noise or theatre.
+measures move over months rather than commits.
 
-You do not need it to contribute, but it is the right tool for "what should we
-clean up next?" -- including for an agent working on this repo, which gets a
-whole-package structural picture from one command:
+You do not need it to contribute. It answers "what should we clean up next?" --
+including for an agent working on this repo, which gets a whole-package
+structural picture from one command:
 
 ```bash
 pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64, Windows x86-64
@@ -226,8 +225,8 @@ pyscn analyze dataretrieval  # HTML report, or --json for the numbers
 
 Read its findings as leads, not verdicts. Its clone detector flags this
 package's per-collection getters -- thin, heavily documented wrappers whose
-bodies necessarily rhyme -- and collapsing them into one parameterized function
-would trade the documented public surface for a metric. Its
+bodies are necessarily similar -- and collapsing them into one parameterized
+function would trade the documented public surface for a metric. Its
 dependency-injection heuristics expect a class-oriented design this package
 deliberately does not have.
 
@@ -245,7 +244,7 @@ link checking.
 * Follow the [PEP8 style guidelines](https://peps.python.org/pep-0008/).
 * The public interface should emphasize functions over classes; classes can and
   should be used internally and in tests.
-* Group public download functions by data portal. For example, modern Water
+* Group public download functions by service. For example, modern Water
   Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
   remain quarantined in `dataretrieval.nwis` during deprecation.
 * Treat a change to a service's documented return shape or metadata type as a
@@ -261,6 +260,10 @@ link checking.
   code.
 
 #### Docstrings
+* A docstring documents the *contract*. Rationale that argues for a rule binding
+  other files belongs in an ADR, cited by number; measurements, symptoms, and
+  what the code used to do belong in the commit message. See
+  [ADR 0000](docs/source/architecture/decisions/0000-documenting-decisions.rst).
 * Docstrings should follow the [numpy standard](https://numpydoc.readthedocs.io/en/v1.5.0/format.html):
   * Example:
     ``` python
@@ -339,26 +342,23 @@ Documentation is built using [sphinx](https://www.sphinx-doc.org/en/master/),
 and is located within the `docs/source/` subdirectory in the repository.
 Documentation is written using [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html).
 
-Contributions to the documentation should be made in a similar fashion to code
-contributions - by following a forking workflow. When opening a pull request
-please be sure to have tested your documentation modifications locally, and
-clearly describe what it is your proposed changes add or fix.
+Contributions to the documentation follow the same forking workflow as code
+contributions. Before opening a pull request, test your documentation changes
+locally, and describe what they add or fix.
 
 ### Adding Examples to the Documentation
 
-A number of examples are provided in the documentation in the form of Jupyter
-notebooks. These example notebooks are all contained within the `demos/`
-subdirectory of the repository. If you have an example use of the package you
-would like to add to the documentation as a run and rendered notebook, you
-will need to do the following (in a separate branch of the repository):
+The documentation includes examples as Jupyter notebooks, all of which live in
+the `demos/` subdirectory. To add one that the documentation runs and renders,
+do the following in a separate branch of the repository:
 
 1. Add your notebook to the `demos/` subdirectory after clearing all outputs
-2. Add a corresponding `.nblink` file to `docs/source/examples/` subdirectory,
-   see existing examples for reference, or refer to the [nbsphinx-link](https://nbsphinx-link.readthedocs.io/en/latest/) documentation.
+2. Add a corresponding `.nblink` file to the `docs/source/examples/`
+   subdirectory; see the existing examples for reference, or the [nbsphinx-link](https://nbsphinx-link.readthedocs.io/en/latest/) documentation.
 3. Add the example and some text describing it to one of the `.rst` files in
    the examples subdirectory.
 4. Run the documentation locally to ensure it renders as you expect, and then
-   open a pull request wherein you describe the proposed addition.
+   open a pull request describing the addition.
 
 ---
 
@@ -366,11 +366,11 @@ will need to do the following (in a separate branch of the repository):
 
 ### Submitting Feedback
 
-The best way to send feedback is to open an issue at
+Send feedback by opening an issue at
 https://github.com/DOI-USGS/dataretrieval-python/issues.
 
-Please be as clear as possible in your feedback, if you are reporting a bug
-refer to [Reporting Bugs](#reporting-bugs).
+Please be as clear as possible. If you are reporting a bug, refer to
+[Reporting Bugs](#reporting-bugs).
 
 
 ### Feature Requests

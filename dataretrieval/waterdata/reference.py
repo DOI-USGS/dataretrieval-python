@@ -54,9 +54,9 @@ def get_reference_table(
         call.
     max_rows : int, optional
         Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole table. Useful for cheaply
-        previewing large tables (e.g. ``hydrologic-unit-codes`` has ~125k
-        rows). Unlike ``limit`` (the per-page size), this bounds the total
+        instead of downloading the whole table. Useful for previewing
+        large tables in a few requests (e.g. ``hydrologic-unit-codes`` has
+        ~125k rows). Unlike ``limit`` (the per-page size), this bounds the total
         result. The default (None) downloads every page.
 
     Returns
@@ -97,7 +97,8 @@ def get_reference_table(
 
     # Give the ID column the collection name, singularized and underscored.
     # ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm
-    # was unreachable and would stay correct if a singular collection appeared.
+    # was unreachable; ``removesuffix`` returns a singular collection name
+    # unchanged if one appears.
     if collection in ("counties", "countries"):
         output_id = collection.removesuffix("ies") + "y"
     else:

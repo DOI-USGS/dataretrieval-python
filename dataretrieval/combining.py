@@ -8,10 +8,7 @@ chunk execution, service fan-out, and cursor-driven pagination.
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
 
-A top-level leaf rather than part of :mod:`dataretrieval.transport`, holding
-the response adjusters (url, elapsed, headers, body release) alongside the
-frame merges. See ADR 0003 for the dependency direction and ADR 0006 for the
-transport boundary and the aggregated-response contract.
+A top-level leaf rather than part of :mod:`dataretrieval.transport` -- ADR 0006.
 """
 
 from __future__ import annotations

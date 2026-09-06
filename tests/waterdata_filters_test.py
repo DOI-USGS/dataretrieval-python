@@ -90,8 +90,8 @@ def test_split_top_level_or_respects_quotes():
 
 def test_split_top_level_or_handles_doubled_quote_escape():
     """CQL text escapes a single quote inside a literal as ``''``. The
-    two quotes are adjacent, so the scanner's naive toggle-on-quote logic
-    happens to land back in the correct state with nothing between the
+    two quotes are adjacent, so the scanner's escape-unaware toggle-on-quote
+    logic happens to land back in the correct state with nothing between the
     toggles to misclassify. Lock that behavior in so a future refactor
     can't regress it."""
     cases = [

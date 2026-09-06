@@ -127,8 +127,8 @@ def _ogc_parse_response(
     The parse strategy :func:`_walk_pages` hands to
     :func:`~dataretrieval.transport.pagination.paginate`. Coerces falsy
     cursors (empty href, etc.) to ``None`` so the paginate loop's
-    ``while cursor is not None`` terminates instead of spinning on a
-    meaningless value.
+    ``while cursor is not None`` terminates instead of looping forever on an
+    empty href, which ``is not None`` and so never ends the walk.
     """
     body = resp.json()
     return (
@@ -247,18 +247,12 @@ def get_ogc_data(
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
-        fetches the full result. Intended for cheap previews of large,
+        fetches the full result. Intended for few-request previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
     base_url : str
         OGC API base URL to target. Required: this package is API-neutral and
         names no API of its own, so each adapter passes its own base (e.g.
-        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``). It was
-        once optional, falling back to whatever was in ambient scope -- which
-        defaults to the empty string, so omitting it built a *relative*
-        ``/collections/{id}/items`` that planning accepted and only httpx
-        rejected at send time, surfacing as a NetworkError about an unknown
-        service. Requiring it moves that mistake to the call site, where mypy
-        catches it.
+        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``).
     spatial : bool
         Whether this collection's result contract includes feature geometry.
         The adapter supplies this semantic fact; ``skip_geometry`` and

@@ -422,7 +422,7 @@ def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous
     Without the injection a list like ``['time', 'value']`` reached the
     service unchanged, the response came back with no
     ``monitoring_location_id``, and every site but one was silently dropped --
-    a wrong answer with nothing for a caller to notice it by.
+    an incomplete result with nothing for a caller to notice it by.
     """
     patch_get_continuous.return_value = (
         pd.DataFrame(
