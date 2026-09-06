@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0012: Announce every removal through one advisory with a published horizon &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0012: Announce every removal through one advisory with a published horizon &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -121,10 +121,10 @@
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p>This package’s value is that established calls keep working. Public API
 compatibility is its first architecture characteristic after artifact integrity.
-Names therefore leave slowly: a renamed argument, a retired module, a getter
-whose service no longer exists.</p>
-<p>Four spellings of “tell the caller something is going away” grew up
-independently, and only one carried a date. A caller could not tell how long
+Names are therefore removed slowly: a renamed argument, a retired module, a
+getter whose service no longer exists.</p>
+<p>Four mechanisms for telling the caller something is being removed were written
+independently, and only one included a date. A caller could not tell how long
 they had, a maintainer could not audit what was due, and the warning category
 was a per-author choice – which matters, because downstream projects run their
 suites under <code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code>.</p>
@@ -136,36 +136,36 @@ Nothing recorded the general rule, and the deprecations kept accumulating.</p>
 <p>Every deprecation is announced through the shared mechanism in
 <code class="docutils literal notranslate"><span class="pre">dataretrieval._deprecation</span></code>, and every one has a published removal horizon
 recorded in <code class="docutils literal notranslate"><span class="pre">REMOVALS</span></code>.</p>
-<p>A deprecation advisory names three things: what is going away, what to use
+<p>A deprecation advisory names three things: what is being removed, what to use
 instead, and the date on or after which it may be removed. The mechanism
-tolerates an advisory with no date – it then promises nothing specific rather
+tolerates an advisory with no date – it then states no date rather
 than implying a schedule it does not have. A deprecation of a public name is
-expected to carry one, and an advisory naming a replacement the caller cannot
+expected to include one, and an advisory naming a replacement the caller cannot
 yet use is not finished.</p>
 <p><code class="docutils literal notranslate"><span class="pre">REMOVALS</span></code> is the single table of horizons. One table is auditable – what is
 due can be listed, and a horizon can be extended in one place – whereas four
-hand-rolled shims could only be found by grep. A renamed public argument keeps
+hand-written shims could only be found by grep. A renamed public argument keeps
 working under its old name through one shared decorator rather than a shim
 written for each getter.</p>
-<p>The <em>warning category</em> an advisory carries is not the author’s choice, but the
+<p>The <em>warning category</em> an advisory uses is not the author’s choice, but the
 rule setting it is not this record’s. <a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a> decides
-when an advisory is a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> (a name in this package is going
-away) and when it is a <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> (an upstream dataset has stopped
-being updated). This record governs the mechanism and the horizon.</p>
-<p>A horizon is a floor, not a schedule. Passing it permits removal; it does not
+when an advisory is a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> (a name in this package is being
+removed) and when it is a <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> (an upstream dataset has
+stopped being updated). This record governs the mechanism and the horizon.</p>
+<p>A horizon is a minimum, not a schedule. Passing it permits removal; it does not
 require one, and removal remains a deliberate change with its own release note.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>A caller can see, from the warning alone, how long they have and what to move
-to.</p></li>
+<li><p>A caller can see, from the warning alone, how long they have and what to
+migrate to.</p></li>
 <li><p>Horizons can be audited and extended centrally, so a removal date cannot
 arrive unnoticed in a module nobody is reading.</p></li>
 <li><p>Deprecating something costs more than adding a <code class="docutils literal notranslate"><span class="pre">warnings.warn</span></code> call: the
 replacement must exist and a date must be chosen. That is the intended cost.</p></li>
 <li><p>The package accumulates long-lived compatibility shims. This is accepted –
-it is what the compatibility characteristic buys, and the table makes the
+it is the cost of the compatibility characteristic, and the table makes the
 accumulation visible rather than hidden.</p></li>
 <li><p>Nothing is removed on the horizon alone. A removal still needs a release that
 says so.</p></li>

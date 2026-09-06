@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../_static/documentation_options.js?v=2921959c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -137,7 +137,7 @@ optional geospatial dependencies must remain isolated.</p></li>
 </section>
 <section id="context-view">
 <h2>Context view<a class="headerlink" href="#context-view" title="Link to this heading"></a></h2>
-<p>The package sits between Python callers and remote hydrologic services:</p>
+<p>The package is the layer between Python callers and remote hydrologic services:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">user</span> <span class="o">/</span> <span class="n">notebook</span> <span class="o">/</span> <span class="n">batch</span> <span class="n">process</span>
                 <span class="o">|</span>
                 <span class="n">v</span>
@@ -191,7 +191,7 @@ Python 3.10. It resolves scoped overrides, environment variables, a TOML
 file with optional profiles, and built-in defaults in that order. Service
 and protocol modules may depend on it; it must not depend back on them.
 Scoped overrides use <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> so concurrent threads and asyncio
-tasks can carry distinct credentials.</p>
+tasks can use distinct credentials.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code></dt><dd><p>Protocol subsystem for Water Data and NGWMN. A facade (<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>)
 exposes the service-adapter seam: <code class="docutils literal notranslate"><span class="pre">OgcDialect</span></code>, <code class="docutils literal notranslate"><span class="pre">prepare_request_args</span></code>,
@@ -214,7 +214,7 @@ acyclic – enforced by the package-wide fitness function in
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.transport</span></code></dt><dd><p>Internal service-neutral execution layer. Owns guarded client lifecycle and
 timeouts, host-scoped authentication, cursor pagination, bounded retry,
 response aggregation, fan-out execution, progress integration, and
-sync-over-async dispatch. <code class="docutils literal notranslate"><span class="pre">fanout</span></code> drives an injected plan and fetch
+sync-over-async dispatch. <code class="docutils literal notranslate"><span class="pre">fanout</span></code> runs an injected plan and fetch
 callback, owning bounded concurrency, deterministic failure precedence,
 sparse completion state, resume, and the progress line. It is also the one
 entry point from synchronous getter code into the async internals: a query
@@ -235,8 +235,8 @@ every service can import it without creating an infrastructure cycle.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._response_metadata</span></code></dt><dd><p><code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code>, the second half of every getter’s <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
 <span class="pre">metadata)</span></code> return contract. A dependency-free leaf: nearly every service
-module needs this class, and while it lived in <code class="docutils literal notranslate"><span class="pre">utils</span></code> beside the legacy
-query machinery, importing it pulled in that module’s whole HTTP stack
+module needs this class, and while it was in <code class="docutils literal notranslate"><span class="pre">utils</span></code> beside the legacy
+query code, importing it pulled in that module’s whole HTTP stack
 transitively. The implementation module is private; the established public
 class path remains <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code>.</p>
 </dd>
@@ -289,8 +289,8 @@ contracts.</p>
 inspect <code class="docutils literal notranslate"><span class="pre">status_code</span></code>, <code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and <code class="docutils literal notranslate"><span class="pre">retryable</span></code> without knowing the
 concrete subtype. A fanned-out call – an over-large OGC request, or a Water Use
 query naming several locations – may raise <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> subclasses
-(formerly, and still aliased as, <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code>) carrying a resumable call
-handle and completed partial state.</p>
+(formerly, and still aliased as, <code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code>) that hold a resumable
+call handle and completed partial state.</p>
 <p>Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
 internal adapters currently import them; those imports are known variances, not
@@ -304,7 +304,7 @@ service into one return shape:</p>
 <li><p>Water Data, NGWMN, and Water Use tabular getters return <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span>
 <span class="pre">BaseMetadata)</span></code>. Geometry-bearing Water Data and NGWMN results may use a
 <code class="docutils literal notranslate"><span class="pre">GeoDataFrame</span></code> in the first position when geopandas is installed.
-<code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code> carries request URL, elapsed query time, response headers,
+<code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code> holds request URL, elapsed query time, response headers,
 and comments where the upstream format provides them.</p></li>
 <li><p>WQP getters return <code class="docutils literal notranslate"><span class="pre">(DataFrame,</span> <span class="pre">WQP_Metadata)</span></code>; the service-specific
 metadata extends <code class="docutils literal notranslate"><span class="pre">BaseMetadata</span></code> with WQP query parameters and site lookup.</p></li>
@@ -364,24 +364,25 @@ config-file format – are catalogued once in the
 architecturally is the behavior around them:</p>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of retries after the first attempt on supported active request paths;
-defaults to four. Backoff is exponential with full jitter and honors bounded
-<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values. Only failures a later attempt could survive are
-re-sent: 429 and gateway 5xx, not a 500 rejecting the query itself, and not a
-transport failure that is settled before the request leaves (unresolvable
-host, unsupported scheme). Deprecated NWIS compatibility paths do not opt in.</p>
+defaults to four. Backoff is exponential with full jitter and waits for
+bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values. Only failures that may not recur on a later
+attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
+itself, and not a transport failure that is settled before the request
+leaves (unresolvable host, unsupported scheme). Deprecated NWIS
+compatibility paths do not opt in.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></dt><dd><p>Seconds a call may go without receiving any data before retrying stops and
-the failure surfaces; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It
+the failure is raised; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It
 complements <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>, which caps attempts rather than elapsed
 time: without this bound, four retries of a request that times out after a
-minute add up to four silent minutes. Progress restarts the budget – a
-page received, or a queued chunk acquiring its concurrency slot. Neither a
-slow but productive download nor the tail of a wide fan-out is cut short,
-and an attempt already in flight is never interrupted. This bound never
-withholds the first retry, so one slow attempt cannot disable retry by
+minute add up to four minutes without data. Progress restarts the budget –
+a page received, or a queued chunk acquiring its concurrency slot. Neither a
+slow but productive download nor the last chunks of a large fan-out are cut
+short, and an attempt already in flight is never interrupted. This bound
+never withholds the first retry, so one slow attempt cannot disable retry by
 itself; after that, the budget decides whether to continue. A dead
-connection therefore costs about two read timeouts rather than five
-attempts’ worth.</p>
+connection therefore costs about two read timeouts rather than five full
+attempts.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code></dt><dd><p>Controls best-effort progress display. Reporting failures must never change
 retrieval results.</p>
@@ -410,15 +411,15 @@ costs and request shapes differ but a caller’s instruction should not (ADR
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">ogc/engine.py</span></code> retains a compatibility pagination wrapper alongside OGC
 orchestration. The sync-dispatch wrapper is gone: every retrieval path now
-enters through <code class="docutils literal notranslate"><span class="pre">transport.fanout.FanOut</span></code>.</p></li>
+goes through <code class="docutils literal notranslate"><span class="pre">transport.fanout.FanOut</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">utils.py</span></code> combines shaping with compatibility imports for metadata,
 ambient configuration, transport, and the query path.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">waterdata/utils.py</span></code> combines endpoint constants, argument normalization,
 and the OGC engine wrappers.</p></li>
 </ul>
-<p>These are documented so guardrails distinguish accepted current dependencies
-from new erosion. They should be removed through small, test-protected changes,
-not a rewrite.</p>
+<p>These are documented so the checks distinguish accepted current dependencies
+from new violations. They should be removed through small, test-protected
+changes, not a rewrite.</p>
 </section>
 <section id="change-process">
 <h2>Change process<a class="headerlink" href="#change-process" title="Link to this heading"></a></h2>

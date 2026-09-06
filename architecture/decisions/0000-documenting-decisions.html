@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0000: Record each explanation once, in the place that owns it &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0000: Record each explanation once, in the place that owns it &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -121,14 +121,14 @@ section records the clause added.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
-<p>This package documents itself heavily and deliberately. Its public getters are
+<p>This package is documented heavily and deliberately. Its public getters are
 thin wrappers whose numpydoc parameter tables <em>are</em> the deliverable: 55% of all
-docstring lines in <code class="docutils literal notranslate"><span class="pre">dataretrieval/</span></code> sit in the service adapters, at a ratio of
+docstring lines in <code class="docutils literal notranslate"><span class="pre">dataretrieval/</span></code> are in the service adapters, at a ratio of
 2.5 prose lines per line of code. CONTRIBUTING already requires those tables.</p>
 <p>The problem is in the internal modules behind them. Rationale – the argument
 for why a rule holds – accumulated in module and function docstrings alongside
 the ADRs that already owned it, because a paragraph can be written where the
-reader is standing while a citation sends them to a record they have to open.
+reader already is, while a citation sends them to a record they have to open.
 Those modules hold 82% of the package’s comment lines, and an audit of that
 prose found roughly 500 lines restating decisions already recorded in ADRs 0003
 through 0011: <code class="docutils literal notranslate"><span class="pre">configuration.py</span></code> re-derives the layered-resolution design in
@@ -153,15 +153,15 @@ sections, what the function does, and what it guarantees. Public getters keep
 their full parameter tables, however long. A private helper’s docstring says
 what it does and what its callers may rely on.</p>
 <p><strong>Inline comments own the local constraint.</strong> Why <em>these</em> lines are written this
-way, when a name cannot carry it – an ordering that matters, an upstream quirk,
-a bail-out that looks removable. One or two lines, adjacent to the code they
-explain. A comment that outgrows that is describing something wider than the
-lines beneath it, and belongs in one of the venues below.</p>
+way, when a name cannot express it – an ordering that matters, an upstream
+quirk, an early return that looks removable. One or two lines, adjacent to the
+code they explain. A comment longer than that is describing something wider
+than the lines beneath it, and belongs in one of the venues below.</p>
 <p><strong>Commit messages own the history.</strong> Benchmark numbers, the symptom that
 prompted a change, what the code used to do, what was tried and rejected. This
 is the venue with a date and a diff attached. It is the one place where “was
 once optional” or “measured 1.6x slower” stays true forever without maintenance.
-Source files carry the current state, not the route to it.</p>
+Source files describe the current state, not how it was reached.</p>
 <p><strong>ADRs own the cross-cutting decision.</strong> A choice that constrains code outside
 the file stating it, or that a future contributor could plausibly undo from
 somewhere else. The code cites the record by number rather than restating its
@@ -169,20 +169,20 @@ argument. Adding a clause to an existing ADR is preferred over a new record;
 number a new one sequentially and follow <a class="reference internal" href="template.html"><span class="doc">ADR template</span></a>.</p>
 <p><strong>The glossary owns the vocabulary.</strong> <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> defines terms with
 package-wide meaning. Documents use those terms rather than redefining them, and
-where a term and the code disagree, the term wins.</p>
+where a term and the code disagree, the term is authoritative.</p>
 <p>Three rules follow:</p>
 <ul class="simple">
 <li><p><strong>Cite, do not restate.</strong> Prose that argues for a rule an ADR already owns is
 replaced by a reference to that ADR’s number. A pointer that does not resolve
 is visible; a paraphrase that has drifted is not.</p></li>
 <li><p><strong>Write from the reader’s position.</strong> A citation replaces an argument only if
-the sentence left behind stands on its own. Prose that assumes the reader has
-the cited record already open, or leans on a term the glossary does not
-define, has moved the cost of the duplication rather than removed it.</p></li>
+the sentence left behind is understandable on its own. Prose that assumes the
+reader has the cited record already open, or relies on a term the glossary
+does not define, has moved the cost of the duplication rather than removed it.</p></li>
 <li><p><strong>An accepted ADR is not edited to reverse its meaning.</strong> A later decision
 supersedes it and links back, as the decisions index already requires.
 Additive clauses and corrections are recorded in the amended record’s
-<code class="docutils literal notranslate"><span class="pre">Notes</span></code>, and its <code class="docutils literal notranslate"><span class="pre">Status</span></code> says the record was amended, so a reader meets
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code>, and its <code class="docutils literal notranslate"><span class="pre">Status</span></code> says the record was amended, so a reader sees
 that fact before the Decision text rather than after it.</p></li>
 </ul>
 </section>
@@ -195,15 +195,15 @@ behind in modules nobody thought to grep.</p></li>
 opening an ADR. That cost is accepted – the reader who needs the argument is
 rarer than the reader who needs the contract, and the ADR is the version that
 is maintained.</p></li>
-<li><p>Rationale is not deleted when it moves. Prose that leaves a docstring lands in
-an ADR clause or in the commit message that removes it. The commit message is
-where a reviewer looks for what a documentation change discarded.</p></li>
+<li><p>Rationale is not deleted when it moves. Prose that leaves a docstring is moved
+to an ADR clause or to the commit message that removes it. The commit message
+is where a reviewer looks for what a documentation change discarded.</p></li>
 <li><p>Docstring volume in the service adapters is expected to stay high and is not a
 metric to optimize. A ratio measured over a public adapter says nothing about
 whether it is over-documented.</p></li>
 <li><p>The policy applies going forward. Existing prose is migrated when a module is
-being changed for another reason, rather than in a sweep that would touch
-every file at once.</p></li>
+being changed for another reason, rather than in a single pass that would
+touch every file at once.</p></li>
 </ul>
 </section>
 <section id="compliance">
@@ -212,9 +212,9 @@ every file at once.</p></li>
 lines beneath it, or does it argue for a rule that binds another file?</em> The
 second belongs in an ADR, cited by number. Then: <em>could a reader who has not
 opened the cited record follow this sentence?</em> If not, the citation has hidden
-the explanation rather than relocated it. The repair is to restore the reader’s
-footing – name the term, resolve the pronoun, say which venue owns the rest –
-not to restate the argument the citation replaced.</p>
+the explanation rather than relocated it. The repair is to give the reader what
+they need – name the term, resolve the pronoun, say which venue owns the
+rest – not to restate the argument the citation replaced.</p>
 <p>The mechanical part is checkable, and it is the part that goes stale: a
 docstring or comment that names an ADR must name one that exists.
 <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> asserts that every <code class="docutils literal notranslate"><span class="pre">ADR</span> <span class="pre">NNNN</span></code> reference in
@@ -223,17 +223,17 @@ docstring or comment that names an ADR must name one that exists.
 the suite rather than leaving a dangling pointer. Whether a given paragraph
 should have been a citation remains a review judgement. No test is proposed: a
 proxy metric here would push contributors to delete parameter documentation to
-move a number.</p>
+improve a number.</p>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <p>The reader’s-position rule and the second review question were added after
 acceptance. Review of the pull request that introduced this record found prose
-this record had put in the right venue and left unreadable from outside the
-author’s head: undefined jargon, a pronoun with no antecedent, and a mapping
-between two numbering schemes that needed a second document open. One instance
+this record had put in the right venue and that only the author could follow:
+undefined jargon, a pronoun with no antecedent, and a mapping between two
+numbering schemes that needed a second document open. One instance
 broke this record’s own history rule. The venue rules say where an explanation
-goes; none of them asked who it reads for.</p>
+goes; none of them considered who would read it.</p>
 <p><code class="docutils literal notranslate"><span class="pre">Context</span></code> and the measurements below are this package’s. <code class="docutils literal notranslate"><span class="pre">Decision</span></code>,
 <code class="docutils literal notranslate"><span class="pre">Consequences</span></code>, and the review questions in <code class="docutils literal notranslate"><span class="pre">Compliance</span></code> are written to hold
 for any project; the paragraph naming <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> is not. A

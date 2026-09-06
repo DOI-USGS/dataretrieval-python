@@ -6,7 +6,7 @@ Status
 
 Accepted. Supersedes the clause of :doc:`0006-service-neutral-transport`
 assigning "resumable ``ChunkedCall`` state" to OGC's protocol concerns; the rest
-of ADR 0006 stands.
+of ADR 0006 remains in effect.
 
 Amended after acceptance under :doc:`0000-documenting-decisions`; the
 ``Notes`` section records every clause added or corrected.
@@ -26,19 +26,19 @@ The two are independent, and only the first is protocol knowledge: dividing a
 query needs the byte budget, the CQL2 grammar, and which parameters are
 list-valued, while distributing the pieces needs none of it.
 
-The package had not drawn that line. ``ChunkPlan`` (division) and
-``ChunkedCall`` (distribution) sat side by side in ``dataretrieval.ogc`` as
+The package had not made that distinction. ``ChunkPlan`` (division) and
+``ChunkedCall`` (distribution) were both defined in ``dataretrieval.ogc`` as
 siblings, and ADR 0006 grouped them together deliberately. That grouping was
 correct while a byte plan was the only thing anyone fanned out over. It stopped
-being correct once Water Use fanned out too: unable to reach an OGC-internal
+being correct once Water Use fanned out too: unable to import an OGC-internal
 executor, ``wateruse._fan_out`` re-implemented the semaphore, the
-``asyncio.gather``, and the cancellation-beats-HTTP-error failure precedence,
+``asyncio.gather``, and the cancellation-before-HTTP-error failure precedence,
 with a comment naming ``ChunkedCall._run`` as the original. One rule, two
 copies, kept in agreement by that comment.
 
 The duplicate was not merely redundant. It lacked resume, so a rate limit
 partway through discarded every location that had already succeeded -- against
-an hourly quota, on fan-outs that reach into the hundreds. It reported no
+an hourly quota, on fan-outs of hundreds of locations. It reported no
 progress. And it read its own module-global concurrency cap, so a user setting
 ``API_USGS_CONCURRENT`` to lower the request rate found one adapter ignoring
 them.
@@ -56,20 +56,21 @@ optionally a ``finalize`` hook applied to the combined frame.
 injected into the executor rather than applied at the call site because a resume
 re-enters the *executor*, never the getter that started the call. Shaping done
 after the getter returns would run on the first attempt and be skipped on the
-resumed one, so the same query would answer differently depending on whether it
-was interrupted. Anything that must be true of the returned frame belongs in
-``finalize``.
+resumed one, so the same query would return different results depending on
+whether it was interrupted. Anything that must be true of the returned frame
+belongs in ``finalize``.
 
 **The concurrency bound is an ``asyncio.Semaphore``, not the connection pool.**
 The pool is sized to match the semaphore rather than used as the throttle: a
-pool smaller than the fan-out would queue chunks inside ``httpx`` and surface as
-``PoolTimeout``, which the taxonomy reads as a transient failure and reports as
-a resumable interruption -- a spurious one, caused entirely by the package's own
-settings rather than by the service. One throttle, and the pool follows it.
+pool smaller than the fan-out would queue chunks inside ``httpx`` and appear as
+``PoolTimeout``, which the taxonomy classifies as a transient failure and
+reports as a resumable interruption -- a spurious one, caused entirely by the
+package's own settings rather than by the service. There is one throttle, and
+the pool is sized to it.
 
 **A CQL2-JSON filter is passed through, never divided.** The planner does not
 chunk a ``cql-json`` filter and does not size-check its body; an over-budget
-body is the server's judgement to render. Splitting a filter expression means
+body is for the server to accept or reject. Splitting a filter expression means
 understanding its semantics well enough to guarantee the union of the parts
 equals the whole, which is a different undertaking from splitting a list of
 identifiers along a comma.
@@ -77,14 +78,14 @@ identifiers along a comma.
 ``FanOutPlan`` is a ``Protocol`` of ``__len__`` and ``__iter__``, generic in the
 item type -- a sized, iterable collection of chunk descriptions, and
 nothing more. The executor passes each item to the adapter's own ``fetch``
-without inspecting it, so the item type is the adapter's business: the OGC
+without inspecting it, so the item type is the adapter's concern: the OGC
 getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
 
 The standard protocols, rather than custom members, are a deliberate choice.
 A plan declaring ``total`` and ``iter_chunk_args()`` would be stating ``len``
 twice under a private name: the two could then report different counts, and a
 test would have to assert they agree. Every adapter whose chunks are
-already a list would also need a wrapper class whose only job is renaming
+already a list would also need a wrapper class whose only purpose is renaming
 ``len``.
 
 With the standard names a plain ``list`` is a plan, which is exactly what Water
@@ -98,13 +99,13 @@ chunks from a byte budget over multi-value axes, a list of requests derives
 nothing, and so there is no shared implementation an abstract base could hold.
 
 The identity of the query as a whole is *not* part of the plan. ``canonical_url``
-is a value stamped on the combined response, not a property of how the work
+is a value set on the combined response, not a property of how the work
 divides, so it is an argument to ``FanOut``. ``ChunkPlan`` computes one while
 planning and the OGC call site passes it through; Water Use passes its first
 location's URL, since the service has no request expressing "all of these".
 
 ``dataretrieval.ogc`` keeps chunk planning: the byte budget, the axis
-partitioning, the CQL2 filter split, the ``parallel_chunks`` dial. Those are
+partitioning, the CQL2 filter split, the ``parallel_chunks`` setting. Those are
 division, and division is protocol-specific.
 
 The interruption taxonomy moves to ``dataretrieval.interruptions``, a top-level
@@ -124,15 +125,15 @@ Concurrency is one general setting with per-adapter defaults.
 a different default for when it is unset. The precedence is deliberate: an
 explicitly set environment variable outranks an adapter default, never the
 reverse. An adapter that could override the general setting would make
-``API_USGS_CONCURRENT=1`` a lie. An adapter default applies only when the
-variable is unset; it never displaces a value the caller set.
+``API_USGS_CONCURRENT=1`` untrue. An adapter default applies only when the
+variable is unset; it never overrides a value the caller set.
 
 Consequences
 ------------
 
 - Water Use gains resume, progress reporting, and the shared concurrency
-  setting, and sheds roughly 75 lines of duplicated orchestration.
-- One implementation of failure precedence, so cancellation-beats-error and
+  setting, and removes roughly 75 lines of duplicated orchestration.
+- One implementation of failure precedence, so cancellation-before-error and
   deterministic failure ordering cannot drift between services.
 - **Breaking:** a Water Use fan-out interrupted by a 5xx, 429, or recoverable
   connection failure now raises ``ServiceInterrupted`` / ``QuotaExhausted``
@@ -145,12 +146,13 @@ Consequences
   ``API_USGS_CONCURRENT`` and ``wateruse.DEFAULT_CONCURRENT_REQUESTS``.
 - Resume re-issues a failed location's entire page walk, so pages fetched before
   the failure are fetched again. This already applied to OGC -- a partial walk
-  never enters the completion map -- and is a cost, not a correctness problem.
-- Water Use frames carry ``huc12_id``, not ``id``, so ``_combine_chunk_frames``
+  is never recorded in the completion map -- and is a cost, not a correctness
+  problem.
+- Water Use frames have ``huc12_id``, not ``id``, so ``_combine_chunk_frames``
   concatenates them without deduplicating. Correct, because locations partition
-  by construction, but the executor's dedup safety net does not apply there.
-- ``transport`` is no longer purely leaf-shaped: ``fanout`` is a composite that
-  drives retry, publishes the client pagination borrows, and calls
+  by construction, but the executor's deduplication does not apply there.
+- ``transport`` is no longer a pure leaf: ``fanout`` is a composite that
+  runs the retry loop, provides the client that pagination uses, and calls
   ``combining``. It remains HTTP execution policy, which is the test the
   package applies.
 
@@ -178,7 +180,7 @@ Notes
 -----
 
 The ``finalize``, semaphore, and CQL2-JSON clauses were added after the original
-decision, consolidating under ADR 0000 rules the code was carrying in prose --
+decision, consolidating under ADR 0000 rules the code was stating in prose --
 the semaphore rule was stated four times in ``transport/fanout.py`` alone, and
 that file now states it once and cites this record.
 

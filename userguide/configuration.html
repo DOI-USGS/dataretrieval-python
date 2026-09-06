@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>Configuration &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../_static/documentation_options.js?v=2921959c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -107,7 +107,7 @@ want to adjust — a concurrency cap, a retry budget, where requests go — belo
 to <em>one</em> of them. So a <strong>configuration profile</strong> is a named set of settings for
 one adapter, written in code or stored in your configuration file, and a
 <code class="docutils literal notranslate"><span class="pre">configure</span></code> block puts one profile per adapter into effect for the calls
-inside it. The Water Data API key is the exception that proves the rule: it
+inside it. The Water Data API key is the one exception: it
 authenticates to a gateway rather than to an adapter, so it stays package-wide.</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
@@ -128,7 +128,8 @@ authenticates to a gateway rather than to an adapter, so it stays package-wide.<
 <span id="configuration-one-block"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">One block, several services</a><a class="headerlink" href="#one-block-several-services" title="Link to this heading"></a></h2>
 <p>This is the case the mechanism exists for. Say the file holds what you would
 write once and keep — the key, a retry budget, and Water Data’s everyday
-concurrency — plus two named profiles for the shapes you only sometimes want:</p>
+concurrency — plus two named profiles for the settings you only sometimes
+want:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"your_api_key_here"</span><span class="w">   </span><span class="c1"># package-wide: every adapter that reads it</span>
 <span class="n">retries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span>
 
@@ -144,7 +145,7 @@ concurrency — plus two named profiles for the shapes you only sometimes want:<
 </pre></div>
 </div>
 <p>Then one block configures three services, taking two of them from the file by
-name and building the third on the spot:</p>
+name and building the third in code:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">ngwmn</span><span class="p">,</span> <span class="n">waterdata</span><span class="p">,</span> <span class="n">wqp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ngwmn</span><span class="w"> </span><span class="kn">import</span> <span class="n">NgwmnConfiguration</span>
@@ -161,18 +162,18 @@ name and building the third on the spot:</p>
     <span class="n">samples</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">wqp</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">siteid</span><span class="o">=</span><span class="n">sites</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Inside the block Water Data runs unbounded and asks the planner for eight
-chunks, NGWMN runs two requests at a time, and WQP retries twice. Everything a
+<p>Inside the block Water Data runs unbounded and requests eight chunks from the
+planner, NGWMN runs two requests at a time, and WQP retries twice. Everything a
 configuration does <em>not</em> name still comes from below it, per setting: Water
 Data and NGWMN both retry six times and both send the <code class="docutils literal notranslate"><span class="pre">api_key</span></code>, written once
 at the top of the file, because a configuration contributes what it names and
-inherits the rest. Only WQP named <code class="docutils literal notranslate"><span class="pre">retries</span></code>, so only WQP departs from the
+inherits the rest. Only WQP named <code class="docutils literal notranslate"><span class="pre">retries</span></code>, so only WQP differs from the
 file’s six.</p>
 <p>Outside the block nothing has changed, and putting those two profiles in the
 file changed nothing on its own — a named profile is inert until a caller
 selects it, which is what makes one safe to add to a file other people’s jobs
 also read.</p>
-<p>Two rules keep a block like that unambiguous. A configuration knows which
+<p>Two rules keep a block like that unambiguous. A configuration records which
 adapter it targets — that is a property of its class — so you never restate it,
 and <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> targets none of them, which is what makes it
 package-wide. And there is at most one configuration per adapter: naming two
@@ -231,9 +232,9 @@ as the URL byte limit forces.</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">60</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></p></td>
 <td><p>Seconds a call may go without receiving <em>any</em> data before retrying
-stops and the failure surfaces. Bounds the wall-clock cost of a dead
+stops and the failure is raised. Bounds the wall-clock cost of a dead
 connection, which <code class="docutils literal notranslate"><span class="pre">retries</span></code> alone does not — it counts attempts, not
-seconds. Progress resets the clock; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound.</p></td>
+seconds. Progress resets the timer; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
 <td><p>the service’s own</p></td>
@@ -258,8 +259,8 @@ another host would be a supply-chain hazard. See
 <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table.</p></li>
 <li><p>The package-wide keys at the top of the configuration file —
 <code class="docutils literal notranslate"><span class="pre">~/.dataretrieval/config.toml</span></code>, or the path in <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_CONFIG</span></code>.</p></li>
-<li><p>The adapter’s own built-in preference, where it has one — NWDC asks for a
-<code class="docutils literal notranslate"><span class="pre">concurrency</span></code> of 4, because that is as far as the service is
+<li><p>The adapter’s own built-in preference, where it has one — NWDC defaults to
+a <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> of 4, because that is as far as the service is
 stress-tested. It is a default, not a cap: anything you set above outranks
 it.</p></li>
 <li><p>The package built-in default, which for <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> is 32.</p></li>
@@ -282,10 +283,10 @@ preserving the existing <code class="docutils literal notranslate"><span class="
 overrides. The reasoning is in <a class="reference internal" href="../architecture/decisions/0009-layered-configuration.html"><span class="doc">ADR 0009</span></a>.</p>
 <p>The one exception is rung 2 above rung 3 — a profile you name in code. That
 is a more deliberate act than a variable inherited from whatever started
-your process, and having it lose to that variable is the kind of thing you
-would file a bug about. The inversion covers what the profile names and
-nothing else: every setting you did <em>not</em> name still follows the
-environment-above-file rule, in the same block. See <a class="reference internal" href="../architecture/decisions/0011-configuration-profiles.html"><span class="doc">ADR 0011</span></a>.</p>
+your process, and having that variable override it would look like a bug.
+The inversion covers what the profile names and nothing else: every setting
+you did <em>not</em> name still follows the environment-above-file rule, in the
+same block. See <a class="reference internal" href="../architecture/decisions/0011-configuration-profiles.html"><span class="doc">ADR 0011</span></a>.</p>
 </div>
 </section>
 <section id="an-environment-variable">
@@ -321,8 +322,8 @@ warns once if a file containing a key is group- or world-readable:</p>
 useful for a container or a job scheduler that mounts secrets elsewhere.</p>
 <section id="per-adapter-settings">
 <h3>Per-adapter settings<a class="headerlink" href="#per-adapter-settings" title="Link to this heading"></a></h3>
-<p>To tune one service and leave the rest alone, name the adapter — the same name
-you import:</p>
+<p>To tune one service and leave the rest unchanged, name the adapter — the same
+name you import:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">          </span><span class="c1"># every adapter</span>
 
 <span class="k">[ngwmn]</span>
@@ -344,11 +345,11 @@ you import:</p>
 <p>An adapter table <em>overrides</em> the top-level one per setting, so <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code>
 above still inherits <code class="docutils literal notranslate"><span class="pre">retries</span></code> and the <code class="docutils literal notranslate"><span class="pre">api_key</span></code>. Precedence is unchanged
 otherwise: an adapter-scoped value outranks a package-wide one only within the
-same source, so <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> exported for one run still beats a
+same source, so <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> exported for one run still outranks a
 <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span> <span class="pre">concurrency</span></code> in the file.</p>
 <p>Between <code class="docutils literal notranslate"><span class="pre">configure</span></code> blocks that tie-break applies per block: an adapter
-configuration beats a package-wide value set by the <em>same</em> block, while
-anything set by a block nested inside it wins over both. So a
+configuration outranks a package-wide value set by the <em>same</em> block, while
+anything set by a block nested inside it overrides both. So a
 <code class="docutils literal notranslate"><span class="pre">configure(Configuration(concurrency=1))</span></code> can still throttle a call an
 enclosing block had scoped to one adapter, and the innermost block decides.</p>
 <p>Each adapter accepts only the settings it reads, and they are the fields of its
@@ -386,8 +387,8 @@ line that quietly does nothing:</p>
 </tr>
 </tbody>
 </table>
-<p>Each class lives in the module whose code reads those settings, so a setting’s
-definition sits next to its use rather than in a service-neutral file.</p>
+<p>Each class is defined in the module whose code reads those settings, so a
+setting’s definition is next to its use rather than in a service-neutral file.</p>
 <p><code class="docutils literal notranslate"><span class="pre">api_key</span></code> is deliberately not per-adapter. It authenticates to the <em>gateway</em>
 in front of a host, and Water Data and NGWMN are served from the same host —
 one key, one hourly quota shared between them — so a per-adapter key would
@@ -396,8 +397,8 @@ package-wide: there is one progress line per call.</p>
 </section>
 <section id="named-profiles">
 <h3>Named profiles<a class="headerlink" href="#named-profiles" title="Link to this heading"></a></h3>
-<p>An adapter can hold more than one shape at a time. The <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table is
-that adapter’s <strong>default profile</strong> — always in effect, as above — while a
+<p>An adapter can have more than one profile at a time. The <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;]</span></code> table
+is that adapter’s <strong>default profile</strong> — always in effect, as above — while a
 <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table is a <strong>named profile</strong>, inert until you select it:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[waterdata]</span>
 <span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w">          </span><span class="c1"># the default profile: always in effect</span>
@@ -407,20 +408,20 @@ that adapter’s <strong>default profile</strong> — always in effect, as above
 <span class="n">parallel_chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">8</span>
 </pre></div>
 </div>
-<p>So one file can hold an overnight bulk shape beside a polite daytime one, and
-name as many of each as an adapter has uses for.</p>
+<p>So one file can hold an overnight bulk profile beside a low-rate daytime one,
+and name as many of each as an adapter has uses for.</p>
 <p>A named profile states only what differs: everything it does not name still
 comes from the adapter’s default profile, the package-wide keys, and the rungs
 below — per setting.</p>
-<p><code class="docutils literal notranslate"><span class="pre">load</span></code> reads the table and hands you a configuration object, so a name the
-file does not define raises there and then, listing the names it does define —
+<p><code class="docutils literal notranslate"><span class="pre">load</span></code> reads the table and returns a configuration object, so a name the
+file does not define raises immediately, listing the names it does define —
 a profile you just typed is more likely a typo than a request to fall through
 to settings you did not ask for. What comes back is inert until you pass it to
 <code class="docutils literal notranslate"><span class="pre">configure</span></code>; that is what puts a selected profile above the environment,
 since selecting one is something your code did.</p>
 <p>A profile holds settings and nothing else: <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk-pull.ngwmn]</span></code> is
-not a Water Data profile carrying NGWMN detail, and selecting it says so rather
-than quietly ignoring the nested table. Two adapters means two profiles,
+not a Water Data profile containing NGWMN detail, and selecting it says so
+rather than quietly ignoring the nested table. Two adapters means two profiles,
 selected in the same block, as in <a class="reference internal" href="#configuration-one-block"><span class="std std-ref">the example above</span></a>.</p>
 </section>
 </section>
@@ -447,8 +448,9 @@ what makes it package-wide.</p>
 <p class="admonition-title">Note</p>
 <p>Settings are not keywords on <code class="docutils literal notranslate"><span class="pre">configure</span></code>. <code class="docutils literal notranslate"><span class="pre">configure(api_key=...)</span></code> and
 the per-adapter mappings <code class="docutils literal notranslate"><span class="pre">configure(ngwmn={&quot;concurrency&quot;:</span> <span class="pre">4})</span></code> were an
-earlier spelling and are gone; write <code class="docutils literal notranslate"><span class="pre">Configuration(api_key=...)</span></code> and
-<code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration(concurrency=4)</span></code> instead. Passing anything that is not
+earlier form and are no longer accepted; write
+<code class="docutils literal notranslate"><span class="pre">Configuration(api_key=...)</span></code> and <code class="docutils literal notranslate"><span class="pre">NgwmnConfiguration(concurrency=4)</span></code>
+instead. Passing anything that is not
 a configuration raises and names the replacement, so an old script says what
 to write rather than failing obscurely.</p>
 </div>
@@ -472,7 +474,7 @@ keeps the rest:</p>
 </pre></div>
 </div>
 <p>Values are validated when the configuration is <em>constructed</em>, so a typo raises
-on the line you wrote it on rather than deep inside a later request.</p>
+on the line you wrote it on rather than inside a later request.</p>
 <p>Omitted settings inherit from an outer block or a lower-precedence source.
 Passing <code class="docutils literal notranslate"><span class="pre">None</span></code> explicitly suppresses those sources and restores built-in
 behavior for that block. <code class="docutils literal notranslate"><span class="pre">Configuration(api_key=None)</span></code>, for example, makes an
@@ -526,24 +528,24 @@ inherited from the rows above it.</p>
 selected any of it. A named profile does nothing until a caller selects it, so
 seeing <code class="docutils literal notranslate"><span class="pre">[waterdata.bulk]</span></code> there while no row above mentions it is the answer
 to “I added a profile and nothing changed”.</p>
-<p>The last line is the honest cost of validating an adapter’s settings lazily:
+<p>The last line is the cost of validating an adapter’s settings lazily:
 <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> cannot say what <code class="docutils literal notranslate"><span class="pre">nldi</span></code> accepts until something imports it,
 so it says that rather than quietly omitting the service. It is named rather
 than left out, because an omitted service would read as “nothing is configured
 for it”, which is a different claim.</p>
 <p>It never raises. A malformed file or a value that fails its grammar is reported
 in place — on the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code> line for a whole-file problem, or in that
-setting’s own row — because a broken configuration is exactly when you reach
-for this.</p>
+setting’s own row — because a broken configuration is exactly when you need
+this.</p>
 </section>
 <section id="why-parallel-chunks-has-no-environment-variable">
 <h2><a class="toc-backref" href="#id9" role="doc-backlink">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a><a class="headerlink" href="#why-parallel-chunks-has-no-environment-variable" title="Link to this heading"></a></h2>
 <p>Every other setting can be set from the environment. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>
 cannot, on purpose.</p>
 <p>Raising it splits a query into more sub-requests, and <em>each sub-request spends
-rate-limit quota</em>. Whether that is a good trade depends on the size of the
+rate-limit quota</em>. Whether that is worthwhile depends on the size of the
 query — which the library cannot know in advance. The setting therefore does
-not add another process-global environment knob that could be exported once
+not add another process-global environment variable that could be exported once
 and inherited by every subprocess.</p>
 <p>Set it per call, which is almost always what you want:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">parallel_chunks</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
@@ -561,8 +563,8 @@ sub-requests than the configured value, and an input with nothing to split
 stays a single request.</p>
 <p><code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code> is shorthand for
 <code class="docutils literal notranslate"><span class="pre">configure(Configuration(parallel_chunks=n))</span></code>: one scoping mechanism, so the
-innermost block wins whichever spelling set it, and <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code>
-always reports the value the chunker will actually use.</p>
+innermost block takes precedence whichever form set it, and
+<code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> always reports the value the chunker will actually use.</p>
 </section>
 <section id="pointing-an-adapter-at-another-host">
 <span id="configuration-redirect"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Pointing an adapter at another host</a><a class="headerlink" href="#pointing-an-adapter-at-another-host" title="Link to this heading"></a></h2>
@@ -578,12 +580,12 @@ a mirror, or a recording proxy — for the duration of a block:</p>
     <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span><span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>It names one adapter, so nothing else moves: NGWMN is served from the same host
-as Water Data, and a <code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration</span></code> still leaves it alone. What the
-value replaces is that adapter’s own base, and the package appends its usual
-paths to it — for Water Data that is the root all four of its APIs hang off, so
-one value moves the OGC collections, the Samples database, the statistics
-service and the STAC catalog together.</p>
+<p>It names one adapter, so nothing else changes: NGWMN is served from the same
+host as Water Data, and a <code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration</span></code> does not affect it. What
+the value replaces is that adapter’s own base, and the package appends its
+usual paths to it — for Water Data that is the root shared by all four of its
+APIs, so one value redirects the OGC collections, the Samples database, the
+statistics service and the STAC catalog together.</p>
 <p><strong>Code only.</strong> The configuration file and the environment both refuse it. A
 <code class="docutils literal notranslate"><span class="pre">base_url</span></code> key anywhere in the file, and an exported <code class="docutils literal notranslate"><span class="pre">API_USGS_BASE_URL</span></code>,
 each raise a <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> saying the setting <em>may only be set in
@@ -591,20 +593,20 @@ code, in a configure() block</em> and naming the configuration to pass it on
 instead.</p>
 <p>A file or a shell export that silently redirected a data-retrieval library to
 another host would be a supply-chain hazard: nothing at the call site would
-show it, and a script that reads correctly would be talking to someone else’s
-service. A <code class="docutils literal notranslate"><span class="pre">with</span></code> block keeps the redirect where a reader of the script sees
-it. The refusal is loud rather than silent for the same reason — a variable
-that was quietly ignored would leave you believing you had redirected
-something.</p>
-<p><strong>The API key does not follow.</strong> It is scoped to the one host that honors it
-(<a class="reference internal" href="#configuration-secret-store"><span class="std std-ref">below</span></a>), so a redirected call goes out
-without it. That is deliberate: the host you redirected to is not the host you
-gave a credential to. If the mirror needs its own credential, it needs its own
-mechanism.</p>
+show it, and a script that reads correctly would be sending requests to
+someone else’s service. A <code class="docutils literal notranslate"><span class="pre">with</span></code> block keeps the redirect where a reader of
+the script sees it. The refusal raises an error rather than ignoring the value,
+for the same reason — a variable that was quietly ignored would leave you
+believing you had redirected something.</p>
+<p><strong>The API key is not sent to the new host.</strong> It is scoped to the one host that
+accepts it (<a class="reference internal" href="#configuration-secret-store"><span class="std std-ref">below</span></a>), so a redirected call
+goes out without it. That is deliberate: the host you redirected to is not the
+host you gave a credential to. If the mirror needs its own credential, it needs
+its own mechanism.</p>
 </section>
 <section id="keeping-a-key-out-of-your-environment-entirely">
 <span id="configuration-secret-store"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Keeping a key out of your environment entirely</a><a class="headerlink" href="#keeping-a-key-out-of-your-environment-entirely" title="Link to this heading"></a></h2>
-<p>If your credentials live in a secret manager, nothing needs to touch
+<p>If your credentials are stored in a secret manager, nothing needs to modify
 <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
@@ -630,7 +632,7 @@ organization’s CA bundle:</p>
 <span class="nb">export</span><span class="w"> </span><span class="nv">SSL_CERT_DIR</span><span class="o">=</span>/etc/ssl/certs
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">httpx</span></code> honors these natively, so they apply to <strong>every</strong> getter in the
+<p><code class="docutils literal notranslate"><span class="pre">httpx</span></code> reads these natively, so they apply to <strong>every</strong> getter in the
 package — including the OGC collection getters (<code class="docutils literal notranslate"><span class="pre">get_daily</span></code>,
 <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>, and the rest), which take no SSL parameter of their own.</p>
 <p>Prefer this to <code class="docutils literal notranslate"><span class="pre">ssl_check=False</span></code>. That argument exists on some of the older

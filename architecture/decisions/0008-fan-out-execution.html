@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -117,7 +117,7 @@
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
 <p>Accepted. Supersedes the clause of <a class="reference internal" href="0006-service-neutral-transport.html"><span class="doc">ADR 0006: Use a service-neutral transport layer</span></a>
 assigning “resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state” to OGC’s protocol concerns; the rest
-of ADR 0006 stands.</p>
+of ADR 0006 remains in effect.</p>
 <p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
 <code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
@@ -133,18 +133,18 @@ with it.</p>
 The two are independent, and only the first is protocol knowledge: dividing a
 query needs the byte budget, the CQL2 grammar, and which parameters are
 list-valued, while distributing the pieces needs none of it.</p>
-<p>The package had not drawn that line. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> (division) and
-<code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> (distribution) sat side by side in <code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code> as
+<p>The package had not made that distinction. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> (division) and
+<code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> (distribution) were both defined in <code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code> as
 siblings, and ADR 0006 grouped them together deliberately. That grouping was
 correct while a byte plan was the only thing anyone fanned out over. It stopped
-being correct once Water Use fanned out too: unable to reach an OGC-internal
+being correct once Water Use fanned out too: unable to import an OGC-internal
 executor, <code class="docutils literal notranslate"><span class="pre">wateruse._fan_out</span></code> re-implemented the semaphore, the
-<code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>, and the cancellation-beats-HTTP-error failure precedence,
+<code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>, and the cancellation-before-HTTP-error failure precedence,
 with a comment naming <code class="docutils literal notranslate"><span class="pre">ChunkedCall._run</span></code> as the original. One rule, two
 copies, kept in agreement by that comment.</p>
 <p>The duplicate was not merely redundant. It lacked resume, so a rate limit
 partway through discarded every location that had already succeeded – against
-an hourly quota, on fan-outs that reach into the hundreds. It reported no
+an hourly quota, on fan-outs of hundreds of locations. It reported no
 progress. And it read its own module-global concurrency cap, so a user setting
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> to lower the request rate found one adapter ignoring
 them.</p>
@@ -160,31 +160,32 @@ optionally a <code class="docutils literal notranslate"><span class="pre">finali
 injected into the executor rather than applied at the call site because a resume
 re-enters the <em>executor</em>, never the getter that started the call. Shaping done
 after the getter returns would run on the first attempt and be skipped on the
-resumed one, so the same query would answer differently depending on whether it
-was interrupted. Anything that must be true of the returned frame belongs in
-<code class="docutils literal notranslate"><span class="pre">finalize</span></code>.</p>
+resumed one, so the same query would return different results depending on
+whether it was interrupted. Anything that must be true of the returned frame
+belongs in <code class="docutils literal notranslate"><span class="pre">finalize</span></code>.</p>
 <p><strong>The concurrency bound is an ``asyncio.Semaphore``, not the connection pool.</strong>
 The pool is sized to match the semaphore rather than used as the throttle: a
-pool smaller than the fan-out would queue chunks inside <code class="docutils literal notranslate"><span class="pre">httpx</span></code> and surface as
-<code class="docutils literal notranslate"><span class="pre">PoolTimeout</span></code>, which the taxonomy reads as a transient failure and reports as
-a resumable interruption – a spurious one, caused entirely by the package’s own
-settings rather than by the service. One throttle, and the pool follows it.</p>
+pool smaller than the fan-out would queue chunks inside <code class="docutils literal notranslate"><span class="pre">httpx</span></code> and appear as
+<code class="docutils literal notranslate"><span class="pre">PoolTimeout</span></code>, which the taxonomy classifies as a transient failure and
+reports as a resumable interruption – a spurious one, caused entirely by the
+package’s own settings rather than by the service. There is one throttle, and
+the pool is sized to it.</p>
 <p><strong>A CQL2-JSON filter is passed through, never divided.</strong> The planner does not
 chunk a <code class="docutils literal notranslate"><span class="pre">cql-json</span></code> filter and does not size-check its body; an over-budget
-body is the server’s judgement to render. Splitting a filter expression means
+body is for the server to accept or reject. Splitting a filter expression means
 understanding its semantics well enough to guarantee the union of the parts
 equals the whole, which is a different undertaking from splitting a list of
 identifiers along a comma.</p>
 <p><code class="docutils literal notranslate"><span class="pre">FanOutPlan</span></code> is a <code class="docutils literal notranslate"><span class="pre">Protocol</span></code> of <code class="docutils literal notranslate"><span class="pre">__len__</span></code> and <code class="docutils literal notranslate"><span class="pre">__iter__</span></code>, generic in the
 item type – a sized, iterable collection of chunk descriptions, and
 nothing more. The executor passes each item to the adapter’s own <code class="docutils literal notranslate"><span class="pre">fetch</span></code>
-without inspecting it, so the item type is the adapter’s business: the OGC
+without inspecting it, so the item type is the adapter’s concern: the OGC
 getters yield kwargs dicts, Water Use yields ready <code class="docutils literal notranslate"><span class="pre">httpx.Request</span></code> objects.</p>
 <p>The standard protocols, rather than custom members, are a deliberate choice.
 A plan declaring <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_chunk_args()</span></code> would be stating <code class="docutils literal notranslate"><span class="pre">len</span></code>
 twice under a private name: the two could then report different counts, and a
 test would have to assert they agree. Every adapter whose chunks are
-already a list would also need a wrapper class whose only job is renaming
+already a list would also need a wrapper class whose only purpose is renaming
 <code class="docutils literal notranslate"><span class="pre">len</span></code>.</p>
 <p>With the standard names a plain <code class="docutils literal notranslate"><span class="pre">list</span></code> is a plan, which is exactly what Water
 Use passes. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> keeps <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_chunk_args</span></code> as its own
@@ -195,12 +196,12 @@ members, not by inheriting – for the original reason: <code class="docutils li
 chunks from a byte budget over multi-value axes, a list of requests derives
 nothing, and so there is no shared implementation an abstract base could hold.</p>
 <p>The identity of the query as a whole is <em>not</em> part of the plan. <code class="docutils literal notranslate"><span class="pre">canonical_url</span></code>
-is a value stamped on the combined response, not a property of how the work
+is a value set on the combined response, not a property of how the work
 divides, so it is an argument to <code class="docutils literal notranslate"><span class="pre">FanOut</span></code>. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> computes one while
 planning and the OGC call site passes it through; Water Use passes its first
 location’s URL, since the service has no request expressing “all of these”.</p>
 <p><code class="docutils literal notranslate"><span class="pre">dataretrieval.ogc</span></code> keeps chunk planning: the byte budget, the axis
-partitioning, the CQL2 filter split, the <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> dial. Those are
+partitioning, the CQL2 filter split, the <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> setting. Those are
 division, and division is protocol-specific.</p>
 <p>The interruption taxonomy moves to <code class="docutils literal notranslate"><span class="pre">dataretrieval.interruptions</span></code>, a top-level
 leaf, for the reason ADR 0006 gives for <code class="docutils literal notranslate"><span class="pre">combining</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, and
@@ -218,15 +219,15 @@ unchanged.</p>
 a different default for when it is unset. The precedence is deliberate: an
 explicitly set environment variable outranks an adapter default, never the
 reverse. An adapter that could override the general setting would make
-<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT=1</span></code> a lie. An adapter default applies only when the
-variable is unset; it never displaces a value the caller set.</p>
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT=1</span></code> untrue. An adapter default applies only when the
+variable is unset; it never overrides a value the caller set.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Water Use gains resume, progress reporting, and the shared concurrency
-setting, and sheds roughly 75 lines of duplicated orchestration.</p></li>
-<li><p>One implementation of failure precedence, so cancellation-beats-error and
+setting, and removes roughly 75 lines of duplicated orchestration.</p></li>
+<li><p>One implementation of failure precedence, so cancellation-before-error and
 deterministic failure ordering cannot drift between services.</p></li>
 <li><p><strong>Breaking:</strong> a Water Use fan-out interrupted by a 5xx, 429, or recoverable
 connection failure now raises <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code> / <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>
@@ -239,12 +240,13 @@ failure resumable. Deterministic connection failures remain <code class="docutil
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> and <code class="docutils literal notranslate"><span class="pre">wateruse.DEFAULT_CONCURRENT_REQUESTS</span></code>.</p></li>
 <li><p>Resume re-issues a failed location’s entire page walk, so pages fetched before
 the failure are fetched again. This already applied to OGC – a partial walk
-never enters the completion map – and is a cost, not a correctness problem.</p></li>
-<li><p>Water Use frames carry <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code>, not <code class="docutils literal notranslate"><span class="pre">id</span></code>, so <code class="docutils literal notranslate"><span class="pre">_combine_chunk_frames</span></code>
+is never recorded in the completion map – and is a cost, not a correctness
+problem.</p></li>
+<li><p>Water Use frames have <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code>, not <code class="docutils literal notranslate"><span class="pre">id</span></code>, so <code class="docutils literal notranslate"><span class="pre">_combine_chunk_frames</span></code>
 concatenates them without deduplicating. Correct, because locations partition
-by construction, but the executor’s dedup safety net does not apply there.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">transport</span></code> is no longer purely leaf-shaped: <code class="docutils literal notranslate"><span class="pre">fanout</span></code> is a composite that
-drives retry, publishes the client pagination borrows, and calls
+by construction, but the executor’s deduplication does not apply there.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transport</span></code> is no longer a pure leaf: <code class="docutils literal notranslate"><span class="pre">fanout</span></code> is a composite that
+runs the retry loop, provides the client that pagination uses, and calls
 <code class="docutils literal notranslate"><span class="pre">combining</span></code>. It remains HTTP execution policy, which is the test the
 package applies.</p></li>
 </ul>
@@ -268,7 +270,7 @@ what an uninterrupted one would.</p>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">finalize</span></code>, semaphore, and CQL2-JSON clauses were added after the original
-decision, consolidating under ADR 0000 rules the code was carrying in prose –
+decision, consolidating under ADR 0000 rules the code was stating in prose –
 the semaphore rule was stated four times in <code class="docutils literal notranslate"><span class="pre">transport/fanout.py</span></code> alone, and
 that file now states it once and cites this record.</p>
 <p>The sentence naming the executor contract was extended in place to include

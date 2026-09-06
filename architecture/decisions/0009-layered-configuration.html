@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0009: Layered configuration resolution &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0009: Layered configuration resolution &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,7 +126,7 @@ recommendation in “<code class="docutils literal notranslate"><span class="pre
 put the setting in one. A profile is now named under the adapter it
 configures (<code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code>); the global table and
 <code class="docutils literal notranslate"><span class="pre">DATARETRIEVAL_PROFILE</span></code> are retired, since a table that switched every
-service at once could not carry per-service detail.</p></li>
+service at once could not express per-service detail.</p></li>
 <li><p><strong>“The environment ranks above the file”</strong>, inverted for – and only for – a
 profile selected in code. Everything the caller did not name in code still
 follows the rule as written here.</p></li>
@@ -138,7 +138,7 @@ free function; the <code class="docutils literal notranslate"><span class="pre">
 had already narrowed the objection to a payload-shape preference.</p></li>
 </ul>
 <p>The chain itself, the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> delivery, host-scoped credentials, and the
-leaf constraint stand.</p>
+leaf constraint remain in effect.</p>
 <p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
 <code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
@@ -150,16 +150,16 @@ variables (<code class="docutils literal notranslate"><span class="pre">API_USGS
 could report the effective configuration, and what those parsers accepted was
 free to drift apart.</p>
 <p>That mechanism cannot express a per-call credential. An application holding
-keys in a secret store, a notebook pulling for two accounts, or a server
-handling concurrent users must assign to <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> – which is
+keys in a secret store, a notebook retrieving data for two accounts, or a
+server handling concurrent users must assign to <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> – which is
 process-global, so it races across threads and tasks (issue #352).</p>
 <p>An <code class="docutils literal notranslate"><span class="pre">api_key=</span></code> parameter on the public getters is where a per-call value would
 normally go, and it is unsafe here. Every Water Data getter ends in
 <code class="docutils literal notranslate"><span class="pre">_get_args(locals())</span></code> with a <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> catch-all that forwards
 unrecognized keywords to the API as query parameters. A credential parameter
 missed in one of ~20 signatures would be serialized into a URL. The maintainers
-object to an <code class="docutils literal notranslate"><span class="pre">api_key=</span></code> parameter on a second ground: it invites keys pasted
-into shared scripts.</p>
+object to an <code class="docutils literal notranslate"><span class="pre">api_key=</span></code> parameter on a second ground: it encourages keys
+pasted into shared scripts.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
@@ -191,18 +191,18 @@ the pre-existing <code class="docutils literal notranslate"><span class="pre">AP
 <code class="docutils literal notranslate"><span class="pre">configure()</span></code> argument inherits from lower sources. Explicit <code class="docutils literal notranslate"><span class="pre">None</span></code> is a
 scoped reset to built-in behavior, so a server can guarantee an anonymous
 call rather than accidentally falling through to its process credential.</p></li>
-<li><p><strong>No public getter grows a credential parameter.</strong> <code class="docutils literal notranslate"><span class="pre">configure</span></code> is the only
+<li><p><strong>No public getter gains a credential parameter.</strong> <code class="docutils literal notranslate"><span class="pre">configure</span></code> is the only
 programmatic path, and a fitness function asserts no getter accepts
 <code class="docutils literal notranslate"><span class="pre">api_key</span></code> / <code class="docutils literal notranslate"><span class="pre">session</span></code> / <code class="docutils literal notranslate"><span class="pre">token</span></code>. The generic <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> path also
 refuses credential-shaped names before request construction so they cannot
-enter a URL. That refusal covers names carrying a secret; <code class="docutils literal notranslate"><span class="pre">session</span></code> is
+appear in a URL. That refusal covers names that hold a secret; <code class="docutils literal notranslate"><span class="pre">session</span></code> is
 deliberately not among them (see Notes).</p></li>
 <li><p><strong>The module owns each setting’s parser.</strong> <code class="docutils literal notranslate"><span class="pre">unbounded</span></code>, bounds, and
-rejection messages live in one place. <code class="docutils literal notranslate"><span class="pre">tomllib</span></code> returns typed scalars, so
-the file and Python API validate source-level types before normalized values
-pass through the shared parsers. Legacy environment-only forms, including a
-blank numeric value and an arbitrary non-empty progress value, remain
-compatible without making the new surfaces equally permissive.</p></li>
+rejection messages are defined in one place. <code class="docutils literal notranslate"><span class="pre">tomllib</span></code> returns typed
+scalars, so the file and Python API validate source-level types before
+normalized values pass through the shared parsers. Legacy environment-only
+forms, including a blank numeric value and an arbitrary non-empty progress
+value, remain compatible without making the new surfaces equally permissive.</p></li>
 <li><p><strong>Each setting’s policy is a row in a named table, never a branch in shared
 code.</strong> Type, bounds, and parser are declared as data, guarded at import time
 for completeness, so adding a setting cannot silently inherit whatever the
@@ -215,21 +215,21 @@ a newer release still loads rather than breaking a caller who downgraded. A
 key the version <em>does</em> recognize, placed in a table that cannot use it, raises:
 that is a mistake the caller can fix, and ignoring it silently would leave the
 user believing a setting is in effect when it is not.</p></li>
-<li><p><strong>Credential-shaped keyword refusal is a usability guardrail, not a security
+<li><p><strong>Credential-shaped keyword refusal is a usability check, not a security
 control.</strong> Names are matched as substrings after separators are stripped, and
 the check errs toward rejecting. It never inspects values, so it stops a
 caller who mistyped a credential into a query filter – it does not stop
-anyone determined to send one. Naming it a security control would invite
-reliance it cannot carry.</p></li>
-<li><p><strong>The key travels only over https, to the one authorized host.</strong> The scheme is
+anyone determined to send one. Naming it a security control would encourage
+reliance it does not justify.</p></li>
+<li><p><strong>The key is sent only over https, to the one authorized host.</strong> The scheme is
 matched as well as the host, because redirects and server-supplied next-page
-links are attacker-influenced data and a downgrade to http would put the
-credential on the wire in clear text. Userinfo on a handed-in URL is stripped
-before the request is built, so <code class="docutils literal notranslate"><span class="pre">httpx</span></code> cannot build an <code class="docutils literal notranslate"><span class="pre">Authorization</span></code>
-header nobody configured. This states the predicate ADR 0006 defers to the
-credentials leaf.</p></li>
+links are attacker-influenced data and a downgrade to http would send the
+credential in clear text. Userinfo on a caller-supplied URL is
+stripped before the request is built, so <code class="docutils literal notranslate"><span class="pre">httpx</span></code> cannot build an
+<code class="docutils literal notranslate"><span class="pre">Authorization</span></code> header nobody configured. This states the predicate ADR
+0006 defers to the credentials leaf.</p></li>
 <li><p><strong>TOML, read with</strong> <code class="docutils literal notranslate"><span class="pre">tomllib</span></code>. Stdlib from Python 3.11; the <code class="docutils literal notranslate"><span class="pre">tomli</span></code>
-backport is declared under an environment marker and disappears when
+backport is declared under an environment marker and is dropped when
 <code class="docutils literal notranslate"><span class="pre">requires-python</span></code> moves to <code class="docutils literal notranslate"><span class="pre">&gt;=3.11</span></code>. YAML was rejected because PyYAML is
 a dependency at every Python version and the settings are flat.</p></li>
 <li><p><strong>Not every setting gets an environment variable.</strong> <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>
@@ -242,11 +242,12 @@ only sources, with a scoped block as the recommended use, which also keeps the
 setting from leaking into unrelated calls.</p></li>
 <li><p><strong>Names distinguish execution capacity from planning granularity.</strong>
 <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> names the maximum chunks in flight and maps to the existing
-<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> variable. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> asks the planner for
-optional extra chunks; it does not promise that many execute simultaneously.
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> variable. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> requests optional
+extra chunks from the planner; it does not guarantee that many execute
+simultaneously.
 The name is retained because the context manager is already public.
 <code class="docutils literal notranslate"><span class="pre">parallelism</span></code> and <code class="docutils literal notranslate"><span class="pre">chunk_parallelism</span></code> were rejected because they would
-conflate this planning hint with <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>.</p></li>
+conflate this planning setting with <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>.</p></li>
 <li><p><strong>Configuration errors are in the error taxonomy.</strong> <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> is a
 <code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code> <em>and</em> a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. Configuration resolves lazily
 on the request path, so an invalid file raises from inside whichever getter
@@ -261,13 +262,13 @@ needs; the top-level form still works, but warns.</p></li>
 <li><p><strong>``dataretrieval.configuration`` is a lightweight leaf.</strong> It uses only the
 standard library, the <code class="docutils literal notranslate"><span class="pre">tomli</span></code> backport on Python 3.10, and
 <code class="docutils literal notranslate"><span class="pre">dataretrieval.exceptions</span></code> – itself a dependency-free leaf, so this adds no
-weight and cannot create an import cycle. It is read by <code class="docutils literal notranslate"><span class="pre">utils</span></code> (headers),
-<code class="docutils literal notranslate"><span class="pre">ogc.chunking</span></code>, <code class="docutils literal notranslate"><span class="pre">ogc.retry</span></code>, and <code class="docutils literal notranslate"><span class="pre">ogc.progress</span></code>, so under ADR 0003 it
-must import none of them. The public callable is named <code class="docutils literal notranslate"><span class="pre">configure</span></code> rather
-than <code class="docutils literal notranslate"><span class="pre">config</span></code> so it does not shadow the module. It is a scoped action, not a
-<code class="docutils literal notranslate"><span class="pre">Configuration</span></code> dataclass: a value object would imply snapshot, equality,
-serialization, and representation contracts while risking disclosure of the
-API key through generated helpers.</p></li>
+dependencies and cannot create an import cycle. It is read by <code class="docutils literal notranslate"><span class="pre">utils</span></code>
+(headers), <code class="docutils literal notranslate"><span class="pre">ogc.chunking</span></code>, <code class="docutils literal notranslate"><span class="pre">ogc.retry</span></code>, and <code class="docutils literal notranslate"><span class="pre">ogc.progress</span></code>, so under
+ADR 0003 it must import none of them. The public callable is named
+<code class="docutils literal notranslate"><span class="pre">configure</span></code> rather than <code class="docutils literal notranslate"><span class="pre">config</span></code> so it does not shadow the module. It is
+a scoped action, not a <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> dataclass: a value object would imply
+snapshot, equality, serialization, and representation contracts while risking
+disclosure of the API key through generated helpers.</p></li>
 <li><p><strong>One flat set of setting names, shared by every service.</strong> <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>
 means the same thing to every adapter, so the chain resolves one name rather
 than one per service. Services differ in the <em>value</em> they want, not the
@@ -278,31 +279,31 @@ of 32, and the single-shot adapters pass <code class="docutils literal notransla
 <code class="docutils literal notranslate"><span class="pre">RetryPolicy.from_configuration()</span></code> because WQP and StreamStats report a
 rejected query as a 500. A value resolved from the chain always outranks a
 caller default – a service able to override an explicit setting would make
-<code class="docutils literal notranslate"><span class="pre">concurrency=1</span></code> a lie.</p></li>
+<code class="docutils literal notranslate"><span class="pre">concurrency=1</span></code> untrue.</p></li>
 <li><p><strong>Per-service overrides are deferred, not refused.</strong> One <code class="docutils literal notranslate"><span class="pre">configure()</span></code>
 block cannot currently set one value for Water Use and another for Water Data.
 Every known service difference is a default, which the caller already
-supplies, so nothing needs it yet. If something does, the shape is a namespace
+supplies, so nothing needs it yet. If something does, the form is a namespace
 inside this chain – a <code class="docutils literal notranslate"><span class="pre">[wateruse]</span></code> table beside the top-level keys, read as
 <code class="docutils literal notranslate"><span class="pre">configuration.concurrency(default,</span> <span class="pre">service=...)</span></code>. It costs a second
 dimension in resolution, which <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> must then render as a
-matrix rather than a list, and that cost should buy a requirement before it is
-paid.</p></li>
+matrix rather than a list, and that cost should be paid only when a
+requirement exists.</p></li>
 <li><p><strong>A configuration object would have no way to reach the call.</strong> The public
 surface is free functions – <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily(...)</span></code>, not a client with
-methods. An instance would therefore arrive either as a parameter on every
+methods. An instance would therefore be passed either as a parameter on every
 getter, which is the per-call passing the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> exists to remove and
 which the <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> catch-all makes unsafe, or through a module-level
 global, which restores the cross-thread and cross-task leakage this ADR
-exists to end. A library entered through a constructed client can hold
-settings on that client; one entered through free functions cannot, and the
+exists to end. A library used through a constructed client can hold
+settings on that client; one used through free functions cannot, and the
 scoped block follows from that.</p></li>
 </ul>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>A credential can be supplied per thread or per task without touching
+<li><p>A credential can be supplied per thread or per task without modifying
 <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>, which is what issue #352 asked for.</p></li>
 <li><p>Host scoping is unchanged and unconditional: a key from any source is sent
 only to <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and is stripped on cross-host redirects.</p></li>
@@ -329,15 +330,15 @@ thread and asyncio isolation, host scoping for file-sourced keys, redaction in
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
-<p>The setting-table, forward-compatibility, guardrail-scoping, and credential-
-egress clauses were added after the original decision, consolidating under ADR
-0000 rules that the code was carrying in prose. None changes behavior.</p>
+<p>The setting-table, forward-compatibility, refusal-scoping, and
+credential-egress clauses were added after the original decision, consolidating
+under ADR 0000 rules that the code was stating in prose. None changes behavior.</p>
 <p>The “Not every setting gets an environment variable” bullet was also extended in
 place: it deferred its argument to a <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> docstring, and that
-argument now sits in the bullet itself, because the docstring it pointed at was
+argument is now in the bullet itself, because the docstring it pointed at was
 the prose being consolidated.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> clause above originally named <code class="docutils literal notranslate"><span class="pre">session</span></code> among the
-rejected spellings. It was corrected after the fact: <code class="docutils literal notranslate"><span class="pre">session</span></code> carries no
+rejected names. It was corrected after the fact: <code class="docutils literal notranslate"><span class="pre">session</span></code> holds no
 secret, so refusing it with a credentials message told callers the wrong thing,
 and as a substring it claimed part of a namespace the <em>server</em> owns – any
 future query parameter containing it would have been unreachable behind that

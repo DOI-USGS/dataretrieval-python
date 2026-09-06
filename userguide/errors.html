@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Handling errors &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>Handling errors &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../_static/documentation_options.js?v=2921959c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -121,7 +121,7 @@ nothing matches, so check <code class="docutils literal notranslate"><span class
 <p>Every <a class="reference internal" href="../reference/exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> exposes three
 read-anywhere fields, so you rarely need to import the specific subclasses:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">.status_code</span></code> – the HTTP status, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the failure carried no
+<li><p><code class="docutils literal notranslate"><span class="pre">.status_code</span></code> – the HTTP status, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the failure included no
 response (a connection error, an over-long URL, …).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> – seconds the server asked you to wait (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
 header), or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
@@ -132,7 +132,7 @@ header), or <code class="docutils literal notranslate"><span class="pre">None</s
     <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
         <span class="o">...</span>            <span class="c1"># not found</span>
     <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">retryable</span><span class="p">:</span>
-        <span class="o">...</span>            <span class="c1"># transient -- see the retry recipe below</span>
+        <span class="o">...</span>            <span class="c1"># transient -- see the retry example below</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span>
 </pre></div>
@@ -142,7 +142,7 @@ header), or <code class="docutils literal notranslate"><span class="pre">None</s
 <h2>Retry transient failures with backoff<a class="headerlink" href="#retry-transient-failures-with-backoff" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">.retryable</span></code> and <code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> make a backoff loop type-agnostic: one loop
 covers rate limits (429), server errors (5xx), and connection failures alike,
-and honors the server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> hint when present:</p>
+and uses the server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> value when present:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
 
@@ -164,7 +164,7 @@ and honors the server’s <code class="docutils literal notranslate"><span class
 <p>Some requests become several: the Water Data and NGWMN getters split an
 over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
-mid-stream, the work already completed is preserved: catch
+partway, the work already completed is preserved: catch
 <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> and call <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> once the condition clears
 – only the unfinished chunks are re-issued.</p>
 <p>(<code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is the same class under its original name; either works.)</p>
@@ -196,10 +196,10 @@ extra quota <em>as long as each chunk still spans many pages</em>. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
 would; a split that leaves each chunk only a page or two adds its partial
 final page.) So if you <em>know</em> your pull is large, ask for a finer split with
-<code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code>: you trade roughly the same pages for more, smaller
+<code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code>: you get roughly the same pages in more, smaller
 chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> is a scoped <code class="docutils literal notranslate"><span class="pre">with</span></code> block, so
-an aggressive setting can’t leak into unrelated calls and accidentally spend
+a high setting can’t leak into unrelated calls and accidentally spend
 quota:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
 
@@ -215,13 +215,13 @@ raises <code class="docutils literal notranslate"><span class="pre">ValueError</
 across every multi-value argument combined (not per argument), bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can’t multiply past it, and
-<code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks for no extra fan-out. Each chunk costs a request against your
+<code class="docutils literal notranslate"><span class="pre">n=1</span></code> requests no extra fan-out. Each chunk costs a request against your
 hourly rate limit. How many run <em>at once</em> is capped separately by
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> (default 32), so an <code class="docutils literal notranslate"><span class="pre">n</span></code> beyond that adds quota without
 adding parallelism – the useful range is roughly <code class="docutils literal notranslate"><span class="pre">2</span></code> up to
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code>. There is no “off” level: don’t enter the block
 unless you already expect a large, multi-page result – on a query that would
-have fit in a single page, extra chunks only burn quota.</p>
+have fit in a single page, extra chunks only spend quota.</p>
 </section>
 <section id="the-full-taxonomy">
 <h2>The full taxonomy<a class="headerlink" href="#the-full-taxonomy" title="Link to this heading"></a></h2>

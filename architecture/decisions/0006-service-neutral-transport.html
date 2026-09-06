@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -117,7 +117,7 @@
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
 <p>Accepted. The clause assigning resumable <code class="docutils literal notranslate"><span class="pre">ChunkedCall</span></code> state to OGC is
 superseded by <a class="reference internal" href="0008-fan-out-execution.html"><span class="doc">ADR 0008: Separate fan-out execution from chunk planning</span></a>, which moves fan-out <em>execution</em>
-into transport and leaves chunk <em>planning</em> in OGC. The rest stands.</p>
+into transport and leaves chunk <em>planning</em> in OGC. The rest remains in effect.</p>
 <p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
 <code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
@@ -130,10 +130,10 @@ would make unrelated services depend on protocol-specific implementation
 details – Water Use previously imported its page walker and sync bridge from
 <code class="docutils literal notranslate"><span class="pre">ogc.engine</span></code>. Duplicating them would allow authentication, timeout, retry,
 and failure behavior to drift.</p>
-<p>“Neutral” here means neutral across the USGS services this package talks to, not
-across HTTP APIs in general. The layer knows the <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> environment
+<p>“Neutral” here means neutral across the USGS services this package calls, not
+across HTTP APIs in general. The layer reads the <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> environment
 variables and the quota header USGS returns. Claiming broader neutrality than
-that invites generality no caller needs.</p>
+that would add generality no caller needs.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
@@ -153,7 +153,7 @@ nothing at all; and</p></li>
 are not HTTP execution policy and every adapter needs them whether or not it goes
 through transport:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.credentials</span></code> – which host honors the key, whether a
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.credentials</span></code> – which host accepts the key, whether a
 destination qualifies, and how the key is withheld. One definition, so the code
 that attaches a credential and the code that removes it cannot disagree.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.progress</span></code> – terminal rendering. Transport reports <em>into</em> it.</p></li>
@@ -170,52 +170,53 @@ interruption handles. Thin imports at previous private OGC and utility paths
 preserve compatibility where a consumer still uses them. A path no consumer
 imports is deleted rather than kept as a module that exists to satisfy its own
 test. Tunables are never re-exported by value: a caller can patch a copy taken
-at import time without reaching the policy that reads it, so
+at import time without affecting the policy that reads it, so
 <code class="docutils literal notranslate"><span class="pre">transport.retry</span></code> is the single place they are read from.</p>
 <p>Automatic retry is enabled only on active, idempotent request paths, and only
-for failures a later attempt could survive – rate limiting, server errors, and
-transport failures that are not deterministic. Which server errors qualify is
-per adapter: a fanned-out call re-sends any 5xx, riding out a transient
-upstream failure, while a single-shot adapter re-sends only the gateway
-statuses, because its service answers a <em>rejected query</em> with a 500, and
-re-sending that would spend a caller’s quota on a request that cannot succeed.
-Both sets are narrower than <code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retryable</span></code>, deliberately:
-that field tells a caller re-issuing might work, where spending someone’s quota
-unasked needs a stricter bar. Deprecated NWIS calls retain their compatibility
-behavior. A failed pagination or fan-out operation raises rather than returning
-successful siblings as an apparently complete result – with one narrow
-carve-out for a fan-out over independent items, recorded in
-<a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a>.</p>
+for failures that may not recur on a later attempt – rate limiting, server
+errors, and transport failures that are not deterministic. Which server errors
+qualify is per adapter: a fanned-out call re-sends any 5xx, since a transient
+upstream failure may have ended, while a single-shot adapter re-sends only the
+gateway statuses, because its service responds to a <em>rejected query</em> with a
+500, and re-sending that would spend a caller’s quota on a request that
+cannot succeed. Both sets are narrower than <code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retryable</span></code>,
+deliberately: that field tells a caller re-issuing might work, where spending
+someone’s quota unasked needs a stricter criterion. Deprecated NWIS calls
+retain their compatibility behavior. A failed pagination or fan-out operation
+raises rather than returning successful siblings as an apparently complete
+result – with one narrow exception for a fan-out over independent items,
+recorded in <a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a>.</p>
 <p>Two independent bounds limit retry: an attempt count and a no-progress budget
 measured in seconds since data last arrived. Attempts alone leave elapsed time
 unbounded, since each attempt may itself block until its timeout; the budget
 alone would cut short a slow but productive download. Receiving a page restarts
 the budget, and an attempt already in flight is never interrupted.</p>
-<p><strong>Waiting is not the same as silence.</strong> The budget bounds time the <em>service</em>
-left the caller with nothing, so time the package chose to spend is credited
-back by the measured amount: a wait the server named in <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>, and
-time a chunk spent queued behind the concurrency gate. The first retry is
-exempt outright. Without these exemptions a policy that honors a server’s hint
-would spend its own budget obeying it, and a call would lose retries for being
-throttled by settings the caller chose. Credit is never stamped into the
-future – a timestamp ahead of now would make elapsed silence negative and
-silently disable the bound. Because half of that accounting is the retry
-driver’s, the concurrency gate is acquired <em>per attempt</em> inside the retry
-driver rather than held by the caller across one.</p>
+<p><strong>Time spent waiting is not time without progress.</strong> The budget bounds time
+the <em>service</em> left the caller with nothing, so time the package chose to spend
+is excluded by the measured amount: a wait the server named in
+<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>, and time a chunk spent waiting for the concurrency semaphore.
+The first retry is exempt outright. Without these exemptions a policy that
+follows a server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> would spend its own budget doing so, and a
+call would lose retries for being throttled by settings the caller chose. An
+exclusion never sets the reference time later than now: a timestamp ahead of
+now would make the elapsed no-progress time negative and silently disable the
+bound. Because half of that exclusion is the retry driver’s, the concurrency
+semaphore is acquired <em>per attempt</em> inside the retry driver rather than held
+by the caller across one.</p>
 <p><strong>A server-supplied next-page link is untrusted response data.</strong> One shared
 policy parses it, resolves it against the request, refuses a host the caller
-did not ask for, and strips embedded credentials (ADR 0009) before it becomes a
+did not request, and strips embedded credentials (ADR 0009) before it becomes a
 request; a page walk injects only which hosts are acceptable. Three walks
 follow such links – OGC <code class="docutils literal notranslate"><span class="pre">links</span></code>, the ratings STAC search, and Water Use’s
 <code class="docutils literal notranslate"><span class="pre">Link</span></code> header – and a link is the same attacker-influenced input in all
 three, so a fourth parse outside that policy is a defect rather than a
 variation.</p>
-<p><strong>Refusing credential-shaped keywords is the credentials leaf’s job.</strong> ADR 0009
-owns the rule that a wide <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> or <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> passthrough refuses
-such names; what belongs here is where the predicate lives. It is the fourth
-question that leaf answers, alongside which host honors the key, whether a
-destination qualifies, and how the key is withheld – one definition, so ten
-getters cannot drift into ten spellings of the same check.</p>
+<p><strong>Refusing credential-shaped keywords belongs to the credentials leaf.</strong> ADR
+0009 owns the rule that a general <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> or <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> passthrough
+refuses such names; what belongs here is where the predicate is defined. It is
+the fourth question that leaf answers, alongside which host accepts the key,
+whether a destination qualifies, and how the key is withheld – one definition,
+so ten getters cannot drift into ten versions of the same check.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
@@ -226,12 +227,12 @@ aggregation, progress, and sync-dispatch policy where their semantics match.</p>
 <li><p>Service-specific request and result contracts remain explicit instead of
 being forced into a universal adapter abstraction.</p></li>
 <li><p>Retry can increase latency and quota consumption, so attempt counts, waits,
-and total silent time remain bounded, and cancellation signals are never
+and total no-progress time remain bounded, and cancellation signals are never
 wrapped.</p></li>
-<li><p>Guidance the progress reporter prints is gated on the host it applies to, so a
+<li><p>Guidance the progress reporter prints depends on the host it applies to, so a
 service that cannot use an API key is not told to obtain one.</p></li>
 <li><p>The transport package is internal infrastructure, not a new public API
-promise.</p></li>
+contract.</p></li>
 <li><p>Keeping presentation and frame assembly out means transport is roughly 570
 lines across five modules, each recognizably HTTP execution policy. Retry is
 the one complex module, because two independent bounds are what make retry
@@ -248,15 +249,15 @@ Component and adapter tests cover cursor termination, row caps, response
 aggregation, retry exhaustion, <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> limits, the no-progress budget,
 which failures are re-sent, cancellation, no-partial fan-out behavior, and
 credential host scoping. The exemptions above are covered by the liveness and
-retry tests over credited waits and the first-attempt case. Next-page link
+retry tests over excluded waits and the first-attempt case. Next-page link
 validation is covered by the shared link-policy tests over foreign hosts and
 embedded userinfo.</p>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
-<p>The waiting-is-not-silence, next-page-link, and credentials-leaf clauses were
-added after the original decision, consolidating under ADR 0000 the rules the
-code was carrying in prose – the budget exemptions were argued in five places
+<p>The waiting-time, next-page-link, and credentials-leaf clauses were added
+after the original decision, consolidating under ADR 0000 the rules the code
+was stating in prose – the budget exemptions were argued in five places
 across <code class="docutils literal notranslate"><span class="pre">transport/retry.py</span></code>, <code class="docutils literal notranslate"><span class="pre">transport/liveness.py</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">transport/fanout.py</span></code>.</p>
 <p>One sentence of the original Decision was also corrected rather than added to:

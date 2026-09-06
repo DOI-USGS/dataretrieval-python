@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0013: Distinguish the terms we own from the terms the services own &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0013: Distinguish the terms we own from the terms the services own &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -121,8 +121,8 @@
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> is one flat glossary. Every term in it reads as equally binding,
 and every place the code disagrees is filed under <em>Known legacy names</em> – a
-list whose framing is that the disagreement is debt, tolerated until someone
-gets to it.</p>
+list whose framing is that the disagreement is a defect, tolerated until
+someone corrects it.</p>
 <p>For most of the glossary that framing is right. But it is wrong for a small set
 of terms, and being wrong about those has produced the same review argument
 repeatedly: whether a docstring may say <em>site</em>, whether <code class="docutils literal notranslate"><span class="pre">service=</span></code> may name a
@@ -131,7 +131,7 @@ Data API.</p>
 <p>The two sets behave differently because their authority differs.</p>
 <p>Terms like <em>chunk</em>, <em>page</em>, <em>fan-out</em>, <em>plan</em>, <em>interruption</em>, <em>dialect</em> and
 <em>leaf</em> appear nowhere in any USGS API’s vocabulary. They were invented here to
-describe machinery this package owns. Nothing external constrains them, so when
+describe mechanisms this package owns. Nothing external constrains them, so when
 the package spells one of them two ways – the resolution chain’s code said
 <em>tier</em> for what its founding records, ADRs 0009 and 0010, call a <em>source</em> –
 that is simply an inconsistency, and one that can be removed by deciding.</p>
@@ -172,7 +172,7 @@ from the API it wraps.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
-<p>The glossary holds two kinds of term, and they carry different obligations.</p>
+<p>The glossary holds two kinds of term, and they impose different obligations.</p>
 <p><strong>Core terms are ours.</strong> The package invented them and no service has a claim
 on them: everything under <em>Retrieval</em>, <em>Failure and resumption</em>, <em>Configuration</em>
 and <em>Boundaries</em>, plus <em>Collection family</em> and <em>Metadata</em>. One spelling,
@@ -180,28 +180,28 @@ enforced everywhere it appears – prose, identifiers, tests. A second spelling
 of a core term is a defect, not a variation, and is fixed rather than recorded.
 This is what makes the lower-level modules shareable: transport, configuration
 and the OGC engine can be written once because the words they are written in
-answer to nothing outside this package.</p>
+are constrained by nothing outside this package.</p>
 <p><strong>Domain terms belong to the services.</strong> <em>Monitoring location</em> and <em>collection</em>
 name things the services define and spell differently. For these the glossary
 chooses one term for <strong>prose</strong>, so that documents about the package are
-internally consistent. It does not choose for the wire, and it does not choose
-for an adapter’s public surface: each adapter keeps its own service’s spelling
-in its parameters, and reproduces that service’s vocabulary faithfully where it
-appears in returned data.</p>
-<p>An adapter is where the two meet. Its public surface speaks its service’s
-language; what it hands to the shared modules speaks the core’s. The
-translation is the adapter’s job, and a divergence at that boundary is the
-design working rather than debt.</p>
+internally consistent. It does not choose the names used in requests, and it
+does not choose for an adapter’s public surface: each adapter keeps its own
+service’s spelling in its parameters, and reproduces that service’s vocabulary
+faithfully where it appears in returned data.</p>
+<p>An adapter is where the two meet. Its public surface uses its service’s
+terms; what it passes to the shared modules uses the core terms. The
+translation is the adapter’s responsibility, and a divergence at that boundary
+is the design working as intended rather than a defect.</p>
 <p>Two rules follow:</p>
 <ul class="simple">
 <li><p><strong>A term the glossary does not define is not used in the glossary.</strong> A word
-that earns a place in <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code>’s prose earns an entry. Naming a term
+used in <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code>’s prose needs an entry. Naming a term
 only to say what an ADR calls it is a cross-reference, not a definition, and
-does not license using the word elsewhere.</p></li>
+does not permit using the word elsewhere.</p></li>
 <li><p><strong>Only core misnamings are legacy.</strong> <em>Known legacy names</em> records a core term
 the code spells wrongly and cannot be renamed. A domain term at an adapter’s
-surface is not a legacy name; it is that adapter speaking its service’s
-language, and belongs with the term’s own entry.</p></li>
+surface is not a legacy name; it is that adapter using its service’s
+terms, and belongs with the term’s own entry.</p></li>
 </ul>
 </section>
 <section id="consequences">
@@ -217,18 +217,18 @@ depends on which adapter the prose is about, so it stays a review judgement.</p>
 <li><p><em>Known legacy names</em> becomes shorter and means something narrower. The entries
 it loses are not resolved; they move to the term they belong to, as part of
 its definition rather than a list of exceptions.</p></li>
-<li><p>A glossary entry now carries an obligation to say which kind it is. That is a
+<li><p>A glossary entry now has an obligation to say which kind it is. That is a
 small cost per term and the reason the distinction is usable at all.</p></li>
 <li><p>The package’s own inconsistencies in core vocabulary become defects with a
 deadline rather than curiosities. The resolution chain’s <code class="docutils literal notranslate"><span class="pre">tier</span></code>-for-<em>source</em>
-identifiers are the standing example.</p></li>
+identifiers are the current example.</p></li>
 </ul>
 </section>
 <section id="compliance">
 <h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> marks each domain term as such and names the per-service
 spellings in the entry itself, so a reader who needs to know whether a word is
-negotiable can see it without asking.</p>
+allowed to vary can see it without asking.</p>
 <p>The mechanical part is that the glossary must define what it uses:
 <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code> asserts every <code class="docutils literal notranslate"><span class="pre">ADR</span> <span class="pre">NNNN</span></code> citation resolves, and
 the same file is where a check that <code class="docutils literal notranslate"><span class="pre">CONTEXT.md</span></code> defines its own vocabulary

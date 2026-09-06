@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../_static/documentation_options.js?v=2921959c"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -485,9 +485,9 @@ instruction it is, floored by
 
 <section id="resumable-fan-out-interruptions">
 <h2>Resumable fan-out interruptions<a class="headerlink" href="#resumable-fan-out-interruptions" title="Link to this heading"></a></h2>
-<p>These are raised when a fanned-out request is interrupted mid-stream; the
+<p>These are raised when a fanned-out request is interrupted partway; the
 completed work is preserved and <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> continues it. They are
-defined in <code class="docutils literal notranslate"><span class="pre">dataretrieval.interruptions</span></code> (they carry pandas/httpx state) but
+defined in <code class="docutils literal notranslate"><span class="pre">dataretrieval.interruptions</span></code> (they hold pandas/httpx state) but
 are importable from the top level, e.g.
 <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">dataretrieval</span> <span class="pre">import</span> <span class="pre">FanOutInterrupted</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code> is a permanent alias of <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> – the same

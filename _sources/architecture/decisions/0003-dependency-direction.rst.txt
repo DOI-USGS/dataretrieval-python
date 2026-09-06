@@ -25,7 +25,7 @@ infrastructure. In particular:
 - ``dataretrieval.exceptions`` is a runtime-dependency-light leaf.
 - ``dataretrieval.ogc`` must not import Water Data, NGWMN, Water Use, or NWIS.
 - ``dataretrieval.ogc`` must not depend on the mixed legacy ``utils`` module;
-  shared scoped state lives in a dependency-free leaf instead.
+  shared scoped state is kept in a dependency-free leaf instead.
 - Modern modules must not import deprecated NWIS.
 - Service-neutral transport must not import OGC modules or service adapters.
 - Non-OGC services must obtain generic execution behavior from transport, not

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -117,16 +117,17 @@
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
 <p>Accepted, except for two clauses. Supersedes the “One flat set of setting
 names” and “Per-service overrides are deferred” clauses of
-<a class="reference internal" href="0009-layered-configuration.html"><span class="doc">ADR 0009: Layered configuration resolution</span></a>; the rest of ADR 0009 stands, subject to what
-ADR 0011 supersedes there.</p>
+<a class="reference internal" href="0009-layered-configuration.html"><span class="doc">ADR 0009: Layered configuration resolution</span></a>; the rest of ADR 0009 remains in effect,
+subject to what ADR 0011 supersedes there.</p>
 <p><a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> supersedes decisions 5 and 8 below –
 adapter schemas held centrally as <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>, and each adapter a named
 keyword on <code class="docutils literal notranslate"><span class="pre">configure()</span></code>. Each adapter now declares a <code class="docutils literal notranslate"><span class="pre">BaseConfiguration</span></code>
 subclass in the module that <em>reads</em> those settings, and <code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes
 instances of them positionally, which is what removes the adapter roster from
-the call site. The spelling shown in decision 1 goes with decision 8. Decisions
-2, 3, 4, 6 and 7 stand: the tiers, source-major precedence, package-wide
-environment variables, the host-scoped key, and the adapter names.</p>
+the call site. The <code class="docutils literal notranslate"><span class="pre">configure()</span></code> form shown in decision 1 is superseded with
+decision 8. Decisions 2, 3, 4, 6 and 7 remain in effect: the tiers,
+source-major precedence, package-wide environment variables, the host-scoped
+key, and the adapter names.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
@@ -193,7 +194,7 @@ single-shot adapters – there is nothing to fan out. <code class="docutils lite
 four adapters (<code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">nwis</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>) and is currently a
 per-call keyword outside the chain entirely; it reaches <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>,
 verified by spying on the client. A flat namespace accepts
-<code class="docutils literal notranslate"><span class="pre">configure(streamstats={&quot;parallel_chunks&quot;:</span> <span class="pre">8})</span></code> without complaint, which is
+<code class="docutils literal notranslate"><span class="pre">configure(streamstats={&quot;parallel_chunks&quot;:</span> <span class="pre">8})</span></code> without error, which is
 the typo class ADR 0009 exists to catch.</p>
 <p>The credential is a separate axis, and measurement settled it. Probing the live
 APIs with and without a key:</p>
@@ -233,30 +234,31 @@ adapters at once:</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The file table stands; the <code class="docutils literal notranslate"><span class="pre">configure()</span></code> spelling above is superseded
-by <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> along with decision 8. One block
-still configures several adapters at once, now as
+<p>The file table remains in effect; the <code class="docutils literal notranslate"><span class="pre">configure()</span></code> form above is
+superseded by <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a> along with decision 8.
+One block still configures several adapters at once, now as
 <code class="docutils literal notranslate"><span class="pre">configure(NgwmnConfiguration(concurrency=4),</span>
 <span class="pre">WqpConfiguration(retries=2))</span></code>.</p>
 </div>
 </li>
-<li><p><strong>The top-level tier survives.</strong> An adapter table <em>overrides</em> it per key; it
-does not replace it. Every setting still has a package-wide spelling, and
+<li><p><strong>The top-level tier remains.</strong> An adapter table <em>overrides</em> it per key; it
+does not replace it. Every setting still has a package-wide form, and
 the shipped <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> variables are package-wide by construction.
 <code class="docutils literal notranslate"><span class="pre">retries</span></code> and <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code> are additionally adapter-scopable, because
-a service that answers slowly or refuses often warrants its own budget
+a service that responds slowly or refuses often warrants its own budget
 without changing anyone else’s. <code class="docutils literal notranslate"><span class="pre">progress</span></code> is not: it describes the
 caller’s terminal, and there is one progress line per call, so scoping it
 per adapter could only produce a contradiction.</p></li>
-<li><p><strong>Precedence stays source-major.</strong> Resolution walks block, then environment,
-then file, as ADR 0009 defines; <em>within</em> each source an adapter-scoped value
-outranks a top-level one. The environment therefore still outranks the file,
-so a stale adapter table cannot quietly beat a variable exported for one run.</p></li>
+<li><p><strong>Precedence stays source-major.</strong> Resolution checks the block, then the
+environment, then the file, as ADR 0009 defines; <em>within</em> each source an
+adapter-scoped value outranks a top-level one. The environment therefore
+still outranks the file, so a stale adapter table cannot quietly override a
+variable exported for one run.</p></li>
 <li><p><strong>Adapter-scoped settings get no environment variables.</strong> Every entry in
 <code class="docutils literal notranslate"><span class="pre">ENV_VARS</span></code> stays package-wide, for the reason <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> already
 has none: an exported variable is inherited by every subprocess and
 invisible at the call site. Six adapters times four settings would be a
-namespace nobody could hold in mind.</p></li>
+namespace nobody could remember.</p></li>
 <li><p><strong>Each adapter’s schema is a</strong> <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>. Its <code class="docutils literal notranslate"><span class="pre">__annotations__</span></code> <em>are</em>
 the schema – there is no second table to maintain, <code class="docutils literal notranslate"><span class="pre">mypy</span> <span class="pre">--strict</span></code> checks
 literal dicts at call sites, and the file path validates against the same
@@ -264,12 +266,12 @@ annotations. A key an adapter does not accept raises <code class="docutils liter
 at block entry, the way an unknown profile already does.</p>
 <p><em>Superseded by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>. The schema is now a
 frozen dataclass owned by the adapter, for the same “the annotations are the
-schema” reason – what changed is where it lives. A <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> had to be
-declared centrally to annotate a central keyword, which put a Water Data
-setting’s definition in a module that knows nothing about Water Data.</p>
+schema” reason – what changed is where it is defined. A <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> had
+to be declared centrally to annotate a central keyword, which put a Water
+Data setting’s definition in a module unrelated to Water Data.</p>
 </li>
 <li><p><strong>The API key stays host-scoped and is not an adapter setting.</strong>
-<code class="docutils literal notranslate"><span class="pre">credentials</span></code> keeps sole ownership of which host honors the key. There is
+<code class="docutils literal notranslate"><span class="pre">credentials</span></code> keeps sole ownership of which host accepts the key. There is
 no <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span> <span class="pre">api_key</span></code>.</p></li>
 <li><p><strong>Adapters are keyed by their service’s name</strong>, matching the module:
 <code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">ngwmn</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>.
@@ -283,29 +285,29 @@ exists to turn a misspelled <em>setting</em> into a message naming the settings 
 <code class="docutils literal notranslate"><span class="pre">configure(concurrancy=8)</span></code> would otherwise be a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
 <p><em>Superseded by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>. <code class="docutils literal notranslate"><span class="pre">configure()</span></code> takes
 configuration objects positionally instead, so the adapter is named by the
-class rather than by a keyword. The type checking survives – a setting an
+class rather than by a keyword. The type checking remains – a setting an
 adapter does not read is not a field of its class – and the catch-all is
 no longer needed for a misspelling, because
 <code class="docutils literal notranslate"><span class="pre">WaterdataConfiguration(concurrancy=8)</span></code> is already a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> naming
-the keyword that does not exist. What the change buys is that <code class="docutils literal notranslate"><span class="pre">configure()</span></code>
-no longer enumerates the adapters at all: that enumeration was the roster
-this ADR left spelled in four places.</p>
+the keyword that does not exist. What the change achieves is that
+<code class="docutils literal notranslate"><span class="pre">configure()</span></code> no longer enumerates the adapters at all: that enumeration
+was the roster this ADR left listed in four places.</p>
 </li>
 </ol>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul>
-<li><p><strong>A caller can be gentle with one adapter without throttling the rest</strong> –
+<li><p><strong>A caller can throttle one adapter without throttling the rest</strong> –
 the requirement ADR 0009 deferred. Because NGWMN and Water Data share a quota
 pool, throttling NGWMN now measurably preserves quota for Water Data.</p></li>
 <li><p><strong>The schema stops being a separate mechanism.</strong> Choosing <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> over
 a hand-maintained table removes the failure mode where a new adapter setting
 is added and the validation table is not, and over a dataclass per adapter it
 keeps the payload a plain mapping, so the file and block paths share one
-validator and <code class="docutils literal notranslate"><span class="pre">configuration</span></code> grows no runtime classes. <em>Superseded with
-decision 5</em>: the classes exist, and live with their adapters rather than in
-the leaf.</p></li>
+validator and <code class="docutils literal notranslate"><span class="pre">configuration</span></code> adds no runtime classes. <em>Superseded with
+decision 5</em>: the classes exist, and are defined with their adapters rather
+than in the leaf.</p></li>
 <li><p><strong>A configuration object is still refused, but on narrower grounds than ADR
 0009 stated.</strong> That ADR rejected an object because it had no way to <em>reach</em>
 the call. A per-adapter payload type does not have that problem – the
@@ -314,23 +316,23 @@ payload’s shape. <code class="docutils literal notranslate"><span class="pre">
 above, not because an object could not be delivered.</p>
 <p><em>Withdrawn by</em> <a class="reference internal" href="0011-configuration-profiles.html"><span class="doc">ADR 0011: Configuration profiles, scoped to one adapter</span></a>, which took the remaining
 step. Narrowing the objection to a payload-shape preference is what left it
-open, and a dataclass turned out to buy the thing a mapping could not: an
-instance knows which adapter it targets, so the caller stops naming one and
-the roster stops being duplicated.</p>
+open, and a dataclass turned out to provide what a mapping could not: an
+instance records which adapter it targets, so the caller stops naming one
+and the roster stops being duplicated.</p>
 </li>
-<li><p><strong>``show_configuration()`` grows a second section, not a matrix.</strong> It prints
+<li><p><strong>``show_configuration()`` gains a second section, not a matrix.</strong> It prints
 the top-level tier as today, then only those adapter overrides actually set.
-A seven-by-eight grid of mostly-inherited values would bury the answer to
+A seven-by-eight grid of mostly-inherited values would obscure the answer to
 “what will this call use”.</p></li>
 <li><p><strong>The shared quota pool is not modelled.</strong> <code class="docutils literal notranslate"><span class="pre">[waterdata]</span></code> and <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code>
-read as independent dials but draw on one 1000/hour allowance. A host or
+appear to be independent settings but share one 1000/hour allowance. A host or
 gateway tier would express it; that is deferred until someone is confused by
 it, since the pool is a property of the credential, which is already
 host-scoped.</p></li>
-<li><p><strong>``stall_timeout`` joins the chain.</strong> <code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code> was read
-directly from <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>, so it could not be set by a block or the file
-and never appeared in <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> – a gap in ADR 0009’s own
-claim that every setting resolves through one chain. It is package-wide by
+<li><p><strong>``stall_timeout`` is added to the chain.</strong> <code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code> was
+read directly from <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>, so it could not be set by a block or the
+file and never appeared in <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> – a gap in ADR 0009’s
+own claim that every setting resolves through one chain. It is package-wide by
 default and adapter-scopable. <code class="docutils literal notranslate"><span class="pre">dataretrieval/transport/env.py</span></code> existed only
 to parse it and is deleted, so <code class="docutils literal notranslate"><span class="pre">configuration</span></code> is now the only module in
 the package that reads <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> for a setting.</p></li>
@@ -338,7 +340,7 @@ the package that reads <code class="docutils literal notranslate"><span class="p
 It is a defaulted keyword on 23 shipped getters across four adapters –
 <code class="docutils literal notranslate"><span class="pre">wqp</span></code> (9), <code class="docutils literal notranslate"><span class="pre">nwis</span></code> (10), <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> (3) and <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> (1) – and it does
 reach <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>. It was added in 2023 to what were then the only
-modules; the OGC getters arrived later and never adopted it, so its
+modules; the OGC getters were added later and never adopted it, so its
 distribution records the package’s history rather than a boundary.</p>
 <p>Three reasons not to promote it. It disables certificate verification, so as
 a per-call keyword it is a visible, scoped decision, while a config-file key
@@ -346,15 +348,15 @@ or environment variable would make a security downgrade process-wide and
 invisible at the call site – the opposite of the direction this chain
 narrows everything else. It does not respect adapter boundaries: within
 <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> it applies only to the getters that bypass the OGC engine, so
-<code class="docutils literal notranslate"><span class="pre">[waterdata]</span> <span class="pre">ssl_check</span></code> would be honored by three getters and silently
-ignored by the rest, exactly the shape this ADR refuses elsewhere. And the
+<code class="docutils literal notranslate"><span class="pre">[waterdata]</span> <span class="pre">ssl_check</span></code> would be applied by three getters and silently
+ignored by the rest, exactly the pattern this ADR refuses elsewhere. And the
 need it serves is already met better: the legitimate case is a
-TLS-intercepting corporate proxy, and <code class="docutils literal notranslate"><span class="pre">httpx</span></code> natively honors
+TLS-intercepting corporate proxy, and <code class="docutils literal notranslate"><span class="pre">httpx</span></code> natively reads
 <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">SSL_CERT_DIR</span></code> on both its sync and async clients –
 so that mechanism already covers <em>every</em> getter, including the OGC ones that
 have no <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code>, and it trusts the corporate CA rather than trusting
-nothing. The <code class="docutils literal notranslate"><span class="pre">bool</span></code> type cannot even carry a CA bundle path, which is the
-value a caller actually wants.</p>
+nothing. The <code class="docutils literal notranslate"><span class="pre">bool</span></code> type cannot even hold a CA bundle path, which is the
+value a caller actually needs.</p>
 <p>The configuration guide documents <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> for that case. Whether
 <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> should be deprecated outright is a public-API question left to
 its own change.</p>
@@ -375,7 +377,7 @@ and <code class="docutils literal notranslate"><span class="pre">exceptions</spa
 <p>The two entries covering decision 8’s <code class="docutils literal notranslate"><span class="pre">**adapters</span></code> catch-all
 (<code class="docutils literal notranslate"><span class="pre">test_a_misspelled_setting_is_not_taken_for_an_adapter</span></code>) and the central
 <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> registry (<code class="docutils literal notranslate"><span class="pre">test_adapter_schema_names_a_real_module</span></code>) went with
-the clauses ADR 0011 superseded; the checks they stood for are named above in
+the clauses ADR 0011 superseded; the checks they represented are named above in
 their current form.</p>
 </section>
 <section id="notes">
@@ -385,7 +387,7 @@ their current form.</p>
 <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> delivery, and the leaf constraint are unchanged.</p></li>
 <li><p>Live-API measurements behind the credential decision were taken 2026-08-11
 against <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov</span></code> and <code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov</span></code>.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> module is renamed <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> under separate cover; the service
+<li><p>The <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> module is renamed <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> in a separate change; the service
 names itself “National Water Availability Assessment Data Companion” and
 serves ten models, only five of which are water use.</p></li>
 </ul>

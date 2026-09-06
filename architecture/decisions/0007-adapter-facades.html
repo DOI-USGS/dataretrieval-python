@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+gbb1765620 documentation</title>
+  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e48bccd0"></script>
+      <script src="../../_static/documentation_options.js?v=2921959c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -152,18 +152,18 @@ is a real file a traceback can name. It is not a package-wide prohibition: the
 legacy <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code> names are split across private modules by
 dependency and <em>do</em> report the documented path, because there the alternative is
 a public, documented import location pointing at a private module.</p>
-<p><strong>Typed getters are the surface; exactly one generic escape hatch sits beside
+<p><strong>Typed getters are the surface; exactly one generic query path accompanies
 them.</strong> <code class="docutils literal notranslate"><span class="pre">cql</span></code> is the only untyped member of the collection families, and
 deliberately so. The alternative in one direction – a single generic query
 function replacing the typed getters – gives up the parameter documentation
 and validation that are most of these getters’ value. The alternative in the
-other – a <code class="docutils literal notranslate"><span class="pre">cql=</span></code> passthrough on every family – multiplies the escape hatch
+other – a <code class="docutils literal notranslate"><span class="pre">cql=</span></code> passthrough on every family – multiplies the generic path
 by the number of collections while making each family’s surface partly untyped.
-One hatch, named as such, keeps both properties.</p>
+One generic path, named as such, keeps both properties.</p>
 <p><strong>Identifier columns are parsed as text.</strong> This one clause applies
-package-wide, legacy NWIS included: it is about what an adapter hands back, not
+package-wide, legacy NWIS included: it is about what an adapter returns, not
 how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
-identifiers (<code class="docutils literal notranslate"><span class="pre">site_no</span></code> in NWIS) carry significant leading zeros, and a bare
+identifiers (<code class="docutils literal notranslate"><span class="pre">site_no</span></code> in NWIS) have significant leading zeros, and a bare
 <code class="docutils literal notranslate"><span class="pre">read_csv</span></code> infers them as integers and
 drops those zeros – <code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">60</span></code>, so the value is silently wrong
 rather than missing. Every adapter reading a USGS tabular response names its
@@ -178,7 +178,7 @@ contracts.</p>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Collection changes touch fewer implementation and test files.</p></li>
+<li><p>Collection changes affect fewer implementation and test files.</p></li>
 <li><p>Existing package and <code class="docutils literal notranslate"><span class="pre">waterdata.api</span></code> import paths remain stable.</p></li>
 <li><p>Explicit exports make accidental public-surface growth reviewable.</p></li>
 <li><p>More modules mean a facade to maintain, plus executable signature and export
@@ -193,17 +193,17 @@ cross-component layers without moving established files.</p></li>
 facade identity, and compatibility names. <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> keeps the
-collection families independent of each other, holds the facade-only consumers
-(NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code>) to the OGC facade, and prevents one adapter from
-importing another. The identifier-column rule is covered by
+collection families independent of each other, restricts the facade-only
+consumers (NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code>) to the OGC facade, and prevents one
+adapter from importing another. The identifier-column rule is covered by
 <code class="docutils literal notranslate"><span class="pre">tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero</span></code> and the equivalent
 leading-zero assertions in the WQP and NWIS adapter tests.</p>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">__module__</span></code> scoping note and the escape-hatch and identifier-column
+<p>The <code class="docutils literal notranslate"><span class="pre">__module__</span></code> scoping note and the generic-path and identifier-column
 clauses were added after the original decision; the rest of the record is
-unchanged. They consolidate under ADR 0000 the rules the code was carrying in
+unchanged. They consolidate under ADR 0000 the rules the code was stating in
 prose. The scoping note in particular records why <code class="docutils literal notranslate"><span class="pre">_querying.py</span></code> reassigning
 <code class="docutils literal notranslate"><span class="pre">__module__</span></code> is not a violation of this record, a question an audit raised.</p>
 </section>

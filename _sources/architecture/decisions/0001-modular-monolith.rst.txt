@@ -37,8 +37,8 @@ Consequences
   therefore require import checks and review discipline.
 - Shared infrastructure must remain small enough that it does not become a god
   module.
-- A new service should begin as its own adapter and earn shared abstractions
-  through demonstrated duplication rather than up-front generalization.
+- A new service should begin as its own adapter and acquire shared abstractions
+  only after duplication has been demonstrated, not by up-front generalization.
 
 Compliance
 ----------
