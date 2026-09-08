@@ -154,7 +154,7 @@ def get_field_measurements(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -286,9 +286,8 @@ def get_peaks(
         Calendar / water-year filters on the peak event. The water year ends
         September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).
     peak_since : int or list of ints, optional
-        Filter on the year since which the peak value has stood as the
-        record (the API serves this field as an integer; many rows are
-        ``null``).
+        Filter on the year since which the peak value has been the record (the API
+        serves this field as an integer; many rows are ``null``).
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
@@ -517,7 +516,7 @@ def get_channel(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.

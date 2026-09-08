@@ -63,12 +63,12 @@ _LOGGER_NAME = _utils_module.__name__
 
 
 def _run_walk_pages(*, geopd, req, client, row_cap=None):
-    """Drive the async ``_walk_pages`` to completion synchronously.
+    """Run the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
     ``AsyncMock(spec=httpx.AsyncClient)`` whose ``.send``/``.request`` are
     awaitable and run the coroutine via ``asyncio.run``. This thin shim
-    keeps the historical sync-shaped call sites terse while exercising the
+    keeps the older synchronous call sites short while exercising the
     real async pagination loop.
     """
     return asyncio.run(
@@ -107,7 +107,7 @@ def test_get_args_empty():
 def test_walk_pages_multiple_mocked():
     # Setup mock responses
     resp1 = mock.MagicMock()
-    # A real response always carries an ``httpx.URL``; the next-page check
+    # A real response always has an ``httpx.URL``; the next-page check
     # resolves and host-checks the ``next`` link against it.
     resp1.url = httpx.URL("https://example.com/page1")
     resp1.json.return_value = {
@@ -199,7 +199,7 @@ def test_row_cap_stops_across_pages():
 
     mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     mock_client.send.return_value = _page(1, has_next=True)
-    # page 2 still advertises a ``next`` (page 3) that must never be fetched.
+    # page 2 still includes a ``next`` (page 3) that must never be fetched.
     mock_client.request.return_value = _page(2, has_next=True)
 
     mock_req = mock.MagicMock(spec=httpx.Request)
@@ -216,7 +216,7 @@ def test_row_cap_stops_across_pages():
 def test_finalize_ogc_truncates_combined_to_max_rows():
     # max_rows is enforced on the *combined* frame in _finalize_ogc (after
     # dedup/sort), so it bounds the total exactly even when a chunked call's
-    # per-chunk pages overshoot the per-_paginate early-stop.
+    # per-chunk pages exceed the per-_paginate early-stop.
     frame = pd.DataFrame({"id": [str(i) for i in range(10)]})
     resp = mock.MagicMock()
     resp.url = "https://example.com/q"
@@ -237,7 +237,7 @@ def test_finalize_ogc_truncates_combined_to_max_rows():
 
 
 def _resp_ok(features):
-    """Build a 200-OK mock response carrying the given features list."""
+    """Build a 200-OK mock response with the given features list."""
     links = [{"rel": "next", "href": "https://example.com/page2"}] if features else []
     resp = mock.MagicMock()
     resp.json.return_value = {
@@ -293,15 +293,15 @@ def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
 
     msg = str(excinfo.value)
     assert "Timeout" in msg, msg
-    # Sanity-check the malformed-empty placeholder didn't slip through.
+    # Sanity-check the malformed-empty placeholder was not emitted.
     assert "page(s): ." not in msg
     assert "page(s): To recover" not in msg
 
 
 def test_walk_pages_raises_on_5xx_mid_pagination():
     """A 5xx mid-pagination must raise — partial data is no longer returned
-    because the API has no resume cursor, so silently truncating would return
-    an incomplete frame the caller cannot tell from a complete one."""
+    because the API has no resume cursor, so truncating without an error would return
+    an incomplete frame the caller cannot distinguish from a complete one."""
     page2_503 = mock.MagicMock()
     page2_503.status_code = 503
     page2_503.json.return_value = {
@@ -334,12 +334,11 @@ def test_walk_pages_raises_on_mid_pagination_429():
 
 
 def test_walk_pages_wraps_initial_page_parse_error():
-    """A 200 response whose body fails to parse on the FIRST page used
-    to escape ``_walk_pages`` as a raw ``JSONDecodeError``, while the
-    SAME failure on a subsequent page was wrapped via
-    ``_paginated_failure_message``. The asymmetry meant operators got
-    different exception types for the same logical bug depending on
-    which page hit it. The initial-parse wrapper closes the gap."""
+    """A 200 response whose body fails to parse on the FIRST page used to propagate out
+    of ``_walk_pages`` as a raw ``JSONDecodeError``, while the SAME failure on a
+    subsequent page was wrapped via ``_paginated_failure_message``. The asymmetry meant
+    operators got different exception types for the same logical bug depending on
+    which page encountered it. The initial-parse wrapper removes the asymmetry."""
     resp = mock.MagicMock()
     resp.status_code = 200
     resp.url = "https://example.com/page1"
@@ -357,17 +356,16 @@ def test_walk_pages_wraps_initial_page_parse_error():
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _run_walk_pages(geopd=False, req=mock_req, client=mock_client)
 
-    # The JSONDecodeError causing it is on __cause__ so callers can drill in.
+    # The JSONDecodeError causing it is on __cause__ so callers can inspect it.
     assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
 
 def test_get_resp_data_handles_missing_features_key():
-    """Regression: a 200 with ``numberReturned > 0`` but no
-    ``features`` key (real schema-drift shape) used to crash
-    ``_get_resp_data`` with ``KeyError`` — wrapped downstream by
-    ``_paginate`` as a generic transport error. ``_handle_nesting``
-    was already hardened against this; ``_get_resp_data`` now mirrors
-    that defensiveness and returns an empty frame instead."""
+    """Regression: a 200 with ``numberReturned > 0`` but no ``features`` key (a real
+    schema-drift shape) used to fail ``_get_resp_data`` with ``KeyError`` — wrapped
+    downstream by ``_paginate`` as a generic transport error. ``_handle_nesting``
+    already handled this; ``_get_resp_data`` now does the same and returns an empty
+    frame instead."""
     resp = mock.Mock()
     resp.json.return_value = {"numberReturned": 1, "links": []}
     df = _get_resp_data(resp, geopd=False)
@@ -377,11 +375,12 @@ def test_get_resp_data_handles_missing_features_key():
 
 def test_next_req_url_follows_link_without_number_returned():
     """The NGWMN OGC API omits ``numberReturned`` from its page envelope, so
-    ``_next_req_url`` keys the ``next`` link off ``features`` (mirroring
-    ``_get_resp_data``) rather than that count -- otherwise a page that carries
-    features but no count stops pagination after page 1 and silently truncates
-    every multi-page result. A page that carries features still follows its
-    ``next`` link even when ``numberReturned`` is absent."""
+    ``_next_req_url`` keys the ``next`` link off ``features`` (matching
+    ``_get_resp_data``) rather than that count -- otherwise a page that has
+    features but no count stops pagination after page 1 and truncates every
+    multi-page result without an error. A page that has features still follows
+    its ``next`` link even when ``numberReturned`` is absent.
+    """
     resp = mock.MagicMock()
     resp.url = httpx.URL("https://example.com/page1")
     body = {
@@ -393,8 +392,9 @@ def test_next_req_url_follows_link_without_number_returned():
 
 
 def test_next_req_url_stops_when_no_features():
-    """A page with no features ends pagination regardless of any stray
-    ``next`` link (and regardless of ``numberReturned``)."""
+    """A page with no features ends pagination regardless of any ``next`` link present
+    (and regardless of ``numberReturned``).
+    """
     resp = mock.MagicMock()
     resp.url = httpx.URL("https://example.com/page1")
     body = {"features": [], "links": [{"rel": "next", "href": "https://x/2"}]}
@@ -403,7 +403,7 @@ def test_next_req_url_stops_when_no_features():
 
 def test_walk_pages_does_not_mutate_initial_response():
     """The aggregated response returned from ``_walk_pages`` is built
-    via ``_merge_response``, which returns a fresh copy.
+    via ``_merge_response``, which returns a new copy.
     Any caller that inspected ``initial_response.headers`` /
     ``.elapsed`` before pagination completed (a Session response hook,
     a logging middleware) must continue to see the original first-page
@@ -450,7 +450,7 @@ def test_walk_pages_does_not_mutate_initial_response():
     assert page1.headers["x-ratelimit-remaining"] == "999"
     assert page1.elapsed == page1_initial_elapsed
 
-    # The returned aggregate carries page-2 headers + cumulative elapsed.
+    # The returned aggregate has page-2 headers + cumulative elapsed.
     assert final.headers["x-ratelimit-remaining"] == "998"
     assert final.elapsed == datetime.timedelta(seconds=3)
     # And mutating the aggregate's headers doesn't leak into either page.
@@ -474,7 +474,7 @@ def _stats_initial_ok():
 
 def _run_get_data_with_failure(failure_resp_or_exc, monkeypatch):
     """Exercise get_data where the initial response succeeds and the
-    paginated follow-up fails as given. Mirrors _walk_pages_with_failure.
+    paginated follow-up fails as given. Matches _walk_pages_with_failure.
     `monkeypatch` stubs ``_handle_nesting`` so the synthetic minimal
     response body doesn't need to parse — these tests only assert on the
     pagination loop's error surfacing."""
@@ -506,7 +506,7 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     ``get_data`` mid-pagination case proves the stats-specific
     follow-up callback is wired into ``_paginate``.
 
-    Statistics drives that page walk as a one-item ``FanOut``, the same
+    Statistics runs that page walk as a one-item ``FanOut``, the same
     executor every other getter uses, so a transient mid-walk failure is
     resumable here too rather than ending the call outright.
     """
@@ -522,7 +522,7 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     assert "Paginated request failed" in str(paginated)
     assert isinstance(paginated.__cause__, httpx.ConnectError)
     assert "stats-boom" in str(paginated)
-    # Nothing completed, so there is nothing to hand back but the handle.
+    # Nothing completed, so nothing is returned but the handle.
     assert excinfo.value.call.completed_chunks == 0
 
 
@@ -580,7 +580,7 @@ def test_handle_nesting_tolerates_missing_drop_columns():
 
 def test_handle_nesting_returns_empty_on_empty_features():
     """A mid-pagination empty page ({\"features\": [], \"next\": <tok>})
-    must not crash the downstream merge with
+    must not fail the downstream merge with
     ``KeyError: 'monitoring_location_id'``. The function short-
     circuits to an empty DataFrame so pagination can continue."""
     df = _handle_nesting({"features": [], "next": None}, geopd=False)
@@ -592,8 +592,8 @@ def test_handle_nesting_empty_preserves_geopd_type():
     must return a ``GeoDataFrame`` rather than a plain ``DataFrame``.
     Otherwise a subsequent ``pd.concat([empty, geo_page])`` downgrades
     the final result to a plain ``DataFrame`` and strips geometry/CRS
-    — a real regression for geopd-installed users on stats queries
-    that hit an empty intermediate page."""
+    — a regression for geopd-installed users on stats queries
+    that encountered an empty intermediate page."""
     # Monkeypatch a stub gpd so the test runs whether or not geopandas is
     # installed. The empty-page short-circuit delegates to the shared
     # ``shaping._empty_feature_frame``, which resolves ``gpd`` from the shaping
@@ -693,7 +693,7 @@ def test_get_resp_data_empty_preserves_geopd_type():
 
 @pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
 def test_get_resp_data_keeps_one_geospatial_type_when_geometry_is_missing():
-    """A spatial request cannot change frame family based on page contents."""
+    """A spatial request cannot change frame type based on page contents."""
     import geopandas as gpd
 
     empty = _get_resp_data(_resp_ok([]), geopd=True)
@@ -713,9 +713,9 @@ def test_get_resp_data_keeps_one_geospatial_type_when_geometry_is_missing():
 
 
 def test_get_resp_data_attaches_wgs84_crs():
-    """A geometry-bearing Water Data page should come back tagged as
-    EPSG:4326 (the CRS the coordinates are published in), so callers can
-    run ``to_crs`` / spatial joins without first patching in a CRS by
+    """A geometry-bearing Water Data page should be returned with the CRS EPSG:4326 (the
+    CRS the coordinates are published in), so callers can run ``to_crs`` / spatial joins
+    without first patching in a CRS by
     hand. Regression for the ``.crs is None`` reported in issue #342."""
     geopandas = pytest.importorskip("geopandas")
 
@@ -735,8 +735,9 @@ def test_get_resp_data_attaches_wgs84_crs():
 
 
 def test_handle_nesting_attaches_wgs84_crs():
-    """The stats path builds its GeoDataFrame the same way, so it should
-    carry EPSG:4326 too (issue #342)."""
+    """The stats path builds its GeoDataFrame the same way, so it should have EPSG:4326
+    too (issue #342).
+    """
     geopandas = pytest.importorskip("geopandas")
 
     body = {
@@ -765,7 +766,7 @@ def test_handle_nesting_attaches_wgs84_crs():
 
 
 def test_handle_nesting_tolerates_missing_features_key():
-    """A 200 response with a body that doesn't carry ``features`` at
+    """A 200 response with a body that does not include ``features`` at
     all (rare but seen in error envelopes) must also short-circuit
     rather than KeyError before the schema-aware extraction even
     runs."""
@@ -775,10 +776,9 @@ def test_handle_nesting_tolerates_missing_features_key():
 
 def test_get_resp_data_always_materializes_id_column():
     """``_get_resp_data`` must always materialize the ``id`` column
-    (NaN-filled when no feature carries one) so the downstream
+    (NaN-filled when no feature has one) so the downstream
     ``_arrange_cols`` rename to the collection-specific output_id
-    (``daily_id``, ``channel_measurements_id``, etc.) isn't a
-    silent no-op."""
+    (``daily_id``, ``channel_measurements_id``, etc.) is not an ignored no-op."""
     resp = mock.MagicMock()
     resp.json.return_value = {
         "numberReturned": 2,
@@ -849,7 +849,7 @@ def test_arrange_cols_swaps_id_in_returned_columns():
 
 
 def test_arrange_cols_keeps_geometry_when_present():
-    """Geometry must come along even if the caller didn't list it."""
+    """Geometry must be included even if the caller did not list it."""
     df = pd.DataFrame({"id": ["a"], "value": [1.0], "geometry": ["p1"]})
     result = _arrange_cols(df, ["value"], output_id="daily_id")
     assert "geometry" in result.columns
@@ -918,7 +918,7 @@ def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
 def test_format_api_dates_rejects_more_than_two_values():
     """A date filter is an instant, a duration, or a closed interval. Three
     values is a caller who meant something else, and the message says which
-    shapes exist rather than truncating silently."""
+    shapes exist rather than truncating without an error."""
     with pytest.raises(ValueError) as excinfo:
         _format_api_dates(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
     message = str(excinfo.value)
@@ -927,9 +927,8 @@ def test_format_api_dates_rejects_more_than_two_values():
 
 
 def test_the_duration_example_is_withheld_where_durations_are_rejected():
-    """``get_ratings`` refuses ISO 8601 durations, so the shared message must
-    not offer 'P7D' on that path -- a caller following it would be sent
-    straight into a second rejection."""
+    """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
+    'P7D' on that path -- a caller following it would receive a second rejection."""
     with pytest.raises(ValueError) as allowed:
         _format_api_dates(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
@@ -952,7 +951,7 @@ def test_format_api_dates_names_the_callers_parameter():
 
 
 def test_format_api_dates_rejects_mapping():
-    """`time={"2024-01-01": "x"}` would silently materialize as the keys list,
+    """`time={"2024-01-01": "x"}` would materialize as the keys list,
     accepting input the user clearly didn't intend.
     """
     with pytest.raises(TypeError, match="date input must be a string or sequence"):
@@ -986,7 +985,7 @@ def test_error_body_handles_non_json_html_response():
 
 
 def test_error_body_handles_empty_response_body():
-    """An empty error body returns a status/reason message without crashing."""
+    """An empty error body returns a status/reason message without raising."""
     resp = _make_response(500, "", reason="Internal Server Error")
     msg = _error_body(resp)
     assert msg == "500: Internal Server Error."
@@ -1017,7 +1016,7 @@ def test_error_body_still_parses_well_formed_json():
 
 def test_parse_retry_after_handles_none_and_empty():
     """Absent or empty header → ``None`` (no quota signal). The chunker
-    treats ``None`` as "fall back to my own retry policy," so this
+    treats ``None`` as a signal to use its own retry policy, so this
     branch must not return a misleading 0."""
     assert _parse_retry_after(None) is None
     assert _parse_retry_after("") is None
@@ -1026,7 +1025,7 @@ def test_parse_retry_after_handles_none_and_empty():
 
 def test_parse_retry_after_parses_delta_seconds():
     """Integer and float forms of delta-seconds (the common shape USGS
-    sends) are parsed directly without touching the HTTP-date branch."""
+    sends) are parsed directly without entering the HTTP-date branch."""
     assert _parse_retry_after("120") == 120.0
     assert _parse_retry_after("0") == 0.0
     assert _parse_retry_after("42.5") == 42.5
@@ -1035,7 +1034,7 @@ def test_parse_retry_after_parses_delta_seconds():
 
 
 def test_parse_retry_after_clamps_negative_delta_to_zero():
-    """A negative delta-seconds means the server is saying "retry now."
+    """A negative delta-seconds means retry immediately.
     Returning the negative value would let callers pass it to
     ``time.sleep`` and get a ``ValueError`` — clamp at the source."""
     assert _parse_retry_after("-10") == 0.0
@@ -1045,16 +1044,16 @@ def test_parse_retry_after_clamps_negative_delta_to_zero():
 def test_parse_retry_after_supports_http_date_and_rejects_garbage():
     """Both standard header forms are accepted; malformed values use backoff.
 
-    A date is converted to seconds exactly like the delta-seconds form, however
-    far out it lands: an over-long wait stops the retry and travels to the
-    caller on ``.retry_after`` rather than being silently ignored.
+    A date is converted to seconds the same way as the delta-seconds form, however
+    far in the future it is: an over-long wait stops the retry and reaches the
+    caller on ``.retry_after`` rather than being discarded.
     """
     assert _parse_retry_after("not-a-date") is None
     assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") > 0
 
 
 def test_raise_for_non_200_raises_service_unavailable_for_5xx():
-    """5xx must surface as the typed ``ServiceUnavailable`` so the chunker can
+    """5xx must be raised as the typed ``ServiceUnavailable`` so the chunker can
     wrap it as a resumable ``ServiceInterrupted`` rather than treating it as a
     fatal error."""
     resp = _make_response(503, "", reason="Service Unavailable")
@@ -1065,9 +1064,9 @@ def test_raise_for_non_200_raises_service_unavailable_for_5xx():
 
 
 def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
-    """``Retry-After`` on a 429 response must travel onto
-    ``RateLimited.retry_after`` so the chunker can surface it on
-    ``QuotaExhausted.retry_after`` for callers to honor."""
+    """``Retry-After`` on a 429 response must be set on
+    ``RateLimited.retry_after`` so the chunker can report it on
+    ``QuotaExhausted.retry_after`` for callers to apply."""
     resp = _make_response(429, "", reason="Too Many Requests")
     resp.headers["Retry-After"] = "60"
     with pytest.raises(RateLimited) as excinfo:
@@ -1076,11 +1075,11 @@ def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
 
 
 def test_403_reports_the_services_own_reason():
-    """A 403 envelope must reach the user rather than a canned guess.
+    """A 403 envelope must be shown to the user rather than fixed text.
 
-    The message was fixed text naming only "query exceeding server limits",
-    and never read the body -- so a revoked ``API_USGS_PAT``, the most common
-    real 403, was reported as a query-size problem.
+    The message was fixed text naming only "query exceeding server limits", and never
+    read the body -- so a revoked ``API_USGS_PAT``, the most common 403, was reported as
+    a query-size problem.
     """
     resp = _make_response(
         403,
@@ -1153,8 +1152,7 @@ def test_403_without_an_envelope_names_the_credential_cause():
 
 def test_error_messages_name_the_url():
     """Without the URL a failed chunk in a fan-out cannot be traced back to
-    the request that produced it -- the message is all the interruption
-    carries."""
+    the request that produced it -- the message is all the interruption holds."""
     request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v0/x")
     resp = httpx.Response(400, content=b"", request=request)
     with pytest.raises(HTTPError) as excinfo:
@@ -1181,7 +1179,7 @@ def test_raise_for_non_200_400_raises_http_error():
     with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
     assert excinfo.value.status_code == 400
-    # Fatal, not transient: the chunker keys off ``isinstance(_, TransientError)``
+    # Fatal, not transient: the chunker uses ``isinstance(_, TransientError)``
     # to decide whether to wrap a failure as a resumable ChunkInterrupted.
     assert not isinstance(excinfo.value, TransientError)
 
@@ -1189,7 +1187,7 @@ def test_raise_for_non_200_400_raises_http_error():
 def test_next_req_url_rejects_cross_host():
     """``_next_req_url`` must refuse to follow a next-page link to a
     different host. The original request's headers (including any
-    auth-like artifacts) were minted for the original host; following
+    auth-like artifacts) were built for the original host; following
     a server-supplied cross-host URL would leak them — and the URL
     itself could be sensitive."""
     resp = mock.MagicMock()
@@ -1204,11 +1202,11 @@ def test_next_req_url_rejects_cross_host():
 
 
 def test_next_req_url_strips_embedded_credentials():
-    """A same-host next link carrying ``user:pass@`` must not survive.
+    """A same-host next link with ``user:pass@`` must not be kept.
 
     The cross-host guard passes here by construction -- the host matches -- so
     nothing else would catch it. httpx derives ``Authorization: Basic`` from
-    userinfo, so following the link verbatim would mint a credential the caller
+    userinfo, so following the link verbatim would create a credential the caller
     never configured and send it alongside the real API key.
     """
     resp = mock.MagicMock()
@@ -1233,7 +1231,7 @@ def test_next_req_url_strips_embedded_credentials():
 
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
-    so a 5xx surfaces as the typed ``ServiceUnavailable`` — the same typed
+    so a 5xx is raised as the typed ``ServiceUnavailable`` — the same typed
     contract as the main data path, not a raw ``httpx`` error."""
     httpx_mock.add_response(
         method="GET",
@@ -1255,7 +1253,7 @@ def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
         ("someField", "some_field"),  # simple camelCase
         ("PascalCase", "pascal_case"),  # leading capital
         # Runs of capitals are best-effort: only the lower->Upper boundary
-        # before the run is split, so the acronym stays glued to the next word.
+        # before the run is split, so the acronym stays joined to the next word.
         ("someXMLField", "some_xmlfield"),
     ],
 )
@@ -1297,7 +1295,7 @@ def test_get_stats_date_range_forwards_interval_type(monkeypatch):
 def test_with_state_routes_into_native_queryable():
     """``_with_state`` resolves the canonical ``state`` argument into the
     endpoint's native queryable (any encoding -> the requested representation)
-    and leaves args without ``state`` untouched."""
+    and leaves args without ``state`` unchanged."""
     assert _utils_module._with_state({"state": "WI"}, to="name", into="state_name") == {
         "state_name": "Wisconsin"
     }
@@ -1331,7 +1329,7 @@ def test_with_state_conflict_via_queryables_raises():
     """A native state param arriving through ``**queryables`` (i.e. not an
     explicit getter parameter, as with ``get_time_series_metadata``'s
     ``state_code``) is flattened before the mutual-exclusion check, so combining
-    it with ``state`` still raises rather than silently sending both filters."""
+    it with ``state`` still raises rather than sending both filters."""
     with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
@@ -1360,7 +1358,7 @@ def test_ogc_getter_resolves_state_at_getter_layer(monkeypatch):
 
 def test_get_ogc_data_wrapper_does_not_touch_state():
     """``get_ogc_data`` no longer rewrites a ``state`` key, so a passthrough
-    query dict (e.g. from ``get_reference_table``) is forwarded untouched."""
+    query dict (e.g. from ``get_reference_table``) is forwarded unchanged."""
     captured: dict = {}
 
     def fake_engine_get_ogc_data(args, collection, output_id, **k):
@@ -1380,7 +1378,7 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
 def test_credential_shaped_queryables_are_rejected(name):
     """The denylist matches spellings, not just a few exact names.
 
-    ``x_api_key`` is the tempting one -- it mirrors the ``X-Api-Key`` header
+    ``x_api_key`` is the likely one -- it matches the ``X-Api-Key`` header
     the README documents -- and an exact-match list let it through into the
     query string.
     """
@@ -1398,13 +1396,14 @@ def test_real_queryables_still_pass_through(name):
 class TestWireIdSwitch:
     """The API keys every collection on ``id``; callers spell it after the
     collection (``monitoring_location_id``). The switch happens here, and
-    dropping an alias without carrying its value to ``id`` silently sends an
+    dropping an alias without moving its value to ``id`` sends an
     unfiltered query."""
 
     def test_the_collection_scoped_spelling_becomes_id(self):
         from dataretrieval.ogc.requests import _switch_arg_id
 
-        # The collection-derived spelling wins over the getter's own id_name.
+        # The collection-derived spelling takes precedence over the getter's own
+        # id_name.
         out = _switch_arg_id(
             {"monitoring_locations_id": "USGS-01646500"},
             "some_other_id",
@@ -1431,7 +1430,7 @@ class TestWireIdSwitch:
 
 def test_extract_features_returns_none_for_a_missing_body():
     """``None`` means "give the caller an empty frame". An empty features list
-    is a real mid-pagination shape, and letting it through would crash the
+    is a real mid-pagination shape, and letting it through would fail the
     downstream merge with a missing join key rather than returning nothing."""
     from dataretrieval.waterdata.stats import _extract_features
 
@@ -1458,8 +1457,9 @@ def test_next_req_url_parses_the_body_when_not_handed_one():
 
 
 def test_next_req_url_stops_on_a_page_with_no_features():
-    """A ``next`` link on a featureless page is the service's pagination
-    running past the end; following it would loop."""
+    """A ``next`` link on a featureless page is the service's pagination continuing past
+    the end; following it would loop.
+    """
     from dataretrieval.ogc.engine import _next_req_url
 
     payload = {
@@ -1474,7 +1474,7 @@ def test_next_req_url_stops_on_a_page_with_no_features():
 
 
 class TestOgcJsonErrorDetail:
-    """The service's own wording is surfaced when it sends one; anything else
+    """The service's own wording is used when it sends one; anything else
     must fall back to the status-derived message rather than raising while
     building an error."""
 
@@ -1485,7 +1485,7 @@ class TestOgcJsonErrorDetail:
         assert _json_error_detail(resp) is None
 
     def test_a_json_scalar_body_yields_no_detail(self):
-        """A bare string or list is valid JSON but carries no error envelope."""
+        """A bare string or list is valid JSON but has no error envelope."""
         from dataretrieval.ogc.errors import _json_error_detail
 
         assert _json_error_detail(httpx.Response(400, json="just a string")) is None

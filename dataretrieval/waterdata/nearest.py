@@ -1,4 +1,4 @@
-"""``get_nearest_continuous``: nearest-timestamp convenience on top of
+"""``get_nearest_continuous``: nearest-timestamp selection over
 ``get_continuous``. Built on the CQL ``filter`` passthrough; only
 ``get_nearest_continuous`` is public — everything else is package-private.
 """
@@ -118,17 +118,17 @@ def get_nearest_continuous(
     that falls in any window. Then, per ``(monitoring_location_id, target)``
     pair, picks the single observation with the smallest ``|time - target|``.
 
-    The USGS continuous endpoint matches ``time`` parameters exactly rather
-    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;
-    this function is the single-round-trip way to ask "what reading is
-    nearest this timestamp?" for many timestamps at once.
+    The USGS continuous endpoint matches ``time`` parameters exactly, with
+    no tolerance, and it does not implement ``sortby`` for arbitrary fields;
+    this function finds the reading nearest each of many timestamps in one
+    round trip.
 
     Parameters
     ----------
     targets : list-like of datetime-convertible
         Target timestamps. Naive datetimes are treated as UTC. Accepts a
         list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
-        or anything ``pandas.to_datetime`` consumes.
+        or anything ``pandas.to_datetime`` accepts.
     monitoring_location_id : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
     parameter_code : string or iterable of strings, optional
@@ -143,11 +143,10 @@ def get_nearest_continuous(
         <https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html>`_
         for the full grammar.
 
-        Must be small enough that every target's window captures
+        Must be small enough that every target's window contains
         roughly one observation at the service cadence. The default
         matches a 15-minute continuous gage; widen (e.g.
-        ``"PT15M"``) for irregular cadences or resilience to data
-        gaps.
+        ``"PT15M"``) for irregular cadences or tolerance of data gaps.
     on_tie : {"first", "last", "mean"}, default ``"first"``
         How to resolve ties when two observations are exactly equidistant
         from a target (which happens when the target falls at the midpoint
@@ -160,14 +159,13 @@ def get_nearest_continuous(
           the target, since no real observation exists at the midpoint.
 
     **kwargs
-        Additional keyword arguments forwarded to ``get_continuous``
-        (e.g. ``statistic_id``, ``approval_status``, ``properties``).
-        Passing ``time``, ``filter``, or ``filter_lang`` raises
-        ``TypeError`` — this function builds those itself. A caller-provided
-        ``properties`` list gains ``time`` and ``monitoring_location_id`` when
-        either is omitted: the match is computed against the first and grouped
-        by the second, so the returned frame carries both columns even when they
-        were not requested.
+        Additional keyword arguments forwarded to ``get_continuous`` (e.g.
+        ``statistic_id``, ``approval_status``, ``properties``). Passing ``time``,
+        ``filter``, or ``filter_lang`` raises ``TypeError`` — this function builds those
+        itself. A caller-provided ``properties`` list has ``time`` and
+        ``monitoring_location_id`` when either is omitted: the match is computed against
+        the first and grouped by the second, so the returned frame includes both columns
+        even when they were not requested.
 
     Returns
     -------
@@ -176,7 +174,7 @@ def get_nearest_continuous(
         had at least one observation in its window. Rows are augmented
         with a ``target_time`` column indicating which target they
         correspond to. Targets with no observations in their window are
-        silently dropped.
+        omitted; no warning is raised.
     md : :class:`~dataretrieval.utils.BaseMetadata`
         Metadata from the underlying ``get_continuous`` call.
 
@@ -191,17 +189,17 @@ def get_nearest_continuous(
     -----
     *Window sizing and ties.* When ``window`` is exactly half the service
     cadence, most targets' windows contain a single observation and
-    ``on_tie`` is moot. Ties arise only when a target sits exactly at the
+    ``on_tie`` has no effect. Ties arise only when a target falls exactly at the
     midpoint between two grid observations — rare in practice but possible.
     Setting ``window`` to a full cadence (or larger) guarantees at least one
     observation per target in steady state at the cost of more bytes per
     response.
 
-    *Why windowed CQL rather than sort+limit.* The API's advertised
-    ``sortby`` parameter would make this a one-liner per target (``filter``
-    by ``time <= t`` and ``limit 1``), but it is per-query — you would need
-    one HTTP round-trip per target. The CQL ``OR``-chain approach folds
-    all N targets into one request (auto-chunked when the URL is long).
+    *Why windowed CQL rather than sort+limit.* The API's documented ``sortby`` parameter
+    would make this a trivial query per target (``filter`` by ``time <= t`` and ``limit
+    1``), but it is per-query — you would need one HTTP round-trip per target. The CQL
+    ``OR``-chain approach combines all N targets into one request (auto-chunked when the
+    URL is long).
 
     Examples
     --------
@@ -313,7 +311,7 @@ def _select_nearest_rows(
 
 
 def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
-    """Accept anything ``pandas.to_datetime`` consumes, including a single value.
+    """Accept anything ``pandas.to_datetime`` accepts, including a single value.
 
     A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a
     one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)
@@ -326,7 +324,7 @@ def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
 
 
 def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
-    """Reject kwargs the helper owns; validate ``on_tie``."""
+    """Reject kwargs the helper sets itself; validate ``on_tie``."""
     for forbidden in ("time", "filter", "filter_lang"):
         if forbidden in kwargs:
             raise TypeError(
@@ -361,7 +359,7 @@ def _pick_nearest_row(
     """Return the single row within ``window_td`` of ``target``, or ``None``.
 
     Resolves ties (two rows equidistant from ``target``) per ``on_tie``.
-    The returned row carries a ``target_time`` column identifying which
+    The returned row includes a ``target_time`` column identifying which
     target it was selected for.
     """
     in_window = site_df[

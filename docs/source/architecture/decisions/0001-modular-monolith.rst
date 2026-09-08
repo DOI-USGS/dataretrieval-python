@@ -22,11 +22,11 @@ Decision
 Maintain one installable distribution organized as a modular monolith. Expose
 functions grouped by data portal. Keep service- and protocol-specific adapters
 independent behind those facades, and share infrastructure only where its
-contract is genuinely API-neutral.
+contract is API-neutral.
 
 Treat the OGC subsystem as a protocol component used by Water Data and NGWMN,
 not as a universal service framework. Do not force NLDI, StreamStats, WQP, or
-Water Use into OGC-shaped return values or paging semantics.
+Water Use into return values or paging semantics in OGC's form.
 
 Consequences
 ------------

@@ -35,7 +35,7 @@ read-anywhere fields, so you rarely need to import the specific subclasses:
 
 * ``.status_code`` -- the HTTP status, or ``None`` when the failure included no
   response (a connection error, an over-long URL, ...).
-* ``.retry_after`` -- seconds the server asked you to wait (its ``Retry-After``
+* ``.retry_after`` -- seconds the server specified to wait (its ``Retry-After``
   header), or ``None``.
 * ``.retryable`` -- ``True`` when re-issuing the same request might succeed (a
   429 / 5xx, or a connection failure); ``False`` otherwise.
@@ -114,7 +114,7 @@ chunk paginates, splitting a large result further costs little or no
 extra quota *as long as each chunk still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
 would; a split that leaves each chunk only a page or two adds its partial
-final page.) So if you *know* your pull is large, ask for a finer split with
+final page.) If you know your pull is large, request a finer split with
 ``parallel_chunks(n)``: you get roughly the same pages in more, smaller
 chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. ``parallel_chunks`` is a scoped ``with`` block, so

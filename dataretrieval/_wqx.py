@@ -2,8 +2,8 @@
 
 The Samples database and the Water Quality Portal both split an instant across
 three columns -- a date, a time, and a time-zone abbreviation -- and they spell
-the trio two different ways. Recognizing either spelling and folding it into one
-UTC column is service-specific knowledge, so it lives in its own leaf rather
+the trio two different ways. Recognizing either spelling and combining it into one
+UTC column is service-specific knowledge, so it is in its own leaf rather
 than in :mod:`dataretrieval.utils` (ADR 0001).
 
 Depends on pandas and the time-zone table only; nothing here issues a request.
@@ -106,11 +106,10 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     are left intact, and an existing ``<prefix>DateTime`` column is never
     overwritten.
 
-    Rows are sorted (and the index reset) by the canonical activity-start
-    datetime when present — ``Activity_StartDateTime`` (WQX3) or
-    ``ActivityStartDateTime`` (legacy WQP) — falling back to the first
-    detected ``*Date`` column. Mirrors R ``dataRetrieval``'s
-    end-of-pipeline sort in ``importWQP.R``.
+    Rows are sorted (and the index reset) by the canonical activity-start datetime when
+    present — ``Activity_StartDateTime`` (WQX3) or ``ActivityStartDateTime`` (legacy
+    WQP) — falling back to the first detected ``*Date`` column. Matches R
+    ``dataRetrieval``'s end-of-pipeline sort in ``importWQP.R``.
 
     Parameters
     ----------

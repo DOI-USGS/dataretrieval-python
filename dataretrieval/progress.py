@@ -1,22 +1,22 @@
 """A single self-updating status line for paginated and chunked queries.
 
-Retrieval adapters can fan out in ways the caller cannot see: large multi-value
+Retrieval adapters can fan out without the caller being told: large multi-value
 requests are split into URL-length-safe *chunks* (``chunking`` module), and each
 request follows ``next`` links across an unknown number of *pages*
-(``transport.pagination.paginate``). This module surfaces that work as one
+(``transport.pagination.paginate``). This module reports that work as one
 line on stderr, rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
-The active reporter lives in a :class:`~contextvars.ContextVar` rather than being
+The active reporter is held in a :class:`~contextvars.ContextVar` rather than being
 threaded through every signature: progress is a cross-cutting concern that the
 chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
-page/row/rate-limit counts) both update without knowing about each other. Call
-:func:`progress_context` to activate one and :func:`current` to reach it.
+page/row/rate-limit counts) both update without importing each other. Call
+:func:`progress_context` to activate one and :func:`current` to get it.
 
 This is a top-level leaf rather than part of :mod:`dataretrieval.transport`:
 transport modules report *into* it and the execution layer owns no rendering
-(ADR 0006), so every service adapter -- OGC or not -- reaches the same reporter.
+(ADR 0006), so every service adapter -- OGC or not -- uses the same reporter.
 
 By default the line is shown for interactive use — an interactive terminal or a
 Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI get no line.
@@ -49,7 +49,7 @@ def _group_int(value: str) -> str:
 
 # The reporter active for the current query. A ContextVar (not a module global)
 # so the chunk orchestrator and the page loop resolve to the same reporter
-# within one query, and an unrelated query in another context can't clobber its
+# within one query, and an unrelated query in another context cannot overwrite its
 # state. (It does not give concurrent queries sharing one stderr separate
 # lines — they would still interleave.)
 _active: Ambient[ProgressReporter | None] = Ambient("dataretrieval_progress", None)
@@ -61,12 +61,11 @@ _api_key_hint_shown = False
 def _in_jupyter_kernel() -> bool:
     """True when running inside a Jupyter/IPython *kernel* (notebook, lab, qtconsole).
 
-    A kernel's ``stderr`` isn't a TTY, but it honors carriage-return rewrites in
-    the cell output area — the same mechanism ``tqdm`` rides on — so the line is
-    worth showing there. The plain IPython terminal REPL is a
-    ``TerminalInteractiveShell`` (already a TTY), so only the ZMQ kernel needs
-    this extra signal. Detected without importing IPython: if it isn't already
-    imported, we aren't in a shell.
+    A kernel's ``stderr`` isn't a TTY, but it handles carriage-return rewrites in the
+    cell output area — the same mechanism ``tqdm`` uses — so the line is shown there.
+    The plain IPython terminal REPL is a ``TerminalInteractiveShell`` (already a TTY),
+    so only the ZMQ kernel needs this extra signal. Detected without importing IPython:
+    if it is not already imported, no IPython shell is running.
     """
     ipython = sys.modules.get("IPython")
     if ipython is None:
@@ -78,13 +77,13 @@ def _in_jupyter_kernel() -> bool:
 def _enabled_default(stream: TextIO) -> bool:
     """Whether to draw the line by default.
 
-    ``API_USGS_PROGRESS`` wins when set. Otherwise show it for interactive use —
-    a TTY or a Jupyter/IPython kernel — and stay quiet for redirected output,
-    logs, and CI.
+    ``API_USGS_PROGRESS`` takes precedence when set. Otherwise show it for
+    interactive use — a TTY or a Jupyter/IPython kernel — and draw nothing for
+    redirected output, logs, and CI.
     """
     # config owns the grammar, so this is already a bool: the same value means
     # the same thing whether it came from a configure() block, the environment,
-    # or the file. Re-parsing here is what let those three disagree.
+    # or the file. Re-parsing here is what let those three differ.
     override = _configuration.progress()
     if override is not None:
         return override
@@ -126,10 +125,10 @@ class ProgressReporter:
         # denominator when the server reports it.
         self.rate_limit: str | None = None
         # Transient note shown while a chunk backs off before a
-        # retry; cleared by the next page/chunk so it doesn't linger.
+        # retry; cleared by the next page/chunk so it is not left on the line.
         self.retry_note: str | None = None
         self._last_len = 0
-        # Whether anything was actually written to the stream — drives whether
+        # Whether anything was written to the stream — decides whether
         # close() needs a terminating newline. (``current_chunk`` doesn't
         # track that: ``start_chunk`` sets it even when it doesn't render.)
         self._rendered = False
@@ -142,7 +141,7 @@ class ProgressReporter:
     def start_chunk(self, index: int) -> None:
         """Mark the start of chunk ``index`` (1-based) and redraw.
 
-        Only redraws when actually chunking (``total_chunks > 1``); a
+        Only redraws when chunking (``total_chunks > 1``); a
         single-chunk plan has nothing chunk-specific to show yet, so it
         avoids a premature "0 pages" frame before the first page arrives.
         """
@@ -152,7 +151,7 @@ class ProgressReporter:
             self._render()
 
     def add_page(self, rows: int = 0) -> None:
-        """Record one fetched page carrying ``rows`` rows and redraw."""
+        """Record one fetched page of ``rows`` rows and redraw."""
         self.pages += 1
         self.rows += int(rows)
         self.retry_note = None
@@ -165,7 +164,7 @@ class ProgressReporter:
         :meth:`close`) so the line returns to normal once the retry resolves.
         """
         # Keep sub-second waits explicit (avoid misleading ``0s``) while
-        # rendering whole-second waits without unnecessary ``.0`` noise.
+        # rendering whole-second waits without an unnecessary ``.0``.
         # ``float()`` to support Python 3.9-3.11: ``round(int, 1)`` returns an
         # int and ``int.is_integer()`` (used below) only exists on 3.12+.
         wait_1dp = round(float(wait), 1)
@@ -182,9 +181,8 @@ class ProgressReporter:
         """Update the rate-limit display from the response headers.
 
         ``value`` is ``x-ratelimit-remaining``; ``limit`` is the optional
-        ``x-ratelimit-limit`` quota, shown as the denominator. Empty/missing
-        values are ignored so a page that omits a header doesn't blank out the
-        last known value.
+        ``x-ratelimit-limit`` quota, shown as the denominator. Empty/missing values are
+        ignored so a page that omits a header does not clear the last known value.
         """
         if value not in (None, ""):
             self.rate_remaining = str(value)
@@ -223,10 +221,10 @@ class ProgressReporter:
             self._last_len = len(line)
             self._rendered = True
         except Exception:  # noqa: BLE001
-            # Progress output is best-effort cosmetics; a broken pipe (output
+            # Progress output is best-effort display; a broken pipe (output
             # piped to ``head``), a closed stream, or an encoding error must
-            # never disturb — let alone truncate — the query. Disable so we
-            # don't retry on every subsequent page.
+            # never affect the query. Disable so rendering
+            # is not retried on every subsequent page.
             self.enabled = False
 
     def close(self) -> None:
@@ -234,11 +232,11 @@ class ProgressReporter:
 
         If the query targeted the API-key host and no key is configured (no
         ``API_USGS_PAT``), append a one-time pointer to API-key registration,
-        since unauthenticated callers hit much lower rate limits.
+        since unauthenticated callers are subject to much lower rate limits.
         """
         if self._closed:
             return
-        # A retry note set during the final backoff would otherwise freeze as
+        # A retry note set during the final backoff would otherwise remain as
         # the persisted last line of a call that has since completed or given
         # up; clear it and redraw (while still un-closed, so ``_render`` runs)
         # so the final state isn't a stale "retrying".
@@ -260,7 +258,7 @@ class ProgressReporter:
         if not self._key_helps or _api_key_hint_shown or api_key():
             return
         # Set the once-per-process latch only after a successful write, so a
-        # failed write (broken pipe) doesn't silently burn the hint for every
+        # failed write (broken pipe) doesn't suppress the hint for every
         # later query in the process.
         self._stream.write(
             f"No API key detected — register for higher rate limits at {SIGNUP_URL}\n"
@@ -279,8 +277,8 @@ def progress_context(
     """Activate a :class:`ProgressReporter` for the duration of a query.
 
     ``service`` labels the line (e.g. ``"Retrieving: daily ..."``), and
-    ``target_url`` is where the query is going -- it decides whether an
-    API-key pointer is worth showing when the line closes. If a reporter is
+    ``target_url`` is the host the query is sent to -- it decides whether an
+    API-key pointer is shown when the line closes. If a reporter is
     already active (a nested call), the existing one is yielded unchanged so the
     outermost query owns the single line; only the outermost context closes it
     (and every argument of a nested call is ignored).

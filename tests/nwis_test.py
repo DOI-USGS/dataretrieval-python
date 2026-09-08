@@ -59,7 +59,7 @@ def _test_iv_service(httpx_mock):
     service = "iv"
     site = ["03339000", "05447500", "03346500"]
 
-    # We use a very simple JSON structure just to satisfy the parser
+    # A minimal JSON structure to satisfy the parser
     mock_json = _load_mock_json("nwis_iv_mock.json")
 
     # Match the base URL and ensure query parameters are correct
@@ -92,14 +92,13 @@ def test_iv_service_answer(httpx_mock):
     ],
 )
 def test_preformat_peaks_response_keeps_every_peak(peak_dt, expected):
-    """A peak is never dropped for want of a parseable date.
+    """A peak is never dropped because its date cannot be parsed.
 
-    NWIS zero-fills the unknown part of a historical peak's date --
-    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
-    not either (the ``Bd`` and ``Bm`` ``peak_cd`` qualifiers). Those are real
-    peaks, often a site's largest, and dropping them loses the discharge value
-    with the date. A date NWIS only partly knows stays ``NaT`` rather than
-    being completed into one it does not have.
+    NWIS zero-fills the unknown part of a historical peak's date -- ``YYYY-MM-00`` when
+    the day is not known, ``YYYY-00-00`` when the month is not either (the ``Bd`` and
+    ``Bm`` ``peak_cd`` qualifiers). Those are real peaks, often a site's largest, and
+    dropping them loses the discharge value with the date. A date NWIS records only
+    partly stays ``NaT`` rather than being completed into one it does not record.
     """
     df = pd.DataFrame({"peak_dt": [peak_dt], "peak_va": [563000]})
 
@@ -114,12 +113,12 @@ def test_preformat_peaks_response_keeps_every_peak(peak_dt, expected):
 
 
 def test_preformat_peaks_response_preserves_peak_dt():
-    """``peak_dt`` must survive the reformat.
+    """``peak_dt`` must be kept through the reformat.
 
-    The peaks response carries no ``water_yr``, so ``peak_dt`` is the only
+    The peaks response has no ``water_yr``, so ``peak_dt`` is the only
     column holding the year of a censored peak -- and the only way a caller can
     tell an unknown day from a known one, since ``peak_cd`` does not always
-    carry the qualifier.
+    include the qualifier.
     """
     df = pd.DataFrame({"peak_dt": ["1858-00-00"], "peak_va": [563000]})
 
@@ -131,7 +130,7 @@ def test_preformat_peaks_response_preserves_peak_dt():
 def test_preformat_peaks_response_malformed_frame_still_raises():
     """Only an *empty* peaks frame is a legitimate empty result. A non-empty
     frame with no ``peak_dt`` column is a malformed response -- a truncated or
-    altered RDB header -- and must stay loud rather than be returned silently
+    altered RDB header -- and must raise rather than be returned
     without its datetime index.
     """
     df = pd.DataFrame({"peak_va": [1000]})
@@ -141,9 +140,9 @@ def test_preformat_peaks_response_malformed_frame_still_raises():
 
 
 class TestDeprecationWarnings:
-    """Verify per-function DeprecationWarning fires with the right replacement.
+    """Verify the per-function DeprecationWarning is emitted with the right replacement.
 
-    The module-level "use waterdata instead" warning fires on import; these
+    The module-level "use waterdata instead" warning is emitted on import; these
     tests pin the function-specific replacements so users see actionable
     migration guidance the first time they call each NWIS getter.
     """
@@ -214,11 +213,11 @@ class TestDeprecationWarnings:
         ],
     )
     def test_named_replacement_exists_in_waterdata(self, name):
-        """Tripwire: every concrete `waterdata.*` named in a deprecation message
-        must actually exist, so a user following the migration guidance doesn't
-        hit AttributeError.
+        """Every concrete `waterdata.*` named in a deprecation message
+        must exist, so a user following the migration guidance does not
+        get an AttributeError.
 
-        Fails loudly if this PR ever lands before its referenced replacement
+        Fails if this change is ever merged before its referenced replacement
         does (e.g. before `get_peaks` from #267).
         """
         import dataretrieval.waterdata as wd
@@ -336,7 +335,7 @@ class TestReadRdb:
 
     The format-agnostic parser is exercised in tests/rdb_test.py; this
     class pins the wrapper-specific contract — that an empty parser
-    result flows through format_response without crashing (issue #171),
+    result passes through format_response without raising (issue #171),
     on the plain arm and on the peaks arm alike.
     """
 
@@ -367,7 +366,7 @@ class TestReadRdb:
         Both functions are public API, so any caller parsing a peaks RDB
         reaches this -- it is not unreachable behind ``NoSitesError``.
         """
-        # Mirror get_discharge_peaks: raw read_rdb, then the peaks-specific
+        # Match get_discharge_peaks: raw read_rdb, then the peaks-specific
         # format_response.
         df = read_rdb(self.NO_RESULTS_RDB)
         df = format_response(df, service="peaks")
@@ -377,8 +376,8 @@ class TestReadRdb:
     def test_malformed_peaks_frame_still_raises(self):
         """Only an *empty* peaks frame is a legitimate empty result. A
         non-empty frame with no ``peak_dt`` column is a malformed response --
-        a truncated or altered RDB header -- and must stay loud rather than be
-        returned silently without its datetime index.
+        a truncated or altered RDB header -- and must raise rather than be
+        returned without its datetime index.
         """
         df = pd.DataFrame({"peak_va": [1000]})
 
@@ -389,10 +388,10 @@ class TestReadRdb:
 class TestGetRecordDispatch:
     """``get_record`` is a router; each service must reach its own getter.
 
-    The arms are near-identical by eye, which is what makes a mis-wired one
-    survive review: every arm forwards ``sites`` except ``ratings``, which
-    takes a scalar ``site``. A swap there fails only at request time, for one
-    service, in a deprecated facade nobody reads.
+    The arms look near-identical, which is what lets a wrong one pass review: every arm
+    forwards ``sites`` except ``ratings``, which takes a scalar ``site``. A swap there
+    fails only at request time, for one service, in a deprecated facade that is rarely
+    read.
     """
 
     @pytest.mark.parametrize(
@@ -426,11 +425,11 @@ class TestGetRecordDispatch:
 
 
 def test_html_error_page_instead_of_json_says_what_to_do():
-    """A 200 carrying an HTML error page must not surface as a JSON parse error.
+    """A 200 whose body is an HTML error page must not be raised as a JSON parse error.
 
-    The legacy services answer an outage with a styled page and a 200, so the
-    only signal is the body. A caller that gets ``JSONDecodeError`` learns
-    nothing actionable; this path names the cause and the move.
+    The legacy services respond to an outage with a styled page and a 200, so the
+    only signal is the body. A caller that gets ``JSONDecodeError`` has
+    nothing actionable; this path names the cause and the remedy.
     """
     response = mock.Mock()
     response.json.side_effect = ValueError("no json")
@@ -448,7 +447,7 @@ def test_html_error_page_instead_of_json_says_what_to_do():
 
 
 def test_a_non_html_parse_failure_is_re_raised_unchanged():
-    """Only HTML gets the rewrite; a genuine malformed-JSON body must not be
+    """Only HTML gets the rewrite; a malformed-JSON body must not be
     relabelled as a service outage."""
     response = mock.Mock()
     response.json.side_effect = ValueError("Expecting value")
@@ -462,9 +461,9 @@ def test_a_non_html_parse_failure_is_re_raised_unchanged():
 
 
 def test_deprecating_a_getter_with_no_named_replacement_is_refused():
-    """``@_deprecated`` promises the caller a replacement, so the decorator
-    refuses to be applied to a function whose replacement nobody recorded --
-    a deprecation warning naming nothing leaves the caller with nothing to
+    """``@_deprecated`` guarantees the caller a replacement, so applying it to a
+    function with no recorded replacement raises -- a deprecation warning naming nothing
+    leaves the caller with nothing to
     migrate to."""
     with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
 
@@ -494,9 +493,9 @@ def test_metadata_site_info_is_none_when_no_site_filter_was_used():
 
 
 def test_utc_localization_of_a_multi_index_datetime_level():
-    """``multi_index=True`` puts the timestamp on level 1 under the site id.
-    The naive level must still be localized, or a multi-site frame carries
-    two different clock conventions in one column."""
+    """``multi_index=True`` puts the timestamp on level 1 under the site id. The naive
+    level must still be localized, or a multi-site frame holds two different time-zone
+    conventions in one column."""
     idx = pd.MultiIndex.from_arrays(
         [
             ["01491000", "01491000"],
@@ -509,9 +508,9 @@ def test_utc_localization_of_a_multi_index_datetime_level():
 
 
 class TestGetInfoSeriesCatalog:
-    """``seriesCatalogOutput`` and the expanded site format are mutually
-    exclusive on the wire, so the getter picks one and warns when the caller
-    asked for the retiring one."""
+    """``seriesCatalogOutput`` and the expanded site format are mutually exclusive on
+    the wire, so the getter picks one and warns when the caller asked for the one being
+    retired."""
 
     @pytest.mark.parametrize("flag", ["True", "TRUE", "true", True])
     def test_asking_for_the_series_catalog_warns_and_forwards_it(

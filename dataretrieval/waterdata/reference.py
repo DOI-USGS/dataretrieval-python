@@ -2,7 +2,7 @@
 
 Reference tables and per-collection queryables -- the parameter codes, statistic
 codes, and filterable properties the other getters accept. These describe the
-service rather than the water, so they are the one family whose results are
+service rather than the measurements, so they are the one family whose results are
 mostly stable between calls.
 """
 
@@ -48,7 +48,7 @@ def get_reference_table(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty.
+        number if your internet connection is unreliable.
     query: dictionary, optional
         A dictionary of extra query parameters to pass to the collection API
         call.
@@ -63,7 +63,7 @@ def get_reference_table(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query. The primary metadata
-        of each reference table will show up in the first column, where
+        of each reference table appears in the first column, where
         the name of the column is the singular form of the collection name,
         separated by underscores (e.g. the "medium-codes" reference table
         has a column called "medium_code", which contains all possible
@@ -120,7 +120,7 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
     """List the queryable properties of a Water Data API collection.
 
     Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
-    ...) advertises the set of properties that can be filtered on -- exposed as
+    ...) lists the set of properties that can be filtered on -- exposed as
     the typed keyword arguments of the matching ``get_*`` function, and usable
     directly in a CQL2 ``filter``. This function returns that set, so you can
     discover the available filters programmatically and monitor them for
@@ -160,9 +160,9 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
         'string'
     """
     # Reading the queryables document is OGC protocol work; this getter only
-    # names the API to ask -- which is the redirected one when a ``configure``
+    # names the API to query -- which is the redirected one when a ``configure``
     # block set a base URL, so the queryables describe the API the getters are
-    # actually querying.
+    # querying.
     return queryables_frame(collection, base_url=ogc_api_url())
 
 

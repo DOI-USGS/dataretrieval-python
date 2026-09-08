@@ -164,8 +164,8 @@ def to_state(
 
     Coverage is the 50 states, DC, and the five US territories, each under its
     real ANSI/FIPS code. A ``value`` that isn't recognized in one of those
-    encodings raises ``ValueError``, so a typo fails fast rather than
-    silently matching nothing.
+    encodings raises ``ValueError``, so a typo raises rather than
+    matching nothing.
     """
     if isinstance(value, str):
         return _to_state_one(value, to)
@@ -224,16 +224,15 @@ def apply_state(
     ``state`` alongside any of them raises ``ValueError``. Returns the (mutated)
     ``local_vars``.
 
-    An unrecognized ``state`` is re-raised naming the parameters in ``reject``,
-    and only those. They are the endpoint's own state parameters as the public
-    getter spells them: the mutual-exclusion guard below proves the getter
-    accepts them as keyword arguments. ``into`` is deliberately not offered,
-    because an API query parameter need not exist on the getter's signature --
-    NGWMN's ``get_sites`` filters on ``state_name`` but accepts only ``state``,
-    so naming ``into`` there produced a remedy that raises ``TypeError`` when
-    followed. An endpoint with an empty ``reject`` has no alternative spelling
-    to offer, so it appends nothing rather than pointing back at the argument
-    that just failed.
+    An unrecognized ``state`` is re-raised naming the parameters in ``reject``, and only
+    those. They are the endpoint's own state parameters as the public getter spells
+    them: the mutual-exclusion check below shows the getter accepts them as keyword
+    arguments. ``into`` is deliberately not offered, because an API query parameter need
+    not exist on the getter's signature -- NGWMN's ``get_sites`` filters on
+    ``state_name`` but accepts only ``state``, so naming ``into`` there produced a
+    remedy that raises ``TypeError`` when followed. An endpoint with an empty ``reject``
+    has no alternative spelling to offer, so it appends nothing rather than naming the
+    argument that just failed.
     """
     state = local_vars.pop("state", None)
     if state is None:
@@ -249,7 +248,7 @@ def apply_state(
             # No native spelling of the getter's own to offer instead.
             raise
         # Only ``reject`` proves the getter accepts a spelling; ``into`` is the
-        # API query parameter, so it leads only when it appears there too.
+        # API query parameter, so it is listed only when it appears there too.
         offered = dict.fromkeys(n for n in (into, *reject) if n in reject)
         raise ValueError(
             f"{err} Pass {' or '.join(offered)} directly instead, using the "

@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
 #: Root the Water Quality Portal serves both its interfaces from. Private
 #: because the two builders below are the documented way to name a WQP URL;
-#: this is only the piece they share, and the piece a redirect replaces.
+#: this is only the part they share, and the part a redirect replaces.
 _WQP_BASE_URL = "https://www.waterqualitydata.us"
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
@@ -137,11 +137,11 @@ def _read_wqp_csv(text: str) -> DataFrame:
     """Read a WQP CSV, forcing code/identifier columns to ``str``.
 
     WQP returns codes with significant leading zeros — HUCs, parameter codes
-    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those
-    as int/float and silently drops the zeros (``"00060"`` -> ``60``, HUC8
+    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those as
+    int/float and drops the zeros without a warning (``"00060"`` -> ``60``, HUC8
     ``"07090002"`` -> ``7090002``). Read the header first, then re-read with
-    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the
-    zeros survive.
+    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the zeros are
+    preserved.
     """
     columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns
     str_cols = {col: str for col in columns if _is_code_column(col)}
@@ -680,7 +680,7 @@ def _service_base() -> str:
 
     The portal serves the legacy and WQX3 interfaces from one root under
     different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
-    both follow it (ADR 0011).
+    both use it (ADR 0011).
     """
     return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
 
@@ -759,11 +759,11 @@ class WQP_Metadata(BaseMetadata):
 def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Check kwargs for unsupported parameters.
 
-    Every WQP getter's ``**kwargs`` funnels through here on its way to the
-    query payload, so this is the choke point where a credential-shaped name is
+    Every WQP getter's ``**kwargs`` passes through here before it becomes the
+    query payload, so this is the one place where a credential-shaped name is
     refused. The predicate is the credentials leaf's, shared with Water Data's
     ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
-    getter now that ``configure(Configuration(api_key=...))`` is the spelling,
+    getter now that ``configure(Configuration(api_key=...))`` is the documented form,
     and this is the adapter with the widest passthrough -- ten getters, whose
     filter names the portal rather than this package defines. The returned
     payload materializes non-string iterables as lists so one-shot iterators
@@ -827,8 +827,8 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
     Passing ``legacy=False`` to one of these helpers emits a ``UserWarning``
     explaining the fallback and *also* suppresses the legacy
     :class:`~dataretrieval.exceptions.DataCurrencyWarning` that ``wqp_url``
-    would otherwise raise. That warning's message claims setting
-    ``legacy=False`` removes it, which is a lie for endpoints that have no
+    would otherwise raise. That warning's message states that setting
+    ``legacy=False`` removes it, which is false for endpoints that have no
     WQX3.0 alternative.
     """
     with warnings.catch_warnings():
@@ -842,8 +842,8 @@ def _legacy_only_url(service: str, legacy: bool) -> str:
 class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for Water Quality Portal calls alone.
 
-    No fan-out dials: a WQP query is answered by a single request, so a
-    concurrency cap could only report a number nothing honours.
+    No fan-out settings: a WQP query is served by a single request, so a
+    concurrency cap could only report a number nothing reads.
 
     Declared here rather than in :mod:`dataretrieval.configuration`
     (ADR 0011).
@@ -857,7 +857,7 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         stops.
     base_url : str, optional
         Root to send WQP requests to, instead of the portal's own. Both
-        interfaces hang off it, so one value moves the legacy ``/data/``
+        interfaces are built on it, so one value redirects the legacy ``/data/``
         and the WQX3 ``/wqx3/`` paths together. Code only: the file and
         the environment refuse it.
     """

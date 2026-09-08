@@ -18,9 +18,9 @@ from dataretrieval.credentials import (
 )
 from dataretrieval.exceptions import NetworkError
 
-# Re-exported for the adapters that reach for credential policy through the
-# transport surface they already import. ``dataretrieval.credentials`` is the
-# single definition; these names are views on it, not copies of it.
+# Re-exported for the adapters that import credential policy through the
+# transport module they already import. ``dataretrieval.credentials`` is the
+# single definition; these names refer to the same objects; they are not copies.
 __all__ = [
     "HTTPX_ASYNC_DEFAULTS",
     "HTTPX_DEFAULTS",
@@ -50,12 +50,12 @@ HTTPX_DEFAULTS: dict[str, Any] = {
 def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
     """Build standard headers, scoping the API key to its authorized host.
 
-    The host is checked *before* the key is resolved, and the key is resolved
-    only for the authorized host. Order matters now that settings come from a
-    layered chain: resolution reads the config file and can raise
+    The host is checked *before* the key is resolved, and the key is resolved only for
+    the authorized host. Order matters because settings come from a layered chain:
+    resolution reads the config file and can raise
     :class:`~dataretrieval.exceptions.ConfigurationError` for a malformed file or
     a profile it no longer defines. Resolving first would let a Water Data
-    configuration problem break a legacy NWIS, WQP, or NGWMN call that would
+    configuration problem fail a legacy NWIS, WQP, or NGWMN call that would
     never have received the key.
     """
     headers = {

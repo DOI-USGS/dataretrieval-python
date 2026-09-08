@@ -22,7 +22,7 @@ _SAMPLE = {
 def test_watershed_from_streamstats_json_builds_independent_instances():
     """B3 regression: ``from_streamstats_json`` previously wrote *class*
     attributes and returned the class object, so it produced no real
-    instance and a second parse clobbered the first. It must now return
+    instance and a second parse overwrote the first. It must now return
     an independent, populated ``Watershed`` instance."""
     w1 = Watershed.from_streamstats_json(_SAMPLE)
     assert isinstance(w1, Watershed)  # was the class object pre-fix
@@ -33,7 +33,7 @@ def test_watershed_from_streamstats_json_builds_independent_instances():
 
     w2 = Watershed.from_streamstats_json(dict(_SAMPLE, workspaceID="WS-XYZ"))
     assert w1 is not w2
-    assert w1._workspaceID == "WS-ABC"  # not clobbered by w2 (was shared class state)
+    assert w1._workspaceID == "WS-ABC"  # not overwritten by w2 (was shared class state)
     assert w2._workspaceID == "WS-XYZ"
 
 
@@ -56,8 +56,8 @@ def test_get_watershed_geojson_returns_raw_response(httpx_mock):
 
 
 def test_get_watershed_shape_raises_not_implemented(httpx_mock):
-    """B3: the unimplemented ``format='shape'`` must fail loudly rather
-    than silently falling through to a (previously broken) ``Watershed``."""
+    """B3: the unimplemented ``format='shape'`` must raise rather
+    than fall through to a (previously broken) ``Watershed``."""
     httpx_mock.add_response(text=json.dumps(_SAMPLE))
     with pytest.raises(NotImplementedError):
         get_watershed("NY", -74.524, 43.939, format="shape")
@@ -96,8 +96,8 @@ def test_get_watershed_retries_transient_failure(httpx_mock, monkeypatch):
 
 
 def test_watershed_constructor_delineates_and_parses(monkeypatch):
-    """``Watershed(...)`` is the object-shaped entry point: it must issue the
-    geojson request and land the parsed fields on the instance, so a caller
+    """``Watershed(...)`` is the entry point that returns an object: it must issue the
+    geojson request and set the parsed fields on the instance, so a caller
     never handles the raw response."""
     import httpx
 
@@ -120,7 +120,7 @@ def test_watershed_constructor_delineates_and_parses(monkeypatch):
 
 def test_get_sample_watershed_uses_the_documented_sample_location(monkeypatch):
     """The sample helper exists so a new user can get a real object in one
-    call; it must keep asking for the location the docstring advertises."""
+    call; it must keep requesting the location the docstring documents."""
     from dataretrieval import streamstats
 
     captured = {}

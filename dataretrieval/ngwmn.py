@@ -6,7 +6,7 @@ The NGWMN exposes its data through a dedicated OGC API
 ``providers``. Each getter below delegates to the shared OGC facade
 (:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.
 Multi-value chunking, pagination, retry/resume, and result shaping therefore
-behave exactly as they do for the main Water Data getters.
+behave as they do for the main Water Data getters.
 
 Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so ``monitoring_location_id`` values use other agency
@@ -58,17 +58,17 @@ BASE_URL = WATERDATA_BASE_URL
 NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 
 # --- state-filter shim -------------------------------------------------------
-# NGWMN's collections expose DIFFERENT state queryables: ``sites`` filters on
+# NGWMN's collections expose different state queryables: ``sites`` filters on
 # the full ``state_name`` (e.g. "Wisconsin"), while ``providers`` filters on the
 # two-letter postal ``state`` (uppercase, e.g. "WI"). The state-aware getters
 # take a single ``state`` parameter accepting any US-state encoding (full name,
 # postal code, or FIPS code); ``_get`` resolves it into the one queryable each
-# collection wants via the shared ``codes.states.apply_state``, keyed by
+# collection accepts via the shared ``codes.states.apply_state``, keyed by
 # ``_STATE_QUERYABLE`` below.
 #
-# This shim exists only to smooth over that upstream asymmetry.
+# This shim exists only to handle that upstream asymmetry.
 # ``tests/ngwmn_test.py::test_state_queryables_still_diverge_upstream`` fails --
-# the signal to remove it -- if the API ever unifies the two queryables.
+# the indication that it can be removed -- if the API ever unifies the two queryables.
 _STATE_QUERYABLE = {
     # service -> ``apply_state`` kwargs (destination queryable + to_state format)
     "sites": {"into": "state_name", "to": "name"},
@@ -101,7 +101,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     """Marshal a getter's arguments and dispatch to the shared OGC facade.
 
     Every NGWMN getter ends with this same call; centralizing it keeps the
-    NGWMN base URL, output id, and dialect wired up in exactly one place.
+    NGWMN base URL, output id, and dialect set in one place.
     """
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
@@ -451,8 +451,8 @@ class NgwmnConfiguration(
 
     NGWMN is a second OGC API on the Water Data host, so its queries
     divide along the same URL byte budget and take the same two fan-out
-    dials. The API key is not among them: one gateway fronts both
-    adapters, so one key and one quota pool serve them (ADR 0010).
+    settings. The API key is not among them: one gateway fronts both
+    adapters, so they share one key and one quota pool (ADR 0010).
 
     Declared here rather than in :mod:`dataretrieval.configuration`
     (ADR 0011).
@@ -468,7 +468,7 @@ class NgwmnConfiguration(
         OGC API base to send NGWMN requests to, instead of the service's
         own (``NGWMN_OGC_API_URL``). Code only: the file and the
         environment refuse it. The API key is scoped to the host that
-        honors it, so a redirected call carries no key.
+        accepts it, so a redirected call sends no key.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional

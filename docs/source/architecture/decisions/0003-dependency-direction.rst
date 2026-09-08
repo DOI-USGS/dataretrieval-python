@@ -22,7 +22,7 @@ Dependencies point from public facades to service/protocol adapters, then to
 service-neutral transport and stable policy, and finally to third-party
 infrastructure. In particular:
 
-- ``dataretrieval.exceptions`` is a runtime-dependency-light leaf.
+- ``dataretrieval.exceptions`` is a leaf with no runtime third-party dependencies.
 - ``dataretrieval.ogc`` must not import Water Data, NGWMN, Water Use, or NWIS.
 - ``dataretrieval.ogc`` must not depend on the mixed legacy ``utils`` module;
   shared scoped state is kept in a dependency-free leaf instead.
@@ -65,14 +65,14 @@ direction belongs in ``.importlinter``.
 
 Named contracts verify the current boundaries: the only OGC dependency of
 NGWMN and ``waterdata.cql`` is the facade, ``ogc.shaping`` does not depend on
-``ogc.engine``, Water Use and the other non-OGC adapters cannot reach the OGC
+``ogc.engine``, Water Use and the other non-OGC adapters cannot import the OGC
 subsystem at all. The fitness functions verify that the runtime graph is
 acyclic package-wide rather than only within ``ogc`` and ``transport``.
 ``waterdata.utils`` not bulk re-exporting private OGC helpers stays there too,
 because that claim is about the module's
 ``__all__``.
 
-The OGC consumer list is an allowlist, so a new service module is refused until
+The OGC consumer list is an allowlist, so a new service module fails the contract until
 someone places it deliberately. It should shrink as private seams move. Any
 growth requires explicit architecture review, and a change to the dependency
 policy requires this ADR to be superseded.

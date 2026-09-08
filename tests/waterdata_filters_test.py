@@ -32,7 +32,7 @@ def _query_params(prepared_request):
 def _fake_prepared_request(url="https://example.test"):
     """Stand-in for the object ``_construct_api_requests`` returns.
 
-    Carries ``content`` because the planner sizes candidate chunks as
+    Has ``content`` because the planner sizes candidate chunks as
     ``len(url) + len(content)`` — and with the builder bound per call, a
     patched builder is what the planner measures.
     """
@@ -49,8 +49,9 @@ def _fake_response(url="https://example.test", elapsed_ms=1):
 
 
 def test_quote_cql_str_doubles_embedded_quotes():
-    """The shared CQL-text escaper doubles ``'`` and leaves other input
-    untouched (the contract ``waterdata.ratings._build_filter`` relies on)."""
+    """The shared CQL-text escaper doubles ``'`` and leaves other input unchanged (the
+    contract ``waterdata.ratings._build_filter`` relies on).
+    """
     assert _quote_cql_str("O'Brien") == "O''Brien"
     assert _quote_cql_str("USGS-01646500") == "USGS-01646500"
     assert _quote_cql_str("a'b'c") == "a''b''c"
@@ -91,8 +92,8 @@ def test_split_top_level_or_respects_quotes():
 def test_split_top_level_or_handles_doubled_quote_escape():
     """CQL text escapes a single quote inside a literal as ``''``. The
     two quotes are adjacent, so the scanner's escape-unaware toggle-on-quote
-    logic happens to land back in the correct state with nothing between the
-    toggles to misclassify. Lock that behavior in so a future refactor
+    logic happens to return to the correct state with nothing between the
+    toggles to misclassify. Pin that behavior so a future refactor
     can't regress it."""
     cases = [
         ("name = 'O''Reilly OR Co' OR id = 1", ["name = 'O''Reilly OR Co'", "id = 1"]),
@@ -149,7 +150,7 @@ def _filter_chunking_clauses(n: int = 300) -> str:
 
 def _filter_size_aware_build(**kwargs):
     """Fake ``_construct_api_requests`` whose returned URL length scales
-    with the request's ``filter`` value, so the joint planner naturally
+    with the request's ``filter`` value, so the joint planner
     triggers chunking on long filters."""
     return _fake_prepared_request(
         url=f"https://example.test/?filter={kwargs.get('filter', '')}",
@@ -307,9 +308,9 @@ def test_cql_json_filter_is_not_chunked():
             filter_lang="cql-json",
         )
 
-    # The planner sizes through the (patched) builder and the fetch builds
-    # through it again; every call must carry the caller's cql-json filter
-    # verbatim — never split — and exactly one chunk is fetched.
+    # The planner sizes through the (patched) builder and the fetch builds through it
+    # again; every call must include the caller's cql-json filter verbatim — never split
+    # — and exactly one chunk is fetched.
     assert sent_filters and set(sent_filters) == {expr}
     assert walk.await_count == 1
 
@@ -327,7 +328,7 @@ def test_cql_json_filter_is_not_chunked():
         "value >= 1000.5",
         "value >= -50",
         # Zero-padded codes: `parameter_code = 60` matches nothing
-        # because the real values are all `'00060'`-shaped
+        # because the real values are all zero-padded like `'00060'`
         "parameter_code = 60",
         "statistic_id = 11",
         "district_code = 1",
@@ -344,14 +345,14 @@ def test_cql_json_filter_is_not_chunked():
         "value > .5",
         "value >= -.5",
         "value < .5e-3",
-        # ``IN`` list form — same footgun, common pattern for codes
+        # ``IN`` list form — same pitfall, common pattern for codes
         "parameter_code IN (60, 61)",
         "value IN (10, 20, 30)",
         "statistic_id in (11)",  # case-insensitive, single-element
-        # ``NOT IN`` with numbers — same footgun via negation
+        # ``NOT IN`` with numbers — same pitfall via negation
         "value NOT IN (1, 2, 3)",
         "parameter_code not in (60, 61)",
-        # ``BETWEEN`` range form — same footgun
+        # ``BETWEEN`` range form — same pitfall
         "value BETWEEN 5 AND 10",
         "channel_flow between 100 and 500",
         # ``NOT BETWEEN`` with numbers
@@ -390,7 +391,7 @@ def test_check_numeric_filter_pitfall_raises(expr):
         "qualifier IN ('A', 'P')",
         "parameter_code IN ('00060', '00065')",
         "value BETWEEN '1' AND '9'",
-        # Footgun identifiers appearing only inside string literals
+        # Pitfall identifiers appearing only inside string literals
         "monitoring_location_id = 'USGS-value >= 1000'",
         "name = 'why I care about parameter_code = 60'",
         "note = 'see district_code = 1 in docs'",
@@ -434,7 +435,7 @@ def test_pitfall_error_names_real_field_not_NOT_keyword(expr, field, op):
 
 def test_get_continuous_surfaces_pitfall_to_caller():
     """End-to-end: the check runs at the ``get_continuous`` boundary,
-    not as a deep internal-only protection, so callers see the error
+    not only inside an internal helper, so callers get the error
     before any HTTP traffic."""
     with mock.patch("dataretrieval.ogc.engine._construct_api_requests") as build:
         with pytest.raises(ValueError, match="lexicographic"):
@@ -448,7 +449,7 @@ def test_get_continuous_surfaces_pitfall_to_caller():
 
 
 class TestOrSeparatorBoundaries:
-    """Top-level ``OR`` splitting drives chunking, so a false split changes
+    """Top-level ``OR`` splitting determines chunking, so a false split changes
     the query's meaning and a missed one leaves an unchunkable filter."""
 
     def test_a_word_merely_starting_with_or_is_not_a_separator(self):

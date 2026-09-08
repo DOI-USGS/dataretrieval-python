@@ -1,7 +1,7 @@
 """Tests for ``waterdata.get_nearest_continuous``.
 
 All network interaction is mocked at the ``get_continuous`` boundary, so
-these run without an API key and without touching the USGS servers.
+these run without an API key and without contacting the USGS servers.
 """
 
 from unittest import mock
@@ -15,7 +15,7 @@ from dataretrieval.waterdata.nearest import get_nearest_continuous
 
 
 def _fake_df(rows):
-    """Build a minimal continuous-response-shaped DataFrame."""
+    """Build a minimal DataFrame with the continuous-response columns."""
     return pd.DataFrame(
         {
             "time": pd.to_datetime([r["time"] for r in rows], utc=True),
@@ -137,7 +137,7 @@ def test_tie_mean_averages_numeric_and_uses_target_time(patch_get_continuous):
         window="PT7M30S",
     )
     assert result.iloc[0]["value"] == pytest.approx(22.2)
-    # Time is set to the target since no real observation sits at the midpoint
+    # Time is set to the target since no real observation falls at the midpoint
     assert result.iloc[0]["time"] == targets[0]
 
 
@@ -174,9 +174,8 @@ def test_multi_site_returns_row_per_target_per_site(patch_get_continuous):
 
 
 def test_empty_targets_raises(patch_get_continuous):
-    """An empty ``targets`` is a call with no useful work to do and
-    almost always a caller bug — raise rather than silently issuing a
-    no-op HTTP request."""
+    """An empty ``targets`` is a call with no useful work to do and almost always a
+    caller bug — raise rather than issue a request that returns nothing."""
     with pytest.raises(ValueError, match="targets"):
         get_nearest_continuous([], monitoring_location_id="USGS-02238500")
     patch_get_continuous.assert_not_called()
@@ -421,8 +420,8 @@ def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous
 
     Without the injection a list like ``['time', 'value']`` reached the
     service unchanged, the response came back with no
-    ``monitoring_location_id``, and every site but one was silently dropped --
-    an incomplete result with nothing for a caller to notice it by.
+    ``monitoring_location_id``, and every site but one was dropped without an error --
+    an incomplete result the caller could not detect.
     """
     patch_get_continuous.return_value = (
         pd.DataFrame(
@@ -506,9 +505,9 @@ def test_empty_response_does_not_require_matching_columns(patch_get_continuous):
 def test_no_observation_inside_the_window_returns_the_empty_shape(
     patch_get_continuous,
 ):
-    """A target with nothing near it is a legitimate answer, not a failure --
+    """A target with nothing near it is a valid result, not a failure --
     but the frame must keep the result columns so a caller can concatenate it
-    with a populated one instead of special-casing empties."""
+    with a populated one instead of special-casing empty frames."""
     patch_get_continuous.return_value = (
         pd.DataFrame(
             [

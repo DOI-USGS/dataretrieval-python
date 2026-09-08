@@ -27,9 +27,9 @@ A setting for one service goes on that adapter's own configuration, such as
 reports what is in effect and where each value came from.
 
 A failed request raises a subclass of :class:`dataretrieval.DataRetrievalError`
-(the taxonomy lives in ``dataretrieval.exceptions``); connection-level failures
+(the taxonomy is defined in ``dataretrieval.exceptions``); connection-level failures
 (timeouts, DNS) are wrapped as :class:`dataretrieval.NetworkError`. A fanned-out
-request interrupted mid-stream raises :class:`dataretrieval.FanOutInterrupted`
+request interrupted partway raises :class:`dataretrieval.FanOutInterrupted`
 (also available under its original ``ChunkInterrupted`` name), whose
 ``.call.resume()`` continues from the work already completed.
 """
@@ -42,7 +42,7 @@ except PackageNotFoundError:
     __version__ = "version-unknown"
 
 # Layered configuration: a ``with configure(...)`` block, the environment, then
-# the config file. The canonical home is ``dataretrieval.configuration``;
+# the config file. It is defined in ``dataretrieval.configuration``;
 # the callable is named ``configure`` so it doesn't shadow that module.
 #
 # The module itself is deliberately absent from ``__all__`` below: it and the
@@ -70,8 +70,8 @@ from dataretrieval.exceptions import (
 # Resumable fan-out interruption exceptions. They are defined in
 # ``dataretrieval.interruptions`` rather than ``dataretrieval.exceptions``
 # because they carry pandas/httpx state and a resumable ``FanOut`` handle,
-# which would pull heavy dependencies into the lightweight exceptions module.
-# They are not under ``ogc`` because Water Use raises them too. Surfaced here so
+# which would make the exceptions module depend on pandas and httpx.
+# They are not under ``ogc`` because Water Use raises them too. Re-exported here so
 # callers get a stable public path: ``from dataretrieval import ChunkInterrupted``.
 from dataretrieval.interruptions import (
     ChunkInterrupted,
@@ -81,7 +81,7 @@ from dataretrieval.interruptions import (
 )
 
 # Parallel-chunks control (a context manager). Defined with the chunker in
-# ``dataretrieval.ogc.chunking``; surfaced here for a stable public path
+# ``dataretrieval.ogc.chunking``; re-exported here for a stable public path
 # ``from dataretrieval import parallel_chunks``.
 from dataretrieval.ogc.chunking import parallel_chunks
 
@@ -97,7 +97,7 @@ from . import (
 )
 
 __all__ = [
-    # layered configuration (canonical home: ``dataretrieval.configuration``)
+    # layered configuration (defined in ``dataretrieval.configuration``)
     "Configuration",
     "configure",
     "show_configuration",
@@ -110,7 +110,7 @@ __all__ = [
     "utils",
     "waterdata",
     "wqp",
-    # error taxonomy (canonical home: ``dataretrieval.exceptions``), re-exported
+    # error taxonomy (defined in ``dataretrieval.exceptions``), re-exported
     # so callers can ``except dataretrieval.DataRetrievalError``
     "exceptions",
     "DataCurrencyWarning",

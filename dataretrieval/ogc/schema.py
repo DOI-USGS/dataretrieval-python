@@ -1,8 +1,8 @@
-"""Asking an OGC collection to describe itself.
+"""Requests that describe an OGC collection.
 
 Queryables and collection schemas: which properties a collection accepts, and
-what columns it returns. Separate from request construction because answering
-these questions means *issuing* a request, and building one must not.
+what columns it returns. Separate from request construction because these
+require *issuing* a request, and request construction must not.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ def _check_ogc_requests(
 ) -> tuple[dict[str, Any], httpx.Response]:
     """Retrieve one collection's queryables or response schema.
 
-    ``base_url`` names the API to ask; it defaults to the one in scope for the
+    ``base_url`` names the API to query; it defaults to the one in scope for the
     current call rather than to any particular collection.
     """
     require_one_of(req_type, ("queryables", "schema"), name="req_type")
@@ -41,9 +41,9 @@ def queryables_frame(
     """Tabulate one collection's queryable properties.
 
     Reading an OGC queryables document is protocol knowledge, not collection
-    knowledge, so it lives here rather than in any one API's getters -- every
-    OGC adapter in the package can offer the same table. ``base_url`` names
-    the API to ask, defaulting to the one in scope for the current call.
+    knowledge, so it is defined here rather than in any one API's getters -- every
+    OGC adapter in the package can return the same table. ``base_url`` names
+    the API to query, defaulting to the one in scope for the current call.
 
     Returns
     -------

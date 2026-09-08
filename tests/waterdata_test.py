@@ -54,7 +54,7 @@ _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 
 #: Two real features per collection, captured from the live collection and trimmed.
 #: Property names, nesting, and value types (including the numeric-looking
-#: strings the API really sends) are verbatim; only the row count is reduced.
+#: strings the API sends) are verbatim; only the row count is reduced.
 #: Regenerate a collection by re-querying it with ``limit=2`` and replacing that
 #: key -- the getters' behavior depends on the shape, not the row count.
 _OGC_FIXTURES = json.loads(
@@ -272,8 +272,8 @@ def test_every_legacy_camelcase_samples_kwarg_is_backward_compatible():
 def test_legacy_camelcase_kwargs_return_identical_to_snake_case(httpx_mock):
     """End-to-end: a legacy camelCase ``get_samples`` call returns results
     byte-identical to the equivalent snake_case call — same request URL and same
-    DataFrame — for every renamed parameter at once. The camelCase shim changes
-    nothing the caller sees but the parameter names."""
+    DataFrame — for every renamed parameter at once. The camelCase shim changes nothing
+    for the caller but the parameter names."""
     import warnings
 
     from dataretrieval.waterdata.api import _SAMPLES_LEGACY_KWARGS
@@ -356,7 +356,7 @@ def test_construct_api_requests_monitoring_locations_post():
     assert req.method == "POST"
     assert req.headers["Content-Type"] == "application/query-cql-json"
 
-    # Body is serialized compactly (tight separators, no whitespace): the
+    # Body is serialized compactly (compact separators, no whitespace): the
     # body counts against the server's ~8 KB request-size cap and the
     # chunk planner's byte budget, so pretty-printing would needlessly
     # halve how many ids fit per chunk and double the chunk count.
@@ -377,7 +377,7 @@ def test_construct_api_requests_monitoring_locations_post():
 
 def test_construct_cql_request_post_verbatim_body():
     """get_cql's request builder POSTs the CQL2 body verbatim with the
-    right content-type, and puts the OGC knobs on the URL."""
+    right content-type, and puts the OGC query parameters on the URL."""
     body = json.dumps(
         {"op": "like", "args": [{"property": "hydrologic_unit_code"}, "02070010%"]},
         separators=(",", ":"),
@@ -406,7 +406,8 @@ def test_construct_cql_request_post_verbatim_body():
 
 def test_construct_cql_request_skip_geometry_none_omits_param():
     """skip_geometry=None leaves skipGeometry unset (server default), so it never
-    reaches the URL — matching get_cql's default."""
+    appears in the URL — matching get_cql's default.
+    """
     req = _construct_cql_request("daily", "{}")
     assert "skipGeometry" not in str(req.url)
 
@@ -416,7 +417,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
 
     ``service`` was the published spelling, and OGC API - Features calls the
     value a collection -- it is the ``collectionId`` in ``/collections/{id}``.
-    The rename must not silently change behavior for callers using the old name.
+    The rename must not change behavior for callers using the old name.
     """
     with pytest.warns(DeprecationWarning, match="use 'collection'"):
         with pytest.raises(ValueError, match="Invalid collection"):
@@ -428,8 +429,8 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
         with pytest.raises(ValueError, match="Invalid collection"):
             get_cql(collection="not-a-collection", cql="a=1")
 
-    # Passing both spellings is ambiguous and refused, which the hand-rolled
-    # shim this replaced did not do -- it silently dropped ``service``.
+    # Passing both spellings is ambiguous and refused, which the hand-written shim this
+    # replaced did not do -- it dropped ``service`` without a warning.
     with pytest.raises(TypeError, match="received both"):
         get_cql(service="daily", collection="daily", cql="a=1")
 
@@ -454,7 +455,7 @@ def test_waterdata_services_literal_matches_output_id_map():
 
 
 def test_construct_api_requests_single_value_stays_get():
-    """A length-1 list (or scalar) reaches the URL as a plain value, not a
+    """A length-1 list (or scalar) appears in the URL as a plain value, not a
     comma-separated form, so existing single-site callers see no change."""
     req = _construct_api_requests(
         "daily",
@@ -468,8 +469,8 @@ def test_construct_api_requests_single_value_stays_get():
 
 def test_construct_api_requests_numeric_list_joins_with_str():
     """Numeric-list params (e.g. ``water_year=[2020, 2021]`` on get_peaks)
-    must reach the URL as a comma-joined string, not crash on ``",".join``
-    of ints. The generator-of-``str(x)`` exists exactly for this case."""
+    must appear in the URL as a comma-joined string, not fail on ``",".join``
+    of ints. The generator-of-``str(x)`` exists for this case."""
     req = _construct_api_requests(
         "peaks",
         monitoring_location_id="USGS-05427718",
@@ -504,7 +505,7 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     """A two-element date list is interpreted as start/end of an OGC datetime
     interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
     parameter does not support "these N specific dates" — that would require
-    a CQL filter. Verifying so this contract is locked in."""
+    a CQL filter. Verifying so this contract is pinned."""
     req = _construct_api_requests(
         "daily",
         monitoring_location_id="USGS-05427718",
@@ -519,15 +520,14 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
 # These replace what used to be ~34 live calls to the Water Data API. Each one
 # serves a committed fixture (``tests/data/waterdata_ogc_fixtures.json``, two
 # real features per collection captured from the collection) and asserts what we
-# actually control: that the request we build carries the right params, and that
-# the frame we hand back has the right columns, dtypes, and ordering.
+# control: that the request this package builds has the right params, and that
+# the frame returned has the right columns, dtypes, and ordering.
 #
-# The assertions they replaced could not do that. ``len(df) > 0`` passes or fails
-# on whether a particular gage reported yesterday; ``df.shape[1] == 97`` breaks
-# when USGS adds a column, which is not our bug. Genuine upstream-drift
-# detection lives in ``waterdata_queryables_test.py`` (marked ``live``), which
-# diffs each collection's queryables against a snapshot and tells us precisely
-# what moved.
+# The assertions they replaced could not do that. ``len(df) > 0`` passes or fails on
+# whether a particular gage reported yesterday; ``df.shape[1] == 97`` breaks when USGS
+# adds a column, which is not a defect in this package. Upstream-drift detection is in
+# ``waterdata_queryables_test.py`` (marked ``live``), which diffs each collection's
+# queryables against a snapshot and tells us what changed.
 
 
 def _fixture(collection):
@@ -642,7 +642,7 @@ def test_samples_service_profile_routes_to_its_endpoint(
 
     Previously one live test per collection asserted a column count against real
     data (``len(df.columns) == 97``), which broke whenever the collection added a
-    field. What is ours to get right is the routing and the parse, so that is
+    field. What this package controls is the routing and the parse, so that is
     what this checks.
     """
     httpx_mock.add_response(
@@ -662,7 +662,7 @@ def test_samples_service_profile_routes_to_its_endpoint(
 
 
 def test_get_daily(httpx_mock):
-    """A daily query returns tidy rows with the collection id renamed to
+    """A daily query returns rows with the collection id renamed to
     ``daily_id`` and moved last, dates as ``date`` objects, values numeric."""
     _mock_items(httpx_mock, "daily")
 
@@ -719,9 +719,10 @@ def test_get_daily_properties(httpx_mock):
     assert df.columns[0] == "daily_id"
     assert df.columns[-1] == "geometry"
     assert df.shape[1] == len(requested)
-    # ``daily_id`` is our name for the wire's ``id`` and ``geometry`` is governed
-    # by ``skipGeometry``, not by ``properties`` -- neither is a real queryable,
-    # so neither may be forwarded or the collection would reject the projection.
+    # ``daily_id`` is this package's name for the wire ``id`` and ``geometry`` is
+    # governed by ``skipGeometry``, not by ``properties`` -- neither is a real
+    # queryable, so neither may be forwarded or the collection would reject the
+    # projection.
     sent = _sent(httpx_mock, "daily")[0]["properties"][0].split(",")
     assert "daily_id" not in sent and "geometry" not in sent
     assert sent == ["monitoring_location_id", "parameter_code", "time", "value"]
@@ -763,7 +764,7 @@ def test_get_daily_no_geometry(httpx_mock):
 
 
 def test_get_daily_empty_no_geometry(httpx_mock):
-    """An empty skip-geometry request has the same plain shape as a hit."""
+    """An empty skip-geometry request has the same plain shape as a non-empty result."""
     httpx_mock.add_response(
         method="GET",
         url=_schema_url("daily"),
@@ -834,7 +835,7 @@ def test_get_latest_daily(httpx_mock):
 
 
 def test_get_latest_daily_properties_geometry(httpx_mock):
-    """Geometry survives an explicit ``properties`` list that omits it -- the
+    """Geometry is kept through an explicit ``properties`` list that omits it -- the
     collection returns it regardless unless ``skip_geometry`` is set, so the
     projection must not drop it."""
     _mock_items(httpx_mock, "latest-daily")
@@ -966,7 +967,7 @@ def test_get_cql_like_wildcard(httpx_mock):
 
 def test_get_cql_resume_returns_finalized_shape(httpx_mock):
     """A resumed ``get_cql`` returns the same finished ``(df, BaseMetadata)``
-    shape as an uninterrupted call. The verbatim-CQL path drives the shared
+    shape as an uninterrupted call. The verbatim-CQL path runs through the shared
     executor with the same finalizer as the typed getters, so
     ``exc.call.resume()`` yields the shaped result, not a raw
     ``(frame, response)`` pair."""
@@ -1027,8 +1028,7 @@ def test_get_field_measurements_metadata(httpx_mock):
 
 
 def test_get_field_measurements_metadata_multi_site(httpx_mock):
-    """Multiple sites plus a parameter filter reach the collection in one
-    request."""
+    """Multiple sites and a parameter filter are sent in one request."""
     sites = ["USGS-07069000", "USGS-07064000", "USGS-07068000"]
     _mock_items(httpx_mock, "field-measurements-metadata")
 
@@ -1137,7 +1137,7 @@ def test_get_peaks_water_year_filter(httpx_mock):
 
     The live version of this test asserted only that the returned rows fell
     inside the requested years -- which an empty frame satisfies, so it could
-    not fail. Asserting on the outgoing request is what actually pins the
+    not fail. Asserting on the outgoing request is what pins the
     behavior.
     """
     _mock_items(httpx_mock, "peaks")
@@ -1180,7 +1180,7 @@ def test_get_reference_table(httpx_mock):
 
 
 def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mock):
-    """The rejection names ``collection`` -- the parameter actually passed.
+    """The rejection names ``collection`` -- the parameter passed.
 
     Regression: this check was copied from ``get_codes``, message and local
     variable name included, so an unknown ``collection=`` was reported as an
@@ -1195,10 +1195,10 @@ def test_get_reference_table_serves_countries(httpx_mock):
     """``countries`` is a real reference collection and singularizes to
     ``country``.
 
-    It sits beside ``counties`` in the service catalog but was missing from the
-    accepted vocabulary, so the rejection told a caller asking for a real
-    collection that it did not exist. The shared ``-s`` rule would also have
-    named its id column ``countrie``.
+    It is listed with ``counties`` in the service catalog but was missing from the
+    accepted vocabulary, so the rejection told a caller requesting a real collection
+    that it did not exist. The shared ``-s`` rule would also have named its id column
+    ``countrie``.
     """
     _mock_items(
         httpx_mock,
@@ -1234,14 +1234,13 @@ def test_get_reference_table_with_query(httpx_mock):
 
 
 def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
-    # ``max_rows`` is a client-side pagination cap, not an OGC query
-    # parameter — the server never sees it. So a getter must keep it out of
-    # the request ``args`` (which become query params) and instead forward it
-    # to ``get_ogc_data`` as the keyword that drives the cap. This pins that
-    # wiring; the cap mechanism itself (stop following ``next`` once the cap is
-    # met, then truncate the combined frame to exactly N) is covered without a
-    # network round-trip by the ``_row_cap`` / ``_finalize_ogc`` tests in
-    # tests/waterdata_utils_test.py.
+    # ``max_rows`` is a client-side pagination cap, not an OGC query parameter — the
+    # server never sees it. So a getter must keep it out of the request ``args`` (which
+    # become query params) and instead forward it to ``get_ogc_data`` as the keyword
+    # that sets the cap. This pins that connection; the cap mechanism itself (stop
+    # following ``next`` once the cap is met, then truncate the combined frame to
+    # exactly N) is covered without a network round-trip by the ``_row_cap`` /
+    # ``_finalize_ogc`` tests in tests/waterdata_utils_test.py.
     with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
         get_daily(
@@ -1260,7 +1259,7 @@ def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
     It was the only one without ``max_rows``, and its ``limit`` is the page
     size -- so asking for a few rows through ``limit`` instead paged the whole
     match a few rows at a time. A bounded probe written that way spent ~400
-    requests of an hourly quota of 1000 before the service refused it.
+    requests of an hourly quota of 1000 before the service rejected it.
     """
     with mock.patch("dataretrieval.waterdata.cql.get_ogc_data") as fake:
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
@@ -1281,9 +1280,9 @@ def test_get_reference_table_wrong_name():
 
 @pytest.mark.parametrize("bad", [0, -1, 2.5, 10.0, True])
 def test_get_reference_table_rejects_bad_max_rows(bad):
-    # max_rows must be a genuine positive int; a non-positive value, a float
+    # max_rows must be a positive int; a non-positive value, a float
     # (even integral like 10.0), or a bool must raise ValueError up front —
-    # not crash later inside pandas .head(). Raises before any HTTP request.
+    # not raise later inside pandas .head(). Raises before any HTTP request.
     with pytest.raises(ValueError, match="positive integer"):
         get_reference_table("agency-codes", max_rows=bad)
 
@@ -1301,7 +1300,7 @@ def test_get_reference_table_accepts_numpy_int_max_rows(httpx_mock):
 
 # --- statistics --------------------------------------------------------------
 # The statistics API nests its values two levels deep (feature -> data ->
-# values); these pin the flattening, which is the part we own.
+# values); these pin the flattening, which is the part this package controls.
 
 
 def _mock_stats(httpx_mock, collection):
@@ -1346,7 +1345,7 @@ def test_get_stats_por(httpx_mock):
 
 def test_get_stats_por_expanded_false(httpx_mock):
     """``expand_percentiles=False`` keeps the raw ``percentiles`` list column
-    instead of exploding it into one row per percentile."""
+    instead of expanding it into one row per percentile."""
     _mock_stats(httpx_mock, "observationNormals")
 
     df, _ = get_stats_por(
@@ -1370,7 +1369,7 @@ def test_get_stats_por_expanded_false(httpx_mock):
 
 
 def test_get_stats_date_range(httpx_mock):
-    """Interval statistics carry an ``interval_type`` distinguishing month from
+    """Interval statistics have an ``interval_type`` distinguishing month from
     calendar- and water-year rows."""
     _mock_stats(httpx_mock, "observationIntervals")
 
@@ -1403,11 +1402,11 @@ class TestCheckMonitoringLocationId:
         assert _check_monitoring_location_id("USGS-01646500") == "USGS-01646500"
 
     def test_integer_raises_type_error(self):
-        """An integer ID raises TypeError with a helpful AGENCY-ID hint."""
+        """An integer ID raises TypeError with an AGENCY-ID format hint."""
         with pytest.raises(TypeError, match="not int") as exc_info:
             _check_monitoring_location_id(5129115)
-        # The wrapper appends the AGENCY-ID format hint that the generic
-        # helper alone doesn't carry.
+        # The wrapper appends the AGENCY-ID format hint that the generic helper alone
+        # does not include.
         assert "USGS-01646500" in str(exc_info.value)
 
     def test_missing_agency_prefix_raises_value_error(self):
@@ -1433,7 +1432,7 @@ class TestCheckMonitoringLocationId:
     def test_per_item_format_check_in_list(self):
         """The AGENCY-ID format check runs on EVERY element of an
         iterable, not just the first. Regression guard against a
-        future ``_check_monitoring_location_id`` loop that bails after one
+        future ``_check_monitoring_location_id`` loop that stops after one
         valid item or only checks the head."""
         with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
             _check_monitoring_location_id(["USGS-01646500", "badformat"])
@@ -1442,7 +1441,7 @@ class TestCheckMonitoringLocationId:
 class TestNormalizeStrIterable:
     """Tests for the generic _normalize_str_iterable helper.
 
-    Mirrors TestCheckMonitoringLocationId for the type/iterable contract;
+    Matches TestCheckMonitoringLocationId for the type/iterable contract;
     the AGENCY-ID format check is monitoring_location_id-specific and lives
     only in the _check_monitoring_location_id wrapper.
     """
@@ -1485,7 +1484,7 @@ class TestNormalizeStrIterable:
             _normalize_str_iterable({"00060": "discharge"}, "parameter_code")
 
     def test_get_daily_parameter_code_as_series(self):
-        """Wiring check: pd.Series for ``parameter_code`` arrives at the inner
+        """Integration check: pd.Series for ``parameter_code`` is passed to the inner
         call as a list.
 
         Regression for the gap PR #229 originally left on every multi-value
@@ -1507,12 +1506,12 @@ class TestNormalizeStrIterable:
         assert isinstance(args_dict["parameter_code"], list)
 
     def test_list_of_ints_rejected_at_boundary(self):
-        """List-of-non-strings must be caught client-side, not silently sent.
+        """List-of-non-strings must be caught client-side, not sent unchecked.
 
-        Regression: an earlier pass through ``_get_args`` had a
-        ``list-of-non-str`` fast-path that bypassed normalization, so
-        ``parameter_code=[60, 65]`` would reach the OGC API and surface as
-        a confusing JSONDecodeError on the malformed response.
+        Regression: an earlier pass through ``_get_args`` had a ``list-of-non-str``
+        fast-path that bypassed normalization, so ``parameter_code=[60, 65]`` would be
+        sent to the OGC API and be raised as an unclear JSONDecodeError on the malformed
+        response.
         """
         with pytest.raises(TypeError, match="parameter_code elements must be strings"):
             get_daily(
@@ -1531,10 +1530,9 @@ def test_get_reference_table_forwards_limit_as_a_query_arg():
 
 
 def test_get_reference_table_docstring_lists_every_collection():
-    """The docstring enumerates the vocabulary by hand, so it drifts the
-    moment a collection is added -- ``countries`` was served, accepted, and
-    absent from the docs. A reader who trusts the prose must not be told a
-    real collection does not exist.
+    """The docstring enumerates the vocabulary by hand, so it drifts as soon as a
+    collection is added -- ``countries`` was served, accepted, and absent from the docs.
+    A reader who trusts the prose must not be told a real collection does not exist.
     """
     from typing import get_args
 

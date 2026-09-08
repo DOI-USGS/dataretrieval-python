@@ -43,9 +43,9 @@ _Cursor = TypeVar("_Cursor")
 async def _client_for(
     client: httpx.AsyncClient | None,
 ) -> AsyncIterator[httpx.AsyncClient]:
-    """Borrow a client: the caller's, else the running drive's, else a new one.
+    """Choose a client: the caller's, else the running fan-out's, else a new one.
 
-    Preferring the executor's published client over a fresh one keeps every
+    Preferring the executor's shared client over a new one keeps every
     page of every request on one connection pool.
     """
     borrowed = client if client is not None else active_client()
@@ -61,7 +61,7 @@ def paginated_failure_message(
     cause: BaseException,
     url: str | httpx.URL | None = None,
 ) -> str:
-    """Build a recovery-oriented message for an interrupted page walk."""
+    """Build a message that names the recovery action for an interrupted page walk."""
     cause_str = str(cause).removesuffix(".")
     if not cause_str.strip():
         cause_str = type(cause).__name__
@@ -69,7 +69,7 @@ def paginated_failure_message(
         action = "wait for the rate-limit window to reset and retry"
     else:
         action = "retry the request (possibly after a short backoff)"
-    # "get a token" is only actionable against the host that honours one.
+    # The token advice applies only to the host that accepts one.
     token_advice = ", or obtain an API token" if accepts_api_key(url) else ""
     return (
         f"Paginated request failed after collecting {pages_collected} "
@@ -99,7 +99,7 @@ async def paginate(
     reporter = _progress.current()
 
     def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
-        note_progress()  # a walk still delivering pages is not stalled
+        note_progress()  # a walk still receiving pages is not stalled
         if reporter is not None:
             reporter.set_rate_remaining(
                 page.headers.get(_QUOTA_HEADER),
@@ -173,14 +173,13 @@ def run_paginated(
     canonical_url: str | None = None,
     adapter: str | None = None,
 ) -> tuple[pd.DataFrame, Any]:
-    """Drive one full page walk per request through the shared executor.
+    """Run one full page walk per request through the shared executor.
 
     The adapter supplies its strategies (``parse_response``, ``follow_up``,
-    ``raise_for_status``, and optionally ``finalize``); this driver owns the
-    composition -- each request paginated on the client the executor publishes
-    unless ``client`` is injected, the retry
-    policy, bounded concurrency, and the canonical URL the aggregate reports
-    (the first request's, unless overridden).
+    ``raise_for_status``, and optionally ``finalize``); this driver owns the composition
+    -- each request paginated on the client the executor sets on ``_active_client``
+    unless ``client`` is injected, the retry policy, bounded concurrency, and the
+    canonical URL the aggregate reports (the first request's, unless overridden).
 
     Raw transport errors need no mapping in the strategies: the executor
     retries them and normalizes a deterministic one into the typed

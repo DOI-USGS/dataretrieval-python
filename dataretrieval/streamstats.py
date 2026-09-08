@@ -36,8 +36,8 @@ STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
 def _service_base() -> str:
     """The StreamStats base this call targets: a block's redirect, or its own.
 
-    Both endpoints below hang off this, so a
-    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather
+    Both endpoints below are built on this, so a
+    ``StreamstatsConfiguration(base_url=...)`` redirects the whole service rather
     than one endpoint (ADR 0011).
     """
     return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
@@ -174,8 +174,8 @@ def get_watershed(
         return r
 
     if format == "shape":
-        # Returning a shapefile/Fiona object isn't implemented; fail
-        # loudly instead of silently falling through to a Watershed.
+        # Returning a shapefile/Fiona object isn't implemented; raise
+        # instead of falling through to a Watershed.
         raise NotImplementedError(
             "format='shape' is not implemented. Use format='geojson' "
             "(default) for the raw response, or format='object' for a "
@@ -224,7 +224,7 @@ class Watershed:
     def from_streamstats_json(cls, streamstats_json: dict[str, Any]) -> Watershed:
         """Create a :class:`Watershed` from a parsed StreamStats JSON payload.
 
-        No new request is issued. Builds a fresh instance (via ``__new__``, so
+        No new request is issued. Builds a new instance (via ``__new__``, so
         the network-fetching ``__init__`` is bypassed) and populates it; each
         call returns an independent object rather than mutating shared class
         state.
@@ -245,7 +245,7 @@ class Watershed:
 class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for StreamStats calls alone.
 
-    No fan-out dials: a StreamStats query is answered by a single
+    No fan-out settings: a StreamStats query is served by a single
     request.
 
     Declared here rather than in :mod:`dataretrieval.configuration`
@@ -260,7 +260,7 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         stops.
     base_url : str, optional
         Services base to send StreamStats requests to, instead of its own
-        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:
+        (``STREAMSTATS_URL``). Both endpoints are built on it. Code only:
         the file and the environment refuse it.
     """
 

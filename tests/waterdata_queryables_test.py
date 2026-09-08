@@ -1,11 +1,11 @@
 """Tests for :func:`dataretrieval.waterdata.get_queryables`, plus a live monitor
 that flags upstream changes to the Water Data API's queryable sets.
 
-The live monitor (:func:`test_queryables_match_snapshot`) compares the
-queryables each collection advertises against a committed snapshot
-(``tests/data/waterdata_queryables.json``). When it fails, the upstream API has
-added / removed / renamed a queryable: regenerate the snapshot and enable any
-new queryables on the matching getter. Regenerate with::
+The live monitor (:func:`test_queryables_match_snapshot`) compares the queryables each
+collection publishes against a committed snapshot
+(``tests/data/waterdata_queryables.json``). When it fails, the upstream API has added /
+removed / renamed a queryable: regenerate the snapshot and enable any new queryables on
+the matching getter. Regenerate with::
 
     python - <<'PY'
     import httpx, json
@@ -66,7 +66,7 @@ _SNAPSHOT = json.loads(_SNAPSHOT_PATH.read_text())
 
 
 def test_get_queryables_parses_properties(httpx_mock):
-    """Properties become one tidy row each, sorted by name, with the
+    """Properties become one row each, sorted by name, with the
     description whitespace-stripped; returns ``(DataFrame, BaseMetadata)``."""
     httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json=_FAKE_QUERYABLES)
 
@@ -83,7 +83,7 @@ def test_get_queryables_parses_properties(httpx_mock):
 
 
 def test_get_queryables_unknown_collection_raises(httpx_mock):
-    """An HTTP error (e.g. a 404 for an unknown collection) is surfaced as the
+    """An HTTP error (e.g. a 404 for an unknown collection) is raised as the
     typed ``DataRetrievalError``, not a bare DataFrame."""
     httpx_mock.add_response(
         method="GET",
@@ -114,7 +114,7 @@ _EMPTY_FEATURES = {
 
 
 def _mock_daily(httpx_mock):
-    """Mock the two endpoints a ``get_daily`` call touches: the items query and
+    """Mock the two endpoints a ``get_daily`` call requests: the items query and
     the schema fetch (used for output typing)."""
     httpx_mock.add_response(method="GET", url=_DAILY_SCHEMA_RE, json={"properties": {}})
     httpx_mock.add_response(method="GET", url=_DAILY_ITEMS_RE, json=_EMPTY_FEATURES)
