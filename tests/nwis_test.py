@@ -1,3 +1,4 @@
+import inspect
 import json
 import re
 import warnings
@@ -8,9 +9,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import dataretrieval
 from dataretrieval import nwis
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.nwis import (
+    _DEFUNCT_RECORD_OPTIONS,
+    _REPLACEMENTS,
     NWIS_Metadata,
     _read_rdb,
     format_response,
@@ -33,6 +37,25 @@ SITENO_COL = "site_no"
 
 # Legacy NWIS site endpoint these tests mock — this module makes no live calls.
 _SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
+
+
+# Every concrete ``module.function(args)`` the deprecation tables name, so the
+# tripwire below is derived from what ships rather than from a hand-kept list.
+# The prose entries (``waterdata.get_*()``) do not name a function and so do
+# not match.
+_NAMED_REPLACEMENTS = sorted(
+    set(
+        re.findall(
+            r"`(\w+)\.(\w+)\(([^`]*)\)`",
+            " ".join(
+                [
+                    *_REPLACEMENTS.values(),
+                    *(r for _, r in _DEFUNCT_RECORD_OPTIONS.values()),
+                ]
+            ),
+        )
+    )
+)
 
 
 def _load_mock_json(file_name):
@@ -200,32 +223,102 @@ class TestDeprecationWarnings:
         assert len(deprecations) == 1
         assert "get_record" in str(deprecations[0].message)
 
-    @pytest.mark.parametrize(
-        "name",
-        [
-            "get_daily",
-            "get_continuous",
-            "get_monitoring_locations",
-            "get_stats_por",
-            "get_stats_date_range",
-            "get_peaks",
-            "get_ratings",
-        ],
-    )
-    def test_named_replacement_exists_in_waterdata(self, name):
-        """Every concrete `waterdata.*` named in a deprecation message
-        must exist, so a user following the migration guidance does not
-        get an AttributeError.
+    @pytest.mark.parametrize("module_name, func_name, arguments", _NAMED_REPLACEMENTS)
+    def test_named_replacement_resolves(self, module_name, func_name, arguments):
+        """Following a deprecation message literally must produce a real call,
+        so a user migrating does not get an AttributeError or TypeError.
 
-        Fails if this change is ever merged before its referenced replacement
+        Fails if a message is ever merged before its referenced replacement
         does (e.g. before `get_peaks` from #267).
         """
-        import dataretrieval.waterdata as wd
-
-        assert callable(getattr(wd, name, None)), (
-            f"`waterdata.{name}` is missing — fix `_REPLACEMENTS` in nwis.py "
-            "or add the replacement before merging."
+        func = getattr(getattr(dataretrieval, module_name), func_name, None)
+        assert callable(func), (
+            f"`{module_name}.{func_name}` is missing — fix the replacement "
+            "tables in nwis.py or add the replacement before merging."
         )
+        for keyword in re.findall(r"(\w+)=", arguments):
+            assert keyword in inspect.signature(func).parameters
+
+
+class TestDefunctRecordOptions:
+    """``get_record``'s three inert options advise; they do not raise.
+
+    They are documented parameters of a Production/Stable getter, so they
+    follow the published deprecation policy and go when `nwis` does, rather
+    than on a release of their own.
+    """
+
+    @pytest.mark.parametrize(
+        "option, value, replacement",
+        [
+            ("wide_format", False, "waterdata.get_samples"),
+            ("datetime_index", False, "waterdata.get_continuous"),
+            ("state", "OH", "nwdc.get_wateruse"),
+        ],
+    )
+    def test_passing_one_advises_and_still_returns_data(
+        self, httpx_mock, option, value, replacement
+    ):
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            df = get_record(sites="01491000", service="site", **{option: value})
+        assert not df.empty
+        assert [
+            w
+            for w in caught
+            if option in str(w.message) and replacement in str(w.message)
+        ]
+
+    @pytest.mark.parametrize("option", sorted(_DEFUNCT_RECORD_OPTIONS))
+    def test_naming_an_option_at_its_default_is_silent(self, httpx_mock, option):
+        """Passing the declared default asks for nothing the dead option
+        cannot give, so it earns no warning -- and the table's "unset" value
+        has to be that declared default for the distinction to hold.
+        """
+        default = inspect.signature(get_record).parameters[option].default
+        assert _DEFUNCT_RECORD_OPTIONS[option][0] == default
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="site", **{option: default})
+        assert not [w for w in caught if f"`{option}` argument" in str(w.message)]
+
+    def test_defaults_advise_nothing(self, httpx_mock):
+        """A caller who never named an option must not be told about one."""
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(sites="01491000", service="site")
+        assert not [w for w in caught if "argument is deprecated" in str(w.message)]
+
+    def test_each_advisory_is_emitted_once_per_call(self, httpx_mock):
+        """A call naming all three options emits four ``DeprecationWarning``s:
+        one for ``get_record`` itself, and one per named option, each with a
+        distinct subject and a distinct replacement.
+        """
+        _mock_site(httpx_mock)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", DeprecationWarning)
+            get_record(
+                sites="01491000",
+                service="site",
+                wide_format=False,
+                datetime_index=False,
+                state="OH",
+            )
+        deprecations = [w for w in caught if issubclass(w.category, DeprecationWarning)]
+        messages = [str(w.message) for w in deprecations]
+        assert len(messages) == 4
+        for subject in (
+            "`wide_format` argument",
+            "`datetime_index` argument",
+            "`state` argument",
+        ):
+            assert sum(subject in m for m in messages) == 1
+        # Pins the advisories' hand-counted ``stacklevel``: every one must
+        # blame the caller's own line, not a frame inside the package.
+        assert {Path(w.filename).name for w in deprecations} == {Path(__file__).name}
 
 
 class TestDefunct:
@@ -385,6 +478,61 @@ class TestReadRdb:
             format_response(df, service="peaks")
 
 
+class TestFormatResponseArgument:
+    """``format_response`` indexes a copy, so its argument survives the call.
+
+    The function is public, and both internal callers still hold the frame
+    they passed while it runs. Indexing that frame in place moved their
+    columns into an index they never asked for.
+    """
+
+    @staticmethod
+    def _frame(sites):
+        return pd.DataFrame(
+            {
+                "site_no": sites,
+                "datetime": pd.date_range("2020-01-01", periods=len(sites), freq="D"),
+                "00060": np.arange(float(len(sites))),
+            }
+        )
+
+    @pytest.mark.parametrize(
+        "sites,expected_index",
+        [
+            pytest.param(["01", "01", "01"], pd.DatetimeIndex, id="single-site"),
+            pytest.param(["01", "02", "03"], pd.MultiIndex, id="multi-site"),
+        ],
+    )
+    def test_it_keeps_its_columns_and_index(self, sites, expected_index):
+        df = self._frame(sites)
+        before = df.copy(deep=True)
+
+        out = format_response(df)
+
+        assert isinstance(out.index, expected_index), "the result must be indexed"
+        pd.testing.assert_frame_equal(df, before)
+
+    def test_the_peaks_path_keeps_them_too(self):
+        """The peaks arm derives ``datetime`` from ``peak_dt``, and the derived
+        column belongs to the result rather than to the frame it was handed.
+        ``preformat_peaks_response`` is public, so a caller reaches that
+        derivation without going through ``format_response`` at all.
+        """
+        df = pd.DataFrame(
+            {
+                "site_no": ["01", "01"],
+                "peak_dt": ["2020-01-01", "2020-01-02"],
+                "peak_va": [1.0, 2.0],
+            }
+        )
+        before = df.copy(deep=True)
+
+        out = format_response(df, service="peaks")
+
+        assert isinstance(out.index, pd.DatetimeIndex), "the result must be indexed"
+        pd.testing.assert_frame_equal(df, before)
+
+
 class TestGetRecordDispatch:
     """``get_record`` is a router; each service must reach its own getter.
 
@@ -476,12 +624,9 @@ def test_utc_localization_of_a_single_datetime_index():
     """NWIS returns naive local timestamps; a frame whose index is a plain
     DatetimeIndex must still come back tz-aware, or two services' frames
     cannot be concatenated."""
-    df = pd.DataFrame(
-        {"x": [1, 2]},
-        index=pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"]),
-    )
-    out = nwis._localize_datetime_index(df)
-    assert str(out.index.tz) == "UTC"
+    index = pd.to_datetime(["2018-01-24 10:30", "2018-01-24 11:30"])
+    out = nwis._localized_datetime_index(index)
+    assert str(out.tz) == "UTC"
 
 
 def test_metadata_site_info_is_none_when_no_site_filter_was_used():
@@ -503,8 +648,8 @@ def test_utc_localization_of_a_multi_index_datetime_level():
         ],
         names=["site_no", "datetime"],
     )
-    out = nwis._localize_datetime_index(pd.DataFrame({"x": [1, 2]}, index=idx))
-    assert str(out.index.levels[1].tz) == "UTC"
+    out = nwis._localized_datetime_index(idx)
+    assert str(out.levels[1].tz) == "UTC"
 
 
 class TestGetInfoSeriesCatalog:

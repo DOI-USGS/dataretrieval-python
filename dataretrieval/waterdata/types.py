@@ -1,3 +1,18 @@
+"""The Water Data type vocabularies the getters validate their arguments against.
+
+Each ``Literal`` alias here is one closed vocabulary: ``CODE_SERVICES`` for
+the Samples code services, ``METADATA_COLLECTIONS`` for the reference-table
+collections, ``SERVICES`` and ``PROFILES`` for the Samples resources and the
+output profiles they offer, and ``WATERDATA_COLLECTIONS`` (permanent alias
+``WATERDATA_SERVICES``) for the collections ``get_cql`` queries.
+``PROFILE_LOOKUP`` pairs ``SERVICES`` with ``PROFILES``, mapping each Samples
+resource to the profiles valid for it.
+
+They live apart from the getters that check them so a caller may annotate an
+argument with the same alias the getter validates it against, and so one
+vocabulary cannot be spelled two ways in two modules.
+"""
+
 from typing import Literal, get_args
 
 from dataretrieval._validation import require_one_of

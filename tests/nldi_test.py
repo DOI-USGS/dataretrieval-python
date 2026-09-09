@@ -65,7 +65,7 @@ def test_query_nldi_opts_into_retry(monkeypatch):
 
 
 def mock_request(httpx_mock, request_url, file_path):
-    with open(file_path) as text:
+    with open(file_path, encoding="utf-8") as text:
         httpx_mock.add_response(
             method="GET",
             url=request_url,
@@ -518,7 +518,7 @@ def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
     httpx_mock.add_response(
         method="GET", url=f"{mirror}/", json=[{"source": "WQP"}, {"source": "comid"}]
     )
-    with open("tests/data/nldi_get_basin.json") as body:
+    with open("tests/data/nldi_get_basin.json", encoding="utf-8") as body:
         httpx_mock.add_response(
             method="GET",
             url=(

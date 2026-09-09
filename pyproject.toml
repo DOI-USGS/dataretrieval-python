@@ -56,6 +56,9 @@ failed = true
 type-check = [
   "mypy",
 ]
+lint = [
+  "ruff==0.16.5",
+]
 # Structural gates (complexity ratchets, dependency contracts) and the wily
 # trend history. Kept out of ``test`` so the test job stays lean; see
 # CONTRIBUTING.md for what each does.
@@ -77,7 +80,7 @@ test = [
   "pytest-rerunfailures",
   "coverage",
   "pytest-httpx",
-  "ruff==0.16.1",
+  "dataretrieval[lint]",  # ruff, pinned once in the lint extra
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
 doc = [
@@ -112,16 +115,17 @@ write_to = "dataretrieval/_version.py"
 
 [tool.ruff]
 target-version = "py310"
+line-length = 88
 extend-exclude = ["demos"]
 
 [tool.ruff.lint]
 preview = true
+explicit-preview-rules = true
 # Select rules: Pyflakes(F), pycodestyle(E,W), isort(I), pyupgrade(UP),
 # flake8-bugbear(B), flake8-quotes(Q), flake8-simplify(SIM), flake8-tidy-imports(TID)
 select = [
     "F", "E", "W", "I", "UP", "B", "Q", "SIM", "TID",
     "C90", # mccabe
-    "E501", # line-length
     # A first-party import used only in annotations is not a runtime
     # dependency, and the project already says so twice: ``.importlinter`` sets
     # ``exclude_type_checking_imports = True`` ("Contracts describe what runs")
@@ -132,17 +136,49 @@ select = [
     # here, so they stay unselected.
     "TC001",
     "TC006", # quoted first argument to ``typing.cast``
+    # A blind ``except Exception`` skips ADR 0004's transient-versus-fatal
+    # judgement. ``progress.py``'s best-effort handlers carry a ``noqa``.
+    "BLE001",
+    # A named parameter the body never reads is a promise nothing keeps.
+    # ARG002-004 have nothing to catch (the public interface is functions);
+    # ARG005 fires on lambdas whose parameters the call site dictates.
+    "ARG001",
+    # ``open()`` in text mode without ``encoding=`` writes in the process
+    # locale -- cp1252 on the Windows leg. Preview-only; recheck on a bump.
+    "PLW1514",
+    # ``automodule ... :members:`` renders a docstring-less public symbol as a
+    # bare signature. The rest of pydocstyle stays off: its section rules read
+    # an indented ``Examples:`` as a section header and "fix" it into garbage.
+    "D100", "D101", "D102", "D103", "D104",
+    # A ``# noqa`` for a rule that no longer fires. Author note: ruff's fix
+    # reads the rest of the line as the directive's description, so spell a
+    # co-located suppression ``# noqa: X # pylint: disable=...``.
+    "RUF100",
+    # A blocking call inside ``async def`` stalls the whole event loop; the
+    # suite awaits mocked transports, so a stalled loop still passes.
+    "ASYNC",
+    # ``inplace=`` is on pandas' way out; a naive ``datetime`` in a time-series
+    # library is a bug waiting for a reader in another zone.
+    "PD", "DTZ",
+    # Zero findings today: comprehensions, lazy ``%s`` logging, no ``print`` in
+    # a library, ``from __future__ import annotations``, retired numpy aliases.
+    "C4", "LOG", "G", "T20", "FA", "NPY",
 ]
 ignore = [
     "SIM105", # Use `contextlib.suppress(...)` instead of `try-except-pass`
     "SIM117", # Use a single `with` statement with multiple contexts
 ]
 
+[tool.ruff.lint.flake8-unused-arguments]
+# The defunct ``nwis`` stubs absorb the old call through an unread
+# ``**kwargs``; that is the point, so keep ARG001 on named parameters.
+ignore-variadic-names = true
+
 [tool.ruff.lint.mccabe]
 max-complexity = 20
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["SIM108"]
+"tests/*" = ["SIM108", "ARG001", "D100", "D101", "D102", "D103", "D104"]
 "**/__init__.py" = ["F403"]
 
 [tool.ruff.format]
@@ -163,13 +199,6 @@ python_version = "3.10"  # the project's minimum supported version
 files = ["dataretrieval"]
 strict = true
 ignore_missing_imports = true
-
-# anyio ships ``py.typed``, so mypy follows into its source — which uses
-# ``match`` statements (3.10+). Under our ``python_version = "3.9"`` target that
-# is a hard parse error, so don't follow anyio's source; treat it as ``Any``.
-[[tool.mypy.overrides]]
-module = ["anyio", "anyio.*"]
-follow_imports = "skip"
 
 [tool.pytest.ini_options]
 # The suite is offline by default. Every HTTP call is mocked (see
