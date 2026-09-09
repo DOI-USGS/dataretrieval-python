@@ -7,11 +7,11 @@ from pandas.testing import assert_frame_equal
 
 import dataretrieval
 import dataretrieval.wqp as wqp
+from dataretrieval._csv import read_code_csv
 from dataretrieval.exceptions import DataCurrencyWarning
 from dataretrieval.wqp import (
     WQP_Metadata,
     _check_kwargs,
-    _read_wqp_csv,
     get_results,
     what_activities,
     what_activity_metrics,
@@ -59,23 +59,29 @@ def test_get_results_opts_into_retry(monkeypatch):
     assert query.call_count == 1
 
 
-def test_read_wqp_csv_preserves_leading_zero_codes():
+def test_get_results_preserves_leading_zero_codes(httpx_mock):
     """Regression: WQP code columns (HUCs, parameter codes, FIPS) have significant
     leading zeros; a bare ``read_csv`` inferred them as int/float and dropped the zeros
-    (``"00060"`` -> ``60``). ``_read_wqp_csv`` reads
-    code/identifier columns as ``str`` while leaving value columns numeric."""
-    from dataretrieval.wqp import _read_wqp_csv
-
-    csv = (
-        "Location_HUCEightDigitCode,USGSpcode,ResultMeasureValue,"
-        "AlternateLocation_IdentifierCount\n07090002,00060,1.5,2\n"
+    (``"00060"`` -> ``60``). The getter reads code/identifier columns as ``str`` while
+    leaving value columns numeric. The reader's own cases are in ``_csv_test.py``."""
+    request_url = (
+        "https://www.waterqualitydata.us/data/Result/Search?"
+        "siteid=USGS-05427718&mimeType=csv"
     )
-    df = _read_wqp_csv(csv)
+    httpx_mock.add_response(
+        method="GET",
+        url=request_url,
+        text=(
+            "Location_HUCEightDigitCode,USGSpcode,ResultMeasureValue\n"
+            "07090002,00060,1.5\n"
+        ),
+    )
+
+    df, _ = wqp.get_results(siteid="USGS-05427718")
+
     assert df["Location_HUCEightDigitCode"].iloc[0] == "07090002"
     assert df["USGSpcode"].iloc[0] == "00060"
     assert df["ResultMeasureValue"].iloc[0] == 1.5
-    # Preserve WQP's existing name-based inference, including count-like names.
-    assert df["AlternateLocation_IdentifierCount"].iloc[0] == "2"
 
 
 def test_get_results(httpx_mock):
@@ -121,9 +127,12 @@ def test_get_results_WQX3(httpx_mock):
         startDateHi="09-30-2011",
     )
     assert type(df) is DataFrame
-    assert df.shape == (5, 186)
+    assert df.shape == (5, 187)
     _assert_wqp_metadata(md, request_url)
     assert df["Activity_StartDateTime"].notna().all()
+    # Recorded response codes keep their zeros: HUC8 07090002, county 025.
+    assert set(df["Location_HUCEightDigitCode"]) == {"07090002"}
+    assert set(df["Location_CountyCode"]) == {"025"}
 
 
 @pytest.mark.parametrize("profile", wqp.activity_profiles_legacy)
@@ -339,7 +348,7 @@ def test_what_query(httpx_mock, func, service, fixture, profile_column):
     # Only get_results post-processes: the shared query path must return each
     # what_* response exactly as parsed, with no DateTime columns and no sort.
     with open(f"tests/data/{fixture}") as text:
-        assert_frame_equal(df, _read_wqp_csv(text.read()))
+        assert_frame_equal(df, read_code_csv(text.read()))
     _assert_wqp_metadata(md, request_url)
 
 

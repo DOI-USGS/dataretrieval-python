@@ -106,12 +106,16 @@ def test_mock_get_samples(httpx_mock):
     )
     assert type(df) is DataFrame
     # 181 source columns + 6 derived <prefix>DateTime columns
-    assert df.shape == (67, 187)
+    assert df.shape == (79, 187)
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["Activity_StartDateTime"].notna().any()
+    # Recorded response codes keep their zeros: pcode 00061, not 61.
+    assert "00061" in set(df["USGSpcode"])
+    assert set(df["Location_HUCEightDigitCode"].dropna()) == {"07070005"}
+    assert set(df["Location_HUCTwelveDigitCode"].dropna()) == {"070700050502"}
 
 
 def test_mock_get_samples_summary(httpx_mock):
@@ -142,68 +146,92 @@ def test_mock_get_samples_summary(httpx_mock):
     assert md.comment is None
 
 
-@pytest.mark.parametrize(
-    ("getter", "endpoint", "order"),
-    [
-        (
-            get_samples,
-            "results/fullphyschem?monitoringLocationIdentifier=USGS-00123&mimeType=text%2Fcsv",
-            [1, 0],
-        ),
-        (get_samples_summary, "summary/USGS-00123?mimeType=text%2Fcsv", [0, 1]),
-    ],
+_SAMPLES_CODE_CSV = (
+    "USGSpcode,Location_HUCEightDigitCode,stateFips,countyFips,"
+    "MonitoringLocationIdentifier,OrganizationIdentifier,"
+    "ResultMeasureValue,resultCount,AlternateLocation_IdentifierCount,"
+    "Activity_StartDate,Activity_StartTime,Activity_StartTimeZone\n"
+    "00060,07090002,01,003,00123,00007,1.5,2,2,2025-02-02,13:00:00,UTC\n"
+    "00065,07090003,02,005,00456,00008,,0,0,2025-01-01,09:00:00,UTC\n"
 )
-def test_samples_csv_preserves_identifiers(httpx_mock, getter, endpoint, order):
-    """Both Samples getters retain code text without changing value/date shaping."""
+
+
+def _mock_samples_code_csv(httpx_mock, endpoint):
+    """Serve the two-row code fixture from one Samples endpoint; return its URL."""
     request_url = "https://api.waterdata.usgs.gov/samples-data/" + endpoint
     httpx_mock.add_response(
         method="GET",
         url=request_url,
         headers={"mock_header": "value"},
-        text=(
-            "USGSpcode,Location_HUCEightDigitCode,stateFips,countyFips,"
-            "MonitoringLocationIdentifier,OrganizationIdentifier,"
-            "ResultMeasureValue,resultCount,AlternateLocation_IdentifierCount,Activity_StartDate,"
-            "Activity_StartTime,Activity_StartTimeZone\n"
-            "00060,07090002,01,003,00123,00007,1.5,2,2,2025-02-02,13:00:00,UTC\n"
-            "00065,07090003,02,005,00456,00008,,0,0,2025-01-01,09:00:00,UTC\n"
-        ),
+        text=_SAMPLES_CODE_CSV,
+    )
+    return request_url
+
+
+def test_get_samples_preserves_identifiers(httpx_mock):
+    """Codes keep their zeros, values stay numeric, rows sort by the derived time."""
+    request_url = _mock_samples_code_csv(
+        httpx_mock,
+        "results/fullphyschem?monitoringLocationIdentifier=USGS-00123&mimeType=text%2Fcsv",
     )
 
-    df, md = getter(monitoring_location_id="USGS-00123")
+    df, md = get_samples(monitoring_location_id="USGS-00123")
 
-    expected_codes = {
-        "USGSpcode": ["00060", "00065"],
-        "Location_HUCEightDigitCode": ["07090002", "07090003"],
-        "stateFips": ["01", "02"],
-        "countyFips": ["003", "005"],
-        "MonitoringLocationIdentifier": ["00123", "00456"],
-        "OrganizationIdentifier": ["00007", "00008"],
-    }
+    # get_samples sorts by the derived Activity_StartDateTime, so the January row
+    # (second in the response) comes first.
     assert isinstance(df, DataFrame)
-    for column, values in expected_codes.items():
-        assert df[column].tolist() == [values[i] for i in order]
+    assert df["USGSpcode"].tolist() == ["00065", "00060"]
+    assert df["Location_HUCEightDigitCode"].tolist() == ["07090003", "07090002"]
+    assert df["stateFips"].tolist() == ["02", "01"]
+    assert df["countyFips"].tolist() == ["005", "003"]
+    assert df["MonitoringLocationIdentifier"].tolist() == ["00456", "00123"]
+    assert df["OrganizationIdentifier"].tolist() == ["00008", "00007"]
     assert pd.api.types.is_numeric_dtype(df["ResultMeasureValue"])
-    assert pd.api.types.is_numeric_dtype(df["resultCount"])
-    assert df["ResultMeasureValue"].iloc[order.index(0)] == 1.5
-    assert pd.isna(df["ResultMeasureValue"].iloc[order.index(1)])
-    assert df["resultCount"].tolist() == [[2, 0][i] for i in order]
+    assert pd.isna(df["ResultMeasureValue"].iloc[0])
+    assert df["ResultMeasureValue"].iloc[1] == 1.5
+    assert df["resultCount"].tolist() == [0, 2]
+    # Despite its name this field is a count, not an identifier.
     assert pd.api.types.is_numeric_dtype(df["AlternateLocation_IdentifierCount"])
-    assert df["AlternateLocation_IdentifierCount"].tolist() == [
-        [2, 0][i] for i in order
-    ]
-    dates = ["2025-02-02", "2025-01-01"]
-    times = ["13:00:00", "09:00:00"]
-    assert df["Activity_StartDate"].tolist() == [dates[i] for i in order]
-    assert df["Activity_StartTime"].tolist() == [times[i] for i in order]
+    assert df["AlternateLocation_IdentifierCount"].tolist() == [0, 2]
+    # The original triplet columns survive alongside the derived UTC column.
+    assert df["Activity_StartDate"].tolist() == ["2025-01-01", "2025-02-02"]
+    assert df["Activity_StartTime"].tolist() == ["09:00:00", "13:00:00"]
     assert df["Activity_StartTimeZone"].tolist() == ["UTC", "UTC"]
-    if getter is get_samples:
-        assert df["Activity_StartDateTime"].tolist() == [
-            pd.Timestamp("2025-01-01T09:00:00Z"),
-            pd.Timestamp("2025-02-02T13:00:00Z"),
-        ]
-    else:
-        assert "Activity_StartDateTime" not in df
+    assert df["Activity_StartDateTime"].tolist() == [
+        pd.Timestamp("2025-01-01T09:00:00Z"),
+        pd.Timestamp("2025-02-02T13:00:00Z"),
+    ]
+    assert md.url == request_url
+    assert isinstance(md.query_time, datetime.timedelta)
+    assert md.header.get("mock_header") == "value"
+    assert md.comment is None
+
+
+def test_get_samples_summary_preserves_identifiers(httpx_mock):
+    """The summary path shares the parse: codes as text, counts numeric, rows in
+    the order sent."""
+    request_url = _mock_samples_code_csv(
+        httpx_mock, "summary/USGS-00123?mimeType=text%2Fcsv"
+    )
+
+    df, md = get_samples_summary(monitoring_location_id="USGS-00123")
+
+    assert isinstance(df, DataFrame)
+    assert df["USGSpcode"].tolist() == ["00060", "00065"]
+    assert df["Location_HUCEightDigitCode"].tolist() == ["07090002", "07090003"]
+    assert df["stateFips"].tolist() == ["01", "02"]
+    assert df["countyFips"].tolist() == ["003", "005"]
+    assert df["MonitoringLocationIdentifier"].tolist() == ["00123", "00456"]
+    assert df["OrganizationIdentifier"].tolist() == ["00007", "00008"]
+    assert pd.api.types.is_numeric_dtype(df["ResultMeasureValue"])
+    assert df["ResultMeasureValue"].iloc[0] == 1.5
+    assert pd.isna(df["ResultMeasureValue"].iloc[1])
+    assert df["resultCount"].tolist() == [2, 0]
+    assert pd.api.types.is_numeric_dtype(df["AlternateLocation_IdentifierCount"])
+    assert df["AlternateLocation_IdentifierCount"].tolist() == [2, 0]
+    # The summary getter adds no derived column and does not reorder rows.
+    assert "Activity_StartDateTime" not in df
+    assert df["Activity_StartDate"].tolist() == ["2025-02-02", "2025-01-01"]
     assert md.url == request_url
     assert isinstance(md.query_time, datetime.timedelta)
     assert md.header.get("mock_header") == "value"

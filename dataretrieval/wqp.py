@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple
 
 from dataretrieval import configuration as _configuration
-from dataretrieval._csv import read_code_csv as _read_wqp_csv
+from dataretrieval._csv import read_code_csv
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
 from dataretrieval.configuration import (
@@ -132,7 +132,7 @@ def _query_wqp(
     and :func:`wqp_url` otherwise. Legacy-only collections route through
     :func:`_legacy_only_url`, which warns and falls back to the legacy
     profile. ``dataProfile`` is validated against :data:`_PROFILE_RULES`, and
-    the CSV response is parsed via :func:`_read_wqp_csv`.
+    the CSV response is parsed via :func:`dataretrieval._csv.read_code_csv`.
     """
     kwargs = _check_kwargs(kwargs)
     kwargs = _resolve_profile(service, legacy, kwargs)
@@ -152,7 +152,7 @@ def _query_wqp(
     response = _query_with_retry(
         url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
-    df = _read_wqp_csv(response.text)
+    df = read_code_csv(response.text)
     # Only get_results documents the appended DateTime columns and the
     # activity-start sort, so the other collections keep their parsed shape.
     if service == "Result":

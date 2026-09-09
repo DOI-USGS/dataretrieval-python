@@ -100,10 +100,7 @@ def _get_samples_csv(
         **HTTPX_DEFAULTS,
     )
     _raise_for_non_200(response)
-    # This field counts alternate identifiers; it is not an identifier itself.
-    df = read_code_csv(
-        response.text, infer_columns=("AlternateLocation_IdentifierCount",)
-    )
+    df = read_code_csv(response.text)
     return df, response
 
 

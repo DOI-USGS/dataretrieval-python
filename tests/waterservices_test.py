@@ -228,6 +228,26 @@ def test_get_info(httpx_mock):
     assert_metadata(httpx_mock, request_url, md, site, [parameter_cd], format)
 
 
+def test_get_info_preserves_leading_zero_codes(httpx_mock):
+    """Site codes keep their zeros: HUC 02060005, not 2060005.
+
+    ``site_no`` was hinted as a string from the start, but ``huc_cd`` was
+    inferred as an int, so every site's hydrologic unit came back short a
+    digit. RDB code columns are now detected from the header.
+    """
+    site = "01491000%2C01645000"
+    request_url = (
+        f"https://waterservices.usgs.gov/nwis/site?sites={site}"
+        "&parameterCd=00618&siteOutput=Expanded&format=rdb"
+    )
+    mock_request(httpx_mock, request_url, "tests/data/waterservices_site.txt")
+
+    df, _ = get_info(sites=["01491000", "01645000"], parameterCd="00618")
+
+    assert df["huc_cd"].tolist() == ["02060005", "02070008"]
+    assert df["site_no"].tolist() == ["01491000", "01645000"]
+
+
 def test_get_discharge_peaks(httpx_mock):
     """Verify get_discharge_peaks builds the expected URL and returns a DataFrame."""
     format = "rdb"

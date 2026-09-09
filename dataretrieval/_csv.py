@@ -1,6 +1,6 @@
-"""Shared CSV parsing that preserves significant zeros in codes and identifiers."""
+"""Identify the code columns in a response, and read CSV with them as strings."""
 
-from collections.abc import Collection
+from collections.abc import Iterable
 from io import StringIO
 
 import pandas as pd
@@ -10,27 +10,50 @@ from pandas import DataFrame
 def _is_code_column(name: str) -> bool:
     """Report whether a column name denotes a code or identifier.
 
-    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that
-    are significant and must be preserved as ``str``. A name qualifies if it
-    ends with "code" or contains "identifier", "huc", or "fips".
+    USGS services spell a code column three ways -- a ``code`` suffix
+    (``Location_HUCEightDigitCode``), the RDB abbreviation ``_cd``
+    (``huc_cd``), or a code vocabulary in the name (``identifier``, ``huc``,
+    ``fips``). All three qualify. Their leading zeros carry meaning, so the
+    column must be read as ``str``.
+
+    A name ending in ``count`` is a tally rather than a code, even when it
+    reads like one: ``AlternateLocation_IdentifierCount`` counts a location's
+    alternate identifiers.
     """
     lname = name.lower()
-    return lname.endswith("code") or any(
-        token in lname for token in ("identifier", "huc", "fips")
+    if lname.endswith("count"):
+        return False
+    return (
+        lname.endswith("code")
+        or lname.endswith("_cd")
+        or any(token in lname for token in ("identifier", "huc", "fips"))
     )
 
 
-def read_code_csv(text: str, *, infer_columns: Collection[str] = ()) -> DataFrame:
-    """Read CSV text with code/identifier columns as strings.
+def code_columns(names: Iterable[object]) -> dict[str, type]:
+    """Map each code or identifier name in ``names`` to ``str``.
 
-    Read the header first to select string columns before numeric inference can
-    discard leading zeros (``"00060"`` -> ``60``). Other columns retain pandas'
-    inferred types, and the default missing-value handling is unchanged.
-    ``infer_columns`` also retain inference when their names match a code or
-    identifier, allowing a caller to distinguish counts from identifiers.
+    Returns the ``dtype`` map for a caller that already has the column names
+    and parses the body itself, such as :func:`dataretrieval.rdb.read_rdb`.
+    """
+    return {str(name): str for name in names if _is_code_column(str(name))}
+
+
+def read_code_csv(text: str) -> DataFrame:
+    """Read CSV text with code and identifier columns as strings.
+
+    Read the header first to select those columns before numeric inference
+    discards their leading zeros (``"00060"`` -> ``60``). Other columns keep
+    pandas' inferred types, and missing-value handling is unchanged.
+
+    ``low_memory=False`` types each column from the whole body rather than per
+    chunk. It adds parse time on a large response and keeps a column's dtype
+    independent of where the chunk boundaries fall.
     """
     columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns
-    str_cols = {
-        col: str for col in columns if col not in infer_columns and _is_code_column(col)
-    }
-    return pd.read_csv(StringIO(text), delimiter=",", low_memory=False, dtype=str_cols)
+    return pd.read_csv(
+        StringIO(text),
+        delimiter=",",
+        low_memory=False,
+        dtype=code_columns(columns),
+    )

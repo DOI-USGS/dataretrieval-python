@@ -33,7 +33,7 @@ layers =
     progress
 ; Response-format conventions sit above the pure leaves because they read the
 ; code tables, and below every adapter that shapes a response with them.
-    _wqx | _csv
+    _wqx
     _response_metadata | codes | combining | interruptions | rdb
     credentials
     configuration
@@ -42,7 +42,7 @@ layers =
 ; Pure dependency-free mechanisms sit together at the floor: none imports
 ; first-party code, so every layer can use them without reaching sideways or
 ; creating artificial dependencies among them.
-    _ambient | _deprecation | _validation
+    _ambient | _csv | _deprecation | _validation
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.
 exhaustive = True
