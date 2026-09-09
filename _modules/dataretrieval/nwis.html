@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc2b250712 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0d345a733 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b13374f7"></script>
+      <script src="../../_static/documentation_options.js?v=831df822"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -138,12 +138,14 @@
 <span class="c1"># NAD83</span>
 <span class="n">_CRS</span> <span class="o">=</span> <span class="s2">"EPSG:4269"</span>
 
+<span class="c1"># Hints for columns whose names do not mark them as codes: ``site_no`` is a</span>
+<span class="c1"># zero-padded identifier, and the decimal coordinates are floats. Code columns</span>
+<span class="c1"># (``parm_cd``, ``huc_cd``, ``state_cd``, ...) are detected from the RDB header</span>
+<span class="c1"># by ``rdb.read_rdb``.</span>
 <span class="n">_NWIS_RDB_DTYPES</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"site_no"</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="s2">"dec_long_va"</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="s2">"dec_lat_va"</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="s2">"parm_cd"</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="s2">"parameter_cd"</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">}</span>
 
 

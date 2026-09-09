@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+gc2b250712 documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g0d345a733 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=b13374f7"></script>
+      <script src="../../_static/documentation_options.js?v=831df822"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -114,7 +114,6 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
@@ -123,6 +122,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._csv</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_code_csv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_status</span><span class="p">,</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_options</span><span class="p">,</span> <span class="n">require_exactly_one</span>
@@ -175,10 +175,6 @@
 <span class="c1">#: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the</span>
 <span class="c1">#: general setting outranks a module's default rather than the reverse.</span>
 <span class="n">DEFAULT_CONCURRENT_REQUESTS</span> <span class="o">=</span> <span class="mi">4</span>
-
-<span class="c1"># Page responses hold the HUC12 identifier in this column; it must stay a</span>
-<span class="c1"># string so leading zeros (e.g. "010900020502") are preserved through parsing.</span>
-<span class="n">_HUC12_COLUMN</span> <span class="o">=</span> <span class="s2">"huc12_id"</span>
 
 
 <div class="viewcode-block" id="get_wateruse">
@@ -469,9 +465,13 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_csv_page</span><span class="p">(</span><span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parse one CSV page; ``huc12_id`` stays a string to keep leading zeros."""</span>
+<span class="w">    </span><span class="sd">"""Parse one CSV page through the shared code-preserving reader.</span>
+
+<span class="sd">    ``huc12_id`` is a code column by name, so its leading zeros survive</span>
+<span class="sd">    (``"010900020502"``).</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="n">_HUC12_COLUMN</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">read_code_csv</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">pd</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">EmptyDataError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="c1"># NWDC normally signals "no data" with a 400 (handled above) or rows of</span>
         <span class="c1"># zeros, never an empty body — but keep the typed-error contract if it</span>
