@@ -12,12 +12,10 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
-from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple
 
-import pandas as pd
-
 from dataretrieval import configuration as _configuration
+from dataretrieval._csv import read_code_csv as _read_wqp_csv
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
 from dataretrieval.configuration import (
@@ -118,34 +116,6 @@ def _resolve_profile(
         context=f"{kind} {service} service",
     )
     return kwargs
-
-
-def _is_code_column(name: str) -> bool:
-    """Report whether a WQP column name denotes a code or identifier.
-
-    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that
-    are significant and must be preserved as ``str``. A name qualifies if it
-    ends with "code" or contains "identifier", "huc", or "fips".
-    """
-    lname = name.lower()
-    return lname.endswith("code") or any(
-        token in lname for token in ("identifier", "huc", "fips")
-    )
-
-
-def _read_wqp_csv(text: str) -> DataFrame:
-    """Read a WQP CSV, forcing code/identifier columns to ``str``.
-
-    WQP returns codes with significant leading zeros — HUCs, parameter codes
-    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those as
-    int/float and drops the zeros without a warning (``"00060"`` -> ``60``, HUC8
-    ``"07090002"`` -> ``7090002``). Read the header first, then re-read with
-    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the zeros are
-    preserved.
-    """
-    columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns
-    str_cols = {col: str for col in columns if _is_code_column(col)}
-    return pd.read_csv(StringIO(text), delimiter=",", low_memory=False, dtype=str_cols)
 
 
 def _query_wqp(

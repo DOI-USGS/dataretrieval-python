@@ -11,13 +11,13 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Iterable
-from io import StringIO
 from typing import Any, get_args
 from urllib.parse import quote
 
 import httpx
 import pandas as pd
 
+from dataretrieval._csv import read_code_csv
 from dataretrieval._querying import to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
@@ -100,7 +100,10 @@ def _get_samples_csv(
         **HTTPX_DEFAULTS,
     )
     _raise_for_non_200(response)
-    df = pd.read_csv(StringIO(response.text), delimiter=",")
+    # This field counts alternate identifiers; it is not an identifier itself.
+    df = read_code_csv(
+        response.text, infer_columns=("AlternateLocation_IdentifierCount",)
+    )
     return df, response
 
 
@@ -307,7 +310,9 @@ def get_samples(
     Returns
     -------
     df : ``pandas.DataFrame``
-        Formatted data returned from the API query. For each
+        Formatted data returned from the API query. Code and identifier columns
+        retain leading zeros as strings; measurement columns retain inferred
+        numeric types. For each
         ``<prefix>Date`` / ``<prefix>Time`` / ``<prefix>TimeZone`` triplet in
         the response (e.g. ``Activity_StartDate``, ``Activity_StartTime``,
         ``Activity_StartTimeZone``), an additional ``<prefix>DateTime`` column
@@ -403,7 +408,9 @@ def get_samples_summary(
     Returns
     -------
     df : ``pandas.DataFrame``
-        Formatted data returned from the API query.
+        Formatted data returned from the API query. Code and identifier columns
+        retain leading zeros as strings; count columns retain inferred numeric
+        types.
     md : :obj:`dataretrieval.utils.BaseMetadata`
         Custom ``dataretrieval`` metadata object pertaining to the query.
 

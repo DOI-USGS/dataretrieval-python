@@ -67,12 +67,15 @@ def test_read_wqp_csv_preserves_leading_zero_codes():
     from dataretrieval.wqp import _read_wqp_csv
 
     csv = (
-        "Location_HUCEightDigitCode,USGSpcode,ResultMeasureValue\n07090002,00060,1.5\n"
+        "Location_HUCEightDigitCode,USGSpcode,ResultMeasureValue,"
+        "AlternateLocation_IdentifierCount\n07090002,00060,1.5,2\n"
     )
     df = _read_wqp_csv(csv)
     assert df["Location_HUCEightDigitCode"].iloc[0] == "07090002"
     assert df["USGSpcode"].iloc[0] == "00060"
     assert df["ResultMeasureValue"].iloc[0] == 1.5
+    # Preserve WQP's existing name-based inference, including count-like names.
+    assert df["AlternateLocation_IdentifierCount"].iloc[0] == "2"
 
 
 def test_get_results(httpx_mock):
