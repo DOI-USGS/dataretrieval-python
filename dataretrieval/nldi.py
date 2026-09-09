@@ -57,7 +57,7 @@ _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
 #: Built from the tuple above, so a mode added there cannot go unmentioned.
 _NAVIGATION_MODES_HINT = f"Pass one of {render_options(_VALID_NAVIGATION_MODES)}."
 #: Shared by the conflict check and the nothing-supplied check, so both
-#: offer the same ways forward.
+#: offer the same remedy.
 _ORIGIN_HINT = (
     "Navigate from a comid, e.g. comid=13294314, or from a "
     "feature_source/feature_id pair -- not both"
@@ -71,14 +71,7 @@ def _api_base() -> str:
 
     Every URL below is built from this rather than from
     :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
-    reaches every navigation, basin, and catalog request alike -- a redirect
-    that covered only some of them would leave the library asking the real
-    service about the mirror's data. Resolved per call, because a ``configure``
-    block is scoped to a ``with`` statement rather than to the process.
-
-    Six call sites, which is what this seam is for; choosing between the
-    redirect and the service's own base is the accessor's job, not each
-    service's.
+    applies to every navigation, basin, and catalog request alike (ADR 0011).
     """
     return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
 
@@ -87,9 +80,9 @@ def _query_nldi(
     url: str,
     query_params: dict[str, str],
 ) -> dict[str, Any] | list[Any]:
-    # A helper function to query the NLDI API. ``query()`` already raises a
-    # typed ``DataRetrievalError`` for any HTTP error response, so a returned
-    # response is a success that we only need to parse.
+    # A helper function to query the NLDI API. ``query()`` already raises a typed
+    # ``DataRetrievalError`` for any HTTP error response, so a returned response is a
+    # success that only needs parsing.
     response = _query_with_retry(url, payload=query_params, adapter="nldi")
     response_data: dict[str, Any] | list[Any] = {}
     try:
@@ -102,13 +95,14 @@ def _query_nldi(
 
 
 def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
-    """Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.
+    """Build a GeoDataFrame from an NLDI FeatureCollection, accepting an empty
+    collection.
 
-    NLDI can legitimately return no features (e.g. a feature with nothing
-    upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response
-    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases
-    (there's no geometry column to attach the CRS to), so return an empty
-    GeoDataFrame with the correct CRS instead of crashing.
+    NLDI can validly return no features (e.g. a feature with nothing upstream), and
+    :func:`_query_nldi` returns ``{}`` when a 200 response has no JSON body.
+    ``GeoDataFrame.from_features`` raises on both cases (there's no geometry column to
+    attach the CRS to), so return an empty GeoDataFrame with ``_CRS`` set instead of
+    raising.
     """
     features = feature_collection.get("features") if feature_collection else None
     if not features:
@@ -343,10 +337,10 @@ def _navigation_request(
 ) -> tuple[str, dict[str, str]]:
     """URL and query params for an NLDI navigation from a validated origin.
 
-    The single home for the navigation path grammar — ``{origin}/navigation/
-    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific
-    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query
-    string keeps its documented parameter order.
+    The one definition of the navigation path grammar — ``{origin}/navigation/
+    {mode}/{tail}`` — and its ``distance`` parameter. Callers add the
+    parameters specific to their endpoint (``trimStart``, ``stopComid``)
+    afterwards, so the query string keeps its documented parameter order.
     """
     origin = f"{feature_source}/{feature_id}" if feature_source else f"comid/{comid}"
     url = f"{_api_base()}/{origin}/navigation/{navigation_mode}/{tail}"
@@ -407,10 +401,10 @@ def _get_features_request(
         return f"{_api_base()}/{feature_source}/{feature_id}", {}
 
     # Before the data_source check below: a caller who mistyped the mode should
-    # hear about the mode, not be sent to fix a second argument first.
+    # be told about the mode, not told to fix a second argument first.
     navigation_mode = _validate_navigation_mode(navigation_mode)
-    # The navigation's tail is the data source, so a missing one is spelled
-    # "None" into the path and the service answers 200 with zero features.
+    # The navigation's tail is the data source, so a missing one is written as
+    # "None" into the path and the service returns 200 with zero features.
     data_source = require_argument(
         "data_source",
         data_source,
@@ -458,7 +452,7 @@ def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     .. doctest::
 
         >>> # "nwissite" returns every NWIS site nationwide, so this example is
-        >>> # skipped in the doctest build to avoid the (very large) download.
+        >>> # skipped in the doctest build to avoid the large download.
         >>> gdf = dataretrieval.nldi.get_features_by_data_source(  # doctest: +SKIP
         ...     data_source="nwissite"
         ... )
@@ -663,7 +657,7 @@ def _validate_data_source(data_source: str, *, name: str = "data source") -> Non
                 "NLDI data-source catalog returned an unexpected shape; "
                 "expected a list of {'source': ..., ...} objects, got: "
                 f"{available_data_sources!r}. If you set "
-                "NldiConfiguration(base_url=...), point it at the linked-data "
+                "NldiConfiguration(base_url=...), set it to the linked-data "
                 "root, e.g. base_url='https://api.water.usgs.gov/nldi/"
                 "linked-data'; otherwise the service returned an unexpected "
                 "body -- retry later."
@@ -688,8 +682,9 @@ def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
 ) -> None:
     if comid is not None:
-        # Half a feature pair beside a comid is a conflict, not a gap: advising
-        # the caller to complete the pair would only raise the conflict next.
+        # Half a feature pair with a comid is a conflict, not a missing argument:
+        # advising the caller to complete the pair would only raise the conflict
+        # next.
         reject_together(
             {
                 "comid": comid,
@@ -715,17 +710,15 @@ def _validate_feature_source_comid(
 class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     """Settings for NLDI calls alone.
 
-    No fan-out dials: an NLDI query is answered by a single request.
+    No fan-out settings: an NLDI query is served by a single request.
 
     This adapter is imported on demand for the geopandas extra, so this
-    class registers itself later than the rest -- which is exactly why
-    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`
+    class registers itself later than the rest -- which is why
+    the adapter roster is :data:`~dataretrieval.configuration.ADAPTERS`
     rather than being derived from what has been imported.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -741,9 +734,6 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         environment refuse it.
     """
 
-    # One request per call, so this service reads the retry dials and a
-    # redirectable base and no fan-out dial. Each setting is declared once,
-    # in :mod:`dataretrieval.configuration`, beside its grammar.
     adapter: ClassVar[str] = "nldi"
 
 

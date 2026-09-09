@@ -1,15 +1,15 @@
 """When data last arrived, shared by the loops that produce and consume it.
 
-A retrieval can be slow for two very different reasons: it is downloading a lot
-(fine, however long it takes) or it is receiving nothing at all (worth giving up
-on). Telling those apart needs one fact -- when data last arrived -- that the
-page-walking loop knows and the retry loop acts on. Keeping it in this leaf lets
-both point *down* at it rather than at each other, and leaves any future producer
-of liveness (a streaming body reader, a chunk-level fetch) somewhere to report.
+A retrieval can be slow for two reasons: it is downloading a lot (progressing,
+however long it takes) or it is receiving nothing at all (and should be
+abandoned). Distinguishing them needs one fact -- when data last arrived -- that the
+page-walking loop records and the retry loop reads. Keeping it in this leaf lets
+both depend on it rather than on each other, and gives any future producer
+of liveness (a streaming body reader, a chunk-level fetch) a place to record it.
 
-The stamp lives in a :class:`~contextvars.ContextVar` so concurrent retrievals --
+The timestamp is held in a :class:`~contextvars.ContextVar` so concurrent retrievals --
 each chunk of a chunked call, each location of a Water Use fan-out --
-measure their own silence instead of sharing one clock.
+measure their own time without data instead of sharing one timestamp.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ _last_progress: contextvars.ContextVar[float | None] = contextvars.ContextVar(
 
 
 def note_progress() -> None:
-    """Restart the no-progress budget: data just arrived."""
+    """Restart the no-progress budget: data has arrived."""
     _last_progress.set(time.monotonic())
 
 
@@ -34,24 +34,24 @@ def elapsed_since_progress() -> float | None:
 
 
 def credit_wait(seconds: float) -> None:
-    """Excuse ``seconds`` of sanctioned waiting from the no-progress budget.
+    """Subtract ``seconds`` of permitted waiting from the no-progress budget.
 
-    Two kinds of waiting are not silence: queueing behind a concurrency cap, and
-    sleeping off a delay the server itself named (see
+    Two kinds of waiting do not count as time without data: queueing behind a
+    concurrency cap, and waiting out a delay the server specified (see
     :meth:`~dataretrieval.transport.retry.RetryPolicy.allows_wait` for why a
-    sanctioned delay costs the budget nothing). The deep tail of a wide fan-out
-    can wait past the whole budget and would otherwise start its first attempt
-    with nothing left to retry with. But neither is progress, and the difference
-    matters: crediting only the measured wait keeps the budget cumulative across
-    attempts, where restamping to "now" would also discard silence accumulated
-    by earlier attempts and quietly turn a bound on total silence into a
-    per-attempt latency bound.
+    server-specified delay is not charged against the budget). The last chunks of a wide
+    fan-out can wait past the whole budget and would otherwise start their
+    first attempt with no budget left. Neither is progress, and the
+    distinction matters: crediting only the measured wait keeps the budget
+    cumulative across attempts, where resetting the timestamp to now would also discard
+    time without data accumulated by earlier attempts and turn a bound on total
+    time without data into a per-attempt latency bound.
 
-    The credit never reaches past the present. A wait longer than the whole
-    budget would otherwise stamp the stamp into the *future*, making
-    :func:`elapsed_since_progress` negative -- and since nothing ever pulls it
-    back, that one long queue wait would disable the bound for the rest of the
-    call, which is precisely the silent-minutes case the budget exists to catch.
+    The credit never moves the timestamp past the present. A wait longer than the whole
+    budget would otherwise set the timestamp in the *future*, making
+    :func:`elapsed_since_progress` negative -- and since nothing ever reduces
+    it, that one long queue wait would disable the bound for the rest of the
+    call, which is the case the budget exists to bound.
     """
     last = _last_progress.get()
     if last is not None:

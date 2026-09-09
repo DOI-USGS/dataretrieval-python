@@ -226,11 +226,11 @@ class TestDeprecationWarnings:
 
     @pytest.mark.parametrize("module_name, func_name, arguments", _NAMED_REPLACEMENTS)
     def test_named_replacement_resolves(self, module_name, func_name, arguments):
-        """Tripwire: following a deprecation message literally must produce a
-        real call, so a user migrating doesn't hit AttributeError or TypeError.
+        """Following a deprecation message literally must produce a real call,
+        so a user migrating does not get an AttributeError or TypeError.
 
-        Fails loudly if a message lands before its referenced replacement does
-        (e.g. before `get_peaks` from #267).
+        Fails if a message is ever merged before its referenced replacement
+        does (e.g. before `get_peaks` from #267).
         """
         func = getattr(getattr(dataretrieval, module_name), func_name, None)
         assert callable(func), (

@@ -10,13 +10,9 @@ replacement for the defunct legacy NWIS water-use service
 
 Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
-an OGC API Features collection. This module supplies the NWDC-specific bits —
+an OGC API Features collection. This module supplies the NWDC-specific parts --
 request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope. The service-neutral transport layer supplies cursor pagination,
-response aggregation, client lifecycle, and sync-from-async dispatch. The module
-follows the same conventions: host-scoped request headers, the typed
-:class:`~dataretrieval.exceptions.DataRetrievalError` taxonomy, and a
-``(DataFrame, BaseMetadata)`` return.
+error envelope -- over the service-neutral transport layer (ADR 0006).
 
 See https://api.water.usgs.gov/docs/nwaa-data/ for the API reference and
 https://water.usgs.gov/nwaa-data/ for the catalog of available models and
@@ -96,15 +92,15 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 
 #: This service's preferred in-flight cap when nothing is configured. Lower
 #: than the package default of 32 because every location retries
-#: independently, so a rate-limit episode bursts this number times the retry
-#: count; the NWDC tolerates this level without rate-limit errors (verified by
+#: independently, so a rate-limit episode produces this number times the retry
+#: count of requests; the NWDC returns no rate-limit errors at this level (verified by
 #: stress test) and higher has not been tested. Any configured concurrency
 #: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the
 #: general setting outranks a module's default rather than the reverse.
 DEFAULT_CONCURRENT_REQUESTS = 4
 
-# Page responses carry the HUC12 identifier in this column; it must stay a
-# string so leading zeros (e.g. "010900020502") survive the round trip.
+# Page responses hold the HUC12 identifier in this column; it must stay a
+# string so leading zeros (e.g. "010900020502") are preserved through parsing.
 _HUC12_COLUMN = "huc12_id"
 
 
@@ -128,7 +124,7 @@ def get_wateruse(
     ``state``, ``county``, or ``huc``; results are always returned on a HUC12
     grid, in a long (tidy) frame with one row per HUC12 and time step. Large
     areas (e.g. a whole region or a populous state) are served across multiple
-    pages; this function follows those pages transparently and concatenates
+    pages; this function follows those pages automatically and concatenates
     them into one frame.
 
     Each selector also accepts a list of values. The NWDC queries one area per
@@ -156,12 +152,11 @@ def get_wateruse(
         groundwater and surface-water components). Multiple variables are
         comma-joined into a single request. The service requires at least one
         variable; omitting it returns a 400 listing the model's valid variable
-        IDs (surfaced as a :class:`~dataretrieval.exceptions.DataRetrievalError`).
+        IDs (raised as a :class:`~dataretrieval.exceptions.DataRetrievalError`).
     state : string, int, or iterable, optional
         One or more US states/territories to query. Each accepts a full name
-        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
-        ANSI/FIPS code (``"55"`` or ``55``), mirroring
-        :func:`dataretrieval.ngwmn.get_sites`.
+        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS
+        code (``"55"`` or ``55``), matching :func:`dataretrieval.ngwmn.get_sites`.
     county : string or iterable, optional
         One or more five-digit county FIPS codes — state FIPS + county FIPS,
         e.g. ``"55025"`` for Dane County, Wisconsin.
@@ -251,9 +246,8 @@ def get_wateruse(
     base_params = {k: v for k, v in base_params.items() if v is not None}
 
     # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
-    # service's own endpoint. Resolved once per call -- the block is scoped to
-    # a ``with`` statement -- and threaded through every request and the page
-    # walk, so a redirected call cannot half-follow the redirect.
+    # service's own endpoint, passed to every request and the page walk
+    # (ADR 0011).
     service_url = _configuration.base_url(adapter="nwdc", default=WATERUSE_URL)
 
     # The NWDC queries one location per request, so fan a multi-value selector
@@ -316,7 +310,7 @@ def _as_list(value: object) -> list[Any]:
 
     A scalar becomes a one-element list; any non-string iterable (list, tuple,
     Series, ndarray, generator) is materialized to a list. A string is treated
-    as a scalar so it isn't exploded into characters.
+    as a scalar so it is not split into characters.
     """
     if isinstance(value, Iterable) and not isinstance(value, str):
         return list(value)
@@ -356,17 +350,15 @@ def _fan_out(
 
     This function is only the NWDC-specific half: parse a CSV page and read
     its ``Link`` header cursor, follow that cursor, raise the typed error
-    carrying the NWDC ``detail``, and shape the result.
+    that includes the NWDC ``detail``, and shape the result.
     :func:`~dataretrieval.transport.pagination.run_paginated` owns the rest.
 
-    The plan is the request list itself. The executor asks a plan only to be
-    sized and iterable, and the NWDC accepts one ``location=`` per request, so
-    the caller's locations arrive already separate -- there is nothing to
-    divide and so nothing for a plan class to hold.
+    The plan is the request list itself: the NWDC accepts one ``location=``
+    per request, so the caller's locations are already separate (ADR 0008).
 
-    The broad retry status set is on purpose: NWDC reports a bad query as a 400
+    The broad retry status set is deliberate: NWDC reports an invalid query as a 400
     with a ``{"detail": ...}`` envelope, so unlike WQP and StreamStats its 5xx
-    really is an upstream fault worth re-sending.
+    is an upstream fault that re-sending can resolve.
     """
 
     def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
@@ -418,18 +410,17 @@ def _next_page_url(
     """Return the absolute URL of the next page, or None if this is the last.
 
     Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx into
-    ``response.links``). The cursor is normalized before it is trusted, because
-    the service spells it inconsistently. A relative reference is resolved
-    against the page it came from, and the bare ``water.usgs.gov`` host is
-    rewritten to the public ``api.water.usgs.gov`` gateway (over https, whatever
-    scheme the link used) so the follow-up request reaches the API. Only a
-    cursor that still points somewhere else after that is refused -- following
-    it would send Water Use requests, and any credentials on them, to a host the
-    caller never asked for.
+    ``response.links``). The cursor is normalized before it is used, because the service
+    writes it inconsistently. A relative reference is resolved against the page it came
+    from, and the bare ``water.usgs.gov`` host is rewritten to the public
+    ``api.water.usgs.gov`` gateway (over https, whatever scheme the link used) so the
+    follow-up request is sent to the API. Only a cursor that still names another host
+    after that is refused -- following it would send Water Use requests, and any
+    credentials on them, to a host the caller never asked for.
 
-    ``host`` is the host this call is actually talking to, which is not the
+    ``host`` is the host this call sends requests to, which is not the
     NWDC's when a ``configure`` block redirected the adapter. The alias list and
-    the rewrite are facts about *this* service -- nothing else answers for
+    the rewrite are facts about *this* service -- no other host serves
     ``water.usgs.gov`` -- so a redirected call gets the general rule instead:
     follow a link only back to the host that served the page. Applying the
     NWDC's rewrite there would send page two of a mirrored query to the USGS.
@@ -453,7 +444,7 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
 
     The NWDC reports errors as ``{"detail": "Invalid model name: ..."}``. Passed
     to :func:`~dataretrieval.utils._raise_for_status` as ``detail_from`` so the
-    service's wording surfaces in the typed error message.
+    service's wording appears in the typed error message.
     """
     try:
         body = response.json()
@@ -461,7 +452,7 @@ def _nwdc_error_detail(response: httpx.Response) -> str | None:
         return None
     detail = body.get("detail") if isinstance(body, dict) else None
     if not isinstance(detail, str):
-        # A validation envelope spells ``detail`` as a list of error objects;
+        # A validation envelope gives ``detail`` as a list of error objects;
         # only prose belongs in a message.
         return None
     if detail.startswith("Invalid model name"):
@@ -478,10 +469,8 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
     fans out per location rather than being divided along a URL byte
     budget. There is nothing for the planner to divide more finely.
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -499,9 +488,6 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     """
 
-    # One request per location, fanned out but never chunked, so this service
-    # reads the retry dials, a redirectable base and ``concurrency`` -- but not
-    # ``parallel_chunks``, which divides a query it never divides.
     adapter: ClassVar[str] = "nwdc"
 
 

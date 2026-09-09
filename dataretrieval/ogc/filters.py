@@ -7,7 +7,7 @@ Public:
 Internal helpers used by ``chunking.multi_value_chunked``'s joint
 planner: ``_split_top_level_or`` (clause partitioning),
 ``_is_chunkable`` (filter-language gate), and
-``_check_numeric_filter_pitfall`` (the lexicographic-comparison guard).
+``_check_numeric_filter_pitfall`` (the lexicographic-comparison check).
 ``_quote_cql_str`` escapes a single CQL-text string literal, shared by any
 getter that *builds* a CQL filter (e.g. ``waterdata.ratings``).
 
@@ -57,7 +57,7 @@ def _quote_cql_str(value: str) -> str:
 
     CQL2 text escapes a ``'`` inside a string literal by doubling it, so
     ``O'Brien`` becomes ``O''Brien`` (wrap the result in ``'…'`` at the call
-    site). Defends against malformed filters / injection on arbitrary user
+    site). Prevents malformed filters and injection from arbitrary user
     input. Shared by every getter that builds a CQL-text literal (e.g. the
     STAC ``/search`` filter in ``waterdata.ratings``).
     """
@@ -74,10 +74,10 @@ def _skip_space(expr: str, i: int) -> int:
 def _resume_after_or(expr: str, i: int) -> int | None:
     """Where the clause after a top-level ``OR`` begins, if one starts at ``i``.
 
-    ``i`` is the index of a space that may open a ``<space>OR<space>``
-    separator. Returns the index of the next clause's first character, or
-    ``None`` when this space does not begin one -- so the caller's test is
-    "is this a separator?" rather than four nested boundary checks.
+    ``i`` is the index of a space that may open a ``<space>OR<space>`` separator.
+    Returns the index of the next clause's first character, or ``None`` when this space
+    does not begin one -- so the caller tests one condition rather than four nested
+    boundary checks.
 
     The trailing space is required: without it ``A ORDER BY b`` would split on
     the ``OR`` inside ``ORDER``.
@@ -94,8 +94,8 @@ def _resume_after_or(expr: str, i: int) -> int | None:
 def _skip_quoted(expr: str, i: int) -> int:
     """Index just past the quoted span opening at ``i``.
 
-    An unterminated quote swallows the rest of the expression. A doubled
-    ``''`` escape reads as close-then-reopen, which nets to the same state.
+    An unterminated quote extends to the end of the expression. A doubled
+    ``''`` escape reads as close-then-reopen, which produces the same state.
     """
     close = expr.find(expr[i], i + 1)
     return len(expr) if close == -1 else close + 1
@@ -104,8 +104,8 @@ def _skip_quoted(expr: str, i: int) -> int:
 def _iter_top_level_spaces(expr: str) -> Iterator[int]:
     """Yield the indices of whitespace outside quotes and parens.
 
-    Owns the depth/quote state so callers only see split candidates; quoted
-    spans are skipped wholesale.
+    Owns the depth/quote state so callers receive only split candidates; quoted
+    spans are skipped entirely.
     """
     depth = 0
     i = 0
@@ -127,7 +127,7 @@ def _iter_top_level_spaces(expr: str) -> Iterator[int]:
 def _split_top_level_or(expr: str) -> list[str]:
     """Split ``expr`` at each top-level ``OR``, respecting quotes and parens.
 
-    ``OR`` tokens inside ``(A OR B)`` or ``'word OR word'`` are left alone.
+    ``OR`` tokens inside ``(A OR B)`` or ``'word OR word'`` are not split.
     Matching is case-insensitive; whitespace around each part is stripped;
     empty parts are dropped.
     """
@@ -153,7 +153,7 @@ def _numeric_pitfall_error(field: str, offense: str) -> ValueError:
         f"literals with HTTP 500; even quoting the literal gives a "
         f"lexicographic comparison (``value > '10'`` matches "
         f"``value='34.52'``, ``parameter_code = '60'`` matches nothing "
-        f"because the real codes are ``'00060'``-shaped). For a true "
+        f"because the real codes are of the form ``'00060'``). For a true "
         f"numeric filter, fetch a wider result and reduce in pandas."
     )
 
@@ -198,14 +198,14 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     ``hydrologic_unit_code``, ``channel_flow``). Any unquoted numeric
     comparison — ``value >= 1000``, ``parameter_code = 60``,
     ``parameter_code IN (60, 61)``, ``value BETWEEN 5 AND 10`` — either gets
-    rejected with HTTP 500 or silently produces lexicographic results.
+    rejected with HTTP 500 or produces lexicographic results without an error.
     Zero-padded codes are the worst case (``parameter_code = '60'`` matches
-    nothing because the real codes are ``'00060'``-shaped).
+    nothing because the real codes are of the form ``'00060'``).
 
     Quoted literals (``value >= '1000'``) are not flagged — the caller has
-    signalled they know the column is textual.
+    indicated that the column is textual.
     """
-    # Mask quoted strings so ``name = 'value > 5'`` doesn't false-positive.
+    # Mask quoted strings so ``name = 'value > 5'`` is not flagged.
     masked = (
         _QUOTED_STR_RE.sub("''", filter_expr) if "'" in filter_expr else filter_expr
     )

@@ -1,7 +1,7 @@
 """Tests for the shared argument checks.
 
 Each check is asserted on two things: that it lets a valid call through, and
-that its rejection names the move that would fix the call. The second half is
+that its rejection names the change that would fix the call. The second half is
 the point of the module -- a caller that is a program can only correct itself
 from a message that says what to send instead.
 """
@@ -37,7 +37,7 @@ def test_context_qualifies_a_vocabulary_that_depends_on_another_argument():
 
 def test_remedy_adds_a_move_without_dropping_the_options():
     """A vocabulary narrower than the service's needs both halves: what this
-    function takes, and how to reach the rest."""
+    function takes, and how to obtain the rest."""
     with pytest.raises(ValueError) as excinfo:
         require_one_of(
             "hourly", ("daily",), name="collection", remedy="Call get_queryables."
@@ -49,8 +49,8 @@ def test_remedy_adds_a_move_without_dropping_the_options():
 
 def test_a_string_vocabulary_is_refused():
     """``str`` is a Collection, so passing one type-checks -- and then ``in``
-    silently degrades from membership to a substring test, accepting any
-    fragment of a valid option. Refuse it at the one shared chokepoint."""
+    changes from a membership test to a substring test without any error, accepting any
+    fragment of a valid option. Refuse it in the one shared check."""
     with pytest.raises(TypeError, match="not 'csv'"):
         require_one_of("cs", "csv", name="format")
 
@@ -84,7 +84,7 @@ class TestRequireTogether:
         require_together({"lat": 1.0, "long": 2.0})
 
     def test_accepts_none_supplied(self):
-        """Declining the whole group is a different question from completing it."""
+        """Omitting the whole group is a different case from completing it."""
         require_together({"lat": None, "long": None})
 
     def test_message_names_what_is_missing_and_what_to_do(self):
@@ -157,7 +157,7 @@ class TestRejectTogether:
         reject_together({"lat": 1.0, "comid": None})
 
     def test_accepts_none_supplied(self):
-        """Unlike require_exactly_one, an empty call is not this check's business."""
+        """Unlike require_exactly_one, an empty call is not this check's concern."""
         reject_together({"lat": None, "comid": None})
 
     def test_message_names_only_the_conflicting_arguments(self):

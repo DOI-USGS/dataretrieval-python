@@ -1,9 +1,9 @@
 """One getter for queries the typed getters cannot express.
 
 The other families expose a fixed argument per filter, which covers the common
-cases and keeps them discoverable. This is the escape hatch: an arbitrary CQL2
-filter against any collection, for the query nobody anticipated. Prefer a typed
-getter when one fits -- it validates more and reads better.
+cases and keeps them discoverable. This is the generic path: an arbitrary CQL2
+filter against any collection, for a query the typed getters do not cover.
+Prefer a typed getter when one fits -- it validates more and names its filters.
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def get_cql(
         (e.g. ``"daily"``, ``"monitoring-locations"``).
     cql : str or dict
         CQL2 query. A ``dict`` is JSON-serialized for transport; a ``str`` is
-        sent through unchanged. The query goes into the HTTP POST body with
+        sent through unchanged. The query is sent in the HTTP POST body with
         ``Content-Type: application/query-cql-json``.
     properties : str or iterable of str, optional
         Server-side property whitelist (passed as ``properties=`` on the URL).
@@ -159,16 +159,15 @@ def get_cql(
         ),
     )
 
-    # ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent
+    # A ``dict`` is serialized before sending. ``str`` is sent
     # verbatim so callers who already have a CQL2 doc (e.g. imported from a
     # config file) don't need to re-parse it.
     body = json.dumps(cql, separators=(",", ":")) if isinstance(cql, dict) else cql
 
-    # The engine owns the rest — the wire-properties id-switch, request
-    # construction, pagination, and finalization — behind the same Water Data
-    # entry the typed getters use; ``cql_body`` selects the verbatim-CQL2
-    # shape. ``output_id`` defaults from the collection map, which the guard
-    # above has already confirmed covers ``collection``.
+    # The engine handles the wire-properties id-switch, request construction,
+    # pagination, and finalization, through the same Water Data entry the typed getters
+    # use; ``cql_body`` selects the verbatim-CQL2 shape. ``output_id`` defaults from the
+    # collection map, which the check above has already confirmed covers ``collection``.
     args = _get_args(
         {
             "properties": properties,

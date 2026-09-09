@@ -36,7 +36,7 @@ Consequences
 - Maintainers avoid investing in a second implementation of modern retrieval
   behavior.
 - Legacy integration tests may require special handling as upstream endpoints
-  disappear.
+  are retired.
 - Removal still requires release notes, replacement checks, and an intentional
   compatibility boundary.
 

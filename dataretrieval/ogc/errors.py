@@ -28,12 +28,12 @@ def _error_body(resp: httpx.Response) -> str:
     str
         An error message string assembled per status code:
 
-        * **429** — predefined message describing the rate-limit and pointing
-          at the API-token path; the response body is not consulted.
+        * **429** — predefined message describing the rate-limit and naming the
+        API-token option; the response body is not consulted.
         * **every other status** — a supported JSON error body (the USGS
           ``code``/``description`` envelope or a gateway ``message``) when
           present; otherwise ``"<status>: <reason>. <snippet>"`` with the first
-          200 characters of ``resp.text``; an empty body degrades to
+          200 characters of ``resp.text``; an empty body yields
           ``"<status>: <reason>."``, except **403**, which falls back to
           :data:`_FORBIDDEN_CAUSES` so a credential problem is named.
 
@@ -59,7 +59,7 @@ def _error_body(resp: httpx.Response) -> str:
 
 
 #: What a 403 means when the service sends no error envelope. Both causes are
-#: named because the credential one is far more common and was omitted.
+#: named because the credential one is more common and was omitted.
 _FORBIDDEN_CAUSES = (
     "Query request denied. The API key may be missing, expired, or revoked "
     "(see API_USGS_PAT), or the query may exceed server limits."
@@ -129,8 +129,8 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
         transient types (:class:`~dataretrieval.exceptions.TransientError`) are
         distinguished so ``ChunkedCall`` can wrap them as a resumable
         :class:`~dataretrieval.interruptions.QuotaExhausted` /
-        :class:`~dataretrieval.interruptions.ServiceInterrupted`. The
-        chunker won't resume a fatal
+        :class:`~dataretrieval.interruptions.ServiceInterrupted`. The executor does not
+        resume a fatal
         :class:`~dataretrieval.exceptions.HTTPError` (not a ``TransientError``).
     """
     status = resp.status_code

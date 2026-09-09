@@ -6,7 +6,7 @@ The NGWMN exposes its data through a dedicated OGC API
 ``providers``. Each getter below delegates to the shared OGC facade
 (:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.
 Multi-value chunking, pagination, retry/resume, and result shaping therefore
-behave exactly as they do for the main Water Data getters.
+behave as they do for the main Water Data getters.
 
 Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so ``monitoring_location_id`` values use other agency
@@ -49,12 +49,8 @@ __all__ = [
 ]
 
 
-# The Water Data API base URL, from the credentials leaf rather than OGC policy
-# internals: it names the same authority the API key is scoped to. Spelling the
-# host out here instead would put a second copy of it in the package, which
-# ``tests/architecture_test.py::test_credential_policy_has_one_definition``
-# rejects: the code that attaches the API key and the code that strips it at
-# redirect time must not be able to disagree about which host is authorized.
+# The Water Data API base URL, from the credentials leaf -- the one place the
+# API-key host is named (ADR 0006).
 BASE_URL = WATERDATA_BASE_URL
 
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
@@ -62,17 +58,17 @@ BASE_URL = WATERDATA_BASE_URL
 NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 
 # --- state-filter shim -------------------------------------------------------
-# NGWMN's collections expose DIFFERENT state queryables: ``sites`` filters on
+# NGWMN's collections expose different state queryables: ``sites`` filters on
 # the full ``state_name`` (e.g. "Wisconsin"), while ``providers`` filters on the
 # two-letter postal ``state`` (uppercase, e.g. "WI"). The state-aware getters
 # take a single ``state`` parameter accepting any US-state encoding (full name,
 # postal code, or FIPS code); ``_get`` resolves it into the one queryable each
-# collection wants via the shared ``codes.states.apply_state``, keyed by
+# collection accepts via the shared ``codes.states.apply_state``, keyed by
 # ``_STATE_QUERYABLE`` below.
 #
-# This shim exists only to smooth over that upstream asymmetry.
+# This shim exists only to handle that upstream asymmetry.
 # ``tests/ngwmn_test.py::test_state_queryables_still_diverge_upstream`` fails --
-# the signal to remove it -- if the API ever unifies the two queryables.
+# the indication that it can be removed -- if the API ever unifies the two queryables.
 _STATE_QUERYABLE = {
     # service -> ``apply_state`` kwargs (destination queryable + to_state format)
     "sites": {"into": "state_name", "to": "name"},
@@ -105,7 +101,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     """Marshal a getter's arguments and dispatch to the shared OGC facade.
 
     Every NGWMN getter ends with this same call; centralizing it keeps the
-    NGWMN base URL, output id, and dialect wired up in exactly one place.
+    NGWMN base URL, output id, and dialect set in one place.
     """
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
@@ -116,9 +112,8 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         service,
         output_id=_NGWMN_OUTPUT_ID,
         # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
-        # this service's own base. Resolved per call because the block is
-        # scoped to a ``with`` statement, and read here because this is the one
-        # place the NGWMN base is named.
+        # this service's own base. Read here because this is the one place the
+        # NGWMN base is named (ADR 0011).
         base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
         spatial=service == "sites",
         dialect=NGWMN_DIALECT,
@@ -456,13 +451,11 @@ class NgwmnConfiguration(
 
     NGWMN is a second OGC API on the Water Data host, so its queries
     divide along the same URL byte budget and take the same two fan-out
-    dials. The API key is not among them: one gateway fronts both
-    adapters, so one key and one quota pool serve them (ADR 0010).
+    settings. The API key is not among them: one gateway fronts both
+    adapters, so they share one key and one quota pool (ADR 0010).
 
-    Lives here rather than in :mod:`dataretrieval.configuration` because
-    *which* settings a service reads is the service's own knowledge (ADR
-    0011); what each of them means is shared, so the fields come from the
-    setting groups declared beside their grammar.
+    Declared here rather than in :mod:`dataretrieval.configuration`
+    (ADR 0011).
 
     Parameters
     ----------
@@ -475,7 +468,7 @@ class NgwmnConfiguration(
         OGC API base to send NGWMN requests to, instead of the service's
         own (``NGWMN_OGC_API_URL``). Code only: the file and the
         environment refuse it. The API key is scoped to the host that
-        honors it, so a redirected call carries no key.
+        accepts it, so a redirected call sends no key.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional
@@ -483,10 +476,6 @@ class NgwmnConfiguration(
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
-    # NGWMN rides the same OGC engine as Water Data, so it reads the same
-    # groups: retry dials, a redirectable base, and both fan-out dials. The
-    # settings themselves are declared once in
-    # :mod:`dataretrieval.configuration`, beside the grammar that parses them.
     adapter: ClassVar[str] = "ngwmn"
 
 

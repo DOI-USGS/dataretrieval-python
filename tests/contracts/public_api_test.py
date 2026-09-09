@@ -5,7 +5,7 @@ character-exact ``str(inspect.signature(f))`` snapshot fails on every parameter
 rename, reorder, and annotation reflow -- changes that break no caller -- while
 passing the one thing that does break callers: a new required argument, since
 adding one changes the text the snapshot would have to be updated to anyway. The
-properties below fail on the breaking changes and stay quiet for the rest.
+properties below fail on the breaking changes and pass for the rest.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ _EXPECTED_WATERDATA_ALL = [
 ]
 
 #: Arguments a caller must supply positionally or by keyword. Adding an entry
-#: here is a breaking change to every existing call; that is the whole reason
+#: here is a breaking change to every existing call; that is why
 #: this mapping is written out instead of derived.
 _REQUIRED_ARGUMENTS = {
     "get_channel": (),
@@ -74,10 +74,10 @@ _REQUIRED_ARGUMENTS = {
     "get_time_series_metadata": (),
 }
 
-#: Defaults that are deliberately not ``None``. Every other optional parameter
-#: defaults to ``None``, which is how the request builder tells "caller omitted
-#: this" from "caller asked for this value" -- a non-``None`` default silently
-#: adds a filter to every query.
+#: Defaults that are deliberately not ``None``. Every other optional parameter defaults
+#: to ``None``, which is how the request builder distinguishes an omitted argument from
+#: a caller-supplied value -- a non-``None`` default adds a filter to every query
+#: without the caller seeing it.
 _INTENTIONAL_DEFAULTS = {
     "convert_type": True,
     "expand_percentiles": True,

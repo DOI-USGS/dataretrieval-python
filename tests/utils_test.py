@@ -32,7 +32,7 @@ class Test_query:
 
     def test_url_too_long(self, httpx_mock):
         """A 413 / 414 from the service (an over-long query URL, Issue #64) is
-        surfaced as the typed URLTooLong."""
+        raised as the typed URLTooLong."""
         httpx_mock.add_response(method="GET", status_code=414)
         with pytest.raises(exceptions.URLTooLong):
             nwis.get_iv(sites=["01491000", "01491001"])
@@ -67,7 +67,7 @@ class Test_query:
             utils.query(url, {})
 
     def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
-        """The public legacy adapter still surfaces the first transient failure."""
+        """The public legacy adapter still raises the first transient failure."""
         url = "https://example.invalid/x"
         request_url = f"{url}?a=1"
         httpx_mock.add_response(method="GET", url=request_url, status_code=503)
@@ -101,7 +101,7 @@ class Test_error_taxonomy:
     """The unified request-error hierarchy.
 
     Every module's request failure is catchable as ``DataRetrievalError``.
-    A status error is an ``HTTPError`` carrying ``.status_code`` (the retryable
+    A status error is an ``HTTPError`` with ``.status_code`` (the retryable
     429 / 5xx subset is ``TransientError``); a connection failure is a
     ``NetworkError``. The sole base is ``DataRetrievalError`` -- no builtin
     (``ValueError`` / ``RuntimeError``) mixins.
@@ -119,7 +119,7 @@ class Test_error_taxonomy:
     )
     def test_query_maps_status_to_typed_error(self, httpx_mock, status, exc_name):
         """``query`` maps each HTTP status to the right typed ``DataRetrievalError``:
-        a generic ``HTTPError`` (carrying ``.status_code``) for a fatal 4xx, and
+        a generic ``HTTPError`` (with ``.status_code``) for a fatal 4xx, and
         the transient ``RateLimited`` / ``ServiceUnavailable`` for 429 / 5xx. The
         too-long-URL statuses (413 / 414) are covered separately because their
         message is the actionable remediation, not the bare status number."""
@@ -134,7 +134,7 @@ class Test_error_taxonomy:
 
     @pytest.mark.parametrize("status", [413, 414])
     def test_query_too_long_url_gives_actionable_message(self, httpx_mock, status):
-        """A server 413 / 414 surfaces as ``URLTooLong`` carrying the actionable
+        """A server 413 / 414 is raised as ``URLTooLong`` with the actionable
         "Modify your query" remediation (the same message as the client-side
         over-long-URL path), not a bare ``HTTP 414`` status line."""
         url = "https://example.invalid/x"
@@ -144,7 +144,7 @@ class Test_error_taxonomy:
         assert isinstance(excinfo.value, exceptions.RequestTooLarge)
 
     def test_transport_error_wrapped_as_network_error(self, httpx_mock):
-        """A connection-level failure (no HTTP response) surfaces as the typed
+        """A connection-level failure (no HTTP response) is raised as the typed
         ``NetworkError`` -- catchable via ``except DataRetrievalError`` like the
         response-based errors, with the original ``httpx`` exception on
         ``__cause__`` -- rather than leaking a raw ``httpx`` exception."""
@@ -188,7 +188,7 @@ class Test_error_taxonomy:
             assert err.retryable is retryable, err
 
     def test_no_sites_error_is_data_retrieval_error(self):
-        """``NoSitesError`` (the legacy nwis no-data signal) roots at
+        """``NoSitesError`` (the legacy nwis no-data signal) derives from
         ``DataRetrievalError`` and is not a builtin ``ValueError``, so it is
         caught by the unified ``except dataretrieval.DataRetrievalError``."""
         assert issubclass(exceptions.NoSitesError, exceptions.DataRetrievalError)
@@ -200,7 +200,7 @@ class Test_error_taxonomy:
     def test_typed_errors_survive_pickle_and_deepcopy(self):
         """Typed errors round-trip through pickle/deepcopy -- they get pickled
         back from multiprocessing / lithops workers, and their constructor fields
-        (status_code, retry_after, url) must survive the trip."""
+        (status_code, retry_after, url) must be preserved."""
         import copy
         import pickle
 
@@ -228,7 +228,7 @@ class Test_error_taxonomy:
     def test_waterdata_exceptions_share_the_root(self):
         """waterdata's typed exceptions are ``DataRetrievalError`` too, so one
         ``except`` clause spans the legacy and waterdata subsystems, and they
-        slot under the shared family bases (``HTTPError`` / ``TransientError`` /
+        are subclasses of the shared base classes (``HTTPError`` / ``TransientError`` /
         ``RequestTooLarge``)."""
         from dataretrieval.exceptions import (
             RateLimited,
@@ -243,7 +243,7 @@ class Test_error_taxonomy:
         assert issubclass(RateLimited, exceptions.TransientError)
         assert issubclass(ServiceUnavailable, exceptions.TransientError)
         assert issubclass(ServiceUnavailable, exceptions.HTTPError)
-        # "Too large" failures slot under RequestTooLarge.
+        # "Too large" failures are subclasses of RequestTooLarge.
         assert issubclass(Unchunkable, exceptions.RequestTooLarge)
 
     def test_base_exported_at_top_level(self):
@@ -503,7 +503,7 @@ class Test_to_state:
             "Ohio",
         ]
         assert to_state(["WI", "CA"], "fips_us") == ["US:55", "US:06"]
-        # A bad element fails the whole call (fail-fast).
+        # An unrecognized element fails the whole call (fail-fast).
         with pytest.raises(ValueError, match="not a recognized US state"):
             to_state(["WI", "XX"])
 
@@ -521,8 +521,9 @@ class Test_to_state:
 
 
 class TestTerritories:
-    """The five territories are real ANSI/FIPS entities, and every service this
-    package reaches carries data for them."""
+    """The five territories are real ANSI/FIPS entities, and every service this package
+    queries has data for them.
+    """
 
     @pytest.mark.parametrize(
         ("value", "name", "postal", "fips"),
@@ -579,9 +580,9 @@ class TestApplyStateUnrecognized:
         assert "using the API's native value" in message
 
     def test_an_endpoint_with_no_alternative_offers_none(self):
-        """NGWMN's getters expose only the unified ``state``, so appending a
-        remedy from ``into`` sent a caller to ``get_sites(state_name=...)``
-        (``TypeError``) or straight back into this same error."""
+        """NGWMN's getters expose only the unified ``state``, so appending a remedy from
+        ``into`` directed a caller to ``get_sites(state_name=...)`` (``TypeError``) or
+        back to this same error."""
         from dataretrieval.codes.states import apply_state
 
         for into, to in (("state", "postal"), ("state_name", "name")):
@@ -628,8 +629,9 @@ class TestFormatDatetime:
 
     def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
         """An unparseable row becomes NaT rather than failing the whole frame,
-        but silently dropping timestamps would be a wrong answer -- so it
-        warns, and names the switch that avoids the loss."""
+        but dropping timestamps would return an incomplete frame with
+        nothing to mark the gap -- so it warns, and names the switch that
+        avoids the loss."""
         df = pd.DataFrame(
             {
                 # A missing date field, as an RDB row with an unrecorded
@@ -649,8 +651,8 @@ class TestFormatDatetime:
 
 
 def test_base_metadata_repr_names_the_type_and_url():
-    """``md`` is what a user prints when a query surprises them, so the repr
-    has to say which metadata class it is and which URL produced it."""
+    """``md`` is what a user prints when a query returns something unexpected, so
+    the repr has to say which metadata class it is and which URL produced it."""
     response = mock.MagicMock()
     response.url = "https://example.test/items?limit=1"
     md = utils.BaseMetadata(response)

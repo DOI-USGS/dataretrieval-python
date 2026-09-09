@@ -1,8 +1,8 @@
-"""Getters that answer "what data exists?" rather than returning it.
+"""Getters that describe what data exists rather than returning it.
 
 The monitoring-location catalog, the time-series inventory, and the joins over
 them. These are the discovery step: narrow down which locations and parameters
-are worth requesting before pulling observations from
+to request before pulling observations from
 :mod:`~dataretrieval.waterdata.time_series`.
 """
 
@@ -276,7 +276,7 @@ def get_monitoring_locations(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -531,7 +531,7 @@ def get_time_series_metadata(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -666,8 +666,8 @@ def get_combined_metadata(
     The ``combined-metadata`` collection joins the monitoring-locations
     catalog with the time-series-metadata catalog so that one row is
     returned per (location, parameter, statistic) inventory entry,
-    carrying every column from both source endpoints. This makes it the
-    most flexible "what data is available" endpoint in the Water Data
+    with every column from both source endpoints. This makes it the
+    most flexible inventory endpoint in the Water Data
     API: any monitoring-location attribute (state, HUC, site type,
     drainage area, well-construction depth, …) can be combined with any
     time-series attribute (parameter code, statistic, data type, period
@@ -711,8 +711,8 @@ def get_combined_metadata(
         Indicates whether the data from this time series represent a
         specific statistical computation.
     thresholds : number or list of numbers, optional
-        Numeric limits known for a time series (e.g. historic maximum,
-        below-which-the-sensor-is-non-operative).
+        Numeric limits known for a time series (e.g. the historic maximum, or the level
+        below which the sensor is non-operative).
     sublocation_identifier : string or iterable of strings, optional
     primary : string or iterable of strings, optional
         A flag identifying whether the time series is "primary". Primary
@@ -735,7 +735,7 @@ def get_combined_metadata(
         two-digit ANSI/FIPS code (``"55"``).
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
-        Common location-catalog filters carried over from the
+        Common location-catalog filters shared with the
         ``monitoring-locations`` collection. The function also accepts
         the full list of location-catalog kwargs (agency, district,
         altitude, vertical/horizontal datum, drainage area, aquifer,
@@ -827,8 +827,8 @@ site_type_code : string or iterable of strings, optional
         ...     parameter_code="00060",
         ... )
 
-        >>> # Two-step "what's available?" → "fetch it" workflow:
-        >>> # 1. inventory the sites in two HUCs
+        >>> # Two-step workflow: inventory, then fetch:
+        >>> # 1. inventory the monitoring locations in two HUCs
         >>> hucs, _ = dataretrieval.waterdata.get_combined_metadata(
         ...     hydrologic_unit_code=["11010008", "11010009"],
         ...     site_type="Stream",
@@ -879,9 +879,8 @@ def get_field_measurements_metadata(
 
     This is the discrete-measurement analogue to
     :func:`get_time_series_metadata` (which describes daily and continuous
-    series). It's primarily useful for inventory queries: "what
-    field-measurement parameters does this site have, and over what date
-    range?"
+    series). It is primarily useful for inventory queries: which
+    field-measurement parameters a site has, and over what date range.
 
     See the OpenAPI reference for the full list of supported fields:
     https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata

@@ -1,14 +1,14 @@
 """Resumable fan-out interruption exceptions — the public resume contract.
 
-When a fanned-out request fails mid-stream (a 429, a 5xx, or a bare transport
+When a fanned-out request fails partway (a 429, a 5xx, or a bare transport
 error), the work already completed is preserved and the call is resumable: the
-raised exception carries a ``.call`` handle whose ``resume()`` re-issues only
+raised exception has a ``.call`` handle whose ``resume()`` re-issues only
 the still-pending chunks. These exception types are that contract,
 re-exported at the top level (``from dataretrieval import ChunkInterrupted``).
-The execution machinery that raises and resumes them is
+The executor that raises and resumes them is
 :class:`dataretrieval.transport.fanout.FanOut`.
 
-Vocabulary, consistently (see ``CONTEXT.md``): a **chunk** is one of the
+Terms, as ``CONTEXT.md`` defines them: a **chunk** is one of the
 requests a query was split into, named for being a piece rather than for why it
 became one; **chunking** is how a query is split; and a **fan-out** is the
 concurrent execution of a query's chunks. Water Use chunks one request per
@@ -18,15 +18,15 @@ failure interrupts the *execution*, not the split.
 
 ``ChunkInterrupted`` is retained as an alias of that same class, not a
 deprecated shim to delete later: it is the name published in the user guide and
-caught in user code, and aliasing costs nothing to keep. ``except
+caught in user code, and the alias has no maintenance cost. ``except
 ChunkInterrupted`` and ``except FanOutInterrupted`` are the same handler.
 
 This is a top-level leaf rather than a member of ``ogc`` or ``transport``,
 for the reason ADR 0006 gives for ``combining``, ``progress``, and
 ``credentials``: adapters need it whether or not they go through transport, and
 an exception taxonomy is not HTTP execution policy. It stays out of
-:mod:`dataretrieval.exceptions` because it carries pandas/httpx state, which
-would pull heavy dependencies into that lightweight leaf.
+:mod:`dataretrieval.exceptions` because it holds pandas/httpx state, which
+would make that leaf depend on pandas and httpx.
 """
 
 from __future__ import annotations
@@ -46,39 +46,37 @@ if TYPE_CHECKING:
 
 class FanOutInterrupted(DataRetrievalError):
     """
-    Base class for mid-stream chunk failures whose completed work
+    Base class for partway chunk failures whose completed work
     is preserved and resumable.
 
     A ``FanOutInterrupted`` subclass means: a chunk failed, but
-    ``FanOut`` still owns whatever completed successfully before
-    the failure. Call ``self.call.resume()`` to pick up where the
-    failure stopped you — only still-pending chunks are
+    ``FanOut`` still holds whatever completed successfully before
+    the failure. Call ``self.call.resume()`` to continue from where the
+    failure stopped — only still-pending chunks are
     re-issued.
 
-    Subclasses describe *why* ``FanOut`` stopped so callers can
-    pick a retry policy: :class:`QuotaExhausted` for 429 (wait for the
-    rate-limit window), :class:`ServiceInterrupted` for 5xx (wait for
-    the upstream to recover). The ``.call`` handle is the same object
-    across every interruption of a single fanned-out call — frames
-    accumulate across retries.
+    Subclasses describe *why* ``FanOut`` stopped so callers can choose a retry policy:
+    :class:`QuotaExhausted` for 429 (wait for the rate-limit window),
+    :class:`ServiceInterrupted` for 5xx (wait for the upstream to recover). The
+    ``.call`` handle is the same object across every interruption of a single fanned-out
+    call — frames accumulate across retries.
 
     Attributes
     ----------
     call : FanOut or None
         Resumable handle into the ``FanOut`` that raised this
         exception. ``None`` only on hand-constructed exceptions (test
-        fixtures), where ``.call``-derived accessors degrade to
-        empty/``None``.
+        fixtures), where ``.call``-derived accessors return empty/``None``.
     retry_after : float or None
-        Seconds the server suggested waiting (``Retry-After`` header).
-        ``None`` when the server gave no hint.
+        Seconds the server specified for waiting (``Retry-After`` header).
+        ``None`` when the server sent none.
     completed_chunks : int
         Number of chunks successfully completed before the failure.
     total_chunks : int
         Total chunks in the plan.
     partial_frame : pandas.DataFrame
         Combined frame of work completed by the moment this exception
-        was raised. Snapshot at raise time — does NOT advance on a
+        was raised. Snapshot at raise time — does not advance on a
         later ``call.resume()`` (use ``exc.call.partial_frame`` for
         the live view).
     partial_response : httpx.Response or None
@@ -89,10 +87,9 @@ class FanOutInterrupted(DataRetrievalError):
 
     Examples
     --------
-    Retry on any transient interruption, honoring the server's
-    ``Retry-After`` hint when present and falling back to a fixed wait
-    otherwise. Each new interruption keeps the already-completed work
-    intact — only the still-pending chunks are re-issued.
+    Retry on any transient interruption, applying the server's ``Retry-After`` value
+    when present and falling back to a fixed wait otherwise. Each new interruption keeps
+    the already-completed work intact — only the still-pending chunks are re-issued.
 
     .. code-block:: python
 
@@ -137,14 +134,14 @@ class FanOutInterrupted(DataRetrievalError):
         self.call = call
         self.retry_after = retry_after
         self.status_code = self._resolve_status_code(cause)
-        # Snapshot partial state at raise time so the exception stays a stable
-        # record of the failure moment: ``exc.partial_frame`` /
-        # ``.partial_response`` do NOT advance on a later ``call.resume()``
-        # (that live view is on ``call.partial_frame`` / ``.partial_response``).
-        # This keeps each interruption in a resume loop a faithful record of
-        # what it saw, rather than every exception aliasing the shared call's
-        # advancing state. ``.copy()`` guards the single-chunk fast path, where
-        # the combined frame may be returned verbatim.
+        # Snapshot partial state at raise time so the exception stays a stable record of
+        # the failure moment: ``exc.partial_frame`` / ``.partial_response`` do not
+        # advance on a later ``call.resume()`` (that live view is on
+        # ``call.partial_frame`` / ``.partial_response``). This keeps each interruption
+        # in a resume loop an accurate record of the state when it was raised, rather
+        # than every exception aliasing the shared call's advancing state. ``.copy()``
+        # protects the single-chunk fast path, where the combined frame may be returned
+        # verbatim.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
             self.partial_response: httpx.Response | None = None
@@ -172,8 +169,8 @@ class FanOutInterrupted(DataRetrievalError):
         status: int | None = getattr(type(self), "_DEFAULT_STATUS", None)
         if status is not None or cause is None:
             return status
-        # The status is usually a few frames down: a typed error raised
-        # ``from`` the httpx failure that carried it.
+        # The status is usually further down the chain: a typed error raised
+        # ``from`` the httpx failure that held it.
         for current in _walk_causes(cause):
             found: int | None = getattr(current, "status_code", None)
             if found is not None:
@@ -181,13 +178,13 @@ class FanOutInterrupted(DataRetrievalError):
         return None
 
     def __getstate__(self) -> dict[str, Any]:
-        # Drop the live FanOut before pickling: its ``.fetch`` is an
+        # Drop the FanOut before pickling: its ``.fetch`` is an
         # undecorated module function pickle can't reference by name, so the
         # interruption can't cross a process boundary with ``.call`` attached.
-        # The degraded ``call=None`` form keeps the counts, retry hint, and the
+        # The ``call=None`` form keeps the counts, retry-after value, and the
         # snapshotted partial frame / response — plain instance attributes the
         # base ``__getstate__`` already pickles; only ``.resume()`` is lost
-        # (cross-process resume was never possible anyway).
+        # (cross-process resume was never possible).
         return {**super().__getstate__(), "call": None}
 
 
@@ -206,7 +203,7 @@ class QuotaExhausted(FanOutInterrupted):
         "HTTP 429 after {completed_chunks}/{total_chunks} chunks; "
         "catch QuotaExhausted (or FanOutInterrupted) to access "
         ".partial_frame or .call.resume() once the rate-limit "
-        "window has rolled over."
+        "window has reset."
     )
     _DEFAULT_STATUS = 429
 
@@ -228,12 +225,12 @@ class ServiceInterrupted(FanOutInterrupted):
     )
 
 
-# Resolver failures that will not resolve differently on a later attempt. The
-# temporary ones (notably EAI_AGAIN -- "try again", raised while a resolver is
-# still coming up, on VPN reconnect, or after a laptop wakes) are deliberately
-# absent: those are worth another try. Looked up defensively because the EAI_*
-# constants are platform-dependent; an unrecognized code stays retryable, since
-# spending a few seconds on a retry is cheaper than dropping a recoverable call.
+# Resolver failures that will not resolve differently on a later attempt. The temporary
+# ones (notably EAI_AGAIN -- "try again", raised while a resolver is still starting, on
+# VPN reconnect, or after a laptop resumes from sleep) are deliberately absent: those
+# are retried. Looked up with ``getattr`` defaults because the EAI_* constants are
+# platform-dependent; an unrecognized code stays retryable, since a few seconds on a
+# retry cost less than a dropped recoverable call.
 _PERMANENT_DNS_ERRORS = frozenset(
     code
     for code in (
@@ -256,8 +253,8 @@ def _walk_causes(
     ``__cause__`` (explicit ``raise ... from``) is always followed.
     ``__context__`` (implicit chaining, from raising inside an ``except``
     block) is followed only when ``follow_context`` is set, because it can
-    lead away from the failure being classified into whatever unrelated error
-    happened to be in flight.
+    reach an unrelated error that happened to be in flight rather than the
+    failure being classified.
 
     The ``seen`` set keeps a chain that rejoins itself, or points back at an
     ancestor, from looping.
@@ -279,25 +276,24 @@ def _walk_causes(
 def _deterministic_failure(exc: BaseException) -> bool:
     """Whether a transport failure would fail identically on every retry.
 
-    An unsupported scheme or a request we built wrong is settled before a byte
-    goes out, and a hostname the resolver rejects outright won't be accepted on
-    the next attempt either -- so retrying only delays the error the caller
-    needs. A *temporary* resolver failure is not in that class and stays
-    retryable (see :data:`_PERMANENT_DNS_ERRORS`).
+    True for an unsupported scheme, a malformed request, or a hostname the
+    resolver rejects permanently. A *temporary* resolver failure is not in that
+    class and stays retryable (see :data:`_PERMANENT_DNS_ERRORS`). Bounding
+    retry to failures a later attempt might not repeat is ADR 0006.
 
     Walks ``__context__`` as well as ``__cause__``, because the original
-    failure is several layers down and not always an explicit ``raise ...
-    from``: a DNS failure reaches us as ``NetworkError`` ->
+    failure is several links down the chain and not always an explicit ``raise ...
+    from``: a DNS failure arrives as ``NetworkError`` ->
     ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
-    linked by implicit chaining. Following only the cause would walk off down
-    the explicit branch and miss a ``gaierror`` sitting on the implicit one --
+    linked by implicit chaining. Following only the cause would follow
+    the explicit branch and miss a ``gaierror`` on the implicit one --
     spending the whole retry budget on a hostname that will never resolve.
     """
     for current in _walk_causes(exc, follow_context=True):
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
-            # Return, not continue: the first resolver code found settles the chain.
+            # Return, not continue: the first resolver code found decides.
             return current.errno in _PERMANENT_DNS_ERRORS
     return False
 
@@ -311,9 +307,9 @@ def _classify_transient(
     if isinstance(exc, TransientError):
         return ServiceInterrupted, exc.retry_after
     if isinstance(exc, (httpx.HTTPError, httpx.InvalidURL)):
-        # Some failures will fail the same way every time -- a bad scheme, a
-        # hostname that doesn't resolve. Offering to resume one would just
-        # hide the real error behind a retry that can never work.
+        # Some failures will fail the same way every time -- an unsupported
+        # scheme, a hostname that doesn't resolve. Offering to resume one
+        # would replace the underlying error with a retry that can never succeed.
         if _deterministic_failure(exc):
             return None
         return ServiceInterrupted, None

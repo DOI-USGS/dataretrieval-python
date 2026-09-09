@@ -1,15 +1,15 @@
 """Executable fitness functions that complement the dependency contracts.
 
-Plain dependency direction -- who may import whom, and in which direction -- is
-declared in ``.importlinter`` and checked by ``lint-imports`` in pre-commit and
-CI. Those rules used to be asserted here too, and are not any more: one rule
-enforced in two places is one rule that gets updated in one place.
+Plain dependency direction -- which modules may import which, and in which direction --
+is declared in ``.importlinter`` and checked by ``lint-imports`` in pre-commit and CI.
+Those rules used to be asserted here too, and are not any more: one rule enforced in two
+places is one rule that gets updated in one place.
 
 What remains is everything a boundary checker cannot see, because an import
-graph has no opinion about it:
+graph does not record it:
 
 * which *symbols* cross a boundary, not just which modules (``ogc.engine``'s
-  compatibility surface, ``ogc.requests`` borrowing header policy but not the
+  compatibility surface, ``ogc.requests`` importing header policy but not the
   executing calls);
 * the declared public surface -- ``__all__`` presence, ownership, and the
   facade union;
@@ -28,6 +28,7 @@ from __future__ import annotations
 import ast
 import configparser
 import functools
+import re
 import sys
 from graphlib import CycleError, TopologicalSorter
 from importlib.util import resolve_name
@@ -37,7 +38,7 @@ PACKAGE_ROOT = Path(__file__).parents[1] / "dataretrieval"
 
 #: How many request-building names ``ogc.engine`` currently needs. A ceiling
 #: rather than an exact list allows renames and deletions without weakening the
-#: rule that orchestration must not absorb request construction again.
+#: rule that orchestration must not take over request construction again.
 _MAX_ENGINE_REQUEST_IMPORTS = 5
 
 
@@ -147,7 +148,7 @@ def _imports_from(path: Path, module: str) -> set[str]:
     """Names *path* imports from *module*, wherever the import appears.
 
     Walks the whole tree rather than only ``tree.body`` so a function-local
-    import can't slip past an import-surface rule.
+    import is not missed by an import-surface rule.
     """
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return {
@@ -159,7 +160,7 @@ def _imports_from(path: Path, module: str) -> set[str]:
 
 
 def test_exceptions_has_no_runtime_third_party_dependency() -> None:
-    """The shared error-policy leaf must remain cheap and cycle-safe."""
+    """The shared error-policy leaf must remain dependency-light and cycle-safe."""
     imports = _runtime_imports(PACKAGE_ROOT / "exceptions.py")
     roots = {module.partition(".")[0] for module in imports}
     third_party = roots - sys.stdlib_module_names - {"dataretrieval"}
@@ -179,15 +180,14 @@ def test_runtime_import_graph_is_acyclic() -> None:
 
 
 def test_config_is_a_standard_library_only_leaf() -> None:
-    """The two-module configuration subsystem must stay cheap and cycle-safe.
+    """The two-module configuration subsystem must stay dependency-light and cycle-safe.
 
-    ``dataretrieval.configuration`` remains the public runtime interface and may
-    depend on its private foundation, ``dataretrieval._configuration_core``.
-    The core may depend only on the package's dependency-free leaves,
-    ``dataretrieval._ambient`` and ``dataretrieval.exceptions``. Neither module
-    may reach adapters or runtime third-party packages. ``tomli`` remains the
-    one third-party exception: it is the ``tomllib`` backport used on Python
-    3.10.
+    ``dataretrieval.configuration`` remains the public runtime interface and may depend
+    on its private foundation, ``dataretrieval._configuration_core``. The core may
+    depend only on the package's dependency-free leaves, ``dataretrieval._ambient`` and
+    ``dataretrieval.exceptions``. Neither module may import adapters or runtime
+    third-party packages. ``tomli`` remains the one third-party exception: it is the
+    ``tomllib`` backport used on Python 3.10.
     """
     subsystem = {
         PACKAGE_ROOT / "configuration.py": {
@@ -222,8 +222,8 @@ def test_config_is_a_standard_library_only_leaf() -> None:
 def test_engine_request_import_surface_does_not_grow() -> None:
     """Engine imports only request names it uses and may not grow a new hub.
 
-    An import that nothing uses is dead weight, and a used name past the cap
-    means request construction is migrating back into engine.
+    An import that nothing uses should be removed, and a used name past the cap
+    means request construction is moving back into engine.
     """
     path = PACKAGE_ROOT / "ogc" / "engine.py"
     imported = _imports_from(path, "dataretrieval.ogc.requests")
@@ -241,8 +241,8 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     unused = sorted(imported - referenced)
     assert not unused, f"ogc.engine has unused request imports: {unused}"
 
-    # Every imported name must resolve in ``requests``; a stale import of a name
-    # that moved or was deleted fails as soon as engine loads.
+    # Every imported name must resolve in ``requests``; a stale import of a name that
+    # was renamed or deleted fails as soon as engine loads.
     from dataretrieval.ogc import requests as ogc_requests
 
     missing = sorted(name for name in imported if not hasattr(ogc_requests, name))
@@ -339,9 +339,9 @@ def test_transport_is_execution_policy_only() -> None:
 
     Terminal rendering (``progress``) and pandas result assembly (``combining``)
     are top-level leaves that transport reports *into* and returns *through*.
-    They lived here only because they had to leave ``ogc`` and this was the
-    nearest home; keeping them out is what makes "transport is HTTP execution
-    policy" a checkable claim rather than a description of a grab bag.
+    They were here only because they had to be moved out of ``ogc`` and this was the
+    nearest place; keeping them out is what makes "transport is HTTP execution
+    policy" a checkable claim.
     """
     misplaced = {
         "dataretrieval/transport/progress.py",
@@ -366,17 +366,17 @@ def test_transport_is_execution_policy_only() -> None:
 def test_credential_policy_has_one_definition() -> None:
     """Only ``dataretrieval.credentials`` may name the API-key host.
 
-    Attaching the key and stripping it back off have to agree about which host
-    is authorized; the way they stop agreeing is a second copy of the host
-    string. ``transport.http`` re-exports the predicate, it does not restate it.
+    Attaching the key and stripping it back off have to agree about which host is
+    authorized; they stop agreeing when a second copy of the host string is added.
+    ``transport.http`` re-exports the predicate, it does not restate it.
     """
     host = "api.waterdata.usgs.gov"
     # Walked as AST string *values*, not as source text. A line-substring match
-    # is wrong in both directions: it missed the ``"https://…"`` form three
-    # modules use to spell the same authority, and it flagged docstring prose
-    # that merely names the service. Docstrings are excluded here (they are
-    # documentation, not a second source of truth) while every other literal --
-    # bare host or full base URL -- counts.
+    # produces both false negatives and false positives: it missed the
+    # ``"https://…"`` form three modules use to write the same host, and it
+    # flagged docstring prose that only names the service. Docstrings are
+    # excluded here (they are documentation, not a second definition)
+    # while every other literal -- bare host or full base URL -- counts.
     offenders: list[str] = []
     for path in sorted(PACKAGE_ROOT.rglob("*.py")):
         if path.name == "credentials.py":
@@ -459,7 +459,7 @@ def test_active_service_exports_are_explicit() -> None:
     ``_literal_exports`` raises when ``__all__`` is missing, so the call is the
     first assertion. The second is what keeps these modules from becoming
     re-export hubs: a name in ``__all__`` that the module does not define came
-    from somewhere else, and now has two public homes that can drift apart.
+    from somewhere else, and now has two public import paths that can drift apart.
     """
     for relative in _EXPLICIT_EXPORT_MODULES:
         path = PACKAGE_ROOT / relative
@@ -484,12 +484,12 @@ def test_each_family_getter_has_exactly_one_home() -> None:
 
 
 def test_api_facade_exports_exactly_the_family_union() -> None:
-    """The facade re-exports every family getter and invents none of its own.
+    """The facade re-exports every family getter and adds none of its own.
 
-    Derived from the families' own ``__all__`` rather than a frozen copy: a
-    hardcoded union is 19 more strings to edit per new getter, and it would still
-    pass if a family gained an export the facade forgot to re-export -- the one
-    thing worth catching here.
+    Derived from the families' own ``__all__`` rather than a frozen copy: a hardcoded
+    union is 19 more strings to edit per new getter, and it would still pass if a family
+    gained an export the facade forgot to re-export -- the one thing this test exists to
+    catch.
     """
     families = set().union(
         *(_literal_exports(PACKAGE_ROOT / f) for f in _WATERDATA_FAMILIES)
@@ -501,10 +501,10 @@ def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
     """The facade re-exports; it does not run anything.
 
     Statement *kinds* are checked, not just ``def``/``class``. Scanning for
-    definitions alone let a module-level ``for`` loop live here that rewrote
+    definitions alone let a module-level ``for`` loop exist here that rewrote
     every re-exported getter's ``__module__`` -- code owned by the family
     modules, mutated from a file certified "logic-free". A docstring, imports,
-    and plain assignments are the whole legitimate vocabulary of a facade.
+    and plain assignments are the only statement kinds a facade may contain.
     """
     path = PACKAGE_ROOT / "waterdata" / "api.py"
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -521,15 +521,15 @@ def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
 
 
 def test_ogc_request_construction_does_not_execute_http() -> None:
-    """Building a request may borrow header policy, never the executing calls.
+    """Building a request may import header policy, never the executing calls.
 
     Two assertions, because the first alone was once true while the rule was
     broken: ``requests.py`` imported ``ogc.schema`` purely to forward a name,
     and ``ogc.schema`` calls ``transport.http.get`` -- so constructing a request
-    dragged in the executing path with this test still green.
+    imported the executing path with this test still passing.
 
     The edge is named explicitly rather than checked over the transitive graph.
-    A closure from ``ogc.requests`` reaches the whole package, because
+    A transitive closure from ``ogc.requests`` covers the whole package, because
     ``transport.retry`` imports ``dataretrieval`` for the progress reporter and
     the package ``__init__`` imports every service; a rule stated that way would
     be either vacuous or a list of exceptions.
@@ -548,8 +548,8 @@ def test_ogc_request_construction_does_not_execute_http() -> None:
 def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
     """``_deal_with_empty`` names columns from the collection schema.
 
-    That is a real network call on an empty result, so the dependency is worth
-    pinning deliberately rather than leaving it to be removed as dead weight.
+    That is a real network call on an empty result, so the dependency should be pinned
+    deliberately rather than leaving it to be removed as unused.
     """
     assert "dataretrieval.ogc.schema" in _runtime_imports(
         PACKAGE_ROOT / "ogc" / "shaping.py"
@@ -557,13 +557,13 @@ def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
 
 
 def test_nwdc_does_not_reimplement_fan_out_orchestration() -> None:
-    """Water Use must drive its locations through the shared fan-out executor.
+    """Water Use must run its locations through the shared fan-out executor.
 
     It previously ran its own ``asyncio.gather`` with a private semaphore and a
     hand-copied failure-precedence rule, kept in sync with ``FanOut`` by a
-    comment. Two copies of that rule is how they drift, and the duplicate lost
+    comment. Two copies of that rule can drift apart, and the duplicate lost
     resume, progress, and the shared concurrency setting. Assert the duplication
-    cannot quietly return.
+    cannot return without failing this test.
     """
     source = (PACKAGE_ROOT / "nwdc.py").read_text(encoding="utf-8")
     tree = ast.parse(source)
@@ -584,32 +584,31 @@ def test_nwdc_does_not_reimplement_fan_out_orchestration() -> None:
 def test_ratings_drives_http_through_the_shared_executor() -> None:
     """Ratings must not issue one-off synchronous HTTP requests.
 
-    Its STAC page walk and per-feature downloads previously ran hand-rolled
-    sync loops over ``transport.http.get`` -- no retry, no stall budget, no
-    progress line, no resume, and N serial downloads. Both stages now drive
-    ``paginate``/``FanOut`` like every other multi-request path; assert the
-    direct sync entry points cannot quietly return.
+    Its STAC page walk and per-feature downloads previously ran hand-written sync loops
+    over ``transport.http.get`` -- no retry, no stall budget, no progress line, no
+    resume, and N serial downloads. Both stages now run through ``paginate``/``FanOut``
+    like every other multi-request path; assert the direct sync entry points cannot
+    return without failing this test.
     """
     transport_names = _imports_from(
         PACKAGE_ROOT / "waterdata" / "ratings.py", "dataretrieval.transport.http"
     )
     offenders = transport_names - {"default_headers"}
     assert not offenders, (
-        "ratings imports executing sync transport helpers instead of driving "
+        "ratings imports executing sync transport helpers instead of using "
         f"the shared executor: {sorted(offenders)}"
     )
 
 
 def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
-    """What ``FanOut`` needs of a plan, checked on both real plan types.
+    """What ``FanOut`` requires of a plan, checked on both real plan types.
 
-    ``FanOutPlan`` is the two standard protocols, so a ``list`` conforms with
-    no adapter class and ``isinstance`` against a ``runtime_checkable``
-    protocol would prove only that the methods exist. What is actually
-    load-bearing and *not* guaranteed by the type is repeatability: resume
-    keys completed work by position, so a plan whose second pass differed --
-    a generator mistaken for a collection, say -- would re-issue the wrong
-    chunks.
+    ``FanOutPlan`` is the two standard protocols, so a ``list`` conforms with no adapter
+    class and ``isinstance`` against a ``runtime_checkable`` protocol would prove only
+    that the methods exist. What matters and is not guaranteed by the type is
+    repeatability: resume keys completed work by position, so a plan whose second pass
+    differed -- a generator mistaken for a collection, say -- would re-issue chunks that
+    no longer match the completed positions.
     """
     import httpx
 
@@ -620,7 +619,7 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
 
     plans = [
         ChunkPlan({"sites": ["a", "b"]}, _build, url_limit=8000),
-        # Water Use hands its request list straight to ``FanOut``.
+        # Water Use passes its request list directly to ``FanOut``.
         [httpx.Request("GET", "https://example.invalid/data")],
     ]
     for plan in plans:
@@ -630,3 +629,41 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
             f"{name} yielded {len(first)} items but reports len {len(plan)}"
         )
         assert list(plan) == first, f"{name} is not repeatably iterable"
+
+
+def test_adr_references_resolve_to_a_record() -> None:
+    """Every ``ADR NNNN`` citation names a record that exists, in every venue.
+
+    ADR 0000 places cross-cutting rationale in the decision records and requires the
+    code to cite rather than restate. A renumbered or deleted record has to fail here
+    rather than leave a dangling pointer.
+
+    Scoped to every venue ADR 0000 names, not just the package: the glossary,
+    the contributor guide, and the architecture docs cite records too, and a
+    pointer goes stale there too.
+    """
+    repo_root = PACKAGE_ROOT.parent
+    decisions = repo_root / "docs" / "source" / "architecture" / "decisions"
+    recorded = {path.name[:4] for path in decisions.glob("[0-9][0-9][0-9][0-9]-*.rst")}
+    assert recorded, f"no ADR records found under {decisions}"
+
+    cited: list[Path] = sorted(PACKAGE_ROOT.rglob("*.py"))
+    cited += sorted((repo_root / "docs" / "source").rglob("*.rst"))
+    cited += [repo_root / "CONTEXT.md", repo_root / "CONTRIBUTING.md"]
+    cited += [repo_root / "AGENTS.md"]
+
+    pattern = re.compile(r"ADR\s+(\d{4})")
+    dangling: list[str] = []
+    for path in cited:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for number in pattern.findall(line):
+                if number not in recorded:
+                    rel = path.relative_to(repo_root)
+                    dangling.append(f"{rel}:{lineno} cites ADR {number}")
+
+    assert not dangling, "citations name no such decision record:\n  " + "\n  ".join(
+        dangling
+    )

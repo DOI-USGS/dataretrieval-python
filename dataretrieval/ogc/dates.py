@@ -31,7 +31,7 @@ _DATETIME_FORMATS = (
 _DURATION_RE = re.compile(r"^[Pp]T?\d")
 
 
-# OGC API parameters that carry a date/datetime value (single string,
+# OGC API parameters that take a date/datetime value (single string,
 # two-element range, or interval/duration string) rather than a multi-value
 # string list. Used by ``_construct_api_requests`` to keep them out of the
 # POST/CQL2 multi-value path and to route them through ``_format_api_dates``,
@@ -45,7 +45,7 @@ _DATE_RANGE_PARAMS = frozenset(
 def _parse_datetime(value: str) -> datetime | None:
     """Parse a single datetime string against the supported formats.
 
-    Returns a ``datetime`` (tz-aware iff the input carried a UTC offset),
+    Returns a ``datetime`` (tz-aware iff the input included a UTC offset),
     or ``None`` if no format matched.
     """
     # ``datetime.strptime`` accepts a numeric offset like ``+00:00`` but not
@@ -77,7 +77,7 @@ def _format_one(dt: str | None, *, date: bool) -> str | None:
         return parsed.strftime("%Y-%m-%d")
     # Naive inputs are interpreted in the system local zone (for backwards
     # compatibility). Use ``.astimezone()`` rather than a fixed offset so each
-    # value is resolved against the DST rules for ITS OWN date — a frozen
+    # value is resolved against the DST rules for its own date — a fixed
     # ``datetime.now()`` offset shifted off-season inputs by an hour.
     aware = parsed if parsed.tzinfo is not None else parsed.astimezone()
     return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -136,13 +136,13 @@ def _format_api_dates(
         The caller's own spelling of this argument, used as the subject of
         every message raised here. Defaults to a generic "date input"; pass
         the real parameter name (``"time"``, ``"last_modified"``) so a caller
-        correcting the error edits an argument their getter actually accepts.
+        correcting the error edits an argument their getter accepts.
     single_value_hint : str, optional
         How the "too many values" message describes an acceptable single
         value. Wording only -- a getter that rejects some of the default's
-        forms (``get_ratings`` refuses durations) enforces that itself and
+        forms (``get_ratings`` rejects durations) enforces that itself and
         passes a hint naming only what it accepts, so the remedy does not
-        send a caller straight into its rejection.
+        direct a caller to a value that is rejected.
 
     Returns
     -------

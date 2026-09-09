@@ -3,15 +3,14 @@
 This module is the Water-Data-specific adapter: it supplies the
 collection-to-id map, the CQL2/date-only dialect, and a
 thin ``get_ogc_data`` wrapper that injects the Water Data defaults. The
-statistics path lives in its own :mod:`dataretrieval.waterdata.stats`
+statistics path is in its own :mod:`dataretrieval.waterdata.stats`
 module.
 
-OGC machinery (request construction, pagination, response shaping, the
-chunked ``get_ogc_data`` entry point) lives in :mod:`dataretrieval.ogc`
+OGC protocol code (request construction, pagination, response shaping, the
+chunked ``get_ogc_data`` entry point) is in :mod:`dataretrieval.ogc`
 and its implementation submodules. This adapter consumes the public facade
-for dialects, argument normalization, and retrieval; callers that need an OGC
-implementation helper import its canonical module directly rather than using
-this module as a re-export layer.
+for dialects, argument normalization, and retrieval; it is not a re-export
+layer for OGC helpers (ADR 0003).
 """
 
 from __future__ import annotations
@@ -63,11 +62,11 @@ _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "time-series-metadata": "time_series_id",
 }
 
-# Every collection's output id EXCEPT the two that are genuinely user-facing
+# Every collection's output id except the two that are user-facing
 # (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
 # per-record ids that ``_arrange_cols`` moves to the end of a result frame.
-# Derived from ``_OUTPUT_ID_BY_COLLECTION`` so adding a collection can't silently
-# leave a stray id column at the front again.
+# Derived from ``_OUTPUT_ID_BY_COLLECTION`` so adding a collection cannot
+# leave an extra id column at the front again.
 _EXTRA_ID_COLS = frozenset(
     set(_OUTPUT_ID_BY_COLLECTION.values())
     - {"monitoring_location_id", "time_series_id"}
@@ -107,9 +106,9 @@ WATERDATA_DIALECT = OgcDialect(
     sort_cols=("time", "monitoring_location_id"),
 )
 
-# The Water-Data-specific *extras* on top of the engine's own no-normalize set
+# The Water-Data-specific extras in addition to the engine's own no-normalize set
 # (which already covers the date-range params and ``bbox``). Scalar non-string
-# knobs are caught by runtime type, so only iterables with special handling
+# parameters are caught by runtime type, so only iterables with special handling
 # need to be named here:
 #   - ``boundingBox`` is ``list[float]``, sometimes ``numpy.ndarray``
 #   - ``get_peaks``'s int-valued filters (``water_year`` etc.) are ``list[int]``
@@ -130,20 +129,20 @@ _NO_NORMALIZE_PARAMS = frozenset(
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     """Merge a getter's ``**queryables`` passthrough kwargs into ``local_vars``.
 
-    ``locals()`` collects them under the ``queryables`` key; this lifts them to
+    ``locals()`` collects them under the ``queryables`` key; this moves them to
     top-level entries, so an extra server-side filter such as
     ``state_name="Wisconsin"`` is normalized, mutual-exclusion-checked, and sent
     exactly like a named param. See
     :func:`dataretrieval.waterdata.get_queryables` for each collection's
     filterable properties (the collection rejects an unknown one with a 400).
 
-    ``**queryables`` always arrives as a dict (empty when unused) and the key is
+    ``**queryables`` is always passed as a dict (empty when unused) and the key is
     popped, so this is a no-op on getters without the passthrough and idempotent
     if called twice.
     """
     queryables = local_vars.pop("queryables", {})
-    # A credential-shaped name would go out in the query string, which is the
-    # one thing this passthrough must not forward. The predicate lives in the
+    # A credential-shaped name would be sent in the query string, which is the
+    # one thing this passthrough must not forward. The predicate is defined in the
     # credentials leaf rather than here: what motivates it -- ``api_key=`` being
     # a plausible guess now that ``configure()`` takes it -- is package-wide,
     # and WQP's ``**kwargs`` search filters read the same list.
@@ -175,15 +174,15 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     format-flexible parameter (full name / postal / FIPS); it is normalized via
     :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
     and stored under ``into`` (the API parameter this endpoint filters on).
-    It is additive sugar over the native ``state_code`` / ``state_name``
-    parameters, which still accept the API's raw values (e.g. non-US FIPS);
-    passing ``state`` together with either raises ``ValueError``.
+    It adds to, rather than replaces, the native ``state_code`` /
+    ``state_name`` parameters, which still accept the API's raw values (e.g.
+    non-US FIPS); passing ``state`` together with either raises ``ValueError``.
     """
-    # Flatten ``**queryables`` first so a native state param arriving that way
+    # Flatten ``**queryables`` first so a native state param passed that way
     # (e.g. ``get_time_series_metadata``'s ``state_code``, which isn't an
-    # explicit parameter) is visible to apply_state's mutual-exclusion guard.
-    # Otherwise ``state`` plus a passthrough ``state_code`` would slip past the
-    # check and silently send both.
+    # explicit parameter) is visible to apply_state's mutual-exclusion check.
+    # Otherwise ``state`` plus a passthrough ``state_code`` would pass the
+    # check and send both.
     _flatten_queryables(local_vars)
     return apply_state(
         local_vars, to=to, into=into, reject=("state_code", "state_name")
@@ -225,7 +224,7 @@ def get_ogc_data(
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
     spatial : bool, optional
-        Whether the collection carries feature geometry. Water Data's typed
+        Whether the collection includes feature geometry. Water Data's typed
         feature collections do; reference tables pass ``False``.
 
     Returns
@@ -243,7 +242,7 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        # Endpoint acquisition resolves the active ContextVar at request time;
+        # The endpoint is resolved from the active ContextVar at request time;
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
         base_url=ogc_api_url(),
@@ -254,7 +253,7 @@ def get_ogc_data(
         # Which settings table these calls read. Declared here, in the one
         # wrapper every Water Data getter goes through, rather than derived
         # from ``base_url``: NGWMN is served from the same host, so a URL
-        # cannot tell the two adapters apart (ADR 0010).
+        # does not distinguish the two adapters (ADR 0010).
         adapter="waterdata",
     )
 
@@ -285,19 +284,18 @@ def _accept_legacy_kwargs(
     so static checkers won't flag legacy call sites.
 
     ``removal`` is the published horizon (from
-    :data:`~dataretrieval._deprecation.REMOVALS`); ``None`` reads as "a future
-    release". ``detail`` appends a sentence to the warning. The default
-    message says only
-    that the name changed; a rename with a reason worth giving -- a spec that
-    names the value differently, a removal date -- passes it here rather than
-    hand-rolling the whole shim to carry one sentence.
+    :data:`~dataretrieval._deprecation.REMOVALS`); ``None`` is rendered as "a future
+    release". ``detail`` appends a sentence to the warning. The default message says
+    only that the name changed; a rename with a reason to state -- a spec that names the
+    value differently, a removal date -- passes it here rather than writing a whole shim
+    to hold one sentence.
 
     Raises
     ------
     TypeError
-        If both a deprecated name and its modern equivalent are supplied for
-        the same argument (ambiguous), mirroring Python's "got multiple
-        values for argument" error.
+        If both a deprecated name and its modern equivalent are supplied for the same
+        argument (ambiguous), matching Python's "got multiple values for argument"
+        error.
     """
 
     def decorator(func: Callable[..., _R]) -> Callable[..., _R]:

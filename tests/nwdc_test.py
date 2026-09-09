@@ -25,8 +25,8 @@ from dataretrieval.nwdc import (
 from dataretrieval.transport import fanout as _fanout
 from dataretrieval.utils import BaseMetadata
 
-# Match the NWDC endpoint regardless of query string, so assertions can drill
-# into the captured params without coupling registration to param order.
+# Match the NWDC endpoint regardless of query string, so assertions can inspect the
+# captured params without coupling registration to param order.
 WU_RE = re.compile(r"^https://api\.water\.usgs\.gov/nwaa-data/data(\?.*)?$")
 
 # A single-page monthly CSV: two HUC12s (one with a leading zero), three months.
@@ -80,7 +80,7 @@ def test_huc12_id_kept_as_string_with_leading_zero(httpx_mock):
     df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
 
     # String-typed (object or the pandas StringDtype, depending on version),
-    # never coerced to int — the leading zero must survive.
+    # never coerced to int — the leading zero must be kept.
     assert pd.api.types.is_string_dtype(df["huc12_id"])
     assert df["huc12_id"].iloc[0] == "010900020502"
 
@@ -161,7 +161,7 @@ def test_pagination_follows_link_header_and_concatenates(httpx_mock):
     ]
     assert list(df.index) == [0, 1, 2]
     assert len(httpx_mock.get_requests()) == 2
-    # The second request carries the Link's ``skip`` offset, not the originals.
+    # The second request includes the Link's ``skip`` offset, not the originals.
     second_qs = parse_qs(urlsplit(str(httpx_mock.get_requests()[1].url)).query)
     assert second_qs["skip"] == ["2"]
 
@@ -188,7 +188,7 @@ def test_pagination_rewrites_bare_host(httpx_mock):
 
 
 def test_http_error_raises_typed_exception_with_detail(httpx_mock):
-    """A 4xx response surfaces as a typed error carrying the NWDC ``detail``."""
+    """A 4xx response is raised as a typed error that includes the NWDC ``detail``."""
     httpx_mock.add_response(
         method="GET",
         url=WU_RE,
@@ -210,7 +210,7 @@ def test_empty_response_body_raises_typed_error(httpx_mock):
 
 def test_cyclic_next_link_terminates(httpx_mock):
     """A non-advancing/cyclic ``next`` cursor must not loop forever."""
-    # Page 1 points to a "next" URL; page 2 points back to that SAME URL.
+    # Page 1 points to a "next" URL; page 2 points back to the same URL.
     cyclic = (
         "<https://api.water.usgs.gov/nwaa-data/data"
         '?model=wu-public-supply-wd&skip=2>; rel="next"'
@@ -231,7 +231,7 @@ def test_cyclic_next_link_terminates(httpx_mock):
 
 
 def test_uses_shared_default_headers(httpx_mock):
-    """Requests carry the shared dataretrieval User-Agent (per _default_headers)."""
+    """Requests include the shared dataretrieval User-Agent (per _default_headers)."""
     httpx_mock.add_response(method="GET", url=WU_RE, text=_CSV_PAGE)
 
     get_wateruse(model="wu-public-supply-wd", state="RI")
@@ -280,7 +280,8 @@ def test_multiple_states_fan_out_preserves_input_order(httpx_mock):
 
 
 def test_fan_out_is_serial_when_concurrency_is_one(httpx_mock, monkeypatch):
-    """``API_USGS_CONCURRENT=1`` still fans out correctly (serial path)."""
+    """``API_USGS_CONCURRENT=1`` still fans out one request per state
+    (serial path)."""
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     httpx_mock.add_response(
         method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
@@ -324,7 +325,7 @@ def test_fan_out_failure_never_returns_partial_data(httpx_mock):
     """A failed location aborts the call even when another location succeeded.
 
     The completed sibling is not returned as though the call had succeeded --
-    it is carried on the raised interruption for ``resume()`` instead. Water Use
+    it is held on the raised interruption for ``resume()`` instead. Water Use
     reports ``ServiceInterrupted`` rather than the bare ``ServiceUnavailable``
     it raised before sharing the fan-out executor: the same upstream 503, now
     resumable.
@@ -344,8 +345,8 @@ def test_fan_out_failure_never_returns_partial_data(httpx_mock):
     with pytest.raises(dataretrieval.ServiceInterrupted) as excinfo:
         get_wateruse(model="wu-public-supply-wd", state=["RI", "WI"])
 
-    # The 503 is still the reported cause, and the successful location survives
-    # on the exception rather than being passed off as the whole answer.
+    # The 503 is still the reported cause, and the successful location is kept on the
+    # exception rather than returned as though it were the whole result.
     assert isinstance(excinfo.value.__cause__, dataretrieval.ServiceUnavailable)
     assert excinfo.value.status_code == 503
     assert excinfo.value.retryable
@@ -358,7 +359,7 @@ def test_fan_out_failure_never_returns_partial_data(httpx_mock):
 
 
 def test_resolve_locations_state_accepts_name_postal_fips():
-    # All three encodings normalize to the two-letter postal code stateCd wants.
+    # All three encodings normalize to the two-letter postal code stateCd accepts.
     assert _resolve_locations("Rhode Island", None, None) == ["stateCd:RI"]
     assert _resolve_locations("ri", None, None) == ["stateCd:RI"]
     assert _resolve_locations("44", None, None) == ["stateCd:RI"]
@@ -481,7 +482,7 @@ def test_next_page_url_normalizes_other_spellings_of_the_same_service():
     """The cursor is normalized by host, not by one literal prefix.
 
     A plain-http or relative ``next`` link is the same service; refusing it
-    would throw away every page already collected for that location.
+    would discard every page already collected for that location.
     """
     plain_http = httpx.Response(
         200,
@@ -506,11 +507,11 @@ def test_next_page_url_normalizes_other_spellings_of_the_same_service():
 def test_next_page_url_strips_credentials_from_the_cursor():
     """Userinfo on a cursor must not become an Authorization header.
 
-    httpx derives ``Authorization: Basic ...`` from a URL's userinfo, so a
-    cursor spelled ``http://user:pass@water.usgs.gov/...`` would send a
-    credential the caller never configured to the rewritten host -- exactly what
-    the host check exists to prevent, arriving through the host check's own
-    normalization. The port is dropped for the same reason.
+    httpx derives ``Authorization: Basic ...`` from a URL's userinfo, so a cursor
+    spelled ``http://user:pass@water.usgs.gov/...`` would send a credential the caller
+    never configured to the rewritten host -- what the host check exists to prevent,
+    reached through the host check's own normalization. The port is dropped for the same
+    reason.
     """
     response = httpx.Response(
         200,
@@ -529,7 +530,7 @@ def test_next_page_url_strips_credentials_from_the_cursor():
     assert "s3cret" not in cursor
     assert httpx.URL(cursor).userinfo == b""
 
-    # Assert at the layer that actually synthesizes the header: ``httpx.Request``
+    # Assert at the layer that synthesizes the header: ``httpx.Request``
     # never derives Basic auth from userinfo (so asserting there would pass for
     # any URL) -- the ``Client`` does it at send time.
     sent: dict[str, str | None] = {}
@@ -544,12 +545,12 @@ def test_next_page_url_strips_credentials_from_the_cursor():
 
 
 def test_a_configured_base_url_redirects_the_request(httpx_mock):
-    """The whole call moves, page walk included, or the redirect is a half-truth.
+    """The whole call moves, page walk included, or the redirect is incomplete.
 
-    The page-two mock is served from the mirror and its cursor names the mirror:
-    if either the request or the ``rel="next"`` walk had stayed on the NWDC's
-    host, one of them would go unmocked and this would fail rather than quietly
-    talk to the service the block redirected away from.
+    The page-two mock is served from the mirror and its cursor names the mirror: if
+    either the request or the ``rel="next"`` walk had stayed on the NWDC's host, one of
+    them would go unmocked and this would fail rather than send requests, undetected, to
+    the service the block redirected away from.
     """
     mirror = re.compile(r"^https://mirror\.example/data")
     httpx_mock.add_response(
@@ -575,11 +576,11 @@ def test_a_configured_base_url_redirects_the_request(httpx_mock):
 def test_next_page_url_drops_the_service_rewrite_when_redirected():
     """The alias list and the rewrite are facts about the NWDC, not about URLs.
 
-    Nothing but the NWDC answers for ``water.usgs.gov``, so a call an
+    Nothing but the NWDC is served at ``water.usgs.gov``, so a call an
     ``NwdcConfiguration(base_url=...)`` pointed elsewhere gets the general rule
     instead: follow a link only back to the host that served the page. Keeping
     the rewrite would send page two of a mirrored query to the USGS -- and
-    refusing the mirror's own cursor would throw away page one.
+    refusing the mirror's own cursor would discard page one.
     """
     mirrored = httpx.Response(
         200,
@@ -627,14 +628,14 @@ def test_initial_transient_is_retried(httpx_mock, monkeypatch):
 
 
 def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch):
-    """A fan-out failure must not close the client under its own siblings.
+    """A fan-out failure must not close the client while its siblings still use it.
 
-    Every location shares one ``httpx.AsyncClient`` scoped to the fan-out. When
-    the first failure propagated straight out of the ``gather``, that block
-    exited while siblings were still walking pages, and the next page they asked
-    for failed with "Cannot send a request, as the client has been closed" -- on
-    a task nobody was awaiting any more, so it also surfaced as an unretrieved
-    exception. Both are artifacts of our own teardown, not of the service.
+    Every location shares one ``httpx.AsyncClient`` scoped to the fan-out. When the
+    first failure propagated straight out of the ``gather``, that block exited while
+    siblings were still walking pages, and the next page they requested failed with
+    "Cannot send a request, as the client has been closed" -- on a task nobody was
+    awaiting any more, so it was also reported as an unretrieved exception. Both are
+    caused by our own teardown, not by the service.
     """
     import asyncio
     from contextlib import asynccontextmanager
@@ -680,7 +681,7 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
 
     with pytest.raises(dataretrieval.DataRetrievalError, match="Invalid model"):
         nwdc._fan_out(requests, {}, True)
-    assert pages["n"] == 2, "the sibling finished its walk rather than being abandoned"
+    assert pages["n"] == 2, "the sibling finished its walk rather than being cancelled"
 
 
 def test_next_page_url_rejects_cross_host_link():
@@ -700,10 +701,9 @@ def test_next_page_url_rejects_cross_host_link():
 def test_interrupted_fan_out_resumes_only_the_unfinished_locations(httpx_mock):
     """A rate-limited location is resumable; completed siblings are not re-fetched.
 
-    Before Water Use shared the executor, a 429 anywhere in the fan-out
-    discarded every location that had already succeeded. That is the whole
-    reason a multi-location pull needed re-running from scratch against an
-    hourly quota.
+    Before Water Use shared the executor, a 429 anywhere in the fan-out discarded every
+    location that had already succeeded. That is why a multi-location pull had to be
+    re-run in full against an hourly quota.
     """
     httpx_mock.add_response(
         method="GET", url=re.compile(r".*location=stateCd%3ARI.*"), text=_CSV_P1
@@ -732,7 +732,7 @@ def test_interrupted_fan_out_resumes_only_the_unfinished_locations(httpx_mock):
 
     df, md = interrupted.call.resume()
 
-    # Only WI was re-issued; RI's completed frame carried across the resume.
+    # Only WI was re-issued; RI's completed frame was kept across the resume.
     assert len(httpx_mock.get_requests()) == requests_before + 1
     assert len(df) == 3
     assert isinstance(md, BaseMetadata)
@@ -741,8 +741,8 @@ def test_interrupted_fan_out_resumes_only_the_unfinished_locations(httpx_mock):
 def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
     """``API_USGS_CONCURRENT`` outranks this service's default.
 
-    A user dialing concurrency down to be polite must not find Water Use
-    quietly ignoring them -- the defect that motivated consolidating the knob.
+    A user lowering concurrency to reduce load must not find Water Use
+    ignoring the setting -- the defect that motivated sharing one setting.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "7")
     assert configuration.concurrency(nwdc.DEFAULT_CONCURRENT_REQUESTS) == 7
@@ -757,7 +757,9 @@ def test_fan_out_honors_the_general_concurrency_setting(monkeypatch):
 
 
 def test_fan_out_reports_progress(httpx_mock, monkeypatch):
-    """The fan-out ticks the progress reporter, which it never did standalone."""
+    """The fan-out updates the progress reporter, which it did not do before sharing the
+    executor.
+    """
     seen = []
 
     class _Recorder:
@@ -788,7 +790,7 @@ def test_fan_out_reports_progress(httpx_mock, monkeypatch):
 
 
 def test_resume_uses_the_current_progress_reporter(httpx_mock, monkeypatch):
-    """Resume must not resurrect the reporter closed by the interrupted call."""
+    """Resume must not reuse the reporter closed by the interrupted call."""
     created = []
 
     class _Recorder:
@@ -890,12 +892,12 @@ def test_permanent_later_page_failure_remains_a_network_error(httpx_mock):
 def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
     """A 429 on page 2+ of a location must still be a resumable interruption.
 
-    ``paginate`` re-wraps a later-page failure as a plain ``DataRetrievalError``
-    (page 1's status check sits outside its ``try``), so the typed cause is only
-    reachable through ``__cause__``. ``_classify_chunk_error`` walks that chain
-    for exactly this reason; were it a single ``isinstance`` check, a mid-walk
-    rate limit would escape as a bare error and lose ``.call.resume()`` --
-    inconsistently, since page 1 would still be resumable.
+    ``paginate`` re-wraps a later-page failure as a plain ``DataRetrievalError`` (page
+    1's status check is outside its ``try``), so the typed cause is only reachable
+    through ``__cause__``. ``_classify_chunk_error`` walks that chain for this reason;
+    were it a single ``isinstance`` check, a mid-walk rate limit would propagate as a
+    bare error and lose ``.call.resume()`` -- inconsistently, since page 1 would still
+    be resumable.
     """
     httpx_mock.add_response(
         method="GET",
@@ -929,7 +931,7 @@ def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
 
 
 def _reimport_wateruse():
-    """Import the alias fresh, so its module-level warning fires again."""
+    """Re-import the alias, so its module-level warning is emitted again."""
     import importlib
     import sys
 
@@ -955,7 +957,7 @@ def test_wateruse_alias_warns_and_names_the_replacement():
 
 
 def test_wateruse_alias_re_exports_the_same_objects():
-    """The alias forwards, it does not copy: identity must survive it.
+    """The alias forwards rather than copies, so identity is preserved through it.
 
     A caller monkeypatching through one spelling and asserting through the
     other would otherwise see two different objects.
@@ -970,15 +972,15 @@ def test_wateruse_alias_re_exports_the_same_objects():
 
 
 def test_importing_dataretrieval_does_not_warn():
-    """``import dataretrieval`` must stay silent.
+    """``import dataretrieval`` must emit no warning.
 
     The package imports ``nwdc`` directly; only code naming ``wateruse``
     itself should see the warning. If ``__init__`` ever imports the alias,
     every user of the library gets a DeprecationWarning they cannot act on.
 
-    Runs in a subprocess: a fresh interpreter is the only honest way to test
-    an import side effect, and clearing ``sys.modules`` in-process would hand
-    every later test a second copy of the package.
+    Runs in a subprocess: a new interpreter is the only way to observe an import side
+    effect, and clearing ``sys.modules`` in-process would give every later test a second
+    copy of the package.
     """
     import subprocess
     import sys

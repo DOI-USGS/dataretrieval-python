@@ -1,11 +1,10 @@
 """Tests for the NGWMN OGC getters (``dataretrieval.ngwmn``).
 
-These are mocked against toy FeatureCollections shaped like the real NGWMN OGC
-API (``api.waterdata.usgs.gov/ngwmn/ogcapi``) -- two features per collection,
-with the real property names and value types. What is being tested is our own
-request building and result shaping, and a two-row fixture exercises that just
-as well as a live query does, without depending on USGS uptime or on a
-particular well still having records.
+These are mocked against minimal FeatureCollections shaped like the real NGWMN OGC API
+(``api.waterdata.usgs.gov/ngwmn/ogcapi``) -- two features per collection, with the real
+property names and value types. What is being tested is our own request building and
+result shaping, and a two-row fixture exercises that as well as a live query does,
+without depending on USGS uptime or on a particular well still having records.
 
 The one exception is :func:`test_state_queryables_still_diverge_upstream`, which
 is marked ``live``: it asserts something about the *upstream* API that a mock
@@ -61,7 +60,7 @@ def _collection(features):
 
     Deliberately omits ``numberReturned``/``numberMatched``, which NGWMN does
     not send (the main Water Data API does) -- the pagination and shaping code
-    keys off ``features`` for exactly this reason, and a fixture that supplied
+    depends on ``features`` for this reason, and a fixture that supplied
     the counts would stop covering that.
 
     ``links`` is omitted too, so there is no ``next`` to follow. NGWMN does send
@@ -72,10 +71,10 @@ def _collection(features):
     return {"type": "FeatureCollection", "features": features}
 
 
-# --- toy fixtures, one per collection ---------------------------------------
+# --- minimal fixtures, one per collection ---------------------------------------
 # Property names and value types are copied from real responses; only the number
 # of rows is reduced. Note the numeric-looking strings (``"4.37"``,
-# ``"0"``) -- NGWMN really does send those as strings, and the dialect's
+# ``"0"``) -- NGWMN sends those as strings, and the dialect's
 # coercion is what turns them into numbers, so the fixtures keep them as strings.
 
 _SITES = _collection(
@@ -275,8 +274,9 @@ def _queries(httpx_mock, collection=None):
 
 
 def test_get_sites(httpx_mock):
-    """A sites query returns one tidy row per monitoring location, carrying
-    geometry by default, and reports the collection URL in its metadata."""
+    """A sites query returns one row per monitoring location, with geometry by default,
+    and reports the collection URL in its metadata.
+    """
     _mock(httpx_mock, "sites", _SITES)
 
     df, md = ngwmn.get_sites(state="Wisconsin", limit=10)
@@ -333,7 +333,7 @@ def test_get_sites_empty_skip_geometry_is_plain(httpx_mock):
 def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
     """The single ``state`` parameter accepts a full name, postal code, or FIPS
     code, and all three are normalized to the full ``state_name`` that the
-    ``sites`` collection actually queries on."""
+    ``sites`` collection queries on."""
     _mock(httpx_mock, "sites", _SITES)
 
     for encoding in ("Wisconsin", "WI", "55"):
@@ -344,7 +344,7 @@ def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
     for qs in sent:
         assert qs["state_name"] == ["Wisconsin"]
         # The shim rewrites into ``state_name``; raw ``state`` must not leak
-        # through, or the collection would silently ignore it.
+        # through, or the collection would ignore it without an error.
         assert "state" not in qs
 
 
@@ -352,7 +352,7 @@ def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
 
 
 def test_get_providers(httpx_mock):
-    """Providers carry agency/organization columns and have no geometry."""
+    """Providers have agency/organization columns and have no geometry."""
     _mock(httpx_mock, "providers", _PROVIDERS)
 
     df, _ = ngwmn.get_providers(state="WI")
@@ -388,7 +388,7 @@ def test_get_providers_empty_stays_plain(httpx_mock):
 def test_get_providers_state_accepts_name_postal_or_fips(httpx_mock):
     """``get_providers`` normalizes any state encoding to the uppercase postal
     code that the ``providers`` collection queries on -- the other half of the
-    asymmetry that ``_STATE_QUERYABLE`` papers over."""
+    asymmetry that ``_STATE_QUERYABLE`` hides."""
     _mock(httpx_mock, "providers", _PROVIDERS)
 
     for encoding in ("Wisconsin", "WI", "55"):
@@ -483,7 +483,7 @@ def test_get_well_construction(httpx_mock):
 
 
 def test_observation_collections_return_plain_dataframe(httpx_mock):
-    """NGWMN's observation features carry no ``geometry`` key at all (not even
+    """NGWMN's observation features have no ``geometry`` key at all (not even
     ``null``). The shaping layer has to special-case that, so assert the result
     is a plain frame with no geometry column rather than a GeoDataFrame."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
@@ -519,8 +519,8 @@ def test_pagination_follows_next_link(httpx_mock):
     """Paging follows ``rel="next"`` and stops on the first page with no
     features.
 
-    This is the shape NGWMN actually sends: it supplies a ``next`` link even on
-    the last page, so an implementation that trusted the link alone would loop
+    This is the shape NGWMN sends: it supplies a ``next`` link even on
+    the last page, so an implementation that relied on the link alone would loop
     forever. Termination comes from the empty ``features`` array.
     """
     page_url = (
@@ -535,7 +535,7 @@ def test_pagination_follows_next_link(httpx_mock):
         **_collection(_WATER_LEVELS["features"][2:]),
         "links": [{"rel": "next", "href": page_url, "type": "application/geo+json"}],
     }
-    # The last page carries the same ``next`` link but no features.
+    # The last page has the same ``next`` link but no features.
     last = {
         **_collection([]),
         "links": [{"rel": "next", "href": page_url, "type": "application/geo+json"}],
@@ -549,8 +549,8 @@ def test_pagination_follows_next_link(httpx_mock):
 
 
 def test_empty_result_returns_typed_empty_frame(httpx_mock):
-    """A 200 carrying no features yields an empty frame whose columns come from
-    the collection schema, not a crash and not a shapeless frame."""
+    """A 200 with no features yields an empty frame whose columns come from
+    the collection schema, not an exception and not a frame with no columns."""
     httpx_mock.add_response(
         method="GET",
         url=_schema_re("waterLevelObs"),
@@ -569,11 +569,11 @@ def test_empty_result_returns_typed_empty_frame(httpx_mock):
 def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
     """Two adapters share this host, and a redirect must still name only one.
 
-    NGWMN and Water Data are served from ``api.waterdata.usgs.gov``, so a URL
-    cannot tell them apart -- which is why the settings table an OGC call reads
-    is declared by the adapter rather than derived from its base. Redirecting
-    NGWMN therefore has to leave Water Data where it was, and the Water Data
-    mock here is never requested: the assertion is on the whole request list.
+    NGWMN and Water Data are served from ``api.waterdata.usgs.gov``, so a URL does not
+    distinguish them -- which is why the settings table an OGC call reads is declared by
+    the adapter rather than derived from its base. Redirecting NGWMN therefore has to
+    leave Water Data where it was, and the Water Data mock here is never requested: the
+    assertion is on the whole request list.
     """
     mirror = "https://mirror.example/ngwmn"
     httpx_mock.add_response(
@@ -602,10 +602,10 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
 
 @pytest.mark.live
 def test_state_queryables_still_diverge_upstream():
-    """The NGWMN ``sites`` and ``providers`` collections expose DIFFERENT state
-    queryables (``sites`` -> ``state_name`` full name; ``providers`` ->
-    ``state`` 2-letter code). The single-``state`` shim
-    (``ngwmn._STATE_QUERYABLE``) exists ONLY to paper over that asymmetry.
+    """The NGWMN ``sites`` and ``providers`` collections expose different state
+    queryables (``sites`` -> ``state_name`` full name; ``providers`` -> ``state``
+    2-letter code). The single-``state`` shim (``ngwmn._STATE_QUERYABLE``) exists only
+    to hide that asymmetry.
 
     If this test fails, the upstream API has unified the two queryables and the
     shim (``_STATE_QUERYABLE``) can be removed in favor of a single pass-through

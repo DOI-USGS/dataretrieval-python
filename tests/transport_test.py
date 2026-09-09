@@ -168,7 +168,7 @@ def test_sync_bridge_runs_async_operation() -> None:
 
 
 def test_retry_tunables_have_a_single_home() -> None:
-    """Patching retry tunables must reach the policy that reads them."""
+    """Patching retry tunables must apply to the policy that reads them."""
     from dataretrieval import interruptions
 
     assert not [name for name in vars(interruptions) if name.startswith("_RETRY")]
@@ -183,11 +183,11 @@ def test_retired_ogc_retry_shim_stays_absent() -> None:
 
 
 def test_parse_retry_after_accepts_http_date() -> None:
-    """A date in the future is honored; one already past is not a hint.
+    """A date in the future is applied; one already past is not a value.
 
     Read literally an elapsed date says "retry now", but the likelier cause is
     our clock running ahead of the server's, and acting on it would re-send
-    almost immediately against a service that just asked for a pause.
+    almost immediately against a service that just named a delay.
     """
     soon = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=30)
     parsed = exceptions.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
@@ -202,8 +202,8 @@ def test_parse_retry_after_accepts_http_date() -> None:
 def test_both_retry_after_forms_are_honored_alike() -> None:
     """The two header spellings mean the same thing and must behave the same.
 
-    Discarding an over-long date hint (returning ``None``) made the client retry
-    *harder* against a service asking for a long pause, and dropped the number
+    Discarding an over-long date value (returning ``None``) made the client retry
+    sooner against a service that named a long delay, and dropped the number
     the caller needs from ``.retry_after``.
     """
     far_future = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
@@ -225,22 +225,22 @@ def test_elapsed_retry_after_still_backs_off() -> None:
     policy = retry.RetryPolicy(base_backoff=0.5, max_backoff=30.0)
 
     assert policy.backoff(attempt=1, retry_after=0.0) > 0.0
-    # The nudge is bounded by max_backoff, not this attempt's exponential
-    # ceiling: keying it to the ceiling made it vanish whenever base_backoff was
-    # zero -- exactly when a hint of 0 would become a zero-delay re-send.
+    # The jitter is bounded by max_backoff, not this attempt's exponential ceiling:
+    # keying it to the ceiling made it zero whenever base_backoff was zero -- when a
+    # value of 0 would become a zero-delay re-send.
     assert retry.RetryPolicy(base_backoff=0.0).backoff(attempt=1, retry_after=0.0) > 0.0
-    # A server-named delay is honored, plus a small decorrelating nudge so
-    # concurrent chunks handed the same hint do not all wake together --
+    # A server-named delay is applied, plus a small decorrelating offset so
+    # concurrent chunks given the same value do not all retry together --
     # and never enough to push the wait past the policy's own bounds.
     assert 5.0 < policy.backoff(attempt=1, retry_after=5.0) <= 6.0
-    # A hint already at the cap is never nudged past it -- the jitter would
+    # A value already at the cap is never extended past it -- the jitter would
     # otherwise sleep longer than any bound the policy declares.
     at_cap = policy.backoff(attempt=8, retry_after=policy.retry_after_cap)
     assert at_cap == policy.retry_after_cap
 
 
 def _dns_failure(errno: int) -> NetworkError:
-    """A DNS failure shaped the way one actually reaches the retry loop.
+    """A DNS failure shaped the way one reaches the retry loop.
 
     httpx and httpcore link their wrappers with ``__context__`` (implicit
     chaining), not ``__cause__``, so a walker following only explicit causes
@@ -255,7 +255,7 @@ def _dns_failure(errno: int) -> NetworkError:
 
 
 def test_deterministic_failures_are_not_retried() -> None:
-    """Only failures a later attempt could survive are worth re-sending.
+    """Only failures a later attempt could succeed on are re-sent.
 
     The ``EAI_*`` values are platform-specific -- ``EAI_NONAME`` is 8 on
     macOS and -2 on Linux -- so these must come from :mod:`socket` rather
@@ -270,12 +270,12 @@ def test_deterministic_failures_are_not_retried() -> None:
 def test_temporary_name_resolution_is_still_retried() -> None:
     """``gaierror`` is not one condition: ``EAI_AGAIN`` means "try again".
 
-    A resolver still coming up, a VPN reconnect, or a laptop waking all
-    surface this way, and they are exactly the failures retry exists for.
+    A resolver still starting, a VPN reconnect, or a laptop resuming from
+    sleep all produce this code, and they are the failures retry exists for.
     """
     assert retry._retryable(_dns_failure(socket.EAI_AGAIN)) == (True, None)
-    # An unrecognized code is retried too: a wasted attempt is cheaper than
-    # dropping a call we could have recovered.
+    # An unrecognized code is retried too: one wasted attempt costs less than
+    # abandoning a recoverable call.
     assert retry._retryable(_dns_failure(0)) == (True, None)
 
 
@@ -284,7 +284,7 @@ def test_resolver_failure_found_past_an_unrelated_explicit_cause() -> None:
 
     ``raise X from Y`` inside an ``except`` block leaves an explicit
     ``__cause__`` *and* an unrelated ``__context__`` on the same frame. Following
-    only the cause walks off down the explicit branch and never reaches the
+    only the cause takes the explicit branch and never reaches the
     ``gaierror``, so an unresolvable hostname spends the whole retry budget
     instead of failing fast.
     """
@@ -310,20 +310,20 @@ def test_chain_walk_terminates_on_a_self_referential_cause() -> None:
 def test_retryable_statuses_are_per_adapter() -> None:
     """A 500 means different things to different services, so the set differs.
 
-    WQP answers an over-large query with a 500 and StreamStats answers
-    out-of-network coordinates with one, so re-sending can never help there. The
-    Water Data OGC API is a query interface where a 500 is an upstream hiccup, so
-    the chunker keeps riding those out — applying WQP's rationale to it would
-    quietly drop retries the chunked getters have always had.
+    WQP responds to an over-large query with a 500 and StreamStats responds to
+    out-of-network coordinates with one, so re-sending can never help there. The Water
+    Data OGC API is a query interface where a 500 is a transient upstream failure, so
+    the chunker keeps retrying those — applying WQP's rationale to it would drop retries
+    the chunked getters have always had.
     """
     rejected_query = ServiceUnavailable("bad query", status_code=500)
     gateway = ServiceUnavailable("bad gateway", status_code=502)
 
-    # Default (Water Data chunker): every 5xx is worth another try.
+    # Default (Water Data chunker): every 5xx is retried.
     assert retry._retryable(rejected_query)[0]
     assert retry._retryable(gateway)[0]
 
-    # One-shot adapters: only the gateway family.
+    # One-shot adapters: only the gateway statuses.
     strict = retry._GATEWAY_STATUSES
     assert not retry._retryable(rejected_query, strict)[0]
     assert retry._retryable(gateway, strict)[0]
@@ -336,11 +336,12 @@ def test_retryable_statuses_are_per_adapter() -> None:
 
 
 def test_stall_timeout_stops_a_silent_call(monkeypatch) -> None:
-    """Retrying stops once a call has gone quiet for the whole budget.
+    """Retrying stops once a call has received nothing for the whole budget.
 
     Without this, a request that times out is retried until the attempts run
     out, turning one 60 s timeout into minutes of apparent hang. The first
-    retry is exempt (see below), so a silent call costs two attempts, not five.
+    retry is exempt (see below), so a call that receives nothing costs two
+    attempts, not five.
     """
     attempts = 0
 
@@ -363,13 +364,13 @@ def test_stall_timeout_stops_a_silent_call(monkeypatch) -> None:
 
 
 def test_server_named_delay_does_not_consume_the_stall_budget(monkeypatch) -> None:
-    """Honoring ``Retry-After`` must not cost a call its retries.
+    """Applying ``Retry-After`` must not cost a call its retries.
 
-    The budget bounds *silence*; a delay the service named is the opposite of
-    going quiet. Charging for it meant the more politely a service asked for
-    room, the fewer retries it got: with the shipped defaults a
+    The budget bounds time without data; a delay the service named is not
+    that. Charging for it meant the longer a service asked the client to
+    wait, the fewer retries the call got: with the shipped defaults a
     ``Retry-After: 30`` against a 60 s budget allowed exactly one retry no
-    matter what ``API_USGS_RETRIES`` said, silently capping the feature this
+    matter what ``API_USGS_RETRIES`` said, capping without any signal the feature this
     layer exists to provide.
     """
     attempts = 0
@@ -396,7 +397,7 @@ def test_server_named_delay_does_not_consume_the_stall_budget(monkeypatch) -> No
             retry.RetryPolicy(max_retries=4, stall_timeout=60.0, retry_after_cap=60.0),
         )
 
-    assert attempts == 5, "a sanctioned wait costs the no-progress budget nothing"
+    assert attempts == 5, "a server-named wait costs the no-progress budget nothing"
 
 
 def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
@@ -404,24 +405,24 @@ def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
 
     ``credit_wait`` moves the progress stamp forward; without a ceiling at
     "now", one long queue wait pushed it into the future, made
-    ``elapsed_since_progress`` negative, and -- since nothing ever pulls it back
-    -- left that call exempt from the stall bound for the rest of its life.
+    ``elapsed_since_progress`` negative, and -- since nothing ever reduces it
+    -- left that call exempt from the stall bound until it returned.
     """
     now = 0.0
     monkeypatch.setattr(liveness.time, "monotonic", lambda: now)
     policy = retry.RetryPolicy(stall_timeout=60.0)
 
     liveness.note_progress()
-    liveness.credit_wait(300.0)  # a deep-tail task queued past the whole budget
+    liveness.credit_wait(300.0)  # a task queued past the whole budget
     assert liveness.elapsed_since_progress() == 0.0, "clamped to now, not negative"
 
-    # The budget is spent again by real silence, not permanently disabled.
+    # The budget is spent again by real time without data, not permanently disabled.
     now = 200.0
     assert not policy.allows_wait(5, 30.0, liveness.elapsed_since_progress())
 
 
 def test_arriving_pages_restart_the_stall_budget(monkeypatch) -> None:
-    """A slow but productive download keeps earning more time."""
+    """A slow but productive download keeps restarting the budget."""
     now = 0.0
     monkeypatch.setattr(liveness.time, "monotonic", lambda: now)
     policy = retry.RetryPolicy(stall_timeout=60.0)
@@ -435,7 +436,7 @@ def test_arriving_pages_restart_the_stall_budget(monkeypatch) -> None:
 
 
 def test_bad_retry_environment_raises_a_catchable_error(monkeypatch) -> None:
-    """A typo in the environment must not escape as a bare ValueError.
+    """A typo in the environment must not propagate as a bare ValueError.
 
     Every retrieval path builds its policy from the environment, so an
     unparseable value would otherwise bypass ``except DataRetrievalError`` in
@@ -452,16 +453,17 @@ def test_bad_retry_environment_raises_a_catchable_error(monkeypatch) -> None:
 
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "10")
     assert retry.RetryPolicy.from_configuration().stall_timeout == 10.0
-    # Still a ValueError, so existing handling of a bad setting keeps working.
+    # Still a ValueError, so existing handling of an unparseable setting keeps
+    # working.
     assert issubclass(ConfigurationError, ValueError)
 
 
 def test_queued_work_keeps_its_retries() -> None:
-    """Time spent waiting for a concurrency slot is not silence.
+    """Time spent waiting for a concurrency slot is not time without data.
 
     The no-progress budget starts when a retry loop is entered, but a fan-out
-    task may sit behind a full semaphore long after that. Without excusing the
-    wait, the tail of a wide fan-out enters its first attempt with the budget
+    task may wait on a full semaphore long after that. Without crediting the
+    wait, the last chunks of a wide fan-out enter their first attempt with the budget
     already spent, while the tasks dispatched ahead of it get the full
     allowance.
     """
@@ -499,16 +501,16 @@ def test_queued_work_keeps_its_retries() -> None:
 
 
 def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
-    """Excusing the queue wait must not also forgive accumulated silence.
+    """Crediting the queue wait must not also discard accumulated time without data.
 
     The gated body is what the retry loop re-invokes, so stamping "now" on every
-    slot acquisition would restart the clock each attempt and quietly turn a
-    bound on *total* silence into a per-attempt latency bound -- five slow
-    failures would each look brief while the call sat silent for their sum.
+    slot acquisition would restart the budget each attempt and turn a bound on
+    *total* time without data into a per-attempt latency bound -- five slow
+    failures would each look brief while the call received nothing for their sum.
     """
 
     async def drive() -> int:
-        gate = asyncio.Semaphore(4)  # never contended: no waiting to excuse
+        gate = asyncio.Semaphore(4)  # never contended: no waiting to credit
         attempts = 0
         policy = retry.RetryPolicy(
             max_retries=4, stall_timeout=1.0, base_backoff=0.001, max_backoff=0.001
@@ -517,7 +519,7 @@ def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
         async def attempt() -> str:
             nonlocal attempts
             attempts += 1
-            await asyncio.sleep(0.4)  # each attempt is silent for 0.4 s
+            await asyncio.sleep(0.4)  # each attempt receives nothing for 0.4 s
             raise ServiceUnavailable("gateway", status_code=504)
 
         try:
@@ -552,11 +554,11 @@ def _wrapped_dns_failure(errno: int) -> NetworkError:
 def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     """ "Retryable" and "resumable" are one judgement and must agree.
 
-    ``_retryable`` already refuses to re-send a hostname the resolver rejects
+    ``_retryable`` already does not re-send a hostname the resolver rejects
     outright. If the interruption classifier still mapped it to
-    ``ServiceInterrupted``, the caller would be handed a ``.call.resume()``
+    ``ServiceInterrupted``, the caller would be given a ``.call.resume()``
     whose every attempt fails identically -- a resumable handle for something
-    that cannot be resumed, hiding the ``NetworkError`` that actually explains
+    that cannot be resumed, concealing the ``NetworkError`` that explains
     the failure.
     """
     from dataretrieval.interruptions import _classify_chunk_error
@@ -569,9 +571,9 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     assert retry._retryable(unsupported) == (False, None)
     assert _classify_chunk_error(unsupported) is None
 
-    # The converse still holds: a failure a later attempt could survive stays
-    # both retryable and resumable. A temporary resolver failure is the sharp
-    # case -- same exception type, same chain shape, opposite verdict, decided
+    # The converse still holds: a failure a later attempt could succeed on stays
+    # both retryable and resumable. A temporary resolver failure is the distinguishing
+    # case -- same exception type, same chain shape, opposite classification, decided
     # only by the errno.
     temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
     assert retry._retryable(temporary) == (True, None)
@@ -579,13 +581,13 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
 
 
 def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
-    """Every question asked of a failure chain shares one guarded traversal.
+    """Every classification of a failure chain shares one guarded traversal.
 
     ``raise ... from`` accepts an exception already in the chain, so a retry
     loop that re-raises an earlier failure can close the cycle. Each of these
     walks reaches an answer by inspecting links, so an unguarded one would spin
-    forever inside a request path rather than surface the failure. This fails by
-    hanging, not by asserting -- pytest's timeout is the real assertion.
+    forever inside a request path rather than raise the failure. This fails by
+    hanging, not by asserting -- pytest's timeout is what detects the failure.
     """
     from dataretrieval.interruptions import (
         ServiceInterrupted,
@@ -602,7 +604,7 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
     assert {id(exc) for exc in _walk_causes(first)} == {id(first), id(second)}
     assert _classify_chunk_error(first) is None
     assert _deterministic_failure(first) is False
-    # The status hunt in the interruption constructor walks the same chain.
+    # The status lookup in the interruption constructor walks the same chain.
     assert (
         ServiceInterrupted(completed_chunks=0, total_chunks=1, cause=first).status_code
         is None
@@ -611,7 +613,7 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
 
 def test_an_unusable_next_page_link_is_reported_not_swallowed():
     """A malformed ``next`` href ends the page walk, so it must raise rather
-    than quietly truncate the result -- a short frame with no error is
+    than truncate the result without an error -- a short frame with no error is
     indistinguishable from a complete one."""
     from dataretrieval.transport.links import resolve_next_url
 
@@ -627,15 +629,15 @@ def test_an_unusable_next_page_link_is_reported_not_swallowed():
 
 class TestErrorForStatus:
     def test_a_success_status_is_a_usage_error(self):
-        """``error_for_status`` builds an exception for a failure. Handing it a
-        200 means the caller's branch is wrong, and returning some default
-        exception would hide that."""
+        """``error_for_status`` builds an exception for a failure. Passing it a 200
+        means the caller took the error branch on a success status, and
+        returning some default exception would conceal that."""
         with pytest.raises(ValueError, match="expects an HTTP error status"):
             exceptions.error_for_status(200, "not an error")
 
     def test_a_leaf_without_a_default_status_demands_one(self):
-        """Only RateLimited and ServiceUnavailable imply their own status. Any
-        other HTTPError constructed without one would carry a meaningless
-        status_code, so it refuses instead."""
+        """Only RateLimited and ServiceUnavailable imply their own status. Any other
+        HTTPError constructed without one would have a meaningless status_code, so
+        construction raises instead."""
         with pytest.raises(TypeError, match="requires status_code"):
             exceptions.TransientError("boom")

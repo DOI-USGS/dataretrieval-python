@@ -1,11 +1,8 @@
 """The metadata object every getter returns alongside its DataFrame.
 
-A dependency-free leaf on purpose. This class is the second half of the
-``(DataFrame, metadata)`` return contract, so nearly every service module needs
-it -- and while it lived in :mod:`dataretrieval.utils` beside the legacy query
-machinery, needing it meant inheriting that module's whole HTTP stack
-(transport, credentials, error policy) transitively. Here it costs its
-consumers nothing but ``httpx``.
+A dependency-free leaf on purpose (ADR 0003). This class is the second half of
+the ``(DataFrame, metadata)`` return contract (ADR 0007), so nearly every
+service module needs it; importing it imports nothing but ``httpx``.
 
 ``dataretrieval.utils.BaseMetadata`` remains the public import.
 """
@@ -32,7 +29,7 @@ class BaseMetadata:
     """
 
     def __init__(self, response: httpx.Response) -> None:
-        """Generate a standard set of metadata informed by the response.
+        """Generate a standard set of metadata from the response.
 
         Parameters
         ----------
@@ -56,7 +53,7 @@ class BaseMetadata:
     @property
     def site_info(self) -> Any:
         raise NotImplementedError(
-            "This metadata object carries no site_info: only the nwis and wqp "
+            "This metadata object has no site_info: only the nwis and wqp "
             "metadata classes implement it, and the getter that produced this "
             "result does not return site descriptions alongside data. Fetch "
             "them using a separate function from the same adapter -- "

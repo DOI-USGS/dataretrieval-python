@@ -96,8 +96,7 @@ def get_ratings(
     download_and_parse : bool, default ``True``
         If ``True``, download every matching RDB file and parse it into a
         ``DataFrame``. If ``False``, return the raw list of STAC feature
-        dicts so the caller can inspect what's available before pulling
-        bytes.
+        dicts so the caller can inspect what's available before downloading.
     ssl_check : bool, default ``True``
         Verify the server's SSL certificate.
 
@@ -106,7 +105,7 @@ def get_ratings(
     dict[str, pandas.DataFrame] or list[dict]
         When ``download_and_parse=True`` (the default), a dict keyed by
         feature ID (e.g. ``"USGS-01104475.exsa.rdb"``) mapping to a parsed
-        ``DataFrame``. Each frame carries provenance in
+        ``DataFrame``. Each frame records provenance in
         ``df.attrs["comment"]`` (the RDB ``#``-prefixed header lines, like
         rating id, parameter, last-shifted timestamp) and
         ``df.attrs["url"]`` (the asset URL it was fetched from). When
@@ -124,24 +123,22 @@ def get_ratings(
         or :class:`~dataretrieval.exceptions.NetworkError` if a request
         can't reach the service in a way retrying cannot fix.
     FanOutInterrupted
-        A transient failure (429 / 5xx / timeout) survived the built-in
-        retries during the search or a download. ``exc.call.resume()``
-        finishes the interrupted stage (see :doc:`/userguide/errors`); the
-        assembled per-feature dict is returned by a fresh ``get_ratings``
-        call.
+        A transient failure (429 / 5xx / timeout) was not resolved by the built-in
+        retries during the search or a download. ``exc.call.resume()`` finishes the
+        interrupted stage (see :doc:`/userguide/errors`); the assembled per-feature dict
+        is returned by a new ``get_ratings`` call.
 
     Warns
     -----
     SkippedRatingWarning
-        One feature of the batch failed *deterministically* -- a stale
-        catalog entry (404 on its data asset), a feature with no data asset,
-        a malformed RDB file. That feature is skipped and its id is absent
-        from the returned dict; the rest of the batch is unaffected. A site
-        with no published rating never warns -- it matches no feature in the
-        search, so there is nothing to skip. See
+        One feature of the batch failed *deterministically* -- a stale catalog entry
+        (404 on its data asset), a feature with no data asset, a malformed RDB file.
+        That feature is skipped and its id is absent from the returned dict; the rest of
+        the batch is unaffected. A monitoring location with no published rating never
+        produces a warning -- it matches no feature in the search, so there is nothing
+        to skip. See
         :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy
-        (transients never skip) and the ``filterwarnings`` recipe that makes
-        a skip fatal.
+        (transients never skip) and the ``filterwarnings`` call that makes a skip fatal.
 
     Examples
     --------
@@ -186,7 +183,7 @@ def get_ratings(
         else None
     )
 
-    # Mirror R: pin file_type server-side only when one type is requested.
+    # Match R: set file_type server-side only when one type is requested.
     server_file_type = file_types[0] if len(file_types) == 1 else None
     filter_str = _build_filter(monitoring_location_id, server_file_type)
 
@@ -264,14 +261,14 @@ def _search(
     limit: int,
     ssl_check: bool,
 ) -> list[dict[str, Any]]:
-    """Run STAC ``/search`` and return ALL matching features.
+    """Run STAC ``/search`` and return all matching features.
 
     ``limit`` is the page size (clamped to the service maximum of 10,000); the
     STAC ``next`` link is followed until exhausted so a result set larger than
-    one page isn't silently truncated.
+    one page is not truncated.
 
     The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`
-    with STAC strategies. Pages carry features rather than rows, so each page
+    with STAC strategies. Pages hold features rather than rows, so each page
     frame wraps the raw feature dicts in a single ``feature`` column.
     """
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
@@ -288,13 +285,13 @@ def _search(
     def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
         page = pd.DataFrame({"feature": body.get("features", [])})
-        # The STAC ``next`` link is a fully-formed GET href carrying the
+        # The STAC ``next`` link is a complete GET href that includes the
         # limit/filter/bbox and a continuation token, so it becomes the
         # cursor verbatim -- except for the shared safety policy: the href is
         # response data, so it is checked before it becomes a request. A link
-        # to another host would carry this request's API key off the
-        # authorized host, and one carrying ``user:pass@`` would mint an
-        # ``Authorization: Basic`` header the caller never configured.
+        # to another host would send this request's API key to a host
+        # other than the authorized one, and one with ``user:pass@`` would
+        # produce an ``Authorization: Basic`` header the caller never configured.
         href = next(
             (lnk["href"] for lnk in body.get("links", []) if lnk.get("rel") == "next"),
             None,
@@ -332,10 +329,10 @@ def _inert_response(
 ) -> httpx.Response:
     """A body-less stand-in the executor can aggregate.
 
-    The executor keeps every completed item's response until the drive ends,
+    The executor keeps every completed item's response until the run ends,
     but its aggregation reads only status, headers, and URL -- never the
-    body. Handing it a stand-in keeps a large batch from pinning every
-    downloaded file in memory for the whole drive. ``elapsed`` is left
+    body. Passing it a stand-in keeps a large batch from holding every
+    downloaded file in memory for the whole run. ``elapsed`` is left
     unset; the aggregate's ``_safe_elapsed`` treats that as zero.
     """
     return httpx.Response(status, headers=headers, request=httpx.Request("GET", url))
@@ -356,10 +353,9 @@ async def _fetch_rating(
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Fetch one feature's data asset, parse RDB, optionally persist to disk.
 
-    Headers are evaluated against each asset href -- assets can live on a
-    different host than the catalog, and must not inherit its auth. Runs
-    inside a drive: the executor publishes the shared client before any
-    fetch starts.
+    Headers are evaluated against each asset href -- assets can be on a different host
+    than the catalog, and must not receive its credentials. Runs inside a fan-out run:
+    the executor sets the shared client before any fetch starts.
     """
     fid = feature["id"]
     href = _asset_href(feature)
@@ -372,7 +368,7 @@ async def _fetch_rating(
     headers = _default_headers(href)
     session = active_client()
     if session is None:
-        raise RuntimeError("_fetch_rating must run inside a FanOut drive.")
+        raise RuntimeError("_fetch_rating must run inside a FanOut run.")
     response = await session.get(href, headers=headers)
     _raise_for_non_200(response)
 
@@ -394,10 +390,10 @@ def _download_all(
 ) -> dict[str, pd.DataFrame]:
     """Download every feature's rating over the shared fan-out executor.
 
-    The plan is the feature list itself -- ``FanOut`` asks a plan only to be
+    The plan is the feature list itself -- ``FanOut`` requires a plan only to be
     sized and iterable -- so the downloads get bounded concurrency,
     per-attempt retry, the progress line, and the resumable interruption
-    taxonomy in place of the previous serial loop, which had none of them.
+    taxonomy.
 
     Failure policy (rationale on
     :class:`~dataretrieval.exceptions.SkippedItemWarning`): a *transient*
@@ -406,15 +402,15 @@ def _download_all(
     warns with :class:`~dataretrieval.exceptions.SkippedRatingWarning` and
     skips the feature. ``OSError`` writing ``file_path`` propagates -- a
     local disk problem is not a per-feature condition. Raw ``httpx`` errors
-    pass through untouched so the executor can classify and retry them.
+    pass through unchanged so the executor can classify and retry them.
 
     The public result is a dict keyed by feature id, so the fetch closure
     accumulates it; the executor's combined frame is not the return shape and
-    is discarded. Both outcomes hand the executor a body-less
+    is discarded. Both outcomes return to the executor a body-less
     :func:`_inert_response` -- a skip so the item counts as complete (a later
     ``resume()`` continues past it rather than re-attempting), a success so
-    the drive doesn't pin every downloaded file in memory while keeping the
-    real status and quota headers for aggregation.
+    the run does not hold every downloaded file in memory while keeping the
+    response's status and quota headers for aggregation.
     """
     out: dict[str, pd.DataFrame] = {}
     if not features:

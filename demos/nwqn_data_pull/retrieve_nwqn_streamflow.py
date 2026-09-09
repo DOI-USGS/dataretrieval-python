@@ -43,7 +43,7 @@ def map_retrieval(site):
     print(len(df), "records retrieved")
     # process the results
     if not df.empty:
-        # drop rows with missing values; neglect other 00060_* columns
+        # drop rows with missing values; ignore other 00060_* columns
         df = df.dropna(subset=["00060_Mean"])
         # fill missing codes to enable string operations
         df["00060_Mean_cd"] = df["00060_Mean_cd"].fillna("M")
