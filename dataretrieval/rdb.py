@@ -4,7 +4,7 @@ RDB (Relational DataBase) is the text format used by NWIS web services
 and by the Water Data STAC catalog's rating-curve assets. Every RDB
 file has the same shape:
 
-- One or more ``#``-prefixed comment lines carrying provenance metadata
+- One or more ``#``-prefixed comment lines holding provenance metadata
   (data source, retrieval timestamp, station name, parameter codes, etc.).
 - A tab-separated header row naming each column.
 - A second tab-separated row giving column format specs (e.g. ``5s 15s``);
@@ -33,7 +33,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
         The RDB text response from a USGS web service.
     dtypes : dict[str, type] or None, optional
         Column-name to dtype hints, forwarded to ``pandas.read_csv``. Unknown
-        column names are silently ignored, so callers can pass a dict of every
+        column names are ignored, so callers can pass a dict of every
         column they might be interested in.
 
     Returns
@@ -85,10 +85,9 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
 def extract_rdb_comment(text: str) -> list[str]:
     """Return the RDB ``#``-prefixed comment block, raw and in original order.
 
-    Each entry includes its leading ``#`` and any whitespace, matching what
-    R's ``dataRetrieval`` returns from ``comment(df)``. The comment block
-    carries provenance metadata that is otherwise lost during parsing —
-    data source, retrieval timestamp, parameter codes, rating id and
-    last-shifted timestamp for ratings, etc.
+    Each entry includes its leading ``#`` and any whitespace, matching what R's
+    ``dataRetrieval`` returns from ``comment(df)``. The comment block holds provenance
+    metadata that is otherwise lost during parsing — data source, retrieval timestamp,
+    parameter codes, rating id and last-shifted timestamp for ratings, etc.
     """
     return [line for line in text.splitlines() if line.startswith("#")]

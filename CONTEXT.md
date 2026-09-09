@@ -8,7 +8,7 @@ conversation use them the same way. Architectural decisions are recorded in
 Two kinds of term are defined here, and they impose different obligations
 (ADR 0013).
 
-**Core terms** are ours. The package invented them and no service has a claim on
+**Core terms** are ours. The package invented them and no service defines
 them — *chunk*, *page*, *fan-out*, *source*, *dialect*, *leaf*. One spelling,
 everywhere it appears: prose, identifiers, tests. Where a core term conflicts
 with a name in the code the term is authoritative and the name is legacy,
@@ -47,7 +47,7 @@ location per request — or because the caller asked for it. Both produce chunks
 the reason is not part of the term.
 
 **Plan** — An enumeration of a query's chunks: how many there are, and what each
-one is. A plan says how a query divides; it does not execute. Computing a plan
+one is. A plan describes how a query divides; it does not execute. Computing a plan
 is protocol-specific — a byte budget, a per-location rule — while executing one
 is not, which is why the two are kept in separate modules.
 
@@ -66,7 +66,8 @@ rate limit, a service error, a timeout. Distinguished from a **deterministic
 failure**, which would fail identically every time — an unresolvable hostname,
 an unsupported scheme, a malformed request. Only transient failures are
 retried, and only transient failures produce a resumable interruption. Both
-answers follow from one judgement about what a failure means, and must agree.
+answers follow from one judgement about what a failure means, and must be
+consistent.
 
 **Stall timeout** — How long a call may receive nothing at all before retrying
 stops, measured from when data last arrived rather than from the call's start.
@@ -135,7 +136,7 @@ resemblance is the public contract, not duplication to be removed.
 
 **Monitoring location** — A place where measurements are recorded.
 
-*Domain term.* The services disagree, and each adapter keeps its own service's
+*Domain term.* The services differ, and each adapter keeps its own service's
 spelling in its parameters: NWIS `site_no` and `sites=`, WQP `Station` and
 `siteid`, Water Data `monitoring_location_id`, NGWMN's `sites` collection. Where
 a service names a thing `site-types` or `site_type_code`, that is its vocabulary
@@ -177,8 +178,8 @@ argument on four adapters and resolves through no chain at all; the settings are
 the list the configuration system recognizes.
 
 **Scope** — How much of the package a setting's value applies to: the whole
-package, or one adapter. Orthogonal to source: the scope says who a value is
-for, the source says where it came from, and precedence orders sources first,
+package, or one adapter. Orthogonal to source: the scope states which part of the package a value is
+for, the source states where it came from, and precedence orders sources first,
 scopes within them. ADR 0010's word for a scope level is *tier* — the top-level
 tier that remains, the host or gateway tier it defers.
 
@@ -192,7 +193,7 @@ rejects a setting it has no use for, rather than accepting and ignoring it.
 
 The scope is the *adapter*, not the service and not the host, because the
 adapter is what owns the conventions being tuned. The API key shows where the
-boundary falls: it belongs to the gateway fronting a host, so Water Data and
+boundary is: it belongs to the gateway fronting a host, so Water Data and
 NGWMN — two adapters, one host — necessarily share one key and one quota pool.
 Credentials are host-scoped; tunables are adapter-scoped.
 
@@ -202,7 +203,7 @@ default. The order is resolved per setting rather than per source: a value
 supplied for one setting does not displace another setting's value from a lower
 source.
 
-*Core term.* The accepted records already say it: ADR 0009 resolves settings
+*Core term.* The accepted records already use it: ADR 0009 resolves settings
 by source, and ADR 0010 keeps precedence *source-major*. ADR 0010's *tier* is a
 different axis — the scope — and ADR 0011's *rungs* are positions of its merged
 precedence ladder, where sources and scopes interleave. Neither is a second
@@ -247,7 +248,7 @@ for one adapter. Both narrow to a single adapter; only one of them is something
 the caller wrote.
 
 All three are called "the default" in casual use, and they are not the same
-value. Where the distinction matters — reporting what a call will actually use
+value. Where the distinction matters — reporting what a call will use
 — say which one is meant.
 
 ## Boundaries

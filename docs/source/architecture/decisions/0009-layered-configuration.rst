@@ -24,7 +24,7 @@ every service accepts the same settings -- is false.
 - **The refusal of a configuration object**, stated in the leaf clause ("a
   scoped action, not a ``Configuration`` dataclass") and in "A configuration
   object would have no way to reach the call". ``configure()`` now takes
-  exactly such objects. The grounds were that an instance had no way to reach a
+  exactly such objects. The grounds were that an instance had no way to be passed to a
   free function; the ``ContextVar`` this ADR established is one, and ADR 0010
   had already narrowed the objection to a payload-shape preference.
 
@@ -76,7 +76,7 @@ Supporting decisions:
   *blank* environment variable does not count as set, so it cannot shadow the
   file: container and CI tooling routinely creates one. The exception is
   ``progress``, where a blank ``API_USGS_PROGRESS`` has always meant "off" --
-  so "does blank count as a value?" is a property of the setting
+  so whether blank counts as a value is a property of the setting
   (``configuration._BLANK_MEANS_SET``) rather than an extra tier in the chain.
 - **The environment ranks above the file.** This follows the precedence used by
   `pip
@@ -103,15 +103,15 @@ Supporting decisions:
   value, remain compatible without making the new surfaces equally permissive.
 - **Each setting's policy is a row in a named table, never a branch in shared
   code.** Type, bounds, and parser are declared as data, guarded at import time
-  for completeness, so adding a setting cannot silently inherit whatever the
+  for completeness, so adding a setting cannot inherit, with no error, whatever the
   fallback branch happened to do. The rejected alternative -- an ``if``/``elif``
-  chain with an implicit integer default -- fails by omission, and fails
-  quietly.
+  chain with an implicit integer default -- fails by omission, without an
+  error.
 - **The file format is forward compatible; the table layout is not.** A key the
   running version does not recognize warns and is ignored, so a file written for
   a newer release still loads rather than breaking a caller who downgraded. A
   key the version *does* recognize, placed in a table that cannot use it, raises:
-  that is a mistake the caller can fix, and ignoring it silently would leave the
+  that is a mistake the caller can fix, and ignoring it would leave the
   user believing a setting is in effect when it is not.
 - **Credential-shaped keyword refusal is a usability check, not a security
   control.** Names are matched as substrings after separators are stripped, and
@@ -170,7 +170,7 @@ Supporting decisions:
 
 - **One flat set of setting names, shared by every service.** ``concurrency``
   means the same thing to every adapter, so the chain resolves one name rather
-  than one per service. Services differ in the *value* they want, not the
+  than one per service. Services differ in the *value* they use, not the
   vocabulary, and that difference is expressed as a caller-supplied default:
   ``wateruse`` passes its ``DEFAULT_CONCURRENT_REQUESTS`` of 4 to
   ``configuration.concurrency()`` where the OGC getters take the package default
@@ -190,7 +190,7 @@ Supporting decisions:
   matrix rather than a list, and that cost should be paid only when a
   requirement exists.
 
-- **A configuration object would have no way to reach the call.** The public
+- **A configuration object would have no way to be passed to the call.** The public
   surface is free functions -- ``waterdata.get_daily(...)``, not a client with
   methods. An instance would therefore be passed either as a parameter on every
   getter, which is the per-call passing the ``ContextVar`` exists to remove and
@@ -243,8 +243,7 @@ the prose being consolidated.
 The ``**queryables`` clause above originally named ``session`` among the
 rejected names. It was corrected after the fact: ``session`` holds no
 secret, so refusing it with a credentials message told callers the wrong thing,
-and as a substring it claimed part of a namespace the *server* owns -- any
-future query parameter containing it would have been unreachable behind that
-message. ``dataretrieval/credentials.py`` records the exclusion at the
+and as a substring it reserved part of a namespace the *server* defines -- any
+future query parameter containing it would have been blocked by that message. ``dataretrieval/credentials.py`` records the exclusion at the
 predicate. The decision the clause makes -- credential-shaped names never reach
 a URL -- is unchanged.

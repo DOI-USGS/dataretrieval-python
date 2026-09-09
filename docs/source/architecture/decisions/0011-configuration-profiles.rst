@@ -20,8 +20,8 @@ Context
 -------
 
 ADR 0010 gave each adapter its own table in the chain, so ``[ngwmn]`` narrows a
-setting to NGWMN. That covers "tune one service" but not the case a
-multi-service caller actually has:
+setting to NGWMN. That covers tuning one service but not the case a
+multi-service caller has:
 
 - **Several named configurations per adapter.** A caller with an overnight bulk
   configuration profile and a lower-rate daytime one for Water Data cannot
@@ -36,7 +36,7 @@ multi-service caller actually has:
 Two further problems ADR 0010 left open bear on the same decision. The
 adapter roster is listed in four places, only one of which is derived --
 adding an adapter needs coordinated edits, and forgetting one leaves a schema
-no call site can reach, which happened to three adapters and shipped
+no call site can use, which happened to three adapters and shipped
 undetected until a fitness test was written. And a setting's definition is
 in ``config`` rather than in the module that reads it, so adding a Water Data
 setting edits a file unrelated to Water Data.
@@ -79,13 +79,13 @@ precedence rules do not order.
 
 Keyword settings are removed, so ``configure(api_key=...)`` no longer works.
 This is the most-typed line the feature exists to enable, and making it wordier
-is a real cost, accepted deliberately so that every setting is passed the same
+is a cost, accepted deliberately so that every setting is passed the same
 way.
 
 **Schemas are defined in their adapter; names are defined centrally.**
 ``configuration`` is a standard-library-only leaf every adapter may import, so
 it cannot import adapters. It holds the tuple of adapter *names*, which is what
-parsing a file needs (is ``[ngwmn]`` a table or a typo?). Each adapter package
+parsing a file needs (whether ``[ngwmn]`` is a table or a typo). Each adapter package
 owns its subclass, which is what a setting's definition needs to be local to
 the service that reads it.
 
@@ -108,7 +108,7 @@ imported.
 Each level overrides the one below **per key**, so a named profile still
 inherits its adapter's default profile and the package-wide keys. Positions 1
 and 2 are both code and both target one adapter, so the same-adapter rule
-means they cannot tie.
+means they cannot conflict.
 
 Position 2 above 3 inverts ADR 0009's environment-above-file rule for this one
 case. A profile named in code is a more deliberate act than a variable
@@ -124,7 +124,7 @@ be defined in a module the parser cannot import.
 
 **Base URLs may be configured, from code only.** An adapter's configuration
 may include its base URL, settable in a ``configure()`` block and rejected from
-the file and the environment. A file that silently redirects a data-retrieval
+the file and the environment. A file that redirects a data-retrieval
 library to another host is a supply-chain hazard; an in-code block keeps the
 redirect where a reader sees it.
 
@@ -134,7 +134,7 @@ and ADR 0009's rule reserving ``config`` as an abbreviation for the module and
 the file is withdrawn. The path has never been released, so no alias is
 needed.
 
-**Credentials are unchanged, and measurement settled why.** The API key stays
+**Credentials are unchanged, and measurement shows why.** The API key stays
 one package-wide setting scoped to the single host that accepts it. Probing
 the live services:
 
@@ -168,11 +168,11 @@ anonymously today. The three hosts also keep independent counters, so ADR
 fields.** Which settings an adapter reads is the adapter's own concern, but
 what each setting *means* is shared, so the fields come from frozen mixin
 groups declared once beside their grammar. An adapter's configuration class
-names the groups it composes and adds only what is genuinely its own. Declaring
+names the groups it composes and adds only what is its own. Declaring
 ``retries: int | None = _UNSET`` directly in an adapter module satisfies this
 record literally while losing what it protects: the annotation would enforce
 nothing, could drift from the shared parser, and ``mypy --strict`` would not
-notice, because it checks the annotation, not whether the field still matches
+detect it, because it checks the annotation, not whether the field still matches
 the shared group.
 
 Consequences
@@ -190,16 +190,16 @@ Consequences
   the same commit.
 - **``show_configuration()`` can only resolve the settings an adapter accepts
   once that adapter has been imported.** It names the adapters it could not
-  check rather than omitting them silently, which is the cost of lazy
+  check rather than omitting them, which is the cost of lazy
   validation. The *profile list* is not import-limited: what a profile is
   called is a fact about the file, so every ``[<adapter>.<name>]`` table it
   defines is listed, imported or not -- withholding one would make the
-  section's answer depend on which optional extras happened to be installed.
+  section's contents depend on which optional extras happened to be installed.
 - **Two names differ only by case** -- the ``configuration`` module and the
   ``Configuration`` class. The module stays out of the package's public
   exports, so ``from dataretrieval import configuration, Configuration`` cannot arise.
 - **Separate quota pools are still not modelled.** Three exist. Nothing in the
-  library needs to know yet.
+  library depends on them yet.
 - **``ssl_check`` is unaffected** and remains a per-call argument, for the
   reasons in ADR 0010.
 
@@ -234,7 +234,7 @@ Satisfied. In ``tests/configuration_test.py``:
 - ``test_adapter_roster_names_real_modules_that_register_themselves`` and
   ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
   resolves, and no configuration exists that nothing reads. An adapter name
-  the code does not recognize now raises out of ``_resolve`` rather than
+  not in the roster now raises out of ``_resolve`` rather than
   falling through to the package-wide value, so the grep is a secondary check
   rather than the only one.
 
@@ -250,10 +250,10 @@ Notes
   ``api.water.usgs.gov``.
 - Open, not decided here: whether ``parallel_chunks`` is renamed. ``fan_out``
   was suggested and conflicts with the glossary, where fan-out is *executing*
-  chunks concurrently -- which ``concurrency`` already governs -- while
+  chunks concurrently -- which ``concurrency`` already controls -- while
   ``parallel_chunks`` instructs the planner to *divide* more finely. ADR 0009
   rejected ``parallelism`` and ``chunk_parallelism`` for the same conflation.
-  ``chunk_count`` or ``target_chunks`` would stay on the correct side of it.
+  ``chunk_count`` or ``target_chunks`` would not conflate the two.
 - The setting-group clause was added after the original decision, consolidating
   under ADR 0000 a rule the configuration core was stating in prose. It does
   not change behavior.

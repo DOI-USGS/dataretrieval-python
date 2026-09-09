@@ -41,7 +41,7 @@ def test_query_waterdata_validation():
         query_waterdata(service=None, site_no="sites")
     message = str(value_error.value)
     assert "Invalid service: None" in message
-    # 'ratings' was advertised here but is not an NwisWeb program: the URL it
+    # 'ratings' was listed here but is not an NwisWeb program: the URL it
     # built returned an HTML error page, not data.
     assert "'peaks'" in message
     assert "get_ratings" in message
@@ -50,7 +50,7 @@ def test_query_waterdata_validation():
         query_waterdata(service="pmcodes", nw_longitude_va="something")
     message = str(value_error.value)
     assert "must be given together to describe a bounding box" in message
-    # The three corners actually absent, so the caller knows what to add.
+    # The three corners absent, so the caller knows what to add.
     assert "nw_latitude_va, se_longitude_va and se_latitude_va" in message
 
 

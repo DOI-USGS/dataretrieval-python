@@ -97,7 +97,7 @@ test run neither depends on USGS uptime nor spends anyone's rate limit.
 
 The exception is a small set of tests marked `live`, which query the real
 services to notice when an upstream API changes -- something a mock cannot
-tell us, because the mock is what would need updating. They are deselected by
+detect, because the mock is what would need updating. They are deselected by
 default and run on a nightly schedule
 ([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
 Run them locally with:
@@ -118,7 +118,7 @@ This package keeps its general mechanisms in dependency-free leaves --
 it, and it is the only module that reads the environment for a setting),
 `transport.links.resolve_next_url` for pagination cursors. Each of those has
 been re-implemented at least once by someone who did not know it was there, and
-the copies drift: the same question gets a different cycle guard, a different
+the copies drift: the same check gets a different cycle guard, a different
 error message, a different edge case. None of the automated checks catch it,
 because two eight-line helpers are below the clone detector's minimum size and
 neither one couples nor complicates anything. A grep for the mechanism you are
@@ -139,7 +139,7 @@ lint-imports
 ```
 
 The last three come from `pip install -e '.[metrics]'`, and each has a pre-commit
-hook running the identical check, so a clean pre-commit run means CI agrees.
+hook running the identical check, so a clean pre-commit run means CI will pass.
 
 `coverage report` is a ratchet too. The threshold is in
 `[tool.coverage.report]` in `pyproject.toml` and is set to the measured value,
@@ -149,16 +149,16 @@ why in the commit.
 
 Coverage is measured with branches on, because most of what this package gets
 wrong is a branch rather than a line -- a dispatch arm routing to the wrong
-getter, an error path that never executes, a fallback that quietly becomes the
-norm. Cover the *uncovered branch*, not the percentage: a test written only to
+getter, an error path that never executes, a fallback that becomes the
+norm unnoticed. Cover the *uncovered branch*, not the percentage: a test written only to
 mark a line as covered adds maintenance and catches nothing. If a path cannot be
-reached without contorting the code, exclude it in
+reached without restructuring the code, exclude it in
 `[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
 it is. Either costs less than a test that adds maintenance and catches nothing.
 
 The blocking run is a single Linux job. The OS/Python matrix reports its own
 number with `--fail-under=0`, because several tests are POSIX-only and a
-Windows run genuinely measures a smaller suite.
+Windows run measures a smaller suite.
 
 For the same reason, the threshold assumes the whole suite: on Windows, or
 without the `nldi` extra installed, some tests skip and the local number comes
@@ -167,8 +167,8 @@ in under the gate through no fault of your change. Run
 ratchet.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
-tightest the package passes today, so they fail only when a change pushes a
-score above today's. They disagree because they count different things. `xenon` counts
+tightest the package passes today, so they fail only when a change raises a
+score above today's. Their scores differ because they count different things. `xenon` counts
 branches (cyclomatic complexity), so a large flat dispatch scores high;
 `complexipy` counts how hard the control flow is to follow (cognitive
 complexity), so it scores that dispatch lower and nesting higher. Both name the
@@ -211,9 +211,9 @@ Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 [`pyscn`](https://github.com/ludo-technologies/pyscn) on a weekly schedule
 ([code-health.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/code-health.yml)),
 which attaches an HTML and a JSON report to each run. Nothing gates on it. These
-measures move over months rather than commits.
+measures change over months rather than commits.
 
-You do not need it to contribute. It answers "what should we clean up next?" --
+You do not need it to contribute. It identifies what to clean up next --
 including for an agent working on this repo, which gets a whole-package
 structural overview from one command:
 
@@ -224,9 +224,9 @@ pyscn analyze dataretrieval  # HTML report, or --json for the numbers
 ```
 
 Read its findings as suggestions, not conclusions. Its clone detector flags this
-package's per-collection getters -- thin, heavily documented wrappers whose
+package's per-collection getters -- thin, extensively documented wrappers whose
 bodies are necessarily similar -- and collapsing them into one parameterized
-function would sacrifice the documented public surface for a metric. Its
+function would give up the documented public surface for a metric. Its
 dependency-injection heuristics expect a class-oriented design this package
 deliberately does not have.
 

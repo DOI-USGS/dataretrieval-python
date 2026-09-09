@@ -1,15 +1,15 @@
 """Low-level OGC policy: the dialect type and control validation.
 
-This module is the single source of truth for the :class:`OgcDialect` type
+This module is the one definition of the :class:`OgcDialect` type
 (per-API quirks the generic request builder needs) and OGC control validation.
 It depends only on the stdlib, so any OGC submodule can import it without
 creating cycles.
 
 It names no endpoint: which API an OGC call targets is the *adapter's*
-policy, supplied per call as ``base_url``. A default here would quietly
-point every generic OGC caller at one API.
+policy, supplied per call as ``base_url``. A default here would
+direct every generic OGC caller to one API.
 
-It must NOT import engine, shaping, or any collection adapter.
+It must not import engine, shaping, or any collection adapter.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def _require_positive_int(
 
 @dataclass(frozen=True)
 class OgcDialect:
-    """Per-API quirks the generic request builder needs to know about.
+    """Per-API differences the generic request builder must handle.
 
     Attributes
     ----------
@@ -51,9 +51,9 @@ class OgcDialect:
         ``last_modified`` parameter is always rendered as a full datetime
         regardless of this set.
     time_cols : frozenset[str]
-        Result columns to coerce to datetime when ``convert_type`` is set.
-        Empty by default, so the generic engine carries no API-specific
-        column knowledge; each API supplies its own.
+        Result columns to coerce to datetime when ``convert_type`` is set. Empty by
+        default, so the generic engine holds no API-specific column list; each API
+        supplies its own.
     numerical_cols : frozenset[str]
         Result columns to coerce to numeric when ``convert_type`` is set.
     sort_cols : tuple[str, ...]

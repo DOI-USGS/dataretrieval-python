@@ -60,9 +60,9 @@ def test_get_results_opts_into_retry(monkeypatch):
 
 
 def test_read_wqp_csv_preserves_leading_zero_codes():
-    """Regression: WQP code columns (HUCs, parameter codes, FIPS) carry
-    significant leading zeros; a bare ``read_csv`` inferred them as int/float
-    and dropped the zeros (``"00060"`` -> ``60``). ``_read_wqp_csv`` reads
+    """Regression: WQP code columns (HUCs, parameter codes, FIPS) have significant
+    leading zeros; a bare ``read_csv`` inferred them as int/float and dropped the zeros
+    (``"00060"`` -> ``60``). ``_read_wqp_csv`` reads
     code/identifier columns as ``str`` while leaving value columns numeric."""
     from dataretrieval.wqp import _read_wqp_csv
 
@@ -94,7 +94,7 @@ def test_get_results(httpx_mock):
     assert df.shape == (5, 65)
     _assert_wqp_metadata(md, request_url)
     assert df["ActivityStartDateTime"].notna().all()
-    # Regression: the getter must thread the query kwargs into the metadata
+    # Regression: the getter must pass the query kwargs into the metadata
     # (it previously built WQP_Metadata(response), dropping them), so that
     # md.site_info has a siteid to look up instead of always returning None.
     assert md._parameters.get("siteid") == "WIDNR_WQX-10032762"
@@ -233,7 +233,7 @@ def test_wqp_url_profiles(builder, service, expected, warning):
 
 
 def test_a_configured_base_url_moves_both_interfaces():
-    """One root, both paths: the portal serves legacy and WQX3 from one host.
+    """The portal serves legacy and WQX3 from one host, so one root covers both paths.
 
     Redirecting only the interface a caller happened to use first would leave
     the other pointed at the service they were redirecting away from, which is
@@ -251,7 +251,7 @@ def test_a_configured_base_url_moves_both_interfaces():
     assert wqx3 == f"{mirror}/wqx3/Result/search?"
 
     # Outside the block, the portal's own root again -- the redirect is scoped
-    # to the ``with`` statement, not latched at import.
+    # to the ``with`` statement, not fixed at import.
     with pytest.warns(DataCurrencyWarning):
         assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
 
@@ -322,7 +322,7 @@ _WHAT_CASES = [
     ids=[case[0].__name__ for case in _WHAT_CASES],
 )
 def test_what_query(httpx_mock, func, service, fixture, profile_column):
-    """Each WQP ``what_*`` wrapper hits its own service endpoint and returns the
+    """Each WQP ``what_*`` wrapper requests its own service endpoint and returns the
     parsed DataFrame + metadata."""
     request_url = (
         f"https://www.waterqualitydata.us/data/{service}/Search?"
@@ -333,7 +333,7 @@ def test_what_query(httpx_mock, func, service, fixture, profile_column):
     assert type(df) is DataFrame
     assert not df.empty
     assert profile_column in df.columns
-    # Only get_results post-processes: the shared funnel must hand back each
+    # Only get_results post-processes: the shared query path must return each
     # what_* response exactly as parsed, with no DateTime columns and no sort.
     with open(f"tests/data/{fixture}") as text:
         assert_frame_equal(df, _read_wqp_csv(text.read()))
@@ -371,7 +371,7 @@ def test_credential_shaped_wqp_kwargs_are_rejected(name):
     "name", ["siteid", "characteristicName", "statecode", "providers", "pCode"]
 )
 def test_real_wqp_filters_still_pass_through(name):
-    """The denylist must not claim names the portal owns."""
+    """The denylist must not include names the portal defines."""
     assert _check_kwargs({name: "v"})[name] == "v"
 
 
@@ -380,7 +380,7 @@ def test_get_results_wqx3_preserves_user_dataProfile(httpx_mock):
 
     Regression: previously the `else` branch of the `dataProfile` validation
     triggered whenever the value was *not invalid*, including any valid
-    user-supplied profile, silently overwriting it with 'fullPhysChem'.
+    user-supplied profile, overwriting it with 'fullPhysChem'.
     """
     request_url = (
         "https://www.waterqualitydata.us/wqx3/Result/search?"
@@ -419,7 +419,7 @@ def test_wqp_metadata_site_info_is_accessible_property():
 
 
 def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):
-    """When the query carried a ``siteid`` (WQP's site identifier),
+    """When the query included a ``siteid`` (WQP's site identifier),
     ``site_info`` delegates to ``wqp.what_sites`` with that identifier."""
     import dataretrieval.wqp as wqp_mod
 

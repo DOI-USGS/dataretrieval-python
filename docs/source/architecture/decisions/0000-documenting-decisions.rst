@@ -12,7 +12,7 @@ section records the clause added.
 Context
 -------
 
-This package is documented heavily and deliberately. Its public getters are
+This package is documented extensively and deliberately. Its public getters are
 thin wrappers whose numpydoc parameter tables *are* the deliverable: 55% of all
 docstring lines in ``dataretrieval/`` are in the service adapters, at a ratio of
 2.5 prose lines per line of code. CONTRIBUTING already requires those tables.
@@ -20,7 +20,7 @@ docstring lines in ``dataretrieval/`` are in the service adapters, at a ratio of
 The problem is in the internal modules behind them. Rationale -- the argument
 for why a rule holds -- accumulated in module and function docstrings alongside
 the ADRs that already owned it, because a paragraph can be written where the
-reader already is, while a citation sends them to a record they have to open.
+reader already is, while a citation requires them to open a record.
 Those modules hold 82% of the package's comment lines, and an audit of that
 prose found roughly 500 lines restating decisions already recorded in ADRs 0003
 through 0011: ``configuration.py`` re-derives the layered-resolution design in
@@ -29,7 +29,7 @@ the no-progress budget is argued from first principles in five places across
 ``transport/``, and which failures may be retried is enumerated in three lists
 that can drift apart.
 
-Duplication is not a tidiness problem here; it is a correctness problem. Every
+Duplication here is a correctness problem. Every
 copy is a place the rule can be updated while the others are not, and the audit
 found copies that had already gone stale -- an overview paragraph describing
 concurrency caps that a later ADR had removed, and an ADR clause describing a
@@ -57,7 +57,7 @@ than the lines beneath it, and belongs in one of the venues below.
 **Commit messages own the history.** Benchmark numbers, the symptom that
 prompted a change, what the code used to do, what was tried and rejected. This
 is the venue with a date and a diff attached. It is the one place where "was
-once optional" or "measured 1.6x slower" stays true forever without maintenance.
+once optional" or "measured 1.6x slower" stays true without maintenance.
 Source files describe the current state, not how it was reached.
 
 **ADRs own the cross-cutting decision.** A choice that constrains code outside
@@ -68,7 +68,7 @@ number a new one sequentially and follow :doc:`template`.
 
 **The glossary owns the vocabulary.** ``CONTEXT.md`` defines terms with
 package-wide meaning. Documents use those terms rather than redefining them, and
-where a term and the code disagree, the term is authoritative.
+where a term and the code differ, the term is authoritative.
 
 Three rules follow:
 
@@ -94,7 +94,7 @@ Consequences
   opening an ADR. That cost is accepted -- the reader who needs the argument is
   rarer than the reader who needs the contract, and the ADR is the version that
   is maintained.
-- Rationale is not deleted when it moves. Prose that leaves a docstring is moved
+- Rationale is not deleted when it moves. Prose removed from a docstring is moved
   to an ADR clause or to the commit message that removes it. The commit message
   is where a reviewer looks for what a documentation change discarded.
 - Docstring volume in the service adapters is expected to stay high and is not a
@@ -102,7 +102,7 @@ Consequences
   whether it is over-documented.
 - The policy applies going forward. Existing prose is migrated when a module is
   being changed for another reason, rather than in a single pass that would
-  touch every file at once.
+  change every file at once.
 
 Compliance
 ----------
@@ -110,7 +110,7 @@ Compliance
 Reviewers apply two questions to added prose. First: *does this explain the
 lines beneath it, or does it argue for a rule that binds another file?* The
 second belongs in an ADR, cited by number. Then: *could a reader who has not
-opened the cited record follow this sentence?* If not, the citation has hidden
+opened the cited record follow this sentence?* If not, the citation has removed
 the explanation rather than relocated it. The repair is to give the reader what
 they need -- name the term, resolve the pronoun, say which venue owns the
 rest -- not to restate the argument the citation replaced.
@@ -122,8 +122,8 @@ docstring or comment that names an ADR must name one that exists.
 ``docs/source/architecture/decisions/``, so a renumbered or deleted record fails
 the suite rather than leaving a dangling pointer. Whether a given paragraph
 should have been a citation remains a review judgement. No test is proposed: a
-proxy metric here would push contributors to delete parameter documentation to
-improve a number.
+proxy metric here would encourage contributors to delete parameter
+documentation to improve a number.
 
 Notes
 -----
@@ -134,7 +134,7 @@ this record had put in the right venue and that only the author could follow:
 undefined jargon, a pronoun with no antecedent, and a mapping between two
 numbering schemes that needed a second document open. One instance
 broke this record's own history rule. The venue rules say where an explanation
-goes; none of them considered who would read it.
+goes; none of them addressed who would read it.
 
 ``Context`` and the measurements below are this package's. ``Decision``,
 ``Consequences``, and the review questions in ``Compliance`` are written to hold

@@ -1,8 +1,9 @@
 """OGC argument normalization and HTTP request construction.
 
 The API to target and its quirks are explicit parameters (``base_url``,
-``dialect``) -- construction states everything it needs. Queryables and schema
-execution live in :mod:`dataretrieval.ogc.schema` and are not re-exported here,
+``dialect``) -- construction takes everything it needs as parameters.
+Queryables and schema execution are in :mod:`dataretrieval.ogc.schema` and are
+not re-exported here,
 so this module does not depend on the part of OGC that executes HTTP (ADR 0007).
 """
 
@@ -25,7 +26,7 @@ from dataretrieval.transport.http import default_headers as _default_headers
 
 # ``AGENCY-ID``: a hyphen-separated agency prefix and local id. The local id
 # may itself contain hyphens (``\S+`` after the first separator) — NGWMN
-# aggregates many non-USGS agencies whose local ids aren't bare digits, so
+# aggregates many non-USGS agencies whose local ids are not only digits, so
 # only the agency prefix is constrained to be hyphen/space-free.
 _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 
@@ -37,7 +38,7 @@ _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 
 def _switch_arg_id(ls: dict[str, Any], id_name: str, collection: str) -> dict[str, Any]:
     """Switch argument id from its package-specific identifier to the
-    standardized "id" key that the API recognizes."""
+    standardized "id" key that the API accepts."""
     collection_id = collection.replace("-", "_") + "_id"
     if "id" not in ls:
         if collection_id in ls:
@@ -82,7 +83,7 @@ def _ogc_query_params(
     limit: int | None,
     skip_geometry: bool | None,
 ) -> dict[str, Any]:
-    """Add the shared OGC query knobs to ``params`` (mutated in place)."""
+    """Add the shared OGC query parameters to ``params`` (mutated in place)."""
     if skip_geometry is not None:
         params["skipGeometry"] = skip_geometry
     params["limit"] = 50000 if limit is None or limit > 50000 else limit
@@ -101,7 +102,9 @@ def _is_post_param(value: Any) -> bool:
 def _partition_cql2(
     params: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """CQL2 path: multi-value lists go to POST body, rest stay as URL params."""
+    """CQL2 path: multi-value lists are placed in the POST body, the rest remain URL
+    params.
+    """
     post_params = {key: value for key, value in params.items() if _is_post_param(value)}
     url_params = {key: value for key, value in params.items() if key not in post_params}
     return url_params, post_params
@@ -167,7 +170,7 @@ def _construct_api_requests(
     """Construct an HTTP request object for the specified OGC API collection.
 
     ``base_url`` is required: this package is API-neutral and names no API of
-    its own, so the adapter naming the collection states the API it targets.
+    its own, so the adapter naming the collection also names the API it targets.
     ``dialect`` defaults to a plain OGC API with no per-collection quirks.
     """
     service_url = _items_url(collection, base_url)
@@ -239,9 +242,9 @@ def _construct_cql_request(
 # Argument normalization helpers
 # ---------------------------------------------------------------------------
 
-# Iterable-shaped params that ``_get_args`` must NOT push through
-# ``_normalize_str_iterable`` (date-range params may carry ``pd.NaT``/None or
-# interval strings; ``bbox`` is ``list[float]``). Every OGC caller gets these;
+# Iterable params that ``_get_args`` must not pass through
+# ``_normalize_str_iterable`` (date-range params may contain ``pd.NaT``/None or
+# interval strings; ``bbox`` is ``list[float]``). These apply to every OGC caller;
 # an adapter with extra numeric params names only its extras via
 # ``prepare_request_args(..., extra_no_normalize=...)``.
 _NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"bbox"}
@@ -335,14 +338,14 @@ def prepare_request_args(
 ) -> dict[str, Any]:
     """Build OGC request kwargs from a getter's ``locals()``.
 
-    Internal bookkeeping keys, caller-supplied exclusions, and ``None`` values
+    Internal control keys, caller-supplied exclusions, and ``None`` values
     are omitted. Identifiers and properties are validated; other iterables are
     normalized unless exempted.
 
     ``extra_no_normalize`` *adds* to the engine's own
     :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
-    only the params it owns and cannot silently drop the date-range exemptions
-    by forgetting to union them back in.
+    only the params it owns and cannot drop the date-range exemptions
+    by omitting them.
     """
     no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
     to_exclude = {"collection", "service", "output_id"}

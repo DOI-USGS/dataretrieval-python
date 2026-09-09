@@ -31,7 +31,7 @@ from dataretrieval.transport.pagination import paginate
 
 
 def _run_walk_pages(*, geopd, req, client):
-    """Drive the async ``_walk_pages`` to completion synchronously.
+    """Run the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
     ``AsyncMock(spec=httpx.AsyncClient)`` whose ``.send``/``.request`` are
@@ -42,7 +42,7 @@ def _run_walk_pages(*, geopd, req, client):
     return asyncio.run(_walk_pages(geopd=geopd, req=req, client=client))
 
 
-# The Water Data host is the only one that honors ``API_USGS_PAT``, and so the
+# The Water Data host is the only one that accepts ``API_USGS_PAT``, and so the
 # only one where pointing the user at API-key registration is useful advice.
 _KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/"
 
@@ -132,7 +132,7 @@ def test_note_retry_is_noop_when_disabled():
 def test_note_retry_accepts_integer_wait():
     # An int ``wait`` (e.g. whole seconds) must render without raising:
     # ``round(int, 1)`` returns an int and ``int.is_integer()`` only exists on
-    # Python 3.12+, while the package floor is 3.10. Renders like the float.
+    # Python 3.12+, while the package minimum is 3.10. Renders like the float.
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True)
     reporter.note_retry(attempt=1, wait=5)
@@ -216,8 +216,8 @@ class _RaisingStream:
 def test_reporter_swallows_stream_errors_and_disables(monkeypatch):
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     reporter = ProgressReporter(stream=_RaisingStream(), enabled=True)
-    reporter.add_page(rows=1)  # render write raises -> must be swallowed
-    reporter.close()  # newline + hint writes raise -> must be swallowed
+    reporter.add_page(rows=1)  # render write raises -> must be caught
+    reporter.close()  # newline + hint writes raise -> must be caught
     assert reporter.enabled is False
 
 
@@ -234,8 +234,8 @@ def test_hints_api_key_when_no_key_configured(monkeypatch):
 
 
 def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
-    # Anonymous responses still carry a rate-limit header, so absence of a key
-    # — not absence of the header — is what drives the pointer.
+    # Anonymous responses still include a rate-limit header, so absence of a key
+    # — not absence of the header — is what decides the pointer.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
@@ -255,10 +255,10 @@ def test_no_hint_when_api_key_present(monkeypatch):
 
 
 def test_no_hint_for_a_service_the_key_does_not_cover(monkeypatch):
-    """Only the host that honors ``API_USGS_PAT`` gets the sign-up pointer.
+    """Only the host that accepts ``API_USGS_PAT`` gets the sign-up pointer.
 
-    Water Use is on a different host and never receives the key, so telling its
-    users to register sends them after a fix that changes nothing.
+    Water Use is on a different host and never receives the key, so telling its users to
+    register directs them to a change that has no effect.
     """
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
@@ -326,7 +326,7 @@ def _fake_ipython(shell_class_name):
 
 def test_enabled_in_jupyter_kernel(monkeypatch):
     # A Jupyter kernel's stderr isn't a TTY, but the line should still show
-    # (it honors \r in the cell output, like tqdm).
+    # (it handles \r in the cell output, like tqdm).
     monkeypatch.delenv("API_USGS_PROGRESS", raising=False)
     monkeypatch.setitem(sys.modules, "IPython", _fake_ipython("ZMQInteractiveShell"))
     assert ProgressReporter(stream=io.StringIO()).enabled is True
@@ -373,7 +373,7 @@ def test_nested_context_reuses_outer_reporter():
 
 def _resp(features, *, next_url=None, rate_remaining=None):
     resp = mock.MagicMock()
-    # A real response always carries an ``httpx.URL``; the next-page check
+    # A real response always has an ``httpx.URL``; the next-page check
     # resolves and host-checks the ``next`` link against it.
     resp.url = httpx.URL("https://example.com/p1")
     links = [{"rel": "next", "href": next_url}] if next_url else []
@@ -413,7 +413,8 @@ def test_walk_pages_reports_pages_and_rate_limit():
 
     assert len(df) == 2
     out = stream.getvalue()
-    # The collection set on the context reaches _paginate's render via the contextvar.
+    # The collection set on the context is available to _paginate's render via the
+    # contextvar.
     assert "Retrieving: daily ·" in out
     assert "2 pages" in out
     assert "4,998 requests remaining" in out
@@ -421,7 +422,7 @@ def test_walk_pages_reports_pages_and_rate_limit():
 
 
 def test_walk_pages_without_context_does_not_error():
-    # No active reporter: pagination must still work and stay silent.
+    # No active reporter: pagination must still work and print nothing.
     resp = _resp([{"id": "1", "properties": {"v": "a"}}])
     client = mock.AsyncMock(spec=httpx.AsyncClient)
     client.send.return_value = resp
@@ -437,8 +438,8 @@ def test_walk_pages_without_context_does_not_error():
 
 
 def test_broken_progress_stream_does_not_truncate_pagination():
-    # A render failure (broken pipe) lands inside _walk_pages' per-page try;
-    # it must NOT be mistaken for a failed request and silently drop pages.
+    # A render failure (broken pipe) is raised inside _walk_pages' per-page try; it must
+    # not be mistaken for a failed request and drop pages without an error.
     resp1 = _resp(
         [{"id": "1", "properties": {"v": "a"}}], next_url="https://example.com/p2"
     )
@@ -462,10 +463,9 @@ def test_broken_progress_stream_does_not_truncate_pagination():
 
 
 def test_paginate_reports_pages_through_active_reporter(monkeypatch):
-    """The async paginate path must drive the same progress reporter.
-    Pages and rate-limit updates from each completed page should land
-    via the active ``ProgressReporter``, exactly as they would on
-    ``_walk_pages``."""
+    """The async paginate path must report through the same progress reporter. Pages and
+    rate-limit updates from each completed page should be reported through the active
+    ``ProgressReporter``, as they are on ``_walk_pages``."""
     resp1 = _resp(
         [{"id": "1", "properties": {"v": "a"}}],
         next_url="https://example.com/p2",
@@ -523,13 +523,12 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
 
 def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     """The async fan-out core (``ChunkedCall._run``) records
-    ``plan.total`` on the active reporter so the progress line knows how
-    many chunks are in flight, and ticks ``current_chunk`` via
-    ``start_chunk(len(completed))`` as each gathered chunk finishes
-    — reaching ``plan.total`` in the all-success case."""
+    ``plan.total`` on the active reporter so the progress line has the count of chunks
+    in flight, and increments ``current_chunk`` via ``start_chunk(len(completed))`` as
+    each gathered chunk finishes — reaching ``plan.total`` in the all-success case."""
 
     # Fake build_request whose URL length scales with the sites list,
-    # mirroring the planner's _request_bytes contract. _FakeReq has the
+    # matching the planner's _request_bytes contract. _FakeReq has the
     # same shape as httpx.Request for sizing purposes.
     class _FakeReq:
         __slots__ = ("url", "content")
@@ -554,7 +553,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     stream = io.StringIO()
 
     async def run():
-        # Drive the async execution core directly (the same coroutine the
+        # Run the async execution core directly (the same coroutine the
         # sync ``resume()`` facade runs through the anyio portal).
         with progress_context(service="daily", stream=stream, enabled=True) as rep:
             await ChunkedCall(plan, fetch_async)._run(4)
@@ -562,7 +561,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
 
     total_recorded, current_recorded = asyncio.run(run())
     assert total_recorded == plan.total
-    # Each chunk that completes bumps current_chunk via
+    # Each chunk that completes increments current_chunk via
     # start_chunk(len(completed)), so by the time the gather finishes
     # current_chunk reflects the total number of successful chunks —
     # plan.total in the all-success case.
@@ -583,8 +582,8 @@ def test_closing_twice_is_a_no_op():
 
 
 def test_a_broken_stream_disables_the_reporter_instead_of_failing_the_query():
-    """Progress is decoration. A closed or redirected stream must not take
-    down a query whose data already arrived."""
+    """Progress output is not part of the result. A closed or redirected
+    stream must not fail a query whose data already arrived."""
 
     class _Broken(io.StringIO):
         def write(self, s):

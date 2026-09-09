@@ -1,8 +1,8 @@
 """One advisory mechanism, and one place to read the removal horizons.
 
 Every deprecation is announced through this module, with a horizon in
-:data:`REMOVALS` (ADR 0012). A ``DeprecationWarning`` promises that a *name in
-this package* is going away, while an advisory that an upstream *dataset* has
+:data:`REMOVALS` (ADR 0012). A ``DeprecationWarning`` states that a *name in
+this package* is being removed, while an advisory that an upstream *dataset* has
 stopped being updated belongs under
 :class:`~dataretrieval.exceptions.DataCurrencyWarning` (ADR 0004).
 """
@@ -13,7 +13,7 @@ import warnings
 
 #: Published removal horizons, by the surface each covers. A date here is a
 #: commitment already made in a released warning message; read it rather than
-#: spelling a date at the call site, so bumping one is a single edit.
+#: spelling a date at the call site, so extending one is a single edit.
 REMOVALS: dict[str, str] = {
     "nwis": "2027-05-06",
     "waterdata.get_cql(service=)": "2027-08-09",
@@ -35,19 +35,19 @@ def warn_deprecated(
     Parameters
     ----------
     subject
-        What is going away, as the caller spells it (``"nwis.get_dv"``, the
+        What is being removed, as the caller spells it (``"nwis.get_dv"``, the
         keyword ``"stateFips"``).
     replacement
-        What to use instead. Named in every message because a deprecation
-        without a migration path is only an inconvenience.
+        What to use instead. Named in every message because a deprecation without a
+        replacement gives the caller nothing to do.
     removal
         Date from :data:`REMOVALS`, or ``None`` when no horizon has been
-        published -- which reads as "a future release" rather than inventing
-        a commitment.
+        published -- which reads as "a future release" rather than stating
+        a date that has not been decided.
     detail
-        Optional sentence appended after the advisory, for a rename whose
-        reason is worth giving. Appended, never interpolated into the
-        message, so a multi-sentence detail cannot corrupt the wording.
+        Optional sentence appended after the advisory, for a rename whose reason should
+        be stated. Appended, never interpolated into the message, so a multi-sentence
+        detail cannot corrupt the wording.
     stacklevel
         Frames to skip so the warning is attributed to the caller's own line,
         not to this function.

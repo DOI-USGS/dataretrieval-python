@@ -17,8 +17,8 @@ Context
 Two services turn one logical query into several requests, for unrelated
 reasons. A Water Data or NGWMN query whose URL exceeds the server's byte limit
 is split along its multi-value axes. A Water Use query naming several locations
-is split because the NWDC accepts one ``location=`` per request -- its URLs run
-around 63 bytes against an 8000-byte budget, so the byte limit has nothing to do
+is split because the NWDC accepts one ``location=`` per request -- its URLs are
+about 63 bytes against an 8000-byte budget, so the byte limit has nothing to do
 with it.
 
 Chunking is how you divide the data; fan-out is how you distribute the work.
@@ -33,15 +33,15 @@ correct while a byte plan was the only thing anyone fanned out over. It stopped
 being correct once Water Use fanned out too: unable to import an OGC-internal
 executor, ``wateruse._fan_out`` re-implemented the semaphore, the
 ``asyncio.gather``, and the cancellation-before-HTTP-error failure precedence,
-with a comment naming ``ChunkedCall._run`` as the original. One rule, two
-copies, kept in agreement by that comment.
+with a comment naming ``ChunkedCall._run`` as the original. One rule existed in
+two copies, kept in agreement only by that comment.
 
-The duplicate was not merely redundant. It lacked resume, so a rate limit
+The duplicate was also defective. It lacked resume, so a rate limit
 partway through discarded every location that had already succeeded -- against
 an hourly quota, on fan-outs of hundreds of locations. It reported no
 progress. And it read its own module-global concurrency cap, so a user setting
-``API_USGS_CONCURRENT`` to lower the request rate found one adapter ignoring
-them.
+``API_USGS_CONCURRENT`` to lower the request rate found that one adapter did not
+apply it.
 
 Decision
 --------
@@ -88,7 +88,7 @@ test would have to assert they agree. Every adapter whose chunks are
 already a list would also need a wrapper class whose only purpose is renaming
 ``len``.
 
-With the standard names a plain ``list`` is a plan, which is exactly what Water
+With the standard names a plain ``list`` is a plan, which is what Water
 Use passes. ``ChunkPlan`` keeps ``total`` and ``iter_chunk_args`` as its own
 vocabulary and defines the dunders to delegate to them, so the two cannot
 disagree.
@@ -139,9 +139,9 @@ Consequences
   connection failure now raises ``ServiceInterrupted`` / ``QuotaExhausted``
   rather than ``ServiceUnavailable`` / ``RateLimited`` / ``NetworkError``. All
   remain ``DataRetrievalError``, so broad handlers are unaffected, but a narrow
-  handler around a Water Use call must widen. This is convergence, not novelty
-  -- it is what the OGC getters have always done -- and it is what makes the
-  failure resumable. Deterministic connection failures remain ``NetworkError``.
+  handler around a Water Use call must widen. The OGC getters have always
+  raised these types, and raising them is what makes the failure resumable.
+  Deterministic connection failures remain ``NetworkError``.
 - **Breaking:** ``wateruse.MAX_CONCURRENT_REQUESTS`` is removed in favor of
   ``API_USGS_CONCURRENT`` and ``wateruse.DEFAULT_CONCURRENT_REQUESTS``.
 - Resume re-issues a failed location's entire page walk, so pages fetched before

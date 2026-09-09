@@ -43,8 +43,8 @@ covers what stops a call; two things that do not stop one are decided here as
 well, because getting either wrong turns a condition that should not stop a call
 into one that does.
 
-A fan-out over *independent* items may skip one. Where a query asks for many
-items that do not compose into a single answer, an item failing
+A fan-out over *independent* items may skip one. Where a query requests many
+items that do not compose into a single result, an item failing
 deterministically is dropped with a warning naming it, and counts as complete
 so a resume does not re-attempt it. A transient failure is never skipped: it
 retries, and once retries are exhausted it raises a resumable interruption like
@@ -73,14 +73,14 @@ rather than ``cls(*args)``, because these errors have fields whose values are
 not the constructor's arguments. A subclass holding an unpicklable handle -- a
 client, a task -- must remove it in ``__getstate__``. Without this a failure
 raised inside a worker process is replaced by a pickling error as it is
-returned, losing the diagnosis exactly when it is hardest to reproduce.
+returned, losing the diagnosis when it is hardest to reproduce.
 
 Consequences
 ------------
 
 - Callers can catch one stable base error and still branch on ``status_code``,
   ``retry_after``, and ``retryable``.
-- Mid-pagination failure cannot silently look like a complete dataset.
+- Mid-pagination failure cannot be mistaken for a complete dataset.
 - Retry can increase latency and request quota, so policy and defaults are part
   of observable behavior.
 - Partial OGC state requires serialization and finalization tests.
@@ -95,7 +95,7 @@ pagination failure, retry exhaustion and jitter bounds, ``Retry-After`` limits,
 resume equivalence, partial-state stability, pickling, and cancellation
 precedence. The skip policy is covered by
 ``tests/waterdata_ratings_test.py::test_get_ratings_deterministic_download_failure_warns_and_skips``
-and its sibling for a feature with no asset; the warning categories by
+and the companion test for a feature with no asset; the warning categories by
 ``tests/deprecation_test.py``, which asserts ``DataCurrencyWarning`` is not a
 subclass of ``DeprecationWarning``; the ``Retry-After`` parsing rules by the
 ``Retry-After`` date and over-cap cases; and the process boundary by
@@ -108,7 +108,7 @@ The warning, ``Retry-After`` parsing, and pickling clauses were added after the
 original decision. They record, under ADR 0000, rules the code was stating in
 prose. The skip clause records an exception that previously read as
 contradicting this record and :doc:`0006-service-neutral-transport`; 0006 now
-points here for it.
+cites this record for it.
 
 The ``Status`` line was also annotated retroactively: this record assigned
 resumable partial state to OGC, which :doc:`0008-fan-out-execution` superseded

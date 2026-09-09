@@ -35,7 +35,7 @@ can predict where a thing is defined.
 - `dataretrieval/transport/` — service-neutral request code (HTTP, retry,
   pagination, fan-out). It names no service and no protocol, and is not public API.
 - Leading-underscore top-level modules are private; the dependency-free *leaves*
-  are at the bottom of the stack so anything may use them without pulling in the
+  are at the bottom of the stack so anything may use them without importing the
   rest of the package. Check for an existing leaf before writing a small helper.
 - **`.importlinter` records where every module belongs.** Its `layers` contract
   lists every top-level module in dependency order and is `exhaustive = True`,
@@ -62,7 +62,7 @@ can predict where a thing is defined.
   `*_test.ipynb` at the top level are untracked local scratch — don't edit,
   commit, or cite them.
 - Exclude `.claude/worktrees/` from searches and edits; stale worktrees there
-  pollute results.
+  add spurious results.
 
 ## Environment
 - `pip install .[test,nldi]` (CI uses pip, not uv, despite `uv.lock`).
@@ -77,8 +77,8 @@ can predict where a thing is defined.
   a merge gate: branch coverage with a `fail_under` ratchet in
   `[tool.coverage.report]`. Cover the uncovered *branch*, not the number -- a
   test written only to mark a line as covered catches nothing and adds
-  maintenance. If a path is genuinely unreachable, add it to `exclude_also`
-  with a reason, or leave the ratchet alone.
+  maintenance. If a path is unreachable, add it to `exclude_also`
+  with a reason, or leave the ratchet unchanged.
 - Types: `mypy` (`strict = true` in `pyproject.toml`; CI runs it over the
   PR-merged-into-main, so bare `dict`/`list` annotations fail there even if they
   pass on your branch).
@@ -87,7 +87,7 @@ can predict where a thing is defined.
 - Docs: install docs deps, `ipython kernel install --name "python3" --user`, then
   `make html` from `docs/`. `make docs` adds doctest+linkcheck (network-dependent).
 
-## Testing gotchas
+## Testing notes
 - The suite is offline by default: `addopts = "-m 'not live'"`. Tests marked
   `@pytest.mark.live` call real USGS services and run on a schedule
   (`.github/workflows/live-api.yml`); run them locally with `pytest tests/ -m live`.
@@ -125,17 +125,17 @@ raise states the problem and then the action that fixes it, in that order.
   a real parameter of the function the *caller* called — not a private helper's
   local, not a prose label — and following it literally must produce a working
   call. Messages that read well have failed all three: `datetime_input` was a
-  private local no getter accepts, `configure(Configuration(...))` was a silent
-  no-op because `configure` is a context manager, `pip install
+  private local no getter accepts, `configure(Configuration(...))` was a no-op that raised
+  nothing because `configure` is a context manager, `pip install
   dataretrieval[nldi]` globs in zsh, and a navigation missing its `data_source`
   wrote `None` into the URL and returned an empty frame. Run the corrected
   call against the real service; wording review does not catch these.
 - Shared checks take the caller's argument name. `_validate_data_source`,
   `_format_api_dates`, and `require_one_of` all accept a `name=` so the subject
-  of the message is the argument that was actually passed. A helper that hard-codes
+  of the message is the argument that was passed. A helper that hard-codes
   one noun reports the wrong parameter the moment a second call site reuses it.
-- Prefer raising over returning something empty when the library cannot tell
-  "no data" from "the service misbehaved": a caller that gets an empty frame has
+- Prefer raising over returning something empty when the library cannot distinguish
+  an empty result from a service failure: a caller that gets an empty frame has
   no signal to act on. `nldi._query_nldi` is the deliberate exception — a 200
   with a non-JSON body becomes an empty GeoDataFrame by design.
 
@@ -144,7 +144,7 @@ raise states the problem and then the action that fixes it, in that order.
   `httpx` and tests mock with `httpx_mock`.
 - Public getters return `(DataFrame, metadata)`.
 - `dataretrieval/__init__.py` imports the service modules by name and lists them
-  in `__all__`; it does not star-import them, so a getter is reached through its
+  in `__all__`; it does not star-import them, so a getter is accessed through its
   module (`dataretrieval.nwis.get_record`), never from the top level. `nldi` is
   deliberately absent — it needs `geopandas` at import time, so it is imported on
   demand. `dataretrieval/waterdata/__init__.py` controls Water Data exports via

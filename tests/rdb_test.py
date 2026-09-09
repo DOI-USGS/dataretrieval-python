@@ -49,7 +49,7 @@ def test_read_rdb_empty_when_only_comments():
 
 
 def test_read_rdb_raises_on_html_response():
-    """If the service returns an HTML error page, surface it loudly."""
+    """If the service returns an HTML error page, raise."""
     with pytest.raises(ValueError, match="HTML"):
         read_rdb("<html><body>Service Unavailable</body></html>")
     with pytest.raises(ValueError, match="HTML"):

@@ -1,8 +1,8 @@
 """Data-shaping helpers, plus re-exports for names documented at this path.
 
-What is *defined* here is frame munging that names no service: building a UTC
-datetime column out of the separate date/time/zone columns a caller points at.
-The one-shot HTTP query path lives in :mod:`dataretrieval._querying` and the
+What is *defined* here is frame reshaping that names no service: building a UTC
+datetime column out of the separate date/time/zone columns a caller names.
+The one-shot HTTP query path is in :mod:`dataretrieval._querying` and the
 WQX3 / legacy-WQP column conventions in :mod:`dataretrieval._wqx`; nothing here
 depends on either -- the names below are re-exported so their documented
 ``dataretrieval.utils`` paths keep resolving.

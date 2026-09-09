@@ -43,13 +43,13 @@ ALLPARAMCODES_URL = "https://help.waterdata.usgs.gov/code/parameter_cd_query?"
 
 WATERSERVICES_SERVICES = ["dv", "iv", "site", "stat"]
 # What ``get_record`` routes, which is wider than what ``query_waterdata``
-# reaches: 'ratings' is served by ``get_ratings`` from a different endpoint.
+# serves: 'ratings' is served by ``get_ratings`` from a different endpoint.
 WATERDATA_SERVICES = [
     "peaks",
     "ratings",
 ]
-# The major filters each query function accepts, hoisted beside the service
-# lists so the checks and their remedies read from one roster.
+# The major filters each query function accepts, placed with the service
+# lists so the checks and their remedies use one list.
 _NWIS_WEB_MAJOR_FILTERS = ("site_no", "stateCd")
 _NWIS_WEB_BBOX_CORNERS = (
     "nw_longitude_va",
@@ -88,7 +88,7 @@ _deprecation_state = threading.local()
 
 
 def _warn_deprecated(func_name: str) -> None:
-    """Emit a per-function DeprecationWarning pointing at the waterdata replacement."""
+    """Emit a per-function DeprecationWarning naming the waterdata replacement."""
     warn_deprecated(
         f"`nwis.{func_name}`",
         replacement=_REPLACEMENTS[func_name],
@@ -220,14 +220,14 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     Notes
     -----
     An empty frame with no ``peak_dt`` column is returned unchanged, so an
-    empty peaks response reaches :func:`format_response`'s empty-frame path
+    empty peaks response takes :func:`format_response`'s empty-frame path
     instead of raising ``KeyError``.
 
     NWIS zero-fills the unknown part of a historical peak's date --
     ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
     not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks
     rather than a date NWIS does not have. The peak is kept regardless, and
-    ``peak_dt`` is left in the frame: the response carries no ``water_yr``, so
+    ``peak_dt`` is left in the frame: the response has no ``water_yr``, so
     it is the only column holding a censored peak's year.
 
     """
@@ -527,9 +527,9 @@ def _get_json_values(
     """Shared body of the JSON waterservices time-series getters (dv / iv).
 
     The caller-facing ``sites`` / ``start`` / ``end`` arguments are aliases: an
-    explicit waterservices keyword of the same meaning wins over them. Note that
-    ``multi_index`` travels through ``kwargs`` so that :func:`format_response`
-    sees it.
+    explicit waterservices keyword of the same meaning takes precedence over
+    them. Note that ``multi_index`` is passed through ``kwargs`` so that
+    :func:`format_response` sees it.
     """
     _check_sites_value_types(sites)
 
@@ -1064,7 +1064,7 @@ def get_record(
 
 
 def _site_block_boundaries(site_list: list[str]) -> list[int]:
-    """Return indices where the site number changes, bookended by 0 and len.
+    """Return indices where the site number changes, with 0 and len added at the ends.
 
     For example, given ``['A', 'A', 'B']`` returns ``[0, 2, 3]``.
     """

@@ -10,10 +10,9 @@ from dataretrieval.interruptions import QuotaExhausted
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter
 
-# pytest-httpx matches URL strings exactly (including query). For the
-# ratings tests we want a "match this endpoint, ignore the params"
-# fixture so the assertions can drill into the captured params
-# afterwards without coupling the registration to the implementation's
+# pytest-httpx matches URL strings exactly (including query). For the ratings tests the
+# fixture matches the endpoint and ignores the params, so the assertions can inspect the
+# captured params afterwards without coupling the registration to the implementation's
 # parameter order. ``url=STAC_SEARCH_RE`` does that.
 STAC_SEARCH_RE = re.compile(
     r"^https://api\.waterdata\.usgs\.gov/stac/v0/search(\?.*)?$"
@@ -45,7 +44,7 @@ def test_get_ratings_rejects_invalid_file_type():
 
 
 def test_get_ratings_rejects_iso_8601_duration_in_time():
-    """STAC ratings doesn't accept ISO 8601 durations; surface a clear error."""
+    """STAC ratings doesn't accept ISO 8601 durations; raise a clear error."""
     with pytest.raises(ValueError, match=r"durations.*not supported"):
         get_ratings(
             monitoring_location_id="USGS-01104475",
@@ -54,7 +53,7 @@ def test_get_ratings_rejects_iso_8601_duration_in_time():
 
 
 def test_build_filter_escapes_quotes():
-    """Defends against malformed CQL or injection if an ID contains a quote."""
+    """Prevents malformed CQL or injection if an ID contains a quote."""
     f = _build_filter("USGS-x'-y", None)
     assert f == "monitoring_location_id IN ('USGS-x''-y')"
 
@@ -106,7 +105,7 @@ def test_get_ratings_mocked_search_and_download(httpx_mock, tmp_path):
     assert {"INDEP", "DEP"}.issubset(df.columns)
     assert len(df) == 3
 
-    # Server-side filter should pin the single requested file_type.
+    # Server-side filter should set the single requested file_type.
     sent = httpx_mock.get_requests()[0]
     qs = parse_qs(urlsplit(str(sent.url)).query)
     assert "file_type = 'exsa'" in qs["filter"][0]
@@ -114,7 +113,7 @@ def test_get_ratings_mocked_search_and_download(httpx_mock, tmp_path):
 
 
 def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
-    """Each parsed frame should carry its RDB header + source URL in df.attrs."""
+    """Each parsed frame should hold its RDB header and source URL in df.attrs."""
     httpx_mock.add_response(
         method="GET",
         url=STAC_SEARCH_RE,
@@ -128,7 +127,7 @@ def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
         file_path=str(tmp_path),
     )
     df = out["USGS-01104475.exsa.rdb"]
-    # The fixture has two `# ...` lines at the top; both should land in attrs.
+    # The fixture has two `# ...` lines at the top; both should appear in attrs.
     assert df.attrs["comment"] == [
         "# header line one",
         "# header line two",
@@ -197,8 +196,8 @@ def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
 
 
 def test_get_ratings_search_429_is_resumable(httpx_mock):
-    """A rate-limited search surfaces as a resumable interruption — parity
-    with the other getters, which drive the same executor — instead of a raw
+    """A rate-limited search raises a resumable interruption — the same as the other
+    getters, which use the same executor — instead of a raw
     ``RateLimited``; resuming finishes the interrupted stage."""
     httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, status_code=429)
     httpx_mock.add_response(
@@ -248,7 +247,7 @@ def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
 
 
 def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
-    """A catalog feature carrying no data asset is a per-feature data problem:
+    """A catalog feature with no data asset is a per-feature data problem:
     skipped with a warning, without costing the rest of the batch."""
     body = _two_feature_search_response()
     body["features"][0]["assets"] = {}
@@ -264,7 +263,7 @@ def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
 
 def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
     """``filterwarnings("error", ...)`` restores strict all-or-nothing: the
-    escalated skip surfaces as an exception instead of a silent gap."""
+    escalated skip is raised as an exception instead of leaving an unreported gap."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
     )
@@ -282,7 +281,7 @@ def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
 def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
     """A rate-limited download must never be skipped -- it is raised as a
     resumable interruption, and resuming completes the batch. The escalation
-    filter proves no ``SkippedRatingWarning`` fires along the way."""
+    filter proves no ``SkippedRatingWarning`` is emitted."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
     )
@@ -301,8 +300,8 @@ def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
 def test_stac_next_link_refuses_another_host(httpx_mock):
     """The STAC page walk must not follow a link off the ratings host.
 
-    The search request carries the Water Data API key; a ``next`` href naming
-    another host would take it somewhere the caller never asked for. Unlike the
+    The search request includes the Water Data API key; a ``next`` href naming
+    another host would send it to a host the caller never asked for. Unlike the
     OGC engine, this walk had no host check at all.
     """
     httpx_mock.add_response(
@@ -318,7 +317,7 @@ def test_stac_next_link_refuses_another_host(httpx_mock):
 
 
 def test_stac_next_link_strips_embedded_credentials(httpx_mock):
-    """A same-host ``next`` href must not smuggle in ``user:pass@``.
+    """A same-host ``next`` href must not include ``user:pass@``.
 
     The host check passes by construction here, so only the strip catches it.
     """

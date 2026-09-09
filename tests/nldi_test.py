@@ -59,8 +59,8 @@ def test_query_nldi_opts_into_retry(monkeypatch):
     monkeypatch.setattr(nldi, "_query_with_retry", query)
 
     assert nldi._query_nldi("https://example.test", {}) == {}
-    # ``adapter`` names whose settings the retry resolves, so a ``[nldi]``
-    # table reaches these calls and no others.
+    # ``adapter`` names whose settings the retry resolves, so a ``[nldi]`` table applies
+    # to these calls and no others.
     query.assert_called_once_with("https://example.test", payload={}, adapter="nldi")
 
 
@@ -215,7 +215,7 @@ def test_get_features_by_lat_long(httpx_mock):
     ],
 )
 def test_get_features_rejects_ambiguous_origins(kwargs, problem, remedy):
-    """Origin validation runs ahead of the request, and names the way out.
+    """Origin validation runs ahead of the request, and names the remedy.
 
     Both halves are asserted because the caller is usually a program: the
     problem alone tells it the call is invalid, and only the remedy tells it
@@ -388,7 +388,7 @@ def test_validate_data_source_rejects_invalid_after_cache_populated(httpx_mock):
     """Once the cache is warm, invalid data sources must still raise ValueError.
 
     Regression: previously the validation check was nested inside the
-    cache-population branch, so all calls after the first silently passed.
+    cache-population branch, so all calls after the first passed without validating.
     """
     mock_request_data_sources(httpx_mock)
 
@@ -402,7 +402,7 @@ def test_validate_data_source_rejects_invalid_after_cache_populated(httpx_mock):
 
 
 def test_search_flowlines_without_navigation_mode_raises_value_error():
-    """Regression: previously crashed with AttributeError on None.upper()."""
+    """Regression: previously raised AttributeError on None.upper()."""
     with pytest.raises(ValueError, match="navigation_mode is required"):
         search(comid=13294314, find="flowlines")
 
@@ -422,7 +422,7 @@ def test_search_for_basin_names_the_missing_half(kwargs, problem):
     """An incomplete basin origin says which argument to add, and shows one.
 
     Covers both ways the pair can be incomplete -- neither supplied, and one
-    of the two -- because a caller that has to guess which it hit cannot
+    of the two -- because a caller that has to guess which case applies cannot
     correct the call from the message alone.
     """
     with pytest.raises(ValueError) as excinfo:
@@ -460,7 +460,7 @@ def test_validate_navigation_mode_normalizes_lowercase():
 
 
 def test_query_nldi_non_200_raises_typed_error(httpx_mock):
-    """A non-200 NLDI response surfaces a typed ``DataRetrievalError`` (here a
+    """A non-200 NLDI response raises a typed ``DataRetrievalError`` (here a
     429 → ``RateLimited``, raised by the shared ``query`` path)."""
     from dataretrieval.exceptions import RateLimited
 
@@ -476,10 +476,10 @@ def test_query_nldi_non_200_raises_typed_error(httpx_mock):
 
 
 def test_validate_data_source_rejects_malformed_catalog(httpx_mock, monkeypatch):
-    """``_validate_data_source`` should raise ``ValueError`` with an
-    informative message if the NLDI base URL returns a non-list shape
-    (or a list whose entries don't carry ``source`` keys), instead of
-    crashing with ``TypeError: string indices must be integers``."""
+    """``_validate_data_source`` should raise ``ValueError`` with an informative message
+    if the NLDI base URL returns a non-list shape (or a list whose entries have no
+    ``source`` keys), instead of raising ``TypeError: string indices must be integers``.
+    """
     monkeypatch.setattr(nldi, "_AVAILABLE_DATA_SOURCES", None)
     httpx_mock.add_response(
         method="GET",
@@ -506,13 +506,13 @@ def test_query_504_raises_service_unavailable(httpx_mock):
 
 
 def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
-    """The block moves the catalog probe and the query alike.
+    """The block redirects the catalog probe and the query alike.
 
-    NLDI validates a feature source against a catalog it fetches itself, so a
-    redirect that reached only the getter's own URL would leave the library
-    asking the real service whether the mirror's sources exist -- and the mirror
-    exists precisely because the caller cannot or should not reach the service.
-    Both mocks are on the mirror, so either one straying fails this.
+    NLDI validates a feature source against a catalog it fetches itself, so a redirect
+    that applied only to the getter's own URL would leave the library querying the real
+    service whether the mirror's sources exist -- and the mirror exists because the
+    caller cannot or should not contact the service. Both mocks are on the mirror, so a
+    request to any other host fails this.
     """
     mirror = "https://mirror.example/nldi"
     httpx_mock.add_response(
@@ -549,14 +549,13 @@ def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
 def test_navigation_without_a_data_source_says_what_to_add(kwargs, monkeypatch):
     """A navigation needs the source naming which features to return.
 
-    Without this the missing source was interpolated into the path as the
-    literal string 'None'; the service answered 200 with an empty
-    FeatureCollection and the caller got an empty GeoDataFrame with no way to
-    tell it apart from a navigation that really has nothing on it.
+    Without this the missing source was interpolated into the path as the literal string
+    'None'; the service returned 200 with an empty FeatureCollection, and the caller
+    received an empty GeoDataFrame indistinguishable from a navigation with no features.
     """
-    # Seed the catalog: the feature_source case validates it on the way past,
-    # and the autouse fixture clears it, so an unseeded run reaches the network
-    # for a failure that is purely local.
+    # Seed the catalog: the feature_source case validates it before failing, and the
+    # autouse fixture clears it, so an unseeded run would make a network request for a
+    # failure that is local.
     monkeypatch.setattr(nldi, "_AVAILABLE_DATA_SOURCES", ["WQP", "nwissite"])
     with pytest.raises(ValueError) as excinfo:
         get_features(**kwargs)
@@ -568,9 +567,9 @@ def test_navigation_without_a_data_source_says_what_to_add(kwargs, monkeypatch):
 def test_a_bad_navigation_mode_is_reported_before_the_missing_data_source():
     """Both arguments are invalid; the mode is the one the caller typed.
 
-    Requiring ``data_source`` ahead of validating the mode would answer a
-    mistyped ``navigation_mode`` with a message about a different argument,
-    so the caller fixes that, re-runs, and only then learns about the typo.
+    Requiring ``data_source`` ahead of validating the mode would respond to a mistyped
+    ``navigation_mode`` with a message about a different argument, so the caller fixes
+    that, re-runs, and only then sees the typo.
     """
     with pytest.raises(ValueError) as excinfo:
         get_features(comid=13294314, navigation_mode="XX")
@@ -599,13 +598,13 @@ def test_get_features_by_data_source_validates_the_source(httpx_mock):
 
 
 def test_a_200_with_a_non_json_body_becomes_an_empty_frame(httpx_mock):
-    """NLDI answers some queries 200 with an empty body, and that is not an
-    error condition -- a feature with nothing upstream is a real answer.
+    """NLDI returns 200 with an empty body for some queries, and that is not an
+    error condition -- a feature with nothing upstream is a valid result.
 
-    This is the one place the package returns an empty frame rather than
-    raising on a malformed response. Pinned because it is deliberate: the
-    swallow reads as an oversight and could be 'fixed' into a raise, which
-    would turn a legitimate empty navigation into a crash.
+    This is the one place the package returns an empty frame rather than raising on a
+    malformed response. Pinned because it is deliberate: the suppression reads as an
+    oversight and could be 'fixed' into a raise, which would make a legitimate empty
+    navigation raise.
     """
     mock_request_data_sources(httpx_mock)
     httpx_mock.add_response(
@@ -619,11 +618,11 @@ def test_a_200_with_a_non_json_body_becomes_an_empty_frame(httpx_mock):
 
     assert isinstance(gdf, GeoDataFrame)
     assert gdf.empty
-    assert gdf.crs is not None  # the CRS survives the empty path
+    assert gdf.crs is not None  # the CRS is kept on the empty path
 
 
 def test_get_flowlines_forwards_stop_comid(httpx_mock):
-    """``stop_comid`` bounds a navigation and must reach the query string."""
+    """``stop_comid`` bounds a navigation and must be included in the query string."""
     request_url = (
         f"{NLDI_API_BASE_URL}/comid/13294314/navigation/UM/flowlines"
         "?distance=50&trimStart=false&stopComid=13294312"
@@ -642,7 +641,7 @@ def test_get_flowlines_forwards_stop_comid(httpx_mock):
 
 def test_search_rejects_a_basin_lookup_by_comid():
     """A basin is looked up by feature, not by flowline; the message must
-    offer both ways forward rather than only naming the conflict."""
+    offer both remedies rather than only naming the conflict."""
     with pytest.raises(ValueError) as excinfo:
         search(find="basin", comid=13294314)
     message = str(excinfo.value)

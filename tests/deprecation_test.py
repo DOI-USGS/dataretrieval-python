@@ -1,4 +1,5 @@
-"""The behavioural claim: downstream CI hygiene must not break the library."""
+"""The behavioural claim: a downstream ``-W error::DeprecationWarning``
+filter must not break the library."""
 
 import warnings
 
@@ -10,8 +11,8 @@ from dataretrieval.exceptions import DataCurrencyWarning
 
 
 def test_default_wqp_calls_survive_error_on_deprecationwarning():
-    """A downstream project running ``-W error::DeprecationWarning`` -- ordinary
-    CI hygiene -- must still be able to call wqp with default arguments.
+    """A downstream project running ``-W error::DeprecationWarning``
+    must still be able to call wqp with default arguments.
 
     ``legacy=True`` is the default on every wqp getter and ``wqp_url`` warns
     unconditionally, so emitting that advisory as a ``DeprecationWarning``
@@ -24,8 +25,8 @@ def test_default_wqp_calls_survive_error_on_deprecationwarning():
 
 
 def test_data_currency_is_not_a_deprecation():
-    """The two categories must stay independently filterable: silencing stale
-    data must not silence a real removal notice, or vice versa."""
+    """The two categories must stay independently filterable: filtering the stale-data
+    warning must not filter a removal notice, or vice versa."""
     assert not issubclass(DataCurrencyWarning, DeprecationWarning)
     assert issubclass(DataCurrencyWarning, UserWarning)
 

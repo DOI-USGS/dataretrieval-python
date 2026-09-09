@@ -3,10 +3,10 @@
 The suite uses four dependency-oriented layers without moving established tests:
 
 - **Public contract** (`tests/contracts/`): imports, exports, signatures, return
-  annotations, metadata/error promises, and compatibility paths. These tests use
+  annotations, metadata/error guarantees, and compatibility paths. These tests use
   public modules and no live services.
 - **Adapter contract** (`waterdata_test.py`, `ngwmn_test.py`, `nwdc_test.py`,
-  `wqp_test.py`, `nldi_test.py`, `streamstats_test.py`): service request wiring,
+  `wqp_test.py`, `nldi_test.py`, `streamstats_test.py`): service request construction,
   response parsing, and documented protocol behavior.
 - **Component** (`transport_test.py`, `waterdata_chunking_test.py`,
   `waterdata_queryables_test.py`, `rdb_test.py`): one internal responsibility in

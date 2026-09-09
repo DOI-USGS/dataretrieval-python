@@ -3,7 +3,7 @@
 Discrete water-quality results, which come from a different upstream service
 than the rest of Water Data -- with its own parameter spellings and its own
 error envelope. The translation between this package's argument names and that
-service's wire names lives here, next to the getters that need it.
+service's wire names is defined here, next to the getters that need it.
 """
 
 from __future__ import annotations
@@ -85,7 +85,7 @@ def _get_samples_csv(
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Issue a Samples CSV request and parse the body into a DataFrame.
 
-    Shared tail for the Samples getters: sends the GET with the standard
+    Shared final step for the Samples getters: sends the GET with the standard
     headers (including ``X-Api-Key``), raises a typed error on a non-200
     (consistent with the OGC/stats path) instead of a bare
     ``HTTPStatusError``, and reads the CSV. The caller wraps the response
@@ -107,8 +107,8 @@ def _get_samples_csv(
 # Map the public snake_case ``get_samples`` parameters to the camelCase query
 # parameter names the Samples API expects on the wire. ``characteristic`` is
 # already snake_case-compatible (single word) and is sent unchanged. The
-# remaining snake_case params are bookkeeping (``service``/``profile``/
-# ``ssl_check``) and never reach the request.
+# remaining snake_case params are control arguments (``service``/``profile``/
+# ``ssl_check``) and are never sent in the request.
 _SAMPLES_PARAM_TO_API = {
     "activity_media_name": "activityMediaName",
     "activity_start_date_lower": "activityStartDateLower",
@@ -172,9 +172,9 @@ def get_samples(
     """Search the USGS Samples database for discrete water-quality results.
 
     Every available filter is exposed as an argument, but leave as many as
-    feasible at their default of ``None``. An overcomplicated query can bog
-    down the database's ability to assemble a result before it times out, so
-    filtering narrowly is faster than filtering exhaustively.
+    feasible at their default of ``None``. A query with many filters can keep
+    the database from assembling a result before the request times out, so
+    a query with few filters runs faster than one with many.
 
     The web GUI for the Samples database is at
     https://waterdata.usgs.gov/download-samples/#dataProfile=site

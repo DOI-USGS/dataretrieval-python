@@ -1,12 +1,12 @@
 """Getters for observations that form a time series.
 
 Daily and continuous values, their most-recent counterparts, and the
-period-of-record statistics computed over them. What unites them is shape: a
+period-of-record statistics computed over them. What they share is shape: a
 monitoring location and a parameter, repeated over time.
 
 Metadata *about* these series -- what a location measures, over what period --
-lives in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what
-exists before asking for the observations.
+is in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what
+exists before requesting the observations.
 """
 
 from __future__ import annotations
@@ -164,7 +164,7 @@ def get_daily(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -211,7 +211,7 @@ def get_daily(
         ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",
         ... )
 
-        >>> # Quick "show me the last week" idiom (ISO 8601 duration)
+        >>> # The last seven days, as an ISO 8601 duration
         >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
@@ -226,7 +226,7 @@ def get_daily(
         ... )
 
         >>> # Pull only rows whose underlying record was refreshed in the
-        >>> # last 7 days — handy for incremental ETL polling
+        >>> # last 7 days — useful for incremental ETL polling
         >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
@@ -236,9 +236,9 @@ def get_daily(
         >>> # Chain queries: pull all stream monitoring locations in a
         >>> # state, then their daily discharge for the last week. The
         >>> # location list can be hundreds of values long — the request
-        >>> # is transparently chunked across multiple chunks so the URL
-        >>> # stays under the server's byte limit. Combined output looks
-        >>> # like a single query.
+        >>> # is split into several chunks so the URL stays under the
+        >>> # server's byte limit. The combined output is the same as for
+        >>> # a single request.
         >>> sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(
         ...     state="Ohio",
         ...     site_type="Stream",
@@ -385,7 +385,7 @@ def get_continuous(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 10000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -593,7 +593,7 @@ def get_latest_continuous(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -806,7 +806,7 @@ def get_latest_daily(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is spotty. This is a per-page size,
+        number if your internet connection is unreliable. This is a per-page size,
         not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
         to cap the total instead.
@@ -898,7 +898,7 @@ def get_stats_por(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get day-of-year and month-of-year statistics over the historical record.
 
-    Answers "how does today compare to a normal day here?" -- minimum, maximum,
+    Compares a day to the same day of year across the record: minimum, maximum,
     mean, median, and percentiles computed per day of year and month of year
     (the ``observationNormals`` endpoint). For more on how these statistics are
     calculated, see the Statistics documentation page:
@@ -943,7 +943,7 @@ def get_stats_por(
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        Returns statistics tied to a particular database entry.
+        Returns statistics associated with a particular database entry.
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at
@@ -1038,7 +1038,7 @@ def get_stats_date_range(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get statistics summarizing whole months and years of the record.
 
-    Answers "how did this month or year compare to others?" -- minimum, maximum,
+    Compares a month or year to the others in the record: minimum, maximum,
     mean, median, and percentiles per month-year and per water or calendar year
     (the ``observationIntervals`` endpoint). For more on how these statistics are
     calculated, see the Statistics documentation page:
@@ -1085,7 +1085,7 @@ def get_stats_date_range(
         The number of results to return per page, where one result represents a
         monitoring location. The default is 1000.
     parent_time_series_id: string, optional
-        Returns statistics tied to a particular database entry.
+        Returns statistics associated with a particular database entry.
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at

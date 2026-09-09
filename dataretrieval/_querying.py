@@ -1,17 +1,17 @@
 """The one-shot HTTP query path behind the legacy service adapters.
 
 "Compose a USGS query URL, send it, map the status, retry a transient" -- the
-half of the old ``utils`` module that talks to the network, as used by ``nwis``,
+half of the old ``utils`` module that issues requests, as used by ``nwis``,
 ``wqp``, ``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
-column munging) shared nothing with this but a filename: no caller wanted both,
+column reshaping) shared nothing with this but a filename: no caller used both,
 and the two have disjoint dependencies -- this one needs ``exceptions`` and
 ``transport``, that one needs ``codes`` and pandas.
 
 The module is private because the *names* are not: ``query`` and ``to_str`` keep
 their documented ``dataretrieval.utils`` path, the way ``Ambient`` and
 ``BaseMetadata`` do from their own implementation leaves. This is legacy
-machinery for the deprecated single-request adapters; new service code belongs
-on the chunked transport instead.
+code for the deprecated single-request adapters; new service code uses
+the chunked transport instead.
 """
 
 from __future__ import annotations
@@ -108,11 +108,11 @@ def _raise_for_status(
     remediation as the client-side over-long-URL case below, rather than a bare
     ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).
 
-    ``detail_from``, when given, is called *only on an error response* to pull an
-    API-specific detail string (e.g. a JSON error envelope's message) out of the
-    body; a truthy result is appended to the raised message. This lets callers
-    surface their API's error wording without re-implementing the status-to-type
-    mapping and message format.
+    ``detail_from``, when given, is called *only on an error response* to read an
+    API-specific detail string (e.g. a JSON error envelope's message) from the body; a
+    truthy result is appended to the raised message. This lets callers include their
+    API's error wording without re-implementing the status-to-type mapping and message
+    format.
     """
     status = response.status_code
     if status < 400:
@@ -134,9 +134,9 @@ def _raise_for_status(
 def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
     """Retry policy for the one-shot adapters (WQP, NLDI, StreamStats).
 
-    These services answer a rejected query with a 500, so only the gateway
-    statuses are worth re-sending; the Water Data chunker keeps the broader
-    default, where a 5xx is a transient upstream failure worth riding out.
+    These services respond to a rejected query with a 500, so only the gateway statuses
+    are re-sent; the Water Data chunker keeps the broader default, where a 5xx is a
+    transient upstream failure that a later attempt may not see.
 
     ``adapter`` names which settings table supplies ``retries`` and
     ``stall_timeout`` -- these three services share a retry *shape* but not
@@ -215,8 +215,8 @@ def _query_with_retry(
         **HTTPX_DEFAULTS,
     )
 
-    # USGS waterservices signals an empty result with a 200 whose body starts
-    # "No sites/data ..." (its legacy wording); surface it as NoSitesError.
+    # USGS waterservices reports an empty result with a 200 whose body starts
+    # "No sites/data ..." (its legacy wording); raise it as NoSitesError.
     if response.text.startswith("No sites/data"):
         raise NoSitesError(response.url)
 

@@ -27,8 +27,8 @@ are necessary:
 #. **Public API compatibility.** Established imports, function signatures,
    return shapes, metadata, warnings, and exception types should remain stable;
    intentional changes follow the project's deprecation policy.
-#. **Correctness and data integrity.** Pagination and fan-out must not silently
-   return truncated or duplicated data after a failure.
+#. **Correctness and data integrity.** Pagination and fan-out must not
+   return truncated or duplicated data after a failure as if complete.
 #. **Resilience.** Retry, rate-limit, interruption, and resume behavior must be
    explicit and bounded. Capabilities may differ where upstream protocols do.
 #. **Maintainability.** Modules should have cohesive responsibilities and
@@ -58,7 +58,7 @@ The package is the layer between Python callers and remote hydrologic services::
 
 The remote services own their schemas, paging mechanisms, rate limits, and
 availability. The library adapts those differences to documented Python
-contracts but does not hide meaningful service-specific behavior.
+contracts but does not conceal meaningful service-specific behavior.
 
 Composition and dependency view
 -------------------------------
@@ -131,7 +131,7 @@ Shared components
     callback, owning bounded concurrency, deterministic failure precedence,
     sparse completion state, resume, and the progress line. It is also the one
     entry point from synchronous getter code into the async internals: a query
-    with nothing to divide runs as a one-item fan-out rather than crossing a
+    with nothing to divide runs as a one-item fan-out rather than through a
     separate bridge. Internally, ``liveness`` is a stdlib-only leaf recording
     when data last arrived, so the page loop that observes progress and the
     retry loop that acts on it depend on ``liveness`` rather than on each other.
@@ -152,7 +152,7 @@ Shared components
     ``BaseMetadata``, the second half of every getter's ``(DataFrame,
     metadata)`` return contract. A dependency-free leaf: nearly every service
     module needs this class, and while it was in ``utils`` beside the legacy
-    query code, importing it pulled in that module's whole HTTP stack
+    query code, importing it imported that module's whole HTTP stack
     transitively. The implementation module is private; the established public
     class path remains ``dataretrieval.utils.BaseMetadata``.
 
@@ -163,7 +163,7 @@ Shared components
 
 ``dataretrieval.utils``
     Data-shaping helpers, plus compatibility imports for names that
-    historically lived here (including ``Ambient``, ``BaseMetadata``, ``query``
+    were historically defined here (including ``Ambient``, ``BaseMetadata``, ``query``
     and ``to_str``, so their original import paths keep working). OGC does not
     depend on this legacy module; by default, do not add new service-specific
     behavior there.
@@ -171,10 +171,10 @@ Shared components
 ``dataretrieval._querying``
     The one-shot HTTP query path the single-request adapters (``nwis``,
     ``wqp``, ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
-    it, map the status, retry a transient. It left ``utils`` because the two
-    halves shared only a filename -- this one depends on ``exceptions`` and
-    ``transport``, the shaping half on ``codes`` and pandas, and no caller
-    wanted both. The implementation module is private; the established public
+    it, map the status, retry a transient. It was moved out of ``utils`` because the two
+    halves were in one file for no other reason -- this one depends on
+    ``exceptions`` and ``transport``, the shaping half on ``codes`` and
+    pandas, and no caller used both. The implementation module is private; the established public
     function paths remain ``dataretrieval.utils.query`` and
     ``dataretrieval.utils.to_str``.
 
@@ -190,7 +190,7 @@ The intended direction is::
 Dependencies must not point from shared infrastructure back to a public service
 adapter. ``.importlinter`` declares this as a layer stack and ``lint-imports``
 checks it over the transitive import graph, so a violation routed through an
-intermediary fails as surely as a direct one. The stack is exhaustive: a new
+intermediary fails like a direct one. The stack is exhaustive: a new
 top-level module fails the contract until it is placed, so where a module
 belongs is decided when it is added rather than inferred later.
 
@@ -225,7 +225,7 @@ The library preserves meaningful upstream differences rather than forcing every
 service into one return shape:
 
 - Water Data, NGWMN, and Water Use tabular getters return ``(DataFrame,
-  BaseMetadata)``. Geometry-bearing Water Data and NGWMN results may use a
+  BaseMetadata)``. Water Data and NGWMN results that include geometry may use a
   ``GeoDataFrame`` in the first position when geopandas is installed.
   ``BaseMetadata`` holds request URL, elapsed query time, response headers,
   and comments where the upstream format provides them.
@@ -295,8 +295,8 @@ architecturally is the behavior around them:
     defaults to four. Backoff is exponential with full jitter and waits for
     bounded ``Retry-After`` values. Only failures that may not recur on a later
     attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
-    itself, and not a transport failure that is settled before the request
-    leaves (unresolvable host, unsupported scheme). Deprecated NWIS
+    itself, and not a transport failure that is determined before the request
+    is sent (unresolvable host, unsupported scheme). Deprecated NWIS
     compatibility paths do not opt in.
 
 ``API_USGS_STALL_TIMEOUT``
@@ -306,10 +306,10 @@ architecturally is the behavior around them:
     time: without this bound, four retries of a request that times out after a
     minute add up to four minutes without data. Progress restarts the budget --
     a page received, or a queued chunk acquiring its concurrency slot. Neither a
-    slow but productive download nor the last chunks of a large fan-out are cut
-    short, and an attempt already in flight is never interrupted. This bound
-    never withholds the first retry, so one slow attempt cannot disable retry by
-    itself; after that, the budget decides whether to continue. A dead
+    slow but productive download nor the last chunks of a large fan-out are
+    stopped early, and an attempt already in flight is never interrupted. This bound
+    never blocks the first retry, so one slow attempt cannot disable retry by
+    itself; after that, the budget determines whether retrying continues. A dead
     connection therefore costs about two read timeouts rather than five full
     attempts.
 

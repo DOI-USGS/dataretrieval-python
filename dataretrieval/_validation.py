@@ -6,7 +6,7 @@ checks cover closed vocabularies, required arguments and groups, sufficient
 alternatives, and mutually exclusive arguments.
 
 Every check raises ``ValueError`` about an argument's *value*, so calling code
-needs no inventory of which check fired. Every message states the problem and
+needs no inventory of which check raised. Every message states the problem and
 an executable correction.
 """
 
@@ -47,7 +47,7 @@ def _qualify(context: str, *, prefix: str = " ") -> str:
     """Return *context* ready to splice into a message, or nothing.
 
     Every check appends its caller's ``context`` the same way; owning the
-    splice here keeps a new check from inventing a fifth local spelling of
+    splice here keeps a new check from adding a fifth local copy of
     ``f" {context}" if context else ""``.
     """
     return f"{prefix}{context}" if context else ""
@@ -59,7 +59,7 @@ def _supplied(values: Mapping[str, object]) -> tuple[list[str], list[str]]:
     ``None`` is the package's "not supplied" marker throughout the public
     signatures, so it is the one this module tests for. A caller whose sentinel
     differs -- an empty string that should count as missing -- normalizes to
-    ``None`` before calling, rather than this module guessing which falsy values
+    ``None`` before calling, rather than this module deciding which falsy values
     were meant.
     """
     supplied: list[str] = []
@@ -91,14 +91,14 @@ def require_one_of(
     name
         What the value *is*, as the caller's parameter names it (``"service"``,
         ``"collection"``). It becomes the message's subject, so it must match
-        the parameter the caller actually passed.
+        the parameter the caller passed.
     context
         Optional qualifier for a vocabulary that depends on another argument,
         e.g. ``context="service 'wqp'"`` when the valid profiles differ per
         service.
     remedy
-        A further move, for a vocabulary narrower than the service's: how to
-        reach what this function does not accept. Added rather than
+        A further step, for a vocabulary narrower than the service's: how to
+        obtain what this function does not accept. Added rather than
         substituted -- unlike the checks below, there is no derived remedy
         here, since naming the options *is* the message.
 
@@ -109,7 +109,7 @@ def require_one_of(
     """
     if isinstance(options, str):
         # ``str`` is a Collection, so this type-checks -- and then ``in``
-        # silently means "substring", accepting any fragment of a valid option.
+        # means "substring" without any error, accepting any fragment of a valid option.
         raise TypeError(f"options must be a collection of values, not {options!r}")
     if value in options:
         return
@@ -131,8 +131,8 @@ def require_argument(
     """Return *value*, or raise ``ValueError`` if it was not supplied.
 
     Returns the value rather than ``None`` so the check also narrows the type:
-    a caller that must hand an optional argument to something requiring a
-    concrete one writes ``x = require_argument("x", x)`` and is done. The
+    a caller that must pass an optional argument to something requiring a
+    concrete one writes ``x = require_argument("x", x)``. The
     alternative -- validating here and re-testing for ``None`` to satisfy the
     type checker -- puts a second, unreachable message next to this one, and
     the two drift.
@@ -174,10 +174,10 @@ def require_together(
 ) -> None:
     """Raise ``ValueError`` unless *values* are all supplied or all omitted.
 
-    For arguments that only mean something as a set -- a ``lat``/``long`` pair,
-    a ``feature_source``/``feature_id`` pair. Passing none of them is allowed:
-    that is the caller declining the whole group, which is a different question
-    from whether the group is complete.
+    For arguments that only mean something as a set -- a ``lat``/``long`` pair, a
+    ``feature_source``/``feature_id`` pair. Passing none of them is allowed: that is the
+    caller omitting the whole group, which is a different case from whether the group is
+    complete.
 
     Parameters
     ----------
@@ -218,8 +218,8 @@ def require_any_of(
     """Raise ``ValueError`` unless at least one of *values* was supplied.
 
     For a query that needs to be narrowed but does not care how -- the NWIS
-    major filters, where any one of five is enough for the service to answer.
-    The permissive sibling of :func:`require_exactly_one`: two of them is a
+    major filters, where any one of five is enough for the service to respond.
+    The permissive counterpart of :func:`require_exactly_one`: two of them is a
     narrower query rather than a contradiction, so only none is an error.
     ``None`` counts as not supplied, so ``sites=None`` is refused rather than
     reaching the URL.
@@ -258,14 +258,13 @@ def require_exactly_one(
 ) -> tuple[str, _T]:
     """Return the one supplied ``(name, value)``, or raise ``ValueError``.
 
-    For a choice between alternatives that are each sufficient on their own --
-    the origin of an NLDI navigation, the location selector of an NWDC query.
-    Both failure directions are reported by the same check because they have
-    the same fix from opposite sides: supply one, or drop the rest. The
-    winning pair is returned for the same reason :func:`require_argument`
-    returns its value: the caller's next move is to dispatch on it, and
-    re-deriving it beside the call restates the invariant this check just
-    proved.
+    For a choice between alternatives that are each sufficient on their own -- the
+    origin of an NLDI navigation, the location selector of an NWDC query. Both failure
+    directions are reported by the same check because they have the same fix in either
+    direction: supply one, or drop the rest. The selected pair is returned for the same
+    reason :func:`require_argument` returns its value: the caller's next step is to
+    dispatch on it, and re-deriving it beside the call restates the invariant this check
+    established.
 
     Parameters
     ----------
@@ -313,7 +312,7 @@ def reject_together(
 ) -> None:
     """Raise ``ValueError`` if more than one of *values* was supplied.
 
-    The permissive sibling of :func:`require_exactly_one`: it rejects the
+    The permissive counterpart of :func:`require_exactly_one`: it rejects the
     combination without requiring that anything be supplied at all, for
     arguments that conflict but are jointly optional.
 

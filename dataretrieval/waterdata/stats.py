@@ -2,7 +2,7 @@
 
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
-*separate*, non-OGC API with no chunkable multi-value axes, so it runs as a
+separate, non-OGC API with no chunkable multi-value axes, so it runs as a
 one-item :class:`~dataretrieval.transport.fanout.FanOut` rather than going
 through ``multi_value_chunked`` (ADR 0008). The typed getters
 ``get_stats_por`` and
@@ -62,7 +62,7 @@ def _handle_nesting(
     ``data`` field, which is unrolled separately below via the
     ``record_path`` json_normalize), then adds ``geometry`` only when
     present. Unlike :func:`engine._get_resp_data`, no top-level ``id``
-    column is added — stats features don't carry one, so this matches the
+    column is added — stats features do not have one, so this matches the
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
@@ -95,9 +95,9 @@ def _extract_features(body: dict[str, Any] | None) -> list[dict[str, Any]] | Non
     """Return the features list from a response body, or None for empty/missing.
 
     ``None`` signals the caller to return an empty frame. An empty (or
-    missing) features list — a real mid-pagination shape — would otherwise
-    crash the downstream merge with ``KeyError: 'monitoring_location_id'``
-    because neither frame would carry the merge key.
+    missing) features list — a shape that occurs mid-pagination — would otherwise
+    fail the downstream merge with ``KeyError: 'monitoring_location_id'``
+    because neither frame would have the merge key.
     """
     if body is None:
         return None
@@ -117,15 +117,15 @@ def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFr
         ]
         df = pd.json_normalize(outer_props, sep=".")
         df.columns = df.columns.str.split(".").str[-1]
-        # Stats features don't carry a top-level ``id`` field — the
+        # Stats features do not have a top-level ``id`` field — the
         # geopandas branch (``GeoDataFrame.from_features``) doesn't
-        # surface one either, so the non-geopd branch stays
-        # consistent by NOT adding an id column.
+        # add one either, so the non-geopd branch stays
+        # consistent by not adding an id column.
         _attach_coordinates(df, features)
         return df
 
     # Stats features may omit ``geometry`` entirely; ``_geo_feature_frame``
-    # is the shared home for that upstream-schema workaround.
+    # applies that upstream-schema workaround for every caller.
     return _geo_feature_frame(features).drop(columns=["data"], errors="ignore")
 
 
@@ -224,9 +224,9 @@ def get_data(
         computation_type other than percentiles, a percentile column is still
         returned.
     client : httpx.AsyncClient, optional
-        Caller-borrowed async client. ``None`` (default) borrows the one this
+        Caller-supplied async client. ``None`` (default) uses the one this
         call's :class:`~dataretrieval.transport.fanout.FanOut` opened, which
-        lives in the same event loop as the page walk. Primarily a test seam.
+        runs in the same event loop as the page walk. Primarily a test seam.
 
     Returns
     -------
@@ -246,7 +246,7 @@ def get_data(
         a hostname that does not resolve), the ``httpx`` exception chained
         on ``__cause__``.
     FanOutInterrupted
-        A transient failure (429 / 5xx / timeout) survived the built-in
+        A transient failure (429 / 5xx / timeout) was not resolved by the built-in
         retries. Resume with ``exc.call.resume()`` (see
         :doc:`/userguide/errors`).
     """
@@ -264,12 +264,12 @@ def get_data(
     def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
         # Coerce falsy cursors ("", 0) to None so _paginate terminates.
-        # USGS uses "next": null at end-of-stream, but defensive coerce
-        # protects against any "" sentinel a future schema might use.
+        # USGS uses "next": null on the last page, but the coercion
+        # also covers any "" sentinel a future schema might use.
         return _handle_nesting(body, geopd=GEOPANDAS), body.get("next") or None
 
     async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
-        # Build a fresh params dict per page so the caller's ``args``
+        # Build a new params dict per page so the caller's ``args``
         # is never mutated.
         return await sess.request(
             method, url=url, params={**args, "next_token": cursor}, headers=headers

@@ -22,41 +22,41 @@ class TestDefaultHeadersHostScoping:
 
     @pytest.fixture(autouse=True)
     def _api_token(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Install one harmless token for every host-scoping behavior test."""
+        """Set one fake token for every host-scoping behavior test."""
         monkeypatch.setenv("API_USGS_PAT", self.FAKE_TOKEN)
 
     def test_key_included_for_waterdata_host(self):
-        """Key IS added when target URL matches api.waterdata.usgs.gov."""
+        """The key is added when target URL matches api.waterdata.usgs.gov."""
         url = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
         headers = _default_headers(url)
         assert headers.get("X-Api-Key") == self.FAKE_TOKEN
 
     def test_key_excluded_for_external_host(self):
-        """Key is NOT added for an external (non-USGS) host."""
+        """The key is not added for an external (non-USGS) host."""
         url = "https://nwis.waterservices.usgs.gov/nwis/iv/"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_for_wateruse_host(self):
-        """Key is NOT added for the NWDC water-use host (api.water.usgs.gov)."""
+        """The key is not added for the NWDC water-use host (api.water.usgs.gov)."""
         url = "https://api.water.usgs.gov/nwaa-data/data"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_for_rating_asset_host(self):
-        """Key is NOT added for rating asset downloads (S3/external)."""
+        """The key is not added for rating asset downloads (S3/external)."""
         url = "https://labs.waterdata.usgs.gov/sta/v1.1/Datastreams(123)/rating.rdb"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_for_lookalike_host(self):
-        """Key is NOT sent to a typosquatting/lookalike domain."""
+        """The key is not sent to a typosquatting/lookalike domain."""
         url = "https://api.waterdata.usgs.gov.evil.com/ogcapi/v0/daily/items"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_when_no_url_provided(self):
-        """Key is NOT added when target_url is None (legacy callers)."""
+        """The key is not added when target_url is None (legacy callers)."""
         headers = _default_headers(None)
         assert "X-Api-Key" not in headers
 
@@ -76,14 +76,14 @@ class TestDefaultHeadersHostScoping:
         assert "Accept" in headers
         assert "Accept-Encoding" in headers
         assert "lang" in headers
-        # Key should NOT be sent to example.com
+        # The key must not be sent to example.com
         assert "X-Api-Key" not in headers
 
     def test_key_excluded_over_cleartext_on_the_authorized_host(self):
         """The authorized host over plain http is still an unauthorized destination.
 
-        Matching on the host alone would send a bearer token in the clear on
-        the strength of a hostname an attacker chose to keep -- reachable via a
+        Matching on the host alone would send a bearer token in the clear
+        because of a hostname an attacker chose to keep -- reachable via a
         redirect or a server-supplied ``http://`` next-page link.
         """
         headers = _default_headers("http://api.waterdata.usgs.gov/ogcapi/v0/daily")
@@ -116,7 +116,7 @@ class TestDefaultHeadersHostScoping:
         assert "X-Api-Key" not in seen[1].headers
 
     def test_generic_ogc_request_excludes_key_for_custom_host(self):
-        """A caller-supplied OGC base URL never inherits Water Data auth."""
+        """A caller-supplied OGC base URL never receives Water Data auth."""
         from dataretrieval.ogc.requests import _construct_api_requests
 
         request = _construct_api_requests(

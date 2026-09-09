@@ -75,7 +75,7 @@ upstream failure may have ended, while a single-shot adapter re-sends only the
 gateway statuses, because its service responds to a *rejected query* with a
 500, and re-sending that would spend a caller's quota on a request that
 cannot succeed. Both sets are narrower than ``DataRetrievalError.retryable``,
-deliberately: that field tells a caller re-issuing might work, where spending
+deliberately: that field indicates re-issuing might work, where spending
 someone's quota unasked needs a stricter criterion. Deprecated NWIS calls
 retain their compatibility behavior. A failed pagination or fan-out operation
 raises rather than returning successful siblings as an apparently complete
@@ -85,18 +85,18 @@ recorded in :doc:`0004-error-retry-resume`.
 Two independent bounds limit retry: an attempt count and a no-progress budget
 measured in seconds since data last arrived. Attempts alone leave elapsed time
 unbounded, since each attempt may itself block until its timeout; the budget
-alone would cut short a slow but productive download. Receiving a page restarts
+alone would stop a slow but productive download early. Receiving a page restarts
 the budget, and an attempt already in flight is never interrupted.
 
 **Time spent waiting is not time without progress.** The budget bounds time
-the *service* left the caller with nothing, so time the package chose to spend
+the *service* left the caller with nothing, so time the package itself spent waiting
 is excluded by the measured amount: a wait the server named in
 ``Retry-After``, and time a chunk spent waiting for the concurrency semaphore.
 The first retry is exempt outright. Without these exemptions a policy that
 follows a server's ``Retry-After`` would spend its own budget doing so, and a
 call would lose retries for being throttled by settings the caller chose. An
 exclusion never sets the reference time later than now: a timestamp ahead of
-now would make the elapsed no-progress time negative and silently disable the
+now would make the elapsed no-progress time negative and disable the
 bound. Because half of that exclusion is the retry driver's, the concurrency
 semaphore is acquired *per attempt* inside the retry driver rather than held
 by the caller across one.
@@ -128,8 +128,8 @@ Consequences
 - Retry can increase latency and quota consumption, so attempt counts, waits,
   and total no-progress time remain bounded, and cancellation signals are never
   wrapped.
-- Guidance the progress reporter prints depends on the host it applies to, so a
-  service that cannot use an API key is not told to obtain one.
+- Guidance the progress reporter prints depends on the host it applies to, so the
+  advice to obtain one is not printed for a service that cannot use it.
 - The transport package is internal infrastructure, not a new public API
   contract.
 - Keeping presentation and frame assembly out means transport is roughly 570

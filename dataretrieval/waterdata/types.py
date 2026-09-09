@@ -54,10 +54,10 @@ SERVICES = Literal[
     "results",
 ]
 
-# OGC API time-series/monitoring collections queryable via ``get_cql``.
-# Keep in sync with ``utils._OUTPUT_ID_BY_COLLECTION`` (same keys): that dict maps
-# each service to its user-facing ``id`` column and is the runtime source of
-# truth ``get_cql`` validates against.
+# OGC API time-series/monitoring collections queryable via ``get_cql``. Keep in sync
+# with ``utils._OUTPUT_ID_BY_COLLECTION`` (same keys): that dict maps each service to
+# its user-facing ``id`` column and is the runtime definition ``get_cql`` validates
+# against.
 WATERDATA_COLLECTIONS = Literal[
     "channel-measurements",
     "combined-metadata",

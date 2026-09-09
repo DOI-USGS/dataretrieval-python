@@ -30,8 +30,9 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture
 def non_mocked_hosts() -> list[str]:
-    """No hosts are exempted from mocking; every HTTP call must hit
-    a mock registered through the ``httpx_mock`` fixture."""
+    """No hosts are exempted from mocking; every HTTP call must match a mock registered
+    through the ``httpx_mock`` fixture.
+    """
     return []
 
 
@@ -43,17 +44,16 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
     Pinning ``API_USGS_CONCURRENT=1`` keeps chunk dispatch
     deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
-    a single transient surface immediately rather than be retried.
+    a single transient is raised immediately rather than retried.
     Concurrency and retry tests opt in by overriding the env inside
     their body.
 
-    ``API_USGS_STALL_TIMEOUT=0`` is pinned too so that an opting-in retry
-    test measures the thing it names -- attempt counts -- and not the wall
-    clock of the machine running it. Left at the production 60 s, a test
-    that sets ``API_USGS_RETRIES`` would have its retries silently capped
-    by whatever real time its mocked attempts consumed, which is both flaky
-    on a loaded CI box and a way for a stall-budget bug to hide behind a
-    passing retry test. Tests of the budget itself set it explicitly.
+    ``API_USGS_STALL_TIMEOUT=0`` is pinned too so that an opting-in retry test measures
+    the thing it names -- attempt counts -- and not the wall clock of the machine
+    running it. Left at the production 60 s, a test that sets ``API_USGS_RETRIES`` would
+    have its retries capped, without any signal, by whatever real time its mocked
+    attempts consumed, which is both flaky on a busy CI machine and would let a passing
+    retry test conceal a stall-budget bug. Tests of the budget itself set it explicitly.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     monkeypatch.setenv("API_USGS_RETRIES", "0")

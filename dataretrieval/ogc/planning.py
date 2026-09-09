@@ -3,16 +3,16 @@
 This module holds the side-effect-free planning half of the chunker:
 deciding how to split one over-budget OGC request into URL-fitting
 chunks (:class:`ChunkPlan` and the axis/byte-accounting helpers).
-It has no event loop, retry policy, or network state — those live in
+It has no event loop, retry policy, or network state — those are in
 :mod:`dataretrieval.ogc.chunking` (resumable execution) and
 :mod:`dataretrieval.transport.retry` (retry policy), which import the plan and
-drive it.
+execute it.
 
 Result recombination — reassembling the per-chunk frames and responses
 back into one result
 (:func:`~dataretrieval.combining._combine_chunk_frames`,
 :func:`~dataretrieval.combining._combine_chunk_responses`, etc.) —
-lives in the top-level :mod:`dataretrieval.combining` module.
+is in the top-level :mod:`dataretrieval.combining` module.
 """
 
 from __future__ import annotations
@@ -34,13 +34,12 @@ from dataretrieval.ogc.filters import (
     _split_top_level_or,
 )
 
-# Any list-shaped kwarg with >1 element is chunked (comma-joined per
-# sub-list in the URL); ~90 OGC params qualify, so we denylist the few
-# exceptions rather than maintain a growing allowlist. Excluded because:
-# ``properties`` defines the column schema; ``bbox`` is a fixed coord
-# tuple; date/time params are intervals, not enumerable sets; ``filter``
-# is handled as its own OR-axis in ``_extract_axes``; and ``limit`` /
-# ``skip_geometry`` / ``filter_lang`` are scalar by contract.
+# Any list-shaped kwarg with >1 element is chunked (comma-joined per sub-list in the
+# URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
+# maintaining a growing allowlist. Excluded because: ``properties`` defines the column
+# schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
+# enumerable sets; ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
+# ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
 _NEVER_CHUNK = frozenset(
     {
         "properties",
@@ -99,9 +98,9 @@ def _try_build(
     """Attempt to construct a request, returning ``None`` on overflow.
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
-    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes`
-    and :class:`ChunkPlan`'s initial-request probe need exactly this
-    "build-or-None" step, so it lives here once.
+    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes` and
+    :class:`ChunkPlan`'s initial-request probe need this build-or-None step, so it is
+    defined here once.
 
     Parameters
     ----------
@@ -132,9 +131,9 @@ def _safe_request_bytes(
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component
     (``MAX_URL_LENGTH``) and raises ``httpx.InvalidURL`` for anything
-    bigger. We report ``url_limit + 1`` on overflow so the greedy
+    bigger. ``url_limit + 1`` is reported on overflow so the greedy
     halving loop in :meth:`ChunkPlan._plan` keeps shrinking the
-    largest axis until ``httpx.Request`` can be constructed at all.
+    largest axis until ``httpx.Request`` can be constructed.
 
     Parameters
     ----------
@@ -165,7 +164,7 @@ def _check_unchunkable_request(
 
     Passthrough when the single request fits or when the filter is in a
     language the chunker doesn't manage (cql-json) — the server, not the
-    chunker, judges that request. Raises
+    chunker, accepts or rejects that request. Raises
     :class:`~dataretrieval.exceptions.Unchunkable` when the request is
     over budget and has nothing to split.
     """
@@ -219,7 +218,7 @@ class _Axis:
         """
         Return the URL-encoded byte count this chunk contributes to the request.
 
-        ``quote_plus`` is faithful to what the real URL builder
+        ``quote_plus`` matches what the real URL builder
         produces, so values containing characters that expand under URL
         encoding (``%``, ``+``, ``/``, ``&``, …) can't be mis-ranked.
 
@@ -239,9 +238,8 @@ class _Axis:
         """
         Convert a chunk into the form the URL builder expects.
 
-        List axes yield a fresh list of atoms (``build_request`` will
-        comma-join); the filter axis yields a pre-joined string (CQL
-        doesn't take a list).
+        List axes yield a new list of atoms (``build_request`` will comma-join); the
+        filter axis yields a pre-joined string (CQL does not accept a list).
 
         Parameters
         ----------
@@ -312,12 +310,12 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
 def _split_at(chunks: list[list[str]], idx: int) -> None:
     """Replace ``chunks[idx]`` in place with its two contiguous halves.
 
-    The single primitive both planning passes use to fan an axis out. It
+    The single primitive both planning passes use to split an axis. It
     preserves the partition invariants every consumer relies on: *coverage*
-    (each atom survives, exactly once) and *contiguous, deterministic order*
+    (each atom appears exactly once) and *contiguous, deterministic order*
     (resume and :meth:`ChunkPlan.iter_chunk_args` depend on it). Kept in one
     place so those invariants can't drift between :meth:`ChunkPlan._plan`
-    (byte-driven) and :meth:`ChunkPlan._refine` (fan-out-driven).
+    (by bytes) and :meth:`ChunkPlan._refine` (by chunk count).
     """
     chunk = chunks[idx]
     mid = len(chunk) // 2
@@ -328,7 +326,7 @@ class ChunkPlan:
     """
     Strategy for issuing one user-level request as URL-fitting chunks.
 
-    Every chunk URL fits ``url_limit``. Constructing a plan *is* planning:
+    Every chunk URL fits ``url_limit``. Constructing a plan performs the planning:
     ``ChunkPlan(args, build_request, url_limit)`` extracts the
     chunkable axes, runs greedy halving on the biggest chunk across
     all axes, and stores the result.
@@ -350,16 +348,14 @@ class ChunkPlan:
         Byte budget for the request (URL + body) — a hard ceiling every
         chunk must fit.
     max_chunks : int, optional
-        Hard cap on the plan's total chunk count (default ``1`` = off).
-        ``1`` chunks only as much as ``url_limit`` requires — the most
-        conservative plan, fewest chunks — so a fitting request is a
-        passthrough. A cap of ``2`` or more fans the plan out to up to
-        ``max_chunks`` chunks overall (the cartesian product across axes,
-        never fewer than the byte budget already forces). The cap applies to
-        the plan as a whole, not per axis, so several multi-value axes can't
-        multiply past it. The plan never exceeds the cap and may land below it
-        when no whole split lands on it exactly. ``max_chunks`` is a
-        chunk count, so a value below ``1`` (``0`` or negative) is a
+        Hard cap on the plan's total chunk count (default ``1`` = off). ``1`` chunks
+        only as much as ``url_limit`` requires — the plan with the fewest chunks — so a
+        fitting request is a passthrough. A cap of ``2`` or more fans the plan out to up
+        to ``max_chunks`` chunks overall (the cartesian product across axes, never fewer
+        than the byte budget already forces). The cap applies to the plan as a whole,
+        not per axis, so several multi-value axes can't multiply past it. The plan never
+        exceeds the cap and may fall below it when no whole split reaches it exactly.
+        ``max_chunks`` is a chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
         :meth:`_refine`.
@@ -414,7 +410,7 @@ class ChunkPlan:
             return
 
         # When the un-chunked URL builds, preserve it as ``canonical_url`` so
-        # ``BaseMetadata.url`` echoes the user's original query verbatim.
+        # ``BaseMetadata.url`` reports the user's original query verbatim.
         initial_request = _try_build(build_request, args)
         fits = False
         if initial_request is not None:
@@ -444,7 +440,7 @@ class ChunkPlan:
 
         Halving continues until the worst-case chunk URL fits
         ``url_limit``, mutating ``self.chunks`` in place. List axes and the
-        filter axis are treated uniformly — each is just a list of atoms
+        filter axis are treated uniformly — each is a list of atoms
         joined by its axis's separator.
 
         Raises
@@ -489,24 +485,22 @@ class ChunkPlan:
         """
         Fan the plan out more finely than the byte budget alone requires.
 
-        This is the ``parallel_chunks`` dial: see
-        :func:`~dataretrieval.ogc.chunking.parallel_chunks` for why a caller
-        would want this, and :class:`ChunkPlan`'s ``max_chunks`` parameter for
+        This is what ``parallel_chunks`` controls: see
+        :func:`~dataretrieval.ogc.chunking.parallel_chunks` for when a caller
+        uses this, and :class:`ChunkPlan`'s ``max_chunks`` parameter for
         the cap's contract (total-not-per-axis, a hard ceiling that may land
         below the cap).
 
-        Implementation. Each split multiplies the plan by ``(k+1)/k`` for the
-        chosen axis (adding ``total // k`` chunks, not one), so a split
-        is taken only when it keeps :attr:`total` within the cap. When no
-        in-budget split remains, the plan stops *below* the cap rather than
-        overshooting (two even axes can reach 4 but not 5, so a cap of 5 yields
-        4). Each split picks the single largest splittable chunk among the
-        in-budget axes (ties broken by axis-extraction order, then lowest
-        index), so growth is distributed round-robin rather than one axis
-        saturating before another is touched. Purely additive — only ever
-        *splits* existing chunks, so the byte pass's work and the ``url_limit``
-        invariant are both preserved, and it never raises. A no-op at
-        ``max_chunks == 1``.
+        Implementation. Each split multiplies the plan by ``(k+1)/k`` for the chosen
+        axis (adding ``total // k`` chunks, not one), so a split is taken only when it
+        keeps :attr:`total` within the cap. When no in-budget split remains, the plan
+        stops below the cap rather than exceeding it (two even axes can reach 4 but not
+        5, so a cap of 5 yields 4). Each split picks the single largest splittable chunk
+        among the in-budget axes (ties broken by axis-extraction order, then lowest
+        index), so growth is distributed round-robin rather than one axis saturating
+        before another is split. Additive only: it only splits existing chunks, so the
+        byte pass's work and the ``url_limit`` invariant are both preserved, and it
+        never raises. A no-op at ``max_chunks == 1``.
 
         Parameters
         ----------
@@ -566,7 +560,7 @@ class ChunkPlan:
         for axis in self.axes:
             axis_chunks = self.chunks[axis.arg_key]
             if total + total // len(axis_chunks) > max_chunks:
-                continue  # any split of this axis would overshoot the cap
+                continue  # any split of this axis would exceed the cap
             axis_best, axis_best_size = self._largest_chunk_in(axis_chunks)
             if axis_best_size > candidate_size:
                 candidate, candidate_size = (axis, axis_best), axis_best_size

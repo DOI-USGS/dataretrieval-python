@@ -22,8 +22,8 @@ authenticates to a gateway rather than to an adapter, so it stays package-wide.
 One block, several services
 ---------------------------
 
-This is the case the mechanism exists for. Say the file holds what you would
-write once and keep — the key, a retry budget, and Water Data's everyday
+This is the case the mechanism exists for. Suppose the file holds what you would
+write once and keep — the key, a retry budget, and Water Data's usual
 concurrency — plus two named profiles for the settings you only sometimes
 want:
 
@@ -131,7 +131,7 @@ Settings
      - the service's own
      - *(none — code only)*
      - Where to send one service's requests. Per adapter, and settable only in
-       a ``configure`` block: a file that silently redirected the library to
+       a ``configure`` block: a file that redirected the library to
        another host would be a supply-chain hazard. See
        :ref:`configuration-redirect`.
 
@@ -160,14 +160,14 @@ for one adapter raises, so they cannot disagree inside one block. Between
 nested blocks the innermost decides, as it does for everything else.
 
 Precedence applies **per setting**. An environment that sets only
-``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect —
+``API_USGS_PAT`` leaves a file-provided ``concurrency`` in effect —
 sources are merged, not replaced.
 
 A variable that is *set but empty* (``export API_USGS_PAT=``, or a CI secret
 that resolves to nothing) does not count as configured, so an empty variable
-your tooling happened to create cannot silently discard the key in your config
+your tooling happened to create cannot discard the key in your config
 file. The one exception is ``API_USGS_PROGRESS``, where blank has always meant
-"off" and so is treated as a real value.
+"off" and so is treated as a set value.
 
 .. note::
 
@@ -188,7 +188,7 @@ file. The one exception is ``API_USGS_PROGRESS``, where blank has always meant
 An environment variable
 -----------------------
 
-Still fully supported, and the simplest option for a single key on one
+Still supported, and the simplest option for a single key on one
 machine:
 
 .. code-block:: bash
@@ -226,7 +226,7 @@ Any setting can go in the file:
    concurrency = 16
    retries = 8
 
-Point ``DATARETRIEVAL_CONFIG`` at a different path to override the location —
+Set ``DATARETRIEVAL_CONFIG`` to a different path to override the location —
 useful for a container or a job scheduler that mounts secrets elsewhere.
 
 
@@ -262,7 +262,7 @@ otherwise: an adapter-scoped value outranks a package-wide one only within the
 same source, so ``API_USGS_CONCURRENT`` exported for one run still outranks a
 ``[ngwmn] concurrency`` in the file.
 
-Between ``configure`` blocks that tie-break applies per block: an adapter
+Between ``configure`` blocks that ordering applies per block: an adapter
 configuration outranks a package-wide value set by the *same* block, while
 anything set by a block nested inside it overrides both. So a
 ``configure(Configuration(concurrency=1))`` can still throttle a call an
@@ -272,7 +272,7 @@ Each adapter accepts only the settings it reads, and they are the fields of its
 configuration class — ``concurrency`` and ``parallel_chunks`` are meaningless to
 an adapter that issues a single request, so ``StreamstatsConfiguration`` has no
 such field and ``[streamstats] parallel_chunks = 8`` is an error rather than a
-line that quietly does nothing:
+line that does nothing:
 
 ====================================  ======================================  ========================================
 Adapter                               Configuration                           Accepts
@@ -328,8 +328,8 @@ to settings you did not ask for. What comes back is inert until you pass it to
 since selecting one is something your code did.
 
 A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
-not a Water Data profile containing NGWMN detail, and selecting it says so
-rather than quietly ignoring the nested table. Two adapters means two profiles,
+not a Water Data profile containing NGWMN detail, and selecting it raises
+rather than ignoring the nested table. Two adapters means two profiles,
 selected in the same block, as in :ref:`the example above
 <configuration-one-block>`.
 
@@ -364,8 +364,8 @@ what makes it package-wide.
    earlier form and are no longer accepted; write
    ``Configuration(api_key=...)`` and ``NgwmnConfiguration(concurrency=4)``
    instead. Passing anything that is not
-   a configuration raises and names the replacement, so an old script says what
-   to write rather than failing obscurely.
+   a configuration raises and names the replacement, so an old script fails with a message
+   that states what to write.
 
 Because it is backed by a :class:`~contextvars.ContextVar`, the value applies
 to the current thread and to asyncio tasks started inside the block, and
@@ -426,7 +426,7 @@ the ``bulk`` profile selected for the block:
    parallel_chunks  1      built-in default
    stall_timeout    60s    built-in default
 
-   A built-in default is package-wide. An adapter may prefer its own for
+   A built-in default is package-wide. An adapter may use its own default for
    its own calls; a value from any source above overrides both.
 
    adapter overrides
@@ -440,27 +440,27 @@ the ``bulk`` profile selected for the block:
    not reported: nldi (not imported, so the settings each accepts are unknown here)
 
 Each line names the exact origin, including which table inside the file, which
-is usually enough to answer "why is it still using my old key?". A value that
+is usually enough to find why a call is still using an old key. A value that
 came from a profile names the profile — ``configure() block
-[waterdata.bulk]``, not merely "a block" — so a report taken from inside a
-``with`` block says which selection produced it. Only settings actually
+[waterdata.bulk]``, not only "a block" — so a report taken from inside a
+``with`` block says which selection produced it. Only settings
 overridden for an adapter get a row in the second section; everything else is
 inherited from the rows above it.
 
 The profile section lists what the *file* defines, whether or not this run
 selected any of it. A named profile does nothing until a caller selects it, so
-seeing ``[waterdata.bulk]`` there while no row above mentions it is the answer
-to "I added a profile and nothing changed".
+seeing ``[waterdata.bulk]`` there while no row above mentions it explains
+why adding a profile changed nothing.
 
 The last line is the cost of validating an adapter's settings lazily:
 ``dataretrieval`` cannot say what ``nldi`` accepts until something imports it,
-so it says that rather than quietly omitting the service. It is named rather
-than left out, because an omitted service would read as "nothing is configured
-for it", which is a different claim.
+so it reports that rather than omitting the service. It is named rather
+than left out, because an omitted service would imply that nothing is configured
+for it, which is a different claim.
 
 It never raises. A malformed file or a value that fails its grammar is reported
 in place — on the ``config file`` line for a whole-file problem, or in that
-setting's own row — because a broken configuration is exactly when you need
+setting's own row — because a broken configuration is when you need
 this.
 
 
@@ -487,7 +487,7 @@ or as a baseline in the config file — deliberately written, and visible in
 ``show_configuration()``. Put it in a ``[<adapter>.<name>]`` table rather than
 at the top level: a named profile applies only to runs that select it, while a
 top-level value applies to every query in every process that reads the file,
-which is how a setting added for one bulk pull quietly exhausts an hourly quota
+which is how a setting added for one bulk pull exhausts an hourly quota
 months later. ``dataretrieval`` warns if it finds one at the top level.
 
 The value limits optional refinement only. URL-byte safety can require more
@@ -497,13 +497,13 @@ stays a single request.
 ``parallel_chunks(n)`` is shorthand for
 ``configure(Configuration(parallel_chunks=n))``: one scoping mechanism, so the
 innermost block takes precedence whichever form set it, and
-``show_configuration()`` always reports the value the chunker will actually use.
+``show_configuration()`` always reports the value the chunker will use.
 
 
 .. _configuration-redirect:
 
-Pointing an adapter at another host
------------------------------------
+Redirecting an adapter to another host
+--------------------------------------
 
 ``base_url`` sends one adapter's requests somewhere else — a staging instance,
 a mirror, or a recording proxy — for the duration of a block:
@@ -532,12 +532,12 @@ each raise a ``ConfigurationError`` saying the setting *may only be set in
 code, in a configure() block* and naming the configuration to pass it on
 instead.
 
-A file or a shell export that silently redirected a data-retrieval library to
+A file or a shell export that redirected a data-retrieval library to
 another host would be a supply-chain hazard: nothing at the call site would
 show it, and a script that reads correctly would be sending requests to
 someone else's service. A ``with`` block keeps the redirect where a reader of
 the script sees it. The refusal raises an error rather than ignoring the value,
-for the same reason — a variable that was quietly ignored would leave you
+for the same reason — a variable that was ignored would leave you
 believing you had redirected something.
 
 **The API key is not sent to the new host.** It is scoped to the one host that
@@ -575,7 +575,7 @@ Behind a TLS-intercepting proxy
 -------------------------------
 
 On a corporate network that re-signs HTTPS traffic, requests fail with a
-certificate-verification error. Point the standard OpenSSL variables at your
+certificate-verification error. Set the standard OpenSSL variables to your
 organization's CA bundle:
 
 .. code-block:: bash
@@ -590,7 +590,7 @@ package — including the OGC collection getters (``get_daily``,
 
 Prefer this to ``ssl_check=False``. That argument exists on some of the older
 getters and switches certificate verification *off* rather than trusting your
-CA, so it accepts any certificate a network path offers — and it is not
+CA, so it accepts any certificate a network path presents — and it is not
 available on the OGC getters at all. A CA bundle keeps verification on and
 works everywhere.
 

@@ -1,6 +1,6 @@
 """Layered configuration resolution for ``dataretrieval``.
 
-Every tunable setting -- the Water Data API key, the fan-out concurrency cap,
+Every setting -- the Water Data API key, the fan-out concurrency cap,
 the retry count, and the progress line -- resolves through one ordered chain so
 a caller never has to mutate ``os.environ`` to configure a single call.
 
@@ -26,7 +26,7 @@ apiece. An adapter's own default is not one of the four: a read site such as
 Precedence applies **per setting**, not per source: an environment that sets only
 ``API_USGS_PAT`` leaves a file-provided ``concurrency`` fully in effect. The
 environment ranks above the file (ADR 0009). ADR 0011 makes one exception: a
-profile named *in code* reaches the chain through :func:`configure`, above the
+profile named *in code* enters the chain through :func:`configure`, above the
 environment.
 
 A caller configures by passing configuration objects, at most one per adapter::
@@ -140,7 +140,7 @@ __all__ = [
 def configure(*configurations: BaseConfiguration) -> Iterator[None]:
     """Apply configuration profiles for the duration of a ``with`` block.
 
-    The highest-precedence source. Takes configuration objects positionally, at
+    This is the highest-precedence source. Takes configuration objects positionally, at
     most one per adapter, and nothing else::
 
         with dataretrieval.configure(
@@ -151,9 +151,10 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
             df, md = waterdata.get_daily(monitoring_location_id=sites)
 
     The adapter a configuration targets is a property of its class, so the
-    caller never restates it -- which is what keeps the adapter roster from
-    being spelled once per call site. Naming two configurations for one adapter
-    raises: they are the one pairing with no defined order between them.
+    caller never restates it -- which is what keeps the caller from
+    restating the adapter roster at every call site. Naming two
+    configurations for one adapter raises: they are the one pairing with no
+    defined order between them.
 
     Because the block is delivered through a :class:`~contextvars.ContextVar`,
     a value set here applies to the current thread and to asyncio tasks started
@@ -163,14 +164,14 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
 
     Blocks nest and merge per setting: an inner block that sets only
     ``concurrency`` keeps the outer block's ``api_key``, and an adapter
-    configuration in an outer block loses to a package-wide value set by a
+    configuration in an outer block is overridden by a package-wide value set by a
     block nested inside it, so the innermost block always decides.
 
     Parameters
     ----------
     *configurations : BaseConfiguration
         A package-wide :class:`Configuration` and/or one configuration per
-        adapter, in any order. Each adapter's class lives in that adapter's
+        adapter, in any order. Each adapter's class is defined in that adapter's
         module -- ``WaterdataConfiguration`` in :mod:`dataretrieval.waterdata`,
         ``NgwmnConfiguration`` in :mod:`dataretrieval.ngwmn`, and so on.
 
@@ -195,7 +196,7 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
         ):
             df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
 
-        # a big overnight pull, from a [waterdata.bulk] table in the file
+        # a large overnight pull, from a [waterdata.bulk] table in the file
         with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
             df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
@@ -215,11 +216,12 @@ def _frame(configurations: tuple[BaseConfiguration, ...]) -> _Frame:
     back to raw strings here so that every source shares one parser and one set
     of error messages; they were already checked when each configuration was
     constructed, so nothing new can fail at this point except the two
-    call-shaped mistakes below. Rendering is therefore all this asks for --
+    mistakes in how ``configure()`` was called, below. Rendering is therefore
+    all this function does --
     :func:`_coerce_typed` rather than :func:`_validated_raw`, so a value is not
-    put through its grammar a second time on every block entry. Construction
-    stays the single validation point, which is where a typo should raise
-    anyway: at the line that wrote it, not at a later ``with`` statement.
+    put through its grammar a second time on every block entry. Construction stays the
+    single validation point, which is where a typo should raise: at the line that wrote
+    it, not at a later ``with`` statement.
 
     Each value is stored with the label naming the configuration it came from,
     because this is the last point where that is known -- see :data:`_Frame`.
@@ -269,7 +271,7 @@ def _configuration_overrides(
 def show_configuration(*, stream: TextIO | None = None) -> None:
     """Print the effective configuration and where each setting came from.
 
-    A debugging aid for "why is this using my old key?". Every value is
+    A debugging aid for finding which source supplied a value. Every value is
     reported with the origin that supplied it, named exactly: which variable,
     which table of the file, and -- when a caller selected one -- which
     profile. The API key is never printed, only whether one is set.
@@ -297,7 +299,7 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         parallel_chunks  1      built-in default
         stall_timeout    60s    built-in default
 
-        A built-in default is package-wide. An adapter may prefer its own for
+        A built-in default is package-wide. An adapter may use its own default for
         its own calls; a value from any source above overrides both.
 
         adapter overrides
@@ -315,9 +317,9 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         path = config_path()
     except ConfigurationError as exc:
         # Resolution itself can fail (a relative override with the working
-        # directory removed). That is precisely a configuration a caller would
+        # directory removed). That is a configuration a caller would
         # run this to understand, so report it as the file row rather than
-        # raising out of the explainer.
+        # raising from the report.
         print(f"config file  <unresolved: {exc}>", file=out)
         return
 
@@ -341,9 +343,9 @@ class _ErrorDeduplicatingCell:
     The report exists to explain a configuration, and the configurations
     most in need of explaining are the broken ones -- an unparseable file, a
     value that fails its grammar, a profile that no longer exists. Nothing
-    here raises: each distinct failure is printed once, in the first place
-    it shows up; a repeat is collapsed, so one invalid file does not bury the
-    rows that did resolve under ten copies of the same message.
+    here raises: each distinct failure is printed once, in the first row
+    it appears; a repeat is collapsed, so one invalid file does not repeat the
+    same message on every row that did resolve.
     """
 
     def __init__(self) -> None:
@@ -367,9 +369,9 @@ class _ErrorDeduplicatingCell:
 def _show_file_status(
     out: TextIO, path: Path, cell: _ErrorDeduplicatingCell
 ) -> _ParsedFile:
-    """Probe and print the config file status line, returning the parsed file.
+    """Read and print the config file status line, returning the parsed file.
 
-    Probing the file once here means a whole-file problem -- unparseable TOML,
+    Reading the file once here means a whole-file problem -- unparseable TOML,
     an invalid value at the top level -- is reported on the file row rather
     than repeated in every setting's row below.
     """
@@ -396,7 +398,7 @@ def _show_built_in_default_note(out: TextIO, rows: list[tuple[str, str, str]]) -
     """Print the built-in default footnote when at least one row uses it."""
     if any(label == _BUILT_IN for _name, _value, label in rows):
         print(
-            "\nA built-in default is package-wide. An adapter may prefer its own "
+            "\nA built-in default is package-wide. An adapter may use its own default "
             "for\nits own calls; a value from any source above overrides both.",
             file=out,
         )
@@ -409,13 +411,13 @@ def _show_adapter_overrides(
 ) -> None:
     """Print the adapter-scoped settings that differ from the rows above.
 
-    Only settings actually overridden, and only adapters that override one: a
-    full adapter-by-setting grid would be mostly inherited values, burying the
-    answer to "what will this call use" under the rows that change nothing.
+    Only settings overridden, and only adapters that override one: a
+    full adapter-by-setting grid would be mostly inherited values, obscuring which
+    value a call will use among rows that change nothing.
 
     Each row names its origin exactly, which for a selected profile is the
     profile: ``configure() block [waterdata.bulk]`` rather than a bare block,
-    so the report answers *which* profile put that value there.
+    so the report names *which* profile supplied the value.
 
     An adapter this process has not imported has no vocabulary to resolve
     against, so it is skipped here and named by
@@ -442,7 +444,7 @@ def _collect_adapter_overrides(
     """Gather adapter-scoped settings that differ from the package-wide rows.
 
     Separated from :func:`_show_adapter_overrides` so the collection logic --
-    which carries the nesting -- is not interleaved with the formatting logic.
+    which contains the nesting -- is not interleaved with the formatting logic.
     """
     overrides: list[tuple[str, str, str, str]] = []
     for adapter in ADAPTERS:
@@ -480,16 +482,16 @@ def _overrides_for_adapter(
 def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
     """Print the named profiles the file defines, selected or not.
 
-    A named profile does nothing until a caller selects it, and that is the
-    thing readers of a configuration file get wrong: adding
+    A named profile does nothing until a caller selects it, and that is what
+    readers of a configuration file misunderstand: adding
     ``[waterdata.bulk]`` changes no run on its own. A report that mentioned a
-    profile only when one had been selected would leave that silence with
-    nothing to explain it -- the file would look ignored.
+    profile only when one had been selected would leave the profile's
+    lack of effect unexplained -- the file would appear to be ignored.
 
     Names come from the parsed file, so an unimported adapter's profiles are
     listed too. What such a profile *means* is what needs the import; what it
-    is called is a fact about the file, and withholding it here would make the
-    section's answer depend on which optional extras happened to be installed.
+    is called is a fact about the file, and omitting it here would make the
+    section's contents depend on which optional extras happened to be installed.
     """
     defined = [
         f"[{adapter}.{name}]"
@@ -507,12 +509,12 @@ def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
 
 
 def _show_unimported_adapters(out: TextIO) -> None:
-    """Name the adapters this process cannot report on, and say why.
+    """Name the adapters this process cannot report on, and state why.
 
     An adapter is only known to accept a setting once the module declaring that
     vocabulary has been imported, and NLDI is deliberately imported on demand
     for the geopandas extra. So the rows above cannot cover it. Omitting it
-    silently would read as "nothing is configured for nldi", which is a
+    would read as "nothing is configured for nldi", which is a
     different claim and an incorrect one -- this is the cost of validating an
     adapter's keys lazily (ADR 0011).
     """
@@ -549,10 +551,10 @@ def concurrency(
     """Cap on simultaneous chunks; ``None`` means unbounded.
 
     ``default`` is the caller's own preference for when nothing is configured --
-    Water Use ships a lower figure than the OGC getters, because the NWDC is
+    Water Use uses a lower value than the OGC getters, because the NWDC is
     only stress-tested to that level. A value resolved from the chain always
-    wins over it: a service able to override an explicit setting would make
-    ``concurrency=1`` a lie.
+    takes precedence over it: a service able to override an explicit setting would make
+    ``concurrency=1`` untrue.
     """
     raw, label, _source = _resolve("concurrency", adapter)
     if raw is None:
@@ -586,8 +588,8 @@ def progress() -> bool | None:
 def parallel_chunks(*, adapter: str | None = None) -> int:
     """Configured default fan-out for multi-value queries.
 
-    ``1`` (the default) means "chunk only as much as the URL byte limit
-    forces". This is the *baseline*;
+    ``1`` (the default) chunks only as far as the URL byte limit forces. This is the
+    *baseline*;
     :func:`dataretrieval.parallel_chunks` overrides it for one call. Shares
     the name of that context manager because it is the same setting -- this
     is the resolved value, not the scoping block.
@@ -622,21 +624,21 @@ def base_url(*, adapter: str | None = ..., default: str) -> str: ...
 def base_url(*, adapter: str | None = None, default: str | None = None) -> str | None:
     """An adapter's configured base URL, falling back to *default*.
 
-    Settable from code only: an adapter configuration may carry it, and both
+    Settable from code only: an adapter configuration may include it, and both
     the file and the environment refuse it -- the file at :func:`_accepted_keys`
     and the environment at :data:`_REFUSED_ENV_VARS`, each with an error naming
-    the block to write instead. A file that silently redirects a data-retrieval
-    library to another host is a supply-chain-shaped hazard, while a
+    the block to write instead. A file that redirects a data-retrieval
+    library to another host is a supply-chain hazard, while a
     ``configure`` block keeps the redirect where a reader of the script sees it
     (ADR 0011).
 
-    There is no package-wide default, because there is no one base URL: what an
-    adapter's requests are built on is the adapter's own fact, so the service
-    passes its own -- ``base_url(adapter="nldi", default=NLDI_API_BASE_URL)``
-    -- and the URL stays declared beside the service that owns it. What lives
-    here is the *rule* for choosing between them, which was being spelled at
-    every read site as ``... or SERVICE_DEFAULT``; a change to it (normalizing
-    a trailing slash, say) is one edit rather than five.
+    There is no package-wide default, because there is no one base URL: the base an
+    adapter's requests use is the adapter's own setting, so the service passes its own
+    -- ``base_url(adapter="nldi", default=NLDI_API_BASE_URL)`` -- and the URL stays
+    declared in the module of the service that uses it. What is defined here is the
+    *rule* for choosing between them, which every read site restated as ``... or
+    SERVICE_DEFAULT``; a change to it (normalizing a trailing slash, say) is one edit
+    rather than five.
 
     Parameters
     ----------
@@ -644,8 +646,8 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
         Whose base URL to resolve.
     default : str, optional
         The service's own base, returned when nothing configured one. Omitted,
-        the answer is ``None`` -- which is what :func:`show_configuration` asks
-        for, having no service default to name.
+        ``None`` is returned -- which is what :func:`show_configuration` passes,
+        since it has no service default to supply.
     """
     raw, label, _source = _resolve("base_url", adapter)
     if raw is None:
@@ -655,42 +657,41 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
 
 # --- resolution ----------------------------------------------------------
 
-#: Which source of the chain answered a resolution. Machine-readable so a
+#: Which source of the chain supplied a resolution. Machine-readable so a
 #: per-source rule reads the source, never the display label -- :func:`progress`
-#: keys its legacy-lenient parsing on ``_ENV``, and the label stays purely
-#: presentational.
+#: keys its legacy-lenient parsing on ``_ENV``, and the label is only presentational.
 _BLOCK, _ENV, _FILE, _DEFAULT = "block", "environment", "file", "built-in"
 
 
 def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, str]:
     """Return the raw value for *name*, its origin label, and its source.
 
-    Precedence is *source-major*: the chain walks block, then environment, then
-    file, exactly as ADR 0009 defines it -- and *within* each source an
+    Precedence is *source-major*: the chain checks block, then environment, then
+    file, as ADR 0009 defines it -- and *within* each source an
     adapter-scoped value outranks a package-wide one. So a variable exported
-    for one run still beats a stale ``[wqp]`` table in the config file --
+    for one run still outranks a stale ``[wqp]`` table in the config file --
     ordering by scope first, putting every adapter-scoped value ahead of every
-    package-wide one whatever its source, would have quietly inverted that
+    package-wide one whatever its source, would have inverted that
     (ADR 0010).
 
     ``adapter`` names the adapter on whose behalf the setting is being read.
     ``None`` resolves the package-wide value, which is also what an adapter
-    that declares no interest in this setting gets.
+    that does not read this setting gets.
 
     Returns
     -------
     tuple[str or None, str, str]
-        The raw string as written (parsing happens per setting, so each keeps
-        its own blank-value rule), the human-readable origin label, and which
-        source answered (one of the constants above) -- ``None`` with
-        ``_BUILT_IN`` / ``_DEFAULT`` when nothing configured it.
+        The raw string as written (parsing happens per setting, so each keeps its own
+        blank-value rule), the human-readable origin label, and which source supplied
+        the value (one of the constants above) -- ``None`` with ``_BUILT_IN`` /
+        ``_DEFAULT`` when nothing configured it.
     """
     _check_adapter_known(adapter)
     _check_env_not_refused(name)
 
-    # ``None`` unless this adapter actually reads this setting, so a setting
-    # outside its vocabulary resolves package-wide rather than looking for a
-    # scope it could never have been written into.
+    # ``None`` unless this adapter reads this setting, so a setting
+    # outside its vocabulary resolves package-wide rather than checking a
+    # scope it cannot have been written into.
     scoped: str | None = (
         adapter if adapter is not None and _accepts(adapter, name) else None
     )
@@ -709,8 +710,8 @@ def _resolve(name: str, adapter: str | None = None) -> tuple[str | None, str, st
 def _check_adapter_known(adapter: str | None) -> None:
     """Raise if *adapter* is not in the configurable adapter roster.
 
-    An adapter name nobody recognizes is a typo in *our* source, and its
-    failure mode is silence: ``_accepts`` would wave every setting through,
+    An adapter name not in the roster is a typo in this package's source, and it
+    would fail without an error: ``_accepts`` would accept every setting,
     the file would hold no table under that name, and the read would fall
     through to the package-wide value -- so a ``[waterdata]`` table, or a
     ``WaterdataConfiguration``, would be ignored with nothing raised anywhere.
@@ -725,10 +726,10 @@ def _check_adapter_known(adapter: str | None) -> None:
 def _check_env_not_refused(name: str) -> None:
     """Raise if an environment variable is set for a code-only setting.
 
-    Refused before anything is consulted, not at the environment's turn in
-    the chain. The file and the environment refuse ``base_url`` as one rule
-    (ADR 0011), so a variable that cannot work is not silently outranked by a
-    block that happens to work.
+    Refused before anything is consulted, not when the chain reaches the environment
+    source. The file and the environment refuse ``base_url`` as one rule (ADR 0011), so
+    a variable that cannot work is not outranked, with no error, by a block that happens
+    to work.
     """
     refused = _REFUSED_ENV_VARS.get(name)
     if refused is not None and refused in os.environ:
@@ -743,11 +744,11 @@ def _check_env_not_refused(name: str) -> None:
 def _resolve_from_block(
     name: str, scoped: str | None
 ) -> tuple[str | None, str, str] | None:
-    """Walk the scope stack for the first block that sets *name*.
+    """Check each scope frame, innermost first, for the first block that sets *name*.
 
-    Innermost block first: a value set by a nested block wins over both
+    Innermost block first: a value set by a nested block takes precedence over both
     scopes of an enclosing one. Within one block the adapter-scoped value is
-    the more specific of the two, so it is asked first.
+    the more specific of the two, so it is checked first.
     """
     for frame in reversed(_scope.get()):
         if scoped is not None and (scoped, name) in frame:
@@ -761,7 +762,7 @@ def _resolve_from_env(name: str) -> tuple[str | None, str, str] | None:
     """Check whether an environment variable supplies the setting.
 
     No per-adapter environment variables: seven adapters times four settings
-    is a namespace nobody can hold in mind, and an exported variable is
+    is a namespace nobody could remember, and an exported variable is
     invisible at the call site. See ADR 0010.
     """
     env = ENV_VARS.get(name)
@@ -794,7 +795,7 @@ def _resolve_from_file(name: str, scoped: str | None) -> tuple[str | None, str, 
 def _accepts(adapter: str, name: str) -> bool:
     """Whether *adapter* reads the setting *name*.
 
-    An adapter this process has not imported has no vocabulary to consult, so
+    An adapter this process has not imported has declared no settings to check, so
     every setting is assumed to be in scope for it: the file stays valid either
     way, and an adapter cannot be misreading a setting it has not loaded. See
     :func:`settings_for`.
@@ -820,13 +821,14 @@ def _display_progress(adapter: str | None = None) -> str:
 
 #: How each setting renders in :func:`show_configuration`. Keyed by the same
 #: names as :data:`_ALL_SETTINGS`, and asserted to cover them, so a setting
-#: added to one without the other fails loudly instead of silently printing a
-#: neighbour's value in the one report whose whole job is to be trustworthy.
+#: added to one without the other fails at import instead of printing a
+#: neighbouring setting's value in the one report that exists to report
+#: provenance accurately.
 #:
 #: Every renderer takes the adapter to resolve for, so the adapter-override
 #: rows use this same table rather than a parallel one that the guard below
 #: would not cover. ``api_key`` and ``progress`` ignore it -- neither is
-#: adapter-scoped, and :func:`_show_adapter_overrides` never asks them.
+#: adapter-scoped, and :func:`_show_adapter_overrides` never calls them.
 _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "api_key": _display_api_key,
     "concurrency": _display_concurrency,
@@ -839,7 +841,7 @@ _DISPLAYS: dict[str, Callable[[str | None], str]] = {
 
 if set(_DISPLAYS) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding error
     # Not an ``assert``: ``python -O`` strips those, and this guards the one
-    # report whose whole job is to be trustworthy about provenance.
+    # report that exists to report provenance accurately.
     raise RuntimeError(
         "every setting needs a show_configuration renderer; "
         f"missing={sorted(set(_ALL_SETTINGS) - set(_DISPLAYS))} "
