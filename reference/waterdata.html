@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gc2b250712 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=55581cd2"></script>
+      <script src="../_static/documentation_options.js?v=b13374f7"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2450,7 +2450,9 @@ for the “results” service.
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query. For each
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query. Code and identifier columns
+retain leading zeros as strings; measurement columns retain inferred
+numeric types. For each
 <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Date</span></code> / <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;Time</span></code> / <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;TimeZone</span></code> triplet in
 the response (e.g. <code class="docutils literal notranslate"><span class="pre">Activity_StartDate</span></code>, <code class="docutils literal notranslate"><span class="pre">Activity_StartTime</span></code>,
 <code class="docutils literal notranslate"><span class="pre">Activity_StartTimeZone</span></code>), an additional <code class="docutils literal notranslate"><span class="pre">&lt;prefix&gt;DateTime</span></code> column
@@ -2519,7 +2521,9 @@ is effectively required. (Samples API: <code class="docutils literal notranslate
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query.</p></li>
+<li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>) – Formatted data returned from the API query. Code and identifier columns
+retain leading zeros as strings; count columns retain inferred numeric
+types.</p></li>
 <li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataretrieval.utils.BaseMetadata</span></code></a>) – Custom <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> metadata object pertaining to the query.</p></li>
 </ul>
 </p>

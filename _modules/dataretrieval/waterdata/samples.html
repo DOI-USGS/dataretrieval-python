@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
+  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+gc2b250712 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
+      <script src="../../../_static/documentation_options.js?v=b13374f7"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,13 +88,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">get_args</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">quote</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._csv</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_code_csv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._querying</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_str</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
@@ -180,7 +180,10 @@
         <span class="o">**</span><span class="n">HTTPX_DEFAULTS</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">_raise_for_non_200</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">)</span>
+    <span class="c1"># This field counts alternate identifiers; it is not an identifier itself.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">read_code_csv</span><span class="p">(</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">infer_columns</span><span class="o">=</span><span class="p">(</span><span class="s2">"AlternateLocation_IdentifierCount"</span><span class="p">,)</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">response</span>
 
 
@@ -389,7 +392,9 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
-<span class="sd">        Formatted data returned from the API query. For each</span>
+<span class="sd">        Formatted data returned from the API query. Code and identifier columns</span>
+<span class="sd">        retain leading zeros as strings; measurement columns retain inferred</span>
+<span class="sd">        numeric types. For each</span>
 <span class="sd">        ``&lt;prefix&gt;Date`` / ``&lt;prefix&gt;Time`` / ``&lt;prefix&gt;TimeZone`` triplet in</span>
 <span class="sd">        the response (e.g. ``Activity_StartDate``, ``Activity_StartTime``,</span>
 <span class="sd">        ``Activity_StartTimeZone``), an additional ``&lt;prefix&gt;DateTime`` column</span>
@@ -488,7 +493,9 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame``</span>
-<span class="sd">        Formatted data returned from the API query.</span>
+<span class="sd">        Formatted data returned from the API query. Code and identifier columns</span>
+<span class="sd">        retain leading zeros as strings; count columns retain inferred numeric</span>
+<span class="sd">        types.</span>
 <span class="sd">    md : :obj:`dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        Custom ``dataretrieval`` metadata object pertaining to the query.</span>
 

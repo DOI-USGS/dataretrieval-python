@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
+  <title>dataretrieval.wqp &mdash; dataretrieval 0.1.dev1+gc2b250712 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
+      <script src="../../_static/documentation_options.js?v=b13374f7"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -89,12 +89,10 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">NamedTuple</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">configuration</span> <span class="k">as</span> <span class="n">_configuration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._csv</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_code_csv</span> <span class="k">as</span> <span class="n">_read_wqp_csv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._response_metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMetadata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">require_one_of</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.configuration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -195,34 +193,6 @@
         <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">service</span><span class="si">}</span><span class="s2"> service"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">kwargs</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_is_code_column</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Report whether a WQP column name denotes a code or identifier.</span>
-
-<span class="sd">    Such columns (HUCs, parameter codes, FIPS codes) have leading zeros that</span>
-<span class="sd">    are significant and must be preserved as ``str``. A name qualifies if it</span>
-<span class="sd">    ends with "code" or contains "identifier", "huc", or "fips".</span>
-<span class="sd">    """</span>
-    <span class="n">lname</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">lname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"code"</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
-        <span class="n">token</span> <span class="ow">in</span> <span class="n">lname</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"identifier"</span><span class="p">,</span> <span class="s2">"huc"</span><span class="p">,</span> <span class="s2">"fips"</span><span class="p">)</span>
-    <span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_read_wqp_csv</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Read a WQP CSV, forcing code/identifier columns to ``str``.</span>
-
-<span class="sd">    WQP returns codes with significant leading zeros — HUCs, parameter codes</span>
-<span class="sd">    (``USGSpcode``), FIPS state/county codes. A bare ``read_csv`` infers those as</span>
-<span class="sd">    int/float and drops the zeros without a warning (``"00060"`` -&gt; ``60``, HUC8</span>
-<span class="sd">    ``"07090002"`` -&gt; ``7090002``). Read the header first, then re-read with</span>
-<span class="sd">    ``dtype=str`` for every column that :func:`_is_code_column` flags, so the zeros are</span>
-<span class="sd">    preserved.</span>
-<span class="sd">    """</span>
-    <span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
-    <span class="n">str_cols</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="nb">str</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span> <span class="k">if</span> <span class="n">_is_code_column</span><span class="p">(</span><span class="n">col</span><span class="p">)}</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">str_cols</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_query_wqp</span><span class="p">(</span>
