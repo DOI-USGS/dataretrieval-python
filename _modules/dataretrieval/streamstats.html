@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -113,8 +113,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_service_base</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The StreamStats base this call targets: a block's redirect, or its own.</span>
 
-<span class="sd">    Both endpoints below hang off this, so a</span>
-<span class="sd">    ``StreamstatsConfiguration(base_url=...)`` moves the whole service rather</span>
+<span class="sd">    Both endpoints below are built on this, so a</span>
+<span class="sd">    ``StreamstatsConfiguration(base_url=...)`` redirects the whole service rather</span>
 <span class="sd">    than one endpoint (ADR 0011).</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"streamstats"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">STREAMSTATS_URL</span><span class="p">)</span>
@@ -259,8 +259,8 @@
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">"shape"</span><span class="p">:</span>
-        <span class="c1"># Returning a shapefile/Fiona object isn't implemented; fail</span>
-        <span class="c1"># loudly instead of silently falling through to a Watershed.</span>
+        <span class="c1"># Returning a shapefile/Fiona object isn't implemented; raise</span>
+        <span class="c1"># instead of falling through to a Watershed.</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
             <span class="s2">"format='shape' is not implemented. Use format='geojson' "</span>
             <span class="s2">"(default) for the raw response, or format='object' for a "</span>
@@ -317,7 +317,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">from_streamstats_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">streamstats_json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Watershed</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Create a :class:`Watershed` from a parsed StreamStats JSON payload.</span>
 
-<span class="sd">        No new request is issued. Builds a fresh instance (via ``__new__``, so</span>
+<span class="sd">        No new request is issued. Builds a new instance (via ``__new__``, so</span>
 <span class="sd">        the network-fetching ``__init__`` is bypassed) and populates it; each</span>
 <span class="sd">        call returns an independent object rather than mutating shared class</span>
 <span class="sd">        state.</span>
@@ -345,7 +345,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">StreamstatsConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Settings for StreamStats calls alone.</span>
 
-<span class="sd">    No fan-out dials: a StreamStats query is answered by a single</span>
+<span class="sd">    No fan-out settings: a StreamStats query is served by a single</span>
 <span class="sd">    request.</span>
 
 <span class="sd">    Declared here rather than in :mod:`dataretrieval.configuration`</span>
@@ -360,7 +360,7 @@
 <span class="sd">        stops.</span>
 <span class="sd">    base_url : str, optional</span>
 <span class="sd">        Services base to send StreamStats requests to, instead of its own</span>
-<span class="sd">        (``STREAMSTATS_URL``). Both endpoints hang off it. Code only:</span>
+<span class="sd">        (``STREAMSTATS_URL``). Both endpoints are built on it. Code only:</span>
 <span class="sd">        the file and the environment refuse it.</span>
 <span class="sd">    """</span>
 

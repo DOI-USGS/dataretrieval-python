@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,7 +75,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.waterdata.nearest</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""``get_nearest_continuous``: nearest-timestamp convenience on top of</span>
+<span></span><span class="sd">"""``get_nearest_continuous``: nearest-timestamp selection over</span>
 <span class="sd">``get_continuous``. Built on the CQL ``filter`` passthrough; only</span>
 <span class="sd">``get_nearest_continuous`` is public — everything else is package-private.</span>
 <span class="sd">"""</span>
@@ -197,17 +197,17 @@
 <span class="sd">    that falls in any window. Then, per ``(monitoring_location_id, target)``</span>
 <span class="sd">    pair, picks the single observation with the smallest ``|time - target|``.</span>
 
-<span class="sd">    The USGS continuous endpoint matches ``time`` parameters exactly rather</span>
-<span class="sd">    than fuzzily, and it does not implement ``sortby`` for arbitrary fields;</span>
-<span class="sd">    this function is the single-round-trip way to ask "what reading is</span>
-<span class="sd">    nearest this timestamp?" for many timestamps at once.</span>
+<span class="sd">    The USGS continuous endpoint matches ``time`` parameters exactly, with</span>
+<span class="sd">    no tolerance, and it does not implement ``sortby`` for arbitrary fields;</span>
+<span class="sd">    this function finds the reading nearest each of many timestamps in one</span>
+<span class="sd">    round trip.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    targets : list-like of datetime-convertible</span>
 <span class="sd">        Target timestamps. Naive datetimes are treated as UTC. Accepts a</span>
 <span class="sd">        list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,</span>
-<span class="sd">        or anything ``pandas.to_datetime`` consumes.</span>
+<span class="sd">        or anything ``pandas.to_datetime`` accepts.</span>
 <span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
 <span class="sd">        Forwarded to ``get_continuous``.</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
@@ -222,11 +222,10 @@
 <span class="sd">        &lt;https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html&gt;`_</span>
 <span class="sd">        for the full grammar.</span>
 
-<span class="sd">        Must be small enough that every target's window captures</span>
+<span class="sd">        Must be small enough that every target's window contains</span>
 <span class="sd">        roughly one observation at the service cadence. The default</span>
 <span class="sd">        matches a 15-minute continuous gage; widen (e.g.</span>
-<span class="sd">        ``"PT15M"``) for irregular cadences or resilience to data</span>
-<span class="sd">        gaps.</span>
+<span class="sd">        ``"PT15M"``) for irregular cadences or tolerance of data gaps.</span>
 <span class="sd">    on_tie : {"first", "last", "mean"}, default ``"first"``</span>
 <span class="sd">        How to resolve ties when two observations are exactly equidistant</span>
 <span class="sd">        from a target (which happens when the target falls at the midpoint</span>
@@ -239,14 +238,13 @@
 <span class="sd">          the target, since no real observation exists at the midpoint.</span>
 
 <span class="sd">    **kwargs</span>
-<span class="sd">        Additional keyword arguments forwarded to ``get_continuous``</span>
-<span class="sd">        (e.g. ``statistic_id``, ``approval_status``, ``properties``).</span>
-<span class="sd">        Passing ``time``, ``filter``, or ``filter_lang`` raises</span>
-<span class="sd">        ``TypeError`` — this function builds those itself. A caller-provided</span>
-<span class="sd">        ``properties`` list gains ``time`` and ``monitoring_location_id`` when</span>
-<span class="sd">        either is omitted: the match is computed against the first and grouped</span>
-<span class="sd">        by the second, so the returned frame carries both columns even when they</span>
-<span class="sd">        were not requested.</span>
+<span class="sd">        Additional keyword arguments forwarded to ``get_continuous`` (e.g.</span>
+<span class="sd">        ``statistic_id``, ``approval_status``, ``properties``). Passing ``time``,</span>
+<span class="sd">        ``filter``, or ``filter_lang`` raises ``TypeError`` — this function builds those</span>
+<span class="sd">        itself. A caller-provided ``properties`` list has ``time`` and</span>
+<span class="sd">        ``monitoring_location_id`` when either is omitted: the match is computed against</span>
+<span class="sd">        the first and grouped by the second, so the returned frame includes both columns</span>
+<span class="sd">        even when they were not requested.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -255,7 +253,7 @@
 <span class="sd">        had at least one observation in its window. Rows are augmented</span>
 <span class="sd">        with a ``target_time`` column indicating which target they</span>
 <span class="sd">        correspond to. Targets with no observations in their window are</span>
-<span class="sd">        silently dropped.</span>
+<span class="sd">        omitted; no warning is raised.</span>
 <span class="sd">    md : :class:`~dataretrieval.utils.BaseMetadata`</span>
 <span class="sd">        Metadata from the underlying ``get_continuous`` call.</span>
 
@@ -270,17 +268,17 @@
 <span class="sd">    -----</span>
 <span class="sd">    *Window sizing and ties.* When ``window`` is exactly half the service</span>
 <span class="sd">    cadence, most targets' windows contain a single observation and</span>
-<span class="sd">    ``on_tie`` is moot. Ties arise only when a target sits exactly at the</span>
+<span class="sd">    ``on_tie`` has no effect. Ties arise only when a target falls exactly at the</span>
 <span class="sd">    midpoint between two grid observations — rare in practice but possible.</span>
 <span class="sd">    Setting ``window`` to a full cadence (or larger) guarantees at least one</span>
 <span class="sd">    observation per target in steady state at the cost of more bytes per</span>
 <span class="sd">    response.</span>
 
-<span class="sd">    *Why windowed CQL rather than sort+limit.* The API's advertised</span>
-<span class="sd">    ``sortby`` parameter would make this a one-liner per target (``filter``</span>
-<span class="sd">    by ``time &lt;= t`` and ``limit 1``), but it is per-query — you would need</span>
-<span class="sd">    one HTTP round-trip per target. The CQL ``OR``-chain approach folds</span>
-<span class="sd">    all N targets into one request (auto-chunked when the URL is long).</span>
+<span class="sd">    *Why windowed CQL rather than sort+limit.* The API's documented ``sortby`` parameter</span>
+<span class="sd">    would make this a trivial query per target (``filter`` by ``time &lt;= t`` and ``limit</span>
+<span class="sd">    1``), but it is per-query — you would need one HTTP round-trip per target. The CQL</span>
+<span class="sd">    ``OR``-chain approach combines all N targets into one request (auto-chunked when the</span>
+<span class="sd">    URL is long).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -393,7 +391,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_coerce_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Accept anything ``pandas.to_datetime`` consumes, including a single value.</span>
+<span class="w">    </span><span class="sd">"""Accept anything ``pandas.to_datetime`` accepts, including a single value.</span>
 
 <span class="sd">    A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a</span>
 <span class="sd">    one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)</span>
@@ -406,7 +404,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Reject kwargs the helper owns; validate ``on_tie``."""</span>
+<span class="w">    </span><span class="sd">"""Reject kwargs the helper sets itself; validate ``on_tie``."""</span>
     <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"filter_lang"</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
@@ -441,7 +439,7 @@
 <span class="w">    </span><span class="sd">"""Return the single row within ``window_td`` of ``target``, or ``None``.</span>
 
 <span class="sd">    Resolves ties (two rows equidistant from ``target``) per ``on_tie``.</span>
-<span class="sd">    The returned row carries a ``target_time`` column identifying which</span>
+<span class="sd">    The returned row includes a ``target_time`` column identifying which</span>
 <span class="sd">    target it was selected for.</span>
 <span class="sd">    """</span>
     <span class="n">in_window</span> <span class="o">=</span> <span class="n">site_df</span><span class="p">[</span>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0013: Distinguish the terms we own from the terms the services own &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0013: Distinguish the terms we own from the terms the services own &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,15 +128,15 @@ of terms, and being wrong about those has produced the same review argument
 repeatedly: whether a docstring may say <em>site</em>, whether <code class="docutils literal notranslate"><span class="pre">service=</span></code> may name a
 collection, whether prose about NWIS is bound by a word chosen from the Water
 Data API.</p>
-<p>The two sets behave differently because their authority differs.</p>
+<p>The two sets are treated differently because their authority differs.</p>
 <p>Terms like <em>chunk</em>, <em>page</em>, <em>fan-out</em>, <em>plan</em>, <em>interruption</em>, <em>dialect</em> and
 <em>leaf</em> appear nowhere in any USGS API’s vocabulary. They were invented here to
 describe mechanisms this package owns. Nothing external constrains them, so when
 the package spells one of them two ways – the resolution chain’s code said
 <em>tier</em> for what its founding records, ADRs 0009 and 0010, call a <em>source</em> –
-that is simply an inconsistency, and one that can be removed by deciding.</p>
+that is an inconsistency, and one that can be removed by deciding.</p>
 <p>Terms like <em>monitoring location</em> and <em>collection</em> are different. The services
-name those things, and they do not agree with each other:</p>
+name those things, and they differ:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Concept</p></th>
@@ -161,7 +161,7 @@ name those things, and they do not agree with each other:</p>
 </tr>
 </tbody>
 </table>
-<p>No decision here makes those agree. A caller who has read the WQP
+<p>No decision here makes those match. A caller who has read the WQP
 documentation looks for <code class="docutils literal notranslate"><span class="pre">Station</span></code>; one reading Water Data’s looks for
 <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code>. An adapter that renamed either would be harder to
 use, not easier, and the parameter names are public surface besides.</p>
@@ -173,8 +173,8 @@ from the API it wraps.</p>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
 <p>The glossary holds two kinds of term, and they impose different obligations.</p>
-<p><strong>Core terms are ours.</strong> The package invented them and no service has a claim
-on them: everything under <em>Retrieval</em>, <em>Failure and resumption</em>, <em>Configuration</em>
+<p><strong>Core terms are ours.</strong> The package invented them and no service defines
+them: everything under <em>Retrieval</em>, <em>Failure and resumption</em>, <em>Configuration</em>
 and <em>Boundaries</em>, plus <em>Collection family</em> and <em>Metadata</em>. One spelling,
 enforced everywhere it appears – prose, identifiers, tests. A second spelling
 of a core term is a defect, not a variation, and is fixed rather than recorded.
@@ -187,8 +187,8 @@ chooses one term for <strong>prose</strong>, so that documents about the package
 internally consistent. It does not choose the names used in requests, and it
 does not choose for an adapter’s public surface: each adapter keeps its own
 service’s spelling in its parameters, and reproduces that service’s vocabulary
-faithfully where it appears in returned data.</p>
-<p>An adapter is where the two meet. Its public surface uses its service’s
+where it appears in returned data.</p>
+<p>An adapter uses both kinds. Its public surface uses its service’s
 terms; what it passes to the shared modules uses the core terms. The
 translation is the adapter’s responsibility, and a divergence at that boundary
 is the design working as intended rather than a defect.</p>
@@ -219,9 +219,9 @@ it loses are not resolved; they move to the term they belong to, as part of
 its definition rather than a list of exceptions.</p></li>
 <li><p>A glossary entry now has an obligation to say which kind it is. That is a
 small cost per term and the reason the distinction is usable at all.</p></li>
-<li><p>The package’s own inconsistencies in core vocabulary become defects with a
-deadline rather than curiosities. The resolution chain’s <code class="docutils literal notranslate"><span class="pre">tier</span></code>-for-<em>source</em>
-identifiers are the current example.</p></li>
+<li><p>The package’s own inconsistencies in core vocabulary become defects to fix
+rather than variations to tolerate. The resolution chain’s
+<code class="docutils literal notranslate"><span class="pre">tier</span></code>-for-<em>source</em> identifiers are the current example.</p></li>
 </ul>
 </section>
 <section id="compliance">

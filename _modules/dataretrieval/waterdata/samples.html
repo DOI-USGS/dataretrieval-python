@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.samples &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -80,7 +80,7 @@
 <span class="sd">Discrete water-quality results, which come from a different upstream service</span>
 <span class="sd">than the rest of Water Data -- with its own parameter spellings and its own</span>
 <span class="sd">error envelope. The translation between this package's argument names and that</span>
-<span class="sd">service's wire names lives here, next to the getters that need it.</span>
+<span class="sd">service's wire names is defined here, next to the getters that need it.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -165,7 +165,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Issue a Samples CSV request and parse the body into a DataFrame.</span>
 
-<span class="sd">    Shared tail for the Samples getters: sends the GET with the standard</span>
+<span class="sd">    Shared final step for the Samples getters: sends the GET with the standard</span>
 <span class="sd">    headers (including ``X-Api-Key``), raises a typed error on a non-200</span>
 <span class="sd">    (consistent with the OGC/stats path) instead of a bare</span>
 <span class="sd">    ``HTTPStatusError``, and reads the CSV. The caller wraps the response</span>
@@ -187,8 +187,8 @@
 <span class="c1"># Map the public snake_case ``get_samples`` parameters to the camelCase query</span>
 <span class="c1"># parameter names the Samples API expects on the wire. ``characteristic`` is</span>
 <span class="c1"># already snake_case-compatible (single word) and is sent unchanged. The</span>
-<span class="c1"># remaining snake_case params are bookkeeping (``service``/``profile``/</span>
-<span class="c1"># ``ssl_check``) and never reach the request.</span>
+<span class="c1"># remaining snake_case params are control arguments (``service``/``profile``/</span>
+<span class="c1"># ``ssl_check``) and are never sent in the request.</span>
 <span class="n">_SAMPLES_PARAM_TO_API</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"activity_media_name"</span><span class="p">:</span> <span class="s2">"activityMediaName"</span><span class="p">,</span>
     <span class="s2">"activity_start_date_lower"</span><span class="p">:</span> <span class="s2">"activityStartDateLower"</span><span class="p">,</span>
@@ -254,9 +254,9 @@
 <span class="w">    </span><span class="sd">"""Search the USGS Samples database for discrete water-quality results.</span>
 
 <span class="sd">    Every available filter is exposed as an argument, but leave as many as</span>
-<span class="sd">    feasible at their default of ``None``. An overcomplicated query can bog</span>
-<span class="sd">    down the database's ability to assemble a result before it times out, so</span>
-<span class="sd">    filtering narrowly is faster than filtering exhaustively.</span>
+<span class="sd">    feasible at their default of ``None``. A query with many filters can keep</span>
+<span class="sd">    the database from assembling a result before the request times out, so</span>
+<span class="sd">    a query with few filters runs faster than one with many.</span>
 
 <span class="sd">    The web GUI for the Samples database is at</span>
 <span class="sd">    https://waterdata.usgs.gov/download-samples/#dataProfile=site</span>

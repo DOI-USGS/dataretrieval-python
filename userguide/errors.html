@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Handling errors &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>Handling errors &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -123,7 +123,7 @@ read-anywhere fields, so you rarely need to import the specific subclasses:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">.status_code</span></code> – the HTTP status, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the failure included no
 response (a connection error, an over-long URL, …).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> – seconds the server asked you to wait (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
+<li><p><code class="docutils literal notranslate"><span class="pre">.retry_after</span></code> – seconds the server specified to wait (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
 header), or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">.retryable</span></code> – <code class="docutils literal notranslate"><span class="pre">True</span></code> when re-issuing the same request might succeed (a
 429 / 5xx, or a connection failure); <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p></li>
@@ -195,7 +195,7 @@ chunk paginates, splitting a large result further costs little or no
 extra quota <em>as long as each chunk still spans many pages</em>. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
 would; a split that leaves each chunk only a page or two adds its partial
-final page.) So if you <em>know</em> your pull is large, ask for a finer split with
+final page.) If you know your pull is large, request a finer split with
 <code class="docutils literal notranslate"><span class="pre">parallel_chunks(n)</span></code>: you get roughly the same pages in more, smaller
 chunks, which gives smoother progress, more even concurrency, and a
 smaller unit of retry/resume. <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> is a scoped <code class="docutils literal notranslate"><span class="pre">with</span></code> block, so

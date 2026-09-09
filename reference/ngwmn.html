@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -116,7 +116,7 @@
 <code class="docutils literal notranslate"><span class="pre">providers</span></code>. Each getter below delegates to the shared OGC facade
 (<code class="xref py py-func docutils literal notranslate"><span class="pre">get_ogc_data()</span></code>) with <code class="docutils literal notranslate"><span class="pre">base_url=NGWMN_OGC_API_URL</span></code>.
 Multi-value chunking, pagination, retry/resume, and result shaping therefore
-behave exactly as they do for the main Water Data getters.</p>
+behave as they do for the main Water Data getters.</p>
 <p>Unlike the main Water Data collections, NGWMN aggregates monitoring locations
 from many agencies, so <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> values use other agency
 prefixes besides <code class="docutils literal notranslate"><span class="pre">USGS-</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">MBMG-702934</span></code>, <code class="docutils literal notranslate"><span class="pre">AKDNR-535134236016630</span></code>).</p>
@@ -127,8 +127,8 @@ prefixes besides <code class="docutils literal notranslate"><span class="pre">US
 <dd><p>Settings for NGWMN calls alone.</p>
 <p>NGWMN is a second OGC API on the Water Data host, so its queries
 divide along the same URL byte budget and take the same two fan-out
-dials. The API key is not among them: one gateway fronts both
-adapters, so one key and one quota pool serve them (ADR 0010).</p>
+settings. The API key is not among them: one gateway fronts both
+adapters, so they share one key and one quota pool (ADR 0010).</p>
 <p>Declared here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a>
 (ADR 0011).</p>
 <dl class="field-list simple">
@@ -140,7 +140,7 @@ stops.</p></li>
 <li><p><strong>base_url</strong> (<em>str</em><em>, </em><em>optional</em>) – OGC API base to send NGWMN requests to, instead of the service’s
 own (<code class="docutils literal notranslate"><span class="pre">NGWMN_OGC_API_URL</span></code>). Code only: the file and the
 environment refuse it. The API key is scoped to the host that
-honors it, so a redirected call carries no key.</p></li>
+accepts it, so a redirected call sends no key.</p></li>
 <li><p><strong>concurrency</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Cap on simultaneous sub-requests, or <code class="docutils literal notranslate"><span class="pre">&quot;unbounded&quot;</span></code>.</p></li>
 <li><p><strong>parallel_chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Baseline fan-out for multi-value queries. Each sub-request spends
 rate-limit quota, so raise it only for pulls you know are large.</p></li>
@@ -189,7 +189,7 @@ rate-limit quota, so raise it only for pulls you know are large.</p></li>
 caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
 which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
 property of the class, which is what stops the caller restating it at
-every call site and stops the roster being spelled twice.</p>
+every call site and stops the roster being listed twice.</p>
 </dd></dl>
 
 </dd></dl>

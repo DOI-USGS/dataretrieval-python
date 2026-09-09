@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -148,7 +148,7 @@ transport modules.</p>
 exports. Deprecated NWIS remains outside this modernization. Service adapters do
 not import another adapter’s implementation to obtain transport behavior.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">__module__</span></code> rule above is scoped to this facade, where the family module
-is a real file a traceback can name. It is not a package-wide prohibition: the
+is a file that exists for a traceback to name. It is not a package-wide prohibition: the
 legacy <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils</span></code> names are split across private modules by
 dependency and <em>do</em> report the documented path, because there the alternative is
 a public, documented import location pointing at a private module.</p>
@@ -165,7 +165,7 @@ package-wide, legacy NWIS included: it is about what an adapter returns, not
 how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
 identifiers (<code class="docutils literal notranslate"><span class="pre">site_no</span></code> in NWIS) have significant leading zeros, and a bare
 <code class="docutils literal notranslate"><span class="pre">read_csv</span></code> infers them as integers and
-drops those zeros – <code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">60</span></code>, so the value is silently wrong
+drops those zeros – <code class="docutils literal notranslate"><span class="pre">&quot;00060&quot;</span></code> becomes <code class="docutils literal notranslate"><span class="pre">60</span></code>, so the value is wrong, with no indication,
 rather than missing. Every adapter reading a USGS tabular response names its
 identifier columns as <code class="docutils literal notranslate"><span class="pre">str</span></code> before parsing, which is why a two-pass header
 read is not a redundancy to be optimized away.</p>
@@ -189,7 +189,7 @@ cross-component layers without moving established files.</p></li>
 </section>
 <section id="compliance">
 <h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">tests/contracts/public_api_test.py</span></code> freezes Water Data imports, signatures,
+<p><code class="docutils literal notranslate"><span class="pre">tests/contracts/public_api_test.py</span></code> records Water Data imports, signatures,
 facade identity, and compatibility names. <code class="docutils literal notranslate"><span class="pre">tests/architecture_test.py</span></code>
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code> keeps the

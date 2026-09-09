@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -180,7 +180,7 @@ upstream failure may have ended, while a single-shot adapter re-sends only the
 gateway statuses, because its service responds to a <em>rejected query</em> with a
 500, and re-sending that would spend a caller’s quota on a request that
 cannot succeed. Both sets are narrower than <code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retryable</span></code>,
-deliberately: that field tells a caller re-issuing might work, where spending
+deliberately: that field indicates re-issuing might work, where spending
 someone’s quota unasked needs a stricter criterion. Deprecated NWIS calls
 retain their compatibility behavior. A failed pagination or fan-out operation
 raises rather than returning successful siblings as an apparently complete
@@ -189,17 +189,17 @@ recorded in <a class="reference internal" href="0004-error-retry-resume.html"><s
 <p>Two independent bounds limit retry: an attempt count and a no-progress budget
 measured in seconds since data last arrived. Attempts alone leave elapsed time
 unbounded, since each attempt may itself block until its timeout; the budget
-alone would cut short a slow but productive download. Receiving a page restarts
+alone would stop a slow but productive download early. Receiving a page restarts
 the budget, and an attempt already in flight is never interrupted.</p>
 <p><strong>Time spent waiting is not time without progress.</strong> The budget bounds time
-the <em>service</em> left the caller with nothing, so time the package chose to spend
+the <em>service</em> left the caller with nothing, so time the package itself spent waiting
 is excluded by the measured amount: a wait the server named in
 <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>, and time a chunk spent waiting for the concurrency semaphore.
 The first retry is exempt outright. Without these exemptions a policy that
 follows a server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> would spend its own budget doing so, and a
 call would lose retries for being throttled by settings the caller chose. An
 exclusion never sets the reference time later than now: a timestamp ahead of
-now would make the elapsed no-progress time negative and silently disable the
+now would make the elapsed no-progress time negative and disable the
 bound. Because half of that exclusion is the retry driver’s, the concurrency
 semaphore is acquired <em>per attempt</em> inside the retry driver rather than held
 by the caller across one.</p>
@@ -229,8 +229,8 @@ being forced into a universal adapter abstraction.</p></li>
 <li><p>Retry can increase latency and quota consumption, so attempt counts, waits,
 and total no-progress time remain bounded, and cancellation signals are never
 wrapped.</p></li>
-<li><p>Guidance the progress reporter prints depends on the host it applies to, so a
-service that cannot use an API key is not told to obtain one.</p></li>
+<li><p>Guidance the progress reporter prints depends on the host it applies to, so the
+advice to obtain one is not printed for a service that cannot use it.</p></li>
 <li><p>The transport package is internal infrastructure, not a new public API
 contract.</p></li>
 <li><p>Keeping presentation and frame assembly out means transport is roughly 570

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,12 +78,12 @@
 <span></span><span class="sd">"""Getters for observations that form a time series.</span>
 
 <span class="sd">Daily and continuous values, their most-recent counterparts, and the</span>
-<span class="sd">period-of-record statistics computed over them. What unites them is shape: a</span>
+<span class="sd">period-of-record statistics computed over them. What they share is shape: a</span>
 <span class="sd">monitoring location and a parameter, repeated over time.</span>
 
 <span class="sd">Metadata *about* these series -- what a location measures, over what period --</span>
-<span class="sd">lives in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what</span>
-<span class="sd">exists before asking for the observations.</span>
+<span class="sd">is in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what</span>
+<span class="sd">exists before requesting the observations.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -243,7 +243,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -290,7 +290,7 @@
 <span class="sd">        ...     time="2021-01-01T00:00:00Z/2022-01-01T00:00:00Z",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">        &gt;&gt;&gt; # Quick "show me the last week" idiom (ISO 8601 duration)</span>
+<span class="sd">        &gt;&gt;&gt; # The last seven days, as an ISO 8601 duration</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
 <span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
 <span class="sd">        ...     parameter_code="00060",</span>
@@ -305,7 +305,7 @@
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Pull only rows whose underlying record was refreshed in the</span>
-<span class="sd">        &gt;&gt;&gt; # last 7 days — handy for incremental ETL polling</span>
+<span class="sd">        &gt;&gt;&gt; # last 7 days — useful for incremental ETL polling</span>
 <span class="sd">        &gt;&gt;&gt; df, md = dataretrieval.waterdata.get_daily(</span>
 <span class="sd">        ...     monitoring_location_id="USGS-02238500",</span>
 <span class="sd">        ...     parameter_code="00060",</span>
@@ -315,9 +315,9 @@
 <span class="sd">        &gt;&gt;&gt; # Chain queries: pull all stream monitoring locations in a</span>
 <span class="sd">        &gt;&gt;&gt; # state, then their daily discharge for the last week. The</span>
 <span class="sd">        &gt;&gt;&gt; # location list can be hundreds of values long — the request</span>
-<span class="sd">        &gt;&gt;&gt; # is transparently chunked across multiple chunks so the URL</span>
-<span class="sd">        &gt;&gt;&gt; # stays under the server's byte limit. Combined output looks</span>
-<span class="sd">        &gt;&gt;&gt; # like a single query.</span>
+<span class="sd">        &gt;&gt;&gt; # is split into several chunks so the URL stays under the</span>
+<span class="sd">        &gt;&gt;&gt; # server's byte limit. The combined output is the same as for</span>
+<span class="sd">        &gt;&gt;&gt; # a single request.</span>
 <span class="sd">        &gt;&gt;&gt; sites_df, _ = dataretrieval.waterdata.get_monitoring_locations(</span>
 <span class="sd">        ...     state="Ohio",</span>
 <span class="sd">        ...     site_type="Stream",</span>
@@ -467,7 +467,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 10000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -678,7 +678,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -894,7 +894,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -989,7 +989,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get day-of-year and month-of-year statistics over the historical record.</span>
 
-<span class="sd">    Answers "how does today compare to a normal day here?" -- minimum, maximum,</span>
+<span class="sd">    Compares a day to the same day of year across the record: minimum, maximum,</span>
 <span class="sd">    mean, median, and percentiles computed per day of year and month of year</span>
 <span class="sd">    (the ``observationNormals`` endpoint). For more on how these statistics are</span>
 <span class="sd">    calculated, see the Statistics documentation page:</span>
@@ -1034,7 +1034,7 @@
 <span class="sd">        The number of results to return per page, where one result represents a</span>
 <span class="sd">        monitoring location. The default is 1000.</span>
 <span class="sd">    parent_time_series_id: string, optional</span>
-<span class="sd">        Returns statistics tied to a particular database entry.</span>
+<span class="sd">        Returns statistics associated with a particular database entry.</span>
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>
@@ -1132,7 +1132,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get statistics summarizing whole months and years of the record.</span>
 
-<span class="sd">    Answers "how did this month or year compare to others?" -- minimum, maximum,</span>
+<span class="sd">    Compares a month or year to the others in the record: minimum, maximum,</span>
 <span class="sd">    mean, median, and percentiles per month-year and per water or calendar year</span>
 <span class="sd">    (the ``observationIntervals`` endpoint). For more on how these statistics are</span>
 <span class="sd">    calculated, see the Statistics documentation page:</span>
@@ -1179,7 +1179,7 @@
 <span class="sd">        The number of results to return per page, where one result represents a</span>
 <span class="sd">        monitoring location. The default is 1000.</span>
 <span class="sd">    parent_time_series_id: string, optional</span>
-<span class="sd">        Returns statistics tied to a particular database entry.</span>
+<span class="sd">        Returns statistics associated with a particular database entry.</span>
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>

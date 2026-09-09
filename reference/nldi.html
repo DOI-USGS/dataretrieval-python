@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -119,10 +119,10 @@ or registered features as a <code class="docutils literal notranslate"><span cla
 <dt class="sig sig-object py" id="dataretrieval.nldi.NldiConfiguration">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.nldi.</span></span><span class="sig-name descname"><span class="pre">NldiConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stall_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/nldi.html#NldiConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nldi.NldiConfiguration" title="Link to this definition"></a></dt>
 <dd><p>Settings for NLDI calls alone.</p>
-<p>No fan-out dials: an NLDI query is answered by a single request.</p>
+<p>No fan-out settings: an NLDI query is served by a single request.</p>
 <p>This adapter is imported on demand for the geopandas extra, so this
-class registers itself later than the rest – which is exactly why
-the adapter roster lives in <code class="xref py py-data docutils literal notranslate"><span class="pre">ADAPTERS</span></code>
+class registers itself later than the rest – which is why
+the adapter roster is <code class="xref py py-data docutils literal notranslate"><span class="pre">ADAPTERS</span></code>
 rather than being derived from what has been imported.</p>
 <p>Declared here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a>
 (ADR 0011).</p>
@@ -181,7 +181,7 @@ environment refuse it.</p></li>
 caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
 which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
 property of the class, which is what stops the caller restating it at
-every call site and stops the roster being spelled twice.</p>
+every call site and stops the roster being listed twice.</p>
 </dd></dl>
 
 </dd></dl>
@@ -294,7 +294,7 @@ GeoDataFrame containing a point geometry.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># "nwissite" returns every NWIS site nationwide, so this example is</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># skipped in the doctest build to avoid the (very large) download.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># skipped in the doctest build to avoid the large download.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">nldi</span><span class="o">.</span><span class="n">get_features_by_data_source</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">data_source</span><span class="o">=</span><span class="s2">"nwissite"</span>
 <span class="gp">... </span><span class="p">)</span>

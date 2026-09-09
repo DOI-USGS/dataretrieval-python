@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0009: Layered configuration resolution &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0009: Layered configuration resolution &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,7 +133,7 @@ follows the rule as written here.</p></li>
 <li><p><strong>The refusal of a configuration object</strong>, stated in the leaf clause (“a
 scoped action, not a <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> dataclass”) and in “A configuration
 object would have no way to reach the call”. <code class="docutils literal notranslate"><span class="pre">configure()</span></code> now takes
-exactly such objects. The grounds were that an instance had no way to reach a
+exactly such objects. The grounds were that an instance had no way to be passed to a
 free function; the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> this ADR established is one, and ADR 0010
 had already narrowed the objection to a payload-shape preference.</p></li>
 </ul>
@@ -180,7 +180,7 @@ pasted into shared scripts.</p>
 <em>blank</em> environment variable does not count as set, so it cannot shadow the
 file: container and CI tooling routinely creates one. The exception is
 <code class="docutils literal notranslate"><span class="pre">progress</span></code>, where a blank <code class="docutils literal notranslate"><span class="pre">API_USGS_PROGRESS</span></code> has always meant “off” –
-so “does blank count as a value?” is a property of the setting
+so whether blank counts as a value is a property of the setting
 (<code class="docutils literal notranslate"><span class="pre">configuration._BLANK_MEANS_SET</span></code>) rather than an extra tier in the chain.</p></li>
 <li><p><strong>The environment ranks above the file.</strong> This follows the precedence used by
 <a class="reference external" href="https://pip.pypa.io/en/stable/topics/configuration/#precedence-override-order">pip</a>
@@ -205,15 +205,15 @@ forms, including a blank numeric value and an arbitrary non-empty progress
 value, remain compatible without making the new surfaces equally permissive.</p></li>
 <li><p><strong>Each setting’s policy is a row in a named table, never a branch in shared
 code.</strong> Type, bounds, and parser are declared as data, guarded at import time
-for completeness, so adding a setting cannot silently inherit whatever the
+for completeness, so adding a setting cannot inherit, with no error, whatever the
 fallback branch happened to do. The rejected alternative – an <code class="docutils literal notranslate"><span class="pre">if</span></code>/<code class="docutils literal notranslate"><span class="pre">elif</span></code>
-chain with an implicit integer default – fails by omission, and fails
-quietly.</p></li>
+chain with an implicit integer default – fails by omission, without an
+error.</p></li>
 <li><p><strong>The file format is forward compatible; the table layout is not.</strong> A key the
 running version does not recognize warns and is ignored, so a file written for
 a newer release still loads rather than breaking a caller who downgraded. A
 key the version <em>does</em> recognize, placed in a table that cannot use it, raises:
-that is a mistake the caller can fix, and ignoring it silently would leave the
+that is a mistake the caller can fix, and ignoring it would leave the
 user believing a setting is in effect when it is not.</p></li>
 <li><p><strong>Credential-shaped keyword refusal is a usability check, not a security
 control.</strong> Names are matched as substrings after separators are stripped, and
@@ -271,7 +271,7 @@ snapshot, equality, serialization, and representation contracts while risking
 disclosure of the API key through generated helpers.</p></li>
 <li><p><strong>One flat set of setting names, shared by every service.</strong> <code class="docutils literal notranslate"><span class="pre">concurrency</span></code>
 means the same thing to every adapter, so the chain resolves one name rather
-than one per service. Services differ in the <em>value</em> they want, not the
+than one per service. Services differ in the <em>value</em> they use, not the
 vocabulary, and that difference is expressed as a caller-supplied default:
 <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> passes its <code class="docutils literal notranslate"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></code> of 4 to
 <code class="docutils literal notranslate"><span class="pre">configuration.concurrency()</span></code> where the OGC getters take the package default
@@ -289,7 +289,7 @@ inside this chain – a <code class="docutils literal notranslate"><span class="
 dimension in resolution, which <code class="docutils literal notranslate"><span class="pre">show_configuration()</span></code> must then render as a
 matrix rather than a list, and that cost should be paid only when a
 requirement exists.</p></li>
-<li><p><strong>A configuration object would have no way to reach the call.</strong> The public
+<li><p><strong>A configuration object would have no way to be passed to the call.</strong> The public
 surface is free functions – <code class="docutils literal notranslate"><span class="pre">waterdata.get_daily(...)</span></code>, not a client with
 methods. An instance would therefore be passed either as a parameter on every
 getter, which is the per-call passing the <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> exists to remove and
@@ -340,9 +340,8 @@ the prose being consolidated.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">**queryables</span></code> clause above originally named <code class="docutils literal notranslate"><span class="pre">session</span></code> among the
 rejected names. It was corrected after the fact: <code class="docutils literal notranslate"><span class="pre">session</span></code> holds no
 secret, so refusing it with a credentials message told callers the wrong thing,
-and as a substring it claimed part of a namespace the <em>server</em> owns – any
-future query parameter containing it would have been unreachable behind that
-message. <code class="docutils literal notranslate"><span class="pre">dataretrieval/credentials.py</span></code> records the exclusion at the
+and as a substring it reserved part of a namespace the <em>server</em> defines – any
+future query parameter containing it would have been blocked by that message. <code class="docutils literal notranslate"><span class="pre">dataretrieval/credentials.py</span></code> records the exclusion at the
 predicate. The decision the clause makes – credential-shaped names never reach
 a URL – is unchanged.</p>
 </section>

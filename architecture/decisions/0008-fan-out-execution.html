@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0008: Separate fan-out execution from chunk planning &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -126,8 +126,8 @@ of ADR 0006 remains in effect.</p>
 <p>Two services turn one logical query into several requests, for unrelated
 reasons. A Water Data or NGWMN query whose URL exceeds the server’s byte limit
 is split along its multi-value axes. A Water Use query naming several locations
-is split because the NWDC accepts one <code class="docutils literal notranslate"><span class="pre">location=</span></code> per request – its URLs run
-around 63 bytes against an 8000-byte budget, so the byte limit has nothing to do
+is split because the NWDC accepts one <code class="docutils literal notranslate"><span class="pre">location=</span></code> per request – its URLs are
+about 63 bytes against an 8000-byte budget, so the byte limit has nothing to do
 with it.</p>
 <p>Chunking is how you divide the data; fan-out is how you distribute the work.
 The two are independent, and only the first is protocol knowledge: dividing a
@@ -140,14 +140,14 @@ correct while a byte plan was the only thing anyone fanned out over. It stopped
 being correct once Water Use fanned out too: unable to import an OGC-internal
 executor, <code class="docutils literal notranslate"><span class="pre">wateruse._fan_out</span></code> re-implemented the semaphore, the
 <code class="docutils literal notranslate"><span class="pre">asyncio.gather</span></code>, and the cancellation-before-HTTP-error failure precedence,
-with a comment naming <code class="docutils literal notranslate"><span class="pre">ChunkedCall._run</span></code> as the original. One rule, two
-copies, kept in agreement by that comment.</p>
-<p>The duplicate was not merely redundant. It lacked resume, so a rate limit
+with a comment naming <code class="docutils literal notranslate"><span class="pre">ChunkedCall._run</span></code> as the original. One rule existed in
+two copies, kept in agreement only by that comment.</p>
+<p>The duplicate was also defective. It lacked resume, so a rate limit
 partway through discarded every location that had already succeeded – against
 an hourly quota, on fan-outs of hundreds of locations. It reported no
 progress. And it read its own module-global concurrency cap, so a user setting
-<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> to lower the request rate found one adapter ignoring
-them.</p>
+<code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> to lower the request rate found that one adapter did not
+apply it.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading"></a></h2>
@@ -187,7 +187,7 @@ twice under a private name: the two could then report different counts, and a
 test would have to assert they agree. Every adapter whose chunks are
 already a list would also need a wrapper class whose only purpose is renaming
 <code class="docutils literal notranslate"><span class="pre">len</span></code>.</p>
-<p>With the standard names a plain <code class="docutils literal notranslate"><span class="pre">list</span></code> is a plan, which is exactly what Water
+<p>With the standard names a plain <code class="docutils literal notranslate"><span class="pre">list</span></code> is a plan, which is what Water
 Use passes. <code class="docutils literal notranslate"><span class="pre">ChunkPlan</span></code> keeps <code class="docutils literal notranslate"><span class="pre">total</span></code> and <code class="docutils literal notranslate"><span class="pre">iter_chunk_args</span></code> as its own
 vocabulary and defines the dunders to delegate to them, so the two cannot
 disagree.</p>
@@ -233,9 +233,9 @@ deterministic failure ordering cannot drift between services.</p></li>
 connection failure now raises <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code> / <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>
 rather than <code class="docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code> / <code class="docutils literal notranslate"><span class="pre">RateLimited</span></code> / <code class="docutils literal notranslate"><span class="pre">NetworkError</span></code>. All
 remain <code class="docutils literal notranslate"><span class="pre">DataRetrievalError</span></code>, so broad handlers are unaffected, but a narrow
-handler around a Water Use call must widen. This is convergence, not novelty
-– it is what the OGC getters have always done – and it is what makes the
-failure resumable. Deterministic connection failures remain <code class="docutils literal notranslate"><span class="pre">NetworkError</span></code>.</p></li>
+handler around a Water Use call must widen. The OGC getters have always
+raised these types, and raising them is what makes the failure resumable.
+Deterministic connection failures remain <code class="docutils literal notranslate"><span class="pre">NetworkError</span></code>.</p></li>
 <li><p><strong>Breaking:</strong> <code class="docutils literal notranslate"><span class="pre">wateruse.MAX_CONCURRENT_REQUESTS</span></code> is removed in favor of
 <code class="docutils literal notranslate"><span class="pre">API_USGS_CONCURRENT</span></code> and <code class="docutils literal notranslate"><span class="pre">wateruse.DEFAULT_CONCURRENT_REQUESTS</span></code>.</p></li>
 <li><p>Resume re-issues a failed location’s entire page walk, so pages fetched before

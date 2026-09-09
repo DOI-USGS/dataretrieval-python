@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -85,7 +85,7 @@
 <span class="sd">deterministic failure is :class:`NetworkError`; a recoverable failure that</span>
 <span class="sd">exhausts retries during fan-out is a resumable ``ServiceInterrupted``.</span>
 
-<span class="sd">Most failures are an :class:`HTTPError` carrying the response ``.status_code``,</span>
+<span class="sd">Most failures are an :class:`HTTPError` holding the response ``.status_code``,</span>
 <span class="sd">of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest</span>
 <span class="sd">aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
@@ -94,14 +94,14 @@
 <span class="sd">the one member that is not a request failure at all: it reports an unusable</span>
 <span class="sd">setting or config file, raised from wherever a setting is first resolved --</span>
 <span class="sd">which, because resolution is lazy, is inside whichever getter runs first. The</span>
-<span class="sd">*warning* side of the taxonomy lives here too: :class:`SkippedItemWarning`</span>
+<span class="sd">*warning* side of the taxonomy is defined here too: :class:`SkippedItemWarning`</span>
 <span class="sd">(specialized by :class:`SkippedRatingWarning`) for a per-item skip inside a</span>
 <span class="sd">batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset</span>
 <span class="sd">that has stopped being updated.</span>
 
-<span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only</span>
-<span class="sd">for type checking. Any module can therefore import it without pulling in pandas</span>
-<span class="sd">or httpx, and without risking an import cycle.</span>
+<span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only for</span>
+<span class="sd">type checking. Any module can therefore import it without importing pandas or httpx, and</span>
+<span class="sd">without risking an import cycle.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -139,13 +139,12 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">DataRetrievalError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Base class for every ``dataretrieval`` error.</span>
 
-<span class="sd">    Almost every member is a failed request, and the read-anywhere fields below</span>
-<span class="sd">    describe one. The exception is :class:`ConfigurationError`, which reports a</span>
-<span class="sd">    configuration the library cannot use; it appears here because configuration</span>
-<span class="sd">    is resolved lazily on the request path, so it surfaces from inside a getter</span>
-<span class="sd">    and one ``except DataRetrievalError`` should cover it too. It carries no</span>
-<span class="sd">    status and is not retryable, so the branching idiom below routes it to the</span>
-<span class="sd">    final ``raise``.</span>
+<span class="sd">    Almost every member is a failed request, and the read-anywhere fields below describe</span>
+<span class="sd">    one. The exception is :class:`ConfigurationError`, which reports a configuration the</span>
+<span class="sd">    library cannot use; it appears here because configuration is resolved lazily on the</span>
+<span class="sd">    request path, so it is raised from inside a getter and one ``except</span>
+<span class="sd">    DataRetrievalError`` should cover it too. It has no status and is not retryable, so</span>
+<span class="sd">    the branching idiom below routes it to the final ``raise``.</span>
 
 <span class="sd">    Catch it to handle any USGS or EPA service failure uniformly, and branch on</span>
 <span class="sd">    the read-anywhere fields below without needing the concrete subclass::</span>
@@ -169,8 +168,8 @@
     <span class="c1">#: HTTP status that triggered the error, or ``None`` for errors without one</span>
     <span class="c1">#: (connection failure, too-long URL, no data). Set by :class:`HTTPError`.</span>
     <span class="n">status_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1">#: Seconds the server asked us to wait before retrying (its ``Retry-After``</span>
-    <span class="c1">#: header), or ``None`` when it gave no hint. Set by :class:`TransientError`.</span>
+    <span class="c1">#: Seconds the server specified to wait before retrying (its ``Retry-After``</span>
+    <span class="c1">#: header), or ``None`` when it sent none. Set by :class:`TransientError`.</span>
     <span class="n">retry_after</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1">#: Whether re-issuing the same request might succeed -- ``True`` for the</span>
     <span class="c1">#: transient HTTP statuses (429 / 5xx, :class:`TransientError`) and for</span>
@@ -179,11 +178,11 @@
 
     <span class="c1"># These errors get pickled back across process boundaries (a lithops /</span>
     <span class="c1"># multiprocessing worker returns whatever it raises). Default ``BaseException``</span>
-    <span class="c1"># pickling rebuilds via ``cls(*args)``, which these subclasses can't survive --</span>
-    <span class="c1"># keyword-only constructor fields, and ``ChunkInterrupted`` builds its message</span>
+    <span class="c1"># pickling rebuilds via ``cls(*args)``, which these subclasses cannot be rebuilt by</span>
+    <span class="c1"># -- keyword-only constructor fields, and ``ChunkInterrupted`` builds its message</span>
     <span class="c1"># internally. So reconstruct via ``__new__`` + the standard getstate/setstate</span>
-    <span class="c1"># protocol, bypassing ``__init__``; a subclass drops unpicklable state by</span>
-    <span class="c1"># overriding ``__getstate__`` (see ``ChunkInterrupted``).</span>
+    <span class="c1"># protocol, bypassing ``__init__``; a subclass drops unpicklable state by overriding</span>
+    <span class="c1"># ``__getstate__`` (see ``ChunkInterrupted``).</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">_new_error</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getstate__</span><span class="p">())</span>
 
@@ -217,7 +216,7 @@
 <span class="sd">    ``except HTTPError as e: ... if e.status_code == 404``. :class:`TransientError`</span>
 <span class="sd">    (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one</span>
 <span class="sd">    exception to "a status is an ``HTTPError``" is a request the service rejects</span>
-<span class="sd">    as too long: it surfaces as :class:`URLTooLong` (a :class:`RequestTooLarge`),</span>
+<span class="sd">    as too long: it is raised as :class:`URLTooLong` (a :class:`RequestTooLarge`),</span>
 <span class="sd">    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain of</span>
 <span class="sd">    spanning every failure. See :func:`error_for_status` for the full mapping.</span>
 
@@ -238,7 +237,7 @@
 <div class="viewcode-block" id="TransientError">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.TransientError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TransientError</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""A 429 or 5xx the server may serve on a later try.</span>
+<span class="w">    </span><span class="sd">"""A 429 or 5xx the server may not repeat on a later attempt.</span>
 
 <span class="sd">    :class:`RateLimited` covers 429 and :class:`ServiceUnavailable` covers 5xx.</span>
 
@@ -262,7 +261,7 @@
 
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="c1">#: Canonical status a concrete transient stamps when built without an</span>
+    <span class="c1">#: Canonical status a concrete transient sets when built without an</span>
     <span class="c1">#: explicit ``status_code`` (:class:`RateLimited` = 429,</span>
     <span class="c1">#: :class:`ServiceUnavailable` = 503). ``TransientError`` itself is abstract</span>
     <span class="c1">#: and sets none, so constructing it bare requires ``status_code``.</span>
@@ -302,7 +301,7 @@
 <span class="w">    </span><span class="sd">"""A request was rejected with a server error (HTTP 5xx).</span>
 
 <span class="sd">    Raised by both the legacy ``query`` path and the Water Data path, so a 5xx</span>
-<span class="sd">    surfaces as one type whichever subsystem issued the request. ``.status_code``</span>
+<span class="sd">    is raised as one type whichever subsystem issued the request. ``.status_code``</span>
 <span class="sd">    holds the actual 5xx; it falls back to 503 only on a bare hand-construction.</span>
 <span class="sd">    """</span>
 
@@ -347,9 +346,8 @@
 <span class="sd">    Raised by the Water Data chunker when even the smallest reducible plan</span>
 <span class="sd">    (every list axis at one atom per chunk, the filter at one clause per</span>
 <span class="sd">    chunk) still exceeds the server's byte limit. Unlike</span>
-<span class="sd">    :class:`URLTooLong`, then, automatic splitting has already been tried and</span>
-<span class="sd">    exhausted. Shrink the input lists, simplify the filter, or split the call</span>
-<span class="sd">    manually.</span>
+<span class="sd">    :class:`URLTooLong`, automatic splitting has already been tried. Shrink the</span>
+<span class="sd">    input lists, simplify the filter, or split the call manually.</span>
 <span class="sd">    """</span></div>
 
 
@@ -366,8 +364,8 @@
 <span class="sd">    response arrived to classify.</span>
 
 <span class="sd">    Wraps the underlying ``httpx`` transport exception, preserved on</span>
-<span class="sd">    ``__cause__``. Worth retrying (:attr:`~DataRetrievalError.retryable` is</span>
-<span class="sd">    ``True``), but carries no ``.status_code`` because no response came back.</span>
+<span class="sd">    ``__cause__``. Retryable (:attr:`~DataRetrievalError.retryable` is</span>
+<span class="sd">    ``True``), but has no ``.status_code`` because no response came back.</span>
 <span class="sd">    """</span>
 
     <span class="n">retryable</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span></div>
@@ -423,14 +421,14 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">DataCurrencyWarning</span><span class="p">(</span><span class="ne">UserWarning</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""An upstream dataset is frozen, retired, or no longer updated.</span>
 
-<span class="sd">    Distinct from ``DeprecationWarning``, which promises that a *name in this</span>
-<span class="sd">    package* is going away and gives the caller something to migrate to. Here</span>
+<span class="sd">    Distinct from ``DeprecationWarning``, which states that a *name in this</span>
+<span class="sd">    package* is being removed and gives the caller something to migrate to. Here</span>
 <span class="sd">    the API is unchanged and there is nothing to migrate: the service's own data</span>
-<span class="sd">    has stopped moving, and only the caller can judge whether that matters.</span>
+<span class="sd">    has stopped being updated, and only the caller can decide whether that matters.</span>
 
 <span class="sd">    It is a ``UserWarning`` for that reason. Emitting it as a</span>
 <span class="sd">    ``DeprecationWarning`` meant a downstream project running</span>
-<span class="sd">    ``-W error::DeprecationWarning`` -- ordinary CI hygiene -- could not call</span>
+<span class="sd">    ``-W error::DeprecationWarning`` could not call</span>
 <span class="sd">    the affected getters with their default arguments at all.</span>
 <span class="sd">    """</span></div>
 
@@ -451,8 +449,8 @@
 <span class="sd">    Transient failures (429 / 5xx / timeouts / connection drops) are never</span>
 <span class="sd">    skipped -- they are retried and, if retries run out, raised as a</span>
 <span class="sd">    resumable interruption. Rate limiting in particular is systematic, so</span>
-<span class="sd">    skipping there would silently drop most of a batch; that silent loss is</span>
-<span class="sd">    the failure mode this policy exists to prevent.</span>
+<span class="sd">    skipping there would drop most of a batch undetected; that undetected loss is</span>
+<span class="sd">    what this policy exists to prevent.</span>
 
 <span class="sd">    A warning rather than a log line so it is visible by default. To make</span>
 <span class="sd">    any skip fatal (strict all-or-nothing behavior)::</span>
@@ -472,7 +470,7 @@
 <span class="sd">    :func:`dataretrieval.waterdata.get_ratings`.</span>
 
 <span class="sd">    Emitted when a single STAC feature fails deterministically -- a stale</span>
-<span class="sd">    catalog entry (404 on its data asset), a feature carrying no data asset,</span>
+<span class="sd">    catalog entry (404 on its data asset), a feature with no data asset,</span>
 <span class="sd">    a malformed RDB file. The failed feature's id is absent from the returned</span>
 <span class="sd">    dict. See :class:`SkippedItemWarning` for the policy and how to escalate</span>
 <span class="sd">    a skip to an error.</span>
@@ -520,28 +518,28 @@
 <div class="viewcode-block" id="parse_retry_after">
 <a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.parse_retry_after">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_retry_after</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parse a ``Retry-After`` header into seconds, or ``None`` for no usable hint.</span>
+<span class="w">    </span><span class="sd">"""Parse a ``Retry-After`` header into seconds, or ``None`` for no usable value.</span>
 
 <span class="sd">    Both header forms mean the same thing and are treated the same way: the</span>
 <span class="sd">    seconds are returned as given, however large. A value past what a caller will</span>
-<span class="sd">    wait out inline stops the retry and surfaces a transient carrying the hint on</span>
+<span class="sd">    wait out inline stops the retry and raises a transient with the value on</span>
 <span class="sd">    ``.retry_after``, so a long wait becomes the caller's decision (and, for a</span>
 <span class="sd">    chunked call, a resumable interruption) instead of being ignored.</span>
 
-<span class="sd">    An over-long hint is honored rather than discarded. Dropping it would make</span>
-<span class="sd">    the client retry *harder* against a service that just asked for a long</span>
-<span class="sd">    pause, and would deny the caller the number it needs on ``.retry_after``.</span>
-<span class="sd">    Clock skew can inflate a date-form hint, but trusting one costs a</span>
-<span class="sd">    recoverable escalation while ignoring it costs hammering a service that is</span>
-<span class="sd">    already asking for room.</span>
+<span class="sd">    An over-long value is kept rather than discarded. Dropping it would make</span>
+<span class="sd">    the client retry sooner against a service that just named a long delay,</span>
+<span class="sd">    and would deny the caller the number it needs on ``.retry_after``. Clock</span>
+<span class="sd">    skew can inflate a date-form value, but accepting one leads to a recoverable</span>
+<span class="sd">    escalation while ignoring it leads to re-sending to a service that has</span>
+<span class="sd">    already named a delay.</span>
 
-<span class="sd">    A date that has *already* passed yields no hint at all rather than ``0.0``.</span>
-<span class="sd">    Read literally it says "retry now", but the likelier reading is that our</span>
-<span class="sd">    clock runs ahead of the server's -- and acting on it would re-send almost</span>
-<span class="sd">    immediately against a service that just asked for a pause. Falling back to</span>
-<span class="sd">    our own bounded backoff is right under either reading. (Delta-seconds is</span>
-<span class="sd">    clock-independent, so a literal ``Retry-After: 0`` is still honored as the</span>
-<span class="sd">    instruction it is, floored by</span>
+<span class="sd">    A date that has *already* passed yields no value at all rather than</span>
+<span class="sd">    ``0.0``. Read literally it says "retry now", but the likelier reading is</span>
+<span class="sd">    that the client clock is ahead of the server's -- and acting on it would</span>
+<span class="sd">    re-send almost immediately against a service that just named a delay.</span>
+<span class="sd">    Falling back to the client's own bounded backoff is right under either</span>
+<span class="sd">    reading. (Delta-seconds is clock-independent, so a literal</span>
+<span class="sd">    ``Retry-After: 0`` is still applied as the instruction it is, floored by</span>
 <span class="sd">    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s jitter.)</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
@@ -552,9 +550,9 @@
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># ``inf``/``nan`` parse without error but poison every later comparison: an</span>
-        <span class="c1"># infinite hint would refuse retry forever and travel to the caller on</span>
-        <span class="c1"># ``.retry_after``. Treat them as no hint at all.</span>
+        <span class="c1"># ``inf``/``nan`` parse without error but make every later comparison</span>
+        <span class="c1"># meaningless: an infinite value would prevent retry forever and reach the</span>
+        <span class="c1"># caller on ``.retry_after``. Treat them as no value at all.</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">retry_at</span> <span class="o">=</span> <span class="n">parsedate_to_datetime</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>

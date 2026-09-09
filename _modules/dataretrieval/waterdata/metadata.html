@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -75,11 +75,11 @@
            <div itemprop="articleBody">
              
   <h1>Source code for dataretrieval.waterdata.metadata</h1><div class="highlight"><pre>
-<span></span><span class="sd">"""Getters that answer "what data exists?" rather than returning it.</span>
+<span></span><span class="sd">"""Getters that describe what data exists rather than returning it.</span>
 
 <span class="sd">The monitoring-location catalog, the time-series inventory, and the joins over</span>
 <span class="sd">them. These are the discovery step: narrow down which locations and parameters</span>
-<span class="sd">are worth requesting before pulling observations from</span>
+<span class="sd">to request before pulling observations from</span>
 <span class="sd">:mod:`~dataretrieval.waterdata.time_series`.</span>
 <span class="sd">"""</span>
 
@@ -355,7 +355,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -613,7 +613,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -751,8 +751,8 @@
 <span class="sd">    The ``combined-metadata`` collection joins the monitoring-locations</span>
 <span class="sd">    catalog with the time-series-metadata catalog so that one row is</span>
 <span class="sd">    returned per (location, parameter, statistic) inventory entry,</span>
-<span class="sd">    carrying every column from both source endpoints. This makes it the</span>
-<span class="sd">    most flexible "what data is available" endpoint in the Water Data</span>
+<span class="sd">    with every column from both source endpoints. This makes it the</span>
+<span class="sd">    most flexible inventory endpoint in the Water Data</span>
 <span class="sd">    API: any monitoring-location attribute (state, HUC, site type,</span>
 <span class="sd">    drainage area, well-construction depth, …) can be combined with any</span>
 <span class="sd">    time-series attribute (parameter code, statistic, data type, period</span>
@@ -796,8 +796,8 @@
 <span class="sd">        Indicates whether the data from this time series represent a</span>
 <span class="sd">        specific statistical computation.</span>
 <span class="sd">    thresholds : number or list of numbers, optional</span>
-<span class="sd">        Numeric limits known for a time series (e.g. historic maximum,</span>
-<span class="sd">        below-which-the-sensor-is-non-operative).</span>
+<span class="sd">        Numeric limits known for a time series (e.g. the historic maximum, or the level</span>
+<span class="sd">        below which the sensor is non-operative).</span>
 <span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
 <span class="sd">    primary : string or iterable of strings, optional</span>
 <span class="sd">        A flag identifying whether the time series is "primary". Primary</span>
@@ -820,7 +820,7 @@
 <span class="sd">        two-digit ANSI/FIPS code (``"55"``).</span>
 <span class="sd">    state_name, county_name, hydrologic_unit_code, site_type, \</span>
 <span class="sd">site_type_code : string or iterable of strings, optional</span>
-<span class="sd">        Common location-catalog filters carried over from the</span>
+<span class="sd">        Common location-catalog filters shared with the</span>
 <span class="sd">        ``monitoring-locations`` collection. The function also accepts</span>
 <span class="sd">        the full list of location-catalog kwargs (agency, district,</span>
 <span class="sd">        altitude, vertical/horizontal datum, drainage area, aquifer,</span>
@@ -912,7 +912,7 @@
 <span class="sd">        ...     parameter_code="00060",</span>
 <span class="sd">        ... )</span>
 
-<span class="sd">        &gt;&gt;&gt; # Two-step "what's available?" → "fetch it" workflow:</span>
+<span class="sd">        &gt;&gt;&gt; # Two-step workflow: inventory, then fetch:</span>
 <span class="sd">        &gt;&gt;&gt; # 1. inventory the monitoring locations in two HUCs</span>
 <span class="sd">        &gt;&gt;&gt; hucs, _ = dataretrieval.waterdata.get_combined_metadata(</span>
 <span class="sd">        ...     hydrologic_unit_code=["11010008", "11010009"],</span>
@@ -967,9 +967,8 @@
 
 <span class="sd">    This is the discrete-measurement analogue to</span>
 <span class="sd">    :func:`get_time_series_metadata` (which describes daily and continuous</span>
-<span class="sd">    series). It's primarily useful for inventory queries: "what</span>
-<span class="sd">    field-measurement parameters does this site have, and over what date</span>
-<span class="sd">    range?"</span>
+<span class="sd">    series). It is primarily useful for inventory queries: which</span>
+<span class="sd">    field-measurement parameters a site has, and over what date range.</span>
 
 <span class="sd">    See the OpenAPI reference for the full list of supported fields:</span>
 <span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</span>

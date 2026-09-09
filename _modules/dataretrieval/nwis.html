@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -120,13 +120,13 @@
 
 <span class="n">WATERSERVICES_SERVICES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"dv"</span><span class="p">,</span> <span class="s2">"iv"</span><span class="p">,</span> <span class="s2">"site"</span><span class="p">,</span> <span class="s2">"stat"</span><span class="p">]</span>
 <span class="c1"># What ``get_record`` routes, which is wider than what ``query_waterdata``</span>
-<span class="c1"># reaches: 'ratings' is served by ``get_ratings`` from a different endpoint.</span>
+<span class="c1"># serves: 'ratings' is served by ``get_ratings`` from a different endpoint.</span>
 <span class="n">WATERDATA_SERVICES</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"peaks"</span><span class="p">,</span>
     <span class="s2">"ratings"</span><span class="p">,</span>
 <span class="p">]</span>
-<span class="c1"># The major filters each query function accepts, hoisted beside the service</span>
-<span class="c1"># lists so the checks and their remedies read from one roster.</span>
+<span class="c1"># The major filters each query function accepts, placed with the service</span>
+<span class="c1"># lists so the checks and their remedies use one list.</span>
 <span class="n">_NWIS_WEB_MAJOR_FILTERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"site_no"</span><span class="p">,</span> <span class="s2">"stateCd"</span><span class="p">)</span>
 <span class="n">_NWIS_WEB_BBOX_CORNERS</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"nw_longitude_va"</span><span class="p">,</span>
@@ -167,7 +167,7 @@
 <div class="viewcode-block" id="_warn_deprecated">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._warn_deprecated">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_warn_deprecated</span><span class="p">(</span><span class="n">func_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Emit a per-function DeprecationWarning pointing at the waterdata replacement."""</span>
+<span class="w">    </span><span class="sd">"""Emit a per-function DeprecationWarning naming the waterdata replacement."""</span>
     <span class="n">warn_deprecated</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">"`nwis.</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">`"</span><span class="p">,</span>
         <span class="n">replacement</span><span class="o">=</span><span class="n">_REPLACEMENTS</span><span class="p">[</span><span class="n">func_name</span><span class="p">],</span>
@@ -314,14 +314,14 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    An empty frame with no ``peak_dt`` column is returned unchanged, so an</span>
-<span class="sd">    empty peaks response reaches :func:`format_response`'s empty-frame path</span>
+<span class="sd">    empty peaks response takes :func:`format_response`'s empty-frame path</span>
 <span class="sd">    instead of raising ``KeyError``.</span>
 
 <span class="sd">    NWIS zero-fills the unknown part of a historical peak's date --</span>
 <span class="sd">    ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is</span>
 <span class="sd">    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks</span>
 <span class="sd">    rather than a date NWIS does not have. The peak is kept regardless, and</span>
-<span class="sd">    ``peak_dt`` is left in the frame: the response carries no ``water_yr``, so</span>
+<span class="sd">    ``peak_dt`` is left in the frame: the response has no ``water_yr``, so</span>
 <span class="sd">    it is the only column holding a censored peak's year.</span>
 
 <span class="sd">    """</span>
@@ -645,9 +645,9 @@
 <span class="w">    </span><span class="sd">"""Shared body of the JSON waterservices time-series getters (dv / iv).</span>
 
 <span class="sd">    The caller-facing ``sites`` / ``start`` / ``end`` arguments are aliases: an</span>
-<span class="sd">    explicit waterservices keyword of the same meaning wins over them. Note that</span>
-<span class="sd">    ``multi_index`` travels through ``kwargs`` so that :func:`format_response`</span>
-<span class="sd">    sees it.</span>
+<span class="sd">    explicit waterservices keyword of the same meaning takes precedence over</span>
+<span class="sd">    them. Note that ``multi_index`` is passed through ``kwargs`` so that</span>
+<span class="sd">    :func:`format_response` sees it.</span>
 <span class="sd">    """</span>
     <span class="n">_check_sites_value_types</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
 
@@ -1209,7 +1209,7 @@
 <div class="viewcode-block" id="_site_block_boundaries">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._site_block_boundaries">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_site_block_boundaries</span><span class="p">(</span><span class="n">site_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Return indices where the site number changes, bookended by 0 and len.</span>
+<span class="w">    </span><span class="sd">"""Return indices where the site number changes, with 0 and len added at the ends.</span>
 
 <span class="sd">    For example, given ``['A', 'A', 'B']`` returns ``[0, 2, 3]``.</span>
 <span class="sd">    """</span>

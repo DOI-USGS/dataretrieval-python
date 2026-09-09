@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0004: Use typed failures and bounded recovery &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -147,8 +147,8 @@ OGC-specific capabilities rather than assumptions imposed on every service.</p>
 covers what stops a call; two things that do not stop one are decided here as
 well, because getting either wrong turns a condition that should not stop a call
 into one that does.</p>
-<p>A fan-out over <em>independent</em> items may skip one. Where a query asks for many
-items that do not compose into a single answer, an item failing
+<p>A fan-out over <em>independent</em> items may skip one. Where a query requests many
+items that do not compose into a single result, an item failing
 deterministically is dropped with a warning naming it, and counts as complete
 so a resume does not re-attempt it. A transient failure is never skipped: it
 retries, and once retries are exhausted it raises a resumable interruption like
@@ -174,14 +174,14 @@ rather than <code class="docutils literal notranslate"><span class="pre">cls(*ar
 not the constructor’s arguments. A subclass holding an unpicklable handle – a
 client, a task – must remove it in <code class="docutils literal notranslate"><span class="pre">__getstate__</span></code>. Without this a failure
 raised inside a worker process is replaced by a pickling error as it is
-returned, losing the diagnosis exactly when it is hardest to reproduce.</p>
+returned, losing the diagnosis when it is hardest to reproduce.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Callers can catch one stable base error and still branch on <code class="docutils literal notranslate"><span class="pre">status_code</span></code>,
 <code class="docutils literal notranslate"><span class="pre">retry_after</span></code>, and <code class="docutils literal notranslate"><span class="pre">retryable</span></code>.</p></li>
-<li><p>Mid-pagination failure cannot silently look like a complete dataset.</p></li>
+<li><p>Mid-pagination failure cannot be mistaken for a complete dataset.</p></li>
 <li><p>Retry can increase latency and request quota, so policy and defaults are part
 of observable behavior.</p></li>
 <li><p>Partial OGC state requires serialization and finalization tests.</p></li>
@@ -196,7 +196,7 @@ pagination failure, retry exhaustion and jitter bounds, <code class="docutils li
 resume equivalence, partial-state stability, pickling, and cancellation
 precedence. The skip policy is covered by
 <code class="docutils literal notranslate"><span class="pre">tests/waterdata_ratings_test.py::test_get_ratings_deterministic_download_failure_warns_and_skips</span></code>
-and its sibling for a feature with no asset; the warning categories by
+and the companion test for a feature with no asset; the warning categories by
 <code class="docutils literal notranslate"><span class="pre">tests/deprecation_test.py</span></code>, which asserts <code class="docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code> is not a
 subclass of <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>; the <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> parsing rules by the
 <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> date and over-cap cases; and the process boundary by
@@ -208,7 +208,7 @@ round-tripping error subclasses through <code class="docutils literal notranslat
 original decision. They record, under ADR 0000, rules the code was stating in
 prose. The skip clause records an exception that previously read as
 contradicting this record and <a class="reference internal" href="0006-service-neutral-transport.html"><span class="doc">ADR 0006: Use a service-neutral transport layer</span></a>; 0006 now
-points here for it.</p>
+cites this record for it.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Status</span></code> line was also annotated retroactively: this record assigned
 resumable partial state to OGC, which <a class="reference internal" href="0008-fan-out-execution.html"><span class="doc">ADR 0008: Separate fan-out execution from chunk planning</span></a> superseded
 without noting it here. The supersession is 0008’s; only the backlink is new.</p>

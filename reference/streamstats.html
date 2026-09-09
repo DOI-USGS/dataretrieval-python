@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.streamstats &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -123,7 +123,7 @@
 <dt class="sig sig-object py" id="dataretrieval.streamstats.StreamstatsConfiguration">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.streamstats.</span></span><span class="sig-name descname"><span class="pre">StreamstatsConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">retries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stall_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">&lt;not</span> <span class="pre">set&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#StreamstatsConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.StreamstatsConfiguration" title="Link to this definition"></a></dt>
 <dd><p>Settings for StreamStats calls alone.</p>
-<p>No fan-out dials: a StreamStats query is answered by a single
+<p>No fan-out settings: a StreamStats query is served by a single
 request.</p>
 <p>Declared here rather than in <a class="reference internal" href="config.html#module-dataretrieval.configuration" title="dataretrieval.configuration"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.configuration</span></code></a>
 (ADR 0011).</p>
@@ -134,7 +134,7 @@ request.</p>
 <li><p><strong>stall_timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds a call may go without receiving any data before retrying
 stops.</p></li>
 <li><p><strong>base_url</strong> (<em>str</em><em>, </em><em>optional</em>) – Services base to send StreamStats requests to, instead of its own
-(<code class="docutils literal notranslate"><span class="pre">STREAMSTATS_URL</span></code>). Both endpoints hang off it. Code only:
+(<code class="docutils literal notranslate"><span class="pre">STREAMSTATS_URL</span></code>). Both endpoints are built on it. Code only:
 the file and the environment refuse it.</p></li>
 </ul>
 </dd>
@@ -181,7 +181,7 @@ the file and the environment refuse it.</p></li>
 caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
 which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
 property of the class, which is what stops the caller restating it at
-every call site and stops the roster being spelled twice.</p>
+every call site and stops the roster being listed twice.</p>
 </dd></dl>
 
 </dd></dl>
@@ -263,7 +263,7 @@ from a location to fetch and parse in a single step.</p>
 <dt class="sig sig-object py" id="dataretrieval.streamstats.Watershed.from_streamstats_json">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_streamstats_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamstats_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dataretrieval.streamstats.Watershed" title="dataretrieval.streamstats.Watershed"><span class="pre">Watershed</span></a></span></span><a class="reference internal" href="../_modules/dataretrieval/streamstats.html#Watershed.from_streamstats_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.streamstats.Watershed.from_streamstats_json" title="Link to this definition"></a></dt>
 <dd><p>Create a <a class="reference internal" href="#dataretrieval.streamstats.Watershed" title="dataretrieval.streamstats.Watershed"><code class="xref py py-class docutils literal notranslate"><span class="pre">Watershed</span></code></a> from a parsed StreamStats JSON payload.</p>
-<p>No new request is issued. Builds a fresh instance (via <code class="docutils literal notranslate"><span class="pre">__new__</span></code>, so
+<p>No new request is issued. Builds a new instance (via <code class="docutils literal notranslate"><span class="pre">__new__</span></code>, so
 the network-fetching <code class="docutils literal notranslate"><span class="pre">__init__</span></code> is bypassed) and populates it; each
 call returns an independent object rather than mutating shared class
 state.</p>

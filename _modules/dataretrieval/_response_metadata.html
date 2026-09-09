@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval._response_metadata &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,7 +79,7 @@
 
 <span class="sd">A dependency-free leaf on purpose (ADR 0003). This class is the second half of</span>
 <span class="sd">the ``(DataFrame, metadata)`` return contract (ADR 0007), so nearly every</span>
-<span class="sd">service module needs it; importing it pulls in nothing but ``httpx``.</span>
+<span class="sd">service module needs it; importing it imports nothing but ``httpx``.</span>
 
 <span class="sd">``dataretrieval.utils.BaseMetadata`` remains the public import.</span>
 <span class="sd">"""</span>
@@ -108,7 +108,7 @@
 <div class="viewcode-block" id="BaseMetadata.__init__">
 <a class="viewcode-back" href="../../reference/utils.html#dataretrieval.utils.BaseMetadata.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">Response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Generate a standard set of metadata informed by the response.</span>
+<span class="w">        </span><span class="sd">"""Generate a standard set of metadata from the response.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -133,7 +133,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">site_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="s2">"This metadata object carries no site_info: only the nwis and wqp "</span>
+            <span class="s2">"This metadata object has no site_info: only the nwis and wqp "</span>
             <span class="s2">"metadata classes implement it, and the getter that produced this "</span>
             <span class="s2">"result does not return site descriptions alongside data. Fetch "</span>
             <span class="s2">"them using a separate function from the same adapter -- "</span>

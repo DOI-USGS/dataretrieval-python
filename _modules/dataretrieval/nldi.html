@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.nldi &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -134,7 +134,7 @@
 <span class="c1">#: Built from the tuple above, so a mode added there cannot go unmentioned.</span>
 <span class="n">_NAVIGATION_MODES_HINT</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Pass one of </span><span class="si">{</span><span class="n">render_options</span><span class="p">(</span><span class="n">_VALID_NAVIGATION_MODES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
 <span class="c1">#: Shared by the conflict check and the nothing-supplied check, so both</span>
-<span class="c1">#: offer the same ways forward.</span>
+<span class="c1">#: offer the same remedy.</span>
 <span class="n">_ORIGIN_HINT</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"Navigate from a comid, e.g. comid=13294314, or from a "</span>
     <span class="s2">"feature_source/feature_id pair -- not both"</span>
@@ -148,7 +148,7 @@
 
 <span class="sd">    Every URL below is built from this rather than from</span>
 <span class="sd">    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``</span>
-<span class="sd">    reaches every navigation, basin, and catalog request alike (ADR 0011).</span>
+<span class="sd">    applies to every navigation, basin, and catalog request alike (ADR 0011).</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_configuration</span><span class="o">.</span><span class="n">base_url</span><span class="p">(</span><span class="n">adapter</span><span class="o">=</span><span class="s2">"nldi"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">NLDI_API_BASE_URL</span><span class="p">)</span>
 
@@ -157,9 +157,9 @@
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">query_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-    <span class="c1"># A helper function to query the NLDI API. ``query()`` already raises a</span>
-    <span class="c1"># typed ``DataRetrievalError`` for any HTTP error response, so a returned</span>
-    <span class="c1"># response is a success that we only need to parse.</span>
+    <span class="c1"># A helper function to query the NLDI API. ``query()`` already raises a typed</span>
+    <span class="c1"># ``DataRetrievalError`` for any HTTP error response, so a returned response is a</span>
+    <span class="c1"># success that only needs parsing.</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">_query_with_retry</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">query_params</span><span class="p">,</span> <span class="n">adapter</span><span class="o">=</span><span class="s2">"nldi"</span><span class="p">)</span>
     <span class="n">response_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">try</span><span class="p">:</span>
@@ -172,13 +172,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_features_to_gdf</span><span class="p">(</span><span class="n">feature_collection</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build a GeoDataFrame from an NLDI FeatureCollection, tolerating empties.</span>
+<span class="w">    </span><span class="sd">"""Build a GeoDataFrame from an NLDI FeatureCollection, accepting an empty</span>
+<span class="sd">    collection.</span>
 
-<span class="sd">    NLDI can legitimately return no features (e.g. a feature with nothing</span>
-<span class="sd">    upstream), and :func:`_query_nldi` returns ``{}`` when a 200 response</span>
-<span class="sd">    carries no JSON body. ``GeoDataFrame.from_features`` raises on both cases</span>
-<span class="sd">    (there's no geometry column to attach the CRS to), so return an empty</span>
-<span class="sd">    GeoDataFrame carrying ``_CRS`` instead of crashing.</span>
+<span class="sd">    NLDI can validly return no features (e.g. a feature with nothing upstream), and</span>
+<span class="sd">    :func:`_query_nldi` returns ``{}`` when a 200 response has no JSON body.</span>
+<span class="sd">    ``GeoDataFrame.from_features`` raises on both cases (there's no geometry column to</span>
+<span class="sd">    attach the CRS to), so return an empty GeoDataFrame with ``_CRS`` set instead of</span>
+<span class="sd">    raising.</span>
 <span class="sd">    """</span>
     <span class="n">features</span> <span class="o">=</span> <span class="n">feature_collection</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"features"</span><span class="p">)</span> <span class="k">if</span> <span class="n">feature_collection</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">features</span><span class="p">:</span>
@@ -422,10 +423,10 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""URL and query params for an NLDI navigation from a validated origin.</span>
 
-<span class="sd">    The single home for the navigation path grammar — ``{origin}/navigation/</span>
-<span class="sd">    {mode}/{tail}`` — and its ``distance`` knob. Callers add the knobs specific</span>
-<span class="sd">    to their endpoint (``trimStart``, ``stopComid``) afterwards, so the query</span>
-<span class="sd">    string keeps its documented parameter order.</span>
+<span class="sd">    The one definition of the navigation path grammar — ``{origin}/navigation/</span>
+<span class="sd">    {mode}/{tail}`` — and its ``distance`` parameter. Callers add the</span>
+<span class="sd">    parameters specific to their endpoint (``trimStart``, ``stopComid``)</span>
+<span class="sd">    afterwards, so the query string keeps its documented parameter order.</span>
 <span class="sd">    """</span>
     <span class="n">origin</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">feature_source</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"comid/</span><span class="si">{</span><span class="n">comid</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">origin</span><span class="si">}</span><span class="s2">/navigation/</span><span class="si">{</span><span class="n">navigation_mode</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">"</span>
@@ -486,10 +487,10 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_api_base</span><span class="p">()</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_source</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">feature_id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="p">{}</span>
 
     <span class="c1"># Before the data_source check below: a caller who mistyped the mode should</span>
-    <span class="c1"># hear about the mode, not be sent to fix a second argument first.</span>
+    <span class="c1"># be told about the mode, not told to fix a second argument first.</span>
     <span class="n">navigation_mode</span> <span class="o">=</span> <span class="n">_validate_navigation_mode</span><span class="p">(</span><span class="n">navigation_mode</span><span class="p">)</span>
-    <span class="c1"># The navigation's tail is the data source, so a missing one is spelled</span>
-    <span class="c1"># "None" into the path and the service answers 200 with zero features.</span>
+    <span class="c1"># The navigation's tail is the data source, so a missing one is written as</span>
+    <span class="c1"># "None" into the path and the service returns 200 with zero features.</span>
     <span class="n">data_source</span> <span class="o">=</span> <span class="n">require_argument</span><span class="p">(</span>
         <span class="s2">"data_source"</span><span class="p">,</span>
         <span class="n">data_source</span><span class="p">,</span>
@@ -539,7 +540,7 @@
 <span class="sd">    .. doctest::</span>
 
 <span class="sd">        &gt;&gt;&gt; # "nwissite" returns every NWIS site nationwide, so this example is</span>
-<span class="sd">        &gt;&gt;&gt; # skipped in the doctest build to avoid the (very large) download.</span>
+<span class="sd">        &gt;&gt;&gt; # skipped in the doctest build to avoid the large download.</span>
 <span class="sd">        &gt;&gt;&gt; gdf = dataretrieval.nldi.get_features_by_data_source(  # doctest: +SKIP</span>
 <span class="sd">        ...     data_source="nwissite"</span>
 <span class="sd">        ... )</span>
@@ -748,7 +749,7 @@
                 <span class="s2">"NLDI data-source catalog returned an unexpected shape; "</span>
                 <span class="s2">"expected a list of {'source': ..., ...} objects, got: "</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">available_data_sources</span><span class="si">!r}</span><span class="s2">. If you set "</span>
-                <span class="s2">"NldiConfiguration(base_url=...), point it at the linked-data "</span>
+                <span class="s2">"NldiConfiguration(base_url=...), set it to the linked-data "</span>
                 <span class="s2">"root, e.g. base_url='https://api.water.usgs.gov/nldi/"</span>
                 <span class="s2">"linked-data'; otherwise the service returned an unexpected "</span>
                 <span class="s2">"body -- retry later."</span>
@@ -773,8 +774,9 @@
     <span class="n">feature_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">feature_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">comid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">comid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Half a feature pair beside a comid is a conflict, not a gap: advising</span>
-        <span class="c1"># the caller to complete the pair would only raise the conflict next.</span>
+        <span class="c1"># Half a feature pair with a comid is a conflict, not a missing argument:</span>
+        <span class="c1"># advising the caller to complete the pair would only raise the conflict</span>
+        <span class="c1"># next.</span>
         <span class="n">reject_together</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">"comid"</span><span class="p">:</span> <span class="n">comid</span><span class="p">,</span>
@@ -802,11 +804,11 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">NldiConfiguration</span><span class="p">(</span><span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Settings for NLDI calls alone.</span>
 
-<span class="sd">    No fan-out dials: an NLDI query is answered by a single request.</span>
+<span class="sd">    No fan-out settings: an NLDI query is served by a single request.</span>
 
 <span class="sd">    This adapter is imported on demand for the geopandas extra, so this</span>
-<span class="sd">    class registers itself later than the rest -- which is exactly why</span>
-<span class="sd">    the adapter roster lives in :data:`~dataretrieval.configuration.ADAPTERS`</span>
+<span class="sd">    class registers itself later than the rest -- which is why</span>
+<span class="sd">    the adapter roster is :data:`~dataretrieval.configuration.ADAPTERS`</span>
 <span class="sd">    rather than being derived from what has been imported.</span>
 
 <span class="sd">    Declared here rather than in :mod:`dataretrieval.configuration`</span>

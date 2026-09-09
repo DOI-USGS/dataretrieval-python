@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -129,8 +129,8 @@ host-scoped credentials and the leaf constraint remain in effect.</p>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p>ADR 0010 gave each adapter its own table in the chain, so <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> narrows a
-setting to NGWMN. That covers “tune one service” but not the case a
-multi-service caller actually has:</p>
+setting to NGWMN. That covers tuning one service but not the case a
+multi-service caller has:</p>
 <ul class="simple">
 <li><p><strong>Several named configurations per adapter.</strong> A caller with an overnight bulk
 configuration profile and a lower-rate daytime one for Water Data cannot
@@ -145,7 +145,7 @@ asked for it, and it is the primary use case.</p></li>
 <p>Two further problems ADR 0010 left open bear on the same decision. The
 adapter roster is listed in four places, only one of which is derived –
 adding an adapter needs coordinated edits, and forgetting one leaves a schema
-no call site can reach, which happened to three adapters and shipped
+no call site can use, which happened to three adapters and shipped
 undetected until a fitness test was written. And a setting’s definition is
 in <code class="docutils literal notranslate"><span class="pre">config</span></code> rather than in the module that reads it, so adding a Water Data
 setting edits a file unrelated to Water Data.</p>
@@ -185,12 +185,12 @@ configurations for one adapter raises: they would be the one pairing the
 precedence rules do not order.</p>
 <p>Keyword settings are removed, so <code class="docutils literal notranslate"><span class="pre">configure(api_key=...)</span></code> no longer works.
 This is the most-typed line the feature exists to enable, and making it wordier
-is a real cost, accepted deliberately so that every setting is passed the same
+is a cost, accepted deliberately so that every setting is passed the same
 way.</p>
 <p><strong>Schemas are defined in their adapter; names are defined centrally.</strong>
 <code class="docutils literal notranslate"><span class="pre">configuration</span></code> is a standard-library-only leaf every adapter may import, so
 it cannot import adapters. It holds the tuple of adapter <em>names</em>, which is what
-parsing a file needs (is <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> a table or a typo?). Each adapter package
+parsing a file needs (whether <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code> is a table or a typo). Each adapter package
 owns its subclass, which is what a setting’s definition needs to be local to
 the service that reads it.</p>
 <p>Registration at import alone would not suffice: <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> imports six of
@@ -211,7 +211,7 @@ imported.</p>
 <p>Each level overrides the one below <strong>per key</strong>, so a named profile still
 inherits its adapter’s default profile and the package-wide keys. Positions 1
 and 2 are both code and both target one adapter, so the same-adapter rule
-means they cannot tie.</p>
+means they cannot conflict.</p>
 <p>Position 2 above 3 inverts ADR 0009’s environment-above-file rule for this one
 case. A profile named in code is a more deliberate act than a variable
 inherited from a shell, which would otherwise override a selection the caller
@@ -224,7 +224,7 @@ table must not fail a Water Data call – and it is what allows the schema to
 be defined in a module the parser cannot import.</p>
 <p><strong>Base URLs may be configured, from code only.</strong> An adapter’s configuration
 may include its base URL, settable in a <code class="docutils literal notranslate"><span class="pre">configure()</span></code> block and rejected from
-the file and the environment. A file that silently redirects a data-retrieval
+the file and the environment. A file that redirects a data-retrieval
 library to another host is a supply-chain hazard; an in-code block keeps the
 redirect where a reader sees it.</p>
 <p><strong>The module is renamed</strong> <code class="docutils literal notranslate"><span class="pre">dataretrieval.config</span></code> to
@@ -232,7 +232,7 @@ redirect where a reader sees it.</p>
 and ADR 0009’s rule reserving <code class="docutils literal notranslate"><span class="pre">config</span></code> as an abbreviation for the module and
 the file is withdrawn. The path has never been released, so no alias is
 needed.</p>
-<p><strong>Credentials are unchanged, and measurement settled why.</strong> The API key stays
+<p><strong>Credentials are unchanged, and measurement shows why.</strong> The API key stays
 one package-wide setting scoped to the single host that accepts it. Probing
 the live services:</p>
 <table class="docutils align-default">
@@ -270,11 +270,11 @@ anonymously today. The three hosts also keep independent counters, so ADR
 fields.</strong> Which settings an adapter reads is the adapter’s own concern, but
 what each setting <em>means</em> is shared, so the fields come from frozen mixin
 groups declared once beside their grammar. An adapter’s configuration class
-names the groups it composes and adds only what is genuinely its own. Declaring
+names the groups it composes and adds only what is its own. Declaring
 <code class="docutils literal notranslate"><span class="pre">retries:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">_UNSET</span></code> directly in an adapter module satisfies this
 record literally while losing what it protects: the annotation would enforce
 nothing, could drift from the shared parser, and <code class="docutils literal notranslate"><span class="pre">mypy</span> <span class="pre">--strict</span></code> would not
-notice, because it checks the annotation, not whether the field still matches
+detect it, because it checks the annotation, not whether the field still matches
 the shared group.</p>
 </section>
 <section id="consequences">
@@ -292,16 +292,16 @@ the PR description and ADR 0009’s examples all use it and all must change in
 the same commit.</p></li>
 <li><p><strong>``show_configuration()`` can only resolve the settings an adapter accepts
 once that adapter has been imported.</strong> It names the adapters it could not
-check rather than omitting them silently, which is the cost of lazy
+check rather than omitting them, which is the cost of lazy
 validation. The <em>profile list</em> is not import-limited: what a profile is
 called is a fact about the file, so every <code class="docutils literal notranslate"><span class="pre">[&lt;adapter&gt;.&lt;name&gt;]</span></code> table it
 defines is listed, imported or not – withholding one would make the
-section’s answer depend on which optional extras happened to be installed.</p></li>
+section’s contents depend on which optional extras happened to be installed.</p></li>
 <li><p><strong>Two names differ only by case</strong> – the <code class="docutils literal notranslate"><span class="pre">configuration</span></code> module and the
 <code class="docutils literal notranslate"><span class="pre">Configuration</span></code> class. The module stays out of the package’s public
 exports, so <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">dataretrieval</span> <span class="pre">import</span> <span class="pre">configuration,</span> <span class="pre">Configuration</span></code> cannot arise.</p></li>
 <li><p><strong>Separate quota pools are still not modelled.</strong> Three exist. Nothing in the
-library needs to know yet.</p></li>
+library depends on them yet.</p></li>
 <li><p><strong>``ssl_check`` is unaffected</strong> and remains a per-call argument, for the
 reasons in ADR 0010.</p></li>
 </ul>
@@ -336,7 +336,7 @@ for the call without wrapping every use site.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">test_adapter_roster_names_real_modules_that_register_themselves</span></code> and
 <code class="docutils literal notranslate"><span class="pre">test_every_adapter_is_actually_wired_to_a_read_site</span></code> – the roster
 resolves, and no configuration exists that nothing reads. An adapter name
-the code does not recognize now raises out of <code class="docutils literal notranslate"><span class="pre">_resolve</span></code> rather than
+not in the roster now raises out of <code class="docutils literal notranslate"><span class="pre">_resolve</span></code> rather than
 falling through to the package-wide value, so the grep is a secondary check
 rather than the only one.</p></li>
 </ul>
@@ -352,10 +352,10 @@ only first-party import – and <code class="docutils literal notranslate"><span
 <code class="docutils literal notranslate"><span class="pre">api.water.usgs.gov</span></code>.</p></li>
 <li><p>Open, not decided here: whether <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> is renamed. <code class="docutils literal notranslate"><span class="pre">fan_out</span></code>
 was suggested and conflicts with the glossary, where fan-out is <em>executing</em>
-chunks concurrently – which <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> already governs – while
+chunks concurrently – which <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> already controls – while
 <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> instructs the planner to <em>divide</em> more finely. ADR 0009
 rejected <code class="docutils literal notranslate"><span class="pre">parallelism</span></code> and <code class="docutils literal notranslate"><span class="pre">chunk_parallelism</span></code> for the same conflation.
-<code class="docutils literal notranslate"><span class="pre">chunk_count</span></code> or <code class="docutils literal notranslate"><span class="pre">target_chunks</span></code> would stay on the correct side of it.</p></li>
+<code class="docutils literal notranslate"><span class="pre">chunk_count</span></code> or <code class="docutils literal notranslate"><span class="pre">target_chunks</span></code> would not conflate the two.</p></li>
 <li><p>The setting-group clause was added after the original decision, consolidating
 under ADR 0000 a rule the configuration core was stating in prose. It does
 not change behavior.</p></li>

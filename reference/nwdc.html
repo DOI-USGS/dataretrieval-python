@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -115,7 +115,7 @@ replacement for the defunct legacy NWIS water-use service
 (<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
 <p>Unlike the main Water Data getters (<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>) and NGWMN
 (<a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>), the NWDC is a plain CSV REST service rather than
-an OGC API Features collection. This module supplies the NWDC-specific bits –
+an OGC API Features collection. This module supplies the NWDC-specific parts –
 request building, CSV parsing, the <code class="docutils literal notranslate"><span class="pre">Link</span></code>-header cursor, and the <code class="docutils literal notranslate"><span class="pre">{detail}</span></code>
 error envelope – over the service-neutral transport layer (ADR 0006).</p>
 <p>See <a class="reference external" href="https://api.water.usgs.gov/docs/nwaa-data/">https://api.water.usgs.gov/docs/nwaa-data/</a> for the API reference and
@@ -139,8 +139,8 @@ variables.</p>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwdc.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_CONCURRENT_REQUESTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#dataretrieval.nwdc.DEFAULT_CONCURRENT_REQUESTS" title="Link to this definition"></a></dt>
 <dd><p>This service’s preferred in-flight cap when nothing is configured. Lower
 than the package default of 32 because every location retries
-independently, so a rate-limit episode bursts this number times the retry
-count; the NWDC tolerates this level without rate-limit errors (verified by
+independently, so a rate-limit episode produces this number times the retry
+count of requests; the NWDC returns no rate-limit errors at this level (verified by
 stress test) and higher has not been tested. Any configured concurrency
 overrides it – see <code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.configuration.concurrency()</span></code> for why the
 general setting outranks a module’s default rather than the reverse.</p>
@@ -183,7 +183,7 @@ nothing there. Code only: the file and the environment refuse it.</p></li>
 caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
 which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
 property of the class, which is what stops the caller restating it at
-every call site and stops the roster being spelled twice.</p>
+every call site and stops the roster being listed twice.</p>
 </dd></dl>
 
 </dd></dl>
@@ -208,7 +208,7 @@ Availability Assessment Data Companion. The area is given as exactly one of
 <code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code>, or <code class="docutils literal notranslate"><span class="pre">huc</span></code>; results are always returned on a HUC12
 grid, in a long (tidy) frame with one row per HUC12 and time step. Large
 areas (e.g. a whole region or a populous state) are served across multiple
-pages; this function follows those pages transparently and concatenates
+pages; this function follows those pages automatically and concatenates
 them into one frame.</p>
 <p>Each selector also accepts a list of values. The NWDC queries one area per
 request, so a list is fanned out into one request per value — up to the
@@ -233,11 +233,10 @@ public-supply withdrawals, or <code class="docutils literal notranslate"><span c
 groundwater and surface-water components). Multiple variables are
 comma-joined into a single request. The service requires at least one
 variable; omitting it returns a 400 listing the model’s valid variable
-IDs (surfaced as a <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a>).</p></li>
+IDs (raised as a <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a>).</p></li>
 <li><p><strong>state</strong> (<em>string</em><em>, </em><em>int</em><em>, or </em><em>iterable</em><em>, </em><em>optional</em>) – One or more US states/territories to query. Each accepts a full name
-(<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit
-ANSI/FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">55</span></code>), mirroring
-<a class="reference internal" href="ngwmn.html#dataretrieval.ngwmn.get_sites" title="dataretrieval.ngwmn.get_sites"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.ngwmn.get_sites()</span></code></a>.</p></li>
+(<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a two-digit ANSI/FIPS
+code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">55</span></code>), matching <a class="reference internal" href="ngwmn.html#dataretrieval.ngwmn.get_sites" title="dataretrieval.ngwmn.get_sites"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.ngwmn.get_sites()</span></code></a>.</p></li>
 <li><p><strong>county</strong> (<em>string</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – One or more five-digit county FIPS codes — state FIPS + county FIPS,
 e.g. <code class="docutils literal notranslate"><span class="pre">&quot;55025&quot;</span></code> for Dane County, Wisconsin.</p></li>
 <li><p><strong>huc</strong> (<em>string</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – <p>One or more hydrologic unit codes. Each code’s level is taken from its

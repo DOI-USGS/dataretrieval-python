@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.reference &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -79,7 +79,7 @@
 
 <span class="sd">Reference tables and per-collection queryables -- the parameter codes, statistic</span>
 <span class="sd">codes, and filterable properties the other getters accept. These describe the</span>
-<span class="sd">service rather than the water, so they are the one family whose results are</span>
+<span class="sd">service rather than the measurements, so they are the one family whose results are</span>
 <span class="sd">mostly stable between calls.</span>
 <span class="sd">"""</span>
 
@@ -127,7 +127,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty.</span>
+<span class="sd">        number if your internet connection is unreliable.</span>
 <span class="sd">    query: dictionary, optional</span>
 <span class="sd">        A dictionary of extra query parameters to pass to the collection API</span>
 <span class="sd">        call.</span>
@@ -142,7 +142,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``</span>
 <span class="sd">        Formatted data returned from the API query. The primary metadata</span>
-<span class="sd">        of each reference table will show up in the first column, where</span>
+<span class="sd">        of each reference table appears in the first column, where</span>
 <span class="sd">        the name of the column is the singular form of the collection name,</span>
 <span class="sd">        separated by underscores (e.g. the "medium-codes" reference table</span>
 <span class="sd">        has a column called "medium_code", which contains all possible</span>
@@ -202,7 +202,7 @@
 <span class="w">    </span><span class="sd">"""List the queryable properties of a Water Data API collection.</span>
 
 <span class="sd">    Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,</span>
-<span class="sd">    ...) advertises the set of properties that can be filtered on -- exposed as</span>
+<span class="sd">    ...) lists the set of properties that can be filtered on -- exposed as</span>
 <span class="sd">    the typed keyword arguments of the matching ``get_*`` function, and usable</span>
 <span class="sd">    directly in a CQL2 ``filter``. This function returns that set, so you can</span>
 <span class="sd">    discover the available filters programmatically and monitor them for</span>
@@ -242,9 +242,9 @@
 <span class="sd">        'string'</span>
 <span class="sd">    """</span>
     <span class="c1"># Reading the queryables document is OGC protocol work; this getter only</span>
-    <span class="c1"># names the API to ask -- which is the redirected one when a ``configure``</span>
+    <span class="c1"># names the API to query -- which is the redirected one when a ``configure``</span>
     <span class="c1"># block set a base URL, so the queryables describe the API the getters are</span>
-    <span class="c1"># actually querying.</span>
+    <span class="c1"># querying.</span>
     <span class="k">return</span> <span class="n">queryables_frame</span><span class="p">(</span><span class="n">collection</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">ogc_api_url</span><span class="p">())</span></div>
 
 

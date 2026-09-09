@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.measurements &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -233,7 +233,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>
@@ -368,9 +368,8 @@
 <span class="sd">        Calendar / water-year filters on the peak event. The water year ends</span>
 <span class="sd">        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</span>
 <span class="sd">    peak_since : int or list of ints, optional</span>
-<span class="sd">        Filter on the year since which the peak value has stood as the</span>
-<span class="sd">        record (the API serves this field as an integer; many rows are</span>
-<span class="sd">        ``null``).</span>
+<span class="sd">        Filter on the year since which the peak value has been the record (the API</span>
+<span class="sd">        serves this field as an integer; many rows are ``null``).</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
 <span class="sd">        Subset of columns to return. Defaults to every available property.</span>
 <span class="sd">    skip_geometry : boolean, optional</span>
@@ -602,7 +601,7 @@
 <span class="sd">    limit : int, optional</span>
 <span class="sd">        The number of features returned in each page. The maximum allowable</span>
 <span class="sd">        limit is 50000; the default (None) requests that maximum. Set a lower</span>
-<span class="sd">        number if your internet connection is spotty. This is a per-page size,</span>
+<span class="sd">        number if your internet connection is unreliable. This is a per-page size,</span>
 <span class="sd">        not a cap on the total result: a query matching more rows than ``limit``</span>
 <span class="sd">        still returns every matching row across multiple pages. Use ``max_rows``</span>
 <span class="sd">        to cap the total instead.</span>

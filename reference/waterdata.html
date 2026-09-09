@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -146,12 +146,11 @@ resolve:</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>retries</strong> (<em>int</em><em>, </em><em>optional</em>) – Retries attempted after a transient failure; <code class="docutils literal notranslate"><span class="pre">0</span></code> disables retrying.</p></li>
 <li><p><strong>stall_timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Seconds a call may go without receiving any data before retrying stops.</p></li>
-<li><p><strong>base_url</strong> (<em>str</em><em>, </em><em>optional</em>) – Root to send Water Data requests to, instead of the service’s own. The
-package appends its own paths, so one value moves all four families
-together – <code class="docutils literal notranslate"><span class="pre">/ogcapi/v0</span></code>, <code class="docutils literal notranslate"><span class="pre">/samples-data</span></code>, <code class="docutils literal notranslate"><span class="pre">/statistics/v0</span></code> and
-<code class="docutils literal notranslate"><span class="pre">/stac/v0</span></code>. Code only: the file and the environment refuse it. The
-API key is scoped to the host that honors it, so a redirected call
-carries no key.</p></li>
+<li><p><strong>base_url</strong> (<em>str</em><em>, </em><em>optional</em>) – Root to send Water Data requests to, instead of the service’s own. The package
+appends its own paths, so one value redirects all four families together –
+<code class="docutils literal notranslate"><span class="pre">/ogcapi/v0</span></code>, <code class="docutils literal notranslate"><span class="pre">/samples-data</span></code>, <code class="docutils literal notranslate"><span class="pre">/statistics/v0</span></code> and <code class="docutils literal notranslate"><span class="pre">/stac/v0</span></code>. Code
+only: the file and the environment refuse it. The API key is scoped to the host
+that accepts it, so a redirected call sends no key.</p></li>
 <li><p><strong>concurrency</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Cap on simultaneous sub-requests, or <code class="docutils literal notranslate"><span class="pre">&quot;unbounded&quot;</span></code>.</p></li>
 <li><p><strong>parallel_chunks</strong> (<em>int</em><em>, </em><em>optional</em>) – Baseline fan-out for multi-value queries. Each sub-request spends
 rate-limit quota, so raise it only for pulls you know are large.</p></li>
@@ -200,7 +199,7 @@ rate-limit quota, so raise it only for pulls you know are large.</p></li>
 caller imports. <code class="docutils literal notranslate"><span class="pre">None</span></code> on the package-wide <code class="xref py py-class docutils literal notranslate"><span class="pre">Configuration</span></code>,
 which every adapter reads. A <code class="docutils literal notranslate"><span class="pre">ClassVar</span></code>, not a field: the adapter is a
 property of the class, which is what stops the caller restating it at
-every call site and stops the roster being spelled twice.</p>
+every call site and stops the roster being listed twice.</p>
 </dd></dl>
 
 </dd></dl>
@@ -305,7 +304,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -377,8 +376,8 @@ or “observedproperty”</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">combined-metadata</span></code> collection joins the monitoring-locations
 catalog with the time-series-metadata catalog so that one row is
 returned per (location, parameter, statistic) inventory entry,
-carrying every column from both source endpoints. This makes it the
-most flexible “what data is available” endpoint in the Water Data
+with every column from both source endpoints. This makes it the
+most flexible inventory endpoint in the Water Data
 API: any monitoring-location attribute (state, HUC, site type,
 drainage area, well-construction depth, …) can be combined with any
 time-series attribute (parameter code, statistic, data type, period
@@ -411,8 +410,8 @@ associated with an observation.</p></li>
 <code class="docutils literal notranslate"><span class="pre">&quot;Field</span> <span class="pre">measurements&quot;</span></code>.</p></li>
 <li><p><strong>computation_identifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Indicates whether the data from this time series represent a
 specific statistical computation.</p></li>
-<li><p><strong>thresholds</strong> (<em>number</em><em> or </em><em>list</em><em> of </em><em>numbers</em><em>, </em><em>optional</em>) – Numeric limits known for a time series (e.g. historic maximum,
-below-which-the-sensor-is-non-operative).</p></li>
+<li><p><strong>thresholds</strong> (<em>number</em><em> or </em><em>list</em><em> of </em><em>numbers</em><em>, </em><em>optional</em>) – Numeric limits known for a time series (e.g. the historic maximum, or the level
+below which the sensor is non-operative).</p></li>
 <li><p><strong>sublocation_identifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>)</p></li>
 <li><p><strong>primary</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A flag identifying whether the time series is “primary”. Primary
 time series are standard observations that have undergone Bureau
@@ -437,31 +436,31 @@ or an ISO 8601 duration (e.g. <code class="docutils literal notranslate"><span c
 <li><p><strong>state</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – State/territory filter (the recommended parameter). Accepts a full
 name (<code class="docutils literal notranslate"><span class="pre">&quot;Wisconsin&quot;</span></code>), a two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;WI&quot;</span></code>), or a
 two-digit ANSI/FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;55&quot;</span></code>).</p></li>
-<li><p><strong>state_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters carried over from the
+<li><p><strong>state_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters shared with the
 <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code> collection. The function also accepts
 the full list of location-catalog kwargs (agency, district,
 altitude, vertical/horizontal datum, drainage area, aquifer,
 well construction, …); see <a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations" title="dataretrieval.waterdata.get_monitoring_locations"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a> for
 descriptions of each.</p></li>
-<li><p><strong>county_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters carried over from the
+<li><p><strong>county_name</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters shared with the
 <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code> collection. The function also accepts
 the full list of location-catalog kwargs (agency, district,
 altitude, vertical/horizontal datum, drainage area, aquifer,
 well construction, …); see <a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations" title="dataretrieval.waterdata.get_monitoring_locations"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a> for
 descriptions of each.</p></li>
-<li><p><strong>hydrologic_unit_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters carried over from the
+<li><p><strong>hydrologic_unit_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters shared with the
 <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code> collection. The function also accepts
 the full list of location-catalog kwargs (agency, district,
 altitude, vertical/horizontal datum, drainage area, aquifer,
 well construction, …); see <a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations" title="dataretrieval.waterdata.get_monitoring_locations"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a> for
 descriptions of each.</p></li>
-<li><p><strong>site_type</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters carried over from the
+<li><p><strong>site_type</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters shared with the
 <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code> collection. The function also accepts
 the full list of location-catalog kwargs (agency, district,
 altitude, vertical/horizontal datum, drainage area, aquifer,
 well construction, …); see <a class="reference internal" href="#dataretrieval.waterdata.get_monitoring_locations" title="dataretrieval.waterdata.get_monitoring_locations"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code></a> for
 descriptions of each.</p></li>
-<li><p><strong>site_type_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters carried over from the
+<li><p><strong>site_type_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Common location-catalog filters shared with the
 <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code> collection. The function also accepts
 the full list of location-catalog kwargs (agency, district,
 altitude, vertical/horizontal datum, drainage area, aquifer,
@@ -546,7 +545,7 @@ collection supports.</p></li>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Two-step "what's available?" → "fetch it" workflow:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Two-step workflow: inventory, then fetch:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># 1. inventory the monitoring locations in two HUCs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">hucs</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_combined_metadata</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">hydrologic_unit_code</span><span class="o">=</span><span class="p">[</span><span class="s2">"11010008"</span><span class="p">,</span> <span class="s2">"11010009"</span><span class="p">],</span>
@@ -677,7 +676,7 @@ Examples:</p>
 </p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 10000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -763,7 +762,7 @@ chunking.</p>
 <code class="xref py py-data docutils literal notranslate"><span class="pre">dataretrieval.waterdata.types.WATERDATA_COLLECTIONS</span></code>
 (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;daily&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;monitoring-locations&quot;</span></code>).</p></li>
 <li><p><strong>cql</strong> (<em>str</em><em> or </em><em>dict</em>) – CQL2 query. A <code class="docutils literal notranslate"><span class="pre">dict</span></code> is JSON-serialized for transport; a <code class="docutils literal notranslate"><span class="pre">str</span></code> is
-sent through unchanged. The query goes into the HTTP POST body with
+sent through unchanged. The query is sent in the HTTP POST body with
 <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">application/query-cql-json</span></code>.</p></li>
 <li><p><strong>properties</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Server-side property whitelist (passed as <code class="docutils literal notranslate"><span class="pre">properties=</span></code> on the URL).
 Reduces payload size. <code class="docutils literal notranslate"><span class="pre">&quot;id&quot;</span></code> resolves to the collection’s <code class="docutils literal notranslate"><span class="pre">output_id</span></code>
@@ -950,7 +949,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -994,7 +993,7 @@ collection supports.</p></li>
 <span class="gp">... </span>    <span class="n">time</span><span class="o">=</span><span class="s2">"2021-01-01T00:00:00Z/2022-01-01T00:00:00Z"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quick "show me the last week" idiom (ISO 8601 duration)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The last seven days, as an ISO 8601 duration</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-02238500"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
@@ -1009,7 +1008,7 @@ collection supports.</p></li>
 <span class="gp">... </span><span class="p">)</span>
 
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Pull only rows whose underlying record was refreshed in the</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># last 7 days — handy for incremental ETL polling</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># last 7 days — useful for incremental ETL polling</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_daily</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-02238500"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">parameter_code</span><span class="o">=</span><span class="s2">"00060"</span><span class="p">,</span>
@@ -1019,9 +1018,9 @@ collection supports.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Chain queries: pull all stream monitoring locations in a</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># state, then their daily discharge for the last week. The</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># location list can be hundreds of values long — the request</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># is transparently chunked across multiple chunks so the URL</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># stays under the server's byte limit. Combined output looks</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># like a single query.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># is split into several chunks so the URL stays under the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># server's byte limit. The combined output is the same as for</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># a single request.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sites_df</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">waterdata</span><span class="o">.</span><span class="n">get_monitoring_locations</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">state</span><span class="o">=</span><span class="s2">"Ohio"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">site_type</span><span class="o">=</span><span class="s2">"Stream"</span><span class="p">,</span>
@@ -1146,7 +1145,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -1222,9 +1221,8 @@ units, and so on — without returning the underlying observations
 themselves. Use <a class="reference internal" href="#dataretrieval.waterdata.get_field_measurements" title="dataretrieval.waterdata.get_field_measurements"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_field_measurements()</span></code></a> to fetch the values.</p>
 <p>This is the discrete-measurement analogue to
 <a class="reference internal" href="#dataretrieval.waterdata.get_time_series_metadata" title="dataretrieval.waterdata.get_time_series_metadata"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_time_series_metadata()</span></code></a> (which describes daily and continuous
-series). It’s primarily useful for inventory queries: “what
-field-measurement parameters does this site have, and over what date
-range?”</p>
+series). It is primarily useful for inventory queries: which
+field-measurement parameters a site has, and over what date range.</p>
 <p>See the OpenAPI reference for the full list of supported fields:
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata">https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</a></p>
 <dl class="field-list simple">
@@ -1440,7 +1438,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -1627,7 +1625,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -1847,7 +1845,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -1911,16 +1909,16 @@ per target, joins them as a top-level CQL <code class="docutils literal notransl
 <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> (with its auto-chunking) fetch every observation
 that falls in any window. Then, per <code class="docutils literal notranslate"><span class="pre">(monitoring_location_id,</span> <span class="pre">target)</span></code>
 pair, picks the single observation with the smallest <code class="docutils literal notranslate"><span class="pre">|time</span> <span class="pre">-</span> <span class="pre">target|</span></code>.</p>
-<p>The USGS continuous endpoint matches <code class="docutils literal notranslate"><span class="pre">time</span></code> parameters exactly rather
-than fuzzily, and it does not implement <code class="docutils literal notranslate"><span class="pre">sortby</span></code> for arbitrary fields;
-this function is the single-round-trip way to ask “what reading is
-nearest this timestamp?” for many timestamps at once.</p>
+<p>The USGS continuous endpoint matches <code class="docutils literal notranslate"><span class="pre">time</span></code> parameters exactly, with
+no tolerance, and it does not implement <code class="docutils literal notranslate"><span class="pre">sortby</span></code> for arbitrary fields;
+this function finds the reading nearest each of many timestamps in one
+round trip.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>targets</strong> (<em>list-like</em><em> of </em><em>datetime-convertible</em>) – Target timestamps. Naive datetimes are treated as UTC. Accepts a
 list, <code class="docutils literal notranslate"><span class="pre">pandas.Series</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas.DatetimeIndex</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>,
-or anything <code class="docutils literal notranslate"><span class="pre">pandas.to_datetime</span></code> consumes.</p></li>
+or anything <code class="docutils literal notranslate"><span class="pre">pandas.to_datetime</span></code> accepts.</p></li>
 <li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
 <li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
 <li><p><strong>window</strong> (string or <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code>, default <code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>) – <p>Half-window around each target, as an ISO 8601 duration
@@ -1930,11 +1928,10 @@ any other form <code class="docutils literal notranslate"><span class="pre">pand
 <code class="docutils literal notranslate"><span class="pre">&quot;450s&quot;</span></code>), or a <code class="docutils literal notranslate"><span class="pre">pd.Timedelta</span></code> directly. See the
 <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html">pandas.Timedelta docs</a>
 for the full grammar.</p>
-<p>Must be small enough that every target’s window captures
+<p>Must be small enough that every target’s window contains
 roughly one observation at the service cadence. The default
 matches a 15-minute continuous gage; widen (e.g.
-<code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>) for irregular cadences or resilience to data
-gaps.</p>
+<code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>) for irregular cadences or tolerance of data gaps.</p>
 </p></li>
 <li><p><strong>on_tie</strong> ({“first”, “last”, “mean”}, default <code class="docutils literal notranslate"><span class="pre">&quot;first&quot;</span></code>) – <p>How to resolve ties when two observations are exactly equidistant
 from a target (which happens when the target falls at the midpoint
@@ -1947,14 +1944,13 @@ gage).</p>
 the target, since no real observation exists at the midpoint.</p></li>
 </ul>
 </p></li>
-<li><p><strong>**kwargs</strong> – Additional keyword arguments forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>
-(e.g. <code class="docutils literal notranslate"><span class="pre">statistic_id</span></code>, <code class="docutils literal notranslate"><span class="pre">approval_status</span></code>, <code class="docutils literal notranslate"><span class="pre">properties</span></code>).
-Passing <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, or <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> raises
-<code class="docutils literal notranslate"><span class="pre">TypeError</span></code> — this function builds those itself. A caller-provided
-<code class="docutils literal notranslate"><span class="pre">properties</span></code> list gains <code class="docutils literal notranslate"><span class="pre">time</span></code> and <code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> when
-either is omitted: the match is computed against the first and grouped
-by the second, so the returned frame carries both columns even when they
-were not requested.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> (e.g.
+<code class="docutils literal notranslate"><span class="pre">statistic_id</span></code>, <code class="docutils literal notranslate"><span class="pre">approval_status</span></code>, <code class="docutils literal notranslate"><span class="pre">properties</span></code>). Passing <code class="docutils literal notranslate"><span class="pre">time</span></code>,
+<code class="docutils literal notranslate"><span class="pre">filter</span></code>, or <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> — this function builds those
+itself. A caller-provided <code class="docutils literal notranslate"><span class="pre">properties</span></code> list has <code class="docutils literal notranslate"><span class="pre">time</span></code> and
+<code class="docutils literal notranslate"><span class="pre">monitoring_location_id</span></code> when either is omitted: the match is computed against
+the first and grouped by the second, so the returned frame includes both columns
+even when they were not requested.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1963,7 +1959,7 @@ were not requested.</p></li>
 had at least one observation in its window. Rows are augmented
 with a <code class="docutils literal notranslate"><span class="pre">target_time</span></code> column indicating which target they
 correspond to. Targets with no observations in their window are
-silently dropped.</p></li>
+omitted; no warning is raised.</p></li>
 <li><p><strong>md</strong> (<a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMetadata</span></code></a>) – Metadata from the underlying <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> call.</p></li>
 </ul>
 </p>
@@ -1977,16 +1973,16 @@ silently dropped.</p></li>
 <p class="rubric">Notes</p>
 <p><em>Window sizing and ties.</em> When <code class="docutils literal notranslate"><span class="pre">window</span></code> is exactly half the service
 cadence, most targets’ windows contain a single observation and
-<code class="docutils literal notranslate"><span class="pre">on_tie</span></code> is moot. Ties arise only when a target sits exactly at the
+<code class="docutils literal notranslate"><span class="pre">on_tie</span></code> has no effect. Ties arise only when a target falls exactly at the
 midpoint between two grid observations — rare in practice but possible.
 Setting <code class="docutils literal notranslate"><span class="pre">window</span></code> to a full cadence (or larger) guarantees at least one
 observation per target in steady state at the cost of more bytes per
 response.</p>
-<p><em>Why windowed CQL rather than sort+limit.</em> The API’s advertised
-<code class="docutils literal notranslate"><span class="pre">sortby</span></code> parameter would make this a one-liner per target (<code class="docutils literal notranslate"><span class="pre">filter</span></code>
-by <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span> <span class="pre">1</span></code>), but it is per-query — you would need
-one HTTP round-trip per target. The CQL <code class="docutils literal notranslate"><span class="pre">OR</span></code>-chain approach folds
-all N targets into one request (auto-chunked when the URL is long).</p>
+<p><em>Why windowed CQL rather than sort+limit.</em> The API’s documented <code class="docutils literal notranslate"><span class="pre">sortby</span></code> parameter
+would make this a trivial query per target (<code class="docutils literal notranslate"><span class="pre">filter</span></code> by <code class="docutils literal notranslate"><span class="pre">time</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span>
+<span class="pre">1</span></code>), but it is per-query — you would need one HTTP round-trip per target. The CQL
+<code class="docutils literal notranslate"><span class="pre">OR</span></code>-chain approach combines all N targets into one request (auto-chunked when the
+URL is long).</p>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">waterdata</span>
@@ -2052,9 +2048,8 @@ September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</p></li>
 September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</p></li>
 <li><p><strong>day</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>ints</em><em>, </em><em>optional</em>) – Calendar / water-year filters on the peak event. The water year ends
 September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).</p></li>
-<li><p><strong>peak_since</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>ints</em><em>, </em><em>optional</em>) – Filter on the year since which the peak value has stood as the
-record (the API serves this field as an integer; many rows are
-<code class="docutils literal notranslate"><span class="pre">null</span></code>).</p></li>
+<li><p><strong>peak_since</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>ints</em><em>, </em><em>optional</em>) – Filter on the year since which the peak value has been the record (the API
+serves this field as an integer; many rows are <code class="docutils literal notranslate"><span class="pre">null</span></code>).</p></li>
 <li><p><strong>properties</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Subset of columns to return. Defaults to every available property.</p></li>
 <li><p><strong>skip_geometry</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Skip per-feature geometries; the returned object will be a plain
 <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> with no spatial information.</p></li>
@@ -2128,7 +2123,7 @@ collection supports.</p></li>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_queryables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pd.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/reference.html#get_queryables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_queryables" title="Link to this definition"></a></dt>
 <dd><p>List the queryable properties of a Water Data API collection.</p>
 <p>Every OGC collection (<code class="docutils literal notranslate"><span class="pre">daily</span></code>, <code class="docutils literal notranslate"><span class="pre">continuous</span></code>, <code class="docutils literal notranslate"><span class="pre">monitoring-locations</span></code>,
-…) advertises the set of properties that can be filtered on – exposed as
+…) lists the set of properties that can be filtered on – exposed as
 the typed keyword arguments of the matching <code class="docutils literal notranslate"><span class="pre">get_*</span></code> function, and usable
 directly in a CQL2 <code class="docutils literal notranslate"><span class="pre">filter</span></code>. This function returns that set, so you can
 discover the available filters programmatically and monitor them for
@@ -2203,15 +2198,14 @@ selected. Format: <code class="docutils literal notranslate"><span class="pre">[
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>default 10000</em>) – Page size for the STAC <code class="docutils literal notranslate"><span class="pre">/search</span></code> request (capped at 10000).</p></li>
 <li><p><strong>download_and_parse</strong> (bool, default <code class="docutils literal notranslate"><span class="pre">True</span></code>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, download every matching RDB file and parse it into a
 <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, return the raw list of STAC feature
-dicts so the caller can inspect what’s available before pulling
-bytes.</p></li>
+dicts so the caller can inspect what’s available before downloading.</p></li>
 <li><p><strong>ssl_check</strong> (bool, default <code class="docutils literal notranslate"><span class="pre">True</span></code>) – Verify the server’s SSL certificate.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>When <code class="docutils literal notranslate"><span class="pre">download_and_parse=True</span></code> (the default), a dict keyed by
 feature ID (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;USGS-01104475.exsa.rdb&quot;</span></code>) mapping to a parsed
-<code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>. Each frame carries provenance in
+<code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>. Each frame records provenance in
 <code class="docutils literal notranslate"><span class="pre">df.attrs[&quot;comment&quot;]</span></code> (the RDB <code class="docutils literal notranslate"><span class="pre">#</span></code>-prefixed header lines, like
 rating id, parameter, last-shifted timestamp) and
 <code class="docutils literal notranslate"><span class="pre">df.attrs[&quot;url&quot;]</span></code> (the asset URL it was fetched from). When
@@ -2229,23 +2223,21 @@ as returned by the search endpoint.</p>
     <code class="xref py py-func docutils literal notranslate"><span class="pre">transport.pagination.paginate()</span></code>);
     or <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> if a request
     can’t reach the service in a way retrying cannot fix.</p></li>
-<li><p><a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><strong>FanOutInterrupted</strong></a> – A transient failure (429 / 5xx / timeout) survived the built-in
-    retries during the search or a download. <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code>
-    finishes the interrupted stage (see <a class="reference internal" href="../userguide/errors.html"><span class="doc">Handling errors</span></a>); the
-    assembled per-feature dict is returned by a fresh <code class="docutils literal notranslate"><span class="pre">get_ratings</span></code>
-    call.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><strong>FanOutInterrupted</strong></a> – A transient failure (429 / 5xx / timeout) was not resolved by the built-in
+    retries during the search or a download. <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code> finishes the
+    interrupted stage (see <a class="reference internal" href="../userguide/errors.html"><span class="doc">Handling errors</span></a>); the assembled per-feature dict
+    is returned by a new <code class="docutils literal notranslate"><span class="pre">get_ratings</span></code> call.</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Warns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>SkippedRatingWarning</strong> – One feature of the batch failed <em>deterministically</em> – a stale
-catalog entry (404 on its data asset), a feature with no data asset,
-a malformed RDB file. That feature is skipped and its id is absent
-from the returned dict; the rest of the batch is unaffected. A
-monitoring location with no published rating never warns – it
-matches no feature in the search, so there is nothing to skip. See
+<dd class="field-odd"><p><strong>SkippedRatingWarning</strong> – One feature of the batch failed <em>deterministically</em> – a stale catalog entry
+(404 on its data asset), a feature with no data asset, a malformed RDB file.
+That feature is skipped and its id is absent from the returned dict; the rest of
+the batch is unaffected. A monitoring location with no published rating never
+produces a warning – it matches no feature in the search, so there is nothing
+to skip. See
 <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a> for the policy
-(transients never skip) and the <code class="docutils literal notranslate"><span class="pre">filterwarnings</span></code> recipe that makes
-a skip fatal.</p>
+(transients never skip) and the <code class="docutils literal notranslate"><span class="pre">filterwarnings</span></code> call that makes a skip fatal.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -2296,7 +2288,7 @@ arguments in the waterdata module.</p>
 “time-zone-codes”.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty.</p></li>
+number if your internet connection is unreliable.</p></li>
 <li><p><strong>query</strong> (<em>dictionary</em><em>, </em><em>optional</em>) – A dictionary of extra query parameters to pass to the collection API
 call.</p></li>
 <li><p><strong>max_rows</strong> (<em>int</em><em>, </em><em>optional</em>) – Cap the total number of rows returned, stopping pagination early
@@ -2309,7 +2301,7 @@ result. The default (None) downloads every page.</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>df</strong> (<code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> or <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code>) – Formatted data returned from the API query. The primary metadata
-of each reference table will show up in the first column, where
+of each reference table appears in the first column, where
 the name of the column is the singular form of the collection name,
 separated by underscores (e.g. the “medium-codes” reference table
 has a column called “medium_code”, which contains all possible
@@ -2344,9 +2336,9 @@ medium code values).</p></li>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'activities'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'locations'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'organizations'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'projects'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'results'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'results'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'actgroup'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'actmetric'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'basicbio'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'basicphyschem'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'count'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'fullbio'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'fullphyschem'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'labsampleprep'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'narrow'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'organization'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'project'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'projectmonitoringlocationweight'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'resultdetectionquantitationlimit'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'sampact'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'site'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fullphyschem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity_media_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity_start_date_lower</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity_start_date_upper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristic_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">characteristic_user_supplied</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usgs_pcode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hydrologic_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_location_latitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_location_longitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_location_within_miles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record_identifier_user_supplied</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/samples.html#get_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_samples" title="Link to this definition"></a></dt>
 <dd><p>Search the USGS Samples database for discrete water-quality results.</p>
 <p>Every available filter is exposed as an argument, but leave as many as
-feasible at their default of <code class="docutils literal notranslate"><span class="pre">None</span></code>. An overcomplicated query can bog
-down the database’s ability to assemble a result before it times out, so
-filtering narrowly is faster than filtering exhaustively.</p>
+feasible at their default of <code class="docutils literal notranslate"><span class="pre">None</span></code>. A query with many filters can keep
+the database from assembling a result before the request times out, so
+a query with few filters runs faster than one with many.</p>
 <p>The web GUI for the Samples database is at
 <a class="reference external" href="https://waterdata.usgs.gov/download-samples/#dataProfile=site">https://waterdata.usgs.gov/download-samples/#dataProfile=site</a></p>
 <p>For more details on feasible query parameters, complete with examples, see
@@ -2546,7 +2538,7 @@ is effectively required. (Samples API: <code class="docutils literal notranslate
 <dt class="sig sig-object py" id="dataretrieval.waterdata.get_stats_date_range">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_stats_date_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approval_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_time_series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_percentiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pd.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/time_series.html#get_stats_date_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_stats_date_range" title="Link to this definition"></a></dt>
 <dd><p>Get statistics summarizing whole months and years of the record.</p>
-<p>Answers “how did this month or year compare to others?” – minimum, maximum,
+<p>Compares a month or year to the others in the record: minimum, maximum,
 mean, median, and percentiles per month-year and per water or calendar year
 (the <code class="docutils literal notranslate"><span class="pre">observationIntervals</span></code> endpoint). For more on how these statistics are
 calculated, see the Statistics documentation page:
@@ -2581,7 +2573,7 @@ location (e.g. USGS) with the location’s ID number (e.g. 02238500),
 separated by a hyphen (e.g. USGS-02238500).</p></li>
 <li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
 monitoring location. The default is 1000.</p></li>
-<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – Returns statistics tied to a particular database entry.</p></li>
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – Returns statistics associated with a particular database entry.</p></li>
 <li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. A list of valid site type codes is
 available at
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
@@ -2650,7 +2642,7 @@ value for the other statistics.</p></li>
 <dt class="sig sig-object py" id="dataretrieval.waterdata.get_stats_por">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">get_stats_por</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">approval_status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">computation_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">county_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring_location_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_time_series_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_type_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand_percentiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">pd.DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="utils.html#dataretrieval.utils.BaseMetadata" title="dataretrieval.utils.BaseMetadata"><span class="pre">BaseMetadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/waterdata/time_series.html#get_stats_por"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.get_stats_por" title="Link to this definition"></a></dt>
 <dd><p>Get day-of-year and month-of-year statistics over the historical record.</p>
-<p>Answers “how does today compare to a normal day here?” – minimum, maximum,
+<p>Compares a day to the same day of year across the record: minimum, maximum,
 mean, median, and percentiles computed per day of year and month of year
 (the <code class="docutils literal notranslate"><span class="pre">observationNormals</span></code> endpoint). For more on how these statistics are
 calculated, see the Statistics documentation page:
@@ -2683,7 +2675,7 @@ location (e.g. USGS) with the location’s ID number (e.g. 02238500),
 separated by a hyphen (e.g. USGS-02238500).</p></li>
 <li><p><strong>page_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of results to return per page, where one result represents a
 monitoring location. The default is 1000.</p></li>
-<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – Returns statistics tied to a particular database entry.</p></li>
+<li><p><strong>parent_time_series_id</strong> (<em>string</em><em>, </em><em>optional</em>) – Returns statistics associated with a particular database entry.</p></li>
 <li><p><strong>site_type_code</strong> (<em>string</em><em>, </em><em>optional</em>) – Site type code query parameter. A list of valid site type codes is
 available at
 <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items">https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items</a>.
@@ -2907,7 +2899,7 @@ format is <code class="docutils literal notranslate"><span class="pre">[xmin,</s
 <span class="pre">latitude]</span></code>.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of features returned in each page. The maximum allowable
 limit is 50000; the default (None) requests that maximum. Set a lower
-number if your internet connection is spotty. This is a per-page size,
+number if your internet connection is unreliable. This is a per-page size,
 not a cap on the total result: a query matching more rows than <code class="docutils literal notranslate"><span class="pre">limit</span></code>
 still returns every matching row across multiple pages. Use <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>
 to cap the total instead.</p></li>
@@ -2963,36 +2955,32 @@ collection supports.</p></li>
 <dt class="sig sig-object py" id="dataretrieval.waterdata.parallel_chunks">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.waterdata.</span></span><span class="sig-name descname"><span class="pre">parallel_chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/ogc/chunking.html#parallel_chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.waterdata.parallel_chunks" title="Link to this definition"></a></dt>
 <dd><p>Fan the OGC getters’ multi-value requests out into <code class="docutils literal notranslate"><span class="pre">n</span></code> parallel chunks.</p>
-<p>By default the Water Data / NGWMN getters chunk a request only as much as
-the server’s ~8 KB URL-byte limit forces — the fewest chunks that
-fit. That default can be more conservative than a large pull needs.
-Because every chunk paginates, splitting a large result further costs
-little or no extra quota <em>as long as each chunk still spans many
-pages</em> — rows-per-chunk far exceeding the page size (ten states pulled as
-one request page nearly as many times as ten per-state requests would).
-When a split leaves each chunk only a page or two, its partial final
-page is extra, so finer chunks do add some requests. This context manager
-lets a caller who <em>knows</em> their pull is large ask for that finer split. The
-trade is roughly the same pages for more, smaller chunks, which gives
-smoother progress, more even concurrency, and a smaller unit of
-retry/resume.</p>
-<p>A per-call knob rather than an environment variable, and scoped to a
+<p>By default the Water Data / NGWMN getters chunk a request only as much as the
+server’s ~8 KB URL-byte limit forces — the fewest chunks that fit. That default can
+split less than a large pull benefits from. Because every chunk paginates, splitting
+a large result further costs little or no extra quota <em>as long as each chunk still
+spans many pages</em> — rows-per-chunk far exceeding the page size (ten states pulled as
+one request page nearly as many times as ten per-state requests would). When a split
+leaves each chunk only a page or two, its partial final page is extra, so finer
+chunks do add some requests. This context manager lets a caller who knows their pull
+is large request that finer split. The result is roughly the same pages in more,
+smaller chunks, which gives smoother progress, more even concurrency, and a smaller
+unit of retry/resume.</p>
+<p>A per-call setting rather than an environment variable, and scoped to a
 <code class="docutils literal notranslate"><span class="pre">with</span></code> block: ADR 0009. Outside any block the getters use the
 conservative default. Only the OGC getters (Water Data, NGWMN) read this;
 wrapping a legacy NWIS call in the block is a no-op.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – <p>The number of chunks to fan the whole call out into — a positive
-integer such as <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, or <code class="docutils literal notranslate"><span class="pre">32</span></code>. It caps the plan’s <em>total</em>
-chunk count (the cartesian product across every multi-value
-argument combined, not per argument), so several multi-value arguments
-cannot multiply past it. The cap is a ceiling, never exceeded: the
-actual count is bounded below by what the ~8 KB URL limit already
-forces and above by <code class="docutils literal notranslate"><span class="pre">n</span></code>. So an <code class="docutils literal notranslate"><span class="pre">n</span></code> larger than the input allows
-yields one chunk per value, and with several multi-value
-arguments the total may land somewhat below <code class="docutils literal notranslate"><span class="pre">n</span></code> because splits are
-whole (the plan can’t always divide evenly onto <code class="docutils literal notranslate"><span class="pre">n</span></code>). <code class="docutils literal notranslate"><span class="pre">n=1</span></code> asks
-for no extra fan-out.</p>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – <p>The number of chunks to fan the whole call out into — a positive integer such as
+<code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, or <code class="docutils literal notranslate"><span class="pre">32</span></code>. It caps the plan’s <em>total</em> chunk count (the cartesian
+product across every multi-value argument combined, not per argument), so
+several multi-value arguments cannot multiply past it. The cap is a ceiling,
+never exceeded: the actual count is bounded below by what the ~8 KB URL limit
+already forces and above by <code class="docutils literal notranslate"><span class="pre">n</span></code>. So an <code class="docutils literal notranslate"><span class="pre">n</span></code> larger than the input allows
+yields one chunk per value, and with several multi-value arguments the total may
+be somewhat below <code class="docutils literal notranslate"><span class="pre">n</span></code> because splits are whole (the plan can’t always divide
+evenly onto <code class="docutils literal notranslate"><span class="pre">n</span></code>). <code class="docutils literal notranslate"><span class="pre">n=1</span></code> requests no extra fan-out.</p>
 <p>Each chunk fetches at least one page, so it costs at least one
 request against your hourly rate limit — a larger <code class="docutils literal notranslate"><span class="pre">n</span></code> spends more
 quota. How many chunks run <em>at once</em> is capped separately by
@@ -3006,27 +2994,27 @@ adds quota without adding parallelism; the useful range is roughly
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">n</span></code> is not a positive integer — raised on <code class="docutils literal notranslate"><span class="pre">with</span></code> entry, before
-    any request is issued, so an invalid value fails loudly rather than silently
+    any request is issued, so an invalid value raises rather than
     doing nothing.</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Fanning out carries the same consequences as the byte-limit chunking the
-getters already do for oversized requests; opting in just brings them to a
+<p>Fanning out has the same consequences as the byte-limit chunking the
+getters already do for oversized requests; opting in applies them to a
 request that would otherwise be a single call:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">max_rows</span></code>: each chunk paginates up to <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> rows
 independently, then the combined result is sorted and truncated to
 <code class="docutils literal notranslate"><span class="pre">max_rows</span></code>. So a call with <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> set returns a <em>different</em>
 (though still valid and deterministically sorted) row set inside a
-<code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> block than without one. The cap is drawn from the
-union of the chunks, not a single stream. Don’t pair a tight
+<code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> block than without one. The cap applies to the
+union of the chunks, not to one sequence. Do not combine a small
 <code class="docutils literal notranslate"><span class="pre">max_rows</span></code> preview with <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> if you need exactly the
 rows the un-fanned call would return.</p></li>
 <li><p>Resumability: a single request either fully succeeds or fully fails,
 but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
 raise a resumable <code class="xref py py-class docutils literal notranslate"><span class="pre">ChunkInterrupted</span></code>
-(or <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>) carrying the completed chunks. Finish the
+(or <code class="docutils literal notranslate"><span class="pre">QuotaExhausted</span></code>) holding the completed chunks. Finish the
 call with <code class="docutils literal notranslate"><span class="pre">exc.call.resume()</span></code>.</p></li>
 <li><p>Cross-chunk de-duplication keys on the feature <code class="docutils literal notranslate"><span class="pre">id</span></code>; features
 with no <code class="docutils literal notranslate"><span class="pre">id</span></code> can’t be deduped, so overlapping filter clauses split

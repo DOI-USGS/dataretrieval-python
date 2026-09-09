@@ -43,7 +43,7 @@ exports. Deprecated NWIS remains outside this modernization. Service adapters do
 not import another adapter's implementation to obtain transport behavior.
 
 The ``__module__`` rule above is scoped to this facade, where the family module
-is a real file a traceback can name. It is not a package-wide prohibition: the
+is a file that exists for a traceback to name. It is not a package-wide prohibition: the
 legacy ``dataretrieval.utils`` names are split across private modules by
 dependency and *do* report the documented path, because there the alternative is
 a public, documented import location pointing at a private module.
@@ -62,7 +62,7 @@ package-wide, legacy NWIS included: it is about what an adapter returns, not
 how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
 identifiers (``site_no`` in NWIS) have significant leading zeros, and a bare
 ``read_csv`` infers them as integers and
-drops those zeros -- ``"00060"`` becomes ``60``, so the value is silently wrong
+drops those zeros -- ``"00060"`` becomes ``60``, so the value is wrong, with no indication,
 rather than missing. Every adapter reading a USGS tabular response names its
 identifier columns as ``str`` before parsing, which is why a two-pass header
 read is not a redundancy to be optimized away.
@@ -87,7 +87,7 @@ Consequences
 Compliance
 ----------
 
-``tests/contracts/public_api_test.py`` freezes Water Data imports, signatures,
+``tests/contracts/public_api_test.py`` records Water Data imports, signatures,
 facade identity, and compatibility names. ``tests/architecture_test.py``
 requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. ``.importlinter`` keeps the

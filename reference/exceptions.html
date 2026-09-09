@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -142,7 +142,7 @@ includes connection-level failures (timeouts, DNS, refused connections), which
 remain inside this taxonomy rather than leaking <code class="docutils literal notranslate"><span class="pre">httpx</span></code> exceptions. A
 deterministic failure is <a class="reference internal" href="#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a>; a recoverable failure that
 exhausts retries during fan-out is a resumable <code class="docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code>.</p>
-<p>Most failures are an <a class="reference internal" href="#dataretrieval.exceptions.HTTPError" title="dataretrieval.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a> carrying the response <code class="docutils literal notranslate"><span class="pre">.status_code</span></code>,
+<p>Most failures are an <a class="reference internal" href="#dataretrieval.exceptions.HTTPError" title="dataretrieval.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a> holding the response <code class="docutils literal notranslate"><span class="pre">.status_code</span></code>,
 of which <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a> (429 / 5xx) is the retryable subset. The rest
 aren’t a plain status: <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a> (with <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a> /
 <a class="reference internal" href="#dataretrieval.exceptions.Unchunkable" title="dataretrieval.exceptions.Unchunkable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unchunkable</span></code></a>), <a class="reference internal" href="#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> (a failed connection, per above),
@@ -151,13 +151,13 @@ aren’t a plain status: <a class="reference internal" href="#dataretrieval.exce
 the one member that is not a request failure at all: it reports an unusable
 setting or config file, raised from wherever a setting is first resolved –
 which, because resolution is lazy, is inside whichever getter runs first. The
-<em>warning</em> side of the taxonomy lives here too: <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a>
+<em>warning</em> side of the taxonomy is defined here too: <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a>
 (specialized by <a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>) for a per-item skip inside a
 batched retrieval, and <a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning" title="dataretrieval.exceptions.DataCurrencyWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a> for an upstream dataset
 that has stopped being updated.</p>
-<p>This module has no third-party runtime dependencies – <code class="docutils literal notranslate"><span class="pre">httpx</span></code> is imported only
-for type checking. Any module can therefore import it without pulling in pandas
-or httpx, and without risking an import cycle.</p>
+<p>This module has no third-party runtime dependencies – <code class="docutils literal notranslate"><span class="pre">httpx</span></code> is imported only for
+type checking. Any module can therefore import it without importing pandas or httpx, and
+without risking an import cycle.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.ConfigurationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#ConfigurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.ConfigurationError" title="Link to this definition"></a></dt>
@@ -175,13 +175,13 @@ catches it, and code that already treats an invalid setting as a
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">DataCurrencyWarning</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#DataCurrencyWarning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.DataCurrencyWarning" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></p>
 <p>An upstream dataset is frozen, retired, or no longer updated.</p>
-<p>Distinct from <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>, which promises that a <em>name in this
-package</em> is going away and gives the caller something to migrate to. Here
+<p>Distinct from <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>, which states that a <em>name in this
+package</em> is being removed and gives the caller something to migrate to. Here
 the API is unchanged and there is nothing to migrate: the service’s own data
-has stopped moving, and only the caller can judge whether that matters.</p>
+has stopped being updated, and only the caller can decide whether that matters.</p>
 <p>It is a <code class="docutils literal notranslate"><span class="pre">UserWarning</span></code> for that reason. Emitting it as a
 <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code> meant a downstream project running
-<code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code> – ordinary CI hygiene – could not call
+<code class="docutils literal notranslate"><span class="pre">-W</span> <span class="pre">error::DeprecationWarning</span></code> could not call
 the affected getters with their default arguments at all.</p>
 </dd></dl>
 
@@ -190,13 +190,12 @@ the affected getters with their default arguments at all.</p>
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">DataRetrievalError</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#DataRetrievalError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.DataRetrievalError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Base class for every <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> error.</p>
-<p>Almost every member is a failed request, and the read-anywhere fields below
-describe one. The exception is <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a>, which reports a
-configuration the library cannot use; it appears here because configuration
-is resolved lazily on the request path, so it surfaces from inside a getter
-and one <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">DataRetrievalError</span></code> should cover it too. It carries no
-status and is not retryable, so the branching idiom below routes it to the
-final <code class="docutils literal notranslate"><span class="pre">raise</span></code>.</p>
+<p>Almost every member is a failed request, and the read-anywhere fields below describe
+one. The exception is <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a>, which reports a configuration the
+library cannot use; it appears here because configuration is resolved lazily on the
+request path, so it is raised from inside a getter and one <code class="docutils literal notranslate"><span class="pre">except</span>
+<span class="pre">DataRetrievalError</span></code> should cover it too. It has no status and is not retryable, so
+the branching idiom below routes it to the final <code class="docutils literal notranslate"><span class="pre">raise</span></code>.</p>
 <p>Catch it to handle any USGS or EPA service failure uniformly, and branch on
 the read-anywhere fields below without needing the concrete subclass:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
@@ -217,8 +216,8 @@ the read-anywhere fields below without needing the concrete subclass:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.DataRetrievalError.retry_after">
 <span class="sig-name descname"><span class="pre">retry_after</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.exceptions.DataRetrievalError.retry_after" title="Link to this definition"></a></dt>
-<dd><p>Seconds the server asked us to wait before retrying (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
-header), or <code class="docutils literal notranslate"><span class="pre">None</span></code> when it gave no hint. Set by <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a>.</p>
+<dd><p>Seconds the server specified to wait before retrying (its <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code>
+header), or <code class="docutils literal notranslate"><span class="pre">None</span></code> when it sent none. Set by <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -247,7 +246,7 @@ connection failures (<a class="reference internal" href="#dataretrieval.exceptio
 <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">HTTPError</span> <span class="pre">as</span> <span class="pre">e:</span> <span class="pre">...</span> <span class="pre">if</span> <span class="pre">e.status_code</span> <span class="pre">==</span> <span class="pre">404</span></code>. <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a>
 (429 / 5xx) is the retryable subset, and is itself an <code class="docutils literal notranslate"><span class="pre">HTTPError</span></code>. The one
 exception to “a status is an <code class="docutils literal notranslate"><span class="pre">HTTPError</span></code>” is a request the service rejects
-as too long: it surfaces as <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a> (a <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a>),
+as too long: it is raised as <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a> (a <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a>),
 <em>not</em> an <code class="docutils literal notranslate"><span class="pre">HTTPError</span></code>. Catch <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> to be certain of
 spanning every failure. See <a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a> for the full mapping.</p>
 <dl class="field-list simple">
@@ -268,8 +267,8 @@ spanning every failure. See <a class="reference internal" href="#dataretrieval.e
 <p>A DNS failure, refused connection, or timeout stopped it, so no HTTP
 response arrived to classify.</p>
 <p>Wraps the underlying <code class="docutils literal notranslate"><span class="pre">httpx</span></code> transport exception, preserved on
-<code class="docutils literal notranslate"><span class="pre">__cause__</span></code>. Worth retrying (<a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError.retryable" title="dataretrieval.exceptions.DataRetrievalError.retryable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">retryable</span></code></a> is
-<code class="docutils literal notranslate"><span class="pre">True</span></code>), but carries no <code class="docutils literal notranslate"><span class="pre">.status_code</span></code> because no response came back.</p>
+<code class="docutils literal notranslate"><span class="pre">__cause__</span></code>. Retryable (<a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError.retryable" title="dataretrieval.exceptions.DataRetrievalError.retryable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">retryable</span></code></a> is
+<code class="docutils literal notranslate"><span class="pre">True</span></code>), but has no <code class="docutils literal notranslate"><span class="pre">.status_code</span></code> because no response came back.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.NetworkError.retryable">
 <span class="sig-name descname"><span class="pre">retryable</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#dataretrieval.exceptions.NetworkError.retryable" title="Link to this definition"></a></dt>
@@ -298,7 +297,7 @@ deprecated <code class="docutils literal notranslate"><span class="pre">nwis</sp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.RateLimited._DEFAULT_STATUS">
 <span class="sig-name descname"><span class="pre">_DEFAULT_STATUS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">429</span></span><a class="headerlink" href="#dataretrieval.exceptions.RateLimited._DEFAULT_STATUS" title="Link to this definition"></a></dt>
-<dd><p>Canonical status a concrete transient stamps when built without an
+<dd><p>Canonical status a concrete transient sets when built without an
 explicit <code class="docutils literal notranslate"><span class="pre">status_code</span></code> (<a class="reference internal" href="#dataretrieval.exceptions.RateLimited" title="dataretrieval.exceptions.RateLimited"><code class="xref py py-class docutils literal notranslate"><span class="pre">RateLimited</span></code></a> = 429,
 <a class="reference internal" href="#dataretrieval.exceptions.ServiceUnavailable" title="dataretrieval.exceptions.ServiceUnavailable"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code></a> = 503). <code class="docutils literal notranslate"><span class="pre">TransientError</span></code> itself is abstract
 and sets none, so constructing it bare requires <code class="docutils literal notranslate"><span class="pre">status_code</span></code>.</p>
@@ -323,12 +322,12 @@ enough to fit).</p>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a></p>
 <p>A request was rejected with a server error (HTTP 5xx).</p>
 <p>Raised by both the legacy <code class="docutils literal notranslate"><span class="pre">query</span></code> path and the Water Data path, so a 5xx
-surfaces as one type whichever subsystem issued the request. <code class="docutils literal notranslate"><span class="pre">.status_code</span></code>
+is raised as one type whichever subsystem issued the request. <code class="docutils literal notranslate"><span class="pre">.status_code</span></code>
 holds the actual 5xx; it falls back to 503 only on a bare hand-construction.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.ServiceUnavailable._DEFAULT_STATUS">
 <span class="sig-name descname"><span class="pre">_DEFAULT_STATUS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">503</span></span><a class="headerlink" href="#dataretrieval.exceptions.ServiceUnavailable._DEFAULT_STATUS" title="Link to this definition"></a></dt>
-<dd><p>Canonical status a concrete transient stamps when built without an
+<dd><p>Canonical status a concrete transient sets when built without an
 explicit <code class="docutils literal notranslate"><span class="pre">status_code</span></code> (<a class="reference internal" href="#dataretrieval.exceptions.RateLimited" title="dataretrieval.exceptions.RateLimited"><code class="xref py py-class docutils literal notranslate"><span class="pre">RateLimited</span></code></a> = 429,
 <a class="reference internal" href="#dataretrieval.exceptions.ServiceUnavailable" title="dataretrieval.exceptions.ServiceUnavailable"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code></a> = 503). <code class="docutils literal notranslate"><span class="pre">TransientError</span></code> itself is abstract
 and sets none, so constructing it bare requires <code class="docutils literal notranslate"><span class="pre">status_code</span></code>.</p>
@@ -348,8 +347,8 @@ aborting would discard every other item’s data over one failing entry.
 Transient failures (429 / 5xx / timeouts / connection drops) are never
 skipped – they are retried and, if retries run out, raised as a
 resumable interruption. Rate limiting in particular is systematic, so
-skipping there would silently drop most of a batch; that silent loss is
-the failure mode this policy exists to prevent.</p>
+skipping there would drop most of a batch undetected; that undetected loss is
+what this policy exists to prevent.</p>
 <p>A warning rather than a log line so it is visible by default. To make
 any skip fatal (strict all-or-nothing behavior):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">"error"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">SkippedItemWarning</span><span class="p">)</span>
@@ -366,7 +365,7 @@ any skip fatal (strict all-or-nothing behavior):</p>
 <p>A rating feature was skipped by
 <a class="reference internal" href="waterdata.html#dataretrieval.waterdata.get_ratings" title="dataretrieval.waterdata.get_ratings"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.waterdata.get_ratings()</span></code></a>.</p>
 <p>Emitted when a single STAC feature fails deterministically – a stale
-catalog entry (404 on its data asset), a feature carrying no data asset,
+catalog entry (404 on its data asset), a feature with no data asset,
 a malformed RDB file. The failed feature’s id is absent from the returned
 dict. See <a class="reference internal" href="#dataretrieval.exceptions.SkippedItemWarning" title="dataretrieval.exceptions.SkippedItemWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedItemWarning</span></code></a> for the policy and how to escalate
 a skip to an error.</p>
@@ -376,7 +375,7 @@ a skip to an error.</p>
 <dt class="sig sig-object py" id="dataretrieval.exceptions.TransientError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">TransientError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#TransientError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.TransientError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.HTTPError" title="dataretrieval.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a></p>
-<p>A 429 or 5xx the server may serve on a later try.</p>
+<p>A 429 or 5xx the server may not repeat on a later attempt.</p>
 <p><a class="reference internal" href="#dataretrieval.exceptions.RateLimited" title="dataretrieval.exceptions.RateLimited"><code class="xref py py-class docutils literal notranslate"><span class="pre">RateLimited</span></code></a> covers 429 and <a class="reference internal" href="#dataretrieval.exceptions.ServiceUnavailable" title="dataretrieval.exceptions.ServiceUnavailable"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code></a> covers 5xx.</p>
 <p>This only classifies the condition; it does not itself retry. Whether to
 retry is up to the calling path: a single-shot request raises it for the
@@ -397,7 +396,7 @@ header; <code class="docutils literal notranslate"><span class="pre">None</span>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.TransientError._DEFAULT_STATUS">
 <span class="sig-name descname"><span class="pre">_DEFAULT_STATUS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#dataretrieval.exceptions.TransientError._DEFAULT_STATUS" title="Link to this definition"></a></dt>
-<dd><p>Canonical status a concrete transient stamps when built without an
+<dd><p>Canonical status a concrete transient sets when built without an
 explicit <code class="docutils literal notranslate"><span class="pre">status_code</span></code> (<a class="reference internal" href="#dataretrieval.exceptions.RateLimited" title="dataretrieval.exceptions.RateLimited"><code class="xref py py-class docutils literal notranslate"><span class="pre">RateLimited</span></code></a> = 429,
 <a class="reference internal" href="#dataretrieval.exceptions.ServiceUnavailable" title="dataretrieval.exceptions.ServiceUnavailable"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceUnavailable</span></code></a> = 503). <code class="docutils literal notranslate"><span class="pre">TransientError</span></code> itself is abstract
 and sets none, so constructing it bare requires <code class="docutils literal notranslate"><span class="pre">status_code</span></code>.</p>
@@ -432,9 +431,8 @@ call manually.</p>
 <p>Raised by the Water Data chunker when even the smallest reducible plan
 (every list axis at one atom per chunk, the filter at one clause per
 chunk) still exceeds the server’s byte limit. Unlike
-<a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a>, then, automatic splitting has already been tried and
-exhausted. Shrink the input lists, simplify the filter, or split the call
-manually.</p>
+<a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a>, automatic splitting has already been tried. Shrink the
+input lists, simplify the filter, or split the call manually.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -461,25 +459,25 @@ transient (<a class="reference internal" href="#dataretrieval.exceptions.Transie
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.parse_retry_after">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">parse_retry_after</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#parse_retry_after"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.parse_retry_after" title="Link to this definition"></a></dt>
-<dd><p>Parse a <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header into seconds, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for no usable hint.</p>
+<dd><p>Parse a <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header into seconds, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for no usable value.</p>
 <p>Both header forms mean the same thing and are treated the same way: the
 seconds are returned as given, however large. A value past what a caller will
-wait out inline stops the retry and surfaces a transient carrying the hint on
+wait out inline stops the retry and raises a transient with the value on
 <code class="docutils literal notranslate"><span class="pre">.retry_after</span></code>, so a long wait becomes the caller’s decision (and, for a
 chunked call, a resumable interruption) instead of being ignored.</p>
-<p>An over-long hint is honored rather than discarded. Dropping it would make
-the client retry <em>harder</em> against a service that just asked for a long
-pause, and would deny the caller the number it needs on <code class="docutils literal notranslate"><span class="pre">.retry_after</span></code>.
-Clock skew can inflate a date-form hint, but trusting one costs a
-recoverable escalation while ignoring it costs hammering a service that is
-already asking for room.</p>
-<p>A date that has <em>already</em> passed yields no hint at all rather than <code class="docutils literal notranslate"><span class="pre">0.0</span></code>.
-Read literally it says “retry now”, but the likelier reading is that our
-clock runs ahead of the server’s – and acting on it would re-send almost
-immediately against a service that just asked for a pause. Falling back to
-our own bounded backoff is right under either reading. (Delta-seconds is
-clock-independent, so a literal <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">0</span></code> is still honored as the
-instruction it is, floored by
+<p>An over-long value is kept rather than discarded. Dropping it would make
+the client retry sooner against a service that just named a long delay,
+and would deny the caller the number it needs on <code class="docutils literal notranslate"><span class="pre">.retry_after</span></code>. Clock
+skew can inflate a date-form value, but accepting one leads to a recoverable
+escalation while ignoring it leads to re-sending to a service that has
+already named a delay.</p>
+<p>A date that has <em>already</em> passed yields no value at all rather than
+<code class="docutils literal notranslate"><span class="pre">0.0</span></code>. Read literally it says “retry now”, but the likelier reading is
+that the client clock is ahead of the server’s – and acting on it would
+re-send almost immediately against a service that just named a delay.
+Falling back to the client’s own bounded backoff is right under either
+reading. (Delta-seconds is clock-independent, so a literal
+<code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">0</span></code> is still applied as the instruction it is, floored by
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">backoff()</span></code>’s jitter.)</p>
 </dd></dl>
 
@@ -494,32 +492,30 @@ are importable from the top level, e.g.
 class object under the name it was first published as – so <code class="docutils literal notranslate"><span class="pre">except</span>
 <span class="pre">ChunkInterrupted</span></code> and <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">FanOutInterrupted</span></code> are the same handler. The
 base class is named for the fan-out rather than for chunking because a Water Use
-call fans out without dividing anything: the NWDC simply accepts one location
+call fans out without dividing anything: the NWDC accepts one location
 per request.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.</span></span><span class="sig-name descname"><span class="pre">FanOutInterrupted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_chunks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FanOut</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cause</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/interruptions.html#FanOutInterrupted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.FanOutInterrupted" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a></p>
-<p>Base class for mid-stream chunk failures whose completed work
+<p>Base class for partway chunk failures whose completed work
 is preserved and resumable.</p>
 <p>A <code class="docutils literal notranslate"><span class="pre">FanOutInterrupted</span></code> subclass means: a chunk failed, but
-<code class="docutils literal notranslate"><span class="pre">FanOut</span></code> still owns whatever completed successfully before
-the failure. Call <code class="docutils literal notranslate"><span class="pre">self.call.resume()</span></code> to pick up where the
-failure stopped you — only still-pending chunks are
+<code class="docutils literal notranslate"><span class="pre">FanOut</span></code> still holds whatever completed successfully before
+the failure. Call <code class="docutils literal notranslate"><span class="pre">self.call.resume()</span></code> to continue from where the
+failure stopped — only still-pending chunks are
 re-issued.</p>
-<p>Subclasses describe <em>why</em> <code class="docutils literal notranslate"><span class="pre">FanOut</span></code> stopped so callers can
-pick a retry policy: <a class="reference internal" href="#dataretrieval.QuotaExhausted" title="dataretrieval.QuotaExhausted"><code class="xref py py-class docutils literal notranslate"><span class="pre">QuotaExhausted</span></code></a> for 429 (wait for the
-rate-limit window), <a class="reference internal" href="#dataretrieval.ServiceInterrupted" title="dataretrieval.ServiceInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code></a> for 5xx (wait for
-the upstream to recover). The <code class="docutils literal notranslate"><span class="pre">.call</span></code> handle is the same object
-across every interruption of a single fanned-out call — frames
-accumulate across retries.</p>
+<p>Subclasses describe <em>why</em> <code class="docutils literal notranslate"><span class="pre">FanOut</span></code> stopped so callers can choose a retry policy:
+<a class="reference internal" href="#dataretrieval.QuotaExhausted" title="dataretrieval.QuotaExhausted"><code class="xref py py-class docutils literal notranslate"><span class="pre">QuotaExhausted</span></code></a> for 429 (wait for the rate-limit window),
+<a class="reference internal" href="#dataretrieval.ServiceInterrupted" title="dataretrieval.ServiceInterrupted"><code class="xref py py-class docutils literal notranslate"><span class="pre">ServiceInterrupted</span></code></a> for 5xx (wait for the upstream to recover). The
+<code class="docutils literal notranslate"><span class="pre">.call</span></code> handle is the same object across every interruption of a single fanned-out
+call — frames accumulate across retries.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.call">
 <span class="sig-name descname"><span class="pre">call</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.call" title="Link to this definition"></a></dt>
 <dd><p>Resumable handle into the <code class="docutils literal notranslate"><span class="pre">FanOut</span></code> that raised this
 exception. <code class="docutils literal notranslate"><span class="pre">None</span></code> only on hand-constructed exceptions (test
-fixtures), where <code class="docutils literal notranslate"><span class="pre">.call</span></code>-derived accessors degrade to
-empty/<code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+fixtures), where <code class="docutils literal notranslate"><span class="pre">.call</span></code>-derived accessors return empty/<code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>FanOut or None</p>
@@ -530,8 +526,8 @@ empty/<code class="docutils literal notranslate"><span class="pre">None</span></
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.retry_after">
 <span class="sig-name descname"><span class="pre">retry_after</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.retry_after" title="Link to this definition"></a></dt>
-<dd><p>Seconds the server suggested waiting (<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header).
-<code class="docutils literal notranslate"><span class="pre">None</span></code> when the server gave no hint.</p>
+<dd><p>Seconds the server specified for waiting (<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header).
+<code class="docutils literal notranslate"><span class="pre">None</span></code> when the server sent none.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float or None</p>
@@ -565,7 +561,7 @@ empty/<code class="docutils literal notranslate"><span class="pre">None</span></
 <dt class="sig sig-object py" id="dataretrieval.FanOutInterrupted.partial_frame">
 <span class="sig-name descname"><span class="pre">partial_frame</span></span><a class="headerlink" href="#dataretrieval.FanOutInterrupted.partial_frame" title="Link to this definition"></a></dt>
 <dd><p>Combined frame of work completed by the moment this exception
-was raised. Snapshot at raise time — does NOT advance on a
+was raised. Snapshot at raise time — does not advance on a
 later <code class="docutils literal notranslate"><span class="pre">call.resume()</span></code> (use <code class="docutils literal notranslate"><span class="pre">exc.call.partial_frame</span></code> for
 the live view).</p>
 <dl class="field-list simple">
@@ -590,10 +586,9 @@ semantics as <code class="docutils literal notranslate"><span class="pre">partia
 </dd></dl>
 
 <p class="rubric">Examples</p>
-<p>Retry on any transient interruption, honoring the server’s
-<code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> hint when present and falling back to a fixed wait
-otherwise. Each new interruption keeps the already-completed work
-intact — only the still-pending chunks are re-issued.</p>
+<p>Retry on any transient interruption, applying the server’s <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> value
+when present and falling back to a fixed wait otherwise. Each new interruption keeps
+the already-completed work intact — only the still-pending chunks are re-issued.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkInterrupted</span>
 

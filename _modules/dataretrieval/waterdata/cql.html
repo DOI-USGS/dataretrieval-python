@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.waterdata.cql &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -78,9 +78,9 @@
 <span></span><span class="sd">"""One getter for queries the typed getters cannot express.</span>
 
 <span class="sd">The other families expose a fixed argument per filter, which covers the common</span>
-<span class="sd">cases and keeps them discoverable. This is the escape hatch: an arbitrary CQL2</span>
-<span class="sd">filter against any collection, for the query nobody anticipated. Prefer a typed</span>
-<span class="sd">getter when one fits -- it validates more and names its filters.</span>
+<span class="sd">cases and keeps them discoverable. This is the generic path: an arbitrary CQL2</span>
+<span class="sd">filter against any collection, for a query the typed getters do not cover.</span>
+<span class="sd">Prefer a typed getter when one fits -- it validates more and names its filters.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -155,7 +155,7 @@
 <span class="sd">        (e.g. ``"daily"``, ``"monitoring-locations"``).</span>
 <span class="sd">    cql : str or dict</span>
 <span class="sd">        CQL2 query. A ``dict`` is JSON-serialized for transport; a ``str`` is</span>
-<span class="sd">        sent through unchanged. The query goes into the HTTP POST body with</span>
+<span class="sd">        sent through unchanged. The query is sent in the HTTP POST body with</span>
 <span class="sd">        ``Content-Type: application/query-cql-json``.</span>
 <span class="sd">    properties : str or iterable of str, optional</span>
 <span class="sd">        Server-side property whitelist (passed as ``properties=`` on the URL).</span>
@@ -238,16 +238,15 @@
         <span class="p">),</span>
     <span class="p">)</span>
 
-    <span class="c1"># ``dict`` is the pythonic input — serialize on the way out. ``str`` is sent</span>
+    <span class="c1"># A ``dict`` is serialized before sending. ``str`` is sent</span>
     <span class="c1"># verbatim so callers who already have a CQL2 doc (e.g. imported from a</span>
     <span class="c1"># config file) don't need to re-parse it.</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">cql</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">":"</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cql</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">cql</span>
 
-    <span class="c1"># The engine owns the rest — the wire-properties id-switch, request</span>
-    <span class="c1"># construction, pagination, and finalization — behind the same Water Data</span>
-    <span class="c1"># entry the typed getters use; ``cql_body`` selects the verbatim-CQL2</span>
-    <span class="c1"># shape. ``output_id`` defaults from the collection map, which the guard</span>
-    <span class="c1"># above has already confirmed covers ``collection``.</span>
+    <span class="c1"># The engine handles the wire-properties id-switch, request construction,</span>
+    <span class="c1"># pagination, and finalization, through the same Water Data entry the typed getters</span>
+    <span class="c1"># use; ``cql_body`` selects the verbatim-CQL2 shape. ``output_id`` defaults from the</span>
+    <span class="c1"># collection map, which the check above has already confirmed covers ``collection``.</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
         <span class="p">{</span>
             <span class="s2">"properties"</span><span class="p">:</span> <span class="n">properties</span><span class="p">,</span>

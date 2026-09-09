@@ -20,7 +20,7 @@ are importable from the top level, e.g.
 class object under the name it was first published as -- so ``except
 ChunkInterrupted`` and ``except FanOutInterrupted`` are the same handler. The
 base class is named for the fan-out rather than for chunking because a Water Use
-call fans out without dividing anything: the NWDC simply accepts one location
+call fans out without dividing anything: the NWDC accepts one location
 per request.
 
 .. autoclass:: dataretrieval.FanOutInterrupted

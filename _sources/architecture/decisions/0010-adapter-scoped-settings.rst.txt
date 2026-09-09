@@ -24,7 +24,7 @@ Context
 
 ADR 0009 resolved every setting through one flat namespace, on the premise that
 "a setting means the same thing to every service; services differ in the value
-they want, not the vocabulary." Surveying the seven APIs this package retrieves
+they use, not the vocabulary." Surveying the seven APIs this package retrieves
 from shows the premise is false. The settings themselves differ:
 
 .. list-table::
@@ -74,12 +74,12 @@ from shows the premise is false. The settings themselves differ:
 ``concurrency`` and ``parallel_chunks`` are meaningless for the four
 single-shot adapters -- there is nothing to fan out. ``ssl_check`` applies to
 four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is currently a
-per-call keyword outside the chain entirely; it reaches ``httpx``'s ``verify``,
+per-call keyword outside the chain entirely; it is passed to ``httpx``'s ``verify``,
 verified by spying on the client. A flat namespace accepts
 ``configure(streamstats={"parallel_chunks": 8})`` without error, which is
 the typo class ADR 0009 exists to catch.
 
-The credential is a separate axis, and measurement settled it. Probing the live
+The credential is a separate axis, and measurement shows this. Probing the live
 APIs with and without a key:
 
 * NGWMN and Water Data are served from the *same host*
@@ -90,7 +90,7 @@ APIs with and without a key:
   (997, 996, 996, 994, 993, 992), so the two adapters share one quota pool.
 * Water Data's OpenAPI declares ``ApiKeyHeader``/``ApiKeyQuery``; NGWMN's
   declares no security scheme at all across 34 paths -- yet the gateway meters
-  it regardless. Every response carries ``via: ... api-umbrella``.
+  it regardless. Every response includes ``via: ... api-umbrella``.
 
 The key is therefore a credential of the **gateway fronting the host**, not of
 either adapter. It cannot meaningfully vary per adapter: two keys against one
@@ -128,15 +128,15 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    does not replace it. Every setting still has a package-wide form, and
    the shipped ``API_USGS_*`` variables are package-wide by construction.
    ``retries`` and ``stall_timeout`` are additionally adapter-scopable, because
-   a service that responds slowly or refuses often warrants its own budget
-   without changing anyone else's. ``progress`` is not: it describes the
+   a service that responds slowly or returns errors often warrants its own
+   budget without changing the others'. ``progress`` is not: it describes the
    caller's terminal, and there is one progress line per call, so scoping it
    per adapter could only produce a contradiction.
 
 3. **Precedence stays source-major.** Resolution checks the block, then the
    environment, then the file, as ADR 0009 defines; *within* each source an
    adapter-scoped value outranks a top-level one. The environment therefore
-   still outranks the file, so a stale adapter table cannot quietly override a
+   still outranks the file, so a stale adapter table cannot override a
    variable exported for one run.
 
 4. **Adapter-scoped settings get no environment variables.** Every entry in
@@ -164,7 +164,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
 7. **Adapters are keyed by their service's name**, matching the module:
    ``waterdata``, ``ngwmn``, ``nwdc``, ``wqp``, ``nldi``, ``streamstats``.
    The deprecated ``nwis`` is deliberately absent: its calls pin
-   ``max_retries=0``, so a ``[nwis]`` table could only be reported as live and
+   ``max_retries=0``, so a ``[nwis]`` table could only be reported as in effect and
    then ignored -- the failure this decision exists to prevent.
 
 8. **Each adapter is a named, typed parameter on** ``configure()``, annotated
@@ -199,7 +199,7 @@ Consequences
   than in the leaf.
 
 - **A configuration object is still refused, but on narrower grounds than ADR
-  0009 stated.** That ADR rejected an object because it had no way to *reach*
+  0009 stated.** That ADR rejected an object because it had no way to be passed to
   the call. A per-adapter payload type does not have that problem -- the
   ``ContextVar`` remains the delivery mechanism and the type is only the
   payload's shape. ``TypedDict`` is chosen over a dataclass for the reason
@@ -212,9 +212,9 @@ Consequences
   and the roster stops being duplicated.
 
 - **``show_configuration()`` gains a second section, not a matrix.** It prints
-  the top-level tier as today, then only those adapter overrides actually set.
-  A seven-by-eight grid of mostly-inherited values would obscure the answer to
-  "what will this call use".
+  the top-level tier as today, then only those adapter overrides set.
+  A seven-by-eight grid of mostly-inherited values would obscure which
+  value a call will use.
 
 - **The shared quota pool is not modelled.** ``[waterdata]`` and ``[ngwmn]``
   appear to be independent settings but share one 1000/hour allowance. A host or
@@ -232,8 +232,8 @@ Consequences
 
 - **``ssl_check`` stays a per-call argument and does not become a setting.**
   It is a defaulted keyword on 23 shipped getters across four adapters --
-  ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it does
-  reach ``httpx``'s ``verify``. It was added in 2023 to what were then the only
+  ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it is
+  passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the only
   modules; the OGC getters were added later and never adopted it, so its
   distribution records the package's history rather than a boundary.
 
@@ -241,17 +241,17 @@ Consequences
   a per-call keyword it is a visible, scoped decision, while a config-file key
   or environment variable would make a security downgrade process-wide and
   invisible at the call site -- the opposite of the direction this chain
-  narrows everything else. It does not respect adapter boundaries: within
+  narrows everything else. It does not follow adapter boundaries: within
   ``waterdata`` it applies only to the getters that bypass the OGC engine, so
-  ``[waterdata] ssl_check`` would be applied by three getters and silently
-  ignored by the rest, exactly the pattern this ADR refuses elsewhere. And the
+  ``[waterdata] ssl_check`` would be applied by three getters and
+  ignored by the rest, the pattern this ADR refuses elsewhere. And the
   need it serves is already met better: the legitimate case is a
   TLS-intercepting corporate proxy, and ``httpx`` natively reads
   ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients --
   so that mechanism already covers *every* getter, including the OGC ones that
   have no ``ssl_check``, and it trusts the corporate CA rather than trusting
-  nothing. The ``bool`` type cannot even hold a CA bundle path, which is the
-  value a caller actually needs.
+  nothing. The ``bool`` type cannot hold a CA bundle path, which is the
+  value a caller needs.
 
   The configuration guide documents ``SSL_CERT_FILE`` for that case. Whether
   ``ssl_check`` should be deprecated outright is a public-API question left to

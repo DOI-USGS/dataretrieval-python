@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,7 +133,7 @@ key, and the adapter names.</p>
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
 <p>ADR 0009 resolved every setting through one flat namespace, on the premise that
 “a setting means the same thing to every service; services differ in the value
-they want, not the vocabulary.” Surveying the seven APIs this package retrieves
+they use, not the vocabulary.” Surveying the seven APIs this package retrieves
 from shows the premise is false. The settings themselves differ:</p>
 <table class="docutils align-default">
 <thead>
@@ -192,11 +192,11 @@ from shows the premise is false. The settings themselves differ:</p>
 <p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code> and <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> are meaningless for the four
 single-shot adapters – there is nothing to fan out. <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> applies to
 four adapters (<code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">nwis</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>) and is currently a
-per-call keyword outside the chain entirely; it reaches <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>,
+per-call keyword outside the chain entirely; it is passed to <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>,
 verified by spying on the client. A flat namespace accepts
 <code class="docutils literal notranslate"><span class="pre">configure(streamstats={&quot;parallel_chunks&quot;:</span> <span class="pre">8})</span></code> without error, which is
 the typo class ADR 0009 exists to catch.</p>
-<p>The credential is a separate axis, and measurement settled it. Probing the live
+<p>The credential is a separate axis, and measurement shows this. Probing the live
 APIs with and without a key:</p>
 <ul class="simple">
 <li><p>NGWMN and Water Data are served from the <em>same host</em>
@@ -207,7 +207,7 @@ with one.</p></li>
 (997, 996, 996, 994, 993, 992), so the two adapters share one quota pool.</p></li>
 <li><p>Water Data’s OpenAPI declares <code class="docutils literal notranslate"><span class="pre">ApiKeyHeader</span></code>/<code class="docutils literal notranslate"><span class="pre">ApiKeyQuery</span></code>; NGWMN’s
 declares no security scheme at all across 34 paths – yet the gateway meters
-it regardless. Every response carries <code class="docutils literal notranslate"><span class="pre">via:</span> <span class="pre">...</span> <span class="pre">api-umbrella</span></code>.</p></li>
+it regardless. Every response includes <code class="docutils literal notranslate"><span class="pre">via:</span> <span class="pre">...</span> <span class="pre">api-umbrella</span></code>.</p></li>
 </ul>
 <p>The key is therefore a credential of the <strong>gateway fronting the host</strong>, not of
 either adapter. It cannot meaningfully vary per adapter: two keys against one
@@ -245,14 +245,14 @@ One block still configures several adapters at once, now as
 does not replace it. Every setting still has a package-wide form, and
 the shipped <code class="docutils literal notranslate"><span class="pre">API_USGS_*</span></code> variables are package-wide by construction.
 <code class="docutils literal notranslate"><span class="pre">retries</span></code> and <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code> are additionally adapter-scopable, because
-a service that responds slowly or refuses often warrants its own budget
-without changing anyone else’s. <code class="docutils literal notranslate"><span class="pre">progress</span></code> is not: it describes the
+a service that responds slowly or returns errors often warrants its own
+budget without changing the others’. <code class="docutils literal notranslate"><span class="pre">progress</span></code> is not: it describes the
 caller’s terminal, and there is one progress line per call, so scoping it
 per adapter could only produce a contradiction.</p></li>
 <li><p><strong>Precedence stays source-major.</strong> Resolution checks the block, then the
 environment, then the file, as ADR 0009 defines; <em>within</em> each source an
 adapter-scoped value outranks a top-level one. The environment therefore
-still outranks the file, so a stale adapter table cannot quietly override a
+still outranks the file, so a stale adapter table cannot override a
 variable exported for one run.</p></li>
 <li><p><strong>Adapter-scoped settings get no environment variables.</strong> Every entry in
 <code class="docutils literal notranslate"><span class="pre">ENV_VARS</span></code> stays package-wide, for the reason <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> already
@@ -276,7 +276,7 @@ no <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span> <
 <li><p><strong>Adapters are keyed by their service’s name</strong>, matching the module:
 <code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">ngwmn</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>.
 The deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> is deliberately absent: its calls pin
-<code class="docutils literal notranslate"><span class="pre">max_retries=0</span></code>, so a <code class="docutils literal notranslate"><span class="pre">[nwis]</span></code> table could only be reported as live and
+<code class="docutils literal notranslate"><span class="pre">max_retries=0</span></code>, so a <code class="docutils literal notranslate"><span class="pre">[nwis]</span></code> table could only be reported as in effect and
 then ignored – the failure this decision exists to prevent.</p></li>
 <li><p><strong>Each adapter is a named, typed parameter on</strong> <code class="docutils literal notranslate"><span class="pre">configure()</span></code>, annotated
 with its own <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code>, so a type checker rejects a setting the adapter
@@ -309,7 +309,7 @@ validator and <code class="docutils literal notranslate"><span class="pre">confi
 decision 5</em>: the classes exist, and are defined with their adapters rather
 than in the leaf.</p></li>
 <li><p><strong>A configuration object is still refused, but on narrower grounds than ADR
-0009 stated.</strong> That ADR rejected an object because it had no way to <em>reach</em>
+0009 stated.</strong> That ADR rejected an object because it had no way to be passed to
 the call. A per-adapter payload type does not have that problem – the
 <code class="docutils literal notranslate"><span class="pre">ContextVar</span></code> remains the delivery mechanism and the type is only the
 payload’s shape. <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> is chosen over a dataclass for the reason
@@ -321,9 +321,9 @@ instance records which adapter it targets, so the caller stops naming one
 and the roster stops being duplicated.</p>
 </li>
 <li><p><strong>``show_configuration()`` gains a second section, not a matrix.</strong> It prints
-the top-level tier as today, then only those adapter overrides actually set.
-A seven-by-eight grid of mostly-inherited values would obscure the answer to
-“what will this call use”.</p></li>
+the top-level tier as today, then only those adapter overrides set.
+A seven-by-eight grid of mostly-inherited values would obscure which
+value a call will use.</p></li>
 <li><p><strong>The shared quota pool is not modelled.</strong> <code class="docutils literal notranslate"><span class="pre">[waterdata]</span></code> and <code class="docutils literal notranslate"><span class="pre">[ngwmn]</span></code>
 appear to be independent settings but share one 1000/hour allowance. A host or
 gateway tier would express it; that is deferred until someone is confused by
@@ -338,25 +338,25 @@ to parse it and is deleted, so <code class="docutils literal notranslate"><span 
 the package that reads <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> for a setting.</p></li>
 <li><p><strong>``ssl_check`` stays a per-call argument and does not become a setting.</strong>
 It is a defaulted keyword on 23 shipped getters across four adapters –
-<code class="docutils literal notranslate"><span class="pre">wqp</span></code> (9), <code class="docutils literal notranslate"><span class="pre">nwis</span></code> (10), <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> (3) and <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> (1) – and it does
-reach <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>. It was added in 2023 to what were then the only
+<code class="docutils literal notranslate"><span class="pre">wqp</span></code> (9), <code class="docutils literal notranslate"><span class="pre">nwis</span></code> (10), <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> (3) and <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> (1) – and it is
+passed to <code class="docutils literal notranslate"><span class="pre">httpx</span></code>’s <code class="docutils literal notranslate"><span class="pre">verify</span></code>. It was added in 2023 to what were then the only
 modules; the OGC getters were added later and never adopted it, so its
 distribution records the package’s history rather than a boundary.</p>
 <p>Three reasons not to promote it. It disables certificate verification, so as
 a per-call keyword it is a visible, scoped decision, while a config-file key
 or environment variable would make a security downgrade process-wide and
 invisible at the call site – the opposite of the direction this chain
-narrows everything else. It does not respect adapter boundaries: within
+narrows everything else. It does not follow adapter boundaries: within
 <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> it applies only to the getters that bypass the OGC engine, so
-<code class="docutils literal notranslate"><span class="pre">[waterdata]</span> <span class="pre">ssl_check</span></code> would be applied by three getters and silently
-ignored by the rest, exactly the pattern this ADR refuses elsewhere. And the
+<code class="docutils literal notranslate"><span class="pre">[waterdata]</span> <span class="pre">ssl_check</span></code> would be applied by three getters and
+ignored by the rest, the pattern this ADR refuses elsewhere. And the
 need it serves is already met better: the legitimate case is a
 TLS-intercepting corporate proxy, and <code class="docutils literal notranslate"><span class="pre">httpx</span></code> natively reads
 <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> and <code class="docutils literal notranslate"><span class="pre">SSL_CERT_DIR</span></code> on both its sync and async clients –
 so that mechanism already covers <em>every</em> getter, including the OGC ones that
 have no <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code>, and it trusts the corporate CA rather than trusting
-nothing. The <code class="docutils literal notranslate"><span class="pre">bool</span></code> type cannot even hold a CA bundle path, which is the
-value a caller actually needs.</p>
+nothing. The <code class="docutils literal notranslate"><span class="pre">bool</span></code> type cannot hold a CA bundle path, which is the
+value a caller needs.</p>
 <p>The configuration guide documents <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code> for that case. Whether
 <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> should be deprecated outright is a public-API question left to
 its own change.</p>

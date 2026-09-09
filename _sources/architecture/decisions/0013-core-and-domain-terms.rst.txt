@@ -20,17 +20,17 @@ repeatedly: whether a docstring may say *site*, whether ``service=`` may name a
 collection, whether prose about NWIS is bound by a word chosen from the Water
 Data API.
 
-The two sets behave differently because their authority differs.
+The two sets are treated differently because their authority differs.
 
 Terms like *chunk*, *page*, *fan-out*, *plan*, *interruption*, *dialect* and
 *leaf* appear nowhere in any USGS API's vocabulary. They were invented here to
 describe mechanisms this package owns. Nothing external constrains them, so when
 the package spells one of them two ways -- the resolution chain's code said
 *tier* for what its founding records, ADRs 0009 and 0010, call a *source* --
-that is simply an inconsistency, and one that can be removed by deciding.
+that is an inconsistency, and one that can be removed by deciding.
 
 Terms like *monitoring location* and *collection* are different. The services
-name those things, and they do not agree with each other:
+name those things, and they differ:
 
 .. list-table::
    :header-rows: 1
@@ -51,7 +51,7 @@ name those things, and they do not agree with each other:
      - ``collection``
      - ``collection``
 
-No decision here makes those agree. A caller who has read the WQP
+No decision here makes those match. A caller who has read the WQP
 documentation looks for ``Station``; one reading Water Data's looks for
 ``monitoring_location_id``. An adapter that renamed either would be harder to
 use, not easier, and the parameter names are public surface besides.
@@ -66,8 +66,8 @@ Decision
 
 The glossary holds two kinds of term, and they impose different obligations.
 
-**Core terms are ours.** The package invented them and no service has a claim
-on them: everything under *Retrieval*, *Failure and resumption*, *Configuration*
+**Core terms are ours.** The package invented them and no service defines
+them: everything under *Retrieval*, *Failure and resumption*, *Configuration*
 and *Boundaries*, plus *Collection family* and *Metadata*. One spelling,
 enforced everywhere it appears -- prose, identifiers, tests. A second spelling
 of a core term is a defect, not a variation, and is fixed rather than recorded.
@@ -81,9 +81,9 @@ chooses one term for **prose**, so that documents about the package are
 internally consistent. It does not choose the names used in requests, and it
 does not choose for an adapter's public surface: each adapter keeps its own
 service's spelling in its parameters, and reproduces that service's vocabulary
-faithfully where it appears in returned data.
+where it appears in returned data.
 
-An adapter is where the two meet. Its public surface uses its service's
+An adapter uses both kinds. Its public surface uses its service's
 terms; what it passes to the shared modules uses the core terms. The
 translation is the adapter's responsibility, and a divergence at that boundary
 is the design working as intended rather than a defect.
@@ -114,9 +114,9 @@ Consequences
   its definition rather than a list of exceptions.
 - A glossary entry now has an obligation to say which kind it is. That is a
   small cost per term and the reason the distinction is usable at all.
-- The package's own inconsistencies in core vocabulary become defects with a
-  deadline rather than curiosities. The resolution chain's ``tier``-for-*source*
-  identifiers are the current example.
+- The package's own inconsistencies in core vocabulary become defects to fix
+  rather than variations to tolerate. The resolution chain's
+  ``tier``-for-*source* identifiers are the current example.
 
 Compliance
 ----------

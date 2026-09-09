@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.ogc.chunking &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../../../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -77,18 +77,17 @@
   <h1>Source code for dataretrieval.ogc.chunking</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""URL-byte chunk planning and dispatch for the OGC getters.</span>
 
-<span class="sd">An OGC query has several chunkable axes: every multi-value list</span>
-<span class="sd">parameter (sites, parameter codes, …) plus the cql-text ``filter``,</span>
-<span class="sd">which splits along its top-level OR clauses. Any of them can fan the</span>
-<span class="sd">URL past the server's ~8 KB byte limit. ``ChunkPlan`` picks a fan-out</span>
-<span class="sd">for each axis that minimizes total chunks while keeping every</span>
-<span class="sd">chunk URL under the budget. Requests that already fit get a single-chunk</span>
-<span class="sd">plan — the executor has one code path either way.</span>
+<span class="sd">An OGC query has several chunkable axes: every multi-value list parameter (sites,</span>
+<span class="sd">parameter codes, …) plus the cql-text ``filter``, which splits along its top-level OR</span>
+<span class="sd">clauses. Any of them can make the URL exceed the server's ~8 KB byte limit.</span>
+<span class="sd">``ChunkPlan`` picks a fan-out for each axis that minimizes total chunks while keeping</span>
+<span class="sd">every chunk URL under the budget. Requests that already fit get a single-chunk plan —</span>
+<span class="sd">the executor has one code path either way.</span>
 
 <span class="sd">This module owns the OGC-specific half: the byte budget, the</span>
-<span class="sd">``parallel_chunks`` dial, and the ``multi_value_chunked`` decorator that</span>
-<span class="sd">ties a plan to a fetcher. It hands the plan to</span>
-<span class="sd">:class:`dataretrieval.transport.fanout.FanOut`, which drives the chunks to</span>
+<span class="sd">``parallel_chunks`` setting, and the ``multi_value_chunked`` decorator that</span>
+<span class="sd">ties a plan to a fetcher. It passes the plan to</span>
+<span class="sd">:class:`dataretrieval.transport.fanout.FanOut`, which runs the chunks to</span>
 <span class="sd">completion; :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies</span>
 <span class="sd">:class:`~dataretrieval.transport.fanout.FanOutPlan` structurally. That split</span>
 <span class="sd">is ADR 0008.</span>
@@ -96,8 +95,8 @@
 <span class="sd">Parallel chunks: the planner is conservative by default — it splits only as</span>
 <span class="sd">far as the byte limit forces. A caller who knows their result is large can opt</span>
 <span class="sd">into a finer split via the ``parallel_chunks(n)`` context manager, which fans</span>
-<span class="sd">the query out into ``n`` parallel chunks. ``n`` drives</span>
-<span class="sd">:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for the why and the when.</span>
+<span class="sd">the query out into ``n`` parallel chunks. ``n`` is the input to</span>
+<span class="sd">:meth:`ChunkPlan._refine`; see ``parallel_chunks`` for when to use it.</span>
 
 <span class="sd">Concurrency, retries, and interruption semantics are documented on</span>
 <span class="sd">:mod:`dataretrieval.transport.fanout`; the ``concurrency`` and ``retries``</span>
@@ -134,14 +133,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.planning</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChunkPlan</span>
 
-<span class="c1"># Compatibility aliases for the chunking/progress test modules. The client</span>
-<span class="c1"># names bind the *same* objects transport publishes, not copies -- a test</span>
-<span class="c1"># reading a copy here would never see the running client.</span>
+<span class="c1"># Compatibility aliases for the chunking/progress test modules. The client names bind</span>
+<span class="c1"># the same objects transport sets, not copies -- a test reading a copy here would never</span>
+<span class="c1"># see the running client.</span>
 <span class="n">ChunkedCall</span> <span class="o">=</span> <span class="n">FanOut</span>
 <span class="n">get_active_client</span> <span class="o">=</span> <span class="n">active_client</span>
 <span class="n">_chunked_client</span> <span class="o">=</span> <span class="n">_active_client</span>
 
-<span class="c1"># Empirically the API replies HTTP 414 above ~8200 bytes of full URL —</span>
+<span class="c1"># Empirically the API returns HTTP 414 above ~8200 bytes of full URL —</span>
 <span class="c1"># matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000</span>
 <span class="c1"># leaves ~200 bytes for request-line framing and proxy variance. The decorator</span>
 <span class="c1"># resolves this module-level default at call time when ``url_limit`` is None,</span>
@@ -156,21 +155,19 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fan the OGC getters' multi-value requests out into ``n`` parallel chunks.</span>
 
-<span class="sd">    By default the Water Data / NGWMN getters chunk a request only as much as</span>
-<span class="sd">    the server's ~8 KB URL-byte limit forces — the fewest chunks that</span>
-<span class="sd">    fit. That default can be more conservative than a large pull needs.</span>
-<span class="sd">    Because every chunk paginates, splitting a large result further costs</span>
-<span class="sd">    little or no extra quota *as long as each chunk still spans many</span>
-<span class="sd">    pages* — rows-per-chunk far exceeding the page size (ten states pulled as</span>
-<span class="sd">    one request page nearly as many times as ten per-state requests would).</span>
-<span class="sd">    When a split leaves each chunk only a page or two, its partial final</span>
-<span class="sd">    page is extra, so finer chunks do add some requests. This context manager</span>
-<span class="sd">    lets a caller who *knows* their pull is large ask for that finer split. The</span>
-<span class="sd">    trade is roughly the same pages for more, smaller chunks, which gives</span>
-<span class="sd">    smoother progress, more even concurrency, and a smaller unit of</span>
-<span class="sd">    retry/resume.</span>
+<span class="sd">    By default the Water Data / NGWMN getters chunk a request only as much as the</span>
+<span class="sd">    server's ~8 KB URL-byte limit forces — the fewest chunks that fit. That default can</span>
+<span class="sd">    split less than a large pull benefits from. Because every chunk paginates, splitting</span>
+<span class="sd">    a large result further costs little or no extra quota *as long as each chunk still</span>
+<span class="sd">    spans many pages* — rows-per-chunk far exceeding the page size (ten states pulled as</span>
+<span class="sd">    one request page nearly as many times as ten per-state requests would). When a split</span>
+<span class="sd">    leaves each chunk only a page or two, its partial final page is extra, so finer</span>
+<span class="sd">    chunks do add some requests. This context manager lets a caller who knows their pull</span>
+<span class="sd">    is large request that finer split. The result is roughly the same pages in more,</span>
+<span class="sd">    smaller chunks, which gives smoother progress, more even concurrency, and a smaller</span>
+<span class="sd">    unit of retry/resume.</span>
 
-<span class="sd">    A per-call knob rather than an environment variable, and scoped to a</span>
+<span class="sd">    A per-call setting rather than an environment variable, and scoped to a</span>
 <span class="sd">    ``with`` block: ADR 0009. Outside any block the getters use the</span>
 <span class="sd">    conservative default. Only the OGC getters (Water Data, NGWMN) read this;</span>
 <span class="sd">    wrapping a legacy NWIS call in the block is a no-op.</span>
@@ -178,17 +175,15 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    n : int</span>
-<span class="sd">        The number of chunks to fan the whole call out into — a positive</span>
-<span class="sd">        integer such as ``2``, ``8``, or ``32``. It caps the plan's *total*</span>
-<span class="sd">        chunk count (the cartesian product across every multi-value</span>
-<span class="sd">        argument combined, not per argument), so several multi-value arguments</span>
-<span class="sd">        cannot multiply past it. The cap is a ceiling, never exceeded: the</span>
-<span class="sd">        actual count is bounded below by what the ~8 KB URL limit already</span>
-<span class="sd">        forces and above by ``n``. So an ``n`` larger than the input allows</span>
-<span class="sd">        yields one chunk per value, and with several multi-value</span>
-<span class="sd">        arguments the total may land somewhat below ``n`` because splits are</span>
-<span class="sd">        whole (the plan can't always divide evenly onto ``n``). ``n=1`` asks</span>
-<span class="sd">        for no extra fan-out.</span>
+<span class="sd">        The number of chunks to fan the whole call out into — a positive integer such as</span>
+<span class="sd">        ``2``, ``8``, or ``32``. It caps the plan's *total* chunk count (the cartesian</span>
+<span class="sd">        product across every multi-value argument combined, not per argument), so</span>
+<span class="sd">        several multi-value arguments cannot multiply past it. The cap is a ceiling,</span>
+<span class="sd">        never exceeded: the actual count is bounded below by what the ~8 KB URL limit</span>
+<span class="sd">        already forces and above by ``n``. So an ``n`` larger than the input allows</span>
+<span class="sd">        yields one chunk per value, and with several multi-value arguments the total may</span>
+<span class="sd">        be somewhat below ``n`` because splits are whole (the plan can't always divide</span>
+<span class="sd">        evenly onto ``n``). ``n=1`` requests no extra fan-out.</span>
 
 <span class="sd">        Each chunk fetches at least one page, so it costs at least one</span>
 <span class="sd">        request against your hourly rate limit — a larger ``n`` spends more</span>
@@ -205,27 +200,27 @@
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If ``n`` is not a positive integer — raised on ``with`` entry, before</span>
-<span class="sd">        any request is issued, so an invalid value fails loudly rather than silently</span>
+<span class="sd">        any request is issued, so an invalid value raises rather than</span>
 <span class="sd">        doing nothing.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Fanning out carries the same consequences as the byte-limit chunking the</span>
-<span class="sd">    getters already do for oversized requests; opting in just brings them to a</span>
+<span class="sd">    Fanning out has the same consequences as the byte-limit chunking the</span>
+<span class="sd">    getters already do for oversized requests; opting in applies them to a</span>
 <span class="sd">    request that would otherwise be a single call:</span>
 
 <span class="sd">    - ``max_rows``: each chunk paginates up to ``max_rows`` rows</span>
 <span class="sd">      independently, then the combined result is sorted and truncated to</span>
 <span class="sd">      ``max_rows``. So a call with ``max_rows`` set returns a *different*</span>
 <span class="sd">      (though still valid and deterministically sorted) row set inside a</span>
-<span class="sd">      ``parallel_chunks`` block than without one. The cap is drawn from the</span>
-<span class="sd">      union of the chunks, not a single stream. Don't pair a tight</span>
+<span class="sd">      ``parallel_chunks`` block than without one. The cap applies to the</span>
+<span class="sd">      union of the chunks, not to one sequence. Do not combine a small</span>
 <span class="sd">      ``max_rows`` preview with ``parallel_chunks`` if you need exactly the</span>
 <span class="sd">      rows the un-fanned call would return.</span>
 <span class="sd">    - Resumability: a single request either fully succeeds or fully fails,</span>
 <span class="sd">      but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and</span>
 <span class="sd">      raise a resumable :class:`~dataretrieval.interruptions.ChunkInterrupted`</span>
-<span class="sd">      (or ``QuotaExhausted``) carrying the completed chunks. Finish the</span>
+<span class="sd">      (or ``QuotaExhausted``) holding the completed chunks. Finish the</span>
 <span class="sd">      call with ``exc.call.resume()``.</span>
 <span class="sd">    - Cross-chunk de-duplication keys on the feature ``id``; features</span>
 <span class="sd">      with no ``id`` can't be deduped, so overlapping filter clauses split</span>
@@ -262,16 +257,16 @@
     <span class="n">adapter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Fetch</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]],</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Decorate an async fetcher to transparently chunk over-budget requests.</span>
+<span class="sd">    Decorate an async fetcher to chunk over-budget requests automatically.</span>
 
 <span class="sd">    Returns a callable that builds a :class:`ChunkPlan` from ``args``,</span>
 <span class="sd">    constructs a :class:`ChunkedCall` over the decorated</span>
-<span class="sd">    ``async def fetch(args) -&gt; (df, response)``, and drives it to</span>
+<span class="sd">    ``async def fetch(args) -&gt; (df, response)``, and runs it to</span>
 <span class="sd">    completion via :meth:`ChunkedCall.resume`. The plan splits multi-value</span>
 <span class="sd">    list params and the cql-text filter so each chunk URL fits the</span>
 <span class="sd">    byte limit. An already-fitting request is a one-step plan, unless an</span>
-<span class="sd">    active :func:`parallel_chunks` block asks the plan to fan out more</span>
-<span class="sd">    finely. See the module docstring for the concurrency model.</span>
+<span class="sd">    active :func:`parallel_chunks` block requests a finer fan-out. See the</span>
+<span class="sd">    module docstring for the concurrency model.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -289,7 +284,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    Callable</span>
 <span class="sd">        A *synchronous* wrapper ``wrapper(args, *, finalize=...) -&gt;</span>
-<span class="sd">        (df, response)`` that executes the underlying plan transparently</span>
+<span class="sd">        (df, response)`` that executes the underlying plan</span>
 <span class="sd">        over the decorated async fetcher.</span>
 
 <span class="sd">    Raises</span>
@@ -317,10 +312,10 @@
             <span class="n">finalize</span><span class="p">:</span> <span class="n">_Finalize</span> <span class="o">=</span> <span class="n">_passthrough_result</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="n">limit</span> <span class="o">=</span> <span class="n">_OGC_URL_BYTE_LIMIT</span> <span class="k">if</span> <span class="n">url_limit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">url_limit</span>
-            <span class="c1"># Resolve the parallel_chunks dial ``n`` through the configuration</span>
+            <span class="c1"># Resolve the parallel_chunks setting ``n`` through the configuration</span>
             <span class="c1"># chain (1 = off unless a ``parallel_chunks``/``configure`` block or</span>
-            <span class="c1"># the config file raised it; otherwise the requested total chunk</span>
-            <span class="c1"># cap). It only affects *planning*, done here up front, so a later</span>
+            <span class="c1"># the config file set it higher; otherwise the requested total chunk</span>
+            <span class="c1"># cap). It affects only planning, done here before execution, so a later</span>
             <span class="c1"># resume — which re-issues the already-planned chunks — reuses this</span>
             <span class="c1"># plan rather than resolving again.</span>
             <span class="n">plan</span> <span class="o">=</span> <span class="n">ChunkPlan</span><span class="p">(</span>

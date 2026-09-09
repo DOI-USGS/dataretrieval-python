@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g45a60d002 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g50407c8c1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=2921959c"></script>
+      <script src="../_static/documentation_options.js?v=55581cd2"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -237,9 +237,9 @@ user sees only the outermost call’s warning.</p>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_get_json_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#dataretrieval.nwis.NWIS_Metadata" title="dataretrieval.nwis.NWIS_Metadata"><span class="pre">NWIS_Metadata</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_get_json_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._get_json_values" title="Link to this definition"></a></dt>
 <dd><p>Shared body of the JSON waterservices time-series getters (dv / iv).</p>
 <p>The caller-facing <code class="docutils literal notranslate"><span class="pre">sites</span></code> / <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code> arguments are aliases: an
-explicit waterservices keyword of the same meaning wins over them. Note that
-<code class="docutils literal notranslate"><span class="pre">multi_index</span></code> travels through <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> so that <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a>
-sees it.</p>
+explicit waterservices keyword of the same meaning takes precedence over
+them. Note that <code class="docutils literal notranslate"><span class="pre">multi_index</span></code> is passed through <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> so that
+<a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a> sees it.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -295,14 +295,14 @@ index, multi-site MultiIndex, optional GeoDataFrame).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._site_block_boundaries">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_site_block_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_site_block_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._site_block_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return indices where the site number changes, bookended by 0 and len.</p>
+<dd><p>Return indices where the site number changes, with 0 and len added at the ends.</p>
 <p>For example, given <code class="docutils literal notranslate"><span class="pre">['A',</span> <span class="pre">'A',</span> <span class="pre">'B']</span></code> returns <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2,</span> <span class="pre">3]</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dataretrieval.nwis._warn_deprecated">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_warn_deprecated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_warn_deprecated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._warn_deprecated" title="Link to this definition"></a></dt>
-<dd><p>Emit a per-function DeprecationWarning pointing at the waterdata replacement.</p>
+<dd><p>Emit a per-function DeprecationWarning naming the waterdata replacement.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -735,13 +735,13 @@ Companion (NWDC); retrieve them with
 </dl>
 <p class="rubric">Notes</p>
 <p>An empty frame with no <code class="docutils literal notranslate"><span class="pre">peak_dt</span></code> column is returned unchanged, so an
-empty peaks response reaches <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a>’s empty-frame path
+empty peaks response takes <a class="reference internal" href="#dataretrieval.nwis.format_response" title="dataretrieval.nwis.format_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">format_response()</span></code></a>’s empty-frame path
 instead of raising <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>.</p>
 <p>NWIS zero-fills the unknown part of a historical peak’s date –
 <code class="docutils literal notranslate"><span class="pre">YYYY-MM-00</span></code> when the day is not known, <code class="docutils literal notranslate"><span class="pre">YYYY-00-00</span></code> when the month is
 not either. Neither parses, so <code class="docutils literal notranslate"><span class="pre">datetime</span></code> is <code class="docutils literal notranslate"><span class="pre">NaT</span></code> for those peaks
 rather than a date NWIS does not have. The peak is kept regardless, and
-<code class="docutils literal notranslate"><span class="pre">peak_dt</span></code> is left in the frame: the response carries no <code class="docutils literal notranslate"><span class="pre">water_yr</span></code>, so
+<code class="docutils literal notranslate"><span class="pre">peak_dt</span></code> is left in the frame: the response has no <code class="docutils literal notranslate"><span class="pre">water_yr</span></code>, so
 it is the only column holding a censored peak’s year.</p>
 </dd></dl>
 
