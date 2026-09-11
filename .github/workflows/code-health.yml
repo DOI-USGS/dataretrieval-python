@@ -44,8 +44,11 @@ jobs:
 
       - name: Structural analysis (pyscn)
         # One output format per invocation, so run it twice: JSON to read the
-        # numbers, HTML to read the report. Never fails the job -- a non-zero
-        # exit here means "findings", which are the point.
+        # numbers, HTML to read the report. Passing both flags at once exits 1
+        # with "only one output format flag can be specified" *after* running
+        # the analysis, so the combined run costs the work and writes no report
+        # (still true in 1.30.1; reported upstream in DOI-USGS#415). Never fails
+        # the job -- a non-zero exit here means "findings", which are the point.
         continue-on-error: true
         run: |
           pyscn analyze --json --no-open dataretrieval 2>&1 | tee pyscn-summary.txt
@@ -65,9 +68,21 @@ jobs:
           reports = sorted(glob.glob(".pyscn/reports/*.json"))
           if not reports:
               print("no pyscn JSON report found"); raise SystemExit
-          s = json.load(open(reports[-1]))["system"]["Summary"]
-          root, deps = s["ProjectRoot"], s["TotalDependencies"]
-          print(f"modules={s['TotalModules']} resolved_dependencies={deps} root={root}")
+          system = json.load(open(reports[-1]))["system"]
+          # 1.30.0 renamed the report keys from CamelCase to snake_case, so read
+          # either spelling: a pin bump should not quietly cost us the check.
+          summary = system.get("summary") or system["Summary"]
+          def field(*names):
+              for name in names:
+                  if name in summary:
+                      return summary[name]
+              print(f"pyscn report has none of {names}; the report shape changed "
+                    "-- update this check against the pinned pyscn version.")
+              raise SystemExit
+          root = field("project_root", "ProjectRoot")
+          modules = field("total_modules", "TotalModules")
+          deps = field("total_dependencies", "TotalDependencies")
+          print(f"modules={modules} resolved_dependencies={deps} root={root}")
           if os.path.realpath(root) != os.path.realpath(os.getcwd()):
               print(f"WARNING: project root {root!r} is not the checkout; "
                     "import resolution is probably degraded and the scores "
