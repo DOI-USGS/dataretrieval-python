@@ -905,8 +905,8 @@ def what_sites(
     return df, NWIS_Metadata(response, **kwargs)
 
 
-# The value that means "not passed" -- which must stay in step with
-# ``get_record``'s declared default -- and the replacement to name.
+# Each ignored ``get_record`` parameter maps to its declared default and
+# replacement getter guidance, not restrictions on the replacement getter.
 _DEFUNCT_RECORD_OPTIONS: dict[str, tuple[object, str]] = {
     "wide_format": (True, "`waterdata.get_samples()`"),
     "datetime_index": (
@@ -918,10 +918,13 @@ _DEFUNCT_RECORD_OPTIONS: dict[str, tuple[object, str]] = {
 
 
 def _warn_defunct_record_options(**given: object) -> None:
-    """Advise on each ``get_record`` option asked to do something it cannot.
+    """Warn when an ignored ``get_record`` parameter differs from its default.
 
-    Naming an option at its declared default is silent: the caller is asking
-    for what the dead default already gave them.
+    ``given`` must contain only names from ``_DEFUNCT_RECORD_OPTIONS``.
+    Values equal to the declared defaults do not produce parameter warnings,
+    whether passed explicitly or omitted by the caller of ``get_record``.
+    Replacement names in the table identify getters for retrieving the data;
+    they do not mean those getters accept the ignored parameters.
     """
     for name, value in given.items():
         unset, replacement = _DEFUNCT_RECORD_OPTIONS[name]
@@ -972,16 +975,25 @@ def get_record(
         If False, return a dataframe with a single-level index (datetime).
         Default is True.
     wide_format : bool, optional
-        (defunct) Shaped the output of the retired 'qwdata' service. Ignored;
-        passing `False` warns. Use `waterdata.get_samples`, which returns one
-        row per result.
+        (defunct) Previously shaped output from the retired 'qwdata' service.
+        ``get_record`` ignores this parameter; passing ``False`` emits a
+        ``DeprecationWarning``.
+        To retrieve sample data, use ``waterdata.get_samples``,
+        which returns one row per result and has no ``wide_format`` parameter.
     datetime_index : bool, optional
-        (defunct) Shaped the output of the retired 'qwdata' and 'gwlevels'
-        services. Ignored; passing `False` warns. Use `waterdata.get_continuous`
-        or `waterdata.get_daily`, which return `time` as a column.
+        (defunct) Previously shaped output from the retired 'qwdata' and
+        'gwlevels' services.
+        ``get_record`` ignores this parameter; passing ``False`` emits a
+        ``DeprecationWarning``.
+        To retrieve time-series data, use ``waterdata.get_continuous`` or
+        ``waterdata.get_daily``, which return ``time`` as a column and have
+        no ``datetime_index`` parameter.
     state: string, optional, default is None
-        (defunct) Selected sites for the retired 'water_use' service. Ignored;
-        passing a state warns. Use `nwdc.get_wateruse`, which takes `state`.
+        (defunct) Previously selected sites for the retired 'water_use' service.
+        ``get_record`` ignores this parameter; passing a value other than
+        ``None`` emits a ``DeprecationWarning``.
+        To retrieve water-use data by state, use ``nwdc.get_wateruse(state=...)``.
+        Its ``state`` parameter is supported and filters the query.
     service: string, default is 'iv'
         - 'iv' : instantaneous data
         - 'dv' : daily mean data

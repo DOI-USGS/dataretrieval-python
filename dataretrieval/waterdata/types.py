@@ -1,16 +1,19 @@
-"""The Water Data type vocabularies the getters validate their arguments against.
+"""Accepted argument values for the Water Data getters.
 
-Each ``Literal`` alias here is one closed vocabulary: ``CODE_SERVICES`` for
-the Samples code services, ``METADATA_COLLECTIONS`` for the reference-table
-collections, ``SERVICES`` and ``PROFILES`` for the Samples resources and the
-output profiles they offer, and ``WATERDATA_COLLECTIONS`` (permanent alias
-``WATERDATA_SERVICES``) for the collections ``get_cql`` queries.
-``PROFILE_LOOKUP`` pairs ``SERVICES`` with ``PROFILES``, mapping each Samples
-resource to the profiles valid for it.
+Each ``Literal`` type alias lists the values an argument accepts:
+``CODE_SERVICES`` for the Samples code services,
+``METADATA_COLLECTIONS`` for the reference-table collections,
+``SERVICES`` and ``PROFILES`` for the Samples resources and output profiles,
+and ``WATERDATA_COLLECTIONS`` for the collections ``get_cql`` queries.
+``PROFILE_LOOKUP`` maps each Samples resource to its valid output profiles.
 
-They live apart from the getters that check them so a caller may annotate an
-argument with the same alias the getter validates it against, and so one
-vocabulary cannot be spelled two ways in two modules.
+``WATERDATA_SERVICES`` is the previous name for ``WATERDATA_COLLECTIONS``.
+Both names refer to the same type alias.
+The previous name remains supported for compatibility and is not scheduled
+for removal.
+
+Callers can use these aliases in type annotations.
+The getters use the same definitions to validate argument values at runtime.
 """
 
 from typing import Literal, get_args
@@ -69,10 +72,9 @@ SERVICES = Literal[
     "results",
 ]
 
-# OGC API time-series/monitoring collections queryable via ``get_cql``. Keep in sync
-# with ``utils._OUTPUT_ID_BY_COLLECTION`` (same keys): that dict maps each service to
-# its user-facing ``id`` column and is the runtime definition ``get_cql`` validates
-# against.
+# OGC API collections queryable via ``get_cql``. Keep in sync with the keys of
+# ``utils._OUTPUT_ID_BY_COLLECTION``, which maps each collection to its ``id``
+# column and is used by ``get_cql`` to validate the collection argument.
 WATERDATA_COLLECTIONS = Literal[
     "channel-measurements",
     "combined-metadata",
@@ -87,9 +89,8 @@ WATERDATA_COLLECTIONS = Literal[
     "time-series-metadata",
 ]
 
-#: Permanent alias. OGC API - Features calls these collections -- the value is
-#: the ``collectionId`` in ``/collections/{id}/items`` -- but this name is the one
-#: the package published first, so it keeps resolving.
+#: Previous name for ``WATERDATA_COLLECTIONS``, retained for compatibility.
+#: Both names refer to the same object; neither is scheduled for removal.
 WATERDATA_SERVICES = WATERDATA_COLLECTIONS
 
 PROFILES = Literal[
@@ -132,16 +133,14 @@ def _check_profiles(
     service: SERVICES,
     profile: PROFILES,
 ) -> None:
-    """Check whether a service profile is valid.
+    """Check whether an output profile is valid for a Samples resource.
 
     Parameters
     ----------
     service : string
-        One of the service names from the "services" list.
+        A Samples resource name from ``SERVICES``.
     profile : string
-        One of the profile names from "results_profiles",
-        "locations_profiles", "activities_profiles",
-        "projects_profiles" or "organizations_profiles".
+        An output profile name from ``PROFILE_LOOKUP[service]``.
     """
     require_one_of(service, get_args(SERVICES), name="service")
     require_one_of(

@@ -39,10 +39,10 @@ SITENO_COL = "site_no"
 _SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
 
 
-# Every concrete ``module.function(args)`` the deprecation tables name, so the
-# tripwire below is derived from what ships rather than from a hand-kept list.
-# The prose entries (``waterdata.get_*()``) do not name a function and so do
-# not match.
+# Extract backtick-enclosed ``module.function(args)`` from deprecation messages.
+# The two (\w+) groups capture the module and function names; ([^`]*) captures
+# the argument text. Escaped dots and parentheses match those literal characters.
+# ``waterdata.get_*()`` does not match because * is not a word character.
 _NAMED_REPLACEMENTS = sorted(
     set(
         re.findall(
@@ -225,11 +225,12 @@ class TestDeprecationWarnings:
 
     @pytest.mark.parametrize("module_name, func_name, arguments", _NAMED_REPLACEMENTS)
     def test_named_replacement_resolves(self, module_name, func_name, arguments):
-        """Following a deprecation message literally must produce a real call,
-        so a user migrating does not get an AttributeError or TypeError.
+        """Check that each replacement function exists and is callable.
 
-        Fails if a message is ever merged before its referenced replacement
-        does (e.g. before `get_peaks` from #267).
+        Keyword names shown in the deprecation message must be declared
+        parameters of that function.
+        This test inspects the function without calling it;
+        it does not emit a deprecation warning or retrieve data.
         """
         func = getattr(getattr(dataretrieval, module_name), func_name, None)
         assert callable(func), (
@@ -241,11 +242,9 @@ class TestDeprecationWarnings:
 
 
 class TestDefunctRecordOptions:
-    """``get_record``'s three inert options advise; they do not raise.
+    """Ignored ``get_record`` parameters warn without preventing retrieval.
 
-    They are documented parameters of a Production/Stable getter, so they
-    follow the published deprecation policy and go when `nwis` does, rather
-    than on a release of their own.
+    The parameters remain accepted until the ``nwis`` module is removed.
     """
 
     @pytest.mark.parametrize(
@@ -272,9 +271,9 @@ class TestDefunctRecordOptions:
 
     @pytest.mark.parametrize("option", sorted(_DEFUNCT_RECORD_OPTIONS))
     def test_naming_an_option_at_its_default_is_silent(self, httpx_mock, option):
-        """Passing the declared default asks for nothing the dead option
-        cannot give, so it earns no warning -- and the table's "unset" value
-        has to be that declared default for the distinction to hold.
+        """Passing a parameter's declared default emits no parameter warning.
+
+        The value in the warning table must match the signature's default.
         """
         default = inspect.signature(get_record).parameters[option].default
         assert _DEFUNCT_RECORD_OPTIONS[option][0] == default

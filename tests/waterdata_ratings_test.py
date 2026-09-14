@@ -136,15 +136,9 @@ def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
 
 
 def test_get_ratings_writes_the_bytes_the_service_sent(httpx_mock, tmp_path):
-    """The saved file must be the response body, UTF-8, byte for byte.
-
-    Text mode with no ``encoding`` writes in the process locale, and the
-    resulting ``UnicodeEncodeError`` is a ``ValueError``, which the
-    per-feature handler downgrades to a skip -- so the rating would go
-    missing rather than fail. Text mode also rewrites line endings.
-    """
-    # U+2103 is absent from cp1252, so on the Windows leg of the matrix an
-    # unencodable character and a rewritten line ending both land here.
+    """Saving a UTF-8 rating preserves non-ASCII text and CRLF line endings."""
+    # U+2103 cannot be encoded as cp1252. This fixture checks non-ASCII text
+    # and CRLF line endings, including on Windows.
     body = _SAMPLE_RDB.replace("\n", "\r\n").replace("DEP", "DEP \N{DEGREE CELSIUS}")
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()

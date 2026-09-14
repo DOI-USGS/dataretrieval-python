@@ -1,8 +1,7 @@
 """Facade over the ``states`` and ``timezones`` lookup tables.
 
-Re-exports the state code maps and their normalizers (``to_state``,
-``apply_state``) alongside the ``tz`` UTC-offset map, so one import
-reaches every code lookup in the package.
+Re-exports the state code maps, their normalizers (``to_state``,
+``apply_state``), and the ``tz`` UTC-offset map.
 """
 
 from .states import *

@@ -136,19 +136,19 @@ select = [
     # here, so they stay unselected.
     "TC001",
     "TC006", # quoted first argument to ``typing.cast``
-    # A blind ``except Exception`` skips ADR 0004's transient-versus-fatal
-    # judgement. ``progress.py``'s best-effort handlers carry a ``noqa``.
+    # Check broad exception handlers; retry policy distinguishes transient
+    # from deterministic failures (ADR 0004). Progress display uses ``noqa``.
     "BLE001",
-    # A named parameter the body never reads is a promise nothing keeps.
-    # ARG002-004 have nothing to catch (the public interface is functions);
-    # ARG005 fires on lambdas whose parameters the call site dictates.
+    # Check unused function parameters. ARG002-004 cover methods rather than
+    # the function-based public interface; ARG005 also flags lambda parameters
+    # required by callers.
     "ARG001",
-    # ``open()`` in text mode without ``encoding=`` writes in the process
-    # locale -- cp1252 on the Windows leg. Preview-only; recheck on a bump.
+    # Text-mode ``open()`` without ``encoding=`` uses the process locale,
+    # which may not be UTF-8. Preview-only; recheck when upgrading Ruff.
     "PLW1514",
-    # ``automodule ... :members:`` renders a docstring-less public symbol as a
-    # bare signature. The rest of pydocstyle stays off: its section rules read
-    # an indented ``Examples:`` as a section header and "fix" it into garbage.
+    # Require docstrings for public symbols. Other pydocstyle rules remain
+    # disabled because their fixes can misformat indented ``Examples:`` text
+    # as a section header.
     "D100", "D101", "D102", "D103", "D104",
     # A ``# noqa`` for a rule that no longer fires. Author note: ruff's fix
     # reads the rest of the line as the directive's description, so spell a
@@ -157,8 +157,8 @@ select = [
     # A blocking call inside ``async def`` stalls the whole event loop; the
     # suite awaits mocked transports, so a stalled loop still passes.
     "ASYNC",
-    # ``inplace=`` is on pandas' way out; a naive ``datetime`` in a time-series
-    # library is a bug waiting for a reader in another zone.
+    # Check pandas usage, including ``inplace=True``, and naive ``datetime``
+    # operations that can cause time-zone ambiguity.
     "PD", "DTZ",
     # Zero findings today: comprehensions, lazy ``%s`` logging, no ``print`` in
     # a library, ``from __future__ import annotations``, retired numpy aliases.
@@ -170,8 +170,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-unused-arguments]
-# The defunct ``nwis`` stubs absorb the old call through an unread
-# ``**kwargs``; that is the point, so keep ARG001 on named parameters.
+# Retired ``nwis`` functions accept unused ``**kwargs`` to report replacements.
+# Exempt variadic parameters while checking named parameters with ARG001.
 ignore-variadic-names = true
 
 [tool.ruff.lint.mccabe]

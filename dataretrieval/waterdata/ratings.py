@@ -339,11 +339,7 @@ def _inert_response(
 
 
 def _write_rating(path: str, body: str) -> None:
-    """Persist one rating to disk, off the event loop.
-
-    ``_fetch_rating`` runs concurrently under a fan-out drive, so a blocking
-    write here would stall every other in-flight download for its duration.
-    """
+    """Write one rating to disk as UTF-8, preserving line endings."""
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(body)
 

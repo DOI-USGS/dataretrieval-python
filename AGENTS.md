@@ -70,8 +70,9 @@ can predict where a thing is defined.
 - Python >= 3.10; the CI test matrix is 3.10, 3.13, 3.14.
 
 ## Commands
-- Lint: `ruff check .` and `ruff format --check .` (`pip install -e .[lint]`
-  pins the version; keep the `.pre-commit-config.yaml` rev aligned with it).
+- Lint: `ruff check .` and `ruff format --check .`
+  (`pip install -e '.[lint]'` installs the pinned version;
+  keep the `.pre-commit-config.yaml` revision aligned with it).
 - Tests: `coverage run -m pytest tests/ && coverage report`, or focused like
   `pytest tests/waterdata_test.py::test_mock_get_samples`. `coverage report` is
   a merge gate: branch coverage with a `fail_under` ratchet in
