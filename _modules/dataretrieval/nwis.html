@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0d345a733 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=831df822"></script>
+      <script src="../../_static/documentation_options.js?v=fdb2db13"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -234,17 +234,17 @@
 
 
 
-<div class="viewcode-block" id="_localize_datetime_index">
-<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._localize_datetime_index">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_localize_datetime_index</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<div class="viewcode-block" id="_localized_datetime_index">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._localized_datetime_index">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_localized_datetime_index</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Localize a naive datetime index (or multi-index level) to UTC."""</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">):</span>
         <span class="c1"># Multi-index: localize the datetime level (level 1)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"tzinfo"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s2">"tzinfo"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">df</span></div>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"tzinfo"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">set_levels</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">),</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s2">"tzinfo"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span><span class="o">.</span><span class="n">tzinfo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="s2">"UTC"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">index</span></div>
 
 
 
@@ -289,11 +289,19 @@
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"site_no"</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">mi</span><span class="p">:</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">"site_no"</span><span class="p">,</span> <span class="s2">"datetime"</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"site_no"</span><span class="p">,</span> <span class="s2">"datetime"</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">"datetime"</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">_localize_datetime_index</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># Index our own frame, never the caller's. The shallow copy shares the</span>
+    <span class="c1"># columns; ``set_index`` without ``inplace`` duplicates them, because</span>
+    <span class="c1"># pandas deep-copies the frame whenever copy-on-write is off.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># noqa: PD002 # our copy, not the caller's</span>
+
+    <span class="c1"># Retag the index alone; ``DataFrame.tz_localize`` relabels the axis by</span>
+    <span class="c1"># duplicating every column whenever copy-on-write is off.</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">_localized_datetime_index</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
 
 
@@ -332,6 +340,8 @@
         <span class="c1"># still raise.</span>
         <span class="k">return</span> <span class="n">df</span>
 
+    <span class="c1"># Derive the column on our own frame, never the caller's.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"peak_dt"</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
 
@@ -1037,6 +1047,47 @@
 
 
 
+<span class="c1"># Each ignored ``get_record`` parameter maps to its declared default and</span>
+<span class="c1"># replacement getter guidance, not restrictions on the replacement getter.</span>
+<span class="n">_DEFUNCT_RECORD_OPTIONS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"wide_format"</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">"`waterdata.get_samples()`"</span><span class="p">),</span>
+    <span class="s2">"datetime_index"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">"`waterdata.get_continuous()` or `waterdata.get_daily()`"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"state"</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">"`nwdc.get_wateruse(state=...)`"</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="_warn_defunct_record_options">
+<a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis._warn_defunct_record_options">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_defunct_record_options</span><span class="p">(</span><span class="o">**</span><span class="n">given</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Warn when an ignored ``get_record`` parameter differs from its default.</span>
+
+<span class="sd">    ``given`` must contain only names from ``_DEFUNCT_RECORD_OPTIONS``.</span>
+<span class="sd">    Values equal to the declared defaults do not produce parameter warnings,</span>
+<span class="sd">    whether passed explicitly or omitted by the caller of ``get_record``.</span>
+<span class="sd">    Replacement names in the table identify getters for retrieving the data;</span>
+<span class="sd">    they do not mean those getters accept the ignored parameters.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">given</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">unset</span><span class="p">,</span> <span class="n">replacement</span> <span class="o">=</span> <span class="n">_DEFUNCT_RECORD_OPTIONS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">unset</span><span class="p">:</span>
+            <span class="n">warn_deprecated</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"`nwis.get_record`'s `</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">` argument"</span><span class="p">,</span>
+                <span class="n">replacement</span><span class="o">=</span><span class="n">replacement</span><span class="p">,</span>
+                <span class="n">removal</span><span class="o">=</span><span class="n">_NWIS_REMOVAL_DATE</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">"It is ignored, and has been since the service that read "</span>
+                    <span class="s2">"it was retired."</span>
+                <span class="p">),</span>
+                <span class="c1"># _warn_defunct_record_options -&gt; get_record -&gt; @_deprecated</span>
+                <span class="c1"># wrapper -&gt; the caller's own line.</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="get_record">
 <a class="viewcode-back" href="../../reference/nwis.html#dataretrieval.nwis.get_record">[docs]</a>
 <span class="nd">@_deprecated</span>
@@ -1071,12 +1122,25 @@
 <span class="sd">        If False, return a dataframe with a single-level index (datetime).</span>
 <span class="sd">        Default is True.</span>
 <span class="sd">    wide_format : bool, optional</span>
-<span class="sd">        If True, return data in wide format, with multiple samples per row and</span>
-<span class="sd">        one row per time. Default is True.</span>
+<span class="sd">        (defunct) Previously shaped output from the retired 'qwdata' service.</span>
+<span class="sd">        ``get_record`` ignores this parameter; passing ``False`` emits a</span>
+<span class="sd">        ``DeprecationWarning``.</span>
+<span class="sd">        To retrieve sample data, use ``waterdata.get_samples``,</span>
+<span class="sd">        which returns one row per result and has no ``wide_format`` parameter.</span>
 <span class="sd">    datetime_index : bool, optional</span>
-<span class="sd">        If True, create a datetime index. Default is True.</span>
+<span class="sd">        (defunct) Previously shaped output from the retired 'qwdata' and</span>
+<span class="sd">        'gwlevels' services.</span>
+<span class="sd">        ``get_record`` ignores this parameter; passing ``False`` emits a</span>
+<span class="sd">        ``DeprecationWarning``.</span>
+<span class="sd">        To retrieve time-series data, use ``waterdata.get_continuous`` or</span>
+<span class="sd">        ``waterdata.get_daily``, which return ``time`` as a column and have</span>
+<span class="sd">        no ``datetime_index`` parameter.</span>
 <span class="sd">    state: string, optional, default is None</span>
-<span class="sd">        State full name, abbreviation, or id.</span>
+<span class="sd">        (defunct) Previously selected sites for the retired 'water_use' service.</span>
+<span class="sd">        ``get_record`` ignores this parameter; passing a value other than</span>
+<span class="sd">        ``None`` emits a ``DeprecationWarning``.</span>
+<span class="sd">        To retrieve water-use data by state, use ``nwdc.get_wateruse(state=...)``.</span>
+<span class="sd">        Its ``state`` parameter is supported and filters the query.</span>
 <span class="sd">    service: string, default is 'iv'</span>
 <span class="sd">        - 'iv' : instantaneous data</span>
 <span class="sd">        - 'dv' : daily mean data</span>
@@ -1153,6 +1217,10 @@
             <span class="s2">"New work should use the dataretrieval.waterdata getters instead; "</span>
             <span class="s2">"NWIS is deprecated."</span>
         <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">_warn_defunct_record_options</span><span class="p">(</span>
+        <span class="n">wide_format</span><span class="o">=</span><span class="n">wide_format</span><span class="p">,</span> <span class="n">datetime_index</span><span class="o">=</span><span class="n">datetime_index</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">service</span> <span class="o">==</span> <span class="s2">"iv"</span><span class="p">:</span>
@@ -1250,15 +1318,13 @@
     <span class="n">record_df</span><span class="p">[</span><span class="s2">"qualifiers"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">record_df</span><span class="p">[</span><span class="s2">"qualifiers"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"[]"</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"'"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">record_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">record_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
         <span class="n">columns</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">"value"</span><span class="p">:</span> <span class="n">col_name</span><span class="p">,</span>
             <span class="s2">"dateTime"</span><span class="p">:</span> <span class="s2">"datetime"</span><span class="p">,</span>
             <span class="s2">"qualifiers"</span><span class="p">:</span> <span class="n">col_name</span> <span class="o">+</span> <span class="s2">"_cd"</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">record_df</span></div>
+        <span class="p">}</span>
+    <span class="p">)</span></div>
 
 
 

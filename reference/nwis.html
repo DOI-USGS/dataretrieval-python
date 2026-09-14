@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g0d345a733 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=831df822"></script>
+      <script src="../_static/documentation_options.js?v=fdb2db13"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -68,13 +68,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._build_column_name"><code class="docutils literal notranslate"><span class="pre">_build_column_name()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._deprecated"><code class="docutils literal notranslate"><span class="pre">_deprecated()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._get_json_values"><code class="docutils literal notranslate"><span class="pre">_get_json_values()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._localize_datetime_index"><code class="docutils literal notranslate"><span class="pre">_localize_datetime_index()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._localized_datetime_index"><code class="docutils literal notranslate"><span class="pre">_localized_datetime_index()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_json_or_raise"><code class="docutils literal notranslate"><span class="pre">_parse_json_or_raise()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_parameter_record"><code class="docutils literal notranslate"><span class="pre">_parse_parameter_record()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._parse_site_block"><code class="docutils literal notranslate"><span class="pre">_parse_site_block()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_json"><code class="docutils literal notranslate"><span class="pre">_read_json()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._read_rdb"><code class="docutils literal notranslate"><span class="pre">_read_rdb()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._site_block_boundaries"><code class="docutils literal notranslate"><span class="pre">_site_block_boundaries()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._warn_defunct_record_options"><code class="docutils literal notranslate"><span class="pre">_warn_defunct_record_options()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis._warn_deprecated"><code class="docutils literal notranslate"><span class="pre">_warn_deprecated()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.format_response"><code class="docutils literal notranslate"><span class="pre">format_response()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.nwis.get_discharge_measurements"><code class="docutils literal notranslate"><span class="pre">get_discharge_measurements()</span></code></a></li>
@@ -243,8 +244,8 @@ them. Note that <code class="docutils literal notranslate"><span class="pre">mul
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dataretrieval.nwis._localize_datetime_index">
-<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_localize_datetime_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_localize_datetime_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._localize_datetime_index" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="dataretrieval.nwis._localized_datetime_index">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_localized_datetime_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Index</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Index</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_localized_datetime_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._localized_datetime_index" title="Link to this definition"></a></dt>
 <dd><p>Localize a naive datetime index (or multi-index level) to UTC.</p>
 </dd></dl>
 
@@ -297,6 +298,17 @@ index, multi-site MultiIndex, optional GeoDataFrame).</p>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_site_block_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_site_block_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._site_block_boundaries" title="Link to this definition"></a></dt>
 <dd><p>Return indices where the site number changes, with 0 and len added at the ends.</p>
 <p>For example, given <code class="docutils literal notranslate"><span class="pre">['A',</span> <span class="pre">'A',</span> <span class="pre">'B']</span></code> returns <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2,</span> <span class="pre">3]</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dataretrieval.nwis._warn_defunct_record_options">
+<span class="sig-prename descclassname"><span class="pre">dataretrieval.nwis.</span></span><span class="sig-name descname"><span class="pre">_warn_defunct_record_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">given</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/dataretrieval/nwis.html#_warn_defunct_record_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.nwis._warn_defunct_record_options" title="Link to this definition"></a></dt>
+<dd><p>Warn when an ignored <code class="docutils literal notranslate"><span class="pre">get_record</span></code> parameter differs from its default.</p>
+<p><code class="docutils literal notranslate"><span class="pre">given</span></code> must contain only names from <code class="docutils literal notranslate"><span class="pre">_DEFUNCT_RECORD_OPTIONS</span></code>.
+Values equal to the declared defaults do not produce parameter warnings,
+whether passed explicitly or omitted by the caller of <code class="docutils literal notranslate"><span class="pre">get_record</span></code>.
+Replacement names in the table identify getters for retrieving the data;
+they do not mean those getters accept the ignored parameters.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -612,10 +624,23 @@ returned.</p>
 <li><p><strong>end</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – Ending date of record (YYYY-MM-DD).</p></li>
 <li><p><strong>multi_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, return a dataframe with a single-level index (datetime).
 Default is True.</p></li>
-<li><p><strong>wide_format</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return data in wide format, with multiple samples per row and
-one row per time. Default is True.</p></li>
-<li><p><strong>datetime_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, create a datetime index. Default is True.</p></li>
-<li><p><strong>state</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – State full name, abbreviation, or id.</p></li>
+<li><p><strong>wide_format</strong> (<em>bool</em><em>, </em><em>optional</em>) – (defunct) Previously shaped output from the retired ‘qwdata’ service.
+<code class="docutils literal notranslate"><span class="pre">get_record</span></code> ignores this parameter; passing <code class="docutils literal notranslate"><span class="pre">False</span></code> emits a
+<code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>.
+To retrieve sample data, use <code class="docutils literal notranslate"><span class="pre">waterdata.get_samples</span></code>,
+which returns one row per result and has no <code class="docutils literal notranslate"><span class="pre">wide_format</span></code> parameter.</p></li>
+<li><p><strong>datetime_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – (defunct) Previously shaped output from the retired ‘qwdata’ and
+‘gwlevels’ services.
+<code class="docutils literal notranslate"><span class="pre">get_record</span></code> ignores this parameter; passing <code class="docutils literal notranslate"><span class="pre">False</span></code> emits a
+<code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>.
+To retrieve time-series data, use <code class="docutils literal notranslate"><span class="pre">waterdata.get_continuous</span></code> or
+<code class="docutils literal notranslate"><span class="pre">waterdata.get_daily</span></code>, which return <code class="docutils literal notranslate"><span class="pre">time</span></code> as a column and have
+no <code class="docutils literal notranslate"><span class="pre">datetime_index</span></code> parameter.</p></li>
+<li><p><strong>state</strong> (<em>string</em><em>, </em><em>optional</em><em>, </em><em>default is None</em>) – (defunct) Previously selected sites for the retired ‘water_use’ service.
+<code class="docutils literal notranslate"><span class="pre">get_record</span></code> ignores this parameter; passing a value other than
+<code class="docutils literal notranslate"><span class="pre">None</span></code> emits a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>.
+To retrieve water-use data by state, use <code class="docutils literal notranslate"><span class="pre">nwdc.get_wateruse(state=...)</span></code>.
+Its <code class="docutils literal notranslate"><span class="pre">state</span></code> parameter is supported and filters the query.</p></li>
 <li><p><strong>service</strong> (<em>string</em><em>, </em><em>default is 'iv'</em>) – <ul>
 <li><p>‘iv’ : instantaneous data</p></li>
 <li><p>’dv’ : daily mean data</p></li>
