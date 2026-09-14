@@ -37,7 +37,6 @@ Examples
 
 from __future__ import annotations
 
-import io
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any, ClassVar
@@ -46,6 +45,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._csv import read_code_csv
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import render_options, require_exactly_one
@@ -98,10 +98,6 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 #: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the
 #: general setting outranks a module's default rather than the reverse.
 DEFAULT_CONCURRENT_REQUESTS = 4
-
-# Page responses hold the HUC12 identifier in this column; it must stay a
-# string so leading zeros (e.g. "010900020502") are preserved through parsing.
-_HUC12_COLUMN = "huc12_id"
 
 
 def get_wateruse(
@@ -389,9 +385,13 @@ def _fan_out(
 
 
 def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
-    """Parse one CSV page; ``huc12_id`` stays a string to keep leading zeros."""
+    """Parse one CSV page through the shared code-preserving reader.
+
+    ``huc12_id`` is a code column by name, so its leading zeros survive
+    (``"010900020502"``).
+    """
     try:
-        return pd.read_csv(io.BytesIO(response.content), dtype={_HUC12_COLUMN: str})
+        return read_code_csv(response.text)
     except pd.errors.EmptyDataError as exc:
         # NWDC normally signals "no data" with a 400 (handled above) or rows of
         # zeros, never an empty body — but keep the typed-error contract if it

@@ -23,16 +23,23 @@ from io import StringIO
 
 import pandas as pd
 
+from dataretrieval._csv import code_columns
+
 
 def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     """Parse an RDB text response into a ``pandas.DataFrame``.
+
+    Every column whose name marks it as a code is read as ``str`` so its
+    leading zeros survive -- ``huc_cd`` ``02060005`` rather than ``2060005``.
+    See :func:`dataretrieval._csv.code_columns` for which names those are.
 
     Parameters
     ----------
     text : str
         The RDB text response from a USGS web service.
     dtypes : dict[str, type] or None, optional
-        Column-name to dtype hints, forwarded to ``pandas.read_csv``. Unknown
+        Column-name to dtype hints, forwarded to ``pandas.read_csv`` and
+        applied over the code columns detected from the header. Unknown
         column names are ignored, so callers can pass a dict of every
         column they might be interested in.
 
@@ -78,7 +85,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
         skiprows=header_idx + 2,  # +1 for header, +1 for the format-spec row
         names=fields,
         na_values="NaN",
-        dtype=dtypes,
+        dtype=code_columns(fields) | (dtypes or {}),
     )
 
 

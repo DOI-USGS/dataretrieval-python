@@ -61,12 +61,14 @@ _WATERSERVICES_MAJOR_FILTERS = ("sites", "stateCd", "bBox", "huc", "countyCd")
 # NAD83
 _CRS = "EPSG:4269"
 
+# Hints for columns whose names do not mark them as codes: ``site_no`` is a
+# zero-padded identifier, and the decimal coordinates are floats. Code columns
+# (``parm_cd``, ``huc_cd``, ``state_cd``, ...) are detected from the RDB header
+# by ``rdb.read_rdb``.
 _NWIS_RDB_DTYPES = {
     "site_no": str,
     "dec_long_va": float,
     "dec_lat_va": float,
-    "parm_cd": str,
-    "parameter_cd": str,
 }
 
 

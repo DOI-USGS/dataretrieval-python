@@ -41,6 +41,27 @@ def test_read_rdb_dtype_hints_applied():
     assert df["DEP"].dtype == float
 
 
+def test_read_rdb_detects_code_columns():
+    """Code columns are read as text from the header, without a caller hint.
+
+    ``huc_cd`` is the case that motivated this: NWIS sends ``02060005`` and
+    pandas inferred ``2060005``. ``_cd`` is the RDB spelling of "code".
+    """
+    rdb = (
+        "# a comment\n"
+        "huc_cd\tstate_cd\tcounty_cd\tdec_lat_va\n"
+        "8s\t2s\t3s\t10n\n"
+        "02060005\t09\t025\t38.99\n"
+    )
+
+    df = read_rdb(rdb)
+
+    assert df["huc_cd"].iloc[0] == "02060005"
+    assert df["state_cd"].iloc[0] == "09"
+    assert df["county_cd"].iloc[0] == "025"
+    assert df["dec_lat_va"].iloc[0] == 38.99
+
+
 def test_read_rdb_empty_when_only_comments():
     """All-comments input is a legitimate "no data" response, not an error."""
     df = read_rdb("# only a comment\n# and another\n")
