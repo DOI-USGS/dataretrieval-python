@@ -401,6 +401,34 @@ def test_next_req_url_stops_when_no_features():
     assert _next_req_url(resp, body=body) is None
 
 
+def test_merge_response_empties_the_body_but_keeps_the_rest():
+    """``_drop_body`` writes httpx's private ``_content`` slot, so a rename
+    upstream would silently stop freeing anything -- ``.content`` would keep
+    returning real bytes and only the heap would regress. Pin both halves:
+    the aggregate carries no body, and status/headers/URL still read."""
+    from dataretrieval.combining import _merge_response
+
+    page = httpx.Response(200, headers={"x-page": "1"}, content=b'{"features": []}')
+    page._request = httpx.Request("GET", "https://example.com/items?page=1")
+    assert page.text  # an adapter that parses via .text caches the decoded body
+
+    merged = _merge_response(
+        page,
+        headers_from=page,
+        elapsed=datetime.timedelta(seconds=2),
+        url="https://example.com/items",
+    )
+
+    assert merged.content == b""
+    # ``.text`` is cached in its own slot and rides along on the shallow copy,
+    # so clearing only ``_content`` would leave the two accessors disagreeing.
+    assert merged.text == ""
+    assert page.content == b'{"features": []}'  # the base is never mutated
+    assert merged.status_code == 200
+    assert merged.headers["x-page"] == "1"
+    assert str(merged.url) == "https://example.com/items"
+
+
 def test_walk_pages_does_not_mutate_initial_response():
     """The aggregated response returned from ``_walk_pages`` is built
     via ``_merge_response``, which returns a new copy.
@@ -1391,6 +1419,224 @@ def test_credential_shaped_queryables_are_rejected(name):
 )
 def test_real_queryables_still_pass_through(name):
     assert _flatten_queryables({"queryables": {name: "v"}}) == {name: "v"}
+
+
+# ---------------------------------------------------------------------------
+# Feature-frame fast paths (vectorized points, flat properties)
+# ---------------------------------------------------------------------------
+
+_POINT_FEATURES = [
+    {
+        "id": "f-1",
+        "properties": {"id": "wire-1", "value": "1", "site": "USGS-A"},
+        "geometry": {"type": "Point", "coordinates": [-77.1, 38.9]},
+    },
+    {
+        "id": "f-2",
+        "properties": {"id": "wire-2", "value": "2", "site": "USGS-B"},
+        "geometry": {"type": "Point", "coordinates": [-80.0, 40.0]},
+    },
+    {
+        # No geometry at all (NGWMN observation shape).
+        "id": "f-3",
+        "properties": {"id": "wire-3", "value": "3", "site": "USGS-C"},
+    },
+]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_fast_path_matches_from_features():
+    """The vectorized point build is a pure speedup: identical frame,
+    column order, CRS, and missing-geometry handling as the
+    ``from_features`` fallback — including the feature-level ``id``
+    overwriting a properties ``id`` column."""
+    fast = _shaping_module._spatial_feature_frame(_POINT_FEATURES)
+    fallback = _shaping_module._geo_feature_frame(_POINT_FEATURES)
+    fallback["id"] = [feature["id"] for feature in _POINT_FEATURES]
+    fallback = fallback[["id", "geometry", "value", "site"]]
+
+    pd.testing.assert_frame_equal(fast, fallback)
+    assert fast.crs == "EPSG:4326"
+    assert list(fast["id"]) == ["f-1", "f-2", "f-3"]
+    assert fast.geometry.isna().tolist() == [False, False, True]
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_non_point_geometry_uses_from_features():
+    """A non-point geometry anywhere disables the vectorized build; the
+    result still carries the real geometry via ``from_features``."""
+    features = _POINT_FEATURES[:1] + [
+        {
+            "id": "f-poly",
+            "properties": {"value": "4"},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]],
+            },
+        }
+    ]
+    with mock.patch.object(pd, "DataFrame", side_effect=AssertionError):
+        assert _shaping_module._point_feature_frame(features) is None
+
+    df = _shaping_module._spatial_feature_frame(features)
+    fallback = _shaping_module._geo_feature_frame(features)
+    fallback["id"] = [feature["id"] for feature in features]
+    pd.testing.assert_frame_equal(df, fallback[df.columns])
+    assert df.geometry.iloc[1].geom_type == "Polygon"
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+@pytest.mark.parametrize(
+    "coordinates",
+    [
+        pytest.param([1.0, 2.0, 3.0], id="3d"),
+        pytest.param([1.0], id="single"),
+        pytest.param({"x": 1.0, "y": 2.0}, id="mapping"),
+        # A pair of non-scalars passes the shape check and is refused by the
+        # array build instead, which is the only param reaching that branch.
+        pytest.param([[1.0, 2.0], [3.0, 4.0]], id="ragged"),
+    ],
+)
+def test_point_geometries_rejects_malformed_coordinates(coordinates):
+    """Coordinates that are not a usable 2-element pair disable the fast path
+    rather than building a wrong geometry."""
+    features = [
+        {
+            "id": "f",
+            "properties": {},
+            "geometry": {"type": "Point", "coordinates": coordinates},
+        }
+    ]
+    assert _shaping_module._point_geometries(features) is None
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+@pytest.mark.parametrize(
+    "properties",
+    [
+        [{"nested": {"x": {"y": 1}}}, {"nested": {"x": "z"}}],
+        [{"nested": None}, {"nested": "scalar"}, {}, {"nested": {"x": "y"}}],
+        [{"nested": [1, 2]}, {"other": 3}, {"nested": {"x": "y"}}],
+    ],
+    ids=["nested", "mixed-sparse", "list-and-dict"],
+)
+def test_spatial_nested_properties_match_the_fallback(properties):
+    features = [
+        {
+            "id": str(index),
+            "properties": values,
+            "geometry": {"type": "Point", "coordinates": [index, 2]},
+        }
+        for index, values in enumerate(properties)
+    ]
+    fallback = _shaping_module._geo_feature_frame(features)
+    with (
+        mock.patch.object(
+            _shaping_module, "_holds_nested_value", side_effect=AssertionError
+        ),
+        mock.patch.object(pd, "json_normalize", side_effect=AssertionError),
+    ):
+        fast = _shaping_module._point_feature_frame(features)
+        all_points = _shaping_module._spatial_feature_frame(features)
+    assert fast is not None
+    pd.testing.assert_frame_equal(fast[fallback.columns], fallback)
+
+    mixed = features + [
+        {
+            "id": "line",
+            "properties": properties[-1],
+            "geometry": {"type": "LineString", "coordinates": [[0, 0], [1, 1]]},
+        }
+    ]
+    with_a_line = _shaping_module._spatial_feature_frame(mixed)
+    assert list(all_points.columns) == list(with_a_line.columns)
+    assert "nested" in all_points.columns and "nested_x" not in all_points.columns
+    assert list(pd.concat([all_points, with_a_line]).columns) == list(
+        all_points.columns
+    )
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+@pytest.mark.parametrize("coordinates", [[None, None], [None, 2], [1, None]])
+def test_spatial_null_coordinates_match_from_features(coordinates):
+    features = [
+        {
+            "properties": {"value": 1},
+            "geometry": {"type": "Point", "coordinates": coordinates},
+        }
+    ]
+    assert _shaping_module._point_feature_frame(features) is None
+    if coordinates == [None, None]:
+        fallback = _shaping_module._geo_feature_frame(features)
+        result = _shaping_module._spatial_feature_frame(features)
+        pd.testing.assert_frame_equal(result[fallback.columns], fallback)
+        assert result.geometry.iloc[0].wkt == "POINT EMPTY"
+    else:
+        with pytest.raises(TypeError) as expected:
+            _shaping_module._geo_feature_frame(features)
+        with pytest.raises(type(expected.value)) as actual:
+            _shaping_module._spatial_feature_frame(features)
+        assert str(actual.value) == str(expected.value)
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+@pytest.mark.parametrize("properties", [{}, None, {"nested": {"x": 1}}])
+def test_spatial_all_missing_geometry_skips_point_construction(properties):
+    features = [
+        {"properties": properties},
+        {"properties": properties, "geometry": None},
+        {"properties": properties, "geometry": {}},
+    ]
+    fallback = _shaping_module._geo_feature_frame(features)
+    with mock.patch.object(
+        _shaping_module.gpd, "points_from_xy", side_effect=AssertionError
+    ):
+        result = _shaping_module._point_feature_frame(features)
+    assert result is not None
+    pd.testing.assert_frame_equal(result[fallback.columns], fallback)
+    assert result.geometry.isna().all()
+    assert result.crs == "EPSG:4326"
+
+
+@pytest.mark.skipif(not _shaping_module.GEOPANDAS, reason="requires geopandas")
+def test_spatial_geometry_property_collision_preserves_fallback():
+    features = [
+        {
+            "properties": {"geometry": None, "value": 1},
+            "geometry": {"type": "Point", "coordinates": [1, 2]},
+        }
+    ]
+    assert _shaping_module._point_feature_frame(features) is None
+    fallback = _shaping_module._geo_feature_frame(features)
+    result = _shaping_module._spatial_feature_frame(features)
+    pd.testing.assert_frame_equal(result[fallback.columns], fallback)
+    assert result.geometry.iloc[0] is None
+
+
+def test_properties_frame_flat_matches_normalize():
+    """Flat properties take the plain-DataFrame path and match
+    ``json_normalize`` exactly."""
+    properties = [
+        {"a": "1", "b": None},
+        {"a": "2", "b": "x"},
+    ]
+    fast = _shaping_module._properties_frame([{"properties": p} for p in properties])
+    pd.testing.assert_frame_equal(fast, pd.json_normalize(properties, sep="_"))
+
+
+def test_properties_frame_nested_still_normalizes():
+    """One nested value anywhere routes the whole page through
+    ``json_normalize`` so no row keeps a raw dict."""
+    properties = [
+        {"a": "1", "nested": None},
+        {"a": "2", "nested": "scalar"},
+        {"a": "3"},
+        {"a": "4", "nested": {"x": "y", "deeper": {"z": 1}}},
+    ]
+    df = _shaping_module._properties_frame([{"properties": p} for p in properties])
+    pd.testing.assert_frame_equal(df, pd.json_normalize(properties, sep="_"))
+    assert "nested_x" in df.columns
+    assert not any(isinstance(v, dict) for v in df.to_numpy().ravel())
 
 
 class TestWireIdSwitch:

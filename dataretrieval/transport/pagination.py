@@ -18,6 +18,7 @@ from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
 from dataretrieval.combining import (
     _QUOTA_HEADER,
+    _drop_body,
     _merge_response,
     _safe_elapsed,
 )
@@ -79,6 +80,22 @@ def paginated_failure_message(
     )
 
 
+def _finish_page(
+    page: httpx.Response, frame: pd.DataFrame, *, release_body: bool
+) -> None:
+    """Report a parsed page and release its body when transport owns it."""
+    note_progress()
+    reporter = _progress.current()
+    if reporter is not None:
+        reporter.set_rate_remaining(
+            page.headers.get(_QUOTA_HEADER),
+            limit=page.headers.get("x-ratelimit-limit"),
+        )
+        reporter.add_page(rows=len(frame))
+    if release_body:
+        _drop_body(page)
+
+
 async def paginate(
     initial_req: httpx.Request,
     *,
@@ -96,17 +113,6 @@ async def paginate(
     metadata aggregation.
     """
     logger.debug("Requesting: %s", initial_req.url)
-    reporter = _progress.current()
-
-    def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
-        note_progress()  # a walk still receiving pages is not stalled
-        if reporter is not None:
-            reporter.set_rate_remaining(
-                page.headers.get(_QUOTA_HEADER),
-                limit=page.headers.get("x-ratelimit-limit"),
-            )
-            reporter.add_page(rows=len(frame))
-
     async with _client_for(client) as session:
         response = await session.send(initial_req)
         raise_for_status(response)
@@ -124,7 +130,7 @@ async def paginate(
         frames = [frame]
         nrows = len(frame)
         seen: set[Any] = set()
-        report_page(response, frame)
+        _finish_page(response, frame, release_body=client is None)
 
         while (
             cursor is not None
@@ -139,7 +145,7 @@ async def paginate(
                 frames.append(frame)
                 nrows += len(frame)
                 total_elapsed += _safe_elapsed(response)
-                report_page(response, frame)
+                _finish_page(response, frame, release_body=client is None)
             except Exception as exc:
                 logger.warning(
                     "Request failed at cursor %r. Data download interrupted.", cursor

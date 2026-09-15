@@ -19,6 +19,7 @@ REMOVALS: dict[str, str] = {
     "waterdata.get_cql(service=)": "2027-08-09",
     "wateruse": "2027-08-11",
     "ogc.interruptions": "2027-08-25",
+    "utils.format_datetime": "2027-09-15",
 }
 
 

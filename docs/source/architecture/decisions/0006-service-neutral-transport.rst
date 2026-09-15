@@ -53,6 +53,22 @@ through transport:
 - ``dataretrieval.combining`` -- pandas frame and response assembly. Transport
   returns results *through* it.
 
+An aggregated response describes the call, not a page:
+its status, headers, URL, and elapsed are meaningful, and its body is empty.
+A page body belongs to one request, not the query's combined data;
+retaining page bodies also increases memory use during a fan-out.
+The aggregate is always a copy with its body emptied,
+regardless of who owns the HTTP client.
+
+Page-body lifetime depends on client ownership.
+When no client is explicitly supplied (``client is None``),
+transport releases each page body after parsing and progress reporting.
+This includes clients obtained from the ambient fan-out context,
+which are internally owned.
+An adapter needing bytes must consume them in its page parser.
+When a caller explicitly supplies a client,
+transport leaves its per-page response bodies unchanged.
+
 Transport depends only on stable package leaves and third-party infrastructure.
 It must not import OGC modules or service adapters. Service adapters inject
 request construction, response parsing, cursor extraction, and API-specific
@@ -132,6 +148,8 @@ Consequences
   advice to obtain one is not printed for a service that cannot use it.
 - The transport package is internal infrastructure, not a new public API
   contract.
+- Reading ``.content`` or ``.text`` off an aggregated response returns empty.
+  Callers wanting the payload use the returned frame.
 - Keeping presentation and frame assembly out means transport is roughly 570
   lines across five modules, each recognizably HTTP execution policy. Retry is
   the one complex module, because two independent bounds are what make retry
@@ -150,14 +168,15 @@ which failures are re-sent, cancellation, no-partial fan-out behavior, and
 credential host scoping. The exemptions above are covered by the liveness and
 retry tests over excluded waits and the first-attempt case. Next-page link
 validation is covered by the shared link-policy tests over foreign hosts and
-embedded userinfo.
+embedded userinfo. ``test_merge_response_empties_the_body_but_keeps_the_rest``
+pins the empty-body contract and the metadata that must survive it.
 
 Notes
 -----
 
-The waiting-time, next-page-link, and credentials-leaf clauses were added
-after the original decision, consolidating under ADR 0000 the rules the code
-was stating in prose -- the budget exemptions were argued in five places
+The waiting-time, next-page-link, credentials-leaf, and empty-body clauses were
+added after the original decision, consolidating under ADR 0000 the rules the
+code was stating in prose -- the budget exemptions were argued in five places
 across ``transport/retry.py``, ``transport/liveness.py``, and
 ``transport/fanout.py``.
 
@@ -165,3 +184,6 @@ One sentence of the original Decision was also corrected rather than added to:
 it scoped automatic retry to "gateway 5xx", which was never true of a fanned-out
 call -- those re-send any 5xx, and only the single-shot adapters are limited to
 the gateway statuses. The decision is unchanged; the sentence now describes it.
+
+The page-body lifetime clause was corrected to distinguish internally owned
+clients from explicitly caller-supplied clients.

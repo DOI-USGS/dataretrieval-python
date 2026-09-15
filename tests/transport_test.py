@@ -14,6 +14,7 @@ import pytest
 
 import dataretrieval.exceptions as exceptions
 import dataretrieval.transport.liveness as liveness
+import dataretrieval.transport.pagination as pagination
 import dataretrieval.transport.retry as retry
 from dataretrieval._querying import _raise_for_status
 from dataretrieval.exceptions import (
@@ -65,6 +66,76 @@ def test_paginate_follows_cursor_and_aggregates_response() -> None:
     assert frame["value"].tolist() == [str(first.url), str(second.url)]
     assert response.url == first.url
     assert response.headers["x-ratelimit-remaining"] == "8"
+
+
+@pytest.mark.parametrize("client_source", ["injected", "fanout", "new"])
+def test_paginate_releases_only_owned_page_bodies(client_source) -> None:
+    pages: list[httpx.Response] = []
+    payloads = {
+        "/1": {"value": 1, "next": "https://example.test/2"},
+        "/2": {"value": 2, "next": None},
+    }
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=payloads[request.url.path])
+
+    async def retain(response: httpx.Response) -> None:
+        if pages:
+            assert bool(pages[-1].content) is (client_source == "injected")
+            assert bool(pages[-1].text) is (client_source == "injected")
+        await response.aread()
+        assert response.text
+        pages.append(response)
+
+    def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+        body = response.json()
+        return pd.DataFrame({"value": [body["value"]]}), body["next"]
+
+    async def follow(cursor: str, session: httpx.AsyncClient) -> httpx.Response:
+        return await session.get(cursor)
+
+    async def run() -> tuple[pd.DataFrame, httpx.Response]:
+        session = httpx.AsyncClient(
+            transport=httpx.MockTransport(respond),
+            event_hooks={"response": [retain]},
+        )
+        try:
+            with (
+                mock.patch.object(
+                    pagination,
+                    "active_client",
+                    return_value=session if client_source == "fanout" else None,
+                ),
+                mock.patch.object(
+                    pagination, "open_async_client", return_value=session
+                ),
+            ):
+                result = await paginate(
+                    httpx.Request("GET", "https://example.test/1"),
+                    parse_response=parse,
+                    follow_up=follow,
+                    raise_for_status=_raise_for_status,
+                    client=session if client_source == "injected" else None,
+                )
+            assert session.is_closed is (client_source == "new")
+            return result
+        finally:
+            await session.aclose()
+
+    frame, aggregate = asyncio.run(run())
+
+    assert frame["value"].tolist() == [1, 2]
+    assert len(pages) == 2
+    assert aggregate.content == b""
+    assert aggregate.text == ""
+    assert aggregate.url == pages[0].url
+    for page in pages:
+        if client_source == "injected":
+            assert page.json() == payloads[page.url.path]
+            assert page.text
+        else:
+            assert page.content == b""
+            assert page.text == ""
 
 
 def test_paginate_stops_on_repeated_cursor_and_respects_row_cap() -> None:
