@@ -265,18 +265,19 @@
      ],
      "type": "Point"
     },
-    "id": "1f6dacef-9405-4e72-a755-6d3ff6121051",
+    "id": "c7ab17e0-14cb-4998-b532-95353f75e6ee",
     "properties": {
      "approval_status": "Approved",
-     "last_modified": "2025-08-28T11:10:36.529563+00:00",
+     "last_modified": "2026-01-08T21:21:09.233391+00:00",
+     "method_category": "UNKWN",
      "monitoring_location_id": "USGS-06904500",
      "parameter_code": "00065",
      "qualifier": null,
      "statistic_id": "00011",
-     "time": "2025-01-01T00:00:00+00:00",
+     "time": "2025-09-22T16:00:00+00:00",
      "time_series_id": "b36569a0067443ac9425e850a3ac7baa",
      "unit_of_measure": "ft",
-     "value": "1.76"
+     "value": "0.39"
     },
     "type": "Feature"
    },
@@ -288,18 +289,19 @@
      ],
      "type": "Point"
     },
-    "id": "0be08516-f3a0-4a60-b3bf-41fba6b0a3ea",
+    "id": "f76707d5-2a10-4de0-99c3-65b63b4a92db",
     "properties": {
      "approval_status": "Approved",
-     "last_modified": "2025-08-28T11:10:36.529563+00:00",
+     "last_modified": "2026-01-08T21:21:09.233391+00:00",
+     "method_category": "UNKWN",
      "monitoring_location_id": "USGS-06904500",
      "parameter_code": "00065",
      "qualifier": null,
      "statistic_id": "00011",
-     "time": "2025-01-01T00:15:00+00:00",
+     "time": "2025-09-22T16:15:00+00:00",
      "time_series_id": "b36569a0067443ac9425e850a3ac7baa",
      "unit_of_measure": "ft",
-     "value": "1.76"
+     "value": "0.39"
     },
     "type": "Feature"
    }

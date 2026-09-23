@@ -267,6 +267,7 @@ def get_continuous(
     approval_status: str | Iterable[str] | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
+    method_category: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     time: str | Iterable[str] | None = None,
@@ -316,7 +317,8 @@ def get_continuous(
         The columns to return from the query.
         Available options are: geometry, id, time_series_id,
         monitoring_location_id, parameter_code, statistic_id, time, value,
-        unit_of_measure, approval_status, qualifier, last_modified
+        unit_of_measure, approval_status, qualifier, method_category,
+        last_modified
     time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series, corresponding to
         the id field in the time-series-metadata endpoint.
@@ -345,6 +347,12 @@ def get_continuous(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+    method_category : string or iterable of strings, optional
+        The RLMS method category code for the method in effect over the
+        observation's interval: "STNRD" (standardized, with known uncertainty
+        and full QA/QC), "LMTUS" (limited use: a modified or externally
+        sourced method), "EXPER" (experimental), or "UNKWN" (unknown).
+        Null for time series that have not been categorized.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.
