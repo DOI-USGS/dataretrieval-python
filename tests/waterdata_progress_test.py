@@ -44,7 +44,7 @@ def _run_walk_pages(*, geopd, req, client):
 
 # The Water Data host is the only one that accepts ``API_USGS_PAT``, and so the
 # only one where pointing the user at API-key registration is useful advice.
-_KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/"
+_KEYED_URL = "https://api.waterdata.usgs.gov/ogcapi/v1/"
 
 
 @pytest.fixture(autouse=True)

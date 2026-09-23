@@ -947,7 +947,7 @@ def get_stats_por(
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter.
@@ -1089,12 +1089,12 @@ def get_stats_date_range(
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter. A list of valid site type names is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "Well"
     parameter_code : string or iterable of strings, optional
         A 5-digit code identifying the constituent measured and the units of

@@ -13,6 +13,8 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
+import dataretrieval
+from dataretrieval import configuration
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -24,6 +26,7 @@ from dataretrieval.ogc.requests import (
     _construct_cql_request as _construct_cql_request_explicit,
 )
 from dataretrieval.waterdata import (
+    WaterdataConfiguration,
     get_channel,
     get_combined_metadata,
     get_continuous,
@@ -49,7 +52,11 @@ from dataretrieval.waterdata.utils import (
     _get_args,
 )
 
-_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
+_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v1"
+#: The version the deprecated time-series-metadata filters are served from.
+#: Spelled out rather than derived from ``_OGC_BASE``, so that it still names
+#: v0 once the default changes.
+_V0_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
 _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 
 #: Two real features per collection, captured from the live collection and trimmed.
@@ -489,7 +496,7 @@ def test_construct_cql_request_post_verbatim_body():
     assert req.method == "POST"
     assert req.headers["Content-Type"] == "application/query-cql-json"
     assert str(req.url).startswith(
-        "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
+        "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items"
     )
     # The body is sent through unchanged, not re-serialized.
     assert req.content.decode() == body
@@ -646,11 +653,11 @@ def _schema_url(collection, *, base=_OGC_BASE):
     )
 
 
-def _mock_items(httpx_mock, collection, body=None, **kwargs):
+def _mock_items(httpx_mock, collection, body=None, *, base=_OGC_BASE, **kwargs):
     """Serve ``collection``'s fixture for any ``/items`` request against it."""
     httpx_mock.add_response(
         method=None,
-        url=_items_url(collection),
+        url=_items_url(collection, base=base),
         json=_fixture(collection) if body is None else body,
         **kwargs,
     )
@@ -1167,6 +1174,68 @@ def test_get_time_series_metadata(httpx_mock):
     qs = _sent(httpx_mock, "time-series-metadata")[0]
     # bbox is a fixed 4-coord scalar param, comma-joined and never chunked.
     assert qs["bbox"] == ["-89.840355,42.853411,-88.818626,43.422598"]
+
+
+def test_time_series_metadata_goes_to_v1_without_an_advisory(httpx_mock):
+    _mock_items(httpx_mock, "time-series-metadata")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        get_time_series_metadata(
+            monitoring_location_id="USGS-05427718", begin="1990-01-01/.."
+        )
+
+    (sent,) = httpx_mock.get_requests()
+    assert str(sent.url).startswith(f"{_OGC_BASE}/collections/time-series-metadata")
+    assert "begin=1990-01-01" in str(sent.url)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "spelled"),
+    [
+        ({"begin_utc": "1990-01-01/.."}, "begin_utc"),
+        ({"end_utc": "../2020-01-01"}, "end_utc"),
+        ({"state": "WI"}, "state"),
+        ({"state_name": "Wisconsin"}, "state_name"),
+        ({"hydrologic_unit_code": "07090002"}, "hydrologic_unit_code"),
+        ({"properties": ["begin_utc", "id"]}, "begin_utc"),
+    ],
+)
+def test_time_series_metadata_v0_only_filters_warn_and_go_to_v0(
+    httpx_mock, kwargs, spelled
+):
+    """A call naming a field that v1 dropped, as a filter or in ``properties``,
+    goes to v0, and the warning uses the caller's spelling."""
+    _mock_items(httpx_mock, "time-series-metadata", base=_V0_OGC_BASE)
+
+    with pytest.warns(
+        DeprecationWarning,
+        match=rf"'{spelled}' argument.*on or after 2027-06-01.*sent to v0",
+    ):
+        get_time_series_metadata(monitoring_location_id="USGS-05427718", **kwargs)
+
+    (sent,) = httpx_mock.get_requests()
+    assert str(sent.url).startswith(f"{_V0_OGC_BASE}/collections/time-series-metadata")
+
+
+def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
+    """The getter sets v0 on the request, not in the configuration, so the
+    version the caller set still applies to every other call (ADR 0011)."""
+    _mock_items(httpx_mock, "time-series-metadata", base=_V0_OGC_BASE)
+    _mock_items(httpx_mock, "daily")
+
+    with dataretrieval.configure(WaterdataConfiguration(api_version="v1")):
+        with pytest.warns(DeprecationWarning):
+            get_time_series_metadata(
+                monitoring_location_id="USGS-05427718", begin_utc="1990-01-01/.."
+            )
+        # The caller's setting is unchanged.
+        get_daily(monitoring_location_id="USGS-05427718")
+        assert configuration.api_version(adapter="waterdata") == "v1"
+
+    legacy, other = (str(r.url) for r in httpx_mock.get_requests())
+    assert legacy.startswith(f"{_V0_OGC_BASE}/collections/time-series-metadata")
+    assert other.startswith(f"{_OGC_BASE}/collections/daily")
 
 
 def test_get_combined_metadata(httpx_mock):

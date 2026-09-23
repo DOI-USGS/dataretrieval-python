@@ -134,6 +134,12 @@ Settings
        a ``configure`` block: a file that redirected the library to
        another host would be a supply-chain hazard. See
        :ref:`configuration-redirect`.
+   * - ``api_version``
+     - the version the release targets
+     - *(none — code or file)*
+     - Which version of one service's API to request, as the segment of its
+       path (``"v1"``). Per adapter; Water Data reads it for its OGC
+       collections. See :ref:`configuration-api-version`.
 
 
 Where settings come from
@@ -279,8 +285,8 @@ Adapter                               Configuration                           Ac
 ====================================  ======================================  ========================================
 ``waterdata``                         ``waterdata.WaterdataConfiguration``    ``concurrency``, ``parallel_chunks``,
                                                                               ``retries``, ``stall_timeout``,
-                                                                              ``base_url``
-``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same five
+                                                                              ``base_url``, ``api_version``
+``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same, without ``api_version``
 ``nwdc``                              ``nwdc.NwdcConfiguration``              ``concurrency``, ``retries``,
                                                                               ``stall_timeout``, ``base_url``
 ``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpConfiguration`` and so on      ``retries``, ``stall_timeout``,
@@ -545,6 +551,50 @@ accepts it (:ref:`below <configuration-secret-store>`), so a redirected call
 goes out without it. That is deliberate: the host you redirected to is not the
 host you gave a credential to. If the mirror needs its own credential, it needs
 its own mechanism.
+
+
+.. _configuration-api-version:
+
+Pinning the Water Data API version
+----------------------------------
+
+The Water Data OGC getters request v1 of the Water Data APIs and shape
+responses for it. ``api_version`` sends an adapter's requests to another
+version, either within a ``configure`` block or, from the file, for every
+script that reads it:
+
+.. code-block:: python
+
+   with dataretrieval.configure(WaterdataConfiguration(api_version="v0")):
+       df, md = waterdata.get_time_series_metadata(
+           monitoring_location_id="USGS-05114000"
+       )
+
+.. code-block:: toml
+
+   [waterdata]
+   api_version = "v0"
+
+The value is the version segment of the service's path, ``"v1"`` or ``"v0"``,
+and it replaces only that segment. The Samples database, the statistics service
+and the STAC catalog are versioned separately and have no v1, so a pin leaves
+them unchanged. v0 stays online until June 2027, after which the service
+redirects every v0 request to v1.
+
+Under a pinned version, getters return that version's columns as the service
+sends them.
+v0 of ``time-series-metadata`` still has ``begin_utc``, ``end_utc``,
+``state_name`` and ``hydrologic_unit_code``, which v1 removed, and v0 of
+``field-measurements`` returns ``time`` as a datetime, where v1 returns a date
+(parsed to a tz-naive midnight timestamp).
+When a call to ``get_time_series_metadata`` names one of those four filters,
+the getter sends that one call to v0 and emits a ``DeprecationWarning``.
+It does not change your configuration,
+so every other getter still uses the version you set.
+
+Unlike ``base_url``, the file accepts ``api_version``,
+because a version cannot send a request to another host.
+The environment refuses it, as it refuses every per-adapter setting.
 
 
 .. _configuration-secret-store:

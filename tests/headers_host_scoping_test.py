@@ -27,7 +27,7 @@ class TestDefaultHeadersHostScoping:
 
     def test_key_included_for_waterdata_host(self):
         """The key is added when target URL matches api.waterdata.usgs.gov."""
-        url = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
+        url = "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items"
         headers = _default_headers(url)
         assert headers.get("X-Api-Key") == self.FAKE_TOKEN
 
@@ -51,7 +51,7 @@ class TestDefaultHeadersHostScoping:
 
     def test_key_excluded_for_lookalike_host(self):
         """The key is not sent to a typosquatting/lookalike domain."""
-        url = "https://api.waterdata.usgs.gov.evil.com/ogcapi/v0/daily/items"
+        url = "https://api.waterdata.usgs.gov.evil.com/ogcapi/v1/daily/items"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 
@@ -65,7 +65,7 @@ class TestDefaultHeadersHostScoping:
     ) -> None:
         """No key header at all when API_USGS_PAT is not set."""
         monkeypatch.delenv("API_USGS_PAT")
-        headers = _default_headers("https://api.waterdata.usgs.gov/ogcapi/v0/daily")
+        headers = _default_headers("https://api.waterdata.usgs.gov/ogcapi/v1/daily")
         assert "X-Api-Key" not in headers
 
     def test_non_auth_headers_always_present(self):
@@ -86,7 +86,7 @@ class TestDefaultHeadersHostScoping:
         because of a hostname an attacker chose to keep -- reachable via a
         redirect or a server-supplied ``http://`` next-page link.
         """
-        headers = _default_headers("http://api.waterdata.usgs.gov/ogcapi/v0/daily")
+        headers = _default_headers("http://api.waterdata.usgs.gov/ogcapi/v1/daily")
         assert "X-Api-Key" not in headers
 
     def test_sync_transport_withholds_key_on_downgrade_to_cleartext(self):

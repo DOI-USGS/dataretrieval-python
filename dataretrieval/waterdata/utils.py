@@ -197,6 +197,7 @@ def get_ogc_data(
     cql_body: str | None = None,
     *,
     spatial: bool = True,
+    api_version: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
@@ -226,6 +227,10 @@ def get_ogc_data(
     spatial : bool, optional
         Whether the collection includes feature geometry. Water Data's typed
         feature collections do; reference tables pass ``False``.
+    api_version : str, optional
+        API version for this one request. ``None`` (the default) resolves it
+        through the configuration chain. See
+        :func:`~dataretrieval.waterdata.endpoints.ogc_api_url`.
 
     Returns
     -------
@@ -245,7 +250,7 @@ def get_ogc_data(
         # The endpoint is resolved from the active ContextVar at request time;
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
-        base_url=ogc_api_url(),
+        base_url=ogc_api_url(api_version),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,

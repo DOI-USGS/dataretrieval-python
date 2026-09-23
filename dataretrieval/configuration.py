@@ -72,6 +72,7 @@ from typing import TextIO, overload
 # isort: off
 from dataretrieval._configuration_core import (
     ADAPTERS as ADAPTERS,
+    BLOCK_ONLY_SETTINGS as BLOCK_ONLY_SETTINGS,
     CONFIG_PATH_ENV as CONFIG_PATH_ENV,
     CONCURRENCY_UNBOUNDED as CONCURRENCY_UNBOUNDED,
     DEFAULT_CONCURRENCY as DEFAULT_CONCURRENCY,
@@ -94,6 +95,7 @@ from dataretrieval._configuration_core import (
     _Frame as _Frame,
     _named_profiles as _named_profiles,
     _NO_FILE as _NO_FILE,
+    _parse_api_version as _parse_api_version,
     _parse_base_url as _parse_base_url,
     _parse_concurrency as _parse_concurrency,
     _parse_parallel_chunks as _parse_parallel_chunks,
@@ -112,6 +114,7 @@ from dataretrieval._configuration_core import (
     _SettingValue as _SettingValue,
     _UNSET as _UNSET,
     _validated_raw as _validated_raw,
+    _Versioned as _Versioned,
     config_path as config_path,
     settings_for as settings_for,
 )
@@ -655,6 +658,41 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
     return _parse_base_url(raw, label)
 
 
+@overload
+def api_version(*, adapter: str | None = ...) -> str | None: ...
+
+
+@overload
+def api_version(*, adapter: str | None = ..., default: str) -> str: ...
+
+
+def api_version(
+    *, adapter: str | None = None, default: str | None = None
+) -> str | None:
+    """An adapter's configured API version, falling back to *default*.
+
+    Settable from code or from the adapter's table in the file. The
+    environment refuses it, as it refuses every adapter-only setting
+    (:data:`_REFUSED_ENV_VARS`).
+
+    Like :func:`base_url`, it has no package-wide default. The adapter passes
+    its own, as in ``api_version(adapter="waterdata", default=OGC_API_VERSION)``,
+    so the version is declared in the module that builds the path.
+
+    Parameters
+    ----------
+    adapter : str, optional
+        Whose version to resolve.
+    default : str, optional
+        Returned when nothing configured a version. If omitted, ``None`` is
+        returned; :func:`show_configuration` relies on this.
+    """
+    raw, label, _source = _resolve("api_version", adapter)
+    if raw is None:
+        return default
+    return _parse_api_version(raw, label)
+
+
 # --- resolution ----------------------------------------------------------
 
 #: Which source of the chain supplied a resolution. Machine-readable so a
@@ -724,7 +762,7 @@ def _check_adapter_known(adapter: str | None) -> None:
 
 
 def _check_env_not_refused(name: str) -> None:
-    """Raise if an environment variable is set for a code-only setting.
+    """Raise if an environment variable is set for an adapter-only setting.
 
     Refused before anything is consulted, not when the chain reaches the environment
     source. The file and the environment refuse ``base_url`` as one rule (ADR 0011), so
@@ -732,13 +770,24 @@ def _check_env_not_refused(name: str) -> None:
     to work.
     """
     refused = _REFUSED_ENV_VARS.get(name)
-    if refused is not None and refused in os.environ:
-        raise ConfigurationError(
-            f"{_env_label(refused)} is set, but {name!r} may only be set "
-            "in code, in a configure() block, never from the environment. Unset "
-            f"it and pass the value on the adapter's configuration, e.g. "
-            f"WaterdataConfiguration({name}=...)."
-        )
+    if refused is None or refused not in os.environ:
+        return
+    block_only = name in BLOCK_ONLY_SETTINGS
+    fault = (
+        "may only be set in code, in a configure() block, never from the environment"
+        if block_only
+        else "names one service and has no package-wide value, so the environment "
+        "cannot set it"
+    )
+    # Suggest the file only for the settings it accepts.
+    or_the_file = (
+        "" if block_only else ", or set the value in that adapter's table of the file"
+    )
+    raise ConfigurationError(
+        f"{_env_label(refused)} is set, but {name!r} {fault}. Unset it and pass "
+        f"the value on the adapter's configuration, e.g. "
+        f"WaterdataConfiguration({name}=...){or_the_file}."
+    )
 
 
 def _resolve_from_block(
@@ -837,6 +886,7 @@ _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "parallel_chunks": lambda adapter: str(parallel_chunks(adapter=adapter)),
     "stall_timeout": lambda adapter: f"{stall_timeout(adapter=adapter):g}s",
     "base_url": lambda adapter: base_url(adapter=adapter) or "<service default>",
+    "api_version": lambda adapter: api_version(adapter=adapter) or "<service default>",
 }
 
 if set(_DISPLAYS) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding error

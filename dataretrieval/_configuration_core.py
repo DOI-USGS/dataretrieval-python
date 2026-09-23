@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 import stat
 import sys
 import warnings
@@ -26,11 +27,16 @@ from dataretrieval._ambient import Ambient
 from dataretrieval.exceptions import ConfigurationError
 
 #: Settings only an adapter can hold, because they name one service. No
-#: package-wide value could mean anything for them: there is no one base URL.
+#: package-wide value could mean anything for them: there is no one base URL,
+#: and a version is a segment of one service's paths.
 #:
 #: The package-wide roster is :data:`SETTINGS`, declared below the class it is
 #: derived from.
-ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
+ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version")
+
+#: The adapter-only settings the file also refuses, so only a ``configure()``
+#: block can supply them (ADR 0011).
+BLOCK_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
 
 #: Environment variable backing a setting (precedence step 2).
 #:
@@ -52,12 +58,9 @@ ENV_VARS: dict[str, str] = {
 
 #: Variables the environment is *refused* for, by setting. Named rather than left out of
 #: :data:`ENV_VARS`, so a caller who exports ``API_USGS_BASE_URL`` gets an error instead
-#: of an ignored variable. The file refuses the same key in the same words
-#: (:func:`_accepted_keys`): a base URL set outside the code could redirect the library
-#: to another host without a reader of the script seeing it (ADR 0011).
-#:
-#: Derived from :data:`ADAPTER_ONLY_SETTINGS` so the file and the environment
-#: cannot drift apart on which settings are code-only.
+#: of an ignored variable. Derived from :data:`ADAPTER_ONLY_SETTINGS`, because a
+#: variable applies to every adapter and those settings name one. The file
+#: refuses only :data:`BLOCK_ONLY_SETTINGS` (ADR 0011).
 _REFUSED_ENV_VARS: dict[str, str] = {
     name: f"API_USGS_{name.upper()}" for name in ADAPTER_ONLY_SETTINGS
 }
@@ -393,9 +396,7 @@ class BaseConfiguration:
 # Plain mixins rather than ``BaseConfiguration`` subclasses: a group has no
 # adapter and cannot be passed to :func:`configure`, so keeping it off that
 # branch leaves one linear base for the behavior. Frozen because a dataclass
-# may not mix frozen and non-frozen bases; fields collect in reverse MRO order,
-# so an adapter composing all four reads ``retries, stall_timeout, base_url,
-# concurrency, parallel_chunks``.
+# may not mix frozen and non-frozen bases. Fields collect in reverse MRO order.
 
 
 @dataclass(frozen=True)
@@ -411,6 +412,13 @@ class _Redirectable:
     """An adapter whose requests can be sent to another base URL."""
 
     base_url: str | None = _UNSET
+
+
+@dataclass(frozen=True)
+class _Versioned:
+    """An adapter whose service publishes its API under a version path segment."""
+
+    api_version: str | None = _UNSET
 
 
 @dataclass(frozen=True)
@@ -771,6 +779,7 @@ def _coerce_count(value: object, label: str, optional: str) -> str:
 #: so the wider check cannot change a TOML outcome.)
 _TYPES: dict[str, Callable[[object, str, str], str]] = {
     "api_key": _coerce_string,
+    "api_version": _coerce_string,
     "base_url": _coerce_string,
     "progress": _coerce_progress,
     "concurrency": _coerce_concurrency,
@@ -899,6 +908,25 @@ def _parse_base_url(raw: str, label: str) -> str:
     return value
 
 
+#: A version path segment: ``v`` followed by digits, as in every Water Data path.
+_API_VERSION_RE = re.compile(r"^v\d+$")
+
+
+def _parse_api_version(raw: str, label: str) -> str:
+    """Parse an API version: the segment the service publishes it under, ``v1``.
+
+    Checked as a shape, not against a list: a list here would refuse a version
+    the service already serves until a release of this package added it.
+    """
+    value = raw.strip()
+    if not _API_VERSION_RE.match(value):
+        raise ConfigurationError(
+            f"{label} must be the version segment of the service's path, "
+            f"such as 'v1' (got {raw!r})."
+        )
+    return value
+
+
 def _parse_progress(raw: str, label: str, *, strict: bool) -> bool:
     """Parse a progress toggle, optionally preserving legacy env truthiness."""
     value = raw.strip().lower()
@@ -931,6 +959,7 @@ _VALIDATORS: dict[str, Callable[[str, str], object]] = {
     "parallel_chunks": _parse_parallel_chunks,
     "stall_timeout": _parse_seconds,
     "base_url": _parse_base_url,
+    "api_version": _parse_api_version,
 }
 
 
@@ -1048,11 +1077,13 @@ def _adapter_file_settings(
 
     where = f"[{adapter}]"
     # An adapter this process has not imported declares no vocabulary, so its
-    # table is checked against the package-wide settings alone: refusing a key
-    # for want of a schema would make the file's validity depend on which
-    # optional extras happened to be installed.
+    # table is checked against every setting this release has a grammar for:
+    # refusing a key for want of a schema would make the file's validity depend
+    # on which optional extras happened to be installed.
     accepted = settings_for(adapter)
-    validated = _scalars(table, path, where, SETTINGS if accepted is None else accepted)
+    validated = _scalars(
+        table, path, where, _ALL_SETTINGS if accepted is None else accepted
+    )
     label = f"{path} {where}"
     result: Mapping[str, tuple[str, str]] = MappingProxyType(
         {name: (value, label) for name, value in validated.items()}
@@ -1230,7 +1261,7 @@ def _accepted_keys(
             # and :func:`_named_profile` refuses a table inside a profile, so a
             # sub-table here is always a profile rather than deeper nesting.
             continue
-        if key in ADAPTER_ONLY_SETTINGS:
+        if key in BLOCK_ONLY_SETTINGS:
             # Rejected from the file wherever it appears. A file that
             # redirects a data-retrieval library to another host is a
             # supply-chain hazard; an in-code block keeps the redirect
@@ -1240,16 +1271,7 @@ def _accepted_keys(
                 "configure() block, never from a file."
             )
         if key not in allowed:
-            if key in SETTINGS:
-                # A real setting, in a table that does not read it. Unlike an
-                # unrecognized name -- which may belong to a newer release --
-                # this cannot become meaningful later, and ignoring it without an error
-                # would leave a caller believing they had tuned something. See
-                # ADR 0010.
-                raise ConfigurationError(
-                    f"{path}: {key!r} at {where} is not a setting that table "
-                    f"accepts. It accepts: {', '.join(sorted(allowed))}."
-                )
+            _reject_known_setting(key, path, where, allowed)
             warnings.warn(
                 f"{path}: unknown setting {key!r} at {where} (ignored). "
                 f"Known settings: {', '.join(SETTINGS)}.",
@@ -1259,6 +1281,31 @@ def _accepted_keys(
             continue
         out[key] = value
     return out
+
+
+def _reject_known_setting(
+    key: str, path: Path, where: str, allowed: frozenset[str] | tuple[str, ...]
+) -> None:
+    """Raise if *key* is a setting this release defines but that table cannot use.
+
+    Returns for an unknown name, which the caller warns about instead: an
+    unknown name may belong to a newer release, but a known setting in the
+    wrong table will never take effect, and ignoring it would leave the caller
+    believing it had (ADR 0010).
+    """
+    if where == _TOP_LEVEL and key in ADAPTER_ONLY_SETTINGS:
+        # The generic message below would list only top-level settings, none of
+        # which is the one to write.
+        raise ConfigurationError(
+            f"{path}: {key!r} at {where} names one service and has no "
+            "package-wide value; set it in the table of the adapter it belongs "
+            "to, such as [waterdata]."
+        )
+    if key in _ALL_SETTINGS:
+        raise ConfigurationError(
+            f"{path}: {key!r} at {where} is not a setting that table "
+            f"accepts. It accepts: {', '.join(sorted(allowed))}."
+        )
 
 
 def _checked_table(

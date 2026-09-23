@@ -938,34 +938,30 @@
    {
     "geometry": {
      "coordinates": [
-      -89.35249999999999,
-      43.20888888888889
+      -74.5836111111111,
+      40.9177777777778
      ],
      "type": "Point"
     },
-    "id": "04585e9fb4ec467aafa86c7c0b3f1439",
+    "id": "000068b2a47b45708c656bcff5264f54",
     "properties": {
-     "begin": "2013-10-01T06:00:00.000001",
-     "begin_utc": "2013-10-01T11:00:00+00:00",
-     "computation_identifier": "Decumulated",
-     "computation_period_identifier": "Points",
-     "data_gap_interval": "PT1H12M",
-     "end": "2025-10-01T05:45:00.000001",
-     "end_utc": "2025-10-01T10:45:00+00:00",
-     "hydrologic_unit_code": "070900020504",
-     "id": "04585e9fb4ec467aafa86c7c0b3f1439",
-     "last_modified": "2026-06-05T17:16:13.005607",
-     "monitoring_location_id": "USGS-05427718",
-     "parameter_code": "00045",
-     "parameter_description": "Precipitation, total, inches",
-     "parameter_name": "Precipitation",
+     "begin": "1983-11-03T05:00:00+00:00",
+     "computation_identifier": "Min",
+     "computation_period_identifier": "Daily",
+     "data_gap_interval": null,
+     "end": "1985-04-16T05:00:00+00:00",
+     "id": "000068b2a47b45708c656bcff5264f54",
+     "last_modified": "2017-05-07T20:53:29.551297",
+     "monitoring_location_id": "USGS-01379790",
+     "parameter_code": "00010",
+     "parameter_description": "Temperature, water, degrees Celsius",
+     "parameter_name": "Temperature, water",
      "parent_time_series_id": null,
      "primary": "Primary",
-     "state_name": "Wisconsin",
-     "statistic_id": null,
+     "statistic_id": "00002",
      "sublocation_identifier": null,
      "thresholds": [],
-     "unit_of_measure": "in",
+     "unit_of_measure": "degC",
      "web_description": null
     },
     "type": "Feature"
@@ -973,34 +969,30 @@
    {
     "geometry": {
      "coordinates": [
-      -89.35249999999999,
-      43.20888888888889
+      -112.13859444444445,
+      40.780852777777774
      ],
      "type": "Point"
     },
-    "id": "0aa968f7d6494e2eb214d1829754532d",
+    "id": "00009b3da7e44a96a283bc413ff2de48",
     "properties": {
-     "begin": "1990-10-01T00:00:00.000001",
-     "begin_utc": "1990-10-01T05:00:00+00:00",
-     "computation_identifier": "Mean",
-     "computation_period_identifier": "Daily",
-     "data_gap_interval": null,
-     "end": "2025-09-30T00:00:00.000001",
-     "end_utc": "2025-09-30T05:00:00+00:00",
-     "hydrologic_unit_code": "070900020504",
-     "id": "0aa968f7d6494e2eb214d1829754532d",
-     "last_modified": "2025-12-19T19:35:48.365292",
-     "monitoring_location_id": "USGS-05427718",
-     "parameter_code": "91060",
-     "parameter_description": "Orthophosphate, water, filtered, pounds per day",
-     "parameter_name": "Orthophosphate, diss",
-     "parent_time_series_id": null,
+     "begin": "2006-05-18T12:00:00+00:00",
+     "computation_identifier": "Instantaneous",
+     "computation_period_identifier": "Points",
+     "data_gap_interval": "PT1H12M",
+     "end": "2026-09-22T16:00:00+00:00",
+     "id": "00009b3da7e44a96a283bc413ff2de48",
+     "last_modified": "2026-09-22T10:10:05.077878",
+     "monitoring_location_id": "USGS-10172640",
+     "parameter_code": "00060",
+     "parameter_description": "Discharge, cubic feet per second",
+     "parameter_name": "Discharge",
+     "parent_time_series_id": "769d7201a8044b4ab5218bac4cd282e8",
      "primary": "Primary",
-     "state_name": "Wisconsin",
-     "statistic_id": "00003",
+     "statistic_id": "00011",
      "sublocation_identifier": null,
      "thresholds": [],
-     "unit_of_measure": "lbs/day",
+     "unit_of_measure": "ft^3/s",
      "web_description": null
     },
     "type": "Feature"
