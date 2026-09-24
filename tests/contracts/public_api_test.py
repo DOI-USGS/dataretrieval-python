@@ -1,11 +1,10 @@
 """Public import, export, and signature contracts for Water Data.
 
 These assert *properties* of the signatures rather than their rendered text. A
-character-exact ``str(inspect.signature(f))`` snapshot fails on every parameter
-rename, reorder, and annotation reflow -- changes that break no caller -- while
-passing the one thing that does break callers: a new required argument, since
-adding one changes the text the snapshot would have to be updated to anyway. The
-properties below fail on the breaking changes and pass for the rest.
+character-exact ``str(inspect.signature(f))`` snapshot fails on every annotation
+reflow and on a new keyword-only parameter -- changes that break no caller. The
+properties below fail on the changes that do: a new required argument, and a
+new parameter that can be passed by position, which shifts a positional call.
 """
 
 from __future__ import annotations
@@ -156,6 +155,47 @@ def test_required_arguments_have_not_grown(name: str) -> None:
         and parameter.kind is not inspect.Parameter.VAR_KEYWORD
     )
     assert required == _REQUIRED_ARGUMENTS[name]
+
+
+#: How many parameters each getter accepts by position, as released. A positional
+#: call binds each argument by its position, so a parameter inserted or appended
+#: without ``*`` changes what an existing call sends without raising. Change a
+#: count only in a major release, with the deprecation notice ADR 0012 requires.
+_POSITIONAL_COUNT = {
+    "get_channel": 32,
+    "get_codes": 1,
+    "get_combined_metadata": 64,
+    "get_continuous": 17,
+    "get_cql": 2,
+    "get_daily": 19,
+    "get_field_measurements": 21,
+    "get_field_measurements_metadata": 15,
+    "get_latest_continuous": 19,
+    "get_latest_daily": 19,
+    "get_monitoring_locations": 49,
+    "get_nearest_continuous": 3,
+    "get_peaks": 19,
+    "get_queryables": 1,
+    "get_ratings": 8,
+    "get_reference_table": 4,
+    "get_samples": 25,
+    "get_samples_summary": 2,
+    "get_stats_date_range": 16,
+    "get_stats_por": 16,
+    "get_time_series_metadata": 29,
+}
+
+
+@pytest.mark.parametrize("name", sorted(_POSITIONAL_COUNT))
+def test_no_parameter_is_added_by_position(name: str) -> None:
+    """A new parameter goes after ``*``, so it cannot shift a positional call."""
+    parameters = inspect.signature(getattr(waterdata, name)).parameters.values()
+    positional = [p.name for p in parameters if p.kind is p.POSITIONAL_OR_KEYWORD]
+    assert len(positional) == _POSITIONAL_COUNT[name], (
+        f"{name} accepts {len(positional)} parameters by position, not "
+        f"{_POSITIONAL_COUNT[name]}. Move the new parameter after the bare * in "
+        "the signature."
+    )
 
 
 @pytest.mark.parametrize("name", api.__all__)

@@ -992,7 +992,7 @@ def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
         (get_daily, "daily", [], None),
         (get_peaks, "peaks", "DIFFDATUM", ['["DIFFDATUM"]']),
     ],
-    ids=["string", "list", "json-literal", "empty-list", "peaks-queryables"],
+    ids=["string", "list", "json-literal", "empty-list", "peaks"],
 )
 def test_qualifier_is_sent_as_a_json_array(
     httpx_mock, getter, collection, qualifier, sent
