@@ -18,13 +18,14 @@ from dataretrieval.waterdata.endpoints import ogc_api_url
 
 #: Getters that list their returned columns, by collection. Written out rather
 #: than discovered, so a getter that loses its list fails instead of being
-#: skipped. get_channel and get_monitoring_locations also list columns but are
-#: left out until their lists match the schema.
+#: skipped. get_channel is left out: its list names the output column
+#: channel_measurements_id where the schema has id.
 _DOCUMENTED = {
     "daily": waterdata.get_daily,
     "continuous": waterdata.get_continuous,
     "latest-continuous": waterdata.get_latest_continuous,
     "latest-daily": waterdata.get_latest_daily,
+    "monitoring-locations": waterdata.get_monitoring_locations,
     "time-series-metadata": waterdata.get_time_series_metadata,
 }
 

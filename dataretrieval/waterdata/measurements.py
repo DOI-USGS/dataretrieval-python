@@ -26,6 +26,14 @@ def get_field_measurements(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     observing_procedure_code: str | Iterable[str] | None = None,
+    control_condition: str | Iterable[str] | None = None,
+    day: int | list[int] | None = None,
+    field_measurements_series_id: str | Iterable[str] | None = None,
+    measurement_rated: str | Iterable[str] | None = None,
+    month: int | list[int] | None = None,
+    reading_type: str | Iterable[str] | None = None,
+    time_of_day: str | Iterable[str] | None = None,
+    year: int | list[int] | None = None,
     properties: str | Iterable[str] | None = None,
     field_visit_id: str | Iterable[str] | None = None,
     approval_status: str | Iterable[str] | None = None,
@@ -69,6 +77,29 @@ def get_field_measurements(
     observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
+    control_condition : string or iterable of strings, optional
+        The state of the control feature at the time of observation.
+    day : integer or list of integers, optional
+        The day of the month the field measurement was taken. If null, the day is
+        unknown.
+    field_measurements_series_id : string or iterable of strings, optional
+        A unique identifier representing a single collection series, corresponding to
+        the id field in the field-measurements-metadata endpoint. A collection series
+        is the set of field measurements at one monitoring location for a single
+        parameter code using a single reading type.
+    measurement_rated : string or iterable of strings, optional
+        A qualitative estimate of the quality of a measurement.
+    month : integer or list of integers, optional
+        The calendar month the field measurement was taken. If null, the month is
+        unknown.
+    reading_type : string or iterable of strings, optional
+        Distinguishes field-measurement readings from measurements. Readings have a
+        value of ReferencePrimary; measurements are Discharge or MeanGageHeight.
+    time_of_day : string or iterable of strings, optional
+        The time of day the field measurement was taken. If null, the time of day is
+        unknown. The time column holds only the date.
+    year : integer or list of integers, optional
+        The calendar year the field measurement was taken.
     properties : string or iterable of strings, optional
         The columns to return from the query. See the
         field-measurements schema in the OpenAPI reference for the available
@@ -240,6 +271,9 @@ def get_peaks(
     month: int | list[int] | None = None,
     day: int | list[int] | None = None,
     peak_since: int | list[int] | None = None,
+    qualifier: str | Iterable[str] | None = None,
+    time_of_day: str | Iterable[str] | None = None,
+    value: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -288,6 +322,15 @@ def get_peaks(
     peak_since : int or list of ints, optional
         Filter on the year since which the peak value has been the record (the API
         serves this field as an integer; many rows are ``null``).
+    qualifier : string or iterable of strings, optional
+        Any qualifiers associated with a peak, for instance whether a sensor may have
+        been impacted by ice or whether the value was estimated.
+    time_of_day : string or iterable of strings, optional
+        The time of day a peak occurred. If null, the time of day is unknown, as is
+        common for historical peaks recorded only to the day.
+    value : string or iterable of strings, optional
+        The value of the peak. Values are transmitted as strings in the JSON response
+        to preserve precision.
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
@@ -393,6 +436,7 @@ def get_channel(
     measurement_type: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     channel_measurement_type: str | Iterable[str] | None = None,
+    channel_location_direction: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -494,6 +538,8 @@ def get_channel(
         Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     channel_measurement_type : string or iterable of strings, optional
         The channel measurement type.
+    channel_location_direction : string or iterable of strings, optional
+        Location of the measurement from the gage.
     properties : string or iterable of strings, optional
         The columns to return from the query. Available
         options are: geometry, channel_measurements_id, monitoring_location_id,
@@ -503,8 +549,8 @@ def get_channel(
         channel_location_distance, channel_location_distance_unit, channel_stability,
         channel_material, channel_evenness, horizontal_velocity_description,
         vertical_velocity_description, longitudinal_velocity_description,
-        measurement_type, last_modified, channel_measurement_type. The default
-        (None) returns all columns.
+        measurement_type, last_modified, channel_measurement_type,
+        channel_location_direction. The default (None) returns all columns.
     bbox : list of numbers, optional
         Only features whose geometry intersects the bounding box are selected.
         The bounding box is provided as four or six numbers, depending on
