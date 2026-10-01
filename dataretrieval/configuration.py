@@ -671,9 +671,9 @@ def api_version(
 ) -> str | None:
     """An adapter's configured API version, falling back to *default*.
 
-    Settable from code or from the adapter's table in the file. The
-    environment refuses it, as it refuses every adapter-only setting
-    (:data:`_REFUSED_ENV_VARS`).
+    Settable from code or from the adapter's table in the file. Exporting
+    ``API_USGS_API_VERSION`` raises ``ConfigurationError``, as a variable does
+    for every adapter-only setting (:data:`_REFUSED_ENV_VARS`).
 
     Like :func:`base_url`, it has no package-wide default. The adapter passes
     its own, as in ``api_version(adapter="waterdata", default=OGC_API_VERSION)``,

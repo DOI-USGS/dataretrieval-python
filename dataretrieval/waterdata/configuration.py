@@ -47,16 +47,17 @@ class WaterdataConfiguration(
         Root to send Water Data requests to, instead of the service's own. The package
         appends its own paths, so one value redirects all four families together --
         ``/ogcapi/<api_version>``, ``/samples-data``, ``/statistics/v0`` and
-        ``/stac/v0``. Code only: the file and the environment refuse it. The API key is
-        scoped to the host that accepts it, so a redirected call sends no key.
+        ``/stac/v0``. Code only: setting it in the configuration file or through an
+        environment variable raises ``ConfigurationError``. The API key is scoped to
+        the host that accepts it, so a redirected call sends no key.
     api_version : str, optional
         Version of the Water Data API to request, as the segment of its path:
         ``"v1"``, which this release is written against, or ``"v0"`` while the
         service keeps it online (until June 2027). It replaces that one segment,
         so the Samples, Statistics and STAC families -- versioned separately, with
-        no v1 -- are unaffected. Settable in code or in the ``[waterdata]`` table
-        of the file, never from the environment. Under another version, getters
-        return that version's columns as the service sends them.
+        no v1 -- are unaffected. Set it here or in the ``[waterdata]`` table of
+        the configuration file. Under another version, getters return that
+        version's columns as the service sends them.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional

@@ -1218,6 +1218,21 @@ def test_time_series_metadata_v0_only_filters_warn_and_go_to_v0(
     assert str(sent.url).startswith(f"{_V0_OGC_BASE}/collections/time-series-metadata")
 
 
+@pytest.mark.parametrize("spelled", ["state", "state_name"])
+def test_time_series_metadata_state_warning_points_to_the_same_argument(
+    httpx_mock, spelled
+):
+    """get_combined_metadata accepts both spellings, so the remedy repeats the
+    one the caller passed rather than swapping it for the other."""
+    _mock_items(httpx_mock, "time-series-metadata", base=_V0_OGC_BASE)
+
+    with pytest.warns(DeprecationWarning) as record:
+        get_time_series_metadata(**{spelled: "Wisconsin"})
+
+    (message,) = (str(w.message) for w in record if w.category is DeprecationWarning)
+    assert f"get_combined_metadata({spelled}=...)" in message
+
+
 def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
     """The getter sets v0 on the request, not in the configuration, so the
     version the caller set still applies to every other call (ADR 0011)."""

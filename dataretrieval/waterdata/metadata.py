@@ -347,7 +347,8 @@ def get_monitoring_locations(
 #: Filters that v1 of ``time-series-metadata`` dropped (it responds with 400 or
 #: 500 to them, as a filter or in ``properties``), mapped to what to use
 #: instead. ``state`` resolves to ``state_name`` before the check, so that entry
-#: covers both.
+#: covers both; its replacement names whichever of the two the caller passed,
+#: because :func:`get_combined_metadata` accepts both.
 #:
 #: The renames do not use ``_accept_legacy_kwargs`` (ADR 0012) because the old
 #: name may also appear in ``properties``, and translating it would rename a
@@ -355,7 +356,7 @@ def get_monitoring_locations(
 _V0_ONLY_FILTERS: dict[str, str] = {
     "begin_utc": "'begin'",
     "end_utc": "'end'",
-    "state_name": "get_combined_metadata(state=...)",
+    "state_name": "get_combined_metadata({name}=...)",
     "hydrologic_unit_code": "get_combined_metadata(hydrologic_unit_code=...)",
 }
 
@@ -371,7 +372,7 @@ def _time_series_metadata(
         spelled = "state" if name == "state_name" and state_given else name
         warn_deprecated(
             f"The {spelled!r} argument of get_time_series_metadata",
-            replacement=_V0_ONLY_FILTERS[name],
+            replacement=_V0_ONLY_FILTERS[name].format(name=spelled),
             removal=REMOVALS["waterdata.get_time_series_metadata(v0 filters)"],
             detail=(
                 "v1 of the Water Data API has no such field, so this call is "
@@ -472,10 +473,13 @@ def get_time_series_metadata(
     state : string or iterable of strings, optional
         Deprecated, as ``hydrologic_unit_code`` is: v1 does not filter this
         collection by state. Use :func:`get_combined_metadata` with ``state``
-        instead. Accepts a full name (``"Wisconsin"``), a two-letter postal
-        code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
+        instead. ``state`` is a dataretrieval argument rather than an API
+        field: it accepts a full name (``"Wisconsin"``), a two-letter postal
+        code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``) and is sent
+        as ``state_name``.
     state_name : string or iterable of strings, optional
-        Deprecated; see ``state``. The name of the state or state equivalent in
+        Deprecated, as ``state`` is. Use :func:`get_combined_metadata` with
+        ``state_name`` instead. The name of the state or state equivalent in
         which the monitoring location is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. A refresh may

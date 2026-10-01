@@ -34,8 +34,8 @@ from dataretrieval.exceptions import ConfigurationError
 #: derived from.
 ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version")
 
-#: The adapter-only settings the file also refuses, so only a ``configure()``
-#: block can supply them (ADR 0011).
+#: Adapter-only settings that only a ``configure()`` block can set: writing one in
+#: the configuration file raises ``ConfigurationError`` (ADR 0011).
 BLOCK_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
 
 #: Environment variable backing a setting (precedence step 2).
@@ -59,8 +59,8 @@ ENV_VARS: dict[str, str] = {
 #: Variables the environment is *refused* for, by setting. Named rather than left out of
 #: :data:`ENV_VARS`, so a caller who exports ``API_USGS_BASE_URL`` gets an error instead
 #: of an ignored variable. Derived from :data:`ADAPTER_ONLY_SETTINGS`, because a
-#: variable applies to every adapter and those settings name one. The file
-#: refuses only :data:`BLOCK_ONLY_SETTINGS` (ADR 0011).
+#: variable applies to every adapter and those settings name one. In the file,
+#: only :data:`BLOCK_ONLY_SETTINGS` raise (ADR 0011).
 _REFUSED_ENV_VARS: dict[str, str] = {
     name: f"API_USGS_{name.upper()}" for name in ADAPTER_ONLY_SETTINGS
 }

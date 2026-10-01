@@ -592,9 +592,9 @@ the getter sends that one call to v0 and emits a ``DeprecationWarning``.
 It does not change your configuration,
 so every other getter still uses the version you set.
 
-Unlike ``base_url``, the file accepts ``api_version``,
+Unlike ``base_url``, ``api_version`` may be set in the file,
 because a version cannot send a request to another host.
-The environment refuses it, as it refuses every per-adapter setting.
+It has no environment variable.
 
 
 .. _configuration-secret-store:
