@@ -6,12 +6,15 @@ these run without an API key and without contacting the USGS servers.
 
 from unittest import mock
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from dataretrieval.exceptions import DataRetrievalError
 from dataretrieval.interruptions import QuotaExhausted, ServiceInterrupted
 from dataretrieval.waterdata.nearest import get_nearest_continuous
+
+_SITE = "USGS-02238500"
 
 
 def _fake_df(rows):
@@ -173,33 +176,208 @@ def test_multi_site_returns_row_per_target_per_site(patch_get_continuous):
     assert set(result["monitoring_location_id"]) == {"USGS-1", "USGS-2"}
 
 
+# --- targets validation ------------------------------------------------------
+# Every rejection happens before ``get_continuous`` is called, so each test also
+# asserts no request was made. Where a message suggests a fix, a companion test
+# applies that fix literally and checks the call then succeeds.
+
+
 def test_empty_targets_raises(patch_get_continuous):
     """An empty ``targets`` is a call with no useful work to do and almost always a
     caller bug — raise rather than issue a request that returns nothing."""
     with pytest.raises(ValueError, match="targets"):
-        get_nearest_continuous([], monitoring_location_id="USGS-02238500")
+        get_nearest_continuous([], monitoring_location_id=_SITE)
+    patch_get_continuous.assert_not_called()
+
+
+_LONE_MISSING_TARGETS = {
+    "nat": pd.NaT,
+    "none": None,
+    "empty-string": "",
+    "float-nan": float("nan"),
+    "numpy-nat": pd.NaT.to_datetime64(),
+    "one-element-list": [None],
+}
+
+
+@pytest.mark.parametrize(
+    ("targets", "message"),
+    [(t, "its only entry is missing") for t in _LONE_MISSING_TARGETS.values()]
+    + [([None, pd.NaT, float("nan")], "all 3 entries are missing")],
+    ids=[*_LONE_MISSING_TARGETS, "all-of-three"],
+)
+def test_all_missing_targets_ask_for_a_timestamp(
+    patch_get_continuous, targets, message
+):
+    """Removing every entry would leave nothing, so ask for a timestamp rather
+    than suggesting the caller remove them."""
+    with pytest.raises(ValueError, match=message) as exc_info:
+        get_nearest_continuous(targets, monitoring_location_id=_SITE)
+    assert "Remove" not in str(exc_info.value)
+    patch_get_continuous.assert_not_called()
+
+
+def test_missing_target_message_wording(patch_get_continuous):
+    """The full message for the common case: one gap in an otherwise valid list.
+    Missing timestamps must not become ``'nan'`` CQL bounds."""
+    with pytest.raises(ValueError) as exc_info:
+        get_nearest_continuous(
+            ["2024-01-01T12:00:00Z", None], monitoring_location_id=_SITE
+        )
+    assert str(exc_info.value) == (
+        "targets contains 1 missing timestamp (NaT, None, NaN, or ''), at "
+        "position 1, counting from 0. Remove those entries or replace them with "
+        "valid timestamps, e.g. targets.dropna() for a pandas Series or "
+        "DatetimeIndex."
+    )
     patch_get_continuous.assert_not_called()
 
 
 @pytest.mark.parametrize(
-    "targets",
+    ("targets", "located"),
     [
-        pd.NaT,
-        None,
-        [pd.NaT],
-        ["2024-01-01T12:00:00Z", None],
-        pd.Series([pd.Timestamp("2024-01-01T12:00:00Z"), pd.NaT]),
-        pd.DatetimeIndex(["2024-01-01T12:00:00Z", pd.NaT]),
-        pd.NaT.to_datetime64(),
+        (
+            pd.Series([pd.Timestamp("2024-01-01T12:00:00Z"), pd.NaT]),
+            "1 missing timestamp (NaT, None, NaN, or ''), at position 1",
+        ),
+        (
+            pd.DatetimeIndex(["2024-01-01T12:00:00Z", pd.NaT]),
+            "1 missing timestamp (NaT, None, NaN, or ''), at position 1",
+        ),
+        (
+            pd.Series(["2024-01-01", float("nan"), "2024-01-03", ""]),
+            "2 missing timestamps (NaT, None, NaN, or ''); the first is at position 1",
+        ),
     ],
-    ids=["nat", "none", "list", "mixed-list", "series", "index", "numpy-nat"],
+    ids=["series", "index", "series-nan-and-empty-string"],
 )
-def test_missing_targets_raise_before_query(patch_get_continuous, targets):
-    """Missing timestamps must not become ``'nan'`` CQL bounds."""
-    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
-    with pytest.raises(ValueError, match="targets.*missing.*Remove"):
-        get_nearest_continuous(targets, monitoring_location_id="USGS-02238500")
+def test_missing_target_entries_are_located(patch_get_continuous, targets, located):
+    """A long target list is only correctable if the message says where to look,
+    whatever container the targets arrive in."""
+    with pytest.raises(ValueError) as exc_info:
+        get_nearest_continuous(targets, monitoring_location_id=_SITE)
+    assert located in str(exc_info.value)
     patch_get_continuous.assert_not_called()
+
+
+def test_missing_target_remedy_works_when_followed(patch_get_continuous):
+    """The suggested ``dropna()`` must produce a call that succeeds."""
+    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
+    targets = pd.Series(["2024-01-01T12:00:00Z", None])
+    with pytest.raises(ValueError, match=r"targets\.dropna\(\)"):
+        get_nearest_continuous(targets, monitoring_location_id=_SITE)
+    get_nearest_continuous(targets.dropna(), monitoring_location_id=_SITE)
+    patch_get_continuous.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("targets", "shown"),
+    [
+        (1.5e9, "1500000000.0"),
+        ([1.5e9, 1.6e9], "1500000000.0"),
+        (np.array([1, 2]), "1"),
+        (pd.Series([np.nan, 1.5e9]), "1500000000.0"),
+    ],
+    ids=["scalar", "list", "int-array", "series-leading-nan"],
+)
+def test_numeric_targets_are_refused(patch_get_continuous, targets, shown):
+    """``pandas.to_datetime(1.5e9)`` is 1970-01-01T00:00:01.5Z, never what was
+    meant by an epoch value. The message shows the first non-missing number."""
+    with pytest.raises(TypeError, match="targets must be timestamps") as exc_info:
+        get_nearest_continuous(targets, monitoring_location_id=_SITE)
+    assert f"(got {shown})" in str(exc_info.value)
+    patch_get_continuous.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("unit", "number"),
+    [("s", 1.5e9), ("ms", 1.5e12), ("us", 1.5e15), ("ns", 1.5e18)],
+    ids=["s", "ms", "us", "ns"],
+)
+def test_numeric_targets_remedy_works_for_every_listed_unit(
+    patch_get_continuous, unit, number
+):
+    """Each unit the message lists must convert to the intended timestamp."""
+    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
+    get_nearest_continuous(
+        pd.to_datetime([number], unit=unit), monitoring_location_id=_SITE
+    )
+    assert "2017-07-14T02:32:30Z" in patch_get_continuous.call_args.kwargs["filter"]
+
+
+@pytest.mark.parametrize(
+    "targets",
+    [["2024-01-01", "not a date"], ["2024-01-01", "2024-01-01T12:00Z"]],
+    ids=["garbage", "mixed-iso-forms"],
+)
+def test_unparseable_targets_name_the_argument(patch_get_continuous, targets):
+    """pandas' own message names no argument and suggests a ``format=`` this
+    getter does not accept; the rewrapped one names ``targets`` instead."""
+    with pytest.raises(ValueError, match="targets could not be parsed") as exc_info:
+        get_nearest_continuous(targets, monitoring_location_id=_SITE)
+    assert "You might want to try" not in str(exc_info.value)
+    patch_get_continuous.assert_not_called()
+
+
+# --- window validation -------------------------------------------------------
+
+
+def _call_with_window(window):
+    """Call the getter with one valid target, varying only ``window``."""
+    return get_nearest_continuous(
+        ["2024-01-01T12:00:00Z"], monitoring_location_id=_SITE, window=window
+    )
+
+
+@pytest.mark.parametrize(
+    ("window", "message"),
+    [
+        (None, r"window is missing \(got None\)"),
+        ("NaT", r"window is missing \(got 'NaT'\)"),
+        ("seven minutes", r"window could not be parsed as a duration"),
+        ("-PT5M", r"window must not be negative.*window='P0DT0H5M0S'"),
+        (
+            pd.Timedelta(minutes=-7, seconds=-30),
+            r"window must not be negative.*window='P0DT0H7M30S'",
+        ),
+    ],
+    ids=["none", "nat", "garbage", "negative-string", "negative-timedelta"],
+)
+def test_unusable_window_raises_before_query(patch_get_continuous, window, message):
+    """A missing window crashed while building the filter; a negative one
+    inverted every bound and returned an empty frame as if no data existed."""
+    with pytest.raises(ValueError, match=message):
+        _call_with_window(window)
+    patch_get_continuous.assert_not_called()
+
+
+@pytest.mark.parametrize("window", [450, 7.5], ids=["int", "float"])
+def test_numeric_window_is_refused(patch_get_continuous, window):
+    """``pandas.Timedelta(450)`` is 450 nanoseconds, never what was meant."""
+    with pytest.raises(TypeError, match="window must be a duration.*nanoseconds"):
+        _call_with_window(window)
+    patch_get_continuous.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("window", "lower", "upper"),
+    [
+        # The fix the negative-window message suggests: same span, sign dropped.
+        ("P0DT0H5M0S", "2024-01-01T11:55:00Z", "2024-01-01T12:05:00Z"),
+        # Zero is a legitimate degenerate window: an exact-match query.
+        ("PT0S", "2024-01-01T12:00:00Z", "2024-01-01T12:00:00Z"),
+    ],
+    ids=["negative-window-remedy", "zero"],
+)
+def test_accepted_window_bounds(patch_get_continuous, window, lower, upper):
+    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
+    _call_with_window(window)
+    assert patch_get_continuous.call_args.kwargs["filter"] == (
+        f"(time >= '{lower}' AND time <= '{upper}')"
+    )
+
+
+# --- other arguments and behavior --------------------------------------------
 
 
 def test_rejects_time_kwarg(patch_get_continuous):
@@ -262,9 +440,9 @@ def test_accepts_list_of_strings(patch_get_continuous):
     ],
 )
 def test_window_accepts_any_pandas_timedelta_form(patch_get_continuous, window):
-    """Every representation ``pandas.Timedelta`` parses must produce the
-    same CQL filter. Documents the public contract: ``window`` is
-    whatever ``pd.Timedelta(window)`` returns."""
+    """Every string or ``Timedelta`` form ``pandas.Timedelta`` parses must
+    produce the same CQL filter. Documents the public contract; bare numbers
+    and negative or missing windows are rejected (see window validation)."""
     targets = pd.to_datetime(["2023-06-15T10:30:00Z"], utc=True)
     patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
 

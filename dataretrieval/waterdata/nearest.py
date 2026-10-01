@@ -26,6 +26,12 @@ __all__ = ["get_nearest_continuous"]
 OnTie = Literal["first", "last", "mean"]
 _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
 
+# ``pandas.api.types.infer_dtype`` results that ``pandas.to_datetime`` would
+# read as epoch nanoseconds rather than reject.
+_NUMERIC_INFERRED_DTYPES = frozenset(
+    {"integer", "floating", "mixed-integer-float", "decimal"}
+)
+
 
 class _ResumableCall(Protocol):
     """Structural subset of a fan-out call needed by the outer decorator."""
@@ -128,23 +134,27 @@ def get_nearest_continuous(
     targets : list-like of datetime-convertible
         Target timestamps. Naive datetimes are treated as UTC. Accepts a
         list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
-        or anything ``pandas.to_datetime`` accepts. Missing timestamps
-        (``NaT`` or ``None``) are not accepted.
+        or anything ``pandas.to_datetime`` accepts except numbers, which
+        it would read as epoch nanoseconds. Must contain at least one
+        timestamp. Missing timestamps (``NaT``, ``None``, ``NaN``, or
+        ``""``) are rejected.
     monitoring_location_id : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
     parameter_code : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
     window : string or ``pandas.Timedelta``, default ``"PT7M30S"``
-        Half-window around each target, as an ISO 8601 duration
-        (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.). Also accepts
-        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``
-        (``"00:07:30"``), pandas shorthand (``"7min30s"``,
+        How far before and after each target to search, as an ISO 8601
+        duration (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.); an
+        observation matches if it lies within ``window`` of the target.
+        Also accepts any other form ``pandas.Timedelta`` parses —
+        ``HH:MM:SS`` (``"00:07:30"``), pandas shorthand (``"7min30s"``,
         ``"450s"``), or a ``pd.Timedelta`` directly. See the
         `pandas.Timedelta docs
         <https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html>`_
         for the full grammar.
 
-        Must be small enough that every target's window contains
+        Must not be negative; zero matches only an observation at exactly
+        the target time. Must be small enough that every target's window contains
         roughly one observation at the service cadence. The default
         matches a 15-minute continuous gage; widen (e.g.
         ``"PT15M"``) for irregular cadences or tolerance of data gaps.
@@ -182,7 +192,12 @@ def get_nearest_continuous(
     Raises
     ------
     ValueError
-        If ``targets`` is empty or contains missing timestamps.
+        If ``targets`` is empty, unparseable, or contains missing timestamps;
+        if ``window`` is unparseable, missing, or negative; or if ``on_tie``
+        is not one of its options.
+    TypeError
+        If ``targets`` or ``window`` is a bare number, or if ``time``, ``filter``, or
+        ``filter_lang`` is passed in ``kwargs``.
     FanOutInterrupted
         If the underlying fan-out is interrupted. ``partial_frame`` and
         ``call.partial_frame`` contain nearest-selected rows with
@@ -236,14 +251,7 @@ def get_nearest_continuous(
     """
     _check_nearest_kwargs(kwargs, on_tie)
     target_index = _coerce_targets(targets)
-    window_td = pd.Timedelta(window)
-
-    if len(target_index) == 0:
-        raise ValueError(
-            "targets is empty; there is nothing to find a nearest value for. "
-            "Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "
-            "or a pandas DatetimeIndex."
-        )
+    window_td = _coerce_window(window)
 
     selector = _NearestSelector(target_index, window_td, on_tie)
     filter_expr = _build_window_or_filter(target_index, window_td)
@@ -319,18 +327,118 @@ def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
     A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a
     one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)
     is wrapped directly so its elements are preserved.
+
+    Raises ``TypeError`` for numbers, which pandas reads as nanoseconds since
+    the epoch, and ``ValueError`` for an unparseable, empty, or missing target:
+    a missing target would be rendered as a ``'nan'`` CQL bound rather than a
+    window.
     """
-    parsed = pd.to_datetime(targets, utc=True)
-    if pd.api.types.is_scalar(parsed):
-        parsed = [parsed]
-    index = pd.DatetimeIndex(parsed)
-    if index.hasnans:
+    values = targets if pd.api.types.is_list_like(targets) else [targets]
+    _reject_numeric_targets(values)
+    try:
+        parsed = pd.to_datetime(values, utc=True)
+    except (ValueError, TypeError) as exc:
+        # pandas' own message goes on to suggest ``format=``, which this getter
+        # does not accept; keep only the part that names the offending value.
+        detail = str(exc).splitlines()[0].split(". You might want to try")[0]
+        detail = detail.rstrip(".")
         raise ValueError(
-            "targets contains missing timestamps (NaT/None). Remove missing "
-            "entries or replace them with valid timestamps before calling "
-            "get_nearest_continuous."
+            f"targets could not be parsed as timestamps: {detail}. Pass "
+            "timestamps in one consistent format, e.g. ISO 8601 "
+            "'2024-01-01T12:00:00Z', or parse them first with "
+            "pandas.to_datetime(..., format=...)."
+        ) from exc
+    index = pd.DatetimeIndex(parsed)
+    if len(index) == 0:
+        raise ValueError(
+            "targets is empty; there is nothing to find a nearest value for. "
+            "Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "
+            "or a pandas DatetimeIndex."
         )
+    if index.hasnans:
+        raise ValueError(_missing_targets_message(index))
     return index
+
+
+def _reject_numeric_targets(values: Any) -> None:
+    """Refuse numbers, which ``pandas.to_datetime`` reads as epoch nanoseconds.
+
+    ``targets=[1.5e9]`` meant as epoch seconds would otherwise become
+    1970-01-01T00:00:01.5Z and match nothing. Missing values are skipped, so a
+    lone ``NaN`` is still reported as a missing target. *values* is list-like.
+    """
+    if pd.api.types.infer_dtype(values, skipna=True) in _NUMERIC_INFERRED_DTYPES:
+        # A numeric inference means at least one non-missing value exists.
+        # Formatted with str() so a numpy scalar reads as 1500000000.0, not
+        # np.float64(1500000000.0).
+        first = next(value for value in values if pd.notna(value))
+        raise TypeError(
+            "targets must be timestamps, not numbers, which pandas would read "
+            f"as nanoseconds since 1970-01-01 (got {first}). Convert them first "
+            "with pandas.to_datetime(targets, unit=...), setting unit to what "
+            "your numbers count: 's', 'ms', 'us', or 'ns'."
+        )
+
+
+def _missing_targets_message(index: pd.DatetimeIndex) -> str:
+    """Describe the missing entries of *index* so a caller can find them."""
+    missing = index.isna()
+    count = int(missing.sum())
+    first = int(missing.argmax())
+    if count == len(index):
+        entries = "its only entry is" if count == 1 else f"all {count} entries are"
+        return (
+            f"targets has no valid timestamps; {entries} missing "
+            "(NaT, None, NaN, or ''). Pass at least one timestamp, e.g. "
+            "targets=['2024-01-01 12:00']."
+        )
+    if count == 1:
+        found = f"1 missing timestamp (NaT, None, NaN, or ''), at position {first}"
+    else:
+        found = (
+            f"{count} missing timestamps (NaT, None, NaN, or ''); the first is "
+            f"at position {first}"
+        )
+    return (
+        f"targets contains {found}, counting from 0. Remove those entries or "
+        "replace them with valid timestamps, e.g. targets.dropna() for a "
+        "pandas Series or DatetimeIndex."
+    )
+
+
+def _coerce_window(window: str | pd.Timedelta) -> pd.Timedelta:
+    """Parse ``window`` and reject the values that cannot bound a match.
+
+    A bare number is refused because ``pandas.Timedelta`` reads it as
+    nanoseconds, so ``window=450`` meant as seconds would match nothing. A
+    missing window cannot be subtracted from the targets, and a negative one
+    inverts every bound; both would otherwise return an empty frame
+    indistinguishable from a gap in the data.
+    """
+    example = "Pass an ISO 8601 duration, e.g. window='PT7M30S'."
+    if isinstance(window, (int, float)):
+        raise TypeError(
+            "window must be a duration string or Timedelta, not a number, "
+            f"which pandas would read as nanoseconds (got {window!r}). {example}"
+        )
+    try:
+        window_td = pd.Timedelta(window)
+    except ValueError as exc:
+        raise ValueError(
+            f"window could not be parsed as a duration (got {window!r}). {example}"
+        ) from exc
+    if pd.isna(window_td):
+        raise ValueError(f"window is missing (got {window!r}). {example}")
+    if window_td < pd.Timedelta(0):
+        # ``window`` spans both sides of each target, so the sign carries no
+        # meaning; the magnitude is what the caller wants.
+        magnitude = (-window_td).isoformat()
+        raise ValueError(
+            "window must not be negative; it already "
+            "extends both before and after each target. Drop the sign, e.g. "
+            f"window={magnitude!r}."
+        )
+    return window_td
 
 
 def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
@@ -338,8 +446,9 @@ def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
     for forbidden in ("time", "filter", "filter_lang"):
         if forbidden in kwargs:
             raise TypeError(
-                f"get_nearest_continuous constructs its own {forbidden!r}; "
-                "do not pass it directly"
+                f"get_nearest_continuous sets {forbidden} itself. Remove "
+                f"{forbidden} from the call; choose the times with targets and "
+                "window."
             )
     require_one_of(on_tie, _VALID_ON_TIE, name="on_tie")
 
