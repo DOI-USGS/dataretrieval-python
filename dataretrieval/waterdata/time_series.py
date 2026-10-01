@@ -921,7 +921,8 @@ def get_stats_por(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55").
+        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -1061,7 +1062,8 @@ def get_stats_date_range(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55").
+        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).

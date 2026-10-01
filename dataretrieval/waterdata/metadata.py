@@ -120,7 +120,8 @@ def get_monitoring_locations(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
-        ANSI/FIPS code (``"55"``).
+        ANSI/FIPS code (``"55"``). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_name``.
     state_code : string or iterable of strings, optional
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
@@ -788,7 +789,8 @@ def get_combined_metadata(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full
         name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
-        two-digit ANSI/FIPS code (``"55"``).
+        two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument rather
+        than an API field: it is sent as the API's ``state_name``.
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
         Common location-catalog filters shared with the
