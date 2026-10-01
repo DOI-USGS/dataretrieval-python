@@ -983,6 +983,26 @@ def test_get_monitoring_locations(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
+def test_construction_date_keeps_every_precision(httpx_mock, recwarn):
+    """Day, month, and year precision all survive: a datetime parse turned the
+    month-precision values into NaT and warned that it could not infer a
+    format."""
+    body = _fixture("monitoring-locations")
+    feature = body["features"][0]
+    body["features"] = [
+        {**feature, "id": f"USGS-{i}", "properties": {**feature["properties"]}}
+        for i in range(3)
+    ]
+    for f, raw in zip(body["features"], ["19950812", "199508", "2005"], strict=True):
+        f["properties"]["construction_date"] = raw
+    _mock_items(httpx_mock, "monitoring-locations", body=body)
+
+    df, _ = get_monitoring_locations(state_name="Iowa")
+
+    assert df["construction_date"].tolist() == ["19950812", "199508", "2005"]
+    assert not [w for w in recwarn.list if issubclass(w.category, UserWarning)]
+
+
 def test_get_monitoring_locations_hucs_uses_post_cql(httpx_mock):
     """``monitoring-locations`` is a POST/CQL2 collection in the Water Data
     dialect, so a multi-value filter goes out as a CQL2 body rather than a

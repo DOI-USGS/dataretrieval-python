@@ -78,6 +78,9 @@ _EXTRA_ID_COLS = frozenset(
 # ``daily`` renders its time arguments date-only (``YYYY-MM-DD``), and the
 # ``time_cols``/``numerical_cols``/``sort_cols`` are the Water-Data column
 # vocabulary used to coerce datetime/numeric columns and to sort results.
+# ``construction_date`` is deliberately not a time column: the service sends it
+# as a string at day, month, or year precision (``19950812``, ``199508``,
+# ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
     cql2_services=frozenset({"combined-metadata", "monitoring-locations"}),
     date_only_services=frozenset({"daily"}),
@@ -85,7 +88,6 @@ WATERDATA_DIALECT = OgcDialect(
         {
             "begin",
             "begin_utc",
-            "construction_date",
             "end",
             "end_utc",
             "last_modified",

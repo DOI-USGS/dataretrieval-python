@@ -214,7 +214,9 @@ def get_monitoring_locations(
     uses_daylight_savings : string or iterable of strings, optional
         A flag indicating whether a monitoring location uses daylight savings.
     construction_date : string or iterable of strings, optional
-        Date the well was completed.
+        Date the well was completed. The service records it at day, month, or
+        year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the
+        returned column holds these strings as sent.
     aquifer_code : string or iterable of strings, optional
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
