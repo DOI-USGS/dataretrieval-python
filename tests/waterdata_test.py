@@ -777,6 +777,19 @@ def test_get_daily(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
+def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
+    """Issue #428: whole-number values used to infer ``int64``, so ``value``
+    changed dtype between calls. It is ``float64`` regardless of the data."""
+    body = _fixture("daily")
+    for feature in body["features"]:
+        feature["properties"]["value"] = "42"
+    _mock_items(httpx_mock, "daily", body=body)
+
+    df, _ = get_daily(monitoring_location_id="USGS-05427718", parameter_code="00060")
+
+    assert df["value"].dtype == "float64"
+
+
 def test_get_daily_sends_date_only_time_interval(httpx_mock):
     """The Water Data dialect marks ``daily`` date-only, so an open-ended
     interval goes out as ``2025-01-01/..`` with no time component."""
