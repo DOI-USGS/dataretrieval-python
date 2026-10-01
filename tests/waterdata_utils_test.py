@@ -3,6 +3,7 @@ import datetime
 import functools
 import json
 import logging
+import warnings
 from unittest import mock
 
 import httpx
@@ -30,12 +31,14 @@ from dataretrieval.ogc.errors import (
     _parse_retry_after,
     _raise_for_non_200,
 )
+from dataretrieval.ogc.policy import OgcDialect
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
     _deal_with_empty,
     _get_resp_data,
     _to_snake_case,
+    _type_cols,
 )
 from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
@@ -853,6 +856,61 @@ def test_arrange_cols_keeps_geometry_when_present():
     df = pd.DataFrame({"id": ["a"], "value": [1.0], "geometry": ["p1"]})
     result = _arrange_cols(df, ["value"], output_id="daily_id")
     assert "geometry" in result.columns
+
+
+# --- _type_cols --------------------------------------------------------------
+
+_TYPING_DIALECT = OgcDialect(
+    time_cols=frozenset({"time"}), numerical_cols=frozenset({"value"})
+)
+
+
+@pytest.mark.parametrize(
+    "values",
+    [["1", "2"], [1, 2], [], [None, None]],
+    ids=["whole-strings", "json-integers", "empty", "all-null"],
+)
+def test_type_cols_numeric_columns_are_always_float(values):
+    """Whole, integer, empty, and all-null columns all come back ``float64``
+    (#428): ``pd.to_numeric`` alone would keep the integers as ``int64``."""
+    df = pd.DataFrame({"value": pd.Series(values, dtype=object)})
+    assert _type_cols(df, _TYPING_DIALECT)["value"].dtype == "float64"
+
+
+def test_type_cols_missing_values_do_not_warn():
+    """Null and empty-string values are missing, not parse failures."""
+    df = pd.DataFrame(
+        {
+            "time": ["2024-01-01T00:00:00Z", None, ""],
+            "value": ["1.5", None, ""],
+        }
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        _type_cols(df, _TYPING_DIALECT)
+
+
+@pytest.mark.parametrize(
+    ("col", "raw", "kind"),
+    [
+        ("value", ["1.5", None, "", "abc", "n/a"], "numbers"),
+        ("time", ["2024-01-01T00:00:00Z", None, "", "not a date", "n/a"], "datetimes"),
+    ],
+    ids=["numbers", "datetimes"],
+)
+def test_type_cols_counts_only_unparseable_values(col, raw, kind):
+    """The warning counts values the parser dropped, not values that were
+    already missing, so a parse failure cannot be mistaken for a gap (#428)."""
+    df = pd.DataFrame({col: raw})
+    with pytest.warns(UserWarning, match=rf"^2 values in column '{col}'.*{kind}"):
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out[col].isna().sum() == 4
+
+
+def test_type_cols_warning_is_singular_for_one_value():
+    df = pd.DataFrame({"value": ["1.5", "abc"]})
+    with pytest.warns(UserWarning, match=r"^1 value in column 'value'"):
+        _type_cols(df, _TYPING_DIALECT)
 
 
 # --- _format_api_dates -------------------------------------------------------
