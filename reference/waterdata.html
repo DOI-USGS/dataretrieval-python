@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gc7a356e60 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=fdb2db13"></script>
+      <script src="../_static/documentation_options.js?v=d832c248"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1918,17 +1918,22 @@ round trip.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>targets</strong> (<em>list-like</em><em> of </em><em>datetime-convertible</em>) – Target timestamps. Naive datetimes are treated as UTC. Accepts a
 list, <code class="docutils literal notranslate"><span class="pre">pandas.Series</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas.DatetimeIndex</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>,
-or anything <code class="docutils literal notranslate"><span class="pre">pandas.to_datetime</span></code> accepts.</p></li>
+or anything <code class="docutils literal notranslate"><span class="pre">pandas.to_datetime</span></code> accepts except numbers, which
+it would read as epoch nanoseconds. Must contain at least one
+timestamp. Missing timestamps (<code class="docutils literal notranslate"><span class="pre">NaT</span></code>, <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">NaN</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) are rejected.</p></li>
 <li><p><strong>monitoring_location_id</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
 <li><p><strong>parameter_code</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Forwarded to <code class="docutils literal notranslate"><span class="pre">get_continuous</span></code>.</p></li>
-<li><p><strong>window</strong> (string or <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code>, default <code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>) – <p>Half-window around each target, as an ISO 8601 duration
-(<code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT1H&quot;</span></code>, etc.). Also accepts
-any other form <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code> parses — <code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code>
-(<code class="docutils literal notranslate"><span class="pre">&quot;00:07:30&quot;</span></code>), pandas shorthand (<code class="docutils literal notranslate"><span class="pre">&quot;7min30s&quot;</span></code>,
+<li><p><strong>window</strong> (string or <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code>, default <code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>) – <p>How far before and after each target to search, as an ISO 8601
+duration (<code class="docutils literal notranslate"><span class="pre">&quot;PT7M30S&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT1H&quot;</span></code>, etc.); an
+observation matches if it lies within <code class="docutils literal notranslate"><span class="pre">window</span></code> of the target.
+Also accepts any other form <code class="docutils literal notranslate"><span class="pre">pandas.Timedelta</span></code> parses —
+<code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;00:07:30&quot;</span></code>), pandas shorthand (<code class="docutils literal notranslate"><span class="pre">&quot;7min30s&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;450s&quot;</span></code>), or a <code class="docutils literal notranslate"><span class="pre">pd.Timedelta</span></code> directly. See the
 <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html">pandas.Timedelta docs</a>
 for the full grammar.</p>
-<p>Must be small enough that every target’s window contains
+<p>Must not be negative; zero matches only an observation at exactly
+the target time. Must be small enough that every target’s window contains
 roughly one observation at the service cadence. The default
 matches a 15-minute continuous gage; widen (e.g.
 <code class="docutils literal notranslate"><span class="pre">&quot;PT15M&quot;</span></code>) for irregular cadences or tolerance of data gaps.</p>
@@ -1965,9 +1970,16 @@ omitted; no warning is raised.</p></li>
 </p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><strong>FanOutInterrupted</strong></a> – If the underlying fan-out is interrupted. <code class="docutils literal notranslate"><span class="pre">partial_frame</span></code> and
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">targets</span></code> is empty, unparseable, or contains missing timestamps;
+    if <code class="docutils literal notranslate"><span class="pre">window</span></code> is unparseable, missing, or negative; or if <code class="docutils literal notranslate"><span class="pre">on_tie</span></code>
+    is not one of its options.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">targets</span></code> or <code class="docutils literal notranslate"><span class="pre">window</span></code> is a bare number, or if <code class="docutils literal notranslate"><span class="pre">time</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, or
+    <code class="docutils literal notranslate"><span class="pre">filter_lang</span></code> is passed in <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>.</p></li>
+<li><p><a class="reference internal" href="exceptions.html#dataretrieval.FanOutInterrupted" title="dataretrieval.FanOutInterrupted"><strong>FanOutInterrupted</strong></a> – If the underlying fan-out is interrupted. <code class="docutils literal notranslate"><span class="pre">partial_frame</span></code> and
     <code class="docutils literal notranslate"><span class="pre">call.partial_frame</span></code> contain nearest-selected rows with
-    <code class="docutils literal notranslate"><span class="pre">target_time</span></code>; <code class="docutils literal notranslate"><span class="pre">call.resume()</span></code> returns that same public shape.</p>
+    <code class="docutils literal notranslate"><span class="pre">target_time</span></code>; <code class="docutils literal notranslate"><span class="pre">call.resume()</span></code> returns that same public shape.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Notes</p>

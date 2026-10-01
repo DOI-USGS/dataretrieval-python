@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
+  <title>dataretrieval.waterdata.nearest &mdash; dataretrieval 0.1.dev1+gc7a356e60 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=fdb2db13"></script>
+      <script src="../../../_static/documentation_options.js?v=d832c248"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -102,6 +102,12 @@
 
 <span class="n">OnTie</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"first"</span><span class="p">,</span> <span class="s2">"last"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">]</span>
 <span class="n">_VALID_ON_TIE</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OnTie</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">OnTie</span><span class="p">)</span>
+
+<span class="c1"># ``pandas.api.types.infer_dtype`` results that ``pandas.to_datetime`` would</span>
+<span class="c1"># read as epoch nanoseconds rather than reject.</span>
+<span class="n">_NUMERIC_INFERRED_DTYPES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">"integer"</span><span class="p">,</span> <span class="s2">"floating"</span><span class="p">,</span> <span class="s2">"mixed-integer-float"</span><span class="p">,</span> <span class="s2">"decimal"</span><span class="p">}</span>
+<span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ResumableCall</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
@@ -207,22 +213,27 @@
 <span class="sd">    targets : list-like of datetime-convertible</span>
 <span class="sd">        Target timestamps. Naive datetimes are treated as UTC. Accepts a</span>
 <span class="sd">        list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,</span>
-<span class="sd">        or anything ``pandas.to_datetime`` accepts.</span>
+<span class="sd">        or anything ``pandas.to_datetime`` accepts except numbers, which</span>
+<span class="sd">        it would read as epoch nanoseconds. Must contain at least one</span>
+<span class="sd">        timestamp. Missing timestamps (``NaT``, ``None``, ``NaN``, or</span>
+<span class="sd">        ``""``) are rejected.</span>
 <span class="sd">    monitoring_location_id : string or iterable of strings, optional</span>
 <span class="sd">        Forwarded to ``get_continuous``.</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        Forwarded to ``get_continuous``.</span>
 <span class="sd">    window : string or ``pandas.Timedelta``, default ``"PT7M30S"``</span>
-<span class="sd">        Half-window around each target, as an ISO 8601 duration</span>
-<span class="sd">        (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.). Also accepts</span>
-<span class="sd">        any other form ``pandas.Timedelta`` parses — ``HH:MM:SS``</span>
-<span class="sd">        (``"00:07:30"``), pandas shorthand (``"7min30s"``,</span>
+<span class="sd">        How far before and after each target to search, as an ISO 8601</span>
+<span class="sd">        duration (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.); an</span>
+<span class="sd">        observation matches if it lies within ``window`` of the target.</span>
+<span class="sd">        Also accepts any other form ``pandas.Timedelta`` parses —</span>
+<span class="sd">        ``HH:MM:SS`` (``"00:07:30"``), pandas shorthand (``"7min30s"``,</span>
 <span class="sd">        ``"450s"``), or a ``pd.Timedelta`` directly. See the</span>
 <span class="sd">        `pandas.Timedelta docs</span>
 <span class="sd">        &lt;https://pandas.pydata.org/docs/reference/api/pandas.Timedelta.html&gt;`_</span>
 <span class="sd">        for the full grammar.</span>
 
-<span class="sd">        Must be small enough that every target's window contains</span>
+<span class="sd">        Must not be negative; zero matches only an observation at exactly</span>
+<span class="sd">        the target time. Must be small enough that every target's window contains</span>
 <span class="sd">        roughly one observation at the service cadence. The default</span>
 <span class="sd">        matches a 15-minute continuous gage; widen (e.g.</span>
 <span class="sd">        ``"PT15M"``) for irregular cadences or tolerance of data gaps.</span>
@@ -259,6 +270,13 @@
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If ``targets`` is empty, unparseable, or contains missing timestamps;</span>
+<span class="sd">        if ``window`` is unparseable, missing, or negative; or if ``on_tie``</span>
+<span class="sd">        is not one of its options.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If ``targets`` or ``window`` is a bare number, or if ``time``, ``filter``, or</span>
+<span class="sd">        ``filter_lang`` is passed in ``kwargs``.</span>
 <span class="sd">    FanOutInterrupted</span>
 <span class="sd">        If the underlying fan-out is interrupted. ``partial_frame`` and</span>
 <span class="sd">        ``call.partial_frame`` contain nearest-selected rows with</span>
@@ -312,14 +330,7 @@
 <span class="sd">    """</span>
     <span class="n">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
     <span class="n">target_index</span> <span class="o">=</span> <span class="n">_coerce_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span>
-    <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">"targets is empty; there is nothing to find a nearest value for. "</span>
-            <span class="s2">"Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "</span>
-            <span class="s2">"or a pandas DatetimeIndex."</span>
-        <span class="p">)</span>
+    <span class="n">window_td</span> <span class="o">=</span> <span class="n">_coerce_window</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
 
     <span class="n">selector</span> <span class="o">=</span> <span class="n">_NearestSelector</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">,</span> <span class="n">on_tie</span><span class="p">)</span>
     <span class="n">filter_expr</span> <span class="o">=</span> <span class="n">_build_window_or_filter</span><span class="p">(</span><span class="n">target_index</span><span class="p">,</span> <span class="n">window_td</span><span class="p">)</span>
@@ -396,11 +407,118 @@
 <span class="sd">    A bare scalar (string, ``Timestamp``, ``datetime``, …) becomes a</span>
 <span class="sd">    one-element ``DatetimeIndex``; an iterable (list, ``Series``, ``ndarray``)</span>
 <span class="sd">    is wrapped directly so its elements are preserved.</span>
+
+<span class="sd">    Raises ``TypeError`` for numbers, which pandas reads as nanoseconds since</span>
+<span class="sd">    the epoch, and ``ValueError`` for an unparseable, empty, or missing target:</span>
+<span class="sd">    a missing target would be rendered as a ``'nan'`` CQL bound rather than a</span>
+<span class="sd">    window.</span>
 <span class="sd">    """</span>
-    <span class="n">parsed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_scalar</span><span class="p">(</span><span class="n">parsed</span><span class="p">):</span>
-        <span class="n">parsed</span> <span class="o">=</span> <span class="p">[</span><span class="n">parsed</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">targets</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_list_like</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">targets</span><span class="p">]</span>
+    <span class="n">_reject_numeric_targets</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="c1"># pandas' own message goes on to suggest ``format=``, which this getter</span>
+        <span class="c1"># does not accept; keep only the part that names the offending value.</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">". You might want to try"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">detail</span> <span class="o">=</span> <span class="n">detail</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"targets could not be parsed as timestamps: </span><span class="si">{</span><span class="n">detail</span><span class="si">}</span><span class="s2">. Pass "</span>
+            <span class="s2">"timestamps in one consistent format, e.g. ISO 8601 "</span>
+            <span class="s2">"'2024-01-01T12:00:00Z', or parse them first with "</span>
+            <span class="s2">"pandas.to_datetime(..., format=...)."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"targets is empty; there is nothing to find a nearest value for. "</span>
+            <span class="s2">"Pass at least one timestamp, e.g. targets=['2024-01-01 12:00'] "</span>
+            <span class="s2">"or a pandas DatetimeIndex."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">hasnans</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_missing_targets_message</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">index</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reject_numeric_targets</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Refuse numbers, which ``pandas.to_datetime`` reads as epoch nanoseconds.</span>
+
+<span class="sd">    ``targets=[1.5e9]`` meant as epoch seconds would otherwise become</span>
+<span class="sd">    1970-01-01T00:00:01.5Z and match nothing. Missing values are skipped, so a</span>
+<span class="sd">    lone ``NaN`` is still reported as a missing target. *values* is list-like.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">infer_dtype</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">skipna</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_NUMERIC_INFERRED_DTYPES</span><span class="p">:</span>
+        <span class="c1"># A numeric inference means at least one non-missing value exists.</span>
+        <span class="c1"># Formatted with str() so a numpy scalar reads as 1500000000.0, not</span>
+        <span class="c1"># np.float64(1500000000.0).</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">value</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">"targets must be timestamps, not numbers, which pandas would read "</span>
+            <span class="sa">f</span><span class="s2">"as nanoseconds since 1970-01-01 (got </span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2">). Convert them first "</span>
+            <span class="s2">"with pandas.to_datetime(targets, unit=...), setting unit to what "</span>
+            <span class="s2">"your numbers count: 's', 'ms', 'us', or 'ns'."</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_missing_targets_message</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Describe the missing entries of *index* so a caller can find them."""</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">missing</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">missing</span><span class="o">.</span><span class="n">argmax</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="s2">"its only entry is"</span> <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"all </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> entries are"</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"targets has no valid timestamps; </span><span class="si">{</span><span class="n">entries</span><span class="si">}</span><span class="s2"> missing "</span>
+            <span class="s2">"(NaT, None, NaN, or ''). Pass at least one timestamp, e.g. "</span>
+            <span class="s2">"targets=['2024-01-01 12:00']."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"1 missing timestamp (NaT, None, NaN, or ''), at position </span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> missing timestamps (NaT, None, NaN, or ''); the first is "</span>
+            <span class="sa">f</span><span class="s2">"at position </span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"targets contains </span><span class="si">{</span><span class="n">found</span><span class="si">}</span><span class="s2">, counting from 0. Remove those entries or "</span>
+        <span class="s2">"replace them with valid timestamps, e.g. targets.dropna() for a "</span>
+        <span class="s2">"pandas Series or DatetimeIndex."</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_window</span><span class="p">(</span><span class="n">window</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Parse ``window`` and reject the values that cannot bound a match.</span>
+
+<span class="sd">    A bare number is refused because ``pandas.Timedelta`` reads it as</span>
+<span class="sd">    nanoseconds, so ``window=450`` meant as seconds would match nothing. A</span>
+<span class="sd">    missing window cannot be subtracted from the targets, and a negative one</span>
+<span class="sd">    inverts every bound; both would otherwise return an empty frame</span>
+<span class="sd">    indistinguishable from a gap in the data.</span>
+<span class="sd">    """</span>
+    <span class="n">example</span> <span class="o">=</span> <span class="s2">"Pass an ISO 8601 duration, e.g. window='PT7M30S'."</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">"window must be a duration string or Timedelta, not a number, "</span>
+            <span class="sa">f</span><span class="s2">"which pandas would read as nanoseconds (got </span><span class="si">{</span><span class="n">window</span><span class="si">!r}</span><span class="s2">). </span><span class="si">{</span><span class="n">example</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">window_td</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"window could not be parsed as a duration (got </span><span class="si">{</span><span class="n">window</span><span class="si">!r}</span><span class="s2">). </span><span class="si">{</span><span class="n">example</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">window_td</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"window is missing (got </span><span class="si">{</span><span class="n">window</span><span class="si">!r}</span><span class="s2">). </span><span class="si">{</span><span class="n">example</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">window_td</span> <span class="o">&lt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># ``window`` spans both sides of each target, so the sign carries no</span>
+        <span class="c1"># meaning; the magnitude is what the caller wants.</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">window_td</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"window must not be negative; it already "</span>
+            <span class="s2">"extends both before and after each target. Drop the sign, e.g. "</span>
+            <span class="sa">f</span><span class="s2">"window=</span><span class="si">{</span><span class="n">magnitude</span><span class="si">!r}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">window_td</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_nearest_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">on_tie</span><span class="p">:</span> <span class="n">OnTie</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -408,8 +526,9 @@
     <span class="k">for</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"filter"</span><span class="p">,</span> <span class="s2">"filter_lang"</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">forbidden</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"get_nearest_continuous constructs its own </span><span class="si">{</span><span class="n">forbidden</span><span class="si">!r}</span><span class="s2">; "</span>
-                <span class="s2">"do not pass it directly"</span>
+                <span class="sa">f</span><span class="s2">"get_nearest_continuous sets </span><span class="si">{</span><span class="n">forbidden</span><span class="si">}</span><span class="s2"> itself. Remove "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">forbidden</span><span class="si">}</span><span class="s2"> from the call; choose the times with targets and "</span>
+                <span class="s2">"window."</span>
             <span class="p">)</span>
     <span class="n">require_one_of</span><span class="p">(</span><span class="n">on_tie</span><span class="p">,</span> <span class="n">_VALID_ON_TIE</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"on_tie"</span><span class="p">)</span>
 

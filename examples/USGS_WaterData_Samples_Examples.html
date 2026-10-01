@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
+  <title>USGS dataretrieval Python Package get_samples() Examples &mdash; dataretrieval 0.1.dev1+gc7a356e60 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=fdb2db13"></script>
+      <script src="../_static/documentation_options.js?v=d832c248"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,13 +128,13 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g75e56ab67)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+gc7a356e60)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.3)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.19)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
 Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
 Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.7.22)
@@ -202,7 +202,7 @@ Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_5266/2642924150.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_5503/2642924150.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
   wq_data = waterdata.get_samples(monitoringLocationIdentifier=siteID)
 </pre></div></div>
 </div>
@@ -211,7 +211,7 @@ Eastern-most longitude - Northern-most longitude Example: [-92.8,44.2,-88.9,46.0
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 2424 samples.
+Retrieved data for 2434 samples.
 </pre></div></div>
 </div>
 </section>
@@ -420,7 +420,7 @@ Retrieved data for 2424 samples.
       <td>...</td>
     </tr>
     <tr>
-      <th>2419</th>
+      <th>2429</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
       <td>["USGS"]</td>
@@ -444,7 +444,7 @@ Retrieved data for 2424 samples.
       <td>NaT</td>
     </tr>
     <tr>
-      <th>2420</th>
+      <th>2430</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
       <td>["USGS"]</td>
@@ -468,7 +468,7 @@ Retrieved data for 2424 samples.
       <td>NaT</td>
     </tr>
     <tr>
-      <th>2421</th>
+      <th>2431</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
       <td>["USGS"]</td>
@@ -492,7 +492,7 @@ Retrieved data for 2424 samples.
       <td>NaT</td>
     </tr>
     <tr>
-      <th>2422</th>
+      <th>2432</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
       <td>["USGS"]</td>
@@ -516,7 +516,7 @@ Retrieved data for 2424 samples.
       <td>NaT</td>
     </tr>
     <tr>
-      <th>2423</th>
+      <th>2433</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
       <td>["USGS"]</td>
@@ -541,7 +541,7 @@ Retrieved data for 2424 samples.
     </tr>
   </tbody>
 </table>
-<p>2424 rows × 187 columns</p>
+<p>2434 rows × 187 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -615,9 +615,9 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_5266/3910379390.py:3: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
+/tmp/ipykernel_5503/3910379390.py:3: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
   wq_multi_site = waterdata.get_samples(
-/tmp/ipykernel_5266/3910379390.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_5503/3910379390.py:3: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
   wq_multi_site = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -626,7 +626,7 @@ The query URL used to retrieve the data from USGS Samples was: https://api.water
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 312 samples.
+Retrieved data for 313 samples.
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -820,30 +820,6 @@ Retrieved data for 312 samples.
       <td>...</td>
     </tr>
     <tr>
-      <th>307</th>
-      <td>USGS</td>
-      <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>USGS-04024000</td>
-      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
-      <td>...</td>
-      <td>Federal/US Government</td>
-      <td>2026-08-19</td>
-      <td>00065</td>
-      <td>NaN</td>
-      <td>2026-04-20 15:50:00+00:00</td>
-      <td>NaT</td>
-      <td>NaT</td>
-      <td>NaT</td>
-      <td>NaT</td>
-      <td>NaT</td>
-    </tr>
-    <tr>
       <th>308</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
@@ -871,7 +847,7 @@ Retrieved data for 312 samples.
       <th>309</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
-      <td>["Great Lakes Restoration Initiative"]</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -881,7 +857,7 @@ Retrieved data for 312 samples.
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
       <td>Federal/US Government</td>
-      <td>2026-08-19</td>
+      <td>2026-09-17</td>
       <td>00065</td>
       <td>NaN</td>
       <td>2026-05-26 14:15:00+00:00</td>
@@ -905,7 +881,7 @@ Retrieved data for 312 samples.
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
       <td>Federal/US Government</td>
-      <td>2026-07-29</td>
+      <td>2026-09-15</td>
       <td>00065</td>
       <td>NaN</td>
       <td>2026-06-23 14:00:00+00:00</td>
@@ -919,6 +895,30 @@ Retrieved data for 312 samples.
       <th>311</th>
       <td>USGS</td>
       <td>U.S. Geological Survey</td>
+      <td>["Great Lakes Restoration Initiative","GLRITRI...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>USGS-04024000</td>
+      <td>ST. LOUIS RIVER AT SCANLON, MN</td>
+      <td>...</td>
+      <td>Federal/US Government</td>
+      <td>2026-09-17</td>
+      <td>00065</td>
+      <td>NaN</td>
+      <td>2026-08-24 17:30:00+00:00</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+      <td>NaT</td>
+    </tr>
+    <tr>
+      <th>312</th>
+      <td>USGS</td>
+      <td>U.S. Geological Survey</td>
       <td>["Great Lakes Restoration Initiative","00TX369...</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -929,10 +929,10 @@ Retrieved data for 312 samples.
       <td>ST. LOUIS RIVER AT SCANLON, MN</td>
       <td>...</td>
       <td>Federal/US Government</td>
-      <td>2026-08-25</td>
+      <td>2026-09-23</td>
       <td>00065</td>
       <td>NaN</td>
-      <td>2026-08-24 17:30:00+00:00</td>
+      <td>2026-09-21 16:00:00+00:00</td>
       <td>NaT</td>
       <td>NaT</td>
       <td>NaT</td>
@@ -941,7 +941,7 @@ Retrieved data for 312 samples.
     </tr>
   </tbody>
 </table>
-<p>312 rows × 187 columns</p>
+<p>313 rows × 187 columns</p>
 </div></div>
 </div>
 </section>
@@ -969,11 +969,11 @@ Retrieved data for 312 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_5266/2201109112.py:4: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_lower&#39; instead.
+/tmp/ipykernel_5503/2201109112.py:4: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_lower&#39; instead.
   wq_data2 = waterdata.get_samples(
-/tmp/ipykernel_5266/2201109112.py:4: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
+/tmp/ipykernel_5503/2201109112.py:4: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
   wq_data2 = waterdata.get_samples(
-/tmp/ipykernel_5266/2201109112.py:4: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_5503/2201109112.py:4: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
   wq_data2 = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -1330,7 +1330,7 @@ Retrieved data for 152 samples.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_5266/1863275440.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_5503/1863275440.py:2: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
   wq_data, _ = waterdata.get_samples(monitoringLocationIdentifier=siteID)
 </pre></div></div>
 </div>
@@ -1339,7 +1339,7 @@ Retrieved data for 152 samples.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Retrieved data for 2424 sample results.
+Retrieved data for 2434 sample results.
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1347,7 +1347,7 @@ Retrieved data for 2424 sample results.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_5266/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+/tmp/ipykernel_5503/1863275440.py:5: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
   wq_data[&#34;characteristic_unit&#34;] = (
 </pre></div></div>
 </div>
@@ -1577,31 +1577,6 @@ Retrieved data for 2424 sample results.
       <td>...</td>
     </tr>
     <tr>
-      <th>2026-04-20</th>
-      <th>10:08:00</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>...</td>
-      <td>7.0</td>
-      <td>NaN</td>
-      <td>50.6</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>7.7</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
       <th>2026-05-12</th>
       <th>13:46:00</th>
       <td>NaN</td>
@@ -1701,9 +1676,34 @@ Retrieved data for 2424 sample results.
       <td>NaN</td>
       <td>NaN</td>
     </tr>
+    <tr>
+      <th>2026-09-08</th>
+      <th>16:22:00</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>1.9</td>
+      <td>NaN</td>
+      <td>45.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>13.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
   </tbody>
 </table>
-<p>359 rows × 34 columns</p>
+<p>360 rows × 34 columns</p>
 </div></div>
 </div>
 </section>

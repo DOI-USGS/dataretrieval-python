@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_continuous() Examples &mdash; dataretrieval 0.1.dev1+g75e56ab67 documentation</title>
+  <title>USGS dataretrieval Python Package get_continuous() Examples &mdash; dataretrieval 0.1.dev1+gc7a356e60 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=fdb2db13"></script>
+      <script src="../_static/documentation_options.js?v=d832c248"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,13 +128,13 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g75e56ab67)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+gc7a356e60)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.5)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
 Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.3)
 Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.19)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
 Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
 Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
 Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.7.22)
@@ -248,6 +248,7 @@ Retrieved 2785 data values.
       <th>approval_status</th>
       <th>qualifier</th>
       <th>last_modified</th>
+      <th>method_category</th>
       <th>continuous_id</th>
     </tr>
   </thead>
@@ -265,6 +266,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>c1d51022-849f-4c9c-a680-f5956bab8bc9</td>
     </tr>
     <tr>
@@ -280,6 +282,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>e283ab0d-0dc7-4c7c-b29a-11a990f47c5b</td>
     </tr>
     <tr>
@@ -295,6 +298,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>33a3d549-51e2-4b47-b420-b607fd0b3497</td>
     </tr>
     <tr>
@@ -310,6 +314,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>f3fb4785-5109-434e-8625-c59f5554cd18</td>
     </tr>
     <tr>
@@ -325,10 +330,12 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>c91ea645-9a58-4265-b0e0-d628dd4000ab</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -355,6 +362,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>7c019805-71a2-4f6e-85c6-901274cb124e</td>
     </tr>
     <tr>
@@ -370,6 +378,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>20f92c76-913e-40e0-b1e8-7ad590503c22</td>
     </tr>
     <tr>
@@ -385,6 +394,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>987b74ac-c2d1-44ce-aa92-06184f0cc29b</td>
     </tr>
     <tr>
@@ -400,6 +410,7 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>a5540ab1-47db-4bdc-947f-e4f5a7ba1884</td>
     </tr>
     <tr>
@@ -415,11 +426,12 @@ Retrieved 2785 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-07-03 18:26:44.437050+00:00</td>
+      <td>None</td>
       <td>b3bc536e-615c-4ae2-a05a-df77b318f40a</td>
     </tr>
   </tbody>
 </table>
-<p>2785 rows × 12 columns</p>
+<p>2785 rows × 13 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -447,6 +459,7 @@ unit_of_measure                           str
 approval_status                           str
 qualifier                              object
 last_modified             datetime64[us, UTC]
+method_category                        object
 continuous_id                             str
 dtype: object
 </pre></div></div>
@@ -638,6 +651,7 @@ Retrieved 1 data values.
       <th>approval_status</th>
       <th>qualifier</th>
       <th>last_modified</th>
+      <th>method_category</th>
       <th>continuous_id</th>
     </tr>
   </thead>
@@ -655,6 +669,7 @@ Retrieved 1 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>bde6e74b-0d6c-4f13-bbc8-8ed1ff336fc6</td>
     </tr>
   </tbody>
@@ -726,6 +741,7 @@ Retrieved 1 data values.
       <th>approval_status</th>
       <th>qualifier</th>
       <th>last_modified</th>
+      <th>method_category</th>
       <th>continuous_id</th>
     </tr>
   </thead>
@@ -737,13 +753,14 @@ Retrieved 1 data values.
       <td>USGS-05114000</td>
       <td>00060</td>
       <td>00011</td>
-      <td>2026-09-14 00:00:00+00:00</td>
-      <td>176</td>
+      <td>2026-10-01 00:00:00+00:00</td>
+      <td>203</td>
       <td>ft^3/s</td>
       <td>Provisional</td>
       <td>None</td>
-      <td>2026-09-14 00:20:20.097244+00:00</td>
-      <td>5bb708eb-9d0d-4071-b7eb-81ab8cdad83d</td>
+      <td>2026-10-01 00:16:20.345417+00:00</td>
+      <td>None</td>
+      <td>237e8334-b653-498c-a4e3-2ed87078f1c8</td>
     </tr>
   </tbody>
 </table>
@@ -816,6 +833,7 @@ Retrieved 96 data values.
       <th>approval_status</th>
       <th>qualifier</th>
       <th>last_modified</th>
+      <th>method_category</th>
       <th>continuous_id</th>
     </tr>
   </thead>
@@ -833,6 +851,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>bde6e74b-0d6c-4f13-bbc8-8ed1ff336fc6</td>
     </tr>
     <tr>
@@ -848,6 +867,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>ac396e6b-d731-419a-9f7f-807b5e3cec73</td>
     </tr>
     <tr>
@@ -863,6 +883,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>889af5a8-850c-46e0-afb3-e472991a7001</td>
     </tr>
     <tr>
@@ -878,6 +899,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>ac1198c8-0857-43e1-998b-f1e7382429eb</td>
     </tr>
     <tr>
@@ -893,10 +915,12 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>e787d026-fce2-4f1f-a253-d2e0af849e06</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -923,6 +947,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>0922c174-5d17-4751-88a6-63455b407486</td>
     </tr>
     <tr>
@@ -938,6 +963,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>2470636f-3b9d-4cda-968b-dabd01b1a844</td>
     </tr>
     <tr>
@@ -953,6 +979,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>f6b7c7c7-058b-4264-95a1-3683c095d92e</td>
     </tr>
     <tr>
@@ -968,6 +995,7 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>c293157c-bd5b-4685-bb06-4a7597ca2932</td>
     </tr>
     <tr>
@@ -983,11 +1011,12 @@ Retrieved 96 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-09-01 12:22:04.139884+00:00</td>
+      <td>None</td>
       <td>7bc54eb8-654d-4294-b22e-6ebd2ecf5c1f</td>
     </tr>
   </tbody>
 </table>
-<p>96 rows × 12 columns</p>
+<p>96 rows × 13 columns</p>
 </div></div>
 </div>
 </section>
@@ -1057,6 +1086,7 @@ Retrieved 2 data values.
       <th>approval_status</th>
       <th>qualifier</th>
       <th>last_modified</th>
+      <th>method_category</th>
       <th>continuous_id</th>
     </tr>
   </thead>
@@ -1074,6 +1104,7 @@ Retrieved 2 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-08-27 16:02:26.026729+00:00</td>
+      <td>None</td>
       <td>86d87afb-0c3c-4e64-b759-4a1e7ae3d374</td>
     </tr>
     <tr>
@@ -1089,6 +1120,7 @@ Retrieved 2 data values.
       <td>Approved</td>
       <td>None</td>
       <td>2025-08-21 19:19:27.898360+00:00</td>
+      <td>None</td>
       <td>50e6a614-b358-4b01-83e0-8c7ac21a8730</td>
     </tr>
   </tbody>
