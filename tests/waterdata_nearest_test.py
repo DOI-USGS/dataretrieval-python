@@ -181,6 +181,27 @@ def test_empty_targets_raises(patch_get_continuous):
     patch_get_continuous.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    "targets",
+    [
+        pd.NaT,
+        None,
+        [pd.NaT],
+        ["2024-01-01T12:00:00Z", None],
+        pd.Series([pd.Timestamp("2024-01-01T12:00:00Z"), pd.NaT]),
+        pd.DatetimeIndex(["2024-01-01T12:00:00Z", pd.NaT]),
+        pd.NaT.to_datetime64(),
+    ],
+    ids=["nat", "none", "list", "mixed-list", "series", "index", "numpy-nat"],
+)
+def test_missing_targets_raise_before_query(patch_get_continuous, targets):
+    """Missing timestamps must not become ``'nan'`` CQL bounds."""
+    patch_get_continuous.return_value = (_fake_df([]), mock.Mock())
+    with pytest.raises(ValueError, match="targets.*missing.*Remove"):
+        get_nearest_continuous(targets, monitoring_location_id="USGS-02238500")
+    patch_get_continuous.assert_not_called()
+
+
 def test_rejects_time_kwarg(patch_get_continuous):
     with pytest.raises(TypeError, match="time"):
         get_nearest_continuous(

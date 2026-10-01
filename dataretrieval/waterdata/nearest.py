@@ -128,7 +128,8 @@ def get_nearest_continuous(
     targets : list-like of datetime-convertible
         Target timestamps. Naive datetimes are treated as UTC. Accepts a
         list, ``pandas.Series``, ``pandas.DatetimeIndex``, ``numpy.ndarray``,
-        or anything ``pandas.to_datetime`` accepts.
+        or anything ``pandas.to_datetime`` accepts. Missing timestamps
+        (``NaT`` or ``None``) are not accepted.
     monitoring_location_id : string or iterable of strings, optional
         Forwarded to ``get_continuous``.
     parameter_code : string or iterable of strings, optional
@@ -180,6 +181,8 @@ def get_nearest_continuous(
 
     Raises
     ------
+    ValueError
+        If ``targets`` is empty or contains missing timestamps.
     FanOutInterrupted
         If the underlying fan-out is interrupted. ``partial_frame`` and
         ``call.partial_frame`` contain nearest-selected rows with
@@ -320,7 +323,14 @@ def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
     parsed = pd.to_datetime(targets, utc=True)
     if pd.api.types.is_scalar(parsed):
         parsed = [parsed]
-    return pd.DatetimeIndex(parsed)
+    index = pd.DatetimeIndex(parsed)
+    if index.hasnans:
+        raise ValueError(
+            "targets contains missing timestamps (NaT/None). Remove missing "
+            "entries or replace them with valid timestamps before calling "
+            "get_nearest_continuous."
+        )
+    return index
 
 
 def _check_nearest_kwargs(kwargs: dict[str, Any], on_tie: OnTie) -> None:
