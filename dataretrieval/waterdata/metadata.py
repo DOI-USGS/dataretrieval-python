@@ -357,8 +357,8 @@ def get_monitoring_locations(
 #: name may also appear in ``properties``, and translating it would rename a
 #: column the caller asked for by name.
 _V0_ONLY_FILTERS: dict[str, str] = {
-    "begin_utc": "'begin'",
-    "end_utc": "'end'",
+    "begin_utc": "begin=...",
+    "end_utc": "end=...",
     "state_name": "get_combined_metadata({name}=...)",
     "hydrologic_unit_code": "get_combined_metadata(hydrologic_unit_code=...)",
 }

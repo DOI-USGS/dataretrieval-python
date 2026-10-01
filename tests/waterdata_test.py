@@ -1151,6 +1151,18 @@ def test_get_field_measurements(httpx_mock):
     assert qs["unit_of_measure"] == ["ft^3/s"]
 
 
+def test_field_measurements_time_is_a_date_with_time_of_day_alongside(httpx_mock):
+    """v1 sends ``time`` as a date and the time of day separately; the date
+    parses to a tz-naive midnight, as ``get_daily``'s does."""
+    _mock_items(httpx_mock, "field-measurements")
+
+    df, _ = get_field_measurements(monitoring_location_id="USGS-05427718")
+
+    assert df["time"].dt.tz is None
+    assert (df["time"] == df["time"].dt.normalize()).all()
+    assert df["time_of_day"].tolist() == ["16:00:27+00:00", "14:49:30+00:00"]
+
+
 def test_get_field_measurements_metadata(httpx_mock):
     _mock_items(httpx_mock, "field-measurements-metadata")
 

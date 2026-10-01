@@ -252,7 +252,7 @@ def get_ogc_data(
         # The endpoint is resolved from the active ContextVar at request time;
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
-        base_url=ogc_api_url(api_version),
+        base_url=ogc_api_url(api_version=api_version),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,

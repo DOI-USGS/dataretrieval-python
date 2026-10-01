@@ -38,7 +38,7 @@ def _endpoint(path: str) -> str:
     return f"{root}{path}"
 
 
-def ogc_api_url(api_version: str | None = None) -> str:
+def ogc_api_url(*, api_version: str | None = None) -> str:
     """Return the OGC collections endpoint for the effective configuration.
 
     Parameters
