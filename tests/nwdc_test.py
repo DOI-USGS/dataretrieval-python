@@ -402,6 +402,12 @@ def test_resolve_locations_requires_exactly_one():
     with pytest.raises(ValueError, match="exactly one"):
         _resolve_locations(None, None, None)
     with pytest.raises(ValueError, match="exactly one"):
+        _resolve_locations(None, "55025", "04")
+
+
+def test_state_qualifies_county_rather_than_naming_a_second_location():
+    assert _resolve_locations("WI", "Dane", None) == ["countyCd:55025"]
+    with pytest.raises(ValueError, match="in Wisconsin, not Rhode Island"):
         _resolve_locations("RI", "55025", None)
 
 

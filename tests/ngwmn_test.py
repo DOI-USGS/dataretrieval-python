@@ -11,6 +11,7 @@ is marked ``live``: it asserts something about the *upstream* API that a mock
 cannot tell us, because the mock is what would need updating.
 """
 
+import json
 import re
 from urllib.parse import parse_qs, urlsplit
 
@@ -348,6 +349,50 @@ def test_get_sites_state_accepts_name_postal_or_fips(httpx_mock):
         assert "state" not in qs
 
 
+def test_get_sites_county_sends_state_name_and_county_name(httpx_mock):
+    """``sites`` files a county by name; ``state`` qualifies it."""
+    _mock(httpx_mock, "sites", _SITES)
+
+    ngwmn.get_sites(county="Dane", state="WI", skip_geometry=True)
+    ngwmn.get_sites(county="02020", skip_geometry=True)
+
+    dane, anchorage = _queries(httpx_mock, "sites")
+    assert dane["state_name"] == ["Wisconsin"]
+    assert dane["county_name"] == ["Dane County"]
+    # NGWMN names Anchorage the other way round from the county table.
+    assert anchorage["county_name"] == ["Municipality of Anchorage"]
+    assert "county" not in dane and "state" not in dane
+
+
+def test_get_sites_posts_a_county_name_list(httpx_mock):
+    """A comma-joined ``county_name`` matches nothing on NGWMN, where the
+    same names POSTed as CQL2 match; this applies to ``county_name`` too."""
+    httpx_mock.add_response(method="POST", url=_items_re("sites"), json=_SITES)
+
+    ngwmn.get_sites(county=["55025", "55065"], skip_geometry=True)
+    ngwmn.get_sites(county_name=["Dane County", "Lafayette County"], skip_geometry=True)
+
+    for req in httpx_mock.get_requests():
+        assert req.method == "POST"
+        (clause,) = json.loads(req.content)["args"]
+        assert clause["args"][1] == ["Dane County", "Lafayette County"]
+    first = parse_qs(urlsplit(str(httpx_mock.get_requests()[0].url)).query)
+    assert first["state_name"] == ["Wisconsin"]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"county": ["55025", "17031"]}, "counties from one state per call"),
+        ({"county": "09110"}, "Pass county_name directly"),
+        ({"county": "55025", "county_name": "Dane County"}, "cannot be combined"),
+    ],
+)
+def test_get_sites_county_refusals(kwargs, match):
+    with pytest.raises(ValueError, match=match):
+        ngwmn.get_sites(**kwargs)
+
+
 # --- providers ---------------------------------------------------------------
 
 
@@ -598,6 +643,32 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
 
 
 # --- live upstream monitor ---------------------------------------------------
+
+
+@pytest.mark.live
+def test_county_names_still_match_the_table_upstream():
+    """Every county NGWMN files a site under is the table's name for it, but for
+    ``ngwmn._NGWMN_COUNTY_NAMES`` and the retired Connecticut counties.
+
+    If this fails, NGWMN renamed a county (add it to ``_NGWMN_COUNTY_NAMES``),
+    or moved Connecticut to planning regions (drop ``_LEGACY_COUNTY_STATES``).
+    """
+    from dataretrieval.codes.counties import counties
+    from dataretrieval.codes.states import to_state
+    from dataretrieval.ngwmn import _LEGACY_COUNTY_STATES, _NGWMN_COUNTY_NAMES
+
+    df, _ = ngwmn.get_sites(
+        properties=["state_name", "county_name"], skip_geometry=True
+    )
+    known = {
+        (to_state(f[:2], "name"), _NGWMN_COUNTY_NAMES.get(f, name))
+        for f, name in counties.items()
+        if f[:2] not in _LEGACY_COUNTY_STATES
+    }
+    legacy = {to_state(s, "name") for s in _LEGACY_COUNTY_STATES}
+    filed = set(zip(df["state_name"], df["county_name"], strict=True))
+    assert {p for p in filed if p[0] not in legacy} <= known
+    assert all(not name.endswith("Planning Region") for s, name in filed if s in legacy)
 
 
 @pytest.mark.live

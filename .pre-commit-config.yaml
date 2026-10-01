@@ -27,7 +27,7 @@ repos:
         language: pygrep
         entry: \b([A-Za-z]+)[ \t]+\1\b
         types: [text]
-        exclude: ^tests/data/
+        exclude: ^(tests/data/|dataretrieval/codes/_county_table\.py$)
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.5
