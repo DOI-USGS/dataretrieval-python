@@ -143,6 +143,36 @@ a service names a thing `site-types` or `site_type_code`, that is its vocabulary
 and is reproduced rather than translated. Prose that is not about one particular
 adapter says *monitoring location*.
 
+**State** — A US state, the District of Columbia, or one of the five
+territories, as the place a monitoring location is in.
+
+*Domain term.* The services spell it differently: Water Data `state_name`
+(`"Wisconsin"`) and `state_code` (`"55"`), the Water Data statistics service
+`state_code` (`"US:55"`), NGWMN `state_name` on `sites` but a postal `state`
+(`"WI"`) on `providers`, NWDC `stateCd:WI`, WQP `statecode`, NWIS `stateCd`.
+Each adapter keeps those parameters. Where an adapter also takes `state`, that is
+a *unified argument* and not a service's spelling.
+
+**County** — A county or county equivalent (parish, borough, census area,
+independent city, municipio, Connecticut planning region) within a state.
+
+*Domain term.* A county's three-digit code repeats across states, so it is
+identified by state and county together, and the services spell the pair
+differently: Water Data `state_code` + `county_code` (`"55"` + `"025"`) or
+`county_name` (`"Dane County"`), the statistics service one `county_code`
+(`"US:55:025"`), NGWMN `state_name` + `county_name`, NWDC `countyCd:55025`, WQP
+`countycode`, NWIS `countyCd`. Where an adapter also takes `county`, that is a
+unified argument.
+
+**Unified argument** — A getter argument named by the package for a domain
+concept, accepting every common spelling of it and sending each service the one
+it filters on: `state` (a name, postal code, or FIPS code) and `county` (a
+FIPS code, or a name with its state). It is added beside the service's own
+parameters, never in their place; the rule is ADR 0013's.
+
+*Core term.* The argument names are the package's; the conversion tables are in
+`dataretrieval.codes`.
+
 **Metadata** — The second half of every getter's return: the request URL, the
 elapsed time, and the response headers. Describes the *retrieval*, not the data.
 
