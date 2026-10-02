@@ -918,6 +918,21 @@ def test_get_continuous(httpx_mock):
     assert "continuous_id" in df.columns
     assert df["time"].dtype.name.startswith("datetime64[")
     assert "UTC" in df["time"].dtype.name
+    # A code column stays the string the service sent.
+    assert df["method_category"].tolist() == ["UNKWN", "UNKWN"]
+
+
+def test_get_continuous_sends_method_category(httpx_mock):
+    """The named ``method_category`` parameter is sent in the request as a filter."""
+    _mock_items(httpx_mock, "continuous")
+
+    get_continuous(
+        monitoring_location_id="USGS-06904500",
+        method_category=["STNRD", "LMTUS"],
+    )
+
+    qs = _sent(httpx_mock, "continuous")[0]
+    assert qs["method_category"] == ["STNRD,LMTUS"]
 
 
 def test_get_latest_continuous(httpx_mock):
