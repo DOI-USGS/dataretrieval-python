@@ -1300,6 +1300,72 @@ def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
     assert other.startswith(f"{_OGC_BASE}/collections/daily")
 
 
+#: Named parameters for returned columns, by getter and collection, with a value
+#: to send.
+_NEWLY_NAMED = {
+    (get_channel, "channel-measurements"): {
+        "channel_location_direction": "left bank",
+    },
+    (get_field_measurements, "field-measurements"): {
+        "control_condition": "Clear",
+        "day": 5,
+        "field_measurements_series_id": "abc123",
+        "measurement_rated": "Good",
+        "month": 3,
+        "reading_type": "Discharge",
+        "time_of_day": "17:30:00",
+        "year": 2020,
+    },
+    (get_peaks, "peaks"): {
+        "qualifier": "Bd",
+        "time_of_day": "17:30:00",
+        "value": "847000",
+    },
+    (get_combined_metadata, "combined-metadata"): {
+        "data_gap_interval": "P1D",
+        "reading_type": "Discharge",
+    },
+    (get_monitoring_locations, "monitoring-locations"): {
+        "revision_created": "2024-01-01",
+        "revision_modified": "2024-01-01",
+        "revision_note": "corrected",
+    },
+    (get_time_series_metadata, "time-series-metadata"): {
+        "data_gap_interval": "P1D",
+        "parameter_description": "Discharge",
+        "statistics_begin": "2000",
+    },
+    (get_field_measurements_metadata, "field-measurements-metadata"): {
+        "reading_type": "Discharge",
+    },
+}
+
+
+@pytest.mark.parametrize(
+    ("getter", "collection", "parameter", "value"),
+    [
+        pytest.param(
+            getter, collection, parameter, value, id=f"{getter.__name__}-{parameter}"
+        )
+        for (getter, collection), params in _NEWLY_NAMED.items()
+        for parameter, value in params.items()
+    ],
+)
+def test_newly_named_columns_reach_the_request(
+    httpx_mock, getter, collection, parameter, value
+):
+    """A newly named parameter is sent to the service.
+
+    A call whose parameter is accepted but not forwarded returns unfiltered
+    results instead of failing.
+    """
+    _mock_items(httpx_mock, collection)
+
+    getter(monitoring_location_id="USGS-05427718", **{parameter: value})
+
+    assert _sent(httpx_mock, collection)[0][parameter] == [str(value)]
+
+
 def test_get_combined_metadata(httpx_mock):
     _mock_items(httpx_mock, "combined-metadata")
 

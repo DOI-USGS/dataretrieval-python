@@ -67,6 +67,9 @@ def get_monitoring_locations(
     well_constructed_depth: str | Iterable[str] | None = None,
     hole_constructed_depth: str | Iterable[str] | None = None,
     depth_source_code: str | Iterable[str] | None = None,
+    revision_created: str | Iterable[str] | None = None,
+    revision_modified: str | Iterable[str] | None = None,
+    revision_note: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -253,6 +256,14 @@ def get_monitoring_locations(
         A code indicating the source of water-level data. A `list of
         codes <https://help.waterdata.usgs.gov/code/water_level_src_cd_query?fmt=html>`_
         is available.
+    revision_created : string or iterable of strings, optional
+        The date a revision statement was created.
+    revision_modified : string or iterable of strings, optional
+        The most recent date a revision statement was modified.
+    revision_note : string or iterable of strings, optional
+        Text explaining a revision to this location's approved data. Revisions are
+        also flagged by revision qualifier codes in the data. Explanations from
+        before 2017 may not be online but can be requested.
     properties : string or iterable of strings, optional
         The columns to return from the query. Available
         options are: geometry, id, agency_code, agency_name,
@@ -268,7 +279,8 @@ def get_monitoring_locations(
         contributing_drainage_area, time_zone_abbreviation,
         uses_daylight_savings, construction_date, aquifer_code,
         national_aquifer_code, aquifer_type_code, well_constructed_depth,
-        hole_constructed_depth, depth_source_code.
+        hole_constructed_depth, depth_source_code, revision_created,
+        revision_modified, revision_note.
     bbox : list of numbers, optional
         Only features whose geometry intersects the bounding box are selected.
         The bounding box is provided as four or six numbers, depending on
@@ -395,6 +407,8 @@ def get_time_series_metadata(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
     parameter_name: str | Iterable[str] | None = None,
+    data_gap_interval: str | Iterable[str] | None = None,
+    parameter_description: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     statistic_id: str | Iterable[str] | None = None,
     hydrologic_unit_code: str | Iterable[str] | None = None,
@@ -448,6 +462,12 @@ def get_time_series_metadata(
         available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to parameter_code.
+    data_gap_interval : string or iterable of strings, optional
+        The time interval threshold used for gap detection in the time series, as an
+        ISO 8601 duration.
+    parameter_description : string or iterable of strings, optional
+        A description of what the parameter code represents, as used by WDFN and other
+        USGS data dissemination products.
     properties : string or iterable of strings, optional
         The columns to return from the query.
         Available options are: begin, computation_identifier,
@@ -708,6 +728,8 @@ def get_combined_metadata(
     well_constructed_depth: str | Iterable[str] | None = None,
     hole_constructed_depth: str | Iterable[str] | None = None,
     depth_source_code: str | Iterable[str] | None = None,
+    data_gap_interval: str | Iterable[str] | None = None,
+    reading_type: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -799,6 +821,12 @@ site_type_code : string or iterable of strings, optional
         altitude, vertical/horizontal datum, drainage area, aquifer,
         well construction, …); see :func:`get_monitoring_locations` for
         descriptions of each.
+    data_gap_interval : string or iterable of strings, optional
+        The time interval threshold used for gap detection in the time series, as an
+        ISO 8601 duration.
+    reading_type : string or iterable of strings, optional
+        Distinguishes field-measurement readings from measurements. Readings have a
+        value of ReferencePrimary; measurements are Discharge or MeanGageHeight.
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available
         property.
@@ -918,6 +946,7 @@ def get_field_measurements_metadata(
     begin: str | Iterable[str] | None = None,
     end: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
+    reading_type: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -960,6 +989,9 @@ def get_field_measurements_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
+    reading_type : string or iterable of strings, optional
+        Distinguishes field-measurement readings from measurements. Readings have a
+        value of ReferencePrimary; measurements are Discharge or MeanGageHeight.
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
