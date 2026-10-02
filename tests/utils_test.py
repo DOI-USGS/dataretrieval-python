@@ -526,24 +526,31 @@ class TestTerritories:
     """
 
     @pytest.mark.parametrize(
-        ("value", "name", "postal", "fips"),
+        ("name", "postal", "fips"),
         [
-            ("Puerto Rico", "Puerto Rico", "PR", "72"),
-            ("PR", "Puerto Rico", "PR", "72"),
-            ("72", "Puerto Rico", "PR", "72"),
-            ("US:72", "Puerto Rico", "PR", "72"),
-            ("Guam", "Guam", "GU", "66"),
-            ("VI", "US Virgin Islands", "VI", "78"),
-            ("60", "American Samoa", "AS", "60"),
-            ("MP", "Northern Mariana Islands", "MP", "69"),
+            ("Puerto Rico", "PR", "72"),
+            ("Guam", "GU", "66"),
+            ("Virgin Islands", "VI", "78"),
+            ("American Samoa", "AS", "60"),
+            ("Northern Mariana Islands", "MP", "69"),
         ],
     )
-    def test_every_encoding_resolves(self, value, name, postal, fips):
+    def test_each_territory_is_in_both_code_tables(self, name, postal, fips):
+        """Each code resolves to the others. The input encodings themselves are
+        :class:`Test_to_state`'s concern."""
         from dataretrieval.codes.states import to_state
 
-        assert to_state(value, "name") == name
-        assert to_state(value, "postal") == postal
-        assert to_state(value, "fips") == fips
+        for value in (name, postal, fips):
+            assert to_state(value, "name") == name
+            assert to_state(value, "postal") == postal
+            assert to_state(value, "fips") == fips
+
+    def test_the_census_name_of_the_virgin_islands_is_accepted(self):
+        """The table names it as the services do; the name it had before is
+        still accepted as input."""
+        from dataretrieval.codes.states import to_state
+
+        assert to_state("US Virgin Islands") == "Virgin Islands"
 
     def test_the_ngwmn_shim_routes_a_territory_to_each_queryable(self):
         """``sites`` filters on ``state_name``, ``providers`` on ``state``."""

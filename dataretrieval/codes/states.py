@@ -72,7 +72,7 @@ state_codes = {
     "Guam": "gu",
     "Northern Mariana Islands": "mp",
     "Puerto Rico": "pr",
-    "US Virgin Islands": "vi",
+    "Virgin Islands": "vi",
 }
 
 fips_codes = {
@@ -131,7 +131,7 @@ fips_codes = {
     "Guam": "66",
     "Northern Mariana Islands": "69",
     "Puerto Rico": "72",
-    "US Virgin Islands": "78",
+    "Virgin Islands": "78",
 }
 
 # Reverse lookups (built once): postal code -> name, FIPS code -> name, and a
@@ -140,6 +140,9 @@ fips_codes = {
 _name_by_postal = {code: name for name, code in state_codes.items()}
 _name_by_fips = {fips: name for name, fips in fips_codes.items()}
 _name_by_lower = {name.lower(): name for name in state_codes}
+# The table names each state as the Water Data and NGWMN ``state_name`` fields
+# do. "US Virgin Islands" is the Census Bureau's name, accepted as input only.
+_name_by_lower["us virgin islands"] = "Virgin Islands"
 
 
 def to_state(
