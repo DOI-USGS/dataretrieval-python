@@ -226,7 +226,7 @@ Satisfied. In ``tests/configuration_test.py``:
   isolation rule under lazy validation.
 - ``test_base_url_applies_from_code_and_is_refused_from_the_file``, with
   ``test_base_url_is_refused_from_the_environment`` for the other source, and
-  ``test_a_code_base_url_redirects_every_water_data_endpoint_family`` -- one
+  ``test_base_url_changes_every_endpoint_family_and_api_version_only_ogc`` -- one
   public-getter contract covering OGC, Samples, Statistics, and Ratings. The
   endpoint module exposes functions that build each URL at request time rather
   than ready-made endpoint constants, so a family module gets the root in effect
@@ -257,3 +257,10 @@ Notes
 - The setting-group clause was added after the original decision, consolidating
   under ADR 0000 a rule the configuration core was stating in prose. It does
   not change behavior.
+- ``api_version`` was added on 2026-09-22 as a second adapter-only setting,
+  when the Water Data OGC collections moved to v1. Unlike ``base_url``, it may
+  be set in the file: the code-only rule above exists because a base URL can
+  redirect requests to another host, and a version cannot. Which settings raise
+  ``ConfigurationError`` when written in the file is therefore keyed on a
+  separate ``BLOCK_ONLY_SETTINGS`` list, while an environment variable for any
+  adapter-only setting still raises, because a variable is package-wide.

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>USGS dataretrieval Python Package get_monitoring_locations() Examples &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -129,7 +129,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+gd77c85336)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g917a1d371)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
@@ -263,7 +263,7 @@ Retrieving: monitoring-locations · 1 page · 1 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -293,50 +293,50 @@ Retrieving: monitoring-locations · 1 page · 1 rows
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-monitoring_location_id                           str
-geometry                                    geometry
-agency_code                                      str
-agency_name                                      str
-monitoring_location_number                       str
-monitoring_location_name                         str
-district_code                                    str
-country_code                                     str
-country_name                                     str
-state_code                                       str
-state_name                                       str
-county_code                                      str
-county_name                                      str
-minor_civil_division_code                        str
-site_type_code                                   str
-site_type                                        str
-hydrologic_unit_code                             str
-basin_code                                       str
-altitude                                     float64
-altitude_accuracy                            float64
-altitude_method_code                             str
-altitude_method_name                             str
-vertical_datum                                   str
-vertical_datum_name                              str
-horizontal_positional_accuracy_code              str
-horizontal_positional_accuracy                   str
-horizontal_position_method_code                  str
-horizontal_position_method_name                  str
-original_horizontal_datum                        str
-original_horizontal_datum_name                   str
-drainage_area                                float64
-contributing_drainage_area                   float64
-time_zone_abbreviation                           str
-uses_daylight_savings                            str
-construction_date                      datetime64[s]
-aquifer_code                                  object
-national_aquifer_code                         object
-aquifer_type_code                             object
-well_constructed_depth                       float64
-hole_constructed_depth                       float64
-depth_source_code                             object
-revision_note                                    str
-revision_created                                 str
-revision_modified                             object
+monitoring_location_id                      str
+geometry                               geometry
+agency_code                                 str
+agency_name                                 str
+monitoring_location_number                  str
+monitoring_location_name                    str
+district_code                               str
+country_code                                str
+country_name                                str
+state_code                                  str
+state_name                                  str
+county_code                                 str
+county_name                                 str
+minor_civil_division_code                   str
+site_type_code                              str
+site_type                                   str
+hydrologic_unit_code                        str
+basin_code                                  str
+altitude                                float64
+altitude_accuracy                       float64
+altitude_method_code                        str
+altitude_method_name                        str
+vertical_datum                              str
+vertical_datum_name                         str
+horizontal_positional_accuracy_code         str
+horizontal_positional_accuracy              str
+horizontal_position_method_code             str
+horizontal_position_method_name             str
+original_horizontal_datum                   str
+original_horizontal_datum_name              str
+drainage_area                           float64
+contributing_drainage_area              float64
+time_zone_abbreviation                      str
+uses_daylight_savings                       str
+construction_date                        object
+aquifer_code                             object
+national_aquifer_code                    object
+aquifer_type_code                        object
+well_constructed_depth                  float64
+hole_constructed_depth                  float64
+depth_source_code                        object
+revision_note                               str
+revision_created                            str
+revision_modified                        object
 dtype: object
 </pre></div></div>
 </div>
@@ -354,7 +354,7 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations/items?id=USGS-10109000&amp;limit=50000
+The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations/items?id=USGS-10109000&amp;limit=50000
 </pre></div></div>
 </div>
 </section>
@@ -443,7 +443,7 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <td>United States of America</td>
       <td>38</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -467,7 +467,7 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <td>United States of America</td>
       <td>06</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -502,9 +502,7 @@ No API key detected — register for higher rate limits at https://api.waterdata
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/dataretrieval/ogc/shaping.py:305: UserWarning: 1720 values in column &#39;construction_date&#39; could not be parsed as datetimes and were set to missing. To inspect the raw values, repeat the call with convert_type=False.
-  _warn_unparsed(df[col], parsed, col, &#34;datetimes&#34;)
-
+Retrieving: monitoring-locations · 1 page · 32,841 rows
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -566,7 +564,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -590,7 +588,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -614,7 +612,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -638,7 +636,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -662,7 +660,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -710,7 +708,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>1966-01-01</td>
+      <td>19660101</td>
       <td>100VLFL</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -734,7 +732,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>1936-01-01</td>
+      <td>19360101</td>
       <td>100VLFL</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -758,7 +756,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>1975-06-12</td>
+      <td>19750612</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -782,7 +780,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>1966-01-01</td>
+      <td>19660101</td>
       <td>100VLFL</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -806,7 +804,7 @@ Retrieving: monitoring-locations · 1 page · 32,841 rows/opt/hostedtoolcache/Py
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -905,7 +903,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -929,7 +927,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -953,7 +951,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -977,7 +975,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1001,7 +999,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1025,7 +1023,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1049,7 +1047,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1073,7 +1071,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1097,7 +1095,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1121,7 +1119,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1145,7 +1143,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1169,7 +1167,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1193,7 +1191,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1217,7 +1215,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1241,7 +1239,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1265,7 +1263,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1289,7 +1287,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1313,7 +1311,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1337,7 +1335,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1361,7 +1359,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1385,7 +1383,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1409,7 +1407,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1433,7 +1431,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1457,7 +1455,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1481,7 +1479,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1505,7 +1503,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1529,7 +1527,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1553,7 +1551,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>
@@ -1577,7 +1575,7 @@ Retrieving: monitoring-locations · 1 page · 29 rows
       <td>United States of America</td>
       <td>49</td>
       <td>...</td>
-      <td>NaT</td>
+      <td>None</td>
       <td>None</td>
       <td>None</td>
       <td>None</td>

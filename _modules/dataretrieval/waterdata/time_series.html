@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../../../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -1012,7 +1012,8 @@
 <span class="sd">    state: string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
 <span class="sd">        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code ("55").</span>
+<span class="sd">        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API</span>
+<span class="sd">        field: it is sent as the API's ``state_code``, in its "US:XX" format.</span>
 <span class="sd">    state_code: string, optional</span>
 <span class="sd">        State query parameter. Takes the format "US:XX", where XX is</span>
 <span class="sd">        the two-digit state code. API defaults to "US:42" (Pennsylvania).</span>
@@ -1038,7 +1039,7 @@
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>
-<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.</span>
 <span class="sd">        Example: "GW" (Groundwater site)</span>
 <span class="sd">    site_type_name: string, optional</span>
 <span class="sd">        Site type name query parameter.</span>
@@ -1155,7 +1156,8 @@
 <span class="sd">    state: string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
 <span class="sd">        ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code ("55").</span>
+<span class="sd">        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API</span>
+<span class="sd">        field: it is sent as the API's ``state_code``, in its "US:XX" format.</span>
 <span class="sd">    state_code: string, optional</span>
 <span class="sd">        State query parameter. Takes the format "US:XX", where XX is</span>
 <span class="sd">        the two-digit state code. API defaults to "US:42" (Pennsylvania).</span>
@@ -1183,12 +1185,12 @@
 <span class="sd">    site_type_code: string, optional</span>
 <span class="sd">        Site type code query parameter. A list of valid site type codes is</span>
 <span class="sd">        available at</span>
-<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.</span>
 <span class="sd">        Example: "GW" (Groundwater site)</span>
 <span class="sd">    site_type_name: string, optional</span>
 <span class="sd">        Site type name query parameter. A list of valid site type names is</span>
 <span class="sd">        available at</span>
-<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.</span>
+<span class="sd">        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.</span>
 <span class="sd">        Example: "Well"</span>
 <span class="sd">    parameter_code : string or iterable of strings, optional</span>
 <span class="sd">        A 5-digit code identifying the constituent measured and the units of</span>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>dataretrieval._configuration_core &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -88,6 +88,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -103,11 +104,16 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurationError</span>
 
 <span class="c1">#: Settings only an adapter can hold, because they name one service. No</span>
-<span class="c1">#: package-wide value could mean anything for them: there is no one base URL.</span>
+<span class="c1">#: package-wide value could mean anything for them: there is no one base URL,</span>
+<span class="c1">#: and a version is a segment of one service's paths.</span>
 <span class="c1">#:</span>
 <span class="c1">#: The package-wide roster is :data:`SETTINGS`, declared below the class it is</span>
 <span class="c1">#: derived from.</span>
-<span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"base_url"</span><span class="p">,)</span>
+<span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"base_url"</span><span class="p">,</span> <span class="s2">"api_version"</span><span class="p">)</span>
+
+<span class="c1">#: Adapter-only settings that only a ``configure()`` block can set: writing one in</span>
+<span class="c1">#: the configuration file raises ``ConfigurationError`` (ADR 0011).</span>
+<span class="n">BLOCK_ONLY_SETTINGS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"base_url"</span><span class="p">,)</span>
 
 <span class="c1">#: Environment variable backing a setting (precedence step 2).</span>
 <span class="c1">#:</span>
@@ -129,12 +135,9 @@
 
 <span class="c1">#: Variables the environment is *refused* for, by setting. Named rather than left out of</span>
 <span class="c1">#: :data:`ENV_VARS`, so a caller who exports ``API_USGS_BASE_URL`` gets an error instead</span>
-<span class="c1">#: of an ignored variable. The file refuses the same key in the same words</span>
-<span class="c1">#: (:func:`_accepted_keys`): a base URL set outside the code could redirect the library</span>
-<span class="c1">#: to another host without a reader of the script seeing it (ADR 0011).</span>
-<span class="c1">#:</span>
-<span class="c1">#: Derived from :data:`ADAPTER_ONLY_SETTINGS` so the file and the environment</span>
-<span class="c1">#: cannot drift apart on which settings are code-only.</span>
+<span class="c1">#: of an ignored variable. Derived from :data:`ADAPTER_ONLY_SETTINGS`, because a</span>
+<span class="c1">#: variable applies to every adapter and those settings name one. In the file,</span>
+<span class="c1">#: only :data:`BLOCK_ONLY_SETTINGS` raise (ADR 0011).</span>
 <span class="n">_REFUSED_ENV_VARS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"API_USGS_</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span>
 <span class="p">}</span>
@@ -491,9 +494,7 @@
 <span class="c1"># Plain mixins rather than ``BaseConfiguration`` subclasses: a group has no</span>
 <span class="c1"># adapter and cannot be passed to :func:`configure`, so keeping it off that</span>
 <span class="c1"># branch leaves one linear base for the behavior. Frozen because a dataclass</span>
-<span class="c1"># may not mix frozen and non-frozen bases; fields collect in reverse MRO order,</span>
-<span class="c1"># so an adapter composing all four reads ``retries, stall_timeout, base_url,</span>
-<span class="c1"># concurrency, parallel_chunks``.</span>
+<span class="c1"># may not mix frozen and non-frozen bases. Fields collect in reverse MRO order.</span>
 
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -509,6 +510,13 @@
 <span class="w">    </span><span class="sd">"""An adapter whose requests can be sent to another base URL."""</span>
 
     <span class="n">base_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Versioned</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""An adapter whose service publishes its API under a version path segment."""</span>
+
+    <span class="n">api_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_UNSET</span>
 
 
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -878,6 +886,7 @@
 <span class="c1">#: so the wider check cannot change a TOML outcome.)</span>
 <span class="n">_TYPES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"api_key"</span><span class="p">:</span> <span class="n">_coerce_string</span><span class="p">,</span>
+    <span class="s2">"api_version"</span><span class="p">:</span> <span class="n">_coerce_string</span><span class="p">,</span>
     <span class="s2">"base_url"</span><span class="p">:</span> <span class="n">_coerce_string</span><span class="p">,</span>
     <span class="s2">"progress"</span><span class="p">:</span> <span class="n">_coerce_progress</span><span class="p">,</span>
     <span class="s2">"concurrency"</span><span class="p">:</span> <span class="n">_coerce_concurrency</span><span class="p">,</span>
@@ -1006,6 +1015,25 @@
     <span class="k">return</span> <span class="n">value</span>
 
 
+<span class="c1">#: A version path segment: ``v`` followed by digits, as in every Water Data path.</span>
+<span class="n">_API_VERSION_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^v\d+$"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_api_version</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Parse an API version: the segment the service publishes it under, ``v1``.</span>
+
+<span class="sd">    Checked as a shape, not against a list: a list here would refuse a version</span>
+<span class="sd">    the service already serves until a release of this package added it.</span>
+<span class="sd">    """</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_API_VERSION_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be the version segment of the service's path, "</span>
+            <span class="sa">f</span><span class="s2">"such as 'v1' (got </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">)."</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_progress</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Parse a progress toggle, optionally preserving legacy env truthiness."""</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -1038,6 +1066,7 @@
     <span class="s2">"parallel_chunks"</span><span class="p">:</span> <span class="n">_parse_parallel_chunks</span><span class="p">,</span>
     <span class="s2">"stall_timeout"</span><span class="p">:</span> <span class="n">_parse_seconds</span><span class="p">,</span>
     <span class="s2">"base_url"</span><span class="p">:</span> <span class="n">_parse_base_url</span><span class="p">,</span>
+    <span class="s2">"api_version"</span><span class="p">:</span> <span class="n">_parse_api_version</span><span class="p">,</span>
 <span class="p">}</span>
 
 
@@ -1155,11 +1184,13 @@
 
     <span class="n">where</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">adapter</span><span class="si">}</span><span class="s2">]"</span>
     <span class="c1"># An adapter this process has not imported declares no vocabulary, so its</span>
-    <span class="c1"># table is checked against the package-wide settings alone: refusing a key</span>
-    <span class="c1"># for want of a schema would make the file's validity depend on which</span>
-    <span class="c1"># optional extras happened to be installed.</span>
+    <span class="c1"># table is checked against every setting this release has a grammar for:</span>
+    <span class="c1"># refusing a key for want of a schema would make the file's validity depend</span>
+    <span class="c1"># on which optional extras happened to be installed.</span>
     <span class="n">accepted</span> <span class="o">=</span> <span class="n">settings_for</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
-    <span class="n">validated</span> <span class="o">=</span> <span class="n">_scalars</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">SETTINGS</span> <span class="k">if</span> <span class="n">accepted</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">accepted</span><span class="p">)</span>
+    <span class="n">validated</span> <span class="o">=</span> <span class="n">_scalars</span><span class="p">(</span>
+        <span class="n">table</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">_ALL_SETTINGS</span> <span class="k">if</span> <span class="n">accepted</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">accepted</span>
+    <span class="p">)</span>
     <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">(</span>
         <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">validated</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
@@ -1337,7 +1368,7 @@
             <span class="c1"># and :func:`_named_profile` refuses a table inside a profile, so a</span>
             <span class="c1"># sub-table here is always a profile rather than deeper nesting.</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">BLOCK_ONLY_SETTINGS</span><span class="p">:</span>
             <span class="c1"># Rejected from the file wherever it appears. A file that</span>
             <span class="c1"># redirects a data-retrieval library to another host is a</span>
             <span class="c1"># supply-chain hazard; an in-code block keeps the redirect</span>
@@ -1347,16 +1378,7 @@
                 <span class="s2">"configure() block, never from a file."</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">SETTINGS</span><span class="p">:</span>
-                <span class="c1"># A real setting, in a table that does not read it. Unlike an</span>
-                <span class="c1"># unrecognized name -- which may belong to a newer release --</span>
-                <span class="c1"># this cannot become meaningful later, and ignoring it without an error</span>
-                <span class="c1"># would leave a caller believing they had tuned something. See</span>
-                <span class="c1"># ADR 0010.</span>
-                <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is not a setting that table "</span>
-                    <span class="sa">f</span><span class="s2">"accepts. It accepts: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>
-                <span class="p">)</span>
+            <span class="n">_reject_known_setting</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">where</span><span class="p">,</span> <span class="n">allowed</span><span class="p">)</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: unknown setting </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> (ignored). "</span>
                 <span class="sa">f</span><span class="s2">"Known settings: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SETTINGS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">,</span>
@@ -1366,6 +1388,31 @@
             <span class="k">continue</span>
         <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reject_known_setting</span><span class="p">(</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">allowed</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise if *key* is a setting this release defines but that table cannot use.</span>
+
+<span class="sd">    Returns for an unknown name, which the caller warns about instead: an</span>
+<span class="sd">    unknown name may belong to a newer release, but a known setting in the</span>
+<span class="sd">    wrong table will never take effect, and ignoring it would leave the caller</span>
+<span class="sd">    believing it had (ADR 0010).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="n">_TOP_LEVEL</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ADAPTER_ONLY_SETTINGS</span><span class="p">:</span>
+        <span class="c1"># The generic message below would list only top-level settings, none of</span>
+        <span class="c1"># which is the one to write.</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> names one service and has no "</span>
+            <span class="s2">"package-wide value; set it in the table of the adapter it belongs "</span>
+            <span class="s2">"to, such as [waterdata]."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_ALL_SETTINGS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> at </span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2"> is not a setting that table "</span>
+            <span class="sa">f</span><span class="s2">"accepts. It accepts: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">allowed</span><span class="p">))</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_checked_table</span><span class="p">(</span>

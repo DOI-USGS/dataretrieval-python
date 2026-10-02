@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../../../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -90,6 +90,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._deprecation</span><span class="w"> </span><span class="kn">import</span> <span class="n">REMOVALS</span><span class="p">,</span> <span class="n">warn_deprecated</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.waterdata.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_get_args</span><span class="p">,</span>
     <span class="n">_with_state</span><span class="p">,</span>
@@ -198,7 +199,8 @@
 <span class="sd">    state : string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
 <span class="sd">        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code (``"55"``).</span>
+<span class="sd">        ANSI/FIPS code (``"55"``). A dataretrieval argument rather than an API</span>
+<span class="sd">        field: it is sent as the API's ``state_name``.</span>
 <span class="sd">    state_code : string or iterable of strings, optional</span>
 <span class="sd">        State code. A two-digit ANSI code (formerly FIPS code) as defined by</span>
 <span class="sd">        the American National Standards Institute, to define States and</span>
@@ -292,7 +294,9 @@
 <span class="sd">    uses_daylight_savings : string or iterable of strings, optional</span>
 <span class="sd">        A flag indicating whether a monitoring location uses daylight savings.</span>
 <span class="sd">    construction_date : string or iterable of strings, optional</span>
-<span class="sd">        Date the well was completed.</span>
+<span class="sd">        Date the well was completed. The service records it at day, month, or</span>
+<span class="sd">        year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the</span>
+<span class="sd">        returned column holds these strings as sent.</span>
 <span class="sd">    aquifer_code : string or iterable of strings, optional</span>
 <span class="sd">        Local aquifers in the USGS water resources data base are identified by a</span>
 <span class="sd">        geohydrologic unit code (a three-digit number related to the age of the</span>
@@ -423,6 +427,50 @@
 
 
 
+<span class="c1">#: Filters that v1 of ``time-series-metadata`` dropped (it responds with 400 or</span>
+<span class="c1">#: 500 to them, as a filter or in ``properties``), mapped to what to use</span>
+<span class="c1">#: instead. ``state`` resolves to ``state_name`` before the check, so that entry</span>
+<span class="c1">#: covers both; its replacement names whichever of the two the caller passed,</span>
+<span class="c1">#: because :func:`get_combined_metadata` accepts both.</span>
+<span class="c1">#:</span>
+<span class="c1">#: The renames do not use ``_accept_legacy_kwargs`` (ADR 0012) because the old</span>
+<span class="c1">#: name may also appear in ``properties``, and translating it would rename a</span>
+<span class="c1">#: column the caller asked for by name.</span>
+<span class="n">_V0_ONLY_FILTERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"begin_utc"</span><span class="p">:</span> <span class="s2">"begin=..."</span><span class="p">,</span>
+    <span class="s2">"end_utc"</span><span class="p">:</span> <span class="s2">"end=..."</span><span class="p">,</span>
+    <span class="s2">"state_name"</span><span class="p">:</span> <span class="s2">"get_combined_metadata(</span><span class="si">{name}</span><span class="s2">=...)"</span><span class="p">,</span>
+    <span class="s2">"hydrologic_unit_code"</span><span class="p">:</span> <span class="s2">"get_combined_metadata(hydrologic_unit_code=...)"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_time_series_metadata</span><span class="p">(</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">state_given</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Send the query, to v0 if it names a filter or ``properties`` column that</span>
+<span class="sd">    v1 dropped."""</span>
+    <span class="n">requested</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"properties"</span><span class="p">,</span> <span class="p">()))</span>
+    <span class="n">legacy</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">_V0_ONLY_FILTERS</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">requested</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">legacy</span><span class="p">:</span>
+        <span class="n">spelled</span> <span class="o">=</span> <span class="s2">"state"</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"state_name"</span> <span class="ow">and</span> <span class="n">state_given</span> <span class="k">else</span> <span class="n">name</span>
+        <span class="n">warn_deprecated</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"The </span><span class="si">{</span><span class="n">spelled</span><span class="si">!r}</span><span class="s2"> argument of get_time_series_metadata"</span><span class="p">,</span>
+            <span class="n">replacement</span><span class="o">=</span><span class="n">_V0_ONLY_FILTERS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">spelled</span><span class="p">),</span>
+            <span class="n">removal</span><span class="o">=</span><span class="n">REMOVALS</span><span class="p">[</span><span class="s2">"waterdata.get_time_series_metadata(v0 filters)"</span><span class="p">],</span>
+            <span class="n">detail</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">"v1 of the Water Data API has no such field, so this call is "</span>
+                <span class="s2">"sent to v0."</span>
+            <span class="p">),</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span>
+        <span class="n">args</span><span class="p">,</span>
+        <span class="s2">"time-series-metadata"</span><span class="p">,</span>
+        <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span>
+        <span class="n">api_version</span><span class="o">=</span><span class="s2">"v0"</span> <span class="k">if</span> <span class="n">legacy</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="get_time_series_metadata">
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.get_time_series_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_time_series_metadata</span><span class="p">(</span>
@@ -442,6 +490,7 @@
     <span class="n">unit_of_measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_period_identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">computation_identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">statistics_begin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">sublocation_identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">primary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -483,18 +532,22 @@
 <span class="sd">        A human-understandable name corresponding to parameter_code.</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
 <span class="sd">        The columns to return from the query.</span>
-<span class="sd">        Available options are: begin, begin_utc, computation_identifier,</span>
-<span class="sd">        computation_period_identifier, end, end_utc, geometry,</span>
-<span class="sd">        hydrologic_unit_code, id, last_modified, monitoring_location_id,</span>
-<span class="sd">        parameter_code, parameter_description, parameter_name,</span>
-<span class="sd">        parent_time_series_id, primary, state_name, statistic_id,</span>
-<span class="sd">        sublocation_identifier, thresholds, unit_of_measure, web_description</span>
+<span class="sd">        Available options are: begin, computation_identifier,</span>
+<span class="sd">        computation_period_identifier, data_gap_interval, end, geometry, id,</span>
+<span class="sd">        last_modified, monitoring_location_id, parameter_code,</span>
+<span class="sd">        parameter_description, parameter_name, parent_time_series_id, primary,</span>
+<span class="sd">        statistic_id, statistics_begin, sublocation_identifier, thresholds,</span>
+<span class="sd">        unit_of_measure, web_description</span>
 <span class="sd">    statistic_id : string or iterable of strings, optional</span>
 <span class="sd">        A code corresponding to the statistic an observation represents.</span>
 <span class="sd">        Example codes include 00001 (max), 00002 (min), and 00003 (mean).</span>
 <span class="sd">        A complete list of codes and their descriptions can be found at</span>
 <span class="sd">        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&amp;fmt=html.</span>
 <span class="sd">    hydrologic_unit_code : string or iterable of strings, optional</span>
+<span class="sd">        Deprecated: v1 of the Water Data API does not filter this collection by</span>
+<span class="sd">        hydrologic unit. A call that passes it is sent to v0, with a</span>
+<span class="sd">        ``DeprecationWarning``, until v0 is retired in June 2027. Use</span>
+<span class="sd">        :func:`get_combined_metadata` with ``hydrologic_unit_code`` instead.</span>
 <span class="sd">        A unique hydrologic unit code (HUC) of two to eight digits, based on the</span>
 <span class="sd">        four levels of classification in the hydrologic unit system. The United</span>
 <span class="sd">        States is divided and sub-divided into successively smaller hydrologic</span>
@@ -503,12 +556,16 @@
 <span class="sd">        each other, from the smallest (cataloging units) to the largest</span>
 <span class="sd">        (regions).</span>
 <span class="sd">    state : string or iterable of strings, optional</span>
-<span class="sd">        State/territory filter (the recommended parameter). Accepts a full name</span>
-<span class="sd">        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit</span>
-<span class="sd">        ANSI/FIPS code (``"55"``).</span>
+<span class="sd">        Deprecated, as ``hydrologic_unit_code`` is: v1 does not filter this</span>
+<span class="sd">        collection by state. Use :func:`get_combined_metadata` with ``state``</span>
+<span class="sd">        instead. ``state`` is a dataretrieval argument rather than an API</span>
+<span class="sd">        field: it accepts a full name (``"Wisconsin"``), a two-letter postal</span>
+<span class="sd">        code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``) and is sent</span>
+<span class="sd">        as ``state_name``.</span>
 <span class="sd">    state_name : string or iterable of strings, optional</span>
-<span class="sd">        The name of the state or state equivalent in which the monitoring location</span>
-<span class="sd">        is located.</span>
+<span class="sd">        Deprecated, as ``state`` is. Use :func:`get_combined_metadata` with</span>
+<span class="sd">        ``state_name`` instead. The name of the state or state equivalent in</span>
+<span class="sd">        which the monitoring location is located.</span>
 <span class="sd">    last_modified : string, optional</span>
 <span class="sd">        The last time a record was refreshed in our database. A refresh may</span>
 <span class="sd">        happen due to regular operational processes and does not necessarily</span>
@@ -527,54 +584,50 @@
 <span class="sd">                for the last 36 hours</span>
 
 <span class="sd">    begin : string or iterable of strings, optional</span>
-<span class="sd">        This field contains the same information as "begin_utc", but in the</span>
-<span class="sd">        local time of the monitoring location. It is retained for backwards</span>
-<span class="sd">        compatibility, but will be removed in V1 of these APIs.</span>
+<span class="sd">        The datetime of the earliest observation in the time series, in UTC</span>
+<span class="sd">        with a time zone. Together with end, this field represents the period</span>
+<span class="sd">        of record of a time series. Note that some time series may have large</span>
+<span class="sd">        gaps in their collection record. You can query this field using</span>
+<span class="sd">        date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have a begin that intersects the</span>
+<span class="sd">        value of datetime are selected.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
+
 <span class="sd">    end : string or iterable of strings, optional</span>
-<span class="sd">        This field contains the same information as "end_utc", but in the</span>
-<span class="sd">        local time of the monitoring location. It is retained for backwards</span>
-<span class="sd">        compatibility, but will be removed in V1 of these APIs.</span>
+<span class="sd">        The datetime of the most recent observation in the time series, in UTC</span>
+<span class="sd">        with a time zone. Data returned by this endpoint updates at most once</span>
+<span class="sd">        per day, and potentially less frequently than that, and as such there</span>
+<span class="sd">        may be more recent observations within a time series than the time</span>
+<span class="sd">        series end value reflects. Together with begin, this field represents</span>
+<span class="sd">        the period of record of a time series. It is additionally used to</span>
+<span class="sd">        determine whether a time series is "active". You can query this field</span>
+<span class="sd">        using date-times or intervals, adhering to RFC 3339, or using ISO 8601</span>
+<span class="sd">        duration objects. Intervals may be bounded or half-bounded (double-dots</span>
+<span class="sd">        at start or end). Only features that have an end that intersects the</span>
+<span class="sd">        value of datetime are selected.</span>
+<span class="sd">        Examples:</span>
+
+<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
+<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
+<span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
+<span class="sd">                "PT36H" for the last 36 hours</span>
+
 <span class="sd">    begin_utc : string or iterable of strings, optional</span>
-<span class="sd">        The datetime of the earliest observation in the time series. Together</span>
-<span class="sd">        with end, this field represents the period of record of a time series.</span>
-<span class="sd">        Note that some time series may have large gaps in their collection</span>
-<span class="sd">        record. This field is currently in the local time of the monitoring</span>
-<span class="sd">        location. We intend to update this in version v0 to use UTC with a time</span>
-<span class="sd">        zone. You can query this field using date-times or intervals, adhering</span>
-<span class="sd">        to RFC 3339, or using ISO 8601 duration objects. Intervals may be</span>
-<span class="sd">        bounded or half-bounded (double-dots at start or end). Only features</span>
-<span class="sd">        that have a begin that intersects the value of datetime are selected.</span>
-<span class="sd">        Examples:</span>
-
-<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
-<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
-<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
-<span class="sd">                "../2018-03-18T12:31:12Z"</span>
-<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
-<span class="sd">                "PT36H" for the last 36 hours</span>
-
+<span class="sd">        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` holds this</span>
+<span class="sd">        value.</span>
 <span class="sd">    end_utc : string or iterable of strings, optional</span>
-<span class="sd">        The datetime of the most recent observation in the time series. Data returned by</span>
-<span class="sd">        this endpoint updates at most once per day, and potentially less frequently than</span>
-<span class="sd">        that, and as such there may be more recent observations within a time series</span>
-<span class="sd">        than the time series end value reflects. Together with begin, this field</span>
-<span class="sd">        represents the period of record of a time series. It is additionally used to</span>
-<span class="sd">        determine whether a time series is "active". We intend to update this in</span>
-<span class="sd">        version v0 to use UTC with a time zone.</span>
-<span class="sd">        You can query this field using date-times or intervals,</span>
-<span class="sd">        adhering to RFC 3339, or using ISO 8601 duration objects. Intervals</span>
-<span class="sd">        may be bounded or half-bounded (double-dots at start or end). Only</span>
-<span class="sd">        features that have an end that intersects the value of datetime are</span>
-<span class="sd">        selected.</span>
-<span class="sd">        Examples:</span>
-
-<span class="sd">            * A date-time: "2018-02-12T23:20:50Z"</span>
-<span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
-<span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
-<span class="sd">                "../2018-03-18T12:31:12Z"</span>
-<span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
-<span class="sd">                "PT36H" for the last 36 hours</span>
-
+<span class="sd">        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` holds this</span>
+<span class="sd">        value.</span>
 <span class="sd">    unit_of_measure : string or iterable of strings, optional</span>
 <span class="sd">        A human-readable description of the units of measurement associated</span>
 <span class="sd">        with an observation.</span>
@@ -583,6 +636,12 @@
 <span class="sd">    computation_identifier : string or iterable of strings, optional</span>
 <span class="sd">        Indicates whether the data from this time series represent a specific</span>
 <span class="sd">        statistical computation.</span>
+<span class="sd">    statistics_begin : string or iterable of strings, optional</span>
+<span class="sd">        The year from which statistics are computed for this time series. When</span>
+<span class="sd">        it is populated, WDFN ignores data before that year when computing</span>
+<span class="sd">        statistics; when it is empty, the full period of record is used.</span>
+<span class="sd">        Published by v1 only, so a call routed to v0 by one of the deprecated</span>
+<span class="sd">        filters above cannot use it.</span>
 <span class="sd">    thresholds : number or list of numbers, optional</span>
 <span class="sd">        Thresholds represent known numeric limits for a time series, for example</span>
 <span class="sd">        the historic maximum value for a parameter or a level below which a</span>
@@ -665,15 +724,13 @@
 <span class="sd">        ...     begin="1990-01-01/..",</span>
 <span class="sd">        ... )</span>
 <span class="sd">    """</span>
-    <span class="n">collection</span> <span class="o">=</span> <span class="s2">"time-series-metadata"</span>
-
     <span class="c1"># Build argument dictionary, omitting None values (resolving the unified</span>
     <span class="c1"># `state` argument into the OGC `state_name` queryable).</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">_get_args</span><span class="p">(</span>
         <span class="n">_with_state</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">to</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s2">"state_name"</span><span class="p">),</span> <span class="n">exclude</span><span class="o">=</span><span class="p">{</span><span class="s2">"max_rows"</span><span class="p">}</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">get_ogc_data</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">collection</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_time_series_metadata</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span> <span class="n">state_given</span><span class="o">=</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
 
@@ -759,7 +816,7 @@
 <span class="sd">    of record, …) in a single query.</span>
 
 <span class="sd">    See the OpenAPI reference for the full list of supported fields:</span>
-<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata</span>
+<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/combined-metadata</span>
 
 <span class="sd">    All ~35 location-catalog kwargs are accepted (``agency_code``,</span>
 <span class="sd">    ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only</span>
@@ -817,7 +874,8 @@
 <span class="sd">    state : string or iterable of strings, optional</span>
 <span class="sd">        State/territory filter (the recommended parameter). Accepts a full</span>
 <span class="sd">        name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a</span>
-<span class="sd">        two-digit ANSI/FIPS code (``"55"``).</span>
+<span class="sd">        two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument rather</span>
+<span class="sd">        than an API field: it is sent as the API's ``state_name``.</span>
 <span class="sd">    state_name, county_name, hydrologic_unit_code, site_type, \</span>
 <span class="sd">site_type_code : string or iterable of strings, optional</span>
 <span class="sd">        Common location-catalog filters shared with the</span>
@@ -971,7 +1029,7 @@
 <span class="sd">    field-measurement parameters a site has, and over what date range.</span>
 
 <span class="sd">    See the OpenAPI reference for the full list of supported fields:</span>
-<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata</span>
+<span class="sd">    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/field-measurements-metadata</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

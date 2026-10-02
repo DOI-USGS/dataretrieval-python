@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Surface-Water get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>USGS dataretrieval Python Package Surface-Water get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,7 +128,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+gd77c85336)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (0.1.dev1+g917a1d371)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
@@ -238,7 +238,6 @@ Retrieved 2117 data values.
       <th>value</th>
       <th>unit_of_measure</th>
       <th>...</th>
-      <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
@@ -247,6 +246,7 @@ Retrieved 2117 data values.
       <th>month</th>
       <th>day</th>
       <th>time_of_day</th>
+      <th>sublocation_identifier</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -264,7 +264,6 @@ Retrieved 2117 data values.
       <td>0.94</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -273,6 +272,7 @@ Retrieved 2117 data values.
       <td>9</td>
       <td>6</td>
       <td>16:40:00+00:00</td>
+      <td>None</td>
       <td>c59c39f2-2728-4503-83ec-fcb38fee6169</td>
     </tr>
     <tr>
@@ -288,7 +288,6 @@ Retrieved 2117 data values.
       <td>17.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -297,6 +296,7 @@ Retrieved 2117 data values.
       <td>9</td>
       <td>6</td>
       <td>16:40:00+00:00</td>
+      <td>None</td>
       <td>e91199ef-9791-4670-8b41-983a75cd2fc9</td>
     </tr>
     <tr>
@@ -312,7 +312,6 @@ Retrieved 2117 data values.
       <td>12.50</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -321,6 +320,7 @@ Retrieved 2117 data values.
       <td>12</td>
       <td>13</td>
       <td>19:10:00+00:00</td>
+      <td>None</td>
       <td>2a56c6ea-badf-4ce3-9dcd-ecf4a11aa77d</td>
     </tr>
     <tr>
@@ -336,7 +336,6 @@ Retrieved 2117 data values.
       <td>0.88</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -345,6 +344,7 @@ Retrieved 2117 data values.
       <td>12</td>
       <td>13</td>
       <td>19:10:00+00:00</td>
+      <td>None</td>
       <td>3d0f4ff8-0472-4c95-b23e-15a3dc0d022e</td>
     </tr>
     <tr>
@@ -360,7 +360,6 @@ Retrieved 2117 data values.
       <td>203.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -369,6 +368,7 @@ Retrieved 2117 data values.
       <td>4</td>
       <td>23</td>
       <td>17:25:00+00:00</td>
+      <td>None</td>
       <td>6823f847-ddc7-4246-a0c9-4600ddba1685</td>
     </tr>
     <tr>
@@ -408,7 +408,6 @@ Retrieved 2117 data values.
       <td>2.41</td>
       <td>ft</td>
       <td>...</td>
-      <td>Provisional</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -417,10 +416,59 @@ Retrieved 2117 data values.
       <td>9</td>
       <td>8</td>
       <td>22:10:00+00:00</td>
+      <td>None</td>
       <td>0e147a8c-ed0d-45b3-9504-07e062efcf7c</td>
     </tr>
     <tr>
       <th>2113</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>6caa9af4-cc49-4968-9f1e-601b1c861fb7</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>2.41</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2026</td>
+      <td>9</td>
+      <td>8</td>
+      <td>23:05:00+00:00</td>
+      <td>None</td>
+      <td>1378a83c-65d0-45a8-8993-00c9e1f60c8f</td>
+    </tr>
+    <tr>
+      <th>2114</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>6caa9af4-cc49-4968-9f1e-601b1c861fb7</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>2.41</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2026</td>
+      <td>9</td>
+      <td>8</td>
+      <td>23:05:00+00:00</td>
+      <td>None</td>
+      <td>14f7c30b-10d0-44e8-817c-a5f65554ec4f</td>
+    </tr>
+    <tr>
+      <th>2115</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
       <td>MeanGageHeight</td>
@@ -432,7 +480,6 @@ Retrieved 2117 data values.
       <td>2.41</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -441,10 +488,11 @@ Retrieved 2117 data values.
       <td>9</td>
       <td>8</td>
       <td>22:41:02+00:00</td>
+      <td>None</td>
       <td>574f3840-fdd1-4b90-8f14-cb47eb158baf</td>
     </tr>
     <tr>
-      <th>2114</th>
+      <th>2116</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
       <td>Discharge</td>
@@ -456,7 +504,6 @@ Retrieved 2117 data values.
       <td>66.80</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -465,59 +512,12 @@ Retrieved 2117 data values.
       <td>9</td>
       <td>8</td>
       <td>22:41:02+00:00</td>
+      <td>None</td>
       <td>f2dc9696-690d-48f3-89b5-0399117a0400</td>
-    </tr>
-    <tr>
-      <th>2115</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>6caa9af4-cc49-4968-9f1e-601b1c861fb7</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>2.41</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2026</td>
-      <td>9</td>
-      <td>8</td>
-      <td>23:05:00+00:00</td>
-      <td>1378a83c-65d0-45a8-8993-00c9e1f60c8f</td>
-    </tr>
-    <tr>
-      <th>2116</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>6caa9af4-cc49-4968-9f1e-601b1c861fb7</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>2.41</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2026</td>
-      <td>9</td>
-      <td>8</td>
-      <td>23:05:00+00:00</td>
-      <td>14f7c30b-10d0-44e8-817c-a5f65554ec4f</td>
     </tr>
   </tbody>
 </table>
-<p>2117 rows × 23 columns</p>
+<p>2117 rows × 24 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -544,7 +544,7 @@ observing_procedure_code                        str
 observing_procedure                             str
 value                                       float64
 unit_of_measure                                 str
-time                            datetime64[us, UTC]
+time                                 datetime64[us]
 qualifier                                    object
 vertical_datum                                  str
 approval_status                                 str
@@ -556,6 +556,7 @@ year                                          int64
 month                                         int64
 day                                           int64
 time_of_day                                     str
+sublocation_identifier                       object
 field_measurement_id                            str
 dtype: object
 </pre></div></div>
@@ -574,7 +575,7 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v0/collections/field-measurements/items?monitoring_location_id=USGS-10109000&amp;limit=50000
+The query URL used to retrieve the data from the Water Data API was: https://api.waterdata.usgs.gov/ogcapi/v1/collections/field-measurements/items?monitoring_location_id=USGS-10109000&amp;limit=50000
 </pre></div></div>
 </div>
 </section>
@@ -642,7 +643,6 @@ Retrieved 36 data values.
       <th>value</th>
       <th>unit_of_measure</th>
       <th>...</th>
-      <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
@@ -651,36 +651,13 @@ Retrieved 36 data values.
       <th>month</th>
       <th>day</th>
       <th>time_of_day</th>
+      <th>sublocation_identifier</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>2.40</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2019</td>
-      <td>1</td>
-      <td>29</td>
-      <td>19:24:00+00:00</td>
-      <td>598f2387-bc14-4c97-857b-d5f4b7d81524</td>
-    </tr>
-    <tr>
-      <th>1</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
       <td>MeanGageHeight</td>
@@ -692,7 +669,6 @@ Retrieved 36 data values.
       <td>2.43</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -701,7 +677,32 @@ Retrieved 36 data values.
       <td>1</td>
       <td>29</td>
       <td>19:57:30+00:00</td>
+      <td>None</td>
       <td>43736f31-c7ca-48b0-bc20-4769b4504ced</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>80a47f55-5d75-9c33-e053-0100007fa04d</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>2.40</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>1</td>
+      <td>29</td>
+      <td>19:24:00+00:00</td>
+      <td>None</td>
+      <td>598f2387-bc14-4c97-857b-d5f4b7d81524</td>
     </tr>
     <tr>
       <th>2</th>
@@ -716,7 +717,6 @@ Retrieved 36 data values.
       <td>83.80</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -725,6 +725,7 @@ Retrieved 36 data values.
       <td>1</td>
       <td>29</td>
       <td>19:57:30+00:00</td>
+      <td>None</td>
       <td>69706605-7bc7-42a2-b5b8-e5b913932d01</td>
     </tr>
     <tr>
@@ -740,7 +741,6 @@ Retrieved 36 data values.
       <td>2.45</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -749,6 +749,7 @@ Retrieved 36 data values.
       <td>1</td>
       <td>29</td>
       <td>20:25:00+00:00</td>
+      <td>None</td>
       <td>bbe5b970-d40a-4991-95de-06f851e09441</td>
     </tr>
     <tr>
@@ -761,10 +762,9 @@ Retrieved 36 data values.
       <td>USGS-10109000</td>
       <td>Z</td>
       <td>Gage height, electric tape</td>
-      <td>2.48</td>
+      <td>2.45</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -772,8 +772,9 @@ Retrieved 36 data values.
       <td>2019</td>
       <td>3</td>
       <td>11</td>
-      <td>18:14:00+00:00</td>
-      <td>4f694754-a540-4efa-8d89-875205e9471f</td>
+      <td>18:53:00+00:00</td>
+      <td>None</td>
+      <td>0c02032e-ef58-4dfb-a991-d8f2ee0a0321</td>
     </tr>
     <tr>
       <th>5</th>
@@ -785,10 +786,9 @@ Retrieved 36 data values.
       <td>USGS-10109000</td>
       <td>Z</td>
       <td>Gage height, electric tape</td>
-      <td>2.45</td>
+      <td>2.48</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -796,8 +796,9 @@ Retrieved 36 data values.
       <td>2019</td>
       <td>3</td>
       <td>11</td>
-      <td>18:53:00+00:00</td>
-      <td>0c02032e-ef58-4dfb-a991-d8f2ee0a0321</td>
+      <td>18:14:00+00:00</td>
+      <td>None</td>
+      <td>4f694754-a540-4efa-8d89-875205e9471f</td>
     </tr>
     <tr>
       <th>6</th>
@@ -812,7 +813,6 @@ Retrieved 36 data values.
       <td>2.46</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -821,6 +821,7 @@ Retrieved 36 data values.
       <td>3</td>
       <td>11</td>
       <td>19:29:30+00:00</td>
+      <td>None</td>
       <td>7c10411d-3744-4a72-bed1-644819c220f1</td>
     </tr>
     <tr>
@@ -836,7 +837,6 @@ Retrieved 36 data values.
       <td>94.20</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -845,6 +845,7 @@ Retrieved 36 data values.
       <td>3</td>
       <td>11</td>
       <td>19:29:30+00:00</td>
+      <td>None</td>
       <td>898f04fa-0de3-4884-a823-4a21d4be9f5e</td>
     </tr>
     <tr>
@@ -860,7 +861,6 @@ Retrieved 36 data values.
       <td>2.43</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -869,34 +869,11 @@ Retrieved 36 data values.
       <td>3</td>
       <td>11</td>
       <td>19:57:00+00:00</td>
+      <td>None</td>
       <td>c53d8b4b-4dfe-40ef-8bd6-457b81c3de87</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>3.29</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2019</td>
-      <td>4</td>
-      <td>23</td>
-      <td>20:55:00+00:00</td>
-      <td>8a61baa2-0d5e-4bf2-9ea4-4c04c23b20fe</td>
-    </tr>
-    <tr>
-      <th>10</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
       <td>Discharge</td>
@@ -908,7 +885,6 @@ Retrieved 36 data values.
       <td>337.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -917,34 +893,11 @@ Retrieved 36 data values.
       <td>4</td>
       <td>23</td>
       <td>21:39:16+00:00</td>
+      <td>None</td>
       <td>000f93fb-9690-43de-af28-5c5b522f4ef2</td>
     </tr>
     <tr>
-      <th>11</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
-      <td>MeanGageHeight</td>
-      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>3.29</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>Good</td>
-      <td>2019</td>
-      <td>4</td>
-      <td>23</td>
-      <td>21:39:16+00:00</td>
-      <td>fc8d4b9a-6ddb-4733-9901-6fbea3b98784</td>
-    </tr>
-    <tr>
-      <th>12</th>
+      <th>10</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
       <td>ReferencePrimary</td>
@@ -956,7 +909,6 @@ Retrieved 36 data values.
       <td>3.29</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -965,10 +917,107 @@ Retrieved 36 data values.
       <td>4</td>
       <td>23</td>
       <td>22:03:00+00:00</td>
+      <td>None</td>
       <td>7405b296-6db3-46b5-b94c-2fa09d1ab142</td>
     </tr>
     <tr>
+      <th>11</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>3.29</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>4</td>
+      <td>23</td>
+      <td>20:55:00+00:00</td>
+      <td>None</td>
+      <td>8a61baa2-0d5e-4bf2-9ea4-4c04c23b20fe</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
+      <td>873f3a85-f698-41b8-e053-0100007fc351</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>3.29</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>2019</td>
+      <td>4</td>
+      <td>23</td>
+      <td>21:39:16+00:00</td>
+      <td>None</td>
+      <td>fc8d4b9a-6ddb-4733-9901-6fbea3b98784</td>
+    </tr>
+    <tr>
       <th>13</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
+      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>4.09</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>2019</td>
+      <td>6</td>
+      <td>12</td>
+      <td>14:02:56+00:00</td>
+      <td>None</td>
+      <td>09d68011-61ac-492c-a4be-1ef1ecbe09f3</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>4.09</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>6</td>
+      <td>12</td>
+      <td>14:53:00+00:00</td>
+      <td>None</td>
+      <td>a6bfd373-ca41-412b-9327-8a74faf07531</td>
+    </tr>
+    <tr>
+      <th>15</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
       <td>ReferencePrimary</td>
@@ -980,7 +1029,6 @@ Retrieved 36 data values.
       <td>4.10</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -989,34 +1037,11 @@ Retrieved 36 data values.
       <td>6</td>
       <td>12</td>
       <td>12:28:00+00:00</td>
+      <td>None</td>
       <td>d94dc148-0b95-42ad-802d-2f2030276152</td>
     </tr>
     <tr>
-      <th>14</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
-      <td>MeanGageHeight</td>
-      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>4.09</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>Good</td>
-      <td>2019</td>
-      <td>6</td>
-      <td>12</td>
-      <td>14:02:56+00:00</td>
-      <td>09d68011-61ac-492c-a4be-1ef1ecbe09f3</td>
-    </tr>
-    <tr>
-      <th>15</th>
+      <th>16</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
       <td>Discharge</td>
@@ -1028,7 +1053,6 @@ Retrieved 36 data values.
       <td>709.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1037,55 +1061,32 @@ Retrieved 36 data values.
       <td>6</td>
       <td>12</td>
       <td>14:02:56+00:00</td>
+      <td>None</td>
       <td>e95d676b-9281-4578-9871-4e589d037424</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>8b3913bf-9253-4f4f-e053-0100007f3ec4</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>4.09</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2019</td>
-      <td>6</td>
-      <td>12</td>
-      <td>14:53:00+00:00</td>
-      <td>a6bfd373-ca41-412b-9327-8a74faf07531</td>
     </tr>
     <tr>
       <th>17</th>
       <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
+      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
       <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
       <td>00065</td>
       <td>USGS-10109000</td>
       <td>Z</td>
-      <td>Gage height, electric tape</td>
+      <td>None</td>
       <td>2.84</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
-      <td>NaN</td>
+      <td>Good</td>
       <td>2019</td>
       <td>7</td>
       <td>30</td>
-      <td>17:16:00+00:00</td>
-      <td>c9bc59e6-2cbb-442d-a7cc-f9ea926358f8</td>
+      <td>17:57:17+00:00</td>
+      <td>None</td>
+      <td>1705f62d-e611-47df-b076-8a5b0c2a4748</td>
     </tr>
     <tr>
       <th>18</th>
@@ -1100,55 +1101,6 @@ Retrieved 36 data values.
       <td>2.84</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Vegetation - Light</td>
-      <td>Good</td>
-      <td>2019</td>
-      <td>7</td>
-      <td>30</td>
-      <td>17:57:17+00:00</td>
-      <td>1705f62d-e611-47df-b076-8a5b0c2a4748</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
-      <td>Discharge</td>
-      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
-      <td>00060</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Mid-section</td>
-      <td>167.00</td>
-      <td>ft^3/s</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Vegetation - Light</td>
-      <td>Good</td>
-      <td>2019</td>
-      <td>7</td>
-      <td>30</td>
-      <td>17:57:17+00:00</td>
-      <td>957b4c91-7259-4449-8500-e4baea929e6a</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
-      <td>MeanGageHeight</td>
-      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>None</td>
-      <td>2.84</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1157,34 +1109,11 @@ Retrieved 36 data values.
       <td>7</td>
       <td>30</td>
       <td>18:06:00+00:00</td>
+      <td>None</td>
       <td>1f538320-1fa6-4cfb-b40d-3b330c686eca</td>
     </tr>
     <tr>
-      <th>21</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
-      <td>Discharge</td>
-      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
-      <td>00060</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Mid-section</td>
-      <td>162.00</td>
-      <td>ft^3/s</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Vegetation - Light</td>
-      <td>Good</td>
-      <td>2019</td>
-      <td>7</td>
-      <td>30</td>
-      <td>18:06:00+00:00</td>
-      <td>cc347839-2d5b-466f-97ad-fba507ee84aa</td>
-    </tr>
-    <tr>
-      <th>22</th>
+      <th>19</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
       <td>ReferencePrimary</td>
@@ -1196,7 +1125,6 @@ Retrieved 36 data values.
       <td>2.84</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1205,7 +1133,80 @@ Retrieved 36 data values.
       <td>7</td>
       <td>30</td>
       <td>18:30:00+00:00</td>
+      <td>None</td>
       <td>21356263-6522-4f25-b719-c0436eff1e70</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>167.00</td>
+      <td>ft^3/s</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>17:57:17+00:00</td>
+      <td>None</td>
+      <td>957b4c91-7259-4449-8500-e4baea929e6a</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, electric tape</td>
+      <td>2.84</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>17:16:00+00:00</td>
+      <td>None</td>
+      <td>c9bc59e6-2cbb-442d-a7cc-f9ea926358f8</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
+      <td>Discharge</td>
+      <td>8ef1af85-190d-3d4c-e053-0100007f711a</td>
+      <td>00060</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Mid-section</td>
+      <td>162.00</td>
+      <td>ft^3/s</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Vegetation - Light</td>
+      <td>Good</td>
+      <td>2019</td>
+      <td>7</td>
+      <td>30</td>
+      <td>18:06:00+00:00</td>
+      <td>None</td>
+      <td>cc347839-2d5b-466f-97ad-fba507ee84aa</td>
     </tr>
     <tr>
       <th>23</th>
@@ -1220,7 +1221,6 @@ Retrieved 36 data values.
       <td>2.62</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1229,6 +1229,7 @@ Retrieved 36 data values.
       <td>9</td>
       <td>16</td>
       <td>16:04:00+00:00</td>
+      <td>None</td>
       <td>a0ce4844-1b9a-42e4-9d6e-ba09a33517e6</td>
     </tr>
     <tr>
@@ -1244,7 +1245,6 @@ Retrieved 36 data values.
       <td>126.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1253,6 +1253,7 @@ Retrieved 36 data values.
       <td>9</td>
       <td>16</td>
       <td>16:59:19+00:00</td>
+      <td>None</td>
       <td>bbfe6ac2-f28b-4d24-8f38-e444216d2642</td>
     </tr>
     <tr>
@@ -1268,7 +1269,6 @@ Retrieved 36 data values.
       <td>2.64</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1277,6 +1277,7 @@ Retrieved 36 data values.
       <td>9</td>
       <td>16</td>
       <td>16:59:19+00:00</td>
+      <td>None</td>
       <td>eddcf6b9-3403-4199-baff-9b32b6f0fe81</td>
     </tr>
     <tr>
@@ -1292,7 +1293,6 @@ Retrieved 36 data values.
       <td>2.67</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Vegetation - Light</td>
@@ -1301,6 +1301,7 @@ Retrieved 36 data values.
       <td>9</td>
       <td>16</td>
       <td>17:33:00+00:00</td>
+      <td>None</td>
       <td>ee1bdc21-3a80-4cf1-971b-7a653b95629b</td>
     </tr>
     <tr>
@@ -1313,10 +1314,9 @@ Retrieved 36 data values.
       <td>USGS-10109000</td>
       <td>Z</td>
       <td>Gage height, electric tape</td>
-      <td>2.64</td>
+      <td>2.63</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1324,11 +1324,36 @@ Retrieved 36 data values.
       <td>2019</td>
       <td>10</td>
       <td>28</td>
-      <td>18:46:00+00:00</td>
-      <td>e7a53dea-2ed0-4ad4-9389-8ffd3d890d6f</td>
+      <td>21:15:00+00:00</td>
+      <td>None</td>
+      <td>417153ee-ee2c-4c9a-b657-ab9978c7096c</td>
     </tr>
     <tr>
       <th>28</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
+      <td>MeanGageHeight</td>
+      <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>None</td>
+      <td>2.64</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>Good</td>
+      <td>2019</td>
+      <td>10</td>
+      <td>28</td>
+      <td>19:06:42+00:00</td>
+      <td>None</td>
+      <td>458e76be-02fe-4dd3-9ec1-f1fa08f22d3e</td>
+    </tr>
+    <tr>
+      <th>29</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
       <td>ReferencePrimary</td>
@@ -1340,7 +1365,6 @@ Retrieved 36 data values.
       <td>2.66</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1349,34 +1373,35 @@ Retrieved 36 data values.
       <td>10</td>
       <td>28</td>
       <td>18:50:00+00:00</td>
+      <td>None</td>
       <td>d5ee10b4-a4be-49d2-a921-a7d5710d956c</td>
     </tr>
     <tr>
-      <th>29</th>
+      <th>30</th>
       <td>POINT (-111.78398 41.74355)</td>
-      <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
-      <td>MeanGageHeight</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
       <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
       <td>00065</td>
       <td>USGS-10109000</td>
       <td>Z</td>
-      <td>None</td>
+      <td>Gage height, electric tape</td>
       <td>2.64</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
-      <td>Good</td>
+      <td>NaN</td>
       <td>2019</td>
       <td>10</td>
       <td>28</td>
-      <td>19:06:42+00:00</td>
-      <td>458e76be-02fe-4dd3-9ec1-f1fa08f22d3e</td>
+      <td>18:46:00+00:00</td>
+      <td>None</td>
+      <td>e7a53dea-2ed0-4ad4-9389-8ffd3d890d6f</td>
     </tr>
     <tr>
-      <th>30</th>
+      <th>31</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
       <td>Discharge</td>
@@ -1388,7 +1413,6 @@ Retrieved 36 data values.
       <td>133.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1397,58 +1421,11 @@ Retrieved 36 data values.
       <td>10</td>
       <td>28</td>
       <td>19:06:42+00:00</td>
+      <td>None</td>
       <td>e91df515-677c-4e9d-a2db-d93d8b0fd961</td>
     </tr>
     <tr>
-      <th>31</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>9603d708-a28c-04b1-e053-0100007f2a41</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, electric tape</td>
-      <td>2.63</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2019</td>
-      <td>10</td>
-      <td>28</td>
-      <td>21:15:00+00:00</td>
-      <td>417153ee-ee2c-4c9a-b657-ab9978c7096c</td>
-    </tr>
-    <tr>
       <th>32</th>
-      <td>POINT (-111.78398 41.74355)</td>
-      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
-      <td>ReferencePrimary</td>
-      <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
-      <td>00065</td>
-      <td>USGS-10109000</td>
-      <td>Z</td>
-      <td>Gage height, wire weight gage</td>
-      <td>2.59</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Approved</td>
-      <td>USGS</td>
-      <td>2026-09-27 02:10:13.165977+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2019</td>
-      <td>12</td>
-      <td>3</td>
-      <td>20:07:00+00:00</td>
-      <td>c97220e3-b50b-431b-8cf4-6e2223cd77a9</td>
-    </tr>
-    <tr>
-      <th>33</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>7d5b4004-ca7e-46c5-9bde-25d5dde481c8</td>
       <td>Discharge</td>
@@ -1460,7 +1437,6 @@ Retrieved 36 data values.
       <td>122.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1469,10 +1445,11 @@ Retrieved 36 data values.
       <td>12</td>
       <td>3</td>
       <td>20:53:15+00:00</td>
+      <td>None</td>
       <td>4c1f39f3-9f6c-40c9-bd26-f8a6beaf1f33</td>
     </tr>
     <tr>
-      <th>34</th>
+      <th>33</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>442c040d-8a0f-43e8-b4c7-840b2a60a89a</td>
       <td>MeanGageHeight</td>
@@ -1484,7 +1461,6 @@ Retrieved 36 data values.
       <td>2.60</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1493,10 +1469,11 @@ Retrieved 36 data values.
       <td>12</td>
       <td>3</td>
       <td>20:53:15+00:00</td>
+      <td>None</td>
       <td>8fa7352e-fb63-4220-84a4-ab66c2999e0c</td>
     </tr>
     <tr>
-      <th>35</th>
+      <th>34</th>
       <td>POINT (-111.78398 41.74355)</td>
       <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
       <td>ReferencePrimary</td>
@@ -1508,7 +1485,6 @@ Retrieved 36 data values.
       <td>2.61</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-27 02:10:13.165977+00:00</td>
       <td>Clear</td>
@@ -1517,11 +1493,36 @@ Retrieved 36 data values.
       <td>12</td>
       <td>3</td>
       <td>21:17:00+00:00</td>
+      <td>None</td>
       <td>b1c73710-a6d0-4b15-a8be-1744262379ab</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>POINT (-111.78398 41.74355)</td>
+      <td>4fd8c8cb-2d00-4858-bf22-fa8da4dc45f7</td>
+      <td>ReferencePrimary</td>
+      <td>92b3d616-e8fb-4f7f-862d-632f6ad1c26b</td>
+      <td>00065</td>
+      <td>USGS-10109000</td>
+      <td>Z</td>
+      <td>Gage height, wire weight gage</td>
+      <td>2.59</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-27 02:10:13.165977+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2019</td>
+      <td>12</td>
+      <td>3</td>
+      <td>20:07:00+00:00</td>
+      <td>None</td>
+      <td>c97220e3-b50b-431b-8cf4-6e2223cd77a9</td>
     </tr>
   </tbody>
 </table>
-<p>36 rows × 23 columns</p>
+<p>36 rows × 24 columns</p>
 </div></div>
 </div>
 <p>Example 3: Get all of the field measurements for multiple monitoring locations</p>
@@ -1585,7 +1586,6 @@ Retrieved 1017 data values.
       <th>value</th>
       <th>unit_of_measure</th>
       <th>...</th>
-      <th>approval_status</th>
       <th>measuring_agency</th>
       <th>last_modified</th>
       <th>control_condition</th>
@@ -1594,6 +1594,7 @@ Retrieved 1017 data values.
       <th>month</th>
       <th>day</th>
       <th>time_of_day</th>
+      <th>sublocation_identifier</th>
       <th>field_measurement_id</th>
     </tr>
   </thead>
@@ -1611,7 +1612,6 @@ Retrieved 1017 data values.
       <td>152.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1620,6 +1620,7 @@ Retrieved 1017 data values.
       <td>4</td>
       <td>7</td>
       <td>19:05:00+00:00</td>
+      <td>None</td>
       <td>c320b869-41c0-46c2-9dab-5031c55a4cde</td>
     </tr>
     <tr>
@@ -1635,7 +1636,6 @@ Retrieved 1017 data values.
       <td>3.11</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1644,6 +1644,7 @@ Retrieved 1017 data values.
       <td>4</td>
       <td>7</td>
       <td>19:05:00+00:00</td>
+      <td>None</td>
       <td>ce448c4f-7811-4c71-ac55-b262d774fdcd</td>
     </tr>
     <tr>
@@ -1659,7 +1660,6 @@ Retrieved 1017 data values.
       <td>127.00</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1668,6 +1668,7 @@ Retrieved 1017 data values.
       <td>5</td>
       <td>4</td>
       <td>21:05:00+00:00</td>
+      <td>None</td>
       <td>512e26e6-7763-46d8-815a-b5011dee6647</td>
     </tr>
     <tr>
@@ -1683,7 +1684,6 @@ Retrieved 1017 data values.
       <td>2.76</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1692,6 +1692,7 @@ Retrieved 1017 data values.
       <td>5</td>
       <td>4</td>
       <td>21:05:00+00:00</td>
+      <td>None</td>
       <td>6eb44a66-1037-41df-860b-263b4a44932a</td>
     </tr>
     <tr>
@@ -1707,7 +1708,6 @@ Retrieved 1017 data values.
       <td>4.26</td>
       <td>ft</td>
       <td>...</td>
-      <td>Approved</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1716,6 +1716,7 @@ Retrieved 1017 data values.
       <td>6</td>
       <td>10</td>
       <td>13:35:00+00:00</td>
+      <td>None</td>
       <td>6f923998-87ee-400a-bd94-95604bcf186c</td>
     </tr>
     <tr>
@@ -1745,26 +1746,26 @@ Retrieved 1017 data values.
     <tr>
       <th>1012</th>
       <td>POINT (-76.69369 38.95592)</td>
-      <td>a44e8e21-143d-4afc-853a-f06c59e6e06a</td>
-      <td>ReferencePrimary</td>
+      <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
+      <td>Discharge</td>
       <td>48037f4f-d8c4-4636-a28c-cb7238bccdc3</td>
-      <td>00065</td>
+      <td>00060</td>
       <td>USGS-01594440</td>
       <td>Z</td>
-      <td>Gage height, wire weight gage</td>
-      <td>4.56</td>
-      <td>ft</td>
+      <td>Acoustic Doppler Current Profiler</td>
+      <td>169.00</td>
+      <td>ft^3/s</td>
       <td>...</td>
-      <td>Provisional</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
-      <td>NaN</td>
+      <td>Good</td>
       <td>2026</td>
       <td>6</td>
       <td>29</td>
-      <td>14:23:00+00:00</td>
-      <td>2c7b8ef1-debd-4c0c-b640-fb1d6169b006</td>
+      <td>13:50:34+00:00</td>
+      <td>None</td>
+      <td>770c72e9-e935-43e3-82e8-debda52c45cf</td>
     </tr>
     <tr>
       <th>1013</th>
@@ -1776,10 +1777,33 @@ Retrieved 1017 data values.
       <td>USGS-01594440</td>
       <td>Z</td>
       <td>Gage height, wire weight gage</td>
+      <td>3.95</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>USGS</td>
+      <td>2026-09-24 16:36:10.659596+00:00</td>
+      <td>Clear</td>
+      <td>NaN</td>
+      <td>2026</td>
+      <td>9</td>
+      <td>17</td>
+      <td>14:38:00+00:00</td>
+      <td>None</td>
+      <td>1c1c1fb6-7c95-4401-8f9f-f30458311f94</td>
+    </tr>
+    <tr>
+      <th>1014</th>
+      <td>POINT (-76.69369 38.95592)</td>
+      <td>a44e8e21-143d-4afc-853a-f06c59e6e06a</td>
+      <td>ReferencePrimary</td>
+      <td>e7e66c91-9a4f-49db-8ad2-1182467dd22f</td>
+      <td>00065</td>
+      <td>USGS-01594440</td>
+      <td>Z</td>
+      <td>Gage height, wire weight gage</td>
       <td>3.96</td>
       <td>ft</td>
       <td>...</td>
-      <td>Provisional</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1788,10 +1812,11 @@ Retrieved 1017 data values.
       <td>9</td>
       <td>17</td>
       <td>13:22:00+00:00</td>
+      <td>None</td>
       <td>72c0472a-1c5d-4565-a515-c1a176fa694c</td>
     </tr>
     <tr>
-      <th>1014</th>
+      <th>1015</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>10f75368-e5d4-4b6a-a4a7-ec3f00f906b7</td>
       <td>MeanGageHeight</td>
@@ -1803,7 +1828,6 @@ Retrieved 1017 data values.
       <td>3.95</td>
       <td>ft</td>
       <td>...</td>
-      <td>Provisional</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1812,10 +1836,11 @@ Retrieved 1017 data values.
       <td>9</td>
       <td>17</td>
       <td>14:12:01+00:00</td>
+      <td>None</td>
       <td>844dc4dc-da81-494d-9008-5671a7e4aaf5</td>
     </tr>
     <tr>
-      <th>1015</th>
+      <th>1016</th>
       <td>POINT (-76.69369 38.95592)</td>
       <td>af34921e-31ca-46f0-afad-731e7ab10cae</td>
       <td>Discharge</td>
@@ -1827,7 +1852,6 @@ Retrieved 1017 data values.
       <td>82.50</td>
       <td>ft^3/s</td>
       <td>...</td>
-      <td>Provisional</td>
       <td>USGS</td>
       <td>2026-09-24 16:36:10.659596+00:00</td>
       <td>Clear</td>
@@ -1836,35 +1860,12 @@ Retrieved 1017 data values.
       <td>9</td>
       <td>17</td>
       <td>14:12:01+00:00</td>
+      <td>None</td>
       <td>c6407e87-26b4-4429-8038-4c947328216a</td>
-    </tr>
-    <tr>
-      <th>1016</th>
-      <td>POINT (-76.69369 38.95592)</td>
-      <td>a44e8e21-143d-4afc-853a-f06c59e6e06a</td>
-      <td>ReferencePrimary</td>
-      <td>e7e66c91-9a4f-49db-8ad2-1182467dd22f</td>
-      <td>00065</td>
-      <td>USGS-01594440</td>
-      <td>Z</td>
-      <td>Gage height, wire weight gage</td>
-      <td>3.95</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>Provisional</td>
-      <td>USGS</td>
-      <td>2026-09-24 16:36:10.659596+00:00</td>
-      <td>Clear</td>
-      <td>NaN</td>
-      <td>2026</td>
-      <td>9</td>
-      <td>17</td>
-      <td>14:38:00+00:00</td>
-      <td>1c1c1fb6-7c95-4401-8f9f-f30458311f94</td>
     </tr>
   </tbody>
 </table>
-<p>1017 rows × 23 columns</p>
+<p>1017 rows × 24 columns</p>
 </div></div>
 </div>
 </section>

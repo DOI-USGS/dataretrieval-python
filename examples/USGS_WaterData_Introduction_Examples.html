@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -106,7 +106,7 @@
              
   <section id="Introduction-to-the-USGS-Water-Data-APIs">
 <h1>Introduction to the USGS Water Data APIs<a class="headerlink" href="#Introduction-to-the-USGS-Water-Data-APIs" title="Link to this heading"></a></h1>
-<p>The <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/">USGS Water Data APIs</a> are the modern, OGC-based replacement for the legacy NWIS web services. In Python they are exposed through the <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> module, which will gradually replace the older <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> functions.</p>
+<p>The <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/">USGS Water Data APIs</a> are the modern, OGC-based replacement for the legacy NWIS web services. In Python they are exposed through the <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> module, which will gradually replace the older <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> functions.</p>
 <p>This notebook tours each new function. The NWIS shut-down timeline is still uncertain, so we recommend migrating to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions sooner rather than later.</p>
 <p>If you are coming from the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> package, the functions map across as follows:</p>
 <table class="docutils align-default">
@@ -180,7 +180,7 @@
 </section>
 <section id="Flexible-columns-returned">
 <h3>Flexible columns returned<a class="headerlink" href="#Flexible-columns-returned" title="Link to this heading"></a></h3>
-<p>Use the <code class="docutils literal notranslate"><span class="pre">properties</span></code> argument to choose which columns come back. The full set of available properties for a collection is published in that collection’s schema, e.g. <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/queryables">https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/queryables</a>.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">properties</span></code> argument to choose which columns come back. The full set of available properties for a collection is published in that collection’s schema, e.g. <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/queryables">https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/queryables</a>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -274,7 +274,7 @@ Retrieving: monitoring-locations · 1 page · 1 rows
 <h2>New functions<a class="headerlink" href="#New-functions" title="Link to this heading"></a></h2>
 <section id="Monitoring-location">
 <h3>Monitoring location<a class="headerlink" href="#Monitoring-location" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations</span></code> returns site metadata. To browse the service in a web browser, visit <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations">https://api.waterdata.usgs.gov/ogcapi/v0/collections/monitoring-locations</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_monitoring_locations</span></code> returns site metadata. To browse the service in a web browser, visit <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations">https://api.waterdata.usgs.gov/ogcapi/v1/collections/monitoring-locations</a>.</p>
 <p>A simple request for one known USGS site:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
@@ -465,7 +465,7 @@ Retrieving: monitoring-locations · 1 page · 1 rows
     </tr>
     <tr>
       <th>construction_date</th>
-      <td>NaT</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>aquifer_code</th>
@@ -697,49 +697,49 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <th>2</th>
       <td>Temperature, water</td>
       <td>00011</td>
-      <td>2023-04-20 22:30:00+00:00</td>
-      <td>2026-10-01 12:30:00+00:00</td>
-      <td>2026-10-01 08:37:50.929755+00:00</td>
+      <td>2023-04-20 18:30:00+00:00</td>
+      <td>2026-10-02 10:30:00+00:00</td>
+      <td>2026-10-02 10:36:38.630487+00:00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>Temperature, water</td>
       <td>00002</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-09-29 04:00:00+00:00</td>
-      <td>2026-10-01 05:36:29.662059+00:00</td>
+      <td>2026-09-30 04:00:00+00:00</td>
+      <td>2026-10-02 05:37:47.711882+00:00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>Discharge</td>
       <td>00003</td>
       <td>1948-01-01 05:00:00+00:00</td>
-      <td>2026-09-29 04:00:00+00:00</td>
-      <td>2026-10-01 05:28:51.821001+00:00</td>
+      <td>2026-10-01 04:00:00+00:00</td>
+      <td>2026-10-02 05:30:39.810981+00:00</td>
     </tr>
     <tr>
       <th>5</th>
       <td>Temperature, water</td>
       <td>00001</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-09-29 04:00:00+00:00</td>
-      <td>2026-10-01 05:36:29.730714+00:00</td>
+      <td>2026-09-30 04:00:00+00:00</td>
+      <td>2026-10-02 05:37:47.764716+00:00</td>
     </tr>
     <tr>
       <th>6</th>
       <td>Temperature, water</td>
       <td>00003</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-09-29 04:00:00+00:00</td>
-      <td>2026-10-01 05:36:29.218554+00:00</td>
+      <td>2026-10-01 04:00:00+00:00</td>
+      <td>2026-10-02 05:37:47.374423+00:00</td>
     </tr>
     <tr>
       <th>7</th>
       <td>Discharge</td>
       <td>00011</td>
-      <td>1990-10-01 09:08:09+00:00</td>
-      <td>2026-10-01 11:15:00+00:00</td>
-      <td>2026-10-01 07:29:54.643558+00:00</td>
+      <td>1990-10-01 05:08:09+00:00</td>
+      <td>2026-10-02 10:15:00+00:00</td>
+      <td>2026-10-02 10:28:34.989791+00:00</td>
     </tr>
     <tr>
       <th>8</th>
@@ -879,7 +879,7 @@ Retrieving: parameter-codes · 1 page · 1 rows
 </section>
 <section id="Daily-values">
 <h3>Daily values<a class="headerlink" href="#Daily-values" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">get_daily</span></code> returns daily values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily">https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_daily</span></code> returns daily values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily">https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily</a>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
@@ -999,7 +999,7 @@ Retrieving: daily · 1 page · 730 rows
 </section>
 <section id="Continuous">
 <h3>Continuous<a class="headerlink" href="#Continuous" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> returns instantaneous (sensor) values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v0/collections/continuous">https://api.waterdata.usgs.gov/ogcapi/v0/collections/continuous</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_continuous</span></code> returns instantaneous (sensor) values. Browse it at <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous">https://api.waterdata.usgs.gov/ogcapi/v1/collections/continuous</a>.</p>
 <p>This service currently allows at most <strong>3 years</strong> of data per request; with no <code class="docutils literal notranslate"><span class="pre">time</span></code> argument it returns the latest year. Continuous data have no geometry column and do not support bounding-box queries. For large pulls, see the <em>Continuous Data</em> notebook.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
@@ -1150,38 +1150,38 @@ Retrieving: field-measurements · 1 page · 42 rows
   <tbody>
     <tr>
       <th>0</th>
-      <td>2023-11-02 18:45:00+00:00</td>
+      <td>2023-11-02</td>
       <td>USGS-263819081585801</td>
       <td>62610</td>
       <td>-14.55</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>2023-11-02 18:45:00+00:00</td>
+      <td>2023-11-02</td>
       <td>USGS-263819081585801</td>
       <td>72019</td>
       <td>27.55</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2023-11-02 18:45:00+00:00</td>
+      <td>2023-11-02</td>
       <td>USGS-263819081585801</td>
       <td>62611</td>
       <td>-15.68</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>2023-12-18 21:25:00+00:00</td>
+      <td>2023-12-18</td>
       <td>USGS-451605097071701</td>
       <td>62611</td>
       <td>1837.08</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>2023-12-18 21:25:00+00:00</td>
+      <td>2023-12-18</td>
       <td>USGS-451605097071701</td>
-      <td>72019</td>
-      <td>80.75</td>
+      <td>62610</td>
+      <td>1836.12</td>
     </tr>
   </tbody>
 </table>
@@ -1353,11 +1353,11 @@ Retrieving: latest-continuous · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-10-02 00:15:00+00:00</td>
+      <td>2026-10-02 16:15:00+00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>29.3</td>
+      <td>25.2</td>
     </tr>
     <tr>
       <th>approval_status</th>
@@ -1424,11 +1424,11 @@ Retrieving: latest-daily · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-09-30 00:00:00</td>
+      <td>2026-10-01 00:00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>44.8</td>
+      <td>31.8</td>
     </tr>
     <tr>
       <th>approval_status</th>
@@ -1471,9 +1471,7 @@ Retrieving: latest-daily · 1 page · 1 rows
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-Retrieving: monitoring-locations · 1 page · 2,359 rows/opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/site-packages/dataretrieval/ogc/shaping.py:305: UserWarning: 113 values in column &#39;construction_date&#39; could not be parsed as datetimes and were set to missing. To inspect the raw values, repeat the call with convert_type=False.
-  _warn_unparsed(df[col], parsed, col, &#34;datetimes&#34;)
-
+Retrieving: monitoring-locations · 1 page · 2,359 rows
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">

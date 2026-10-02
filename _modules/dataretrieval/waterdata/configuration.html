@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.configuration &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>dataretrieval.waterdata.configuration &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../../../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -95,6 +95,7 @@
     <span class="n">_Redirectable</span><span class="p">,</span>
     <span class="n">_register</span><span class="p">,</span>
     <span class="n">_Retrying</span><span class="p">,</span>
+    <span class="n">_Versioned</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"WaterdataConfiguration"</span><span class="p">]</span>
@@ -104,7 +105,7 @@
 <a class="viewcode-back" href="../../../reference/waterdata.html#dataretrieval.waterdata.WaterdataConfiguration">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WaterdataConfiguration</span><span class="p">(</span>
-    <span class="n">_Chunked</span><span class="p">,</span> <span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">BaseConfiguration</span>
+    <span class="n">_Chunked</span><span class="p">,</span> <span class="n">_Concurrent</span><span class="p">,</span> <span class="n">_Redirectable</span><span class="p">,</span> <span class="n">_Retrying</span><span class="p">,</span> <span class="n">_Versioned</span><span class="p">,</span> <span class="n">BaseConfiguration</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Settings for Water Data calls alone.</span>
 
@@ -124,9 +125,18 @@
 <span class="sd">    base_url : str, optional</span>
 <span class="sd">        Root to send Water Data requests to, instead of the service's own. The package</span>
 <span class="sd">        appends its own paths, so one value redirects all four families together --</span>
-<span class="sd">        ``/ogcapi/v0``, ``/samples-data``, ``/statistics/v0`` and ``/stac/v0``. Code</span>
-<span class="sd">        only: the file and the environment refuse it. The API key is scoped to the host</span>
-<span class="sd">        that accepts it, so a redirected call sends no key.</span>
+<span class="sd">        ``/ogcapi/&lt;api_version&gt;``, ``/samples-data``, ``/statistics/v0`` and</span>
+<span class="sd">        ``/stac/v0``. Code only: setting it in the configuration file or through an</span>
+<span class="sd">        environment variable raises ``ConfigurationError``. The API key is scoped to</span>
+<span class="sd">        the host that accepts it, so a redirected call sends no key.</span>
+<span class="sd">    api_version : str, optional</span>
+<span class="sd">        Version of the Water Data API to request, as the segment of its path:</span>
+<span class="sd">        ``"v1"``, which this release is written against, or ``"v0"`` while the</span>
+<span class="sd">        service keeps it online (until June 2027). It replaces that one segment,</span>
+<span class="sd">        so the Samples, Statistics and STAC families -- versioned separately, with</span>
+<span class="sd">        no v1 -- are unaffected. Set it here or in the ``[waterdata]`` table of</span>
+<span class="sd">        the configuration file. Under another version, getters return that</span>
+<span class="sd">        version's columns as the service sends them.</span>
 <span class="sd">    concurrency : int or str, optional</span>
 <span class="sd">        Cap on simultaneous sub-requests, or ``"unbounded"``.</span>
 <span class="sd">    parallel_chunks : int, optional</span>
@@ -135,11 +145,11 @@
 <span class="sd">    """</span>
 
     <span class="c1"># The settings this service reads, named by the groups they come from:</span>
-    <span class="c1"># every adapter's retry settings, a redirectable base, and -- because Water</span>
-    <span class="c1"># Data queries divide along a URL byte budget and are executed concurrently</span>
-    <span class="c1"># -- both fan-out settings. Each group declares the setting itself once, in</span>
-    <span class="c1"># :mod:`dataretrieval.configuration`, which also defines its grammar and</span>
-    <span class="c1"># its coercion.</span>
+    <span class="c1"># every adapter's retry settings, a redirectable base, a versioned API, and</span>
+    <span class="c1"># -- because Water Data queries divide along a URL byte budget and are</span>
+    <span class="c1"># executed concurrently -- both fan-out settings. Each group declares the</span>
+    <span class="c1"># setting itself once, in :mod:`dataretrieval.configuration`, which also</span>
+    <span class="c1"># defines its grammar and its coercion.</span>
     <span class="n">adapter</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"waterdata"</span></div>
 
 

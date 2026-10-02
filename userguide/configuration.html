@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>Configuration &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -57,6 +57,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#checking-what-is-in-effect">Checking what is in effect</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#why-parallel-chunks-has-no-environment-variable">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#redirecting-an-adapter-to-another-host">Redirecting an adapter to another host</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pinning-the-water-data-api-version">Pinning the Water Data API version</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#keeping-a-key-out-of-your-environment-entirely">Keeping a key out of your environment entirely</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#behind-a-tls-intercepting-proxy">Behind a TLS-intercepting proxy</a></li>
 </ul>
@@ -120,8 +121,9 @@ authenticates to a gateway rather than to an adapter, so it stays package-wide.<
 <li><p><a class="reference internal" href="#checking-what-is-in-effect" id="id8">Checking what is in effect</a></p></li>
 <li><p><a class="reference internal" href="#why-parallel-chunks-has-no-environment-variable" id="id9">Why <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code> has no environment variable</a></p></li>
 <li><p><a class="reference internal" href="#redirecting-an-adapter-to-another-host" id="id10">Redirecting an adapter to another host</a></p></li>
-<li><p><a class="reference internal" href="#keeping-a-key-out-of-your-environment-entirely" id="id11">Keeping a key out of your environment entirely</a></p></li>
-<li><p><a class="reference internal" href="#behind-a-tls-intercepting-proxy" id="id12">Behind a TLS-intercepting proxy</a></p></li>
+<li><p><a class="reference internal" href="#pinning-the-water-data-api-version" id="id11">Pinning the Water Data API version</a></p></li>
+<li><p><a class="reference internal" href="#keeping-a-key-out-of-your-environment-entirely" id="id12">Keeping a key out of your environment entirely</a></p></li>
+<li><p><a class="reference internal" href="#behind-a-tls-intercepting-proxy" id="id13">Behind a TLS-intercepting proxy</a></p></li>
 </ul>
 </nav>
 <section id="one-block-several-services">
@@ -243,6 +245,13 @@ seconds. Progress resets the timer; <code class="docutils literal notranslate"><
 a <code class="docutils literal notranslate"><span class="pre">configure</span></code> block: a file that redirected the library to
 another host would be a supply-chain hazard. See
 <a class="reference internal" href="#configuration-redirect"><span class="std std-ref">Redirecting an adapter to another host</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">api_version</span></code></p></td>
+<td><p>the version the release targets</p></td>
+<td><p><em>(none — code or file)</em></p></td>
+<td><p>Which version of one service’s API to request, as the segment of its
+path (<code class="docutils literal notranslate"><span class="pre">&quot;v1&quot;</span></code>). Per adapter; Water Data reads it for its OGC
+collections. See <a class="reference internal" href="#configuration-api-version"><span class="std std-ref">Pinning the Water Data API version</span></a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -369,11 +378,11 @@ line that does nothing:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">waterdata.WaterdataConfiguration</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel_chunks</span></code>,
 <code class="docutils literal notranslate"><span class="pre">retries</span></code>, <code class="docutils literal notranslate"><span class="pre">stall_timeout</span></code>,
-<code class="docutils literal notranslate"><span class="pre">base_url</span></code></p></td>
+<code class="docutils literal notranslate"><span class="pre">base_url</span></code>, <code class="docutils literal notranslate"><span class="pre">api_version</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ngwmn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">ngwmn.NgwmnConfiguration</span></code></p></td>
-<td><p>the same five</p></td>
+<td><p>the same, without <code class="docutils literal notranslate"><span class="pre">api_version</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">nwdc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">nwdc.NwdcConfiguration</span></code></p></td>
@@ -604,8 +613,43 @@ goes out without it. That is deliberate: the host you redirected to is not the
 host you gave a credential to. If the mirror needs its own credential, it needs
 its own mechanism.</p>
 </section>
+<section id="pinning-the-water-data-api-version">
+<span id="configuration-api-version"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Pinning the Water Data API version</a><a class="headerlink" href="#pinning-the-water-data-api-version" title="Link to this heading"></a></h2>
+<p>The Water Data OGC getters request v1 of the Water Data APIs and shape
+responses for it. <code class="docutils literal notranslate"><span class="pre">api_version</span></code> sends an adapter’s requests to another
+version, either within a <code class="docutils literal notranslate"><span class="pre">configure</span></code> block or, from the file, for every
+script that reads it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">dataretrieval</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">WaterdataConfiguration</span><span class="p">(</span><span class="n">api_version</span><span class="o">=</span><span class="s2">"v0"</span><span class="p">)):</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">waterdata</span><span class="o">.</span><span class="n">get_time_series_metadata</span><span class="p">(</span>
+        <span class="n">monitoring_location_id</span><span class="o">=</span><span class="s2">"USGS-05114000"</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[waterdata]</span>
+<span class="n">api_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"v0"</span>
+</pre></div>
+</div>
+<p>The value is the version segment of the service’s path, <code class="docutils literal notranslate"><span class="pre">&quot;v1&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;v0&quot;</span></code>,
+and it replaces only that segment. The Samples database, the statistics service
+and the STAC catalog are versioned separately and have no v1, so a pin leaves
+them unchanged. v0 stays online until June 2027, after which the service
+redirects every v0 request to v1.</p>
+<p>Under a pinned version, getters return that version’s columns as the service
+sends them.
+v0 of <code class="docutils literal notranslate"><span class="pre">time-series-metadata</span></code> still has <code class="docutils literal notranslate"><span class="pre">begin_utc</span></code>, <code class="docutils literal notranslate"><span class="pre">end_utc</span></code>,
+<code class="docutils literal notranslate"><span class="pre">state_name</span></code> and <code class="docutils literal notranslate"><span class="pre">hydrologic_unit_code</span></code>, which v1 removed, and v0 of
+<code class="docutils literal notranslate"><span class="pre">field-measurements</span></code> returns <code class="docutils literal notranslate"><span class="pre">time</span></code> as a datetime, where v1 returns a date
+(parsed to a tz-naive midnight timestamp).
+When a call to <code class="docutils literal notranslate"><span class="pre">get_time_series_metadata</span></code> names one of those four filters,
+the getter sends that one call to v0 and emits a <code class="docutils literal notranslate"><span class="pre">DeprecationWarning</span></code>.
+It does not change your configuration,
+so every other getter still uses the version you set.</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">base_url</span></code>, <code class="docutils literal notranslate"><span class="pre">api_version</span></code> may be set in the file,
+because a version cannot send a request to another host.
+It has no environment variable.</p>
+</section>
 <section id="keeping-a-key-out-of-your-environment-entirely">
-<span id="configuration-secret-store"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Keeping a key out of your environment entirely</a><a class="headerlink" href="#keeping-a-key-out-of-your-environment-entirely" title="Link to this heading"></a></h2>
+<span id="configuration-secret-store"></span><h2><a class="toc-backref" href="#id12" role="doc-backlink">Keeping a key out of your environment entirely</a><a class="headerlink" href="#keeping-a-key-out-of-your-environment-entirely" title="Link to this heading"></a></h2>
 <p>If your credentials are stored in a secret manager, nothing needs to modify
 <code class="docutils literal notranslate"><span class="pre">os.environ</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">dataretrieval</span>
@@ -623,7 +667,7 @@ its own mechanism.</p>
 is stripped from any cross-host redirect, so it cannot leak to another host.</p>
 </section>
 <section id="behind-a-tls-intercepting-proxy">
-<h2><a class="toc-backref" href="#id12" role="doc-backlink">Behind a TLS-intercepting proxy</a><a class="headerlink" href="#behind-a-tls-intercepting-proxy" title="Link to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">Behind a TLS-intercepting proxy</a><a class="headerlink" href="#behind-a-tls-intercepting-proxy" title="Link to this heading"></a></h2>
 <p>On a corporate network that re-signs HTTPS traffic, requests fail with a
 certificate-verification error. Set the standard OpenSSL variables to your
 organization’s CA bundle:</p>

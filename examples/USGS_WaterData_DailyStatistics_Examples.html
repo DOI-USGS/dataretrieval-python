@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily statistics: get_stats_por and get_stats_date_range &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>Daily statistics: get_stats_por and get_stats_date_range &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -935,7 +935,7 @@ Retrieving: observationIntervals · 1 page · 1,277 rows
 </section>
 <section id="Statistics-API-tips">
 <h2>Statistics API tips<a class="headerlink" href="#Statistics-API-tips" title="Link to this heading"></a></h2>
-<p>The statistics API does <strong>not</strong> follow the OGC standards used by the <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov/ogcapi/v0/</span></code> endpoints. A few things to keep in mind:</p>
+<p>The statistics API does <strong>not</strong> follow the OGC standards used by the <code class="docutils literal notranslate"><span class="pre">api.waterdata.usgs.gov/ogcapi/v1/</span></code> endpoints. A few things to keep in mind:</p>
 <ul class="simple">
 <li><p><strong>Higher rate limits.</strong> At the time of writing the statistics API allows ~4000 requests/hour per IP (per token if a token is supplied).</p></li>
 <li><p><strong>All columns, always.</strong> There is no <code class="docutils literal notranslate"><span class="pre">skip_geometry</span></code> or <code class="docutils literal notranslate"><span class="pre">properties</span></code> argument — the API returns the full column set.</p></li>

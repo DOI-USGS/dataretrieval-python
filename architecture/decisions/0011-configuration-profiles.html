@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+gd77c85336 documentation</title>
+  <title>ADR 0011: Configuration profiles, scoped to one adapter &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=4f76b303"></script>
+      <script src="../../_static/documentation_options.js?v=3c2ed6cd"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -328,7 +328,7 @@ innermost block takes precedence, including over an adapter-scoped outer one.</p
 isolation rule under lazy validation.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">test_base_url_applies_from_code_and_is_refused_from_the_file</span></code>, with
 <code class="docutils literal notranslate"><span class="pre">test_base_url_is_refused_from_the_environment</span></code> for the other source, and
-<code class="docutils literal notranslate"><span class="pre">test_a_code_base_url_redirects_every_water_data_endpoint_family</span></code> – one
+<code class="docutils literal notranslate"><span class="pre">test_base_url_changes_every_endpoint_family_and_api_version_only_ogc</span></code> – one
 public-getter contract covering OGC, Samples, Statistics, and Ratings. The
 endpoint module exposes functions that build each URL at request time rather
 than ready-made endpoint constants, so a family module gets the root in effect
@@ -359,6 +359,13 @@ rejected <code class="docutils literal notranslate"><span class="pre">parallelis
 <li><p>The setting-group clause was added after the original decision, consolidating
 under ADR 0000 a rule the configuration core was stating in prose. It does
 not change behavior.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">api_version</span></code> was added on 2026-09-22 as a second adapter-only setting,
+when the Water Data OGC collections moved to v1. Unlike <code class="docutils literal notranslate"><span class="pre">base_url</span></code>, it may
+be set in the file: the code-only rule above exists because a base URL can
+redirect requests to another host, and a version cannot. Which settings raise
+<code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> when written in the file is therefore keyed on a
+separate <code class="docutils literal notranslate"><span class="pre">BLOCK_ONLY_SETTINGS</span></code> list, while an environment variable for any
+adapter-only setting still raises, because a variable is package-wide.</p></li>
 </ul>
 </section>
 </section>
