@@ -18,6 +18,7 @@ import pandas as pd
 
 from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.utils import (
+    ShapingOptions,
     _get_args,
     _with_state,
     get_ogc_data,
@@ -252,9 +253,13 @@ def get_daily(
     collection = "daily"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_continuous(
@@ -450,9 +455,13 @@ def get_continuous(
     collection = "continuous"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_latest_continuous(
@@ -661,9 +670,13 @@ def get_latest_continuous(
     collection = "latest-continuous"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_latest_daily(
@@ -873,9 +886,13 @@ def get_latest_daily(
     collection = "latest-daily"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_stats_por(

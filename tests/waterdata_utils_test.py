@@ -31,7 +31,7 @@ from dataretrieval.ogc.errors import (
     _parse_retry_after,
     _raise_for_non_200,
 )
-from dataretrieval.ogc.policy import OgcDialect
+from dataretrieval.ogc.policy import OgcDialect, ShapingOptions
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
@@ -231,12 +231,39 @@ def test_finalize_ogc_truncates_combined_to_max_rows():
         resp,
         properties=None,
         output_id="thing_id",
-        convert_type=False,
+        options=ShapingOptions(convert_type=False, max_rows=3),
         collection="things",
-        max_rows=3,
     )
     assert len(df) == 3
     assert hasattr(md, "url")  # wrapped as BaseMetadata
+
+
+@pytest.mark.parametrize("bad", [0, -1, 2.5, 10.0, True])
+def test_shaping_options_rejects_bad_max_rows(bad):
+    # The one definition owns the validation: building the options raises
+    # before any request, so an invalid cap never reaches ``pd.DataFrame.head``.
+    with pytest.raises(ValueError, match="positive integer"):
+        ShapingOptions(max_rows=bad)
+
+
+def test_shaping_options_take_ignores_absent_keys():
+    # A getter without ``max_rows`` (a reference-table fetch) leaves that field
+    # at its default; ``take`` reads only the option keys present in locals().
+    opts = ShapingOptions.take({"convert_type": True, "parameter_code": "00060"})
+    assert opts == ShapingOptions(convert_type=True, max_rows=None)
+
+
+def test_shaping_option_keys_are_the_keys_the_query_excludes():
+    # The single-definition invariant: every shaping-option field name is a key
+    # ``prepare_request_args`` drops from the query, so adding an option field
+    # cannot leave the key leaking into the request params.
+    from dataretrieval.ogc import prepare_request_args
+
+    local_vars = dict.fromkeys(ShapingOptions.field_names(), 1)
+    local_vars["parameter_code"] = "00060"
+    args = prepare_request_args(local_vars)
+    assert ShapingOptions.field_names().isdisjoint(args)
+    assert "parameter_code" in args  # a real query key still passes through
 
 
 def _resp_ok(features):

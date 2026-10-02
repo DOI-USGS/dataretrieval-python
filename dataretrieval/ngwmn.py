@@ -34,7 +34,12 @@ from dataretrieval.configuration import (
     _Retrying,
 )
 from dataretrieval.credentials import WATERDATA_BASE_URL
-from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
+from dataretrieval.ogc import (
+    OgcDialect,
+    ShapingOptions,
+    get_ogc_data,
+    prepare_request_args,
+)
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -106,6 +111,11 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
+    # Pull the shaping options (``convert_type``) out of the getter's locals
+    # before the query is built; ``prepare_request_args`` drops the same keys
+    # from the query dict, so the two cannot disagree about what is a shaping
+    # option.
+    options = ShapingOptions.take(local_vars)
     args = prepare_request_args(local_vars)
     return get_ogc_data(
         args,
@@ -117,6 +127,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
         spatial=service == "sites",
         dialect=NGWMN_DIALECT,
+        options=options,
         adapter="ngwmn",
     )
 

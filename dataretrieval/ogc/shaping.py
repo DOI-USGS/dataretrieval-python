@@ -19,7 +19,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect, ShapingOptions
 
 try:
     import geopandas as gpd
@@ -393,11 +393,10 @@ def _finalize_ogc(
     *,
     properties: list[str] | None,
     output_id: str,
-    convert_type: bool,
+    options: ShapingOptions,
     collection: str,
     geopd: bool,
     include_geometry: bool,
-    max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
     base_url: str,
@@ -406,16 +405,18 @@ def _finalize_ogc(
 
     The one place the OGC getters' results are shaped: empty results
     normalized, column names normalized to snake_case, types coerced (when
-    ``convert_type``), the wire ``id`` renamed and columns ordered, rows
-    sorted, optionally truncated to ``max_rows``, and the response wrapped
-    as :class:`~dataretrieval.utils.BaseMetadata`.
+    ``options.convert_type``), the wire ``id`` renamed and columns ordered,
+    rows sorted, optionally truncated to ``options.max_rows``, and the
+    response wrapped as :class:`~dataretrieval.utils.BaseMetadata`.
 
-    Injected into the chunker as its ``finalize`` hook (see
-    :data:`~dataretrieval.ogc.chunking._Finalize`); ADR 0008 makes that hook
-    part of the fan-out contract.
+    ``options`` is the one value carrying every result-shaping choice (see
+    :class:`~dataretrieval.ogc.policy.ShapingOptions`); the query ``args`` the
+    engine sends never reach here. Injected into the chunker as its
+    ``finalize`` hook (see :data:`~dataretrieval.ogc.chunking._Finalize`); ADR
+    0008 makes that hook part of the fan-out contract.
 
-    ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
-    rather than only per-chunk, so a chunked call's total is bounded
+    ``options.max_rows`` is applied here (after dedup/sort, on the *combined*
+    frame) rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call applies the cap too. The
     per-page ``row_cap`` bound in the engine is only an early-stop download
     bound. ``base_url`` is required and captured with the finalizer so resumed
@@ -443,10 +444,10 @@ def _finalize_ogc(
     }
     if renames:
         frame = frame.rename(columns=renames)
-    if convert_type:
+    if options.convert_type:
         frame = _type_cols(frame, dialect)
     frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
     frame = _sort_rows(frame, dialect)
-    if max_rows is not None:
-        frame = frame.head(max_rows)
+    if options.max_rows is not None:
+        frame = frame.head(options.max_rows)
     return frame, BaseMetadata(response)

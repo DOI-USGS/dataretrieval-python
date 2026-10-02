@@ -18,6 +18,7 @@ from dataretrieval._deprecation import REMOVALS
 from dataretrieval._validation import require_one_of
 from dataretrieval.waterdata.utils import (
     _OUTPUT_ID_BY_COLLECTION,
+    ShapingOptions,
     _accept_legacy_kwargs,
     _get_args,
     get_ogc_data,
@@ -168,16 +169,22 @@ def get_cql(
     # pagination, and finalization, through the same Water Data entry the typed getters
     # use; ``cql_body`` selects the verbatim-CQL2 shape. ``output_id`` defaults from the
     # collection map, which the check above has already confirmed covers ``collection``.
+    # ``convert_type`` and ``max_rows`` shape the result, so they travel in
+    # ``options`` rather than in the query dict.
     args = _get_args(
         {
             "properties": properties,
             "bbox": bbox,
             "limit": limit,
             "skip_geometry": skip_geometry,
-            "convert_type": convert_type,
         }
     )
-    return get_ogc_data(args, collection, max_rows=max_rows, cql_body=body)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+        cql_body=body,
+    )
 
 
 __all__ = ["get_cql"]

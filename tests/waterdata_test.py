@@ -1359,7 +1359,8 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
         )
     args_dict = fake.call_args[0][0]
     assert "max_rows" not in args_dict  # not leaked into the query params
-    assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
+    # Forwarded as a shaping option, carried apart from the query.
+    assert fake.call_args.kwargs["options"].max_rows == 3
 
 
 def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
@@ -1379,7 +1380,8 @@ def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
         )
     args_dict = fake.call_args[0][0]
     assert "max_rows" not in args_dict  # not leaked into the query params
-    assert fake.call_args.kwargs["max_rows"] == 3  # forwarded to the cap
+    # Forwarded as a shaping option, carried apart from the query.
+    assert fake.call_args.kwargs["options"].max_rows == 3
 
 
 def test_get_reference_table_wrong_name():

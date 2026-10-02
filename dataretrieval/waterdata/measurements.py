@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval.waterdata.utils import (
+    ShapingOptions,
     _get_args,
     get_ogc_data,
 )
@@ -223,9 +224,13 @@ def get_field_measurements(
     collection = "field-measurements"
 
     # Build argument dictionary, omitting None values
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_peaks(
@@ -363,9 +368,13 @@ def get_peaks(
     """
     collection = "peaks"
 
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_channel(
@@ -563,9 +572,13 @@ def get_channel(
     """
     collection = "channel-measurements"
 
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 __all__ = ["get_field_measurements", "get_peaks", "get_channel"]

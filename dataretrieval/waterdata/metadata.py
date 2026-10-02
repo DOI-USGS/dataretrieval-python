@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 from dataretrieval.waterdata.utils import (
+    ShapingOptions,
     _get_args,
     _with_state,
     get_ogc_data,
@@ -336,11 +337,13 @@ def get_monitoring_locations(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_time_series_metadata(
@@ -587,11 +590,13 @@ def get_time_series_metadata(
 
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_combined_metadata(
@@ -845,11 +850,13 @@ site_type_code : string or iterable of strings, optional
     collection = "combined-metadata"
 
     # Resolve the unified `state` argument into the OGC `state_name` queryable.
-    args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
-    )
+    args = _get_args(_with_state(locals(), to="name", into="state_name"))
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 def get_field_measurements_metadata(
@@ -981,9 +988,13 @@ def get_field_measurements_metadata(
     """
     collection = "field-measurements-metadata"
 
-    args = _get_args(locals(), exclude={"max_rows"})
+    args = _get_args(locals())
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return get_ogc_data(
+        args,
+        collection,
+        options=ShapingOptions(convert_type=convert_type, max_rows=max_rows),
+    )
 
 
 __all__ = [

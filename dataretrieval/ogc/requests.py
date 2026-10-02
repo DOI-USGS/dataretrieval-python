@@ -17,7 +17,7 @@ from typing import Any
 import httpx
 
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
+from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect, ShapingOptions
 from dataretrieval.transport.http import default_headers as _default_headers
 
 # ---------------------------------------------------------------------------
@@ -338,9 +338,16 @@ def prepare_request_args(
 ) -> dict[str, Any]:
     """Build OGC request kwargs from a getter's ``locals()``.
 
-    Internal control keys, caller-supplied exclusions, and ``None`` values
-    are omitted. Identifiers and properties are validated; other iterables are
-    normalized unless exempted.
+    Internal control keys, the shaping-option keys
+    (:meth:`ShapingOptions.field_names`), caller-supplied exclusions, and
+    ``None`` values are omitted. Identifiers and properties are validated;
+    other iterables are normalized unless exempted.
+
+    The shaping options (``convert_type``, ``max_rows``) are dropped here
+    rather than left to ride in the query dict: they shape the result frame,
+    they are never sent, and :meth:`ShapingOptions.take` reads them from the
+    same ``locals()`` in one place. One list names them, so the keys the query
+    must not carry and the options the engine applies cannot drift apart.
 
     ``extra_no_normalize`` *adds* to the engine's own
     :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
@@ -348,7 +355,7 @@ def prepare_request_args(
     by omitting them.
     """
     no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
-    to_exclude = {"collection", "service", "output_id"}
+    to_exclude = {"collection", "service", "output_id"} | ShapingOptions.field_names()
     if exclude:
         to_exclude.update(exclude)
 

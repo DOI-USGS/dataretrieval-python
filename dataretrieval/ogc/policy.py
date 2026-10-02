@@ -15,7 +15,9 @@ It must not import engine, shaping, or any collection adapter.
 from __future__ import annotations
 
 import numbers
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass, field, fields
+from typing import Any
 
 
 def _require_positive_int(
@@ -29,6 +31,82 @@ def _require_positive_int(
     if not isinstance(value, numbers.Integral) or isinstance(value, bool) or value < 1:
         eg = f", e.g. {examples}" if examples else ""
         raise ValueError(f"{name} must be a positive integer{eg} (got {value!r}).")
+
+
+# ---------------------------------------------------------------------------
+# Shaping options
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ShapingOptions:
+    """How a result frame is shaped, carried apart from the query.
+
+    A *shaping option* controls the DataFrame the getter returns, not the
+    records the service is asked for. The query keys travel as a dict the
+    engine chunks, paginates, and sends; these travel beside it as one typed
+    value the engine hands to :func:`~dataretrieval.ogc.shaping._finalize_ogc`.
+    This class is the one definition of the set: adding an option is a field
+    here plus the matching keyword on the getters, and every hop between reads
+    the field rather than popping a key or threading a parameter of its own.
+
+    The split matters because the two are consumed in different places and at
+    different times. A query key is normalized by
+    :func:`~dataretrieval.ogc.requests.prepare_request_args`, sized by the
+    planner, and sent; a shaping option is never sent and is applied once to
+    the combined frame, so a chunked or resumed call shapes its result the
+    same way an un-chunked one does (ADR 0008's finalize-hook contract).
+
+    Attributes
+    ----------
+    convert_type : bool
+        Coerce the dialect's ``time_cols`` / ``numerical_cols`` to datetime /
+        numeric. Default ``False`` — the typed getters pass ``True``.
+    max_rows : int, optional
+        Stop paginating once this many rows have accumulated and truncate the
+        combined frame to exactly this many. ``None`` (default) fetches the
+        full result. Validated here, before any request, so an invalid value
+        raises without spending quota.
+    """
+
+    convert_type: bool = False
+    max_rows: int | None = None
+
+    def __post_init__(self) -> None:
+        # Validate before any request: a float (even ``10.0``) or ``bool``
+        # passes a bare ``< 1`` check and then raises an unclear ``TypeError``
+        # from ``pd.DataFrame.head`` after the HTTP requests have been sent.
+        if self.max_rows is not None:
+            _require_positive_int(self.max_rows, "max_rows")
+
+    @classmethod
+    def field_names(cls) -> frozenset[str]:
+        """The option names, so request building excludes exactly these keys.
+
+        One list, derived from the fields, so the keys the query must not carry
+        and the options this class defines cannot drift apart.
+        """
+        return frozenset(f.name for f in fields(cls))
+
+    @classmethod
+    def take(cls, local_vars: Mapping[str, Any]) -> ShapingOptions:
+        """Build options from a getter's ``locals()``, ignoring absent keys.
+
+        A getter names each option as a keyword and passes ``locals()``; a
+        getter without one (a reference-table fetch has no ``convert_type``)
+        simply leaves that field at its default. The companion to
+        :func:`~dataretrieval.ogc.requests.prepare_request_args`, which drops
+        these same keys from the query.
+        """
+        present = {
+            name: local_vars[name] for name in cls.field_names() if name in local_vars
+        }
+        return cls(**present)
+
+
+# A plain, shared default: the dataclass is frozen, so one instance is safe to
+# reuse as every caller's "no shaping" default rather than building one per call.
+DEFAULT_SHAPING = ShapingOptions()
 
 
 # ---------------------------------------------------------------------------

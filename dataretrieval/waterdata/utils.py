@@ -24,7 +24,12 @@ import pandas as pd
 from dataretrieval._deprecation import warn_deprecated
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
-from dataretrieval.ogc import OgcDialect, prepare_request_args
+from dataretrieval.ogc import (
+    DEFAULT_SHAPING,
+    OgcDialect,
+    ShapingOptions,
+    prepare_request_args,
+)
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
 # Default endpoint constants remain at their documented compatibility paths.
@@ -193,7 +198,7 @@ def get_ogc_data(
     args: dict[str, Any],
     collection: str,
     output_id: str | None = None,
-    max_rows: int | None = None,
+    options: ShapingOptions = DEFAULT_SHAPING,
     cql_body: str | None = None,
     *,
     spatial: bool = True,
@@ -216,10 +221,11 @@ def get_ogc_data(
         The user-facing id column the wire ``id`` is renamed to. Defaults
         to ``_OUTPUT_ID_BY_COLLECTION[collection]``; pass it explicitly only for
         collections outside that map (e.g. reference-table collections).
-    max_rows : int, optional
-        Stop paginating once this many rows have been collected and
-        truncate the result to exactly ``max_rows``. ``None`` (default)
-        fetches the full result.
+    options : ShapingOptions, optional
+        How the result frame is shaped — ``convert_type`` and ``max_rows``
+        (see :class:`~dataretrieval.ogc.ShapingOptions`). Built by each getter
+        from its own keywords, carried apart from ``args``. Defaults to the
+        plain shaping.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
@@ -241,7 +247,7 @@ def get_ogc_data(
         args,
         collection,
         output_id,
-        max_rows=max_rows,
+        options=options,
         # The endpoint is resolved from the active ContextVar at request time;
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
@@ -328,6 +334,7 @@ __all__ = [
     "BASE_URL",
     "OGC_API_URL",
     "SAMPLES_URL",
+    "ShapingOptions",
     "WATERDATA_DIALECT",
     "_EXTRA_ID_COLS",
     "_NO_NORMALIZE_PARAMS",

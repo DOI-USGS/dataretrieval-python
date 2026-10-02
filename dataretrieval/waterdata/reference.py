@@ -18,7 +18,7 @@ from dataretrieval.waterdata.endpoints import ogc_api_url
 from dataretrieval.waterdata.types import (
     METADATA_COLLECTIONS,
 )
-from dataretrieval.waterdata.utils import get_ogc_data
+from dataretrieval.waterdata.utils import ShapingOptions, get_ogc_data
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -111,7 +111,7 @@ def get_reference_table(
         args=query_args,
         output_id=output_id,
         collection=collection,
-        max_rows=max_rows,
+        options=ShapingOptions(max_rows=max_rows),
         spatial=False,
     )
 

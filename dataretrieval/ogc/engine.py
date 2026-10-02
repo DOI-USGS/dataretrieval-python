@@ -38,8 +38,9 @@ import dataretrieval.ogc.chunking as chunking
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
+    DEFAULT_SHAPING,
     OgcDialect,
-    _require_positive_int,
+    ShapingOptions,
 )
 
 # Request construction is defined in its canonical module; the engine imports only
@@ -221,7 +222,7 @@ def get_ogc_data(
     *,
     base_url: str,
     spatial: bool,
-    max_rows: int | None = None,
+    options: ShapingOptions = DEFAULT_SHAPING,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
     dialect: OgcDialect | None = None,
     cql_body: str | None = None,
@@ -244,11 +245,14 @@ def get_ogc_data(
     output_id : str
         The user-facing id column the wire ``id`` is renamed to. Required —
         the per-API collection-to-id map is the caller's, not this function's.
-    max_rows : int, optional
-        Stop paginating once this many rows have been collected and
-        truncate the result to exactly ``max_rows``. ``None`` (default)
-        fetches the full result. Intended for few-request previews of large,
-        un-chunked tables (e.g. :func:`get_reference_table`).
+    options : ShapingOptions, optional
+        How the result frame is shaped — ``convert_type`` and ``max_rows``,
+        carried apart from the query ``args`` (see :class:`ShapingOptions`).
+        Defaults to the plain shaping (no type coercion, no row cap). The
+        ``max_rows`` field, when set, stops pagination once that many rows
+        have accumulated and truncates the combined frame to exactly that
+        many — intended for few-request previews of large, un-chunked tables
+        (e.g. :func:`get_reference_table`).
     base_url : str
         OGC API base URL to target. Required: this package is API-neutral and
         names no API of its own, so each adapter passes its own base (e.g.
@@ -266,10 +270,11 @@ def get_ogc_data(
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
         building the query from ``args``. With a body, only the
-        ``properties``, ``bbox``, ``limit``, ``skip_geometry``, and
-        ``convert_type`` keys of ``args`` are consulted; there are no
-        multi-value axes to chunk, and the body's size is for the server
-        to accept or reject, as with the planner's cql-json passthrough.
+        ``properties``, ``bbox``, ``limit``, and ``skip_geometry`` keys of
+        ``args`` are consulted (``options`` still applies to the result);
+        there are no multi-value axes to chunk, and the body's size is for
+        the server to accept or reject, as with the planner's cql-json
+        passthrough.
 
     Returns
     -------
@@ -281,16 +286,9 @@ def get_ogc_data(
     Notes
     -----
     - The function does not mutate the input `args` dictionary.
-    - Handles optional arguments such as `convert_type`.
+    - Result shaping (``convert_type``, ``max_rows``) is carried in ``options``.
     - Applies column cleanup and reordering based on collection and properties.
     """
-    # Enforce a positive integer before any request: a float (even ``10.0``) or
-    # ``bool`` would pass a bare ``< 1`` check and then raise an unclear
-    # ``TypeError`` from ``pd.DataFrame.head`` after the HTTP requests have
-    # already been sent. Shared with ``parallel_chunks(n)`` via the helper.
-    if max_rows is not None:
-        _require_positive_int(max_rows, "max_rows")
-
     if dialect is None:
         dialect = DEFAULT_DIALECT
     args = args.copy()
@@ -302,7 +300,6 @@ def get_ogc_data(
     args["properties"] = _switch_properties_id(
         properties, id_name=output_id, collection=collection
     )
-    convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
 
     # Choose one semantic frame shape for the whole request. Every page and
@@ -323,11 +320,10 @@ def get_ogc_data(
         _finalize_ogc,
         properties=properties,
         output_id=output_id,
-        convert_type=convert_type,
+        options=options,
         collection=collection,
         geopd=geopd,
         include_geometry=include_geometry,
-        max_rows=max_rows,
         extra_id_cols=extra_id_cols,
         dialect=dialect,
         base_url=base_url,
@@ -357,7 +353,7 @@ def get_ogc_data(
                 _walk_pages,
                 geopd,
                 include_geometry=include_geometry,
-                row_cap=max_rows,
+                row_cap=options.max_rows,
             ),
             RetryPolicy.from_configuration(adapter=adapter),
             finalize,
@@ -380,7 +376,7 @@ def get_ogc_data(
         build_request=build_request,
         geopd=geopd,
         include_geometry=include_geometry,
-        row_cap=max_rows,
+        row_cap=options.max_rows,
     )
     run = chunking.multi_value_chunked(build_request=build_request, adapter=adapter)(
         fetch
