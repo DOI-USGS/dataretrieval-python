@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 import pandas as pd
 
+from dataretrieval._coercion import to_numeric
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.shaping import (
@@ -287,4 +288,10 @@ def get_data(
 
     if expand_percentiles:
         df = _expand_percentiles(df)
+    # Follow the OGC getters' rule for the measurement column: always
+    # ``float64`` (#428), warning on a present value that fails to parse. The
+    # statistics service is not OGC, so it does not pass through
+    # ``ogc.shaping``; the rule lives in the shared ``_coercion`` leaf instead.
+    if "value" in df.columns:
+        df["value"] = to_numeric(df["value"], name="value")
     return df, BaseMetadata(response)

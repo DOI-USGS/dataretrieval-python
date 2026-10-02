@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import logging
 import re
-import warnings
 from typing import Any
 
 import httpx
 import pandas as pd
 
+from dataretrieval._coercion import coerce_columns
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 
@@ -290,47 +290,14 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
 
     Notes
     -----
-    Numeric columns are always ``float64``. ``pd.to_numeric`` alone infers
-    ``int64`` when every value happens to be whole, so the same column would
-    change dtype between calls (issue #428). The columns are measurements, and
-    ``float64`` also holds the ``NaN`` that marks a missing value.
-
-    A value that cannot be parsed is still set to ``NaN``/``NaT``, so one bad
-    value does not fail a whole download, but a warning names the column and
-    the count, so a parse failure is distinguishable from a missing value.
+    The coercion rule — numeric columns always ``float64`` (#428), and a
+    warning naming the column and count when present values fail to parse — is
+    the shared :mod:`dataretrieval._coercion` leaf. Here the dialect only names
+    which columns to coerce (that list is the API's own vocabulary, ADR 0013).
     """
-    cols = set(df.columns)
-    for col in sorted(cols.intersection(dialect.time_cols)):
-        parsed = pd.to_datetime(df[col], errors="coerce")
-        _warn_unparsed(df[col], parsed, col, "datetimes")
-        df[col] = parsed
-
-    for col in sorted(cols.intersection(dialect.numerical_cols)):
-        parsed = pd.to_numeric(df[col], errors="coerce").astype("float64")
-        _warn_unparsed(df[col], parsed, col, "numbers")
-        df[col] = parsed
-
-    return df
-
-
-def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> None:
-    """Warn when coercion turned values that were present into ``NaN``/``NaT``.
-
-    A value counts as present when it is neither null nor an empty string, so
-    missing values reported either way do not trigger the warning.
-    """
-    if not parsed.isna().any():
-        return
-    lost = int((parsed.isna() & raw.notna() & (raw != "")).sum())
-    if lost:
-        values = "1 value" if lost == 1 else f"{lost} values"
-        warnings.warn(
-            f"{values} in column {col!r} could not be parsed as {kind} and "
-            "were set to missing. To inspect the raw values, repeat the call "
-            "with convert_type=False.",
-            UserWarning,
-            stacklevel=2,
-        )
+    return coerce_columns(
+        df, numeric=dialect.numerical_cols, datetime=dialect.time_cols
+    )
 
 
 def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:

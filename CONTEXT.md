@@ -146,6 +146,20 @@ adapter says *monitoring location*.
 **Metadata** — The second half of every getter's return: the request URL, the
 elapsed time, and the response headers. Describes the *retrieval*, not the data.
 
+**Coercion** — Casting a result column to the type the package promises for it:
+a numeric column to `float64` (always, so a column's dtype never depends on
+whether this response's values happened to be whole — issue #428), a datetime
+column to a timestamp. A value that is *present* but cannot be parsed becomes
+`NaN`/`NaT` and is counted in a `UserWarning` naming the column, so a parse
+failure is distinguishable from a missing value; a null or empty value is
+missing and is not warned about. Coercion is one mechanism, the `_coercion`
+leaf, used by every result path that makes the promise (the OGC getters through
+their dialect, the statistics getter, the Samples/WQP datetime shaping). Which
+columns to coerce is the adapter's own vocabulary (ADR 0013) and stays with the
+adapter; the leaf holds only the casting.
+
+*Core term.* The package invented it; no service defines it.
+
 ## Configuration
 
 **Configuration profile** — A named set of settings for one adapter, stored in

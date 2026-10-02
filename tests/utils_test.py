@@ -434,7 +434,10 @@ class Test_attach_datetime_columns:
             "2024-01-09 18:00:00", tz="UTC"
         )
 
-    def test_unknown_timezone_is_NaT(self):
+    def test_unknown_timezone_warns_and_is_NaT(self):
+        """An unknown zone with a date and time present is a parse failure, not
+        a gap: the value is ``NaT`` and the shared coercion leaf warns, naming
+        the column and count — the same rule the OGC getters follow (#428)."""
         df = pd.DataFrame(
             {
                 "Activity_StartDate": ["2024-01-09"],
@@ -442,8 +445,27 @@ class Test_attach_datetime_columns:
                 "Activity_StartTimeZone": ["BOGUS"],
             }
         )
-        df = _wqx._attach_datetime_columns(df)
+        with pytest.warns(UserWarning, match=r"1 value in column 'Activity_StartDate'"):
+            df = _wqx._attach_datetime_columns(df)
         assert df["Activity_StartDateTime"].isna().all()
+
+    def test_missing_date_or_time_is_silent_NaT(self):
+        """A row missing its date or time has no instant to parse, so it is
+        ``NaT`` without a warning — missing, not a parse failure."""
+        df = pd.DataFrame(
+            {
+                "Activity_StartDate": ["2024-01-09", None, "2024-02-15"],
+                "Activity_StartTime": ["10:00:00", "14:30:00", None],
+                "Activity_StartTimeZone": ["PST", "EST", "EST"],
+            }
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            df = _wqx._attach_datetime_columns(df)
+        assert df["Activity_StartDateTime"].isna().sum() == 2
+        assert df["Activity_StartDateTime"][0] == pd.Timestamp(
+            "2024-01-09 18:00:00", tz="UTC"
+        )
 
     def test_existing_datetime_column_not_overwritten(self):
         df = pd.DataFrame(

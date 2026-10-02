@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import pandas as pd
 
+from dataretrieval._coercion import to_datetime
 from dataretrieval.codes import tz
 
 # (time-suffix, tz-suffix) pairs that follow a "<prefix>Date" column.
@@ -31,19 +32,33 @@ def _build_utc_datetime(
 ) -> pd.Series:
     """Combine date + time + tz-abbreviation columns into a UTC pandas Series.
 
-    Unknown timezone codes (and rows missing any of the three values) yield
-    ``NaT``. The input columns are not mutated.
+    A row missing its date or time has no instant to parse and yields ``NaT``
+    silently. A row that *has* a date and time but cannot be parsed — a
+    malformed date/time, or a timezone abbreviation not in the table — is a
+    present value that failed to parse: it still yields ``NaT``, but through
+    the shared :mod:`dataretrieval._coercion` leaf, which warns naming the
+    column and count, the same rule the OGC getters follow (#428). The input
+    columns are not mutated.
     """
-    offsets = tz_series.map(tz)
-    combined = (
+    # Resolve the abbreviation to a UTC offset; an unknown code maps to NA. Keep
+    # it in the combined string (as the empty offset it is) rather than dropping
+    # the whole row to NA, so an instant with an unknown zone reads as a present
+    # value that failed to parse rather than as a missing one.
+    offsets = tz_series.map(tz).astype("string").fillna("")
+    present = date_series.notna() & time_series.notna()
+    combined = pd.Series("", index=date_series.index, dtype="string")
+    combined[present] = (
         date_series.astype("string")
         + " "
         + time_series.astype("string")
         + " "
-        + offsets.astype("string")
-    )
-    return pd.to_datetime(
-        combined, format="%Y-%m-%d %H:%M:%S %z", utc=True, errors="coerce"
+        + offsets
+    )[present]
+    return to_datetime(
+        combined,
+        name=date_series.name or "datetime",
+        format="%Y-%m-%d %H:%M:%S %z",
+        utc=True,
     )
 
 

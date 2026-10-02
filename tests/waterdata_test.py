@@ -1495,6 +1495,45 @@ def test_get_stats_date_range(httpx_mock):
     assert "data" not in df.columns and "values" not in df.columns
 
 
+def test_get_stats_value_is_always_float64(httpx_mock):
+    """The statistics ``value`` column follows the OGC getters' rule — always
+    ``float64`` (#428) — even though the statistics API is not OGC and the
+    service delivers the values as strings."""
+    _mock_stats(httpx_mock, "observationNormals")
+
+    df, _ = get_stats_por(
+        monitoring_location_id="USGS-12451000",
+        parameter_code="00060",
+        start_date="01-01",
+        end_date="01-01",
+    )
+
+    assert df["value"].dtype == "float64"
+
+
+def test_get_stats_warns_on_unparseable_value(httpx_mock):
+    """A present ``value`` the service sends that cannot be parsed becomes
+    ``NaN`` and the shared coercion leaf warns, naming the column and count —
+    the same signal the OGC getters give (#428)."""
+    body = _fixture("observationNormals")
+    body["features"][0]["properties"]["data"][0]["values"][0]["value"] = "n/a"
+    httpx_mock.add_response(
+        method="GET",
+        url=re.compile(rf"^{re.escape(_STATS_BASE)}/observationNormals"),
+        json=body,
+    )
+
+    with pytest.warns(UserWarning, match=r"1 value in column 'value'.*numbers"):
+        df, _ = get_stats_por(
+            monitoring_location_id="USGS-12451000",
+            parameter_code="00060",
+            start_date="01-01",
+            end_date="01-01",
+        )
+
+    assert df["value"].dtype == "float64"
+
+
 class TestCheckMonitoringLocationId:
     """Tests for the AGENCY-ID-specific layer over ``_normalize_str_iterable``.
 
