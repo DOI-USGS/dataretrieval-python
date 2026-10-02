@@ -78,6 +78,9 @@ _EXTRA_ID_COLS = frozenset(
 # ``daily`` renders its time arguments date-only (``YYYY-MM-DD``), and the
 # ``time_cols``/``numerical_cols``/``sort_cols`` are the Water-Data column
 # vocabulary used to coerce datetime/numeric columns and to sort results.
+# ``construction_date`` is deliberately not a time column: the service sends it
+# as a string at day, month, or year precision (``19950812``, ``199508``,
+# ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
     cql2_services=frozenset({"combined-metadata", "monitoring-locations"}),
     date_only_services=frozenset({"daily"}),
@@ -85,7 +88,6 @@ WATERDATA_DIALECT = OgcDialect(
         {
             "begin",
             "begin_utc",
-            "construction_date",
             "end",
             "end_utc",
             "last_modified",
@@ -197,6 +199,7 @@ def get_ogc_data(
     cql_body: str | None = None,
     *,
     spatial: bool = True,
+    api_version: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
@@ -226,6 +229,10 @@ def get_ogc_data(
     spatial : bool, optional
         Whether the collection includes feature geometry. Water Data's typed
         feature collections do; reference tables pass ``False``.
+    api_version : str, optional
+        API version for this one request. ``None`` (the default) resolves it
+        through the configuration chain. See
+        :func:`~dataretrieval.waterdata.endpoints.ogc_api_url`.
 
     Returns
     -------
@@ -245,7 +252,7 @@ def get_ogc_data(
         # The endpoint is resolved from the active ContextVar at request time;
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
-        base_url=ogc_api_url(),
+        base_url=ogc_api_url(api_version=api_version),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,

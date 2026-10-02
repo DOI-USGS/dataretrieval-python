@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
+from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,
@@ -119,7 +120,8 @@ def get_monitoring_locations(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
-        ANSI/FIPS code (``"55"``).
+        ANSI/FIPS code (``"55"``). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_name``.
     state_code : string or iterable of strings, optional
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
@@ -213,7 +215,9 @@ def get_monitoring_locations(
     uses_daylight_savings : string or iterable of strings, optional
         A flag indicating whether a monitoring location uses daylight savings.
     construction_date : string or iterable of strings, optional
-        Date the well was completed.
+        Date the well was completed. The service records it at day, month, or
+        year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the
+        returned column holds these strings as sent.
     aquifer_code : string or iterable of strings, optional
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
@@ -343,6 +347,50 @@ def get_monitoring_locations(
     return get_ogc_data(args, collection, max_rows=max_rows)
 
 
+#: Filters that v1 of ``time-series-metadata`` dropped (it responds with 400 or
+#: 500 to them, as a filter or in ``properties``), mapped to what to use
+#: instead. ``state`` resolves to ``state_name`` before the check, so that entry
+#: covers both; its replacement names whichever of the two the caller passed,
+#: because :func:`get_combined_metadata` accepts both.
+#:
+#: The renames do not use ``_accept_legacy_kwargs`` (ADR 0012) because the old
+#: name may also appear in ``properties``, and translating it would rename a
+#: column the caller asked for by name.
+_V0_ONLY_FILTERS: dict[str, str] = {
+    "begin_utc": "begin=...",
+    "end_utc": "end=...",
+    "state_name": "get_combined_metadata({name}=...)",
+    "hydrologic_unit_code": "get_combined_metadata(hydrologic_unit_code=...)",
+}
+
+
+def _time_series_metadata(
+    args: dict[str, Any], *, max_rows: int | None, state_given: bool
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Send the query, to v0 if it names a filter or ``properties`` column that
+    v1 dropped."""
+    requested = set(args.get("properties", ()))
+    legacy = [n for n in _V0_ONLY_FILTERS if n in args or n in requested]
+    for name in legacy:
+        spelled = "state" if name == "state_name" and state_given else name
+        warn_deprecated(
+            f"The {spelled!r} argument of get_time_series_metadata",
+            replacement=_V0_ONLY_FILTERS[name].format(name=spelled),
+            removal=REMOVALS["waterdata.get_time_series_metadata(v0 filters)"],
+            detail=(
+                "v1 of the Water Data API has no such field, so this call is "
+                "sent to v0."
+            ),
+            stacklevel=3,
+        )
+    return get_ogc_data(
+        args,
+        "time-series-metadata",
+        max_rows=max_rows,
+        api_version="v0" if legacy else None,
+    )
+
+
 def get_time_series_metadata(
     monitoring_location_id: str | Iterable[str] | None = None,
     parameter_code: str | Iterable[str] | None = None,
@@ -360,6 +408,7 @@ def get_time_series_metadata(
     unit_of_measure: str | Iterable[str] | None = None,
     computation_period_identifier: str | Iterable[str] | None = None,
     computation_identifier: str | Iterable[str] | None = None,
+    statistics_begin: str | Iterable[str] | None = None,
     thresholds: float | list[float] | None = None,
     sublocation_identifier: str | Iterable[str] | None = None,
     primary: str | Iterable[str] | None = None,
@@ -401,18 +450,22 @@ def get_time_series_metadata(
         A human-understandable name corresponding to parameter_code.
     properties : string or iterable of strings, optional
         The columns to return from the query.
-        Available options are: begin, begin_utc, computation_identifier,
-        computation_period_identifier, end, end_utc, geometry,
-        hydrologic_unit_code, id, last_modified, monitoring_location_id,
-        parameter_code, parameter_description, parameter_name,
-        parent_time_series_id, primary, state_name, statistic_id,
-        sublocation_identifier, thresholds, unit_of_measure, web_description
+        Available options are: begin, computation_identifier,
+        computation_period_identifier, data_gap_interval, end, geometry, id,
+        last_modified, monitoring_location_id, parameter_code,
+        parameter_description, parameter_name, parent_time_series_id, primary,
+        statistic_id, statistics_begin, sublocation_identifier, thresholds,
+        unit_of_measure, web_description
     statistic_id : string or iterable of strings, optional
         A code corresponding to the statistic an observation represents.
         Example codes include 00001 (max), 00002 (min), and 00003 (mean).
         A complete list of codes and their descriptions can be found at
         https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
     hydrologic_unit_code : string or iterable of strings, optional
+        Deprecated: v1 of the Water Data API does not filter this collection by
+        hydrologic unit. A call that passes it is sent to v0, with a
+        ``DeprecationWarning``, until v0 is retired in June 2027. Use
+        :func:`get_combined_metadata` with ``hydrologic_unit_code`` instead.
         A unique hydrologic unit code (HUC) of two to eight digits, based on the
         four levels of classification in the hydrologic unit system. The United
         States is divided and sub-divided into successively smaller hydrologic
@@ -421,12 +474,16 @@ def get_time_series_metadata(
         each other, from the smallest (cataloging units) to the largest
         (regions).
     state : string or iterable of strings, optional
-        State/territory filter (the recommended parameter). Accepts a full name
-        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
-        ANSI/FIPS code (``"55"``).
+        Deprecated, as ``hydrologic_unit_code`` is: v1 does not filter this
+        collection by state. Use :func:`get_combined_metadata` with ``state``
+        instead. ``state`` is a dataretrieval argument rather than an API
+        field: it accepts a full name (``"Wisconsin"``), a two-letter postal
+        code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``) and is sent
+        as ``state_name``.
     state_name : string or iterable of strings, optional
-        The name of the state or state equivalent in which the monitoring location
-        is located.
+        Deprecated, as ``state`` is. Use :func:`get_combined_metadata` with
+        ``state_name`` instead. The name of the state or state equivalent in
+        which the monitoring location is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. A refresh may
         happen due to regular operational processes and does not necessarily
@@ -445,54 +502,50 @@ def get_time_series_metadata(
                 for the last 36 hours
 
     begin : string or iterable of strings, optional
-        This field contains the same information as "begin_utc", but in the
-        local time of the monitoring location. It is retained for backwards
-        compatibility, but will be removed in V1 of these APIs.
+        The datetime of the earliest observation in the time series, in UTC
+        with a time zone. Together with end, this field represents the period
+        of record of a time series. Note that some time series may have large
+        gaps in their collection record. You can query this field using
+        date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have a begin that intersects the
+        value of datetime are selected.
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
+
     end : string or iterable of strings, optional
-        This field contains the same information as "end_utc", but in the
-        local time of the monitoring location. It is retained for backwards
-        compatibility, but will be removed in V1 of these APIs.
+        The datetime of the most recent observation in the time series, in UTC
+        with a time zone. Data returned by this endpoint updates at most once
+        per day, and potentially less frequently than that, and as such there
+        may be more recent observations within a time series than the time
+        series end value reflects. Together with begin, this field represents
+        the period of record of a time series. It is additionally used to
+        determine whether a time series is "active". You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601
+        duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end). Only features that have an end that intersects the
+        value of datetime are selected.
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
+
     begin_utc : string or iterable of strings, optional
-        The datetime of the earliest observation in the time series. Together
-        with end, this field represents the period of record of a time series.
-        Note that some time series may have large gaps in their collection
-        record. This field is currently in the local time of the monitoring
-        location. We intend to update this in version v0 to use UTC with a time
-        zone. You can query this field using date-times or intervals, adhering
-        to RFC 3339, or using ISO 8601 duration objects. Intervals may be
-        bounded or half-bounded (double-dots at start or end). Only features
-        that have a begin that intersects the value of datetime are selected.
-        Examples:
-
-            * A date-time: "2018-02-12T23:20:50Z"
-            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-                "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or
-                "PT36H" for the last 36 hours
-
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` holds this
+        value.
     end_utc : string or iterable of strings, optional
-        The datetime of the most recent observation in the time series. Data returned by
-        this endpoint updates at most once per day, and potentially less frequently than
-        that, and as such there may be more recent observations within a time series
-        than the time series end value reflects. Together with begin, this field
-        represents the period of record of a time series. It is additionally used to
-        determine whether a time series is "active". We intend to update this in
-        version v0 to use UTC with a time zone.
-        You can query this field using date-times or intervals,
-        adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
-        may be bounded or half-bounded (double-dots at start or end). Only
-        features that have an end that intersects the value of datetime are
-        selected.
-        Examples:
-
-            * A date-time: "2018-02-12T23:20:50Z"
-            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-                "../2018-03-18T12:31:12Z"
-            * Duration objects: "P1M" for data from the past month or
-                "PT36H" for the last 36 hours
-
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` holds this
+        value.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
@@ -501,6 +554,12 @@ def get_time_series_metadata(
     computation_identifier : string or iterable of strings, optional
         Indicates whether the data from this time series represent a specific
         statistical computation.
+    statistics_begin : string or iterable of strings, optional
+        The year from which statistics are computed for this time series. When
+        it is populated, WDFN ignores data before that year when computing
+        statistics; when it is empty, the full period of record is used.
+        Published by v1 only, so a call routed to v0 by one of the deprecated
+        filters above cannot use it.
     thresholds : number or list of numbers, optional
         Thresholds represent known numeric limits for a time series, for example
         the historic maximum value for a parameter or a level below which a
@@ -583,15 +642,13 @@ def get_time_series_metadata(
         ...     begin="1990-01-01/..",
         ... )
     """
-    collection = "time-series-metadata"
-
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
     args = _get_args(
         _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
     )
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return _time_series_metadata(args, max_rows=max_rows, state_given=state is not None)
 
 
 def get_combined_metadata(
@@ -674,7 +731,7 @@ def get_combined_metadata(
     of record, …) in a single query.
 
     See the OpenAPI reference for the full list of supported fields:
-    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/combined-metadata
+    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/combined-metadata
 
     All ~35 location-catalog kwargs are accepted (``agency_code``,
     ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only
@@ -732,7 +789,8 @@ def get_combined_metadata(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full
         name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
-        two-digit ANSI/FIPS code (``"55"``).
+        two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument rather
+        than an API field: it is sent as the API's ``state_name``.
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
         Common location-catalog filters shared with the
@@ -883,7 +941,7 @@ def get_field_measurements_metadata(
     field-measurement parameters a site has, and over what date range.
 
     See the OpenAPI reference for the full list of supported fields:
-    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements-metadata
+    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/field-measurements-metadata
 
     Parameters
     ----------

@@ -27,14 +27,15 @@ from dataretrieval.utils import _default_headers
 from dataretrieval.waterdata import WaterdataConfiguration
 from dataretrieval.wqp import WqpConfiguration
 
-WATERDATA_URL = "https://api.waterdata.usgs.gov/ogcapi/v0/collections/daily/items"
+_WATERDATA_HOST = "https://api.waterdata.usgs.gov"
+WATERDATA_URL = f"{_WATERDATA_HOST}/ogcapi/v1/collections/daily/items"
 
 # Where the base-URL tests redirect to. A host the suite cannot connect to, so a
 # redirect that failed to apply shows up as an unmocked request rather than as
 # a real one.
 _MIRROR = "https://mirror.example/waterdata"
 _MIRROR_RE = re.compile(r"^https://mirror\.example/")
-_WATERDATA_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/")
+_WATERDATA_RE = re.compile(rf"^{re.escape(_WATERDATA_HOST)}/")
 
 # One committed page of the ``daily`` collection, shared with the Water Data suite. Real
 # response shape rather than a hand-made stub, so a redirect is exercised through the
@@ -400,6 +401,7 @@ def _resolved_settings() -> dict[object, object]:
             adapter=adapter
         )
         snapshot[(adapter, "base_url")] = configuration.base_url(adapter=adapter)
+        snapshot[(adapter, "api_version")] = configuration.api_version(adapter=adapter)
     return snapshot
 
 
@@ -1409,14 +1411,25 @@ def test_base_url_is_refused_from_the_environment(monkeypatch):
     assert "only be set in code" in out.getvalue()
 
 
-def test_a_code_base_url_redirects_every_water_data_endpoint_family(httpx_mock):
-    """One Water Data configuration redirects every endpoint family together."""
+@pytest.mark.parametrize(
+    ("setting", "root", "ogc_version"),
+    [
+        ({"base_url": _MIRROR}, _MIRROR, "v1"),
+        ({"api_version": "v0"}, _WATERDATA_HOST, "v0"),
+    ],
+    ids=["base_url", "api_version"],
+)
+def test_base_url_changes_every_endpoint_family_and_api_version_only_ogc(
+    httpx_mock, setting, root, ogc_version
+):
+    """``base_url`` redirects every endpoint family together; ``api_version``
+    changes only the OGC family's version segment."""
     httpx_mock.add_response(json=_DAILY_PAGE)
     httpx_mock.add_response(json={"data": []})
     httpx_mock.add_response(json={"features": []})
     httpx_mock.add_response(json={"features": []})
 
-    with dataretrieval.configure(WaterdataConfiguration(base_url=_MIRROR)):
+    with dataretrieval.configure(WaterdataConfiguration(**setting)):
         waterdata.get_daily(monitoring_location_id="USGS-05427718")
         waterdata.get_codes("states")
         waterdata.get_stats_por(
@@ -1431,11 +1444,71 @@ def test_a_code_base_url_redirects_every_water_data_endpoint_family(httpx_mock):
         )
 
     requested = [str(request.url) for request in httpx_mock.get_requests()]
-    assert requested[0].startswith(f"{_MIRROR}/ogcapi/v0/collections/daily/items")
-    assert requested[1].startswith(f"{_MIRROR}/samples-data/codeservice/states")
-    assert requested[2].startswith(f"{_MIRROR}/statistics/v0/observationNormals")
-    assert requested[3].startswith(f"{_MIRROR}/stac/v0/search")
-    assert all(_WATERDATA_RE.match(url) is None for url in requested)
+    expected = [
+        f"{root}/ogcapi/{ogc_version}/collections/daily/items",
+        f"{root}/samples-data/codeservice/states",
+        f"{root}/statistics/v0/observationNormals",
+        f"{root}/stac/v0/search",
+    ]
+    for url, prefix in zip(requested, expected, strict=True):
+        assert url.startswith(prefix)
+
+
+def test_api_version_applies_from_code_and_from_the_file(config_file):
+    """Unlike a base URL, a version may come from the file, and a block takes
+    precedence over it."""
+    config_file('[waterdata]\napi_version = "v0"\n')
+    assert configuration.api_version(adapter="waterdata") == "v0"
+    # Adapter-only: no other adapter reads it, and it has no package-wide value.
+    assert configuration.api_version(adapter="ngwmn") is None
+
+    with dataretrieval.configure(WaterdataConfiguration(api_version="v1")):
+        assert configuration.api_version(adapter="waterdata") == "v1"
+    assert configuration.api_version(adapter="waterdata") == "v0"
+
+
+def test_api_version_at_the_top_level_names_the_table_to_move_it_to(config_file):
+    """The error names the table to move the line to, not the top-level
+    settings."""
+    config_file('api_version = "v0"\n')
+    with pytest.raises(
+        configuration.ConfigurationError, match=r"such as \[waterdata\]"
+    ):
+        configuration.api_version(adapter="waterdata")
+
+
+def test_api_version_in_a_table_that_does_not_read_it_raises(config_file):
+    """A known setting in the wrong table is an error, not a warning."""
+    config_file('[wqp]\napi_version = "v0"\n')
+    with pytest.raises(
+        configuration.ConfigurationError, match="not a setting that table accepts"
+    ):
+        configuration.retries(adapter="wqp")
+
+
+def test_api_version_must_be_a_version_path_segment():
+    """Checked as a shape, not against a list of known versions."""
+    for bad in ("1", "V1", "v1.2", "latest"):
+        with pytest.raises(configuration.ConfigurationError, match="such as 'v1'"):
+            WaterdataConfiguration(api_version=bad)
+    assert WaterdataConfiguration(api_version="v2").api_version == "v2"
+
+
+def test_api_version_is_refused_from_the_environment(monkeypatch):
+    """Refused, as every adapter-only setting is. The message also points to
+    the file, which accepts it."""
+    monkeypatch.setenv("API_USGS_API_VERSION", "v0")
+    with pytest.raises(configuration.ConfigurationError, match="table of the file"):
+        configuration.api_version(adapter="waterdata")
+
+
+def test_show_configuration_reports_a_pinned_api_version(config_file):
+    config_file('[waterdata]\napi_version = "v0"\n')
+    out = io.StringIO()
+    dataretrieval.show_configuration(stream=out)
+    override_section = out.getvalue().split("adapter overrides", 1)[1]
+    assert "api_version" in override_section
+    assert "v0" in override_section
 
 
 def test_a_code_base_url_redirects_the_adapters_requests(httpx_mock):
@@ -1458,7 +1531,7 @@ def test_a_code_base_url_redirects_the_adapters_requests(httpx_mock):
     waterdata.get_daily(monitoring_location_id="USGS-05427718")
     direct_url = str(httpx_mock.get_requests()[-1].url)
 
-    assert redirected_url.startswith(f"{_MIRROR}/ogcapi/v0/collections/daily/items")
+    assert redirected_url.startswith(f"{_MIRROR}/ogcapi/v1/collections/daily/items")
     assert direct_url.startswith(WATERDATA_URL)
 
     streamstats_mirror = "https://mirror.example/streamstats"

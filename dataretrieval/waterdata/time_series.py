@@ -921,7 +921,8 @@ def get_stats_por(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55").
+        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -947,7 +948,7 @@ def get_stats_por(
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter.
@@ -1061,7 +1062,8 @@ def get_stats_date_range(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55").
+        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -1089,12 +1091,12 @@ def get_stats_date_range(
     site_type_code: string, optional
         Site type code query parameter. A list of valid site type codes is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "GW" (Groundwater site)
     site_type_name: string, optional
         Site type name query parameter. A list of valid site type names is
         available at
-        https://api.waterdata.usgs.gov/ogcapi/v0/collections/site-types/items.
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
         Example: "Well"
     parameter_code : string or iterable of strings, optional
         A 5-digit code identifying the constituent measured and the units of

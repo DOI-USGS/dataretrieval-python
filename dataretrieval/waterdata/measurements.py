@@ -74,7 +74,7 @@ def get_field_measurements(
         field-measurements schema in the OpenAPI reference for the available
         columns (e.g. geometry, id, monitoring_location_id, parameter_code,
         value, unit_of_measure, approval_status, qualifier, last_modified):
-        https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/field-measurements
+        https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/field-measurements
     field_visit_id : string or iterable of strings, optional
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
@@ -261,7 +261,7 @@ def get_peaks(
     The collection covers both stage (parameter ``"00065"``, ``ft``) and
     discharge (parameter ``"00060"``, ``ft^3/s``); a typical streamgage has a
     series for each. Reference docs:
-    https://api.waterdata.usgs.gov/ogcapi/v0/openapi?f=html#/peaks
+    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/peaks
 
     Parameters
     ----------

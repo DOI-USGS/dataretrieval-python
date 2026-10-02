@@ -18,6 +18,7 @@ from dataretrieval.configuration import (
     _Redirectable,
     _register,
     _Retrying,
+    _Versioned,
 )
 
 __all__ = ["WaterdataConfiguration"]
@@ -25,7 +26,7 @@ __all__ = ["WaterdataConfiguration"]
 
 @dataclass(frozen=True)
 class WaterdataConfiguration(
-    _Chunked, _Concurrent, _Redirectable, _Retrying, BaseConfiguration
+    _Chunked, _Concurrent, _Redirectable, _Retrying, _Versioned, BaseConfiguration
 ):
     """Settings for Water Data calls alone.
 
@@ -45,9 +46,18 @@ class WaterdataConfiguration(
     base_url : str, optional
         Root to send Water Data requests to, instead of the service's own. The package
         appends its own paths, so one value redirects all four families together --
-        ``/ogcapi/v0``, ``/samples-data``, ``/statistics/v0`` and ``/stac/v0``. Code
-        only: the file and the environment refuse it. The API key is scoped to the host
-        that accepts it, so a redirected call sends no key.
+        ``/ogcapi/<api_version>``, ``/samples-data``, ``/statistics/v0`` and
+        ``/stac/v0``. Code only: setting it in the configuration file or through an
+        environment variable raises ``ConfigurationError``. The API key is scoped to
+        the host that accepts it, so a redirected call sends no key.
+    api_version : str, optional
+        Version of the Water Data API to request, as the segment of its path:
+        ``"v1"``, which this release is written against, or ``"v0"`` while the
+        service keeps it online (until June 2027). It replaces that one segment,
+        so the Samples, Statistics and STAC families -- versioned separately, with
+        no v1 -- are unaffected. Set it here or in the ``[waterdata]`` table of
+        the configuration file. Under another version, getters return that
+        version's columns as the service sends them.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional
@@ -56,11 +66,11 @@ class WaterdataConfiguration(
     """
 
     # The settings this service reads, named by the groups they come from:
-    # every adapter's retry settings, a redirectable base, and -- because Water
-    # Data queries divide along a URL byte budget and are executed concurrently
-    # -- both fan-out settings. Each group declares the setting itself once, in
-    # :mod:`dataretrieval.configuration`, which also defines its grammar and
-    # its coercion.
+    # every adapter's retry settings, a redirectable base, a versioned API, and
+    # -- because Water Data queries divide along a URL byte budget and are
+    # executed concurrently -- both fan-out settings. Each group declares the
+    # setting itself once, in :mod:`dataretrieval.configuration`, which also
+    # defines its grammar and its coercion.
     adapter: ClassVar[str] = "waterdata"
 
 

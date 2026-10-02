@@ -11,7 +11,7 @@ the matching getter. Regenerate with::
     import httpx, json
     from typing import get_args
     from dataretrieval.waterdata.types import WATERDATA_SERVICES
-    base = "https://api.waterdata.usgs.gov/ogcapi/v0"
+    base = "https://api.waterdata.usgs.gov/ogcapi/v1"
     snap = {}
     for c in get_args(WATERDATA_SERVICES):
         r = httpx.get(f"{base}/collections/{c}/queryables", timeout=30)
@@ -36,7 +36,7 @@ from dataretrieval.utils import BaseMetadata
 
 # The OGC queryables endpoint for any Water Data collection.
 QUERYABLES_RE = re.compile(
-    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v0/collections/[^/]+/queryables$"
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v1/collections/[^/]+/queryables$"
 )
 
 # A minimal queryables document (the JSON Schema shape the real endpoint returns).
@@ -99,10 +99,10 @@ def test_get_queryables_unknown_collection_raises(httpx_mock):
 # --- passthrough queryables (mocked) ---------------------------------------
 
 _DAILY_ITEMS_RE = re.compile(
-    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v0/collections/daily/items"
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v1/collections/daily/items"
 )
 _DAILY_SCHEMA_RE = re.compile(
-    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v0/collections/daily/schema$"
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v1/collections/daily/schema$"
 )
 _EMPTY_FEATURES = {
     "type": "FeatureCollection",

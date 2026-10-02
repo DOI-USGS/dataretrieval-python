@@ -1211,11 +1211,11 @@ def test_403_without_an_envelope_names_the_credential_cause():
 def test_error_messages_name_the_url():
     """Without the URL a failed chunk in a fan-out cannot be traced back to
     the request that produced it -- the message is all the interruption holds."""
-    request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v0/x")
+    request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v1/x")
     resp = httpx.Response(400, content=b"", request=request)
     with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
-    assert "https://api.waterdata.usgs.gov/ogcapi/v0/x" in str(excinfo.value)
+    assert "https://api.waterdata.usgs.gov/ogcapi/v1/x" in str(excinfo.value)
 
 
 def test_error_message_survives_a_response_with_no_request():
