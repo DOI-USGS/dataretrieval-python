@@ -16,6 +16,7 @@ layer for OGC helpers (ADR 0003).
 from __future__ import annotations
 
 import functools
+import json
 from collections.abc import Callable, Mapping
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -128,6 +129,21 @@ _NO_NORMALIZE_PARAMS = frozenset(
 )
 
 
+#: Parameters the service parses as a JSON array and matches against the whole
+#: list, in order: ``qualifier=ICE`` responds with 400, and ``qualifier=["ICE"]``
+#: does not match ``["ESTIMATED", "ICE"]`` (v0 and v1, probed 2026-09-29).
+_JSON_ARRAY_PARAMS = frozenset({"qualifier"})
+
+
+def _as_json_array(value: Any) -> str:
+    """*value* as a compact JSON array. A string that starts with ``[`` is sent as
+    is, so a caller who worked around the 400 keeps the same request."""
+    if isinstance(value, str) and value.lstrip().startswith("["):
+        return value
+    items = list(value) if isinstance(value, (list, tuple)) else [value]
+    return json.dumps(items, separators=(",", ":"))
+
+
 def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     """Merge a getter's ``**queryables`` passthrough kwargs into ``local_vars``.
 
@@ -161,12 +177,17 @@ def _get_args(
     Adds the Water Data API's extra no-normalize params (numeric params such
     as ``water_year``, ``thresholds``, ``boundingBox``) so they keep their
     element types. Also flattens any ``**queryables`` passthrough (see
-    :func:`_flatten_queryables`).
+    :func:`_flatten_queryables`) and encodes :data:`_JSON_ARRAY_PARAMS`.
     """
     _flatten_queryables(local_vars)
-    return prepare_request_args(
+    args = prepare_request_args(
         local_vars, exclude, extra_no_normalize=_NO_NORMALIZE_PARAMS
     )
+    for name in _JSON_ARRAY_PARAMS & args.keys():
+        # An empty list is dropped from the request downstream, as for any filter.
+        if args[name] != []:
+            args[name] = _as_json_array(args[name])
+    return args
 
 
 def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, Any]:

@@ -112,6 +112,8 @@ def get_daily(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+        Matches observations whose qualifiers are exactly these, in this order:
+        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.
@@ -347,6 +349,8 @@ def get_continuous(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+        Matches observations whose qualifiers are exactly these, in this order:
+        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     method_category : string or iterable of strings, optional
         The RLMS method category code for the method in effect over the
         observation's interval: "STNRD" (standardized, with known uncertainty
@@ -549,6 +553,8 @@ def get_latest_continuous(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+        Matches observations whose qualifiers are exactly these, in this order:
+        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.
@@ -762,6 +768,8 @@ def get_latest_daily(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+        Matches observations whose qualifiers are exactly these, in this order:
+        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.

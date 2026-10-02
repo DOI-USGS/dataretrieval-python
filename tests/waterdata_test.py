@@ -797,6 +797,46 @@ def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
     assert df["value"].dtype == "float64"
 
 
+@pytest.mark.parametrize(
+    ("getter", "collection", "qualifier", "sent"),
+    [
+        (get_daily, "daily", "ICE", ['["ICE"]']),
+        (get_daily, "daily", ["ESTIMATED", "ICE"], ['["ESTIMATED","ICE"]']),
+        (get_daily, "daily", '["ESTIMATED", "ICE"]', ['["ESTIMATED", "ICE"]']),
+        (get_daily, "daily", [], None),
+        (get_peaks, "peaks", "DIFFDATUM", ['["DIFFDATUM"]']),
+    ],
+    ids=["string", "list", "json-literal", "empty-list", "peaks-queryables"],
+)
+def test_qualifier_is_sent_as_a_json_array(
+    httpx_mock, getter, collection, qualifier, sent
+):
+    """The service parses ``qualifier`` as JSON and responds with 400 to a bare
+    word."""
+    _mock_items(httpx_mock, collection)
+
+    getter(monitoring_location_id="USGS-05427718", qualifier=qualifier)
+
+    assert _sent(httpx_mock, collection)[0].get("qualifier") == sent
+
+
+@pytest.mark.live
+def test_qualifier_filter_matches_the_whole_list_in_order():
+    kwargs = {
+        "monitoring_location_id": "USGS-05420500",
+        "parameter_code": "00060",
+        "statistic_id": "00003",
+        "time": "2022-12-01/2023-03-31",
+        "skip_geometry": True,
+    }
+    both, _ = get_daily(qualifier=["ESTIMATED", "ICE"], **kwargs)
+    reversed_, _ = get_daily(qualifier=["ICE", "ESTIMATED"], **kwargs)
+
+    assert len(both) > 0
+    assert all(q == ["ESTIMATED", "ICE"] for q in both["qualifier"])
+    assert reversed_.empty
+
+
 def test_get_daily_sends_date_only_time_interval(httpx_mock):
     """The Water Data dialect marks ``daily`` date-only, so an open-ended
     interval goes out as ``2025-01-01/..`` with no time component."""

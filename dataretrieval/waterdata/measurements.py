@@ -95,6 +95,8 @@ def get_field_measurements(
     qualifier : string or iterable of strings, optional
         Any qualifiers associated with an observation, for instance whether a
         sensor may have been impacted by ice or whether values were estimated.
+        Matches observations whose qualifiers are exactly these, in this order:
+        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.
