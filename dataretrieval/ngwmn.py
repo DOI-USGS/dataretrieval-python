@@ -95,8 +95,7 @@ _LEGACY_COUNTY_STATES = frozenset({"09"})
 
 def _sites_county_params(fips: list[str]) -> dict[str, Any]:
     """``state_name`` plus ``county_name`` for counties in one state."""
-    fips = list(dict.fromkeys(fips))
-    states = list(dict.fromkeys(f[:2] for f in fips))
+    states = sorted({f[:2] for f in fips})
     if len(states) > 1:
         # A cross-state set needs the pairs OR-ed, which NGWMN's edge refuses as
         # a CQL text filter (HTTP 403); separate state_name and county_name
@@ -113,10 +112,9 @@ def _sites_county_params(fips: list[str]) -> dict[str, Any]:
             "matches. Pass county_name directly, e.g. county_name='Hartford "
             f"County', state={to_state(states[0], 'postal')!r}."
         )
-    names = [_NGWMN_COUNTY_NAMES.get(f, counties[f]) for f in fips]
     return {
         "state_name": to_state(states[0], "name"),
-        "county_name": names[0] if len(names) == 1 else names,
+        "county_name": [_NGWMN_COUNTY_NAMES.get(f, counties[f]) for f in fips],
     }
 
 

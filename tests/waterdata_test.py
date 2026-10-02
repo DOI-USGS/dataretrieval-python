@@ -1020,7 +1020,7 @@ def test_counties_in_several_states_or_their_pairs_in_a_filter(httpx_mock):
 
 
 def test_counties_in_several_states_cannot_join_a_caller_filter():
-    with pytest.raises(ValueError, match="cannot be combined with filter"):
+    with pytest.raises(ValueError, match="county and filter cannot be combined"):
         get_monitoring_locations(
             county=["55025", "17031"], filter="site_type_code='ST'"
         )

@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
+from dataretrieval._validation import reject_together
 from dataretrieval.codes.counties import apply_county
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
@@ -211,22 +212,17 @@ def _with_location_county(local_vars: dict[str, Any]) -> dict[str, Any]:
 
 def _location_county_params(fips: list[str], user_filter: object) -> dict[str, Any]:
     """The location collections' parameters for counties ``fips``."""
-    fips = list(dict.fromkeys(fips))
-    states = list(dict.fromkeys(f[:2] for f in fips))
+    states = {f[:2] for f in fips}
     if len(states) == 1:
-        codes = [f[2:] for f in fips]
-        return {
-            "state_code": states[0],
-            "county_code": codes[0] if len(codes) == 1 else codes,
-        }
-    if user_filter is not None:
-        raise ValueError(
-            "county names counties in more than one state, which is sent "
-            "as a filter, so it cannot be combined with filter. Pass the "
-            "counties of one state per call, or write the counties into "
-            "filter yourself, e.g. \"(state_code='55' AND "
-            "county_code='025') OR (state_code='17' AND county_code='031')\"."
-        )
+        return {"state_code": states.pop(), "county_code": [f[2:] for f in fips]}
+    reject_together(
+        {"county": fips, "filter": user_filter},
+        context="when the counties are in more than one state, which is sent "
+        "as a filter",
+        remedy="Pass the counties of one state per call, or write the counties "
+        "into filter yourself, e.g. \"(state_code='55' AND county_code='025') OR "
+        "(state_code='17' AND county_code='031')\".",
+    )
     return {
         "filter": " OR ".join(
             f"(state_code='{f[:2]}' AND county_code='{f[2:]}')" for f in fips
@@ -240,9 +236,7 @@ def _with_statistics_county(local_vars: dict[str, Any]) -> dict[str, Any]:
     _flatten_queryables(local_vars)
     return apply_county(
         local_vars,
-        render=lambda fips: {
-            "county_code": [f"US:{f[:2]}:{f[2:]}" for f in dict.fromkeys(fips)]
-        },
+        render=lambda fips: {"county_code": [f"US:{f[:2]}:{f[2:]}" for f in fips]},
         reject=("state_code", "county_code"),
     )
 

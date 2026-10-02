@@ -137,8 +137,8 @@ def get_monitoring_locations(
         is located.
     county : string, integer, or iterable of them, optional
         County filter (the recommended parameter). Accepts a five-digit FIPS
-        code (``"55025"`` or ``55025``), the statistics service's form
-        (``"US:55:025"``), or, with ``state``, a name (``"Dane County"`` or
+        code (``"55025"`` or ``55025``), the ``"US:55:025"`` form, or, with
+        ``state``, a name (``"Dane County"`` or
         ``"Dane"``) or three-digit county code (``"025"``). A dataretrieval
         argument rather than an API field: it is sent as the API's
         ``state_code`` and ``county_code``, and ``state``, if given, names the
@@ -750,8 +750,8 @@ def get_combined_metadata(
         two-digit ANSI/FIPS code (``"55"``).
     county : string, integer, or iterable of them, optional
         County filter (the recommended parameter). Accepts a five-digit FIPS
-        code (``"55025"`` or ``55025``), the statistics service's form
-        (``"US:55:025"``), or, with ``state``, a name (``"Dane County"`` or
+        code (``"55025"`` or ``55025``), the ``"US:55:025"`` form, or, with
+        ``state``, a name (``"Dane County"`` or
         ``"Dane"``) or three-digit county code (``"025"``). A dataretrieval
         argument rather than an API field: it is sent as the API's
         ``state_code`` and ``county_code``, and ``state``, if given, names the

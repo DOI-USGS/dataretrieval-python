@@ -101,9 +101,10 @@ def apply_county(
     Pops ``county`` from ``local_vars`` (a no-op when absent) together with
     ``state``, which then qualifies the counties instead of filtering on its
     own: a county lies in one state, so sending both would be redundant at
-    best. The counties are resolved to five-digit FIPS codes and passed to
-    ``render``, which returns the parameters this service filters on; they are
-    merged into ``local_vars``, which is returned.
+    best. The counties are resolved to five-digit FIPS codes, deduplicated in
+    order, and passed to ``render`` as a list, which returns the parameters
+    this service filters on; they are merged into ``local_vars``, which is
+    returned.
 
     ``reject`` names the getter's native state and county parameters. Passing
     ``county`` with any of them raises ``ValueError``, and an unrecognized
@@ -126,8 +127,13 @@ def apply_county(
             f"{err} Or pass {' or '.join(reject)} directly, using the API's "
             "native value."
         ) from err
-    local_vars.update(render(fips if isinstance(fips, list) else [fips]))
+    local_vars.update(render(list(dict.fromkeys(_as_list(fips)))))
     return local_vars
+
+
+def _as_list(value: str | list[str]) -> list[str]:
+    """``to_county``'s result as a list, whether it was given one value or many."""
+    return value if isinstance(value, list) else [value]
 
 
 def _single_state_fips(state: object) -> str:
@@ -147,7 +153,7 @@ def _single_state_fips(state: object) -> str:
 def _to_fips_one(value: str | int, state_fips: str | None) -> str:
     """Resolve one county identifier to its five-digit FIPS code."""
     if isinstance(value, bool):
-        raise _unrecognized(value, state_fips)
+        raise _unrecognized(value)
     s = str(value).strip()
     fips = _parse_code(s, state_fips)
     if fips is None:
@@ -159,7 +165,7 @@ def _to_fips_one(value: str | int, state_fips: str | None) -> str:
             )
         fips = _match_name(s, state_fips)
     if fips not in counties:
-        raise _unrecognized(value, state_fips)
+        raise _unrecognized(value, in_connecticut=fips.startswith("09"))
     if state_fips is not None and fips[:2] != state_fips:
         raise ValueError(
             f"county={value!r} is in {to_state(fips[:2], 'name')}, not "
@@ -236,14 +242,14 @@ def _suggest(wanted: str, names: Iterable[str]) -> str:
     return f" Did you mean {', '.join(suggestions)}?" if suggestions else ""
 
 
-def _unrecognized(value: object, state_fips: str | None) -> ValueError:
+def _unrecognized(value: object, *, in_connecticut: bool = False) -> ValueError:
     """The error for a code that names no county in the table."""
-    hint = ""
-    if str(value).strip().removeprefix("US:").startswith("09") or state_fips == "09":
-        hint = (
-            " Connecticut's counties were replaced in 2022 by planning "
-            "regions, codes 09110 to 09190."
-        )
+    hint = (
+        " Connecticut's counties were replaced in 2022 by planning regions, "
+        "codes 09110 to 09190."
+        if in_connecticut
+        else ""
+    )
     return ValueError(
         f"{value!r} is not a recognized US county or county equivalent. Pass a "
         "five-digit FIPS code (county='55025'), or a name with its state "
