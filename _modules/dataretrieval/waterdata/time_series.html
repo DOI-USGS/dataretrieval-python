@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g917a1d371 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+gca6a439d8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=3c2ed6cd"></script>
+      <script src="../../../_static/documentation_options.js?v=f64ca2e3"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -349,6 +349,7 @@
     <span class="n">approval_status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">unit_of_measure</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">qualifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">method_category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -398,7 +399,8 @@
 <span class="sd">        The columns to return from the query.</span>
 <span class="sd">        Available options are: geometry, id, time_series_id,</span>
 <span class="sd">        monitoring_location_id, parameter_code, statistic_id, time, value,</span>
-<span class="sd">        unit_of_measure, approval_status, qualifier, last_modified</span>
+<span class="sd">        unit_of_measure, approval_status, qualifier, method_category,</span>
+<span class="sd">        last_modified</span>
 <span class="sd">    time_series_id : string or iterable of strings, optional</span>
 <span class="sd">        A unique identifier representing a single time series, corresponding to</span>
 <span class="sd">        the id field in the time-series-metadata endpoint.</span>
@@ -427,6 +429,12 @@
 <span class="sd">    qualifier : string or iterable of strings, optional</span>
 <span class="sd">        Any qualifiers associated with an observation, for instance whether a</span>
 <span class="sd">        sensor may have been impacted by ice or whether values were estimated.</span>
+<span class="sd">    method_category : string or iterable of strings, optional</span>
+<span class="sd">        The RLMS method category code for the method in effect over the</span>
+<span class="sd">        observation's interval: "STNRD" (standardized, with known uncertainty</span>
+<span class="sd">        and full QA/QC), "LMTUS" (limited use: a modified or externally</span>
+<span class="sd">        sourced method), "EXPER" (experimental), or "UNKWN" (unknown).</span>
+<span class="sd">        Null for time series that have not been categorized.</span>
 <span class="sd">    value : string or iterable of strings, optional</span>
 <span class="sd">        The value of the observation. Values are transmitted as strings in</span>
 <span class="sd">        the JSON response format to preserve precision.</span>
