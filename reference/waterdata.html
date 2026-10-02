@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+g03ca87de0 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gd633fb72d documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=4ffba8ff"></script>
+      <script src="../_static/documentation_options.js?v=b266db11"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -631,7 +631,9 @@ their use. For more information about provisional data, see
 <li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
 with an observation.</p></li>
 <li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Any qualifiers associated with an observation, for instance whether a
-sensor may have been impacted by ice or whether values were estimated.</p></li>
+sensor may have been impacted by ice or whether values were estimated.
+Matches observations whose qualifiers are exactly these, in this order:
+<code class="docutils literal notranslate"><span class="pre">&quot;ICE&quot;</span></code> matches <code class="docutils literal notranslate"><span class="pre">[&quot;ICE&quot;]</span></code> but not <code class="docutils literal notranslate"><span class="pre">[&quot;ESTIMATED&quot;,</span> <span class="pre">&quot;ICE&quot;]</span></code>.</p></li>
 <li><p><strong>method_category</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The RLMS method category code for the method in effect over the
 observation’s interval: “STNRD” (standardized, with known uncertainty
 and full QA/QC), “LMTUS” (limited use: a modified or externally
@@ -899,7 +901,9 @@ their use. For more information about provisional data, see
 <li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
 with an observation.</p></li>
 <li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Any qualifiers associated with an observation, for instance whether a
-sensor may have been impacted by ice or whether values were estimated.</p></li>
+sensor may have been impacted by ice or whether values were estimated.
+Matches observations whose qualifiers are exactly these, in this order:
+<code class="docutils literal notranslate"><span class="pre">&quot;ICE&quot;</span></code> matches <code class="docutils literal notranslate"><span class="pre">[&quot;ICE&quot;]</span></code> but not <code class="docutils literal notranslate"><span class="pre">[&quot;ESTIMATED&quot;,</span> <span class="pre">&quot;ICE&quot;]</span></code>.</p></li>
 <li><p><strong>value</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The value of the observation. Values are transmitted as strings in
 the JSON response format to preserve precision.</p></li>
 <li><p><strong>last_modified</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The last time a record was refreshed in our database. A refresh may
@@ -1091,7 +1095,9 @@ their use. For more information about provisional data, see
 <li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
 with an observation.</p></li>
 <li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Any qualifiers associated with an observation, for instance whether a
-sensor may have been impacted by ice or whether values were estimated.</p></li>
+sensor may have been impacted by ice or whether values were estimated.
+Matches observations whose qualifiers are exactly these, in this order:
+<code class="docutils literal notranslate"><span class="pre">&quot;ICE&quot;</span></code> matches <code class="docutils literal notranslate"><span class="pre">[&quot;ICE&quot;]</span></code> but not <code class="docutils literal notranslate"><span class="pre">[&quot;ESTIMATED&quot;,</span> <span class="pre">&quot;ICE&quot;]</span></code>.</p></li>
 <li><p><strong>value</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The value of the observation. Values are transmitted as strings in
 the JSON response format to preserve precision.</p></li>
 <li><p><strong>last_modified</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The last time a record was refreshed in our database. A refresh may
@@ -1388,7 +1394,9 @@ their use. For more information about provisional data, see
 <li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
 with an observation.</p></li>
 <li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Any qualifiers associated with an observation, for instance whether a
-sensor may have been impacted by ice or whether values were estimated.</p></li>
+sensor may have been impacted by ice or whether values were estimated.
+Matches observations whose qualifiers are exactly these, in this order:
+<code class="docutils literal notranslate"><span class="pre">&quot;ICE&quot;</span></code> matches <code class="docutils literal notranslate"><span class="pre">[&quot;ICE&quot;]</span></code> but not <code class="docutils literal notranslate"><span class="pre">[&quot;ESTIMATED&quot;,</span> <span class="pre">&quot;ICE&quot;]</span></code>.</p></li>
 <li><p><strong>value</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The value of the observation. Values are transmitted as strings in
 the JSON response format to preserve precision.</p></li>
 <li><p><strong>last_modified</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The last time a record was refreshed in our database. A refresh may
@@ -1575,7 +1583,9 @@ their use. For more information about provisional data, see
 <li><p><strong>unit_of_measure</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – A human-readable description of the units of measurement associated
 with an observation.</p></li>
 <li><p><strong>qualifier</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Any qualifiers associated with an observation, for instance whether a
-sensor may have been impacted by ice or whether values were estimated.</p></li>
+sensor may have been impacted by ice or whether values were estimated.
+Matches observations whose qualifiers are exactly these, in this order:
+<code class="docutils literal notranslate"><span class="pre">&quot;ICE&quot;</span></code> matches <code class="docutils literal notranslate"><span class="pre">[&quot;ICE&quot;]</span></code> but not <code class="docutils literal notranslate"><span class="pre">[&quot;ESTIMATED&quot;,</span> <span class="pre">&quot;ICE&quot;]</span></code>.</p></li>
 <li><p><strong>value</strong> (<em>string</em><em> or </em><em>iterable</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – The value of the observation. Values are transmitted as strings in
 the JSON response format to preserve precision.</p></li>
 <li><p><strong>last_modified</strong> (<em>string</em><em>, </em><em>optional</em>) – <p>The last time a record was refreshed in our database. A refresh may
