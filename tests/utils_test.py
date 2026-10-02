@@ -564,6 +564,26 @@ class TestTerritories:
         }
 
 
+@pytest.mark.live
+def test_state_names_match_the_water_data_states_collection():
+    """Each name is the one the services filter ``state_name`` on (ADR 0013).
+
+    Water Data and NGWMN match ``state_name`` exactly, so a name that differs
+    from theirs returns no rows rather than an error.
+    """
+    from dataretrieval.codes.states import fips_codes, state_codes
+    from dataretrieval.waterdata import get_reference_table
+
+    df, _ = get_reference_table("states")
+    expected = {fips: (name, state_codes[name]) for name, fips in fips_codes.items()}
+    live = {
+        row.state_fips_code: (row.state_name, row.state_postal_code.lower())
+        for row in df[df["country_code"] == "US"].itertuples()
+        if row.state_fips_code in expected
+    }
+    assert live == expected
+
+
 class TestApplyStateUnrecognized:
     """The remedy for an unknown value names the endpoint's API state parameter.
 
