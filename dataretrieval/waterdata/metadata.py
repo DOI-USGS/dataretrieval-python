@@ -15,6 +15,7 @@ import pandas as pd
 
 from dataretrieval.waterdata.utils import (
     _get_args,
+    _with_location_county,
     _with_state,
     get_ogc_data,
 )
@@ -36,6 +37,7 @@ def get_monitoring_locations(
     state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     county_code: str | Iterable[str] | None = None,
     county_name: str | Iterable[str] | None = None,
     minor_civil_division_code: str | Iterable[str] | None = None,
@@ -133,6 +135,17 @@ def get_monitoring_locations(
     state_name : string or iterable of strings, optional
         The name of the state or state equivalent in which the monitoring location
         is located.
+    county : string, integer, or iterable of them, optional
+        County filter (the recommended parameter). Accepts a five-digit FIPS
+        code (``"55025"`` or ``55025``), the ``"US:55:025"`` form, or, with
+        ``state``, a name (``"Dane County"`` or
+        ``"Dane"``) or three-digit county code (``"025"``). A dataretrieval
+        argument rather than an API field: it is sent as the API's
+        ``state_code`` and ``county_code``, and ``state``, if given, names the
+        one state the counties are in rather than filtering separately.
+        Counties in more than one state are sent as a CQL ``filter``, so they
+        cannot be combined with ``filter``. See
+        ``dataretrieval.codes.to_county``.
     county_code : string or iterable of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
         the monitoring location is located. A `list of codes
@@ -337,7 +350,8 @@ def get_monitoring_locations(
     # Build argument dictionary, omitting None values (resolving the unified
     # `state` argument into the OGC `state_name` queryable).
     args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
+        _with_state(_with_location_county(locals()), to="name", into="state_name"),
+        exclude={"max_rows"},
     )
 
     return get_ogc_data(args, collection, max_rows=max_rows)
@@ -621,6 +635,7 @@ def get_combined_metadata(
     state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     county_code: str | Iterable[str] | None = None,
     county_name: str | Iterable[str] | None = None,
     minor_civil_division_code: str | Iterable[str] | None = None,
@@ -733,6 +748,17 @@ def get_combined_metadata(
         State/territory filter (the recommended parameter). Accepts a full
         name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
         two-digit ANSI/FIPS code (``"55"``).
+    county : string, integer, or iterable of them, optional
+        County filter (the recommended parameter). Accepts a five-digit FIPS
+        code (``"55025"`` or ``55025``), the ``"US:55:025"`` form, or, with
+        ``state``, a name (``"Dane County"`` or
+        ``"Dane"``) or three-digit county code (``"025"``). A dataretrieval
+        argument rather than an API field: it is sent as the API's
+        ``state_code`` and ``county_code``, and ``state``, if given, names the
+        one state the counties are in rather than filtering separately.
+        Counties in more than one state are sent as a CQL ``filter``, so they
+        cannot be combined with ``filter``. See
+        ``dataretrieval.codes.to_county``.
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
         Common location-catalog filters shared with the
@@ -846,7 +872,8 @@ site_type_code : string or iterable of strings, optional
 
     # Resolve the unified `state` argument into the OGC `state_name` queryable.
     args = _get_args(
-        _with_state(locals(), to="name", into="state_name"), exclude={"max_rows"}
+        _with_state(_with_location_county(locals()), to="name", into="state_name"),
+        exclude={"max_rows"},
     )
 
     return get_ogc_data(args, collection, max_rows=max_rows)

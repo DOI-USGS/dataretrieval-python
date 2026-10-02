@@ -24,7 +24,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
-from dataretrieval.codes.states import apply_state
+from dataretrieval.codes.counties import apply_county, counties
+from dataretrieval.codes.states import apply_state, to_state
 from dataretrieval.configuration import (
     BaseConfiguration,
     _Chunked,
@@ -80,11 +81,50 @@ _STATE_QUERYABLE = {
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
 
-# NGWMN's request shape matches the generic OGC default (no CQL2-only or
-# date-only collections), but its result columns need their own coercion and
-# sort vocabulary: water-level observations are timestamped by ``sample_time``
-# (not the Water Data ``time``) and report depths/levels in feet.
+# --- county-filter shim ------------------------------------------------------
+# ``sites`` files a county under ``state_name`` and ``county_name``. Its names
+# are the Water Data ``counties`` names that ``codes.counties`` holds, with two
+# exceptions: Anchorage is named the other way round, and Connecticut sites
+# keep the eight counties the state replaced in 2022 with planning regions,
+# which do not map one to one onto them.
+# ``tests/ngwmn_test.py::test_county_names_still_match_the_table_upstream`` fails
+# if that changes.
+_NGWMN_COUNTY_NAMES = {"02020": "Municipality of Anchorage"}
+_LEGACY_COUNTY_STATES = frozenset({"09"})
+
+
+def _sites_county_params(fips: list[str]) -> dict[str, Any]:
+    """``state_name`` plus ``county_name`` for counties in one state."""
+    states = sorted({f[:2] for f in fips})
+    if len(states) > 1:
+        # A cross-state set needs the pairs OR-ed, which NGWMN's edge refuses as
+        # a CQL text filter (HTTP 403); separate state_name and county_name
+        # lists would also match a same-named county in another listed state.
+        raise ValueError(
+            "ngwmn.get_sites takes counties from one state per call, but county "
+            f"names counties in {len(states)} states. Call get_sites once per "
+            "state and concatenate the results."
+        )
+    if states[0] in _LEGACY_COUNTY_STATES:
+        raise ValueError(
+            f"NGWMN still files {to_state(states[0], 'name')} sites under the "
+            "counties it replaced in 2022, which no planning region code "
+            "matches. Pass county_name directly, e.g. county_name='Hartford "
+            f"County', state={to_state(states[0], 'postal')!r}."
+        )
+    return {
+        "state_name": to_state(states[0], "name"),
+        "county_name": [_NGWMN_COUNTY_NAMES.get(f, counties[f]) for f in fips],
+    }
+
+
+# NGWMN has no date-only collections. ``sites`` takes multi-value filters as a
+# CQL2 POST: a comma-joined ``county_name`` matches nothing, where the same
+# names POSTed match. Its result columns need their own coercion and sort
+# vocabulary: water-level observations are timestamped by ``sample_time`` (not
+# the Water Data ``time``) and report depths/levels in feet.
 NGWMN_DIALECT = OgcDialect(
+    cql2_services=frozenset({"sites"}),
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
         {
@@ -103,6 +143,8 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     Every NGWMN getter ends with this same call; centralizing it keeps the
     NGWMN base URL, output id, and dialect set in one place.
     """
+    if service == "sites":
+        apply_county(local_vars, render=_sites_county_params, reject=("county_name",))
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
@@ -131,6 +173,7 @@ def get_sites(
     country_code: str | Iterable[str] | None = None,
     country_name: str | Iterable[str] | None = None,
     state: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     county_name: str | Iterable[str] | None = None,
     aquifer_name: str | Iterable[str] | None = None,
     site_type: str | Iterable[str] | None = None,
@@ -178,8 +221,19 @@ def get_sites(
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
         The 50 states, DC, and the five US territories.
+    county : str, int, or iterable of them, optional
+        County filter (the recommended parameter). Accepts a five-digit FIPS
+        code (``"55025"`` or ``55025``), the ``"US:55:025"`` form, or, with
+        ``state``, a name (``"Dane County"`` or ``"Dane"``) or three-digit
+        county code (``"025"``). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_name`` and ``county_name``, and
+        ``state``, if given, names the one state the counties are in rather
+        than filtering separately. One state per call. Connecticut raises
+        ``ValueError``: NGWMN still files its sites under the counties replaced
+        in 2022, so pass ``county_name`` instead. See
+        ``dataretrieval.codes.to_county``.
     county_name : str or iterable of str, optional
-        County name filter.
+        County name filter, as NGWMN spells it (``"Dane County"``).
     aquifer_name, site_type, aquifer_type_code : str or iterable, optional
         Aquifer name, site type, and aquifer-type code.
     qw_sys_name, qw_sn_flag, qw_baseline_flag : str or iterable, optional

@@ -526,24 +526,31 @@ class TestTerritories:
     """
 
     @pytest.mark.parametrize(
-        ("value", "name", "postal", "fips"),
+        ("name", "postal", "fips"),
         [
-            ("Puerto Rico", "Puerto Rico", "PR", "72"),
-            ("PR", "Puerto Rico", "PR", "72"),
-            ("72", "Puerto Rico", "PR", "72"),
-            ("US:72", "Puerto Rico", "PR", "72"),
-            ("Guam", "Guam", "GU", "66"),
-            ("VI", "US Virgin Islands", "VI", "78"),
-            ("60", "American Samoa", "AS", "60"),
-            ("MP", "Northern Mariana Islands", "MP", "69"),
+            ("Puerto Rico", "PR", "72"),
+            ("Guam", "GU", "66"),
+            ("Virgin Islands", "VI", "78"),
+            ("American Samoa", "AS", "60"),
+            ("Northern Mariana Islands", "MP", "69"),
         ],
     )
-    def test_every_encoding_resolves(self, value, name, postal, fips):
+    def test_each_territory_is_in_both_code_tables(self, name, postal, fips):
+        """Each code resolves to the others. The input encodings themselves are
+        :class:`Test_to_state`'s concern."""
         from dataretrieval.codes.states import to_state
 
-        assert to_state(value, "name") == name
-        assert to_state(value, "postal") == postal
-        assert to_state(value, "fips") == fips
+        for value in (name, postal, fips):
+            assert to_state(value, "name") == name
+            assert to_state(value, "postal") == postal
+            assert to_state(value, "fips") == fips
+
+    def test_the_census_name_of_the_virgin_islands_is_accepted(self):
+        """The table names it as the services do; the name it had before is
+        still accepted as input."""
+        from dataretrieval.codes.states import to_state
+
+        assert to_state("US Virgin Islands") == "Virgin Islands"
 
     def test_the_ngwmn_shim_routes_a_territory_to_each_queryable(self):
         """``sites`` filters on ``state_name``, ``providers`` on ``state``."""
@@ -555,6 +562,26 @@ class TestTerritories:
         assert apply_state({"state": "Puerto Rico"}, to="postal", into="state") == {
             "state": "PR"
         }
+
+
+@pytest.mark.live
+def test_state_names_match_the_water_data_states_collection():
+    """Each name is the one the services filter ``state_name`` on (ADR 0013).
+
+    Water Data and NGWMN match ``state_name`` exactly, so a name that differs
+    from theirs returns no rows rather than an error.
+    """
+    from dataretrieval.codes.states import fips_codes, state_codes
+    from dataretrieval.waterdata import get_reference_table
+
+    df, _ = get_reference_table("states")
+    expected = {fips: (name, state_codes[name]) for name, fips in fips_codes.items()}
+    live = {
+        row.state_fips_code: (row.state_name, row.state_postal_code.lower())
+        for row in df[df["country_code"] == "US"].itertuples()
+        if row.state_fips_code in expected
+    }
+    assert live == expected
 
 
 class TestApplyStateUnrecognized:

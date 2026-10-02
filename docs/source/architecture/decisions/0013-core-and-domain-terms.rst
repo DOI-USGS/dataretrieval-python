@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records the clause added.
+
 Context
 -------
 
@@ -68,7 +71,7 @@ The glossary holds two kinds of term, and they impose different obligations.
 
 **Core terms are ours.** The package invented them and no service defines
 them: everything under *Retrieval*, *Failure and resumption*, *Configuration*
-and *Boundaries*, plus *Collection family* and *Metadata*. One spelling,
+and *Boundaries*, plus *Collection family*, *Metadata* and *Unified argument*. One spelling,
 enforced everywhere it appears -- prose, identifiers, tests. A second spelling
 of a core term is a defect, not a variation, and is fixed rather than recorded.
 This is what makes the lower-level modules shareable: transport, configuration
@@ -99,6 +102,30 @@ Two rules follow:
   surface is not a legacy name; it is that adapter using its service's
   terms, and belongs with the term's own entry.
 
+**A unified argument may stand beside a service's spelling.** Where one domain
+concept is a filter in several adapters and each spells it differently, a getter
+may also take an argument the package names -- ``state``, ``county`` -- that
+accepts every common spelling of the concept and sends the service its own.
+It is added to the adapter's surface and removes nothing from it, so a caller
+who has read a service's documentation still finds the parameters described
+there. It is allowed on four conditions:
+
+- **The service's parameters stay.** They are not deprecated, and they still
+  send the service's raw value, including values the conversion does not cover
+  (a non-US FIPS code, a county the service files under a retired name).
+- **The conversion is exact.** It is a table in ``dataretrieval.codes``, checked
+  against the service's own reference collection by a live test. A value the
+  table does not hold raises ``ValueError`` naming the native parameters,
+  rather than being guessed at or sent unchecked. A service that cannot express
+  a converted value exactly raises too: NGWMN still files Connecticut sites
+  under the counties the state replaced with planning regions, so
+  ``ngwmn.get_sites(county="09110")`` raises rather than returning no rows.
+- **It cannot be combined with what it replaces.** Passing it together with the
+  native parameter it is sent as raises ``ValueError``.
+- **Its docstring names what it is sent as.** It says the argument is
+  dataretrieval's rather than the API's, and names the field or fields the
+  service receives, so the two documentations can be read against each other.
+
 Consequences
 ------------
 
@@ -114,6 +141,10 @@ Consequences
   its definition rather than a list of exceptions.
 - A glossary entry now has an obligation to say which kind it is. That is a
   small cost per term and the reason the distinction is usable at all.
+- A caller filtering by place across adapters learns one spelling rather than
+  one per service, at the cost of a table per concept to keep current. The
+  live tests that compare each table with its reference collection are what
+  keep that cost visible.
 - The package's own inconsistencies in core vocabulary become defects to fix
   rather than variations to tolerate. The resolution chain's
   ``tier``-for-*source* identifiers are the current example.
@@ -135,6 +166,12 @@ reader notices immediately.
 Whether a given adapter docstring should say *site* or *monitoring location*
 remains a review judgement, and is meant to.
 
+For unified arguments, ``tests/utils_test.py`` and ``tests/counties_test.py``
+compare the state and county tables with the Water Data ``states`` and
+``counties`` collections, and ``tests/ngwmn_test.py`` checks that NGWMN files
+its sites under the table's county names, live. Each getter's tests assert the
+mutual exclusion with its native parameters.
+
 Notes
 -----
 
@@ -145,3 +182,10 @@ made the gap visible rather than creating it.
 
 The per-service spellings in the table above were read from the adapters on
 2026-09-01.
+
+The unified-argument clause was added on 2026-10-01, with ``county``. ``state``
+had been a unified argument since NGWMN joined the shared OGC code, with no
+record saying why it did not contradict the rule that each adapter keeps its
+service's spelling, and review read it as hiding the APIs' own parameters. The
+clause states the conditions both arguments already met, so the next one is
+judged against them rather than against that precedent.

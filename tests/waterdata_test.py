@@ -976,6 +976,72 @@ def test_get_monitoring_locations(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
+def test_county_is_sent_as_state_code_and_county_code_pairs(httpx_mock):
+    """A county code repeats across states, so ``county`` sends the pair; with
+    ``state``, the state qualifies the county rather than filtering again."""
+    _mock_items(httpx_mock, "monitoring-locations")
+    _mock_items(httpx_mock, "combined-metadata")
+
+    get_monitoring_locations(county="Dane", state="WI")
+    get_combined_metadata(county=55025)
+
+    for qs in _sent(httpx_mock):
+        assert qs["state_code"] == ["55"]
+        assert qs["county_code"] == ["025"]
+        assert "state_name" not in qs and "state" not in qs and "county" not in qs
+
+
+def test_counties_in_one_state_post_a_county_code_list(httpx_mock):
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    get_monitoring_locations(county=["55025", "US:55:021"])
+
+    (req,) = httpx_mock.get_requests()
+    assert req.method == "POST"
+    assert parse_qs(urlsplit(str(req.url)).query)["state_code"] == ["55"]
+    assert json.loads(req.content)["args"] == [
+        {"op": "in", "args": [{"property": "county_code"}, ["025", "021"]]}
+    ]
+
+
+def test_counties_in_several_states_or_their_pairs_in_a_filter(httpx_mock):
+    """Separate state_code and county_code lists would also match Cook
+    County's code (031) in Wisconsin; the pairs must be OR-ed."""
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    get_monitoring_locations(county=["55025", "17031"])
+
+    (qs,) = _sent(httpx_mock)
+    assert qs["filter"] == [
+        "(state_code='55' AND county_code='025') OR "
+        "(state_code='17' AND county_code='031')"
+    ]
+    assert "state_code" not in qs and "county_code" not in qs
+
+
+def test_counties_in_several_states_cannot_join_a_caller_filter():
+    with pytest.raises(ValueError, match="county and filter cannot be combined"):
+        get_monitoring_locations(
+            county=["55025", "17031"], filter="site_type_code='ST'"
+        )
+
+
+def test_county_in_one_state_keeps_a_caller_filter(httpx_mock):
+    _mock_items(httpx_mock, "monitoring-locations")
+
+    get_monitoring_locations(county="55025", filter="site_type_code='ST'")
+
+    (qs,) = _sent(httpx_mock)
+    assert qs["filter"] == ["site_type_code='ST'"]
+    assert qs["county_code"] == ["025"]
+
+
+@pytest.mark.parametrize("native", ["state_code", "state_name", "county_code"])
+def test_county_cannot_be_combined_with_a_native_location_parameter(native):
+    with pytest.raises(ValueError, match=f"county and {native} cannot be combined"):
+        get_monitoring_locations(county="55025", **{native: "x"})
+
+
 def test_get_monitoring_locations_hucs_uses_post_cql(httpx_mock):
     """``monitoring-locations`` is a POST/CQL2 collection in the Water Data
     dialect, so a multi-value filter goes out as a CQL2 body rather than a
@@ -1450,6 +1516,24 @@ def test_get_stats_por(httpx_mock):
     assert len(df) == 11
     assert df.loc[df["computation"] == "minimum", "percentile"].tolist() == [0.0]
     assert df.loc[df["computation"] == "arithmetic_mean", "percentile"].isna().all()
+
+
+def test_stats_county_is_sent_in_the_us_state_county_form(httpx_mock):
+    _mock_stats(httpx_mock, "observationIntervals")
+
+    get_stats_date_range(county=["Dane", "025", 55021], state="WI")
+
+    (req,) = httpx_mock.get_requests()
+    qs = parse_qs(urlsplit(str(req.url)).query)
+    # Deduplicated, in order; state named the counties' state, so no state_code.
+    assert qs["county_code"] == ["US:55:025", "US:55:021"]
+    assert "state_code" not in qs
+
+
+@pytest.mark.parametrize("native", ["state_code", "county_code"])
+def test_stats_county_cannot_be_combined_with_a_native_location_parameter(native):
+    with pytest.raises(ValueError, match=f"county and {native} cannot be combined"):
+        get_stats_por(county="55025", **{native: "US:55"})
 
 
 def test_get_stats_por_expanded_false(httpx_mock):

@@ -49,6 +49,7 @@ from dataretrieval._csv import read_code_csv
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import render_options, require_exactly_one
+from dataretrieval.codes.counties import to_county
 from dataretrieval.codes.states import to_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -104,7 +105,7 @@ def get_wateruse(
     model: str,
     variable: str | Iterable[str] | None = None,
     state: str | int | Iterable[str | int] | None = None,
-    county: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     huc: str | Iterable[str] | None = None,
     time_resolution: str | None = None,
     start_date: str | None = None,
@@ -153,9 +154,14 @@ def get_wateruse(
         One or more US states/territories to query. Each accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS
         code (``"55"`` or ``55``), matching :func:`dataretrieval.ngwmn.get_sites`.
-    county : string or iterable, optional
-        One or more five-digit county FIPS codes — state FIPS + county FIPS,
-        e.g. ``"55025"`` for Dane County, Wisconsin.
+    county : string, int, or iterable, optional
+        One or more counties. Each accepts a five-digit FIPS code — state FIPS +
+        county FIPS, e.g. ``"55025"`` or ``55025`` for Dane County, Wisconsin —
+        the ``"US:55:025"`` form, or, with ``state``, a name (``"Dane County"``
+        or ``"Dane"``) or three-digit county code (``"025"``). With ``county``,
+        ``state`` names the one state the counties are in rather than a second
+        area. Sent as the API's ``countyCd:<FIPS>`` location. See
+        ``dataretrieval.codes.to_county``.
     huc : string or iterable, optional
         One or more hydrologic unit codes. Each code's level is taken from its
         length: a 2-digit code queries a HUC2 region, 8-digit a HUC8 subbasin,
@@ -163,7 +169,8 @@ def get_wateruse(
         ``"07070005"``, ``"010900020502"``).
 
         Provide exactly one of ``state``, ``county``, or ``huc`` (each may be a
-        single value or a list).
+        single value or a list); ``state`` may accompany ``county`` to qualify
+        it.
     time_resolution : string, optional
         Temporal resolution: ``"monthly"``, ``"annualcy"`` (annual, calendar
         year), or ``"annualwy"`` (annual, water year). See
@@ -199,8 +206,8 @@ def get_wateruse(
     ------
     ValueError
         If not exactly one of ``state``, ``county``, or ``huc`` is given, or a
-        given selector is malformed (an unrecognized state, a county code that
-        is not five digits, or a HUC of invalid length).
+        given selector is malformed (an unrecognized state or county, or a HUC
+        of invalid length).
     DataRetrievalError
         On an HTTP error response, the typed subclass for the status (see
         :func:`dataretrieval.exceptions.error_for_status`). A transient 429,
@@ -273,24 +280,27 @@ _HUC_LENGTHS = (2, 4, 6, 8, 10, 12)
 # per location (see :func:`_fan_out`).
 _LOCATION_BUILDERS: dict[str, Callable[[Any], list[str]]] = {
     "state": lambda v: [f"stateCd:{c}" for c in _as_list(to_state(v, to="postal"))],
-    "county": lambda v: [f"countyCd:{_validate_county(c)}" for c in _as_list(v)],
+    "county": lambda v: [f"countyCd:{c}" for c in _as_list(v)],
     "huc": lambda v: [f"huc{len(c)}:{c}" for c in map(_validate_huc, _as_list(v))],
 }
 
 
 def _resolve_locations(
     state: str | int | Iterable[str | int] | None,
-    county: str | Iterable[str] | None,
+    county: str | int | Iterable[str | int] | None,
     huc: str | Iterable[str] | None,
 ) -> list[str]:
     """Build the NWDC ``location=<type>:<id>`` value(s) from the selectors.
 
     Exactly one of ``state`` / ``county`` / ``huc`` must be given; each may be a
     single value or a list. ``state`` is normalized to the two-letter postal
-    code ``stateCd`` requires; ``county`` is a five-digit FIPS code; and a
+    code ``stateCd`` requires; ``county`` to a five-digit FIPS code, with
+    ``state`` qualifying it rather than counting as a second location; and a
     ``huc`` code's length selects its level (``huc2`` … ``huc12``). Returns one
     location string per value — the caller issues one request per location.
     """
+    if county is not None:
+        county, state = to_county(county, "fips", state=state), None
     selectors = {"state": state, "county": county, "huc": huc}
     name, value = require_exactly_one(selectors, context="as the query's location")
     locations = _LOCATION_BUILDERS[name](value)
@@ -311,17 +321,6 @@ def _as_list(value: object) -> list[Any]:
     if isinstance(value, Iterable) and not isinstance(value, str):
         return list(value)
     return [value]
-
-
-def _validate_county(value: object) -> str:
-    """Validate and normalize a five-digit state+county FIPS code."""
-    code = str(value).strip()
-    if not (code.isdigit() and len(code) == 5):
-        raise ValueError(
-            "county must be a five-digit state+county FIPS code "
-            f"(e.g. '55025'), got {value!r}."
-        )
-    return code
 
 
 def _validate_huc(value: object) -> str:

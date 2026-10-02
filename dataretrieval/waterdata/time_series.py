@@ -20,6 +20,7 @@ from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,
+    _with_statistics_county,
     get_ogc_data,
 )
 
@@ -884,6 +885,7 @@ def get_stats_por(
     country_code: str | Iterable[str] | None = None,
     state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
@@ -925,6 +927,14 @@ def get_stats_por(
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
+    county: string, integer, or iterable of them, optional
+        County filter (the recommended parameter). Accepts a five-digit FIPS
+        code ("55025" or 55025), the "US:55:025" form, or, with ``state``, a
+        name ("Dane County" or "Dane") or three-digit county code ("025"). A
+        dataretrieval argument rather than an API field: it is sent as the
+        API's ``county_code``, in its "US:XX:YYY" format, and ``state``, if
+        given, names the one state the counties are in rather than filtering
+        separately. See ``dataretrieval.codes.to_county``.
     county_code: string, optional
         County query parameter. Takes the format "US:XX:YYY", where XX is
         the two-digit state code and YYY is the three-digit county code.
@@ -1009,7 +1019,7 @@ def get_stats_por(
     """
     # Build argument dictionary, omitting None values
     params = _get_args(
-        _with_state(locals(), to="fips_us", into="state_code"),
+        _with_state(_with_statistics_county(locals()), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
     )
 
@@ -1024,6 +1034,7 @@ def get_stats_date_range(
     country_code: str | Iterable[str] | None = None,
     state: str | Iterable[str] | None = None,
     state_code: str | Iterable[str] | None = None,
+    county: str | int | Iterable[str | int] | None = None,
     county_code: str | Iterable[str] | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
@@ -1065,6 +1076,14 @@ def get_stats_date_range(
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
+    county: string, integer, or iterable of them, optional
+        County filter (the recommended parameter). Accepts a five-digit FIPS
+        code ("55025" or 55025), the "US:55:025" form, or, with ``state``, a
+        name ("Dane County" or "Dane") or three-digit county code ("025"). A
+        dataretrieval argument rather than an API field: it is sent as the
+        API's ``county_code``, in its "US:XX:YYY" format, and ``state``, if
+        given, names the one state the counties are in rather than filtering
+        separately. See ``dataretrieval.codes.to_county``.
     county_code: string, optional
         County query parameter. Takes the format "US:XX:YYY", where XX is
         the two-digit state code and YYY is the three-digit county code.
@@ -1155,7 +1174,7 @@ def get_stats_date_range(
     """
     # Build argument dictionary, omitting None values
     params = _get_args(
-        _with_state(locals(), to="fips_us", into="state_code"),
+        _with_state(_with_statistics_county(locals()), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
     )
 
