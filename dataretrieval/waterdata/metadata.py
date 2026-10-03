@@ -918,6 +918,7 @@ def get_field_measurements_metadata(
     begin: str | Iterable[str] | None = None,
     end: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -960,6 +961,9 @@ def get_field_measurements_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
+    sublocation_identifier : string or iterable of strings, optional
+        The sublocation where the series' measurements are recorded, such
+        as "UPSTREAM".
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional

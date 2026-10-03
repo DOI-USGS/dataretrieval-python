@@ -250,6 +250,7 @@
     "site_type_code",
     "state_code",
     "state_name",
+    "sublocation_identifier",
     "time",
     "time_of_day",
     "time_zone_abbreviation",
@@ -272,7 +273,8 @@
     "parameter_code",
     "parameter_description",
     "parameter_name",
-    "reading_type"
+    "reading_type",
+    "sublocation_identifier"
   ],
   "latest-continuous": [
     "agency_code",
