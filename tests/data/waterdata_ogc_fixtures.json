@@ -388,6 +388,7 @@
      "parameter_code": "00065",
      "qualifier": null,
      "reading_type": "ReferencePrimary",
+     "sublocation_identifier": null,
      "time": "2014-06-19",
      "time_of_day": "16:00:27+00:00",
      "unit_of_measure": "ft",
@@ -422,6 +423,7 @@
      "parameter_code": "00060",
      "qualifier": null,
      "reading_type": "Discharge",
+     "sublocation_identifier": null,
      "time": "2023-11-01",
      "time_of_day": "14:49:30+00:00",
      "unit_of_measure": "ft^3/s",
@@ -455,7 +457,8 @@
      "parameter_code": "00065",
      "parameter_description": "Gage height, feet",
      "parameter_name": "Gage height",
-     "reading_type": "ReferencePrimary"
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": null
     },
     "type": "Feature"
    },
@@ -477,7 +480,8 @@
      "parameter_code": "00060",
      "parameter_description": "Discharge, cubic feet per second",
      "parameter_name": "Discharge",
-     "reading_type": "Discharge"
+     "reading_type": "Discharge",
+     "sublocation_identifier": null
     },
     "type": "Feature"
    }
