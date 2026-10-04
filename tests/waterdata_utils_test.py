@@ -239,6 +239,31 @@ def test_finalize_ogc_truncates_combined_to_max_rows():
     assert hasattr(md, "url")  # wrapped as BaseMetadata
 
 
+def test_finalize_ogc_keeps_requested_camel_case_property():
+    """A selected API property remains in the normalized result frame."""
+    frame = pd.DataFrame(
+        {"id": ["obs-1"], "sampleTime": ["2024-01-01T00:00:00Z"], "value": [1.0]}
+    )
+    response = mock.MagicMock()
+    response.url = "https://example.com/collections/things/items"
+    response.elapsed = datetime.timedelta(seconds=0.1)
+    response.headers = {}
+    properties = ["sampleTime"]
+
+    result, _ = _finalize_ogc(
+        frame,
+        response,
+        properties=properties,
+        output_id="thing_id",
+        convert_type=False,
+        collection="things",
+    )
+
+    assert result.columns.tolist() == ["sample_time"]
+    assert result["sample_time"].tolist() == ["2024-01-01T00:00:00Z"]
+    assert properties == ["sampleTime"]
+
+
 def _resp_ok(features):
     """Build a 200-OK mock response with the given features list."""
     links = [{"rel": "next", "href": "https://example.com/page2"}] if features else []
