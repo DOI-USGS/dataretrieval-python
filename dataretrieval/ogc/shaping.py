@@ -264,8 +264,7 @@ def _arrange_cols(
     # Do not alias the caller's list; it is mutated below.
     # Match the names normalized by _finalize_ogc before selecting columns.
     local_properties = [
-        _to_snake_case(name) if isinstance(name, str) else name
-        for name in properties
+        _to_snake_case(name) if isinstance(name, str) else name for name in properties
     ]
     if "geometry" in df.columns and "geometry" not in local_properties:
         local_properties.append("geometry")
