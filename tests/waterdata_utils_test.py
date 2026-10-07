@@ -936,6 +936,13 @@ def test_type_cols_warning_is_singular_for_one_value():
         ("2024-01-01 00:00:00", True, "2024-01-01"),
         (["2024-01-01", None], True, "2024-01-01/.."),
         ([None, "2024-01-01"], True, "../2024-01-01"),
+        (["2024-01-01", ".."], True, "2024-01-01/.."),
+        (["..", "2024-01-01"], True, "../2024-01-01"),
+        (
+            ["2018-02-12T23:20:50Z", ".."],
+            False,
+            "2018-02-12T23:20:50Z/..",
+        ),
     ],
     ids=[
         "iso8601_z",
@@ -951,6 +958,9 @@ def test_type_cols_warning_is_singular_for_one_value():
         "space_separated",
         "open_ended_none_end",
         "open_ended_none_start",
+        "open_ended_dotdot_end",
+        "open_ended_dotdot_start",
+        "open_ended_dotdot_datetime",
     ],
 )
 def test_format_api_dates(value, date, expected):
@@ -971,6 +981,7 @@ def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
     all -- sending ``../..`` would be a query the service has to reject."""
     assert _format_api_dates([None, None]) is None
     assert _format_api_dates(["", ""]) is None
+    assert _format_api_dates(["..", ".."]) is None
 
 
 def test_format_api_dates_rejects_more_than_two_values():

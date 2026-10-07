@@ -784,6 +784,22 @@ def test_get_daily(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
+def test_get_daily_keeps_a_dotdot_open_bound_in_time(httpx_mock):
+    """A ``..`` endpoint in a ``time`` list is an open bound, as in the string
+    form ``"2025-01-01/.."``. It used to discard the whole range and send an
+    empty ``time=``, which the service rejects as an invalid datetime."""
+    _mock_items(httpx_mock, "daily")
+
+    get_daily(
+        monitoring_location_id="USGS-05427718",
+        parameter_code="00060",
+        time=["2025-01-01", ".."],
+    )
+
+    (sent,) = _sent(httpx_mock, "daily")
+    assert sent["time"] == ["2025-01-01/.."]
+
+
 def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
     """Issue #428: whole-number values used to infer ``int64``, so ``value``
     changed dtype between calls. It is ``float64`` regardless of the data."""
