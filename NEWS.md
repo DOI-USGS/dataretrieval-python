@@ -1,3 +1,5 @@
+**10/07/2026:** **Bug fix:** a `".."` endpoint in a two-value date range -- `time=["2024-01-01", ".."]`, the open-ended form shown in the `waterdata.get_ratings()` docstring -- discarded the whole range, because `..` was not recognized as an open bound and failed to parse as a date. `waterdata.get_ratings()` then searched with no `datetime` at all and returned every rating regardless of date (59 instead of 44 for the docstring's bounding box from 2026-09-20 on), and the OGC getters (`get_daily()`, `get_continuous()`, `get_field_measurements()`, and the other `time`, `begin`, `end`, and `last_modified` arguments) sent an empty `time=` that the service rejected with HTTP 400 "Invalid datetime format". `".."` is now an open bound like `None`, so `["2024-01-01", ".."]` sends the same range as `"2024-01-01/.."` and `["2024-01-01", None]`.
+
 **10/03/2026:** `waterdata.get_field_measurements()` and
 `waterdata.get_field_measurements_metadata()` accept `sublocation_identifier`, a
 field USGS added to the `field-measurements` and `field-measurements-metadata`

@@ -61,15 +61,23 @@ def _parse_datetime(value: str) -> datetime | None:
     return None
 
 
+# The OGC API spelling of an open interval bound, as in ``"2024-01-01/.."``.
+_OPEN_BOUND = ".."
+
+
 def _is_blank(dt: str | None) -> bool:
-    """True for a None, NaN, or empty-string element."""
-    return dt is None or bool(pd.isna(dt)) or dt == ""
+    """True for a None, NaN, empty-string, or ``..`` element.
+
+    Each is a spelling of an open bound, so ``["2024-01-01", ".."]`` means the
+    same range as ``["2024-01-01", None]`` and the string ``"2024-01-01/.."``.
+    """
+    return dt is None or bool(pd.isna(dt)) or dt in ("", _OPEN_BOUND)
 
 
 def _format_one(dt: str | None, *, date: bool) -> str | None:
     """Format a single datetime element for inclusion in the API time arg."""
     if dt is None or _is_blank(dt):
-        return ".."
+        return _OPEN_BOUND
     parsed = _parse_datetime(dt)
     if parsed is None:
         return None
@@ -104,7 +112,7 @@ def _is_passthrough(single: str) -> bool:
 
 
 def _all_blank(items: list[str | None]) -> bool:
-    """True when every element is None, NaN, or the empty string."""
+    """True when every element is None, NaN, the empty string, or ``..``."""
     return all(_is_blank(dt) for dt in items)
 
 
@@ -127,8 +135,8 @@ def _format_api_dates(
         A single date/datetime string or a list of one or two date/datetime
         strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
         without ``Z``/numeric offset), or relative periods (e.g., "P7D" /
-        "PT36H"). Range endpoints may be ``None``/``NaN``/empty to denote a
-        half-bounded range.
+        "PT36H"). Range endpoints may be ``None``/``NaN``/empty or ``".."``
+        to denote a half-bounded range.
     date : bool, optional
         If True, uses only the date portion ("YYYY-MM-DD"). If False (default),
         returns full datetime in UTC ISO 8601 format ("YYYY-MM-DDTHH:MM:SSZ").
@@ -162,9 +170,9 @@ def _format_api_dates(
     Notes
     -----
     - A single blank/NA value returns None. In a two-value range, a blank/NA
-      endpoint is rendered as ``".."`` to denote an open bound (e.g.
-      ``"2024-01-01/.."``); the range is only None when *every* element is
-      blank/NA or any non-NA element fails to parse.
+      or ``".."`` endpoint is rendered as ``".."`` to denote an open bound
+      (e.g. ``"2024-01-01/.."``); the range is only None when *every* element
+      is blank/NA/``".."`` or any other element fails to parse.
     - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
       intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when

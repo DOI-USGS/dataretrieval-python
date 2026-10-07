@@ -169,6 +169,25 @@ def test_get_ratings_download_and_parse_false_returns_features(httpx_mock):
     assert features[0]["id"] == "USGS-01104475.exsa.rdb"
 
 
+def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
+    """``time=[start, ".."]`` is the documented open-ended range. The ``..``
+    endpoint used to fail to parse, which discarded the whole range, so the
+    search went out with no ``datetime`` and returned every rating."""
+    httpx_mock.add_response(
+        method="GET",
+        url=STAC_SEARCH_RE,
+        json=_stub_search_response(),
+    )
+    get_ratings(
+        monitoring_location_id="USGS-01104475",
+        time=["2026-04-29", ".."],
+        download_and_parse=False,
+    )
+    (request,) = httpx_mock.get_requests()
+    params = parse_qs(urlsplit(str(request.url)).query)
+    assert params["datetime"] == ["2026-04-29T00:00:00Z/.."]
+
+
 def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
     """File_type list: server filter omits it; local filter reads the property."""
     httpx_mock.add_response(
