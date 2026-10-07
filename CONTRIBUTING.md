@@ -235,6 +235,29 @@ as tools (`analyze_code`, `detect_clones`, `find_dead_code`,
 `get_health_score`, and others). Registering it with an MCP-capable assistant is
 a personal workflow choice, so this repository does not configure one.
 
+`pylint` was evaluated as a periodic second opinion and deliberately not
+adopted. Over `dataretrieval/`, pylint 4.0.8 with its default checks reports
+635 findings; all but fourteen are checks ruff also implements, and 419 are a
+single false positive -- its `unused-argument` cannot see through the
+`locals()` forwarding the collection getters use, so every documented keyword
+argument they accept looks unused. The fourteen ruff has no rule for are size
+metrics, duplication, and one unused wildcard re-export: duplication is
+`pyscn`'s job, the size metrics grade a class-oriented design this package does
+not have, and the wildcard is a deprecated alias module re-exporting its
+replacement on purpose. The capability ruff lacks is import resolution, and a
+missing dependency is already caught by the wheel smoke test in
+`python-package.yml`, which imports every module the wheel ships from an
+installed wheel outside the checkout. One check has no other home -- an
+`except` tuple whose members shadow one another, which ruff's B014 does not
+catch because it knows alias pairs rather than subclass relationships. If you
+want that second opinion, it costs one command and no configuration:
+
+```bash
+uvx --with pandas --with httpx --with anyio pylint -j0 --disable=all \
+  --enable=bad-except-order,overlapping-except \
+  --load-plugins=pylint.extensions.overlapping_exceptions dataretrieval tests
+```
+
 For documentation changes, install `.[doc,nldi]` and run `make html` from
 `docs/`. The broader `make docs` target also runs doctests and network-dependent
 link checking.
