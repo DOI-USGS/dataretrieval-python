@@ -180,7 +180,9 @@ def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     )
     get_ratings(
         monitoring_location_id="USGS-01104475",
-        time=["2026-04-29", ".."],
+        # A UTC instant, so the expected bound does not depend on the local zone
+        # a naive date is read in.
+        time=["2026-04-29T00:00:00Z", ".."],
         download_and_parse=False,
     )
     (request,) = httpx_mock.get_requests()
