@@ -36,6 +36,7 @@ def get_field_measurements(
     observing_procedure: str | Iterable[str] | None = None,
     vertical_datum: str | Iterable[str] | None = None,
     measuring_agency: str | Iterable[str] | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
@@ -124,6 +125,9 @@ def get_field_measurements(
         monitoring location.
     measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
+    sublocation_identifier : string or iterable of strings, optional
+        The sublocation where the measurement was recorded, such as
+        "UPSTREAM".
     skip_geometry : boolean, optional
         If True, the response omits the geometry of each feature and the
         returned object is a data frame with no spatial information. The USGS

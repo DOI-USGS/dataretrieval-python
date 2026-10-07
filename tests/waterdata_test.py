@@ -1218,6 +1218,37 @@ def test_field_measurements_time_is_a_date_with_time_of_day_alongside(httpx_mock
     assert df["time_of_day"].tolist() == ["16:00:27+00:00", "14:49:30+00:00"]
 
 
+@pytest.mark.parametrize(
+    ("getter", "collection", "value", "sent"),
+    [
+        (
+            get_field_measurements,
+            "field-measurements",
+            ["Primary", "UPSTREAM"],
+            ["Primary,UPSTREAM"],
+        ),
+        (
+            get_field_measurements_metadata,
+            "field-measurements-metadata",
+            "UPSTREAM",
+            ["UPSTREAM"],
+        ),
+    ],
+    ids=["measurements-list", "metadata-string"],
+)
+def test_sublocation_identifier_is_sent_as_a_filter(
+    httpx_mock, getter, collection, value, sent
+):
+    """The named ``sublocation_identifier`` parameter is sent as a filter and
+    returned as a column."""
+    _mock_items(httpx_mock, collection)
+
+    df, _ = getter(monitoring_location_id="USGS-05427718", sublocation_identifier=value)
+
+    assert _sent(httpx_mock, collection)[0]["sublocation_identifier"] == sent
+    assert "sublocation_identifier" in df.columns
+
+
 def test_get_field_measurements_metadata(httpx_mock):
     _mock_items(httpx_mock, "field-measurements-metadata")
 
