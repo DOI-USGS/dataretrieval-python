@@ -115,6 +115,8 @@ def get_field_measurements(
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
                 "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+                for an open end: ["2018-02-12", None]
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
@@ -146,6 +148,8 @@ def get_field_measurements(
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
                 "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+                for an open end: ["2018-02-12", None]
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 
@@ -438,6 +442,8 @@ def get_channel(
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
               "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+              for an open end: ["2018-02-12", None]
             * Duration objects: "P1M" for data from the past month or "PT36H"
               for the last 36 hours
 
@@ -491,6 +497,8 @@ def get_channel(
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
                 "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+                for an open end: ["2018-02-12", None]
             * Duration objects: "P1M" for data from the past month or
                 "PT36H" for the last 36 hours
 

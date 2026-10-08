@@ -800,6 +800,18 @@ def test_get_daily_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     assert sent["time"] == ["2025-01-01/.."]
 
 
+@pytest.mark.parametrize(
+    "time", ["2025-13-45", ["2025-01-01", "yesterday"]], ids=["single", "range"]
+)
+def test_get_daily_rejects_an_unreadable_time_before_any_request(httpx_mock, time):
+    """A bound that matches no date format used to drop the whole filter, so
+    the service received an empty ``time=`` and answered HTTP 400 without
+    naming the argument. It now fails locally, naming ``time``."""
+    with pytest.raises(ValueError, match=r"^time could not be read as a date"):
+        get_daily(monitoring_location_id="USGS-05427718", time=time)
+    assert httpx_mock.get_requests() == []
+
+
 def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
     """Issue #428: whole-number values used to infer ``int64``, so ``value``
     changed dtype between calls. It is ``float64`` regardless of the data."""

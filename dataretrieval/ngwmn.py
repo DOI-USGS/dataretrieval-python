@@ -265,7 +265,8 @@ def get_water_level(
         Vertical datum of the reported water level.
     datetime : str or iterable of str, optional
         Temporal filter — a single instant or a two-element ``[start, end]``
-        range (ISO-8601 dates/datetimes); ``".."`` denotes an open end.
+        range (ISO-8601 dates/datetimes); ``None`` or ``".."`` denotes an
+        open end.
     properties : str or iterable of str, optional
         Subset of columns to return. ``None`` (default) returns all columns.
     limit : int, optional
