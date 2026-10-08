@@ -74,13 +74,22 @@ def _is_blank(dt: str | None) -> bool:
     return dt is None or bool(pd.isna(dt)) or dt in ("", _OPEN_BOUND)
 
 
-def _format_one(dt: str | None, *, date: bool) -> str | None:
-    """Format a single datetime element for inclusion in the API time arg."""
+def _format_one(dt: str | None, *, date: bool, name: str) -> str:
+    """Format a single datetime element for inclusion in the API time arg.
+
+    Raises ``ValueError`` naming *name* when the element is not blank and
+    matches no supported format.
+    """
     if dt is None or _is_blank(dt):
         return _OPEN_BOUND
     parsed = _parse_datetime(dt)
     if parsed is None:
-        return None
+        raise ValueError(
+            f"{name} could not be read as a date or datetime: {dt!r}. "
+            "Pass an ISO 8601 date or datetime such as '2024-01-01' or "
+            "'2024-01-01T12:00:00Z', and None for an open end of a range "
+            "(['2024-01-01', None])."
+        )
     if date:
         return parsed.strftime("%Y-%m-%d")
     # Naive inputs are interpreted in the system local zone (for backwards
@@ -155,24 +164,24 @@ def _format_api_dates(
     Returns
     -------
     Union[str, None]
-        - If input is a single value, returns the formatted date/datetime string
-          or None if parsing fails.
+        - If input is a single value, returns the formatted date/datetime string.
         - If input is a list of two values, returns a date/datetime range string
           separated by "/" (e.g., "YYYY-MM-DD/YYYY-MM-DD" or
           "YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ").
-        - Returns None if input is empty, all NA, or cannot be parsed.
+        - Returns None if input is None, empty, or every element is blank.
 
     Raises
     ------
     ValueError
-        If `datetime_input` contains more than two values.
+        If `datetime_input` contains more than two values, or an element that
+        is not blank matches no supported format.
 
     Notes
     -----
     - A single blank/NA value returns None. In a two-value range, a blank/NA
       or ``".."`` endpoint is rendered as ``".."`` to denote an open bound
       (e.g. ``"2024-01-01/.."``); the range is only None when *every* element
-      is blank/NA/``".."`` or any other element fails to parse.
+      is blank/NA/``".."``.
     - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
       intervals containing ``"/"``; both are passed through unchanged.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
@@ -199,11 +208,4 @@ def _format_api_dates(
     if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
         return items[0]
 
-    # Format each element; any element that fails to parse invalidates the range.
-    formatted: list[str] = []
-    for dt in items:
-        one = _format_one(dt, date=date)
-        if one is None:
-            return None
-        formatted.append(one)
-    return "/".join(formatted)
+    return "/".join(_format_one(dt, date=date, name=name) for dt in items)

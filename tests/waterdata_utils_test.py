@@ -930,7 +930,6 @@ def test_type_cols_warning_is_singular_for_one_value():
         ("2018-02-12T00:00:00Z/..", False, "2018-02-12T00:00:00Z/.."),
         ("P7D", False, "P7D"),
         ("PT36H", False, "PT36H"),
-        ("Apr", False, None),
         ("2024-01-01", True, "2024-01-01"),
         (["2024-01-01", "2024-02-01"], True, "2024-01-01/2024-02-01"),
         ("2024-01-01 00:00:00", True, "2024-01-01"),
@@ -952,7 +951,6 @@ def test_type_cols_warning_is_singular_for_one_value():
         "passthrough_interval",
         "passthrough_duration",
         "time_only_duration",
-        "word_with_p_not_duration",
         "date_only",
         "date_only_pair",
         "space_separated",
@@ -966,8 +964,8 @@ def test_type_cols_warning_is_singular_for_one_value():
 def test_format_api_dates(value, date, expected):
     """``_format_api_dates`` normalizes ISO 8601 datetimes to UTC (dropping
     fractional seconds, converting offsets), joins a pair into an interval,
-    passes durations / intervals through unchanged, renders a None endpoint as
-    ``..``, and returns None for a non-date word (e.g. ``"Apr"``)."""
+    passes durations / intervals through unchanged, and renders a None
+    endpoint as ``..``."""
     assert _format_api_dates(value, date=date) == expected
 
 
@@ -982,6 +980,30 @@ def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
     assert _format_api_dates([None, None]) is None
     assert _format_api_dates(["", ""]) is None
     assert _format_api_dates(["..", ".."]) is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["2024-13-45", "Jan 1 2024", "Apr", ["2024-01-01", "garbage"], ["garbage", None]],
+    ids=[
+        "single",
+        "unsupported_format",
+        # Starts with "p" but is not a duration, so it is not passed through.
+        "word_with_p_not_duration",
+        "range_end",
+        "range_start",
+    ],
+)
+def test_format_api_dates_rejects_an_unreadable_bound(value):
+    """An element that is not blank and matches no format used to return None,
+    which the callers send as no filter at all. The message names the caller's
+    argument and the bad value, and shows the forms that are accepted."""
+    with pytest.raises(ValueError) as excinfo:
+        _format_api_dates(value, name="last_modified")
+    message = str(excinfo.value)
+    assert message.startswith("last_modified could not be read as a date")
+    assert "'2024-01-01'" in message
+    assert "None for an open end" in message
 
 
 def test_format_api_dates_rejects_more_than_two_values():

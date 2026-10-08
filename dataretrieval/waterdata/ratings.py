@@ -83,8 +83,10 @@ def get_ratings(
         where each rating came from.
     time : string or list of strings, optional
         STAC ``datetime`` filter (passed through verbatim under that name)
-        — a single date / datetime, or an interval (``"start/end"``,
-        optionally half-bounded with ``..``). ISO 8601 *durations*
+        — a single date / datetime, an interval (``"start/end"``,
+        optionally half-bounded with ``..``), or a list of two values
+        with ``None`` for an open end (``["2026-04-29", None]``). A value
+        that is not a date raises ``ValueError``. ISO 8601 *durations*
         (``"P1M"``, ``"PT36H"``, …) are **not** supported by the
         rating-curve service; passing one raises ``ValueError``.
     bbox : list of numbers, optional

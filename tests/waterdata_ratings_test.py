@@ -190,6 +190,18 @@ def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     assert params["datetime"] == ["2026-04-29T00:00:00Z/.."]
 
 
+def test_get_ratings_rejects_an_unreadable_time_before_any_request(httpx_mock):
+    """An unreadable bound used to drop the ``datetime`` filter, so the search
+    silently returned every rating regardless of date."""
+    with pytest.raises(ValueError, match=r"^time could not be read as a date"):
+        get_ratings(
+            monitoring_location_id="USGS-01104475",
+            time=["2026-04-29", "tomorrow"],
+            download_and_parse=False,
+        )
+    assert httpx_mock.get_requests() == []
+
+
 def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
     """File_type list: server filter omits it; local filter reads the property."""
     httpx_mock.add_response(
