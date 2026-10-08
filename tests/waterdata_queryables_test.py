@@ -458,9 +458,10 @@ def refresh(
 # --- the Water Data mapping layer ------------------------------------------
 
 #: Typed arguments the package owns rather than the service: request controls
-#: from the OGC standard, result shaping, and ``state``, which accepts several
-#: spellings of a state and is sent as a queryable it chooses. None is compared
-#: with a queryable, and their consistency across getters is not checked here.
+#: from the OGC standard, result shaping, ``state``, which accepts several
+#: spellings of a state and is sent as a queryable it chooses, and the
+#: nearest-value selection of ``get_nearest_continuous``. None is compared with
+#: a queryable, and their consistency across getters is not checked here.
 _PACKAGE_OWNED = frozenset(
     {
         "bbox",
@@ -469,19 +470,23 @@ _PACKAGE_OWNED = frozenset(
         "filter_lang",
         "limit",
         "max_rows",
+        "on_tie",
         "properties",
         "skip_geometry",
         "ssl_check",
         "state",
+        "targets",
+        "window",
     }
 )
 
 #: The collection each Water Data getter queries. Every getter the facade
-#: exports from a collection family must appear here, so a new getter fails the
-#: check until its collection is declared. ``None`` declares that the getter
-#: reads no OGC queryables document: the untyped ``get_cql`` path (ADR 0007),
-#: the reference tables, which the snapshot does not record, and the Samples
-#: and Statistics services, which publish none.
+#: exports must appear here, so a new getter fails the check until its
+#: collection is declared. ``None`` declares that the getter reads no OGC
+#: queryables document: the untyped ``get_cql`` path (ADR 0007), the reference
+#: tables, which the snapshot does not record, the Samples and Statistics
+#: services, which publish none, and ``get_ratings``, which searches the STAC
+#: ratings catalog.
 _GETTER_TARGETS: dict[str, Target | None] = {
     "get_channel": Target("channel-measurements"),
     "get_codes": None,
@@ -498,8 +503,10 @@ _GETTER_TARGETS: dict[str, Target | None] = {
     "get_monitoring_locations": Target(
         "monitoring-locations", id_argument="monitoring_location_id"
     ),
+    "get_nearest_continuous": Target("continuous"),
     "get_peaks": Target("peaks"),
     "get_queryables": None,
+    "get_ratings": None,
     "get_reference_table": None,
     "get_samples": None,
     "get_samples_summary": None,
@@ -526,12 +533,19 @@ def _family_modules() -> list[str]:
 
 
 def _waterdata_getters() -> dict[str, Callable[..., Any]]:
-    """Every family getter, resolved through the ``waterdata`` facade."""
-    return {
-        name: getattr(waterdata, name)
+    """Every getter, resolved through the ``waterdata`` facade.
+
+    The family modules' exports, plus every ``get_*`` the facade exports from
+    outside the families (``nearest``, ``ratings``), so a getter is covered the
+    day it is exported, wherever it is defined.
+    """
+    names = {
+        name
         for module in _family_modules()
         for name in importlib.import_module(module).__all__
     }
+    names |= {name for name in waterdata.__all__ if name.startswith("get_")}
+    return {name: getattr(waterdata, name) for name in sorted(names)}
 
 
 def _checked_getters() -> list[tuple[str, Callable[..., Any], Target]]:
@@ -585,11 +599,11 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def test_every_getter_declares_its_collection():
-    """Every family getter has a declared target, and every target is real.
+    """Every exported getter has a declared target, and every target is real.
 
-    The getter set is derived from the collection-family inventory, so a new
-    getter is covered the day it is exported and fails here until its target
-    is declared in ``_GETTER_TARGETS``.
+    The getter set is derived from the collection-family inventory and the
+    facade's exports, so a new getter is covered the day it is exported and
+    fails here until its target is declared in ``_GETTER_TARGETS``.
     """
     getters = set(_waterdata_getters())
     undeclared = sorted(getters - set(_GETTER_TARGETS))
