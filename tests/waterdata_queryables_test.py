@@ -3,19 +3,25 @@ queryables snapshot, and the check that getter docstrings agree with it.
 
 The snapshot (``tests/data/waterdata_queryables.json``) records, for every Water
 Data collection, each queryable's ``type``, ``title``, and ``description`` as
-the service publishes them. Three checks read it, and only the first two block
-a merge:
+the service publishes them. Six tests read it. These block a merge, offline:
 
-* :func:`test_documented_descriptions_contain_the_service_text` -- offline. Each
-  typed argument of a Water Data getter that is a queryable of the getter's
-  collection must have a documented description containing the service's
-  description, after whitespace is normalised. Our own usage notes may surround
-  the service's text; they may not replace it.
-* :func:`test_typed_arguments_are_queryables_or_package_owned` -- offline. A
-  typed argument that is neither a queryable nor declared package-owned means
+* :func:`test_typed_arguments_are_queryables_or_package_owned` -- a typed
+  argument that is neither a queryable nor declared package-owned means
   :data:`_GETTER_TARGETS` or :data:`_PACKAGE_OWNED` is wrong.
-* :func:`test_queryables_match_snapshot` -- ``live``, on the nightly schedule.
-  A failure means the service added or removed a queryable.
+* :func:`test_every_getter_declares_its_collection` and
+  :func:`test_snapshot_covers_every_collection_and_every_collection_is_checked`
+  -- no getter or collection escapes the check.
+* :func:`test_snapshot_records_each_queryables_definition` -- the snapshot is
+  in its canonical form.
+* :func:`test_documented_descriptions_contain_the_service_text` -- each typed
+  argument of a Water Data getter that is a queryable of the getter's
+  collection has a documented description containing the service's
+  description, after whitespace is normalised. Our own usage notes may surround
+  the service's text; they may not replace it. Expected to fail until the
+  docstring sweep for #379 lands; it blocks a merge from then on.
+
+One does not: :func:`test_queryables_match_snapshot` runs ``live`` on the
+nightly schedule, and fails when the service adds or removes a queryable.
 
 A queryable the service publishes but a getter does not take as a typed
 argument is reported as a warning, not a failure: whether to promote it is a
@@ -624,6 +630,7 @@ def test_typed_arguments_are_queryables_or_package_owned():
 
 @pytest.mark.xfail(
     strict=True,
+    raises=AssertionError,
     reason=(
         "#379: the getter docstrings have not yet been revised to contain the "
         "service's descriptions; the sweep that does so removes this marker."
