@@ -1,6 +1,5 @@
 # Periodic structural sweep: duplication, coupling, cohesion, dead code, and the
-# maintainability trend -- plus whether the committed Water Data queryables
-# snapshot still matches the live service.
+# maintainability trend.
 #
 # Advisory by design, and nothing here fails the build. These measures move over
 # months rather than commits, and they report findings a reviewer has to judge
@@ -94,7 +93,7 @@ jobs:
         # queryables snapshot offline, so it cannot see the snapshot itself
         # go stale; this live read can. It is the refresh command a maintainer
         # runs, with --check so nothing is rewritten. A non-zero exit means
-        # drift: refresh the snapshot, then revise the docstrings it names.
+        # drift, or that the service could not be read; the log says which.
         if: always()
         continue-on-error: true
         shell: bash
