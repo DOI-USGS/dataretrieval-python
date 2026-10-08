@@ -1,40 +1,17 @@
-"""Tests for :func:`dataretrieval.waterdata.get_queryables`, the committed
-queryables snapshot, and the check that getter docstrings agree with it.
+"""Tests for :func:`dataretrieval.waterdata.get_queryables`, plus checks that
+flag drift between the Water Data API's queryables and this package.
 
-The snapshot (``tests/data/waterdata_queryables.json``) records, for every Water
-Data collection, each queryable's ``type``, ``title``, and ``description`` as
-the service publishes them. Six tests read it. These block a merge, offline:
-
-* :func:`test_typed_arguments_are_queryables_or_package_owned` -- a typed
-  argument that is neither a queryable nor declared package-owned means
-  :data:`_GETTER_TARGETS` or :data:`_PACKAGE_OWNED` is wrong.
-* :func:`test_every_getter_declares_its_collection` and
-  :func:`test_snapshot_covers_every_collection_and_every_collection_is_checked`
-  -- no getter or collection escapes the check.
-* :func:`test_snapshot_records_each_queryables_definition` -- the snapshot is
-  in its canonical form.
-* :func:`test_documented_descriptions_contain_the_service_text` -- each typed
-  argument of a Water Data getter that is a queryable of the getter's
-  collection has a documented description containing the service's
-  description, after whitespace is normalised. Our own usage notes may surround
-  the service's text; they may not replace it. Expected to fail until the
-  docstring sweep for #379 lands; it blocks a merge from then on.
-
-One does not: :func:`test_queryables_match_snapshot` runs ``live`` on the
-nightly schedule, and fails when the service adds or removes a queryable.
-
-A queryable the service publishes but a getter does not take as a typed
-argument is reported as a warning, not a failure: whether to promote it is a
-design decision. The weekly code-health workflow compares the snapshot to the
-live service and reports any drift without failing.
-
-Refresh the snapshot with::
-
-    python -m tests.waterdata_queryables_test
-
-It rewrites the snapshot and prints which queryables appeared, disappeared, or
-changed, and which getters document each changed one; those docstrings are the
-follow-up edit. ``--check`` prints the same report without rewriting the file.
+The committed snapshot (``tests/data/waterdata_queryables.json``) records each
+collection's queryables with the ``type``, ``title``, and ``description`` the
+service publishes. Offline, each typed argument of a getter that is a queryable
+of its collection must have a documented description containing the service's
+description once whitespace is normalised; our own notes may surround it. The
+live monitor (:func:`test_queryables_match_snapshot`) compares the queryables
+each collection publishes against the snapshot. When the service has changed,
+regenerate the snapshot with ``python -m tests.waterdata_queryables_test``: it
+rewrites the file and reports which queryables appeared, disappeared, or
+changed, and which getters document them. ``--check`` reports without
+rewriting.
 """
 
 from __future__ import annotations
@@ -197,10 +174,6 @@ def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
 
 
 # --- comparing docstrings to a snapshot ------------------------------------
-#
-# Nothing in this section names a service, a base URL, or a collection: an
-# OGC adapter adopts the check by supplying its own getters, targets, exempt
-# arguments, and snapshot, as the Water Data section below does.
 
 
 @dataclass(frozen=True)
@@ -224,7 +197,6 @@ class Target:
         return "id" if argument == self.id_argument else argument
 
 
-#: A section underline in a numpydoc docstring.
 _SECTION_RULE = re.compile(r"^-{3,}\s*$")
 
 
@@ -533,8 +505,6 @@ _GETTER_TARGETS: dict[str, Target | None] = {
     "get_samples_summary": None,
     "get_stats_date_range": None,
     "get_stats_por": None,
-    # v1 dropped these filters; the getter still accepts them and sends the
-    # query to v0 with a deprecation warning.
     "get_time_series_metadata": Target(
         "time-series-metadata",
         id_argument="time_series_id",
@@ -919,23 +889,6 @@ def test_refresh_rewrites_the_snapshot_from_the_schema_reader(httpx_mock, tmp_pa
     )
 
 
-def test_check_mode_reports_without_rewriting(httpx_mock, tmp_path):
-    httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json=_FAKE_QUERYABLES)
-    path = tmp_path / "snapshot.json"
-    write_snapshot({}, path)
-    before = path.read_text(encoding="utf-8")
-
-    report = refresh(
-        path,
-        lambda: fetch_snapshot(["daily"], base_url=ogc_api_url()),
-        lambda collection, queryable: [],
-        write=False,
-    )
-
-    assert report
-    assert path.read_text(encoding="utf-8") == before
-
-
 def test_the_refresh_command_checks_every_collection_offline(httpx_mock, capsys):
     """``--check`` reads every collection, prints the report, and exits 1 on
     drift, leaving the committed snapshot as it was."""
@@ -979,7 +932,7 @@ def test_queryables_match_snapshot(collection):
     """Each collection's live queryables match the committed snapshot.
 
     A failure means the upstream API changed a collection's queryables.
-    Refresh ``tests/data/waterdata_queryables.json`` (see this module's
+    Regenerate ``tests/data/waterdata_queryables.json`` (see this module's
     docstring) and enable any newly added queryables on the matching getter.
     """
     df, _ = waterdata.get_queryables(collection)
@@ -988,7 +941,7 @@ def test_queryables_match_snapshot(collection):
     assert live == expected, (
         f"{collection} queryables changed upstream: "
         f"added={sorted(live - expected)}, removed={sorted(expected - live)}. "
-        f"Refresh {_SNAPSHOT_PATH.name} and enable any new queryables."
+        f"Regenerate {_SNAPSHOT_PATH.name} and enable any new queryables."
     )
 
 
