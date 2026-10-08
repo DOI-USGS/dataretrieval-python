@@ -1,25 +1,29 @@
 """Tests for :func:`dataretrieval.waterdata.get_queryables`, plus a live monitor
 that flags upstream changes to the Water Data API's queryable sets.
 
-The live monitor (:func:`test_queryables_match_snapshot`) compares the queryables each
-collection publishes against a committed snapshot
-(``tests/data/waterdata_queryables.json``). When it fails, the upstream API has added /
-removed / renamed a queryable: regenerate the snapshot and enable any new queryables on
-the matching getter. Regenerate with::
+The committed snapshot (``tests/data/waterdata_queryables.json``) records, for
+each collection, every queryable's ``type``, ``title``, and ``description`` as the
+service publishes them. The live monitor (:func:`test_queryables_match_snapshot`)
+compares the queryables each collection publishes against the snapshot's keys.
+When it fails, the upstream API has added / removed / renamed a queryable:
+regenerate the snapshot and enable any new queryables on the matching getter.
+Regenerate with::
 
     python - <<'PY'
-    import httpx, json
+    import json
     from typing import get_args
-    from dataretrieval.waterdata.types import WATERDATA_SERVICES
-    base = "https://api.waterdata.usgs.gov/ogcapi/v1"
+    from dataretrieval.ogc.schema import queryables_frame
+    from dataretrieval.waterdata.endpoints import ogc_api_url
+    from dataretrieval.waterdata.types import WATERDATA_COLLECTIONS
     snap = {}
-    for c in get_args(WATERDATA_SERVICES):
-        r = httpx.get(f"{base}/collections/{c}/queryables", timeout=30)
-        r.raise_for_status()
-        snap[c] = sorted(r.json().get("properties", {}))
-    json.dump(snap, open("tests/data/waterdata_queryables.json", "w"),
-              indent=2, sort_keys=True)
-    open("tests/data/waterdata_queryables.json", "a").write("\\n")
+    for c in get_args(WATERDATA_COLLECTIONS):
+        df, _ = queryables_frame(c, base_url=ogc_api_url())
+        df = df.astype(object).where(df.notna(), None)
+        snap[c] = df.set_index("queryable").to_dict("index")
+    path = "tests/data/waterdata_queryables.json"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(snap, f, indent=2, sort_keys=True, ensure_ascii=False)
+        f.write("\\n")
     PY
 """
 
@@ -59,7 +63,7 @@ _FAKE_QUERYABLES = {
 }
 
 _SNAPSHOT_PATH = Path(__file__).parent / "data" / "waterdata_queryables.json"
-_SNAPSHOT = json.loads(_SNAPSHOT_PATH.read_text())
+_SNAPSHOT = json.loads(_SNAPSHOT_PATH.read_text(encoding="utf-8"))
 
 
 # --- get_queryables unit tests (mocked) ------------------------------------
@@ -155,6 +159,24 @@ def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
     )
 
     assert _items_query(httpx_mock)["site_type_code"] == ["ST,LK"]
+
+
+# --- the committed snapshot ------------------------------------------------
+
+
+def test_snapshot_records_each_queryables_definition():
+    """Each queryable maps to the ``type``, ``title``, and ``description`` the
+    service publishes, written as sorted, indented JSON so that a revised
+    description reads as a small diff in review."""
+    for collection, queryables in _SNAPSHOT.items():
+        for queryable, definition in queryables.items():
+            assert set(definition) == {"description", "title", "type"}, (
+                f"{collection}: {queryable} is not a queryable definition"
+            )
+    canonical = json.dumps(_SNAPSHOT, indent=2, sort_keys=True, ensure_ascii=False)
+    assert _SNAPSHOT_PATH.read_text(encoding="utf-8") == canonical + "\n", (
+        f"{_SNAPSHOT_PATH.name} is not sorted, indented JSON; regenerate it."
+    )
 
 
 # --- live queryables monitor -----------------------------------------------
