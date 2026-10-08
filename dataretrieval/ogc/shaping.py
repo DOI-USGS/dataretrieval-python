@@ -230,8 +230,9 @@ def _arrange_cols(
     df : pd.DataFrame
         The input DataFrame whose columns are to be rearranged or renamed.
     properties : Optional[List[str]]
-        A list of column names to possibly rename. If None or contains
-        only NaN, the function renames 'id' to output_id.
+        Requested column names. Camel-case names are matched to normalized
+        snake_case DataFrame columns. If None or contains only NaN, the
+        function renames 'id' to output_id.
     output_id : str
         The name to which the 'id' column should be renamed if applicable.
     extra_id_cols : set or frozenset, optional
@@ -261,7 +262,10 @@ def _arrange_cols(
 
     # --- Explicit properties: select and reorder columns per the list ---
     # Do not alias the caller's list; it is mutated below.
-    local_properties = list(properties)
+    # Match the names normalized by _finalize_ogc before selecting columns.
+    local_properties = [
+        _to_snake_case(name) if isinstance(name, str) else name for name in properties
+    ]
     if "geometry" in df.columns and "geometry" not in local_properties:
         local_properties.append("geometry")
     # 'id' is a valid collection column, but expose it under the
