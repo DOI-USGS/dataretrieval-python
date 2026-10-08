@@ -21,45 +21,39 @@ A queryable the service publishes but a getter does not take as a typed
 argument is reported as a warning, not a failure: whether to promote it is a
 design decision.
 
-Regenerate the snapshot with::
+Refresh the snapshot with::
 
-    python - <<'PY'
-    import json
-    from typing import get_args
-    from dataretrieval.ogc.schema import queryables_frame
-    from dataretrieval.waterdata.endpoints import ogc_api_url
-    from dataretrieval.waterdata.types import WATERDATA_COLLECTIONS
-    snap = {}
-    for c in get_args(WATERDATA_COLLECTIONS):
-        df, _ = queryables_frame(c, base_url=ogc_api_url())
-        df = df.astype(object).where(df.notna(), None)
-        snap[c] = df.set_index("queryable").to_dict("index")
-    path = "tests/data/waterdata_queryables.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(snap, f, indent=2, sort_keys=True, ensure_ascii=False)
-        f.write("\\n")
-    PY
+    python -m tests.waterdata_queryables_test
+
+It rewrites the snapshot and prints which queryables appeared, disappeared, or
+changed, and which getters document each changed one; those docstrings are the
+follow-up edit. ``--check`` prints the same report without rewriting the file.
 """
 
 from __future__ import annotations
 
+import argparse
 import configparser
 import importlib
 import inspect
 import json
 import re
+import sys
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, get_args
 from urllib.parse import parse_qs, urlsplit
 
+import pandas as pd
 import pytest
 
 import dataretrieval
 from dataretrieval import waterdata
+from dataretrieval.ogc.schema import queryables_frame
 from dataretrieval.utils import BaseMetadata
+from dataretrieval.waterdata.endpoints import ogc_api_url
 from dataretrieval.waterdata.types import WATERDATA_COLLECTIONS
 
 #: ``{collection: {queryable: {"type", "title", "description"}}}``.
@@ -357,6 +351,103 @@ def unexposed_queryables(
     return sorted(set(snapshot[target.collection]) - exposed)
 
 
+def documenting_getters(
+    collection: str,
+    queryable: str,
+    getters: Mapping[str, Callable[..., Any]],
+    targets: Mapping[str, Target | None],
+) -> list[str]:
+    """The getters with a typed argument for one queryable of one collection."""
+    names = []
+    for name, function in getters.items():
+        target = targets.get(name)
+        if target is None or target.collection != collection:
+            continue
+        arguments = typed_arguments(function)
+        if any(target.queryable(argument) == queryable for argument in arguments):
+            names.append(name)
+    return sorted(names)
+
+
+# --- refreshing a snapshot from the service --------------------------------
+
+
+def fetch_snapshot(collections: Iterable[str], *, base_url: str) -> Snapshot:
+    """Read every collection's queryables from the service at ``base_url``."""
+    snapshot: Snapshot = {}
+    for collection in collections:
+        frame, _ = queryables_frame(collection, base_url=base_url)
+        # A field the service omits is missing in the frame; JSON spells it null.
+        snapshot[collection] = {
+            row["queryable"]: {
+                field: None if pd.isna(row[field]) else row[field]
+                for field in ("description", "title", "type")
+            }
+            for row in frame.to_dict("records")
+        }
+    return snapshot
+
+
+def write_snapshot(snapshot: Snapshot, path: Path) -> None:
+    """Write a snapshot as sorted, indented JSON, so a change reads as a diff."""
+    text = json.dumps(snapshot, indent=2, sort_keys=True, ensure_ascii=False)
+    path.write_text(text + "\n", encoding="utf-8")
+
+
+def drift_report(
+    old: Snapshot,
+    new: Snapshot,
+    documenting: Callable[[str, str], list[str]],
+) -> list[str]:
+    """Describe how ``new`` differs from ``old``, one finding per line group.
+
+    An empty list means the two agree. For a changed description, the getters
+    returned by ``documenting`` are the docstrings to revise.
+    """
+    lines: list[str] = []
+    for collection in sorted(set(old) | set(new)):
+        before = old.get(collection, {})
+        after = new.get(collection, {})
+        appeared = sorted(set(after) - set(before))
+        disappeared = sorted(set(before) - set(after))
+        if appeared:
+            lines.append(f"{collection}: appeared: {', '.join(appeared)}")
+        if disappeared:
+            lines.append(f"{collection}: disappeared: {', '.join(disappeared)}")
+        for queryable in sorted(set(before) & set(after)):
+            fields = [
+                field
+                for field in ("type", "title", "description")
+                if before[queryable].get(field) != after[queryable].get(field)
+            ]
+            if not fields:
+                continue
+            getters = ", ".join(documenting(collection, queryable)) or "no getter"
+            lines.append(
+                f"{collection}: {queryable}: changed {', '.join(fields)}; "
+                f"documented by {getters}"
+            )
+            for field in fields:
+                lines.append(f"    {field} was: {before[queryable].get(field)}")
+                lines.append(f"    {field} now: {after[queryable].get(field)}")
+    return lines
+
+
+def refresh(
+    snapshot_path: Path,
+    fetch: Callable[[], Snapshot],
+    documenting: Callable[[str, str], list[str]],
+    *,
+    write: bool = True,
+) -> list[str]:
+    """Fetch the service's queryables, report drift, and optionally rewrite."""
+    new = fetch()
+    report = drift_report(_load_snapshot(snapshot_path), new, documenting)
+    if write:
+        write_snapshot(new, snapshot_path)
+    return report
+
+
 # --- the Water Data mapping layer ------------------------------------------
 
 #: Typed arguments the package owns rather than the service: request controls
@@ -445,8 +536,42 @@ def _checked_getters() -> list[tuple[str, Callable[..., Any], Target]]:
     ]
 
 
+def _waterdata_documenting(collection: str, queryable: str) -> list[str]:
+    return documenting_getters(
+        collection, queryable, _waterdata_getters(), _GETTER_TARGETS
+    )
+
+
 def _waterdata_collections() -> list[str]:
     return sorted(get_args(WATERDATA_COLLECTIONS))
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Refresh the Water Data queryables snapshot from the live service."""
+    parser = argparse.ArgumentParser(
+        prog="python -m tests.waterdata_queryables_test",
+        description=(
+            "Fetch every Water Data collection's queryables, rewrite "
+            f"{_SNAPSHOT_PATH.relative_to(_REPO_ROOT)}, and report what changed."
+        ),
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="report drift without rewriting the snapshot; exit 1 if any",
+    )
+    options = parser.parse_args(argv)
+    report = refresh(
+        _SNAPSHOT_PATH,
+        lambda: fetch_snapshot(_waterdata_collections(), base_url=ogc_api_url()),
+        _waterdata_documenting,
+        write=not options.check,
+    )
+    if not report:
+        sys.stdout.write("The snapshot matches the service.\n")
+        return 0
+    sys.stdout.write("\n".join(report) + "\n")
+    return 1 if options.check else 0
 
 
 # --- docstrings against the snapshot (offline gate) ------------------------
@@ -475,7 +600,7 @@ def test_snapshot_covers_every_collection_and_every_collection_is_checked():
     assert set(_SNAPSHOT) == collections, (
         f"The snapshot's collections differ from WATERDATA_COLLECTIONS: "
         f"missing={sorted(collections - set(_SNAPSHOT))}, "
-        f"extra={sorted(set(_SNAPSHOT) - collections)}. Regenerate the snapshot."
+        f"extra={sorted(set(_SNAPSHOT) - collections)}. Refresh the snapshot."
     )
     targeted = {target.collection for _, _, target in _checked_getters()}
     assert targeted == collections, (
@@ -508,7 +633,7 @@ def test_documented_descriptions_contain_the_service_text():
 
     A failure names the collection, the queryable, and the getter, and prints
     both texts. Fix the docstring; if the service's text is what changed,
-    regenerate the snapshot first (see this module's docstring).
+    refresh the snapshot first (see this module's docstring).
     """
     failures = [
         failure
@@ -644,6 +769,97 @@ def test_queryables_without_a_typed_argument_are_reported():
     assert unexposed_queryables(_fake_getter, _FAKE_TARGET, _FAKE_SNAPSHOT) == ["size"]
 
 
+def test_drift_report_names_what_moved_and_who_documents_it():
+    new = json.loads(json.dumps(_FAKE_SNAPSHOT))
+    del new["things"]["size"]
+    new["things"]["weight"] = {"type": "number", "title": "W", "description": "W."}
+    new["things"]["colour"]["description"] = "The hue."
+
+    def documenting(collection: str, queryable: str) -> list[str]:
+        return documenting_getters(
+            collection,
+            queryable,
+            {"get_things": _fake_getter},
+            {"get_things": _FAKE_TARGET},
+        )
+
+    report = drift_report(_FAKE_SNAPSHOT, new, documenting)
+    assert "things: appeared: weight" in report
+    assert "things: disappeared: size" in report
+    assert "things: colour: changed description; documented by get_things" in report
+    assert "    description now: The hue." in report
+    assert drift_report(_FAKE_SNAPSHOT, _FAKE_SNAPSHOT, documenting) == []
+
+
+def test_refresh_rewrites_the_snapshot_from_the_schema_reader(httpx_mock, tmp_path):
+    """Offline: the refresh path reads queryables through ``ogc.schema`` and
+    writes sorted, indented JSON ending in a newline."""
+    document = json.loads(json.dumps(_FAKE_QUERYABLES))
+    document["properties"]["geometry"] = {"$ref": "https://geojson.org/geometry"}
+    httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json=document)
+    path = tmp_path / "snapshot.json"
+    write_snapshot({"daily": {"state_name": _FAKE_SNAPSHOT["things"]["id"]}}, path)
+
+    report = refresh(
+        path,
+        lambda: fetch_snapshot(["daily"], base_url=ogc_api_url()),
+        lambda collection, queryable: [],
+    )
+
+    assert "daily: appeared: geometry, parameter_code" in report
+    written = path.read_text(encoding="utf-8")
+    assert written.endswith("}\n")
+    # A field the service omits is written as null, never as NaN.
+    assert json.loads(written)["daily"]["geometry"] == {
+        "description": "",
+        "title": None,
+        "type": None,
+    }
+    assert json.loads(written)["daily"]["state_name"] == {
+        "description": "The name of the state.",
+        "title": "State name",
+        "type": "string",
+    }
+    assert (
+        written
+        == json.dumps(json.loads(written), indent=2, sort_keys=True, ensure_ascii=False)
+        + "\n"
+    )
+
+
+def test_check_mode_reports_without_rewriting(httpx_mock, tmp_path):
+    httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json=_FAKE_QUERYABLES)
+    path = tmp_path / "snapshot.json"
+    write_snapshot({}, path)
+    before = path.read_text(encoding="utf-8")
+
+    report = refresh(
+        path,
+        lambda: fetch_snapshot(["daily"], base_url=ogc_api_url()),
+        lambda collection, queryable: [],
+        write=False,
+    )
+
+    assert report
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_the_refresh_command_checks_every_collection_offline(httpx_mock, capsys):
+    """``--check`` reads every collection, prints the report, and exits 1 on
+    drift, leaving the committed snapshot as it was."""
+    httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json=_FAKE_QUERYABLES)
+    before = _SNAPSHOT_PATH.read_text(encoding="utf-8")
+
+    assert main(["--check"]) == 1
+
+    requested = {str(request.url) for request in httpx_mock.get_requests()}
+    assert len(requested) == len(_waterdata_collections())
+    out = capsys.readouterr().out
+    assert "daily: disappeared:" in out
+    assert "daily: parameter_code: changed description; documented by get_daily" in out
+    assert _SNAPSHOT_PATH.read_text(encoding="utf-8") == before
+
+
 # --- the committed snapshot ------------------------------------------------
 
 
@@ -658,7 +874,7 @@ def test_snapshot_records_each_queryables_definition():
             )
     canonical = json.dumps(_SNAPSHOT, indent=2, sort_keys=True, ensure_ascii=False)
     assert _SNAPSHOT_PATH.read_text(encoding="utf-8") == canonical + "\n", (
-        f"{_SNAPSHOT_PATH.name} is not sorted, indented JSON; regenerate it."
+        f"{_SNAPSHOT_PATH.name} is not sorted, indented JSON; refresh it."
     )
 
 
@@ -671,7 +887,7 @@ def test_queryables_match_snapshot(collection):
     """Each collection's live queryables match the committed snapshot.
 
     A failure means the upstream API changed a collection's queryables.
-    Regenerate ``tests/data/waterdata_queryables.json`` (see this module's
+    Refresh ``tests/data/waterdata_queryables.json`` (see this module's
     docstring) and enable any newly added queryables on the matching getter.
     """
     df, _ = waterdata.get_queryables(collection)
@@ -680,5 +896,9 @@ def test_queryables_match_snapshot(collection):
     assert live == expected, (
         f"{collection} queryables changed upstream: "
         f"added={sorted(live - expected)}, removed={sorted(expected - live)}. "
-        f"Regenerate {_SNAPSHOT_PATH.name} and enable any new queryables."
+        f"Refresh {_SNAPSHOT_PATH.name} and enable any new queryables."
     )
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
