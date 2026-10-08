@@ -19,7 +19,8 @@ a merge:
 
 A queryable the service publishes but a getter does not take as a typed
 argument is reported as a warning, not a failure: whether to promote it is a
-design decision.
+design decision. The weekly code-health workflow compares the snapshot to the
+live service and reports any drift without failing.
 
 Refresh the snapshot with::
 
