@@ -109,6 +109,58 @@ pytest tests/ -m live
 New tests should be offline. Use `live` only when the assertion is a claim
 about the upstream service rather than about this package.
 
+### Water Data Docstrings and the Queryables Snapshot
+
+The Water Data service publishes its own description of every queryable a
+collection accepts. A typed argument of a Water Data getter that filters on a
+queryable must be described in the service's words: its docstring description
+must *contain* the service's description once whitespace is normalised. Text of
+our own -- a usage note, an example, a Python-specific caveat -- may come before
+or after it.
+
+[`tests/data/waterdata_queryables.json`](tests/data/waterdata_queryables.json)
+records each queryable's `type`, `title`, and `description` per collection, and
+[`tests/waterdata_queryables_test.py`](tests/waterdata_queryables_test.py)
+checks the getters against it. Which checks block and which advise:
+
+| Check | Runs | Effect |
+| --- | --- | --- |
+| Docstrings contain the snapshot's descriptions | every push, offline | blocks a merge |
+| Every typed argument is a queryable or package-owned | every push, offline | blocks a merge |
+| Every getter declares the collection it queries | every push, offline | blocks a merge |
+| Queryables with no typed argument | every push, offline | a warning only |
+| Snapshot names match the service | nightly, live | fails the scheduled run, blocks nothing |
+| Snapshot matches the service | weekly code-health run | advisory, written to the run summary |
+
+**Reading a failure.** Each finding names the collection, the queryable, and the
+getter, then prints the service's text and ours:
+
+```
+daily: queryable 'parameter_code' -- the docstring of get_daily(parameter_code=...)
+does not contain the service's description. ...
+    service: Parameter codes are 5-digit codes used to identify the constituent ...
+    ours:    A 5-digit code identifying the constituent measured and the units ...
+```
+
+Edit the getter's parameter description so it includes the `service` text. A
+typed argument the service does not know means a declaration in the test module
+is wrong: give the getter's `Target` an `id_argument` or `deprecated` entry, or
+add the argument to `_PACKAGE_OWNED` if the package owns it. A new getter fails
+until it is added to `_GETTER_TARGETS`, with `None` if it reads no queryables
+document.
+
+**Refreshing the snapshot.** When the weekly run reports drift, or the nightly
+run fails on a renamed queryable, refresh from the live service:
+
+```bash
+python -m tests.waterdata_queryables_test
+```
+
+It rewrites the snapshot and prints which queryables appeared, disappeared, or
+changed, and for each changed one the getters that document it. Those
+docstrings are the follow-up edit; commit them with the refreshed snapshot.
+`--check` prints the same report without rewriting the file.
+
 ### Coding Standards and Style
 
 **Before adding a small helper, check whether a leaf already generalizes it.**
