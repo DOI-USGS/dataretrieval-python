@@ -210,12 +210,14 @@ class Target:
     ``id_argument`` is the typed argument the getter sends as the collection's
     ``id`` queryable, if any. ``deprecated`` lists typed arguments the getter
     still accepts although they are not queryables of the collection, so they
-    are neither compared nor reported as unknown.
+    are neither compared nor reported as unknown. ``owned`` lists typed
+    arguments this getter alone owns, exempt like the shared package-owned ones.
     """
 
     collection: str
     id_argument: str | None = None
     deprecated: frozenset[str] = frozenset()
+    owned: frozenset[str] = frozenset()
 
     def queryable(self, argument: str) -> str:
         """The queryable a typed argument filters on."""
@@ -292,7 +294,7 @@ def _compared_arguments(
     return [
         argument
         for argument in typed_arguments(function)
-        if argument not in exempt and argument not in target.deprecated
+        if argument not in exempt | target.deprecated | target.owned
     ]
 
 
@@ -353,8 +355,9 @@ def unknown_arguments(
 def stale_declarations(
     name: str, function: Callable[..., Any], target: Target
 ) -> list[str]:
-    """Failures: an ``id_argument`` or ``deprecated`` name the getter lacks."""
-    declared = set(target.deprecated)
+    """Failures: an ``id_argument``, ``deprecated`` or ``owned`` name the getter
+    lacks."""
+    declared = set(target.deprecated | target.owned)
     if target.id_argument is not None:
         declared.add(target.id_argument)
     return [
@@ -478,10 +481,9 @@ def refresh(
 # --- the Water Data mapping layer ------------------------------------------
 
 #: Typed arguments the package owns rather than the service: request controls
-#: from the OGC standard, result shaping, ``state``, which accepts several
-#: spellings of a state and is sent as a queryable it chooses, and the
-#: nearest-value selection of ``get_nearest_continuous``. None is compared with
-#: a queryable, and their consistency across getters is not checked here.
+#: from the OGC standard, result shaping, and ``state``, which accepts several
+#: spellings of a state and is sent as a queryable it chooses. None is compared
+#: with a queryable, and their consistency across getters is not checked here.
 _PACKAGE_OWNED = frozenset(
     {
         "bbox",
@@ -490,13 +492,10 @@ _PACKAGE_OWNED = frozenset(
         "filter_lang",
         "limit",
         "max_rows",
-        "on_tie",
         "properties",
         "skip_geometry",
         "ssl_check",
         "state",
-        "targets",
-        "window",
     }
 )
 
@@ -523,7 +522,9 @@ _GETTER_TARGETS: dict[str, Target | None] = {
     "get_monitoring_locations": Target(
         "monitoring-locations", id_argument="monitoring_location_id"
     ),
-    "get_nearest_continuous": Target("continuous"),
+    "get_nearest_continuous": Target(
+        "continuous", owned=frozenset({"on_tie", "targets", "window"})
+    ),
     "get_peaks": Target("peaks"),
     "get_queryables": None,
     "get_ratings": None,
@@ -821,6 +822,10 @@ def test_an_argument_neither_queryable_nor_exempt_is_unknown():
     )
     assert not unknown_arguments(
         "get_things", _fake_getter, deprecated, _FAKE_SNAPSHOT, frozenset()
+    )
+    owned = Target("things", id_argument="thing_id", owned=frozenset({"limit"}))
+    assert not unknown_arguments(
+        "get_things", _fake_getter, owned, _FAKE_SNAPSHOT, frozenset()
     )
 
 
