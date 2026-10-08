@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+ge8a7dc7c8 documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gb3675aabc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c627938c"></script>
+      <script src="../_static/documentation_options.js?v=5e3d6343"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -353,7 +353,8 @@ filter sites.</p></li>
 <li><p><strong>water_level_above_navd88_ft</strong> (<em>str</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Water-level value filter (feet above NAVD 88).</p></li>
 <li><p><strong>monitoring_location_vertical_datum</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Vertical datum of the reported water level.</p></li>
 <li><p><strong>datetime</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Temporal filter — a single instant or a two-element <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">end]</span></code>
-range (ISO-8601 dates/datetimes); <code class="docutils literal notranslate"><span class="pre">&quot;..&quot;</span></code> denotes an open end.</p></li>
+range (ISO-8601 dates/datetimes); <code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;..&quot;</span></code> denotes an
+open end.</p></li>
 <li><p><strong>properties</strong> (<em>str</em><em> or </em><em>iterable</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Subset of columns to return. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) returns all columns.</p></li>
 <li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – Per-page size; pagination still follows <code class="docutils literal notranslate"><span class="pre">next</span></code> links to completion.</p></li>
 <li><p><strong>convert_type</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to coerce column dtypes (default <code class="docutils literal notranslate"><span class="pre">True</span></code>).</p></li>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+ge8a7dc7c8 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+gb3675aabc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=c627938c"></script>
+      <script src="../../../_static/documentation_options.js?v=5e3d6343"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -210,6 +210,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -231,6 +233,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -456,6 +460,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -473,6 +479,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -657,6 +665,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -678,6 +688,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -875,6 +887,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 
@@ -896,6 +910,8 @@
 <span class="sd">            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"</span>
 <span class="sd">            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or</span>
 <span class="sd">                "../2018-03-18T12:31:12Z"</span>
+<span class="sd">            * A list of two values: ["2018-02-12", "2018-03-18"], with None</span>
+<span class="sd">                for an open end: ["2018-02-12", None]</span>
 <span class="sd">            * Duration objects: "P1M" for data from the past month or</span>
 <span class="sd">                "PT36H" for the last 36 hours</span>
 

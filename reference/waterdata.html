@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+ge8a7dc7c8 documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gb3675aabc documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=c627938c"></script>
+      <script src="../_static/documentation_options.js?v=5e3d6343"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -241,6 +241,8 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><p>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or
 “../2018-03-18T12:31:12Z”</p></li>
+<li><p>A list of two values: [“2018-02-12”, “2018-03-18”], with None
+for an open end: [“2018-02-12”, None]</p></li>
 <li><p>Duration objects: “P1M” for data from the past month or “PT36H”
 for the last 36 hours</p></li>
 </ul>
@@ -278,6 +280,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -659,6 +666,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
 </dd>
 </dl>
@@ -680,6 +692,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -924,6 +941,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
 </dd>
 </dl>
@@ -948,6 +970,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -1118,6 +1145,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
 </dd>
 </dl>
@@ -1148,6 +1180,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -1421,6 +1458,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
 </dd>
 </dl>
@@ -1445,6 +1487,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -1610,6 +1657,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or</dt><dd><p>”PT36H” for the last 36 hours</p>
 </dd>
 </dl>
@@ -1634,6 +1686,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -2232,8 +2289,10 @@ determine the result set.</p></li>
 persisting the bytes to disk; <code class="docutils literal notranslate"><span class="pre">df.attrs[&quot;url&quot;]</span></code> still records
 where each rating came from.</p></li>
 <li><p><strong>time</strong> (<em>string</em><em> or </em><em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – STAC <code class="docutils literal notranslate"><span class="pre">datetime</span></code> filter (passed through verbatim under that name)
-— a single date / datetime, or an interval (<code class="docutils literal notranslate"><span class="pre">&quot;start/end&quot;</span></code>,
-optionally half-bounded with <code class="docutils literal notranslate"><span class="pre">..</span></code>). ISO 8601 <em>durations</em>
+— a single date / datetime, an interval (<code class="docutils literal notranslate"><span class="pre">&quot;start/end&quot;</span></code>,
+optionally half-bounded with <code class="docutils literal notranslate"><span class="pre">..</span></code>), or a list of two values
+with <code class="docutils literal notranslate"><span class="pre">None</span></code> for an open end (<code class="docutils literal notranslate"><span class="pre">[&quot;2026-04-29&quot;,</span> <span class="pre">None]</span></code>). A value
+that is not a date raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. ISO 8601 <em>durations</em>
 (<code class="docutils literal notranslate"><span class="pre">&quot;P1M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT36H&quot;</span></code>, …) are <strong>not</strong> supported by the
 rating-curve service; passing one raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></li>
 <li><p><strong>bbox</strong> (<em>list</em><em> of </em><em>numbers</em><em>, </em><em>optional</em>) – Only features whose geometry intersects the bounding box are
@@ -2858,6 +2917,11 @@ Examples:</p>
 </dl>
 </li>
 <li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
 <dt>Duration objects: “P1M” for data from the past month or “PT36H”</dt><dd><p>for the last 36 hours</p>
 </dd>
 </dl>
@@ -2880,6 +2944,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
@@ -2909,6 +2978,11 @@ Examples:</p>
 <li><p>A bounded interval: “2018-02-12T00:00:00Z/2018-03-18T12:31:12Z”</p></li>
 <li><dl class="simple">
 <dt>Half-bounded intervals: “2018-02-12T00:00:00Z/..” or</dt><dd><p>”../2018-03-18T12:31:12Z”</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>A list of two values: [“2018-02-12”, “2018-03-18”], with None</dt><dd><p>for an open end: [“2018-02-12”, None]</p>
 </dd>
 </dl>
 </li>
