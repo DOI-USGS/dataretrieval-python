@@ -416,7 +416,7 @@ def fetch_snapshot(collections: Iterable[str], *, base_url: str) -> Snapshot:
 def write_snapshot(snapshot: Snapshot, path: Path) -> None:
     """Write a snapshot as sorted, indented JSON, so a change reads as a diff."""
     text = json.dumps(snapshot, indent=2, sort_keys=True, ensure_ascii=False)
-    path.write_text(text + "\n", encoding="utf-8")
+    path.write_text(text + "\n", encoding="utf-8", newline="\n")
 
 
 def drift_report(
