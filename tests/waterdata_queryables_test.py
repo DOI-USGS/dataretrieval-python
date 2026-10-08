@@ -398,6 +398,7 @@ def fetch_snapshot(collections: Iterable[str], *, base_url: str) -> Snapshot:
     snapshot: Snapshot = {}
     for collection in collections:
         frame, _ = queryables_frame(collection, base_url=base_url)
+        assert not frame.empty, f"{collection} published no queryables"
         # A field the service omits is missing in the frame; JSON spells it null.
         snapshot[collection] = {
             row["queryable"]: {
@@ -852,6 +853,22 @@ def test_drift_report_names_what_moved_and_who_documents_it():
     assert "things: colour: changed description; documented by get_things" in report
     assert "    description now: The hue." in report
     assert drift_report(_FAKE_SNAPSHOT, _FAKE_SNAPSHOT, documenting) == []
+
+
+def test_refresh_never_writes_a_collection_with_no_queryables(httpx_mock, tmp_path):
+    httpx_mock.add_response(method="GET", url=QUERYABLES_RE, json={"type": "object"})
+    path = tmp_path / "snapshot.json"
+    write_snapshot({}, path)
+    before = path.read_text(encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="daily published no queryables"):
+        refresh(
+            path,
+            lambda: fetch_snapshot(["daily"], base_url=ogc_api_url()),
+            lambda collection, queryable: [],
+        )
+
+    assert path.read_text(encoding="utf-8") == before
 
 
 def test_refresh_rewrites_the_snapshot_from_the_schema_reader(httpx_mock, tmp_path):
