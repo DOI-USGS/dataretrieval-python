@@ -350,6 +350,20 @@ def unknown_arguments(
     ]
 
 
+def stale_declarations(
+    name: str, function: Callable[..., Any], target: Target
+) -> list[str]:
+    """Failures: an ``id_argument`` or ``deprecated`` name the getter lacks."""
+    declared = set(target.deprecated)
+    if target.id_argument is not None:
+        declared.add(target.id_argument)
+    return [
+        f"{name} declares {argument!r} in its target but takes no such typed "
+        "argument. Remove the stale entry, or rename it to match the signature."
+        for argument in sorted(declared - set(typed_arguments(function)))
+    ]
+
+
 def unexposed_queryables(
     function: Callable[..., Any], target: Target, snapshot: Snapshot
 ) -> list[str]:
@@ -421,6 +435,11 @@ def drift_report(
             lines.append(f"{collection}: appeared: {', '.join(appeared)}")
         if disappeared:
             lines.append(f"{collection}: disappeared: {', '.join(disappeared)}")
+        for queryable in disappeared:
+            if getters := ", ".join(documenting(collection, queryable)):
+                lines.append(
+                    f"{collection}: {queryable}: disappeared; documented by {getters}"
+                )
         for queryable in sorted(set(before) & set(after)):
             fields = [
                 field
@@ -642,6 +661,16 @@ def test_typed_arguments_are_queryables_or_package_owned():
     assert not failures, "\n".join(failures)
 
 
+def test_target_declarations_name_real_arguments():
+    """A renamed id argument or a removed deprecated one leaves no stale entry."""
+    failures = [
+        failure
+        for name, function, target in _checked_getters()
+        for failure in stale_declarations(name, function, target)
+    ]
+    assert not failures, "\n".join(failures)
+
+
 @pytest.mark.xfail(
     strict=True,
     raises=AssertionError,
@@ -787,6 +816,14 @@ def test_an_argument_neither_queryable_nor_exempt_is_unknown():
     )
 
 
+def test_a_declaration_the_signature_lacks_is_stale():
+    assert not stale_declarations("get_things", _fake_getter, _FAKE_TARGET)
+    stale = Target("things", id_argument="item_id", deprecated=frozenset({"old"}))
+    failures = stale_declarations("get_things", _fake_getter, stale)
+    assert len(failures) == 2
+    assert all(failure.startswith("get_things declares") for failure in failures)
+
+
 def test_queryables_without_a_typed_argument_are_reported():
     assert unexposed_queryables(_fake_getter, _FAKE_TARGET, _FAKE_SNAPSHOT) == ["size"]
 
@@ -794,6 +831,7 @@ def test_queryables_without_a_typed_argument_are_reported():
 def test_drift_report_names_what_moved_and_who_documents_it():
     new = json.loads(json.dumps(_FAKE_SNAPSHOT))
     del new["things"]["size"]
+    del new["things"]["id"]
     new["things"]["weight"] = {"type": "number", "title": "W", "description": "W."}
     new["things"]["colour"]["description"] = "The hue."
 
@@ -807,7 +845,10 @@ def test_drift_report_names_what_moved_and_who_documents_it():
 
     report = drift_report(_FAKE_SNAPSHOT, new, documenting)
     assert "things: appeared: weight" in report
-    assert "things: disappeared: size" in report
+    assert "things: disappeared: id, size" in report
+    # A disappeared queryable a getter still takes names that getter.
+    assert "things: id: disappeared; documented by get_things" in report
+    assert not any(line.startswith("things: size:") for line in report)
     assert "things: colour: changed description; documented by get_things" in report
     assert "    description now: The hue." in report
     assert drift_report(_FAKE_SNAPSHOT, _FAKE_SNAPSHOT, documenting) == []
