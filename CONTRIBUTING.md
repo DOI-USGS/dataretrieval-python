@@ -128,6 +128,9 @@ checks the getters against it. Which checks block and which advise:
 | Docstrings contain the snapshot's descriptions | every push, offline | expected to fail until the docstring sweep for #379 lands; blocks a merge from then on |
 | Every typed argument is a queryable or package-owned | every push, offline | blocks a merge |
 | Every getter declares the collection it queries | every push, offline | blocks a merge |
+| Every collection is in the snapshot and queried by a getter | every push, offline | blocks a merge |
+| Every `id_argument`, `deprecated` and `owned` entry is an argument of its getter | every push, offline | blocks a merge |
+| The snapshot is sorted, indented JSON recording every field | every push, offline | blocks a merge |
 | Queryables with no typed argument | every push, offline | a warning only |
 | Snapshot names match the service | nightly, live | fails the scheduled run, blocks nothing |
 | Snapshot matches the service | weekly code-health run | advisory, written to the run summary |
