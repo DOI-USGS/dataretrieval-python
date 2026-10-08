@@ -317,7 +317,7 @@ def description_mismatches(
             continue  # an unknown argument, reported by unknown_arguments
         service = _normalise(queryables[queryable].get("description") or "")
         ours = _normalise(documented.get(argument, ""))
-        if service in ours:
+        if ours and service in ours:
             continue
         failures.append(
             f"{target.collection}: queryable {queryable!r} -- the docstring of "
@@ -796,6 +796,13 @@ def test_an_undocumented_queryable_argument_fails():
 
     (failure,) = description_mismatches(
         "bare", bare, _FAKE_TARGET, _FAKE_SNAPSHOT, frozenset()
+    )
+    assert "(not documented)" in failure
+
+    snapshot = json.loads(json.dumps(_FAKE_SNAPSHOT))
+    snapshot["things"]["colour"]["description"] = ""
+    (failure,) = description_mismatches(
+        "bare", bare, _FAKE_TARGET, snapshot, frozenset()
     )
     assert "(not documented)" in failure
 
