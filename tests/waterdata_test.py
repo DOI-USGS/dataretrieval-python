@@ -619,6 +619,18 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     assert "time=2024-01-01%2F2024-01-31" in str(req.url)
 
 
+def test_construct_api_requests_accepts_timestamp_bounds():
+    """A ``pandas.Timestamp`` bound, as in ``time=[df.index.min(), None]``,
+    builds the same request as its string spelling instead of raising
+    ``AttributeError``."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        time=[pd.Timestamp("2024-01-01", tz="UTC"), None],
+    )
+    assert "time=2024-01-01%2F.." in str(req.url)
+
+
 # --- mocked getter smoke tests ------------------------------------------------
 # These replace what used to be ~34 live calls to the Water Data API. Each one
 # serves a committed fixture (``tests/data/waterdata_ogc_fixtures.json``, two

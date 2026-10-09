@@ -8,7 +8,8 @@ instants, two-element ``[start, end]`` ranges, ISO-8601 durations, and open
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from datetime import date as _date
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -65,7 +66,13 @@ def _parse_datetime(value: str) -> datetime | None:
 _OPEN_BOUND = ".."
 
 
-def _is_blank(dt: str | None) -> bool:
+# One element of a date argument: an ISO 8601 string, or a ``date``,
+# ``datetime`` or ``pandas.Timestamp`` (both subclasses of ``datetime.date``),
+# with ``None`` (or ``NaN`` / ``NaT``) for an open bound.
+_DateLike = str | _date | None
+
+
+def _is_blank(dt: _DateLike) -> bool:
     """True for a None, NaN, empty-string, or ``..`` element.
 
     Each is a spelling of an open bound, so ``["2024-01-01", ".."]`` means the
@@ -74,22 +81,42 @@ def _is_blank(dt: str | None) -> bool:
     return dt is None or bool(pd.isna(dt)) or dt in ("", _OPEN_BOUND)
 
 
-def _format_one(dt: str | None, *, date: bool, name: str) -> str:
-    """Format a single datetime element for inclusion in the API time arg.
+def _to_datetime(dt: str | _date, *, name: str) -> datetime:
+    """Read one non-blank element as a ``datetime`` (naive iff it has no zone).
 
-    Raises ``ValueError`` naming *name* when the element is not blank and
-    matches no supported format.
+    A ``date`` is midnight of that day, like the string ``"2024-01-01"``.
+    Raises ``ValueError`` naming *name* for an unreadable string or a value of
+    another type.
     """
-    if dt is None or _is_blank(dt):
-        return _OPEN_BOUND
-    parsed = _parse_datetime(dt)
+    if isinstance(dt, pd.Timestamp):
+        # A plain ``datetime``: ``Timestamp.astimezone()`` needs an explicit zone.
+        converted: datetime = dt.to_pydatetime(warn=False)
+        return converted
+    if isinstance(dt, datetime):
+        return dt
+    if isinstance(dt, _date):
+        return datetime(dt.year, dt.month, dt.day)  # noqa: DTZ001
+    parsed = _parse_datetime(dt) if isinstance(dt, str) else None
     if parsed is None:
         raise ValueError(
             f"{name} could not be read as a date or datetime: {dt!r}. "
             "Pass an ISO 8601 date or datetime such as '2024-01-01' or "
-            "'2024-01-01T12:00:00Z', and None for an open end of a range "
+            "'2024-01-01T12:00:00Z' (a datetime.date, datetime.datetime or "
+            "pandas.Timestamp also works), and None for an open end of a range "
             "(['2024-01-01', None])."
         )
+    return parsed
+
+
+def _format_one(dt: _DateLike, *, date: bool, name: str) -> str:
+    """Format a single datetime element for inclusion in the API time arg.
+
+    Raises ``ValueError`` naming *name* when the element is not blank and
+    cannot be read as a date or datetime.
+    """
+    if dt is None or _is_blank(dt):
+        return _OPEN_BOUND
+    parsed = _to_datetime(dt, name=name)
     if date:
         return parsed.strftime("%Y-%m-%d")
     # Naive inputs are interpreted in the system local zone (for backwards
@@ -101,11 +128,14 @@ def _format_one(dt: str | None, *, date: bool, name: str) -> str:
 
 
 def _coerce_to_list(
-    datetime_input: str | Sequence[str | None],
+    datetime_input: str | _date | Sequence[_DateLike],
     name: str = "date input",
-) -> list[str | None]:
+) -> list[_DateLike]:
     """Normalize datetime input to a list, raising on invalid shapes."""
-    if isinstance(datetime_input, str):
+    if isinstance(datetime_input, (str, _date)) or not isinstance(
+        datetime_input, Iterable
+    ):
+        # A lone value; anything that is not a date is rejected per element.
         return [datetime_input]
     if isinstance(datetime_input, Mapping):
         raise TypeError(
@@ -120,13 +150,13 @@ def _is_passthrough(single: str) -> bool:
     return bool(_DURATION_RE.match(single) or "/" in single)
 
 
-def _all_blank(items: list[str | None]) -> bool:
+def _all_blank(items: list[_DateLike]) -> bool:
     """True when every element is None, NaN, the empty string, or ``..``."""
     return all(_is_blank(dt) for dt in items)
 
 
 def _format_api_dates(
-    datetime_input: str | Sequence[str | None] | None,
+    datetime_input: str | _date | Sequence[_DateLike] | None,
     date: bool = False,
     *,
     name: str = "date input",
@@ -140,9 +170,11 @@ def _format_api_dates(
 
     Parameters
     ----------
-    datetime_input : Union[str, List[Optional[str]], None]
-        A single date/datetime string or a list of one or two date/datetime
-        strings. Accepts formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
+    datetime_input : Union[str, date, List[Optional[Union[str, date]]], None]
+        A single date/datetime or a list of one or two of them. Each may be a
+        ``datetime.date``, ``datetime.datetime`` or ``pandas.Timestamp`` (a
+        naive one is read in the local time zone, as a naive string is), or a
+        string. Strings accept formats like "%Y-%m-%d %H:%M:%S", ISO 8601 (with or
         without ``Z``/numeric offset), or relative periods (e.g., "P7D" /
         "PT36H"). Range endpoints may be ``None``/``NaN``/empty or ``".."``
         to denote a half-bounded range.
@@ -174,7 +206,7 @@ def _format_api_dates(
     ------
     ValueError
         If `datetime_input` contains more than two values, or an element that
-        is not blank matches no supported format.
+        is not blank matches no supported format or is of another type.
 
     Notes
     -----

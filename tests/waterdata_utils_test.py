@@ -1049,6 +1049,86 @@ def test_format_api_dates_rejects_mapping():
         _format_api_dates({"2024-01-01": "ignored"})
 
 
+@pytest.mark.parametrize(
+    "value, date, expected",
+    [
+        (datetime.date(2024, 1, 1), True, "2024-01-01"),
+        ([datetime.date(2024, 1, 1), None], True, "2024-01-01/.."),
+        (
+            [datetime.date(2024, 1, 1), datetime.date(2024, 2, 1)],
+            True,
+            "2024-01-01/2024-02-01",
+        ),
+        (pd.Timestamp("2024-01-01T10:30:00", tz="UTC"), True, "2024-01-01"),
+        (
+            pd.Timestamp("2024-01-01T10:30:00", tz="UTC"),
+            False,
+            "2024-01-01T10:30:00Z",
+        ),
+        (
+            datetime.datetime(
+                2024, 1, 1, 6, 0, tzinfo=datetime.timezone(datetime.timedelta(hours=-4))
+            ),
+            False,
+            "2024-01-01T10:00:00Z",
+        ),
+        (
+            [pd.Timestamp("2024-01-01", tz="UTC"), pd.NaT],
+            False,
+            "2024-01-01T00:00:00Z/..",
+        ),
+        (
+            ["2024-01-01T00:00:00Z", pd.Timestamp("2024-02-01", tz="UTC")],
+            False,
+            "2024-01-01T00:00:00Z/2024-02-01T00:00:00Z",
+        ),
+    ],
+    ids=[
+        "date",
+        "date_open_end",
+        "date_pair",
+        "aware_timestamp_date_only",
+        "aware_timestamp_to_utc",
+        "aware_datetime_offset_to_utc",
+        "nat_is_an_open_bound",
+        "mixed_string_and_timestamp",
+    ],
+)
+def test_format_api_dates_accepts_date_and_datetime_objects(value, date, expected):
+    """``datetime.date``, ``datetime.datetime`` and ``pandas.Timestamp`` used to
+    raise ``AttributeError`` (no ``endswith``) or ``TypeError`` (a lone datetime
+    is not iterable) from inside the formatter. They are read like the
+    equivalent string, and ``NaT`` is an open bound like ``None``."""
+    assert _format_api_dates(value, date=date) == expected
+
+
+@pytest.mark.parametrize("date", [True, False], ids=["date_only", "datetime"])
+def test_format_api_dates_reads_naive_objects_like_naive_strings(date):
+    """A naive ``datetime``/``Timestamp`` is local time, the same rule a naive
+    string follows, so both spellings of one instant build the same filter in
+    any time zone. A ``date`` is midnight of that day, like ``"2024-01-01"``."""
+    as_string = _format_api_dates(["2024-01-01T10:00:00", None], date=date)
+    naive_datetime = [datetime.datetime(2024, 1, 1, 10), None]  # noqa: DTZ001
+    assert _format_api_dates(naive_datetime, date=date) == as_string
+    naive_timestamp = [pd.Timestamp("2024-01-01T10:00:00"), None]
+    assert _format_api_dates(naive_timestamp, date=date) == as_string
+    assert _format_api_dates(datetime.date(2024, 1, 1), date=date) == (
+        _format_api_dates("2024-01-01", date=date)
+    )
+
+
+@pytest.mark.parametrize("value", [20240101, [20240101, None], 1.5])
+def test_format_api_dates_rejects_other_types_naming_the_argument(value):
+    """A number is not a date. It used to fail with an ``AttributeError`` from
+    inside the formatter; the message now names the caller's argument and the
+    types it accepts."""
+    with pytest.raises(ValueError) as excinfo:
+        _format_api_dates(value, name="time")
+    message = str(excinfo.value)
+    assert message.startswith("time could not be read as a date")
+    assert "pandas.Timestamp" in message
+
+
 def _make_response(status, body, reason=None, content_type="text/html"):
     headers = {"Content-Type": content_type}
     extensions = {}
