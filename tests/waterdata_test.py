@@ -801,7 +801,9 @@ def test_get_daily_keeps_a_dotdot_open_bound_in_time(httpx_mock):
 
 
 @pytest.mark.parametrize(
-    "time", ["2025-13-45", ["2025-01-01", "yesterday"]], ids=["single", "range"]
+    "time",
+    ["2025-13-45", ["2025-01-01", "yesterday"], "not-a-date/also-bad"],
+    ids=["single", "range", "interval_string"],
 )
 def test_get_daily_rejects_an_unreadable_time_before_any_request(httpx_mock, time):
     """A bound that matches no date format used to drop the whole filter, so
