@@ -179,7 +179,12 @@ def get_ratings(
     _validate_time_no_duration(time)
     time_str = (
         _format_api_dates(
-            time, name="time", single_value_hint="an instant ('2020-01-01')"
+            time,
+            name="time",
+            single_value_hint="an instant ('2020-01-01')",
+            # The STAC firewall answers ``datetime=../2026-01-01`` with HTTP
+            # 403; STAC reads an empty start (``/2026-01-01``) as open.
+            open_start="",
         )
         if time is not None
         else None

@@ -145,9 +145,27 @@ def _coerce_to_list(
     return list(datetime_input)
 
 
-def _is_passthrough(single: str) -> bool:
-    """True when a single-element input should be returned as-is."""
-    return bool(_DURATION_RE.match(single) or "/" in single)
+def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
+    """Split a ``"start/end"`` string into its two sides.
+
+    Each side is then formatted like a list element, so
+    ``"2024-01-01T10:00:00/.."`` sends the same range as
+    ``["2024-01-01T10:00:00", None]``.
+
+    Raises ``ValueError`` naming *name* unless the string is two sides
+    separated by one ``"/"``, neither of them a duration: the Water Data and
+    NGWMN services answer ``"2024-01-01/P7D"`` and ``"P7D/2024-01-08"`` with
+    HTTP 400.
+    """
+    sides = interval.split("/")
+    if len(sides) != 2 or any(_DURATION_RE.match(side) for side in sides):
+        raise ValueError(
+            f"{name} is not a valid interval: {interval!r}. Pass a start and "
+            "an end separated by '/', such as '2024-01-01/2024-12-31', with "
+            "'..' for an open end ('2024-01-01/..'). Neither side can be a "
+            "duration."
+        )
+    return sides[0], sides[1]
 
 
 def _all_blank(items: list[_DateLike]) -> bool:
@@ -161,6 +179,7 @@ def _format_api_dates(
     *,
     name: str = "date input",
     single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
+    open_start: str = _OPEN_BOUND,
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -192,6 +211,12 @@ def _format_api_dates(
         forms (``get_ratings`` rejects durations) enforces that itself and
         passes a hint naming only what it accepts, so the remedy does not
         direct a caller to a value that is rejected.
+    open_start : str, optional
+        How the target API spells the open start of a range (``".."``
+        by default). OGC API Features and STAC also allow an empty string,
+        ``"/2024-01-01"``, which an API whose firewall rejects ``"../"`` needs
+        instead; see :attr:`OgcDialect.open_start`. An open end is always
+        ``".."``.
 
     Returns
     -------
@@ -214,8 +239,11 @@ def _format_api_dates(
       or ``".."`` endpoint is rendered as ``".."`` to denote an open bound
       (e.g. ``"2024-01-01/.."``); the range is only None when *every* element
       is blank/NA/``".."``.
-    - Supports ISO 8601 durations such as "P7D" and "PT36H" and pre-formatted
-      intervals containing ``"/"``; both are passed through unchanged.
+    - Supports ISO 8601 durations such as "P7D" and "PT36H", which are passed
+      through unchanged.
+    - A single string containing ``"/"`` is an interval: it is split into the
+      two-value form, so ``"2024-01-01/.."`` and ``["2024-01-01", None]`` are
+      formatted alike. A duration is not accepted as either side.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
       `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
       converted from that offset to UTC; naive inputs are interpreted in the
@@ -225,6 +253,8 @@ def _format_api_dates(
         return None
 
     items = _coerce_to_list(datetime_input, name)
+    if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
+        items = list(_split_interval(items[0], name=name))
 
     if _all_blank(items):
         return None
@@ -236,8 +266,11 @@ def _format_api_dates(
             "or two for a closed interval ('2020-01-01', '2020-12-31')."
         )
 
-    # Pass through duration ("P7D", "PT36H") and pre-formatted interval ("a/b")
-    if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
+    # Pass through a duration ("P7D", "PT36H")
+    if len(items) == 1 and isinstance(items[0], str) and _DURATION_RE.match(items[0]):
         return items[0]
 
-    return "/".join(_format_one(dt, date=date, name=name) for dt in items)
+    formatted = [_format_one(dt, date=date, name=name) for dt in items]
+    if len(formatted) == 2 and formatted[0] == _OPEN_BOUND:
+        formatted[0] = open_start
+    return "/".join(formatted)
