@@ -184,6 +184,7 @@ def _construct_api_requests(
                 date=(
                     collection in dialect.date_only_services and key != "last_modified"
                 ),
+                open_start=dialect.open_start,
             )
     params, post_params = _partition_request_params(
         kwargs, use_cql2=collection in dialect.cql2_services

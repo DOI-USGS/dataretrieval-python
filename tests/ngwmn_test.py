@@ -460,6 +460,20 @@ def test_get_water_level_datetime_subsets(httpx_mock):
     assert qs["datetime"] == ["2022-01-01T00:00:00Z/2024-01-01T00:00:00Z"]
 
 
+@pytest.mark.parametrize(
+    "datetime", [[None, "2016-01-01T00:00:00Z"], "../2016-01-01T00:00:00Z"]
+)
+def test_get_water_level_sends_an_open_start_empty(httpx_mock, datetime):
+    """The NGWMN firewall answers ``datetime=../2016-01-01`` with HTTP 403, so
+    an open start is sent as an empty string, which NGWMN reads as open."""
+    _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
+
+    ngwmn.get_water_level(monitoring_location_id=_SITE, datetime=datetime)
+
+    qs = _queries(httpx_mock, "waterLevelObs")[0]
+    assert qs["datetime"] == ["/2016-01-01T00:00:00Z"]
+
+
 def test_get_lithology(httpx_mock):
     _mock(httpx_mock, "lithologyObs", _LITHOLOGY)
 

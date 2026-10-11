@@ -1040,6 +1040,33 @@ def test_format_api_dates_treats_an_all_open_interval_string_as_no_filter():
 
 
 @pytest.mark.parametrize(
+    "value",
+    [
+        [None, "2024-01-01T00:00:00Z"],
+        ["..", "2024-01-01T00:00:00Z"],
+        "../2024-01-01T00:00:00Z",
+        "/2024-01-01T00:00:00Z",
+    ],
+    ids=["none", "dotdot", "dotdot_string", "empty_string"],
+)
+def test_format_api_dates_spells_an_open_start_as_the_api_does(value):
+    """Every spelling of an open start becomes ``..`` by default and the
+    caller's ``open_start`` otherwise: NGWMN and STAC reject ``"../"`` (HTTP
+    403), and the Water Data API rejects an empty start (HTTP 400)."""
+    assert _format_api_dates(value) == "../2024-01-01T00:00:00Z"
+    assert _format_api_dates(value, open_start="") == "/2024-01-01T00:00:00Z"
+
+
+def test_format_api_dates_open_start_leaves_an_open_end_and_no_filter_alone():
+    """``open_start`` changes only the start: an open end is ``..`` on every API,
+    and a range with both ends open is still no filter."""
+    open_end = _format_api_dates(["2024-01-01T00:00:00Z", None], open_start="")
+    assert open_end == "2024-01-01T00:00:00Z/.."
+    assert _format_api_dates([None, None], open_start="") is None
+    assert _format_api_dates("../..", open_start="") is None
+
+
+@pytest.mark.parametrize(
     "interval, message",
     [
         ("not-a-date/also-bad", "time could not be read as a date or datetime"),

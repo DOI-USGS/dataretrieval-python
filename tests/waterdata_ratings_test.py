@@ -169,6 +169,23 @@ def test_get_ratings_download_and_parse_false_returns_features(httpx_mock):
     assert features[0]["id"] == "USGS-01104475.exsa.rdb"
 
 
+@pytest.mark.parametrize(
+    "time", [[None, "2026-04-29T00:00:00Z"], "../2026-04-29T00:00:00Z"]
+)
+def test_get_ratings_sends_an_open_start_empty(httpx_mock, time):
+    """The STAC firewall answers ``datetime=../2026-04-29`` with HTTP 403, so an
+    open start is sent as an empty string, which STAC reads as open."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    get_ratings(
+        monitoring_location_id="USGS-01104475", time=time, download_and_parse=False
+    )
+    (request,) = httpx_mock.get_requests()
+    params = parse_qs(urlsplit(str(request.url)).query)
+    assert params["datetime"] == ["/2026-04-29T00:00:00Z"]
+
+
 def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     """``time=[start, ".."]`` is the documented open-ended range. The ``..``
     endpoint used to fail to parse, which discarded the whole range, so the

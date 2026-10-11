@@ -80,10 +80,12 @@ _STATE_QUERYABLE = {
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
 
-# NGWMN's request shape matches the generic OGC default (no CQL2-only or
-# date-only collections), but its result columns need their own coercion and
-# sort vocabulary: water-level observations are timestamped by ``sample_time``
-# (not the Water Data ``time``) and report depths/levels in feet.
+# NGWMN has no CQL2-only or date-only collections, but its result columns need
+# their own coercion and sort vocabulary: water-level observations are
+# timestamped by ``sample_time`` (not the Water Data ``time``) and report
+# depths/levels in feet. Its firewall answers ``datetime=../2016-01-01`` with
+# HTTP 403, so an open start is sent empty (``/2016-01-01``), which it reads as
+# open.
 NGWMN_DIALECT = OgcDialect(
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
@@ -94,6 +96,7 @@ NGWMN_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("sample_time", "monitoring_location_id"),
+    open_start="",
 )
 
 

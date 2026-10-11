@@ -60,6 +60,12 @@ class OgcDialect:
         Columns to sort the combined result by, in priority order. Sorting
         is applied only when the first (primary) column is present; any
         later columns also present are added as secondary keys.
+    open_start : str
+        How the API spells the open start of a date range: ``".."``
+        (``"../2024-01-01"``, the default) or ``""`` (``"/2024-01-01"``).
+        OGC API Features allows both, but deployments differ in which they
+        accept: the Water Data API rejects the empty start with HTTP 400, and
+        the NGWMN firewall rejects ``"../"`` with HTTP 403.
     """
 
     cql2_services: frozenset[str] = field(default_factory=frozenset)
@@ -67,6 +73,7 @@ class OgcDialect:
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
+    open_start: str = ".."
 
 
 # Default dialect: a plain OGC API with no CQL2-only collections and no

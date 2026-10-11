@@ -149,6 +149,7 @@ def _format_api_dates(
     *,
     name: str = "date input",
     single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
+    open_start: str = _OPEN_BOUND,
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -178,6 +179,12 @@ def _format_api_dates(
         forms (``get_ratings`` rejects durations) enforces that itself and
         passes a hint naming only what it accepts, so the remedy does not
         direct a caller to a value that is rejected.
+    open_start : str, optional
+        How the target API spells the open start of a range (``".."``
+        by default). OGC API Features and STAC also allow an empty string,
+        ``"/2024-01-01"``, which an API whose firewall rejects ``"../"`` needs
+        instead; see :attr:`OgcDialect.open_start`. An open end is always
+        ``".."``.
 
     Returns
     -------
@@ -231,4 +238,7 @@ def _format_api_dates(
     if len(items) == 1 and isinstance(items[0], str) and _DURATION_RE.match(items[0]):
         return items[0]
 
-    return "/".join(_format_one(dt, date=date, name=name) for dt in items)
+    formatted = [_format_one(dt, date=date, name=name) for dt in items]
+    if len(formatted) == 2 and formatted[0] == _OPEN_BOUND:
+        formatted[0] = open_start
+    return "/".join(formatted)
