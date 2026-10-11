@@ -14,6 +14,7 @@ from dataretrieval.credentials import WATERDATA_BASE_URL
 
 #: The Water Data service (ADR 0014). Its OGC, Samples, Statistics, and STAC
 #: APIs are endpoints below this one root, resolved by the functions below.
+#: Public within the package because each of those families reads it.
 SERVICE = Service("waterdata", WATERDATA_BASE_URL)
 
 #: The version of the Water Data OGC API this release requests by default and

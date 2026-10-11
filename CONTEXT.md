@@ -278,7 +278,8 @@ two endpoints speak it.
 the protocol code reads. Each field is one extension, restriction, or renaming,
 and its default is the standard, so a default dialect describes an endpoint
 that follows the standard. Fields are grouped by the code that reads them; the
-date group, `DateDialect`, is shared by the protocols that write intervals.
+date group, `DateDialect`, is meant to be shared by the protocols that write
+intervals (ADR 0014, proposed).
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
 WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing

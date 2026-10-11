@@ -248,22 +248,22 @@ def get_wateruse(
     # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
     # service's own endpoint, passed to every request and the page walk
     # (ADR 0011).
-    service_url = _configuration.service_url(_SERVICE)
+    root = _configuration.service_url(_SERVICE)
 
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each handled by shared transport
     # pagination, and concatenate the results.
-    headers = default_headers(service_url)
+    headers = default_headers(root)
     requests = [
         httpx.Request(
             "GET",
-            service_url,
+            root,
             params={**base_params, "location": location},
             headers=headers,
         )
         for location in _resolve_locations(state, county, huc)
     ]
-    return _fan_out(requests, headers, ssl_check, host=httpx.URL(service_url).host)
+    return _fan_out(requests, headers, ssl_check, host=httpx.URL(root).host)
 
 
 # Valid HUC code lengths (digits) → the hydrologic-unit level they query.

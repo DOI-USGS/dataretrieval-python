@@ -13,10 +13,11 @@ Context
 
 An adapter tells shared code about its service in three unconnected ways.
 
-**A name.** Seven adapters pass a string such as ``adapter="waterdata"`` to
-configuration, retry policy, pagination, and fan-out -- about forty call sites,
-each spelling the name again. The same name is the key of the adapter's table
-in the configuration file and of its ``Configuration`` class.
+**A name.** Six adapters pass a string such as ``adapter="waterdata"`` to
+configuration, retry policy, pagination, and fan-out -- 18 call sites in 10
+files, each spelling the name again, plus the ``adapter`` attribute of each
+``Configuration`` class. The same name is the key of the adapter's table in the
+configuration file.
 
 **A URL.** Each adapter resolves its base URL from configuration in its own
 way, and Water Data alone has four APIs under one root: OGC API Features, a
@@ -99,8 +100,9 @@ Six abstractions, each answering one question:
 **An adapter declares one** ``Service`` **.** It holds the adapter's name and
 its default URL, and it is the only place the adapter writes either.
 Configuration and execution keep resolving settings by the service's name,
-because that is the key a configuration file uses; they receive it from the
-declaration, never as a literal.
+because that is the key a configuration file uses: they take ``service.name``,
+read from the declaration, never a literal. Only resolving the URL takes the
+value itself.
 
 **Each API an adapter calls is an** ``Endpoint`` **of its service.** An
 endpoint names its service, resolves its URL from configuration once when a
