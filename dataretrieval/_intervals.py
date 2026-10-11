@@ -26,27 +26,24 @@ class DateDialect:
     ----------
     params : frozenset[str]
         The parameters that carry a date range. The standard has one,
-        ``datetime``; an endpoint that filters other fields by date (Water Data's
-        ``time``, ``begin``, ``last_modified``) lists them all.
+        ``datetime``; an endpoint that filters other fields by date lists them
+        all.
     date_only_collections : frozenset[str]
         Collections whose dates are written as ``YYYY-MM-DD`` rather than as a
-        UTC datetime. This is a choice rather than a server restriction: Water
-        Data's ``daily`` accepts either, but its values are calendar days, and
-        a naive bound converted to UTC could move to the neighboring day.
+        UTC datetime, because their values are calendar days and a naive bound
+        converted to UTC could move to the neighboring day.
     timed_params : frozenset[str]
         Parameters written as a UTC datetime even in a date-only collection,
-        because they filter a timestamp (Water Data's ``last_modified``).
+        because they filter a timestamp.
     open_start : str
         How the open start of a range is written: ``".."`` (``"../2024-01-01"``,
         the default) or ``""`` (``"/2024-01-01"``). Both standards allow
-        either, but deployments differ. Observed 2026-10-11: Water Data OGC
-        answers the empty start with HTTP 400; the NGWMN and STAC firewalls
-        answer ``"../"`` with HTTP 403.
+        either, but deployments refuse one or the other; each declaration
+        records what its service was observed to refuse.
     durations : bool
         Whether a lone ISO 8601 duration (``"P7D"``, the last seven days) is
-        sent. Neither standard defines one, so the default is ``False`` and a
-        duration raises when the getter is called. Observed 2026-10-11: Water Data OGC
-        accepts it; NGWMN and STAC answer HTTP 400.
+        accepted. Neither standard defines one, so the default is ``False`` and
+        a duration raises when the getter is called.
     """
 
     params: frozenset[str] = frozenset({"datetime"})

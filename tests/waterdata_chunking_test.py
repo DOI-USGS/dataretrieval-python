@@ -157,7 +157,9 @@ def test_extract_axes_never_splits_a_date_range():
     parameter of its own."""
     args = {
         "monitoring_location_id": ["USGS-A", "USGS-B"],
-        "any_date_param": read_date_range(["2024-01-01", "2024-12-31"], durations=True),
+        "any_date_param": read_date_range(
+            ["2024-01-01", "2024-12-31"], name="time", durations=True
+        ),
     }
     assert [axis.arg_key for axis in _extract_axes(args)] == ["monitoring_location_id"]
 

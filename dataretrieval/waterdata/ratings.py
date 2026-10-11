@@ -42,7 +42,7 @@ __all__ = ["get_ratings"]
 # The STAC search's departures from the interval standard (ADR 0014). Its
 # firewall answers ``datetime=../2026-01-01T00:00:00Z`` with HTTP 403, and it
 # reads an empty start (``/2026-01-01T00:00:00Z``) as open; it refuses a lone
-# duration with HTTP 400, as the standard does.
+# duration with HTTP 400, as the standard does (observed 2026-10-11).
 STAC_DATES = DateDialect(open_start="")
 
 
@@ -91,7 +91,7 @@ def get_ratings(
         persisting the bytes to disk; ``df.attrs["url"]`` still records
         where each rating came from.
     time : string or list of strings, optional
-        STAC ``datetime`` filter (passed through verbatim under that name)
+        STAC ``datetime`` filter, sent as a UTC datetime or interval
         — a single date / datetime, an interval (``"start/end"``,
         optionally half-bounded with ``..``), or a list of two values
         with ``None`` for an open end (``["2026-04-29", None]``). A value

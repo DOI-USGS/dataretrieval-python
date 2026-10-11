@@ -253,9 +253,9 @@ Revisions:
   time. ``prepare_request_args`` reads every OGC date parameter into one when
   a getter is called, and drops a range whose bounds are all open, as it drops
   ``None``; ``get_ratings`` reads its ``time`` the same way. The OGC request
-  builder only writes the value. Error messages are unchanged; they are
-  raised when the getter is called rather than when the first request is
-  built.
+  builder only writes the value. Error messages are unchanged by this step;
+  they are raised when the getter is called rather than when the first
+  request is built.
 - *The shared interval grammar and* ``DateDialect``. ``dataretrieval._intervals``
   holds ``DateDialect`` and ``write_interval``, and sits below ``ogc`` because
   STAC is not OGC; ``ogc.dates`` is removed. ``DateDialect`` has five fields:
@@ -268,7 +268,12 @@ Revisions:
   protocol code decides from ``date_only_collections`` and ``timed_params``
   whether it writes date-only bounds, since only OGC has collections. The
   Samples and Statistics getters, which share Water Data's argument helper,
-  read no parameter as a date range. ``get_ratings`` builds an ``Endpoint`` whose dialect is a
+  read no parameter as a date range. Two messages change: the duration refusal
+  is one shared message naming the caller's argument (``get_ratings`` had its
+  own), and the "too many values" message offers a duration only where one is
+  accepted. A field's observed server behavior is recorded where the field is
+  set, in each adapter's declaration, since the type is shared code and names
+  no service. ``get_ratings`` builds an ``Endpoint`` whose dialect is a
   ``DateDialect`` alone; STAC has no other dialect fields. Live tests cover
   ``open_start`` and ``durations`` for each of the three endpoints.
   ``date_only_collections`` and ``timed_params`` have none: they record what a
@@ -287,4 +292,8 @@ Revisions:
   never split. ``tests/architecture_test.py`` fails if a string a shipped
   dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
   recorded deviations, only ``monitoring_location_id`` is such a literal, so
-  it is the one allowlisted entry.
+  it is the one allowlisted entry. ``cql2_collections`` has no live test: on
+  2026-10-11 a comma-joined GET returned the same rows as the CQL2 POST for
+  two ids on ``monitoring-locations`` and ``combined-metadata``, in v0 and
+  v1, so the behavior it records did not reproduce. Whether to keep the field
+  is left to a separate change.

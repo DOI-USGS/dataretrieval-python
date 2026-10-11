@@ -1160,16 +1160,6 @@ def test_read_date_range_names_the_callers_parameter():
         read_date_range({"2024-01-01": "ignored"}, name="time", durations=True)
 
 
-def test_read_date_range_rejects_mapping():
-    """`time={"2024-01-01": "x"}` would materialize as the keys list,
-    accepting input the user clearly didn't intend.
-    """
-    with pytest.raises(
-        TypeError, match="date input must be a date, a string, or a sequence"
-    ):
-        read_date_range({"2024-01-01": "ignored"}, durations=True)
-
-
 @pytest.mark.parametrize(
     "value, date, expected",
     [

@@ -124,7 +124,7 @@ def _read_bound(dt: DateLike, *, name: str) -> datetime | None:
 
 def _coerce_to_list(
     value: str | _date | Sequence[DateLike],
-    name: str = "date input",
+    name: str,
 ) -> list[DateLike]:
     """Normalize a date argument to a list of elements, raising on a mapping."""
     if isinstance(value, str) or not isinstance(value, Iterable):
@@ -146,9 +146,8 @@ def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
     means the same range as ``["2024-01-01T10:00:00", None]``.
 
     Raises ``ValueError`` naming *name* unless the string is two sides
-    separated by one ``"/"``, neither of them a duration: the Water Data and
-    NGWMN services answer ``"2024-01-01/P7D"`` and ``"P7D/2024-01-08"`` with
-    HTTP 400.
+    separated by one ``"/"``, neither of them a duration, which the services
+    this package reaches answer with HTTP 400.
     """
     sides = interval.split("/")
     if len(sides) != 2 or any(_DURATION_RE.match(side) for side in sides):
@@ -164,7 +163,7 @@ def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
 def read_date_range(
     value: str | _date | Sequence[DateLike] | None,
     *,
-    name: str = "date input",
+    name: str,
     durations: bool,
 ) -> DateRange | None:
     """Read a date argument as the caller meant it.
@@ -243,7 +242,7 @@ def _read_single(item: DateLike, *, name: str, durations: bool) -> DateRange:
     if isinstance(item, str) and _DURATION_RE.match(item):
         if not durations:
             raise ValueError(
-                f"{name} cannot be an ISO 8601 duration for this service: "
+                f"{name} cannot be an ISO 8601 duration for this API: "
                 f"{item!r}. Pass a start and an end instead, such as "
                 "['2024-01-01', '2024-01-08'], with None for an open end "
                 "(['2024-01-01', None])."

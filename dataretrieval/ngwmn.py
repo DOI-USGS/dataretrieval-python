@@ -95,7 +95,8 @@ _NGWMN_OUTPUT_ID = "id"
 # timestamped by ``sample_time`` (not the Water Data ``time``) and report
 # depths/levels in feet. Its firewall answers ``datetime=../2016-01-01`` with
 # HTTP 403, so an open start is sent empty (``/2016-01-01``), which it reads as
-# open; see ``DateDialect.open_start``.
+# open, and it answers a lone duration (``P7D``) with HTTP 400, so durations are
+# off, as in the standard (both observed 2026-10-11).
 NGWMN_DIALECT = OgcDialect(
     dates=DateDialect(open_start=""),
     shaping=ShapingDialect(
@@ -280,7 +281,8 @@ def get_water_level(
     datetime : str or iterable of str, optional
         Temporal filter — a single instant or a two-element ``[start, end]``
         range (ISO-8601 dates/datetimes); ``None`` or ``".."`` denotes an
-        open end.
+        open end. A duration such as ``"P7D"`` raises ``ValueError``, because
+        the service refuses one.
     properties : str or iterable of str, optional
         Subset of columns to return. ``None`` (default) returns all columns.
     limit : int, optional

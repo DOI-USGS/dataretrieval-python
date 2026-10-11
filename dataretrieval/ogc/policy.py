@@ -1,7 +1,8 @@
-"""Low-level OGC policy: the dialect type and control validation.
+"""Low-level OGC policy: the dialect types and control validation.
 
-This module is the one definition of the :class:`OgcDialect` type
-(per-API quirks the generic request builder needs) and OGC control validation.
+This module is the one definition of :class:`OgcDialect` (how an API departs
+from OGC API Features, read by the request builder and the result finalizer),
+its :class:`ShapingDialect` group, and OGC control validation.
 It depends only on the stdlib and the interval grammar's dialect type, so any
 OGC submodule can import it without creating cycles.
 

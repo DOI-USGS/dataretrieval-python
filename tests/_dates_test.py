@@ -31,12 +31,12 @@ UTC = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)
 def test_read_date_range_keeps_the_shape_the_caller_passed(value, expected):
     """An instant, a duration, and a range with open bounds stay distinct: a
     one-element instant is not a range with an open end."""
-    assert read_date_range(value, durations=True) == expected
+    assert read_date_range(value, name="time", durations=True) == expected
 
 
 @pytest.mark.parametrize("value", [None, pd.NaT, [None, ".."], "../.."])
 def test_read_date_range_returns_none_for_no_filter(value):
-    assert read_date_range(value, durations=True) is None
+    assert read_date_range(value, name="time", durations=True) is None
 
 
 def test_prepare_request_args_reads_date_arguments_on_entry():
@@ -57,4 +57,6 @@ def test_read_date_range_refuses_a_duration_where_none_is_accepted():
     the caller's argument; where durations are accepted it is kept as given."""
     with pytest.raises(ValueError, match=r"^time cannot be an ISO 8601 duration"):
         read_date_range("P7D", name="time", durations=False)
-    assert read_date_range("P7D", durations=True) == DateRange(duration="P7D")
+    assert read_date_range("P7D", name="time", durations=True) == DateRange(
+        duration="P7D"
+    )
