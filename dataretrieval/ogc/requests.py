@@ -1,7 +1,7 @@
 """OGC argument normalization and HTTP request construction.
 
-The API to target and its quirks are explicit parameters (``base_url``,
-``dialect``) -- construction takes everything it needs as parameters.
+The API to target and its quirks are one explicit parameter, the endpoint
+(ADR 0014) -- construction takes everything it needs as parameters.
 Queryables and schema execution are in :mod:`dataretrieval.ogc.schema` and are
 not re-exported here,
 so this module does not depend on the part of OGC that executes HTTP (ADR 0007).
@@ -12,13 +12,16 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Iterable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.transport.http import default_headers as _default_headers
+
+if TYPE_CHECKING:
+    from dataretrieval._service import Endpoint
+    from dataretrieval.ogc.policy import OgcDialect
 
 # ---------------------------------------------------------------------------
 # Monitoring location ID validation
@@ -163,19 +166,16 @@ def _construct_api_requests(
     limit: int | None = None,
     skip_geometry: bool | None = None,
     *,
-    base_url: str,
-    dialect: OgcDialect | None = None,
+    endpoint: Endpoint[OgcDialect],
     **kwargs: Any,
 ) -> httpx.Request:
     """Construct an HTTP request object for the specified OGC API collection.
 
-    ``base_url`` is required: this package is API-neutral and names no API of
-    its own, so the adapter naming the collection also names the API it targets.
-    ``dialect`` defaults to a plain OGC API with no per-collection quirks.
+    ``endpoint`` is required: this package names no API of its own, so the
+    adapter naming the collection also names the API it targets.
     """
-    service_url = _items_url(collection, base_url)
-    if dialect is None:
-        dialect = DEFAULT_DIALECT
+    service_url = _items_url(collection, endpoint.url)
+    dialect = endpoint.dialect
     for key in _DATE_RANGE_PARAMS:
         if key in kwargs:
             kwargs[key] = _format_api_dates(
@@ -224,8 +224,7 @@ def _construct_cql_request(
 ) -> httpx.Request:
     """Build a POST/CQL2 request from a verbatim CQL2 body.
 
-    ``base_url`` is required for the same reason as in
-    :func:`_construct_api_requests`.
+    ``base_url`` is required: this package names no API of its own.
     """
     service_url = _items_url(collection, base_url)
     params = _ogc_query_params(

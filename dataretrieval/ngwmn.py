@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
-from dataretrieval._service import Service
+from dataretrieval._service import Endpoint, Service
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -115,13 +115,12 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
-        # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
-        # this service's own base. Read here because this is the one place the
-        # NGWMN base is named (ADR 0011).
-        base_url=_configuration.service_url(_SERVICE),
+        # Built when the call starts, so an enclosing
+        # ``NgwmnConfiguration(base_url=...)`` applies (ADR 0011, ADR 0014).
+        endpoint=Endpoint(
+            _SERVICE, _configuration.service_url(_SERVICE), NGWMN_DIALECT
+        ),
         spatial=service == "sites",
-        dialect=NGWMN_DIALECT,
-        adapter=_SERVICE.name,
     )
 
 

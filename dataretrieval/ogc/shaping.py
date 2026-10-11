@@ -13,13 +13,16 @@ from __future__ import annotations
 import logging
 import re
 import warnings
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
+
+if TYPE_CHECKING:
+    from dataretrieval._service import Endpoint
+    from dataretrieval.ogc.policy import OgcDialect
 
 try:
     import geopandas as gpd
@@ -399,8 +402,7 @@ def _finalize_ogc(
     include_geometry: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
-    base_url: str,
+    endpoint: Endpoint[OgcDialect],
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
 
@@ -418,16 +420,15 @@ def _finalize_ogc(
     rather than only per-chunk, so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call applies the cap too. The
     per-page ``row_cap`` bound in the engine is only an early-stop download
-    bound. ``base_url`` is required and captured with the finalizer so resumed
-    calls query the same API's schema when their combined result is empty.
+    bound. ``endpoint`` is captured with the finalizer so resumed calls query
+    the same API's schema when their combined result is empty.
     """
-    if dialect is None:
-        dialect = DEFAULT_DIALECT
+    dialect = endpoint.dialect
     frame = _deal_with_empty(
         frame,
         properties,
         collection,
-        base_url=base_url,
+        base_url=endpoint.url,
         geopd=geopd,
         include_geometry=include_geometry,
     )

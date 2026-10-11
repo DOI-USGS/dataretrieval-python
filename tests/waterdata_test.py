@@ -15,6 +15,7 @@ from pandas import DataFrame
 
 import dataretrieval
 from dataretrieval import configuration
+from dataretrieval._service import Endpoint
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -45,6 +46,7 @@ from dataretrieval.waterdata import (
     get_stats_por,
     get_time_series_metadata,
 )
+from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
     OGC_API_URL,
@@ -76,7 +78,8 @@ _OGC_FIXTURES = json.loads(
 # the real Water Data behavior (monitoring-locations -> POST/CQL2; daily ->
 # date-only time args).
 _construct_api_requests = functools.partial(
-    _construct_api_requests_explicit, base_url=OGC_API_URL, dialect=WATERDATA_DIALECT
+    _construct_api_requests_explicit,
+    endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
 )
 _construct_cql_request = functools.partial(
     _construct_cql_request_explicit, base_url=OGC_API_URL

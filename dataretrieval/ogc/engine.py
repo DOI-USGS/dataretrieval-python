@@ -16,10 +16,9 @@ API-specific behavior is supplied by the caller:
 
 * ``output_id`` — the user-facing column the wire ``id`` is renamed to,
   passed explicitly (no collection map is defined here).
-* ``base_url`` — the OGC API base to target.
+* ``endpoint`` — the API to target, its service, and its
+  :class:`OgcDialect` (ADR 0014).
 * ``extra_id_cols`` — synthetic id columns to move to the end of a result.
-* ``dialect`` — an :class:`OgcDialect` describing which collections need
-  POST/CQL2 and which use date-only (vs. full datetime) time arguments.
 """
 
 from __future__ import annotations
@@ -37,7 +36,6 @@ import pandas as pd
 import dataretrieval.ogc.chunking as chunking
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
-    DEFAULT_DIALECT,
     OgcDialect,
     _require_positive_int,
 )
@@ -58,6 +56,7 @@ from dataretrieval.transport.retry import RetryPolicy
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
+    from dataretrieval._service import Endpoint
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -219,13 +218,11 @@ def get_ogc_data(
     collection: str,
     output_id: str,
     *,
-    base_url: str,
+    endpoint: Endpoint[OgcDialect],
     spatial: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
     cql_body: str | None = None,
-    adapter: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -249,10 +246,10 @@ def get_ogc_data(
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for few-request previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str
-        OGC API base URL to target. Required: this package is API-neutral and
-        names no API of its own, so each adapter passes its own base (e.g.
-        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``).
+    endpoint : Endpoint[OgcDialect]
+        The API to target, built by the adapter when the call starts: its URL,
+        the service whose settings apply, and how it departs from the standard
+        (ADR 0014). This package names no API of its own.
     spatial : bool
         Whether this collection's result contract includes feature geometry.
         The adapter supplies this semantic fact; ``skip_geometry`` and
@@ -260,9 +257,6 @@ def get_ogc_data(
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to move to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
-    dialect : OgcDialect, optional
-        Per-API request quirks (CQL2-only collections, date-only collections).
-        Defaults to a plain OGC API with neither.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
         building the query from ``args``. With a body, only the
@@ -291,8 +285,7 @@ def get_ogc_data(
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
-    if dialect is None:
-        dialect = DEFAULT_DIALECT
+    adapter = endpoint.service.name
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
@@ -329,8 +322,7 @@ def get_ogc_data(
         include_geometry=include_geometry,
         max_rows=max_rows,
         extra_id_cols=extra_id_cols,
-        dialect=dialect,
-        base_url=base_url,
+        endpoint=endpoint,
     )
 
     if cql_body is not None:
@@ -340,7 +332,7 @@ def get_ogc_data(
         req = _construct_cql_request(
             collection,
             cql_body,
-            base_url=base_url,
+            base_url=endpoint.url,
             properties=args.get("properties"),
             bbox=args.get("bbox"),
             limit=args.get("limit"),
@@ -372,9 +364,7 @@ def get_ogc_data(
     # rebuilds them through these same bound callables, so the values the
     # call was created with apply to every chunk — even a resume invoked long
     # after this function returned — without any ambient state to snapshot.
-    build_request = functools.partial(
-        _construct_api_requests, base_url=base_url, dialect=dialect
-    )
+    build_request = functools.partial(_construct_api_requests, endpoint=endpoint)
     fetch = functools.partial(
         _fetch_once,
         build_request=build_request,

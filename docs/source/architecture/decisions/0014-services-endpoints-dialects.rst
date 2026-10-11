@@ -105,9 +105,10 @@ read from the declaration, never a literal. Only resolving the URL takes the
 value itself.
 
 **Each API an adapter calls is an** ``Endpoint`` **of its service.** An
-endpoint names its service, resolves its URL from configuration once when a
-call starts -- so every chunk and a later resume use the same URL -- and carries
-the dialect of its protocol. Water Data is one service with four endpoints.
+endpoint names its service, its URL, and the dialect of its protocol. The
+adapter builds it when a call starts, from the configuration in effect, so
+every chunk and a later resume use the same URL. Water Data is one service with
+four endpoints.
 
 **A protocol is implemented as the standard is written.** Protocol code is
 functions that receive an endpoint. Each dialect field records one way an
@@ -134,9 +135,9 @@ interval grammar shared by OGC and STAC is written by one module, adjusted by a
 ``DateDialect``; another protocol writes the value in its own format.
 
 **Values are data; protocols and execution are functions.** ``Service``,
-``Endpoint``, and the dialect types are frozen dataclasses. They may resolve a
-URL from configuration; they do not send requests, and nothing subclasses them
-or a protocol's code. A method that sends requests, or an override, could
+``Endpoint``, and the dialect types are frozen dataclasses with no behavior.
+They do not send requests or read configuration, and nothing subclasses them or
+a protocol's code. A method that sends requests, or an override, could
 change behavior for one service without declaring a field, which is the problem
 this record exists to prevent.
 
@@ -159,8 +160,6 @@ Consequences
   evidence for each deviation.
 - Inside ``ogc``, one endpoint argument replaces the ``base_url``, ``dialect``,
   and ``adapter`` arguments that are passed together today.
-- Resolving a URL is the one behavior a value has. It only reads
-  configuration, so it cannot change what protocol code does with the URL.
 - A deviation the protocol code does not model needs a new field first. That
   costs one field and its default, deliberately.
 - Behavior change, when the date step lands: a lone duration sent to NGWMN
@@ -231,3 +230,11 @@ Revisions:
   nothing they read. ``configuration.service_url`` resolves a service's URL. The
   name check excludes ``__all__``, whose entries name modules that share a
   service's spelling.
+- *Endpoints for the OGC getters.* An endpoint holds a resolved URL rather than
+  a function that resolves one: the adapter builds it at the start of each
+  call, which gives the same once-per-call guarantee with no behavior in the
+  value. The OGC engine, request builder, and result finalizer take one
+  ``endpoint`` where they took ``base_url``, ``dialect``, and ``adapter``;
+  functions that need only the URL (schema and CQL requests) still take it
+  alone. ``DEFAULT_DIALECT`` is removed, since every call now supplies a
+  dialect through its endpoint.

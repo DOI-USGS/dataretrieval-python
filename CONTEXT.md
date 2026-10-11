@@ -266,8 +266,9 @@ roster. In code, `Service`.
 
 **Endpoint** — One API of a service, at one URL, speaking one protocol. Water
 Data is one service with four endpoints: OGC API Features, the ratings STAC
-catalog, Samples, and Statistics. An endpoint resolves its URL once when a call
-starts and carries its dialect.
+catalog, Samples, and Statistics. The adapter builds an endpoint when a call
+starts, so the URL it holds is the one in effect then; it also carries the
+dialect. In code, `Endpoint`.
 
 **Protocol** — The rules for talking to one kind of standard API, implemented
 once as functions that receive an endpoint: OGC API Features, or the ISO 8601

@@ -3,6 +3,7 @@ import datetime
 import functools
 import json
 import logging
+import re
 import warnings
 from unittest import mock
 
@@ -13,6 +14,7 @@ import pytest
 import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
+from dataretrieval._service import Endpoint, Service
 from dataretrieval.exceptions import (
     DataRetrievalError,
     HTTPError,
@@ -42,6 +44,7 @@ from dataretrieval.ogc.shaping import (
 )
 from dataretrieval.ogc.shaping import _finalize_ogc as _ogc_finalize
 from dataretrieval.waterdata import get_stats_date_range, get_stats_por
+from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
     _EXTRA_ID_COLS,
@@ -56,8 +59,7 @@ from dataretrieval.waterdata.utils import (
 _finalize_ogc = functools.partial(
     _ogc_finalize,
     extra_id_cols=_EXTRA_ID_COLS,
-    dialect=WATERDATA_DIALECT,
-    base_url=OGC_API_URL,
+    endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
     geopd=False,
     include_geometry=True,
 )
@@ -1581,3 +1583,63 @@ class TestOgcJsonErrorDetail:
 
         assert _json_error_detail(httpx.Response(400, json="just a string")) is None
         assert _json_error_detail(httpx.Response(400, json=[1, 2, 3])) is None
+
+
+def test_get_ogc_data_reads_everything_about_the_service_from_its_endpoint(
+    httpx_mock,
+):
+    """ADR 0014: an endpoint is all the OGC engine is told about a service. The
+    request goes to its URL, its dialect decides the request shape (a
+    ``cql2_services`` collection is POSTed), and settings resolve by its
+    service's name."""
+    import dataretrieval
+    from dataretrieval.ngwmn import NgwmnConfiguration
+    from dataretrieval.ogc.engine import get_ogc_data
+
+    endpoint = Endpoint(
+        Service("ngwmn", "https://unused.example"),
+        "https://mirror.example/ogc",
+        OgcDialect(cql2_services=frozenset({"things"})),
+    )
+    httpx_mock.add_response(
+        method="POST",
+        url=re.compile(r"^https://mirror\.example/ogc/collections/things/items"),
+        json={"type": "FeatureCollection", "features": [], "numberReturned": 0},
+    )
+    with dataretrieval.configure(NgwmnConfiguration(retries=0)):
+        df, _ = get_ogc_data(
+            {"properties": ["a"], "site": ["A", "B"]},
+            "things",
+            "thing_id",
+            endpoint=endpoint,
+            spatial=False,
+        )
+    assert df.empty
+    (request,) = httpx_mock.get_requests()
+    assert request.method == "POST"
+
+
+def test_a_resumed_call_keeps_the_url_its_endpoint_was_built_with(httpx_mock):
+    """The endpoint is built when the call starts (ADR 0014), so a call
+    interrupted inside a ``configure(base_url=...)`` block and resumed after the
+    block has exited still reaches the mirror it started on."""
+    import dataretrieval
+    from dataretrieval.interruptions import FanOutInterrupted
+    from dataretrieval.waterdata import WaterdataConfiguration, get_daily
+
+    mirror = re.compile(r"^https://mirror\.example/ogcapi/v1/collections/daily/items")
+    empty = {"type": "FeatureCollection", "features": [], "numberReturned": 0}
+    httpx_mock.add_response(url=mirror, status_code=429)
+    httpx_mock.add_response(url=mirror, json=empty)
+
+    with dataretrieval.configure(
+        WaterdataConfiguration(base_url="https://mirror.example")
+    ):
+        with pytest.raises(FanOutInterrupted) as excinfo:
+            get_daily(monitoring_location_id="USGS-01646500", properties=["value"])
+    excinfo.value.call.resume()
+
+    assert [r.url.host for r in httpx_mock.get_requests()] == [
+        "mirror.example",
+        "mirror.example",
+    ]

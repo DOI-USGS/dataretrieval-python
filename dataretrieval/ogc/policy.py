@@ -67,8 +67,3 @@ class OgcDialect:
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
-
-
-# Default dialect: a plain OGC API with no CQL2-only collections and no
-# date-only collections (every time argument rendered as a full UTC datetime).
-DEFAULT_DIALECT = OgcDialect()

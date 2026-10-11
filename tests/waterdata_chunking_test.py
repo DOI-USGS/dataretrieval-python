@@ -34,6 +34,7 @@ import pytest
 
 import dataretrieval
 from dataretrieval import configuration as _configuration
+from dataretrieval._service import Endpoint
 from dataretrieval.combining import (
     _QUOTA_HEADER,
     _combine_chunk_frames,
@@ -72,6 +73,7 @@ from dataretrieval.ogc.planning import (
     _request_bytes,
     _safe_request_bytes,
 )
+from dataretrieval.ogc.policy import OgcDialect
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
 )
@@ -84,12 +86,14 @@ from dataretrieval.transport.retry import (
     retry_async as _retry,
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
+from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.utils import OGC_API_URL
 
 # The joint-planner stress test uses the real request builder; bind the
 # target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
 _construct_api_requests = functools.partial(
-    _construct_api_requests_explicit, base_url=OGC_API_URL
+    _construct_api_requests_explicit,
+    endpoint=Endpoint(SERVICE, OGC_API_URL, OgcDialect()),
 )
 
 

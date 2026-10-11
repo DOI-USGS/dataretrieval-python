@@ -7,21 +7,25 @@ from urllib.parse import parse_qs, urlsplit
 import pandas as pd
 import pytest
 
+from dataretrieval._service import Endpoint
 from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
     _quote_cql_str,
     _split_top_level_or,
 )
+from dataretrieval.ogc.policy import OgcDialect
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
 )
 from dataretrieval.waterdata import get_continuous
+from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.utils import OGC_API_URL
 
 # Bind the target API the way ``get_ogc_data`` does — explicitly — so the
 # direct construction tests below exercise the real builder.
 _construct_api_requests = functools.partial(
-    _construct_api_requests_explicit, base_url=OGC_API_URL
+    _construct_api_requests_explicit,
+    endpoint=Endpoint(SERVICE, OGC_API_URL, OgcDialect()),
 )
 
 

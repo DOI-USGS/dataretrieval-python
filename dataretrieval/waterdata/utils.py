@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
+from dataretrieval._service import Endpoint
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
@@ -271,19 +272,15 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        # The endpoint is resolved from the active ContextVar at request time;
-        # the documented ``OGC_API_URL`` constant remains the default-value
-        # compatibility path rather than a production request destination.
-        base_url=ogc_api_url(api_version=api_version),
+        # Built when the call starts, from the configuration in effect; the
+        # documented ``OGC_API_URL`` constant remains a default-value
+        # compatibility path, not a request destination (ADR 0014).
+        endpoint=Endpoint(
+            SERVICE, ogc_api_url(api_version=api_version), WATERDATA_DIALECT
+        ),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
         cql_body=cql_body,
-        # Which settings table these calls read. Declared here, in the one
-        # wrapper every Water Data getter goes through, rather than derived
-        # from ``base_url``: NGWMN is served from the same host, so a URL
-        # does not distinguish the two adapters (ADR 0010).
-        adapter=SERVICE.name,
     )
 
 

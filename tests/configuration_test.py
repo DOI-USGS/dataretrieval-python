@@ -1295,15 +1295,20 @@ def test_every_adapter_is_actually_wired_to_a_read_site():
 
     root = pathlib.Path(configuration.__file__).parent
     # Each adapter declares its service once (ADR 0014) and reads the name from
-    # that declaration, so a read site is ``adapter=<declaration>.name`` in the
-    # adapter's own module or package.
+    # that declaration, so a read site is ``adapter=<declaration>.name`` or an
+    # ``Endpoint(<declaration>, ...)`` in the adapter's own module or package.
     declared = re.compile(r'(_?SERVICE) = Service\("([a-z]+)"')
     missing = list(configuration.ADAPTERS)
     for path in root.rglob("*.py"):
         for variable, name in declared.findall(path.read_text(encoding="utf-8")):
             scope = path.parent.glob("*.py") if path.parent != root else [path]
             source = "\n".join(p.read_text(encoding="utf-8") for p in scope)
-            if f"adapter={variable}.name" in source and name in missing:
+            reads = (
+                f"adapter={variable}.name",
+                f"Endpoint(\n            {variable},",
+                f"Endpoint({variable},",
+            )
+            if any(r in source for r in reads) and name in missing:
                 missing.remove(name)
     assert not missing, (
         f"adapters with a schema but no read site: {missing}. Either pass "
