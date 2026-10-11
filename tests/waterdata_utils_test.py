@@ -1023,21 +1023,14 @@ def test_format_api_dates_formats_an_interval_string_like_the_pair(
     "interval, date, expected",
     [
         ("2018-02-12T19:20:50-04:00/..", False, "2018-02-12T23:20:50Z/.."),
-        (
-            "2024-01-01T10:00:00Z/2024-02-01T00:00:00Z",
-            True,
-            "2024-01-01/2024-02-01",
-        ),
-        ("2024-01-01T10:00:00+02:00/PT36H", False, "2024-01-01T08:00:00Z/PT36H"),
-        ("P7D/2024-01-08T00:00:00Z", True, "P7D/2024-01-08"),
+        ("2024-01-01T10:00:00Z/2024-02-01T00:00:00Z", True, "2024-01-01/2024-02-01"),
     ],
-    ids=["offset_to_utc", "date_only", "start_duration", "duration_end"],
+    ids=["offset_to_utc", "date_only"],
 )
 def test_format_api_dates_formats_each_side_of_an_interval_string(
     interval, date, expected
 ):
-    """Each side is formatted on its own; an ISO 8601 duration paired with an
-    instant is kept unchanged."""
+    """Each side is formatted on its own, as a list element is."""
     assert _format_api_dates(interval, date=date) == expected
 
 
@@ -1052,17 +1045,18 @@ def test_format_api_dates_treats_an_all_open_interval_string_as_no_filter():
         ("not-a-date/also-bad", "time could not be read as a date or datetime"),
         ("2024-01-01/tomorrow", "time could not be read as a date or datetime"),
         ("2024-01-01/2024-02-01/2024-03-01", "time is not a valid interval"),
-        ("P7D/P1D", "time is not a valid interval"),
+        # The Water Data and NGWMN services answer a duration side with HTTP 400.
+        ("2024-01-01T10:00:00Z/PT36H", "time is not a valid interval"),
+        ("P7D/2024-01-08", "time is not a valid interval"),
         ("P7D/..", "time is not a valid interval"),
-        ("../P7D", "time is not a valid interval"),
     ],
     ids=[
         "both_sides",
         "one_side",
         "three_sides",
-        "two_durations",
+        "start_duration",
+        "duration_end",
         "duration_open_end",
-        "open_start_duration",
     ],
 )
 def test_format_api_dates_rejects_an_unreadable_interval_string(interval, message):

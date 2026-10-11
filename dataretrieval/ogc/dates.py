@@ -115,40 +115,26 @@ def _coerce_to_list(
     return list(datetime_input)
 
 
-def _is_passthrough(single: str) -> bool:
-    """True when a single-element input should be returned as-is."""
-    return bool(_DURATION_RE.match(single))
+def _split_interval(interval: str, *, name: str) -> list[str | None]:
+    """Split a ``"start/end"`` string into the two-value list form.
 
-
-def _format_interval(interval: str, *, date: bool, name: str) -> str | None:
-    """Format each side of a pre-formatted ``"start/end"`` interval string.
-
-    Each side is formatted like an element of the two-value list form, so
+    Each side is then formatted like a list element, so
     ``"2024-01-01T10:00:00/.."`` sends the same range as
-    ``["2024-01-01T10:00:00", None]``. One side may instead be an ISO 8601
-    duration paired with an instant (``"2024-01-01/P7D"``), which is kept
-    unchanged. Returns None when both sides are open.
+    ``["2024-01-01T10:00:00", None]``.
 
-    Raises ``ValueError`` naming *name* when the string is not two sides
-    separated by one ``"/"``, or a side cannot be read.
+    Raises ``ValueError`` naming *name* unless the string is two sides
+    separated by one ``"/"``, neither of them a duration: the Water Data and
+    NGWMN services answer ``"2024-01-01/P7D"`` and ``"P7D/2024-01-08"`` with
+    HTTP 400.
     """
     sides = interval.split("/")
-    durations = [bool(_DURATION_RE.match(side)) for side in sides]
-    if len(sides) != 2 or (
-        any(durations) and (all(durations) or any(_is_blank(s) for s in sides))
-    ):
+    if len(sides) != 2 or any(_DURATION_RE.match(side) for side in sides):
         raise ValueError(
             f"{name} is not a valid interval: {interval!r}. Pass a start and "
             "an end separated by '/', such as '2024-01-01/2024-12-31', with "
             "'..' for an open end ('2024-01-01/..')."
         )
-    formatted = [
-        side if is_duration else _format_one(side, date=date, name=name)
-        for side, is_duration in zip(sides, durations, strict=True)
-    ]
-    if formatted == [_OPEN_BOUND, _OPEN_BOUND]:
-        return None
-    return "/".join(formatted)
+    return [sides[0], sides[1]]
 
 
 def _all_blank(items: list[str | None]) -> bool:
@@ -215,9 +201,9 @@ def _format_api_dates(
       is blank/NA/``".."``.
     - Supports ISO 8601 durations such as "P7D" and "PT36H", which are passed
       through unchanged.
-    - A single string containing ``"/"`` is an interval: each side is formatted
-      like an element of the two-value form, and may also be an ISO 8601
-      duration paired with an instant (``"2024-01-01/P7D"``).
+    - A single string containing ``"/"`` is an interval: it is split into the
+      two-value form, so ``"2024-01-01/.."`` and ``["2024-01-01", None]`` are
+      formatted alike. A duration is not accepted as either side.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
       `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
       converted from that offset to UTC; naive inputs are interpreted in the
@@ -227,6 +213,8 @@ def _format_api_dates(
         return None
 
     items = _coerce_to_list(datetime_input, name)
+    if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
+        items = _split_interval(items[0], name=name)
 
     if _all_blank(items):
         return None
@@ -238,11 +226,8 @@ def _format_api_dates(
             "or two for a closed interval ('2020-01-01', '2020-12-31')."
         )
 
-    if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
-        return _format_interval(items[0], date=date, name=name)
-
-    # Pass through duration ("P7D", "PT36H")
-    if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
+    # Pass through a duration ("P7D", "PT36H")
+    if len(items) == 1 and isinstance(items[0], str) and _DURATION_RE.match(items[0]):
         return items[0]
 
     return "/".join(_format_one(dt, date=date, name=name) for dt in items)
