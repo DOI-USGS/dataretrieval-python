@@ -104,7 +104,7 @@ because that is the key a configuration file uses: they take ``service.name``,
 read from the declaration, never a literal. Only resolving the URL takes the
 value itself.
 
-**Each API an adapter calls is an** ``Endpoint`` **of its service.** An
+**Each API protocol code reaches is an** ``Endpoint`` **of its service.** An
 endpoint names its service, its URL, and the dialect of its protocol. The
 adapter builds it when a call starts, from the configuration in effect, so
 every chunk and a later resume use the same URL. Water Data is one service with
@@ -238,3 +238,11 @@ Revisions:
   functions that need only the URL (schema and CQL requests) still take it
   alone. ``DEFAULT_DIALECT`` is removed, since every call now supplies a
   dialect through its endpoint.
+- *Endpoints for the remaining adapters* -- not built. An ``Endpoint`` value
+  exists only where protocol code receives one, because its point is to carry a
+  dialect to code shared between endpoints. WQP, NLDI, NWDC, StreamStats, and
+  Water Data's Samples and Statistics APIs have no protocol module, so an
+  endpoint there would carry no dialect and be read only for its URL, which
+  ``configuration.service_url`` and ``waterdata.endpoints`` already resolve. They
+  are still endpoints in the glossary's sense. The STAC ratings search gets an
+  ``Endpoint`` with the interval grammar, where its ``DateDialect`` is read.
