@@ -34,6 +34,7 @@ from dataretrieval.waterdata.endpoints import (
     _DEFAULT_BASE_URL,
     _DEFAULT_OGC_API_URL,
     _DEFAULT_SAMPLES_URL,
+    SERVICE,
     ogc_api_url,
 )
 
@@ -282,7 +283,7 @@ def get_ogc_data(
         # wrapper every Water Data getter goes through, rather than derived
         # from ``base_url``: NGWMN is served from the same host, so a URL
         # does not distinguish the two adapters (ADR 0010).
-        adapter="waterdata",
+        adapter=SERVICE.name,
     )
 
 

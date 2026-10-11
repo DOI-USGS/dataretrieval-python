@@ -218,3 +218,14 @@ Implementation steps, each its own pull request: declare a ``Service`` per
 adapter; endpoints for the OGC getters; endpoints for the remaining adapters;
 the package-wide date range; the shared interval grammar and ``DateDialect``;
 the OGC code naming nothing a dialect declares; acceptance.
+
+Revisions:
+
+- *Service declarations.* Each adapter declares its ``Service`` in the module
+  that owns its URL (Water Data's in ``waterdata.endpoints``, shared by its four
+  APIs). The type is a dependency-free leaf, ``dataretrieval._service``.
+  Configuration, execution, and the OGC code keep taking the service's *name*
+  rather than the value: settings are keyed by name, and a value would add
+  nothing they read. ``configuration.service_url`` resolves a service's URL. The
+  name check excludes ``__all__``, whose entries name modules that share a
+  service's spelling.

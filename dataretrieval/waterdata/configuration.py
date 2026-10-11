@@ -20,6 +20,7 @@ from dataretrieval.configuration import (
     _Retrying,
     _Versioned,
 )
+from dataretrieval.waterdata.endpoints import SERVICE
 
 __all__ = ["WaterdataConfiguration"]
 
@@ -71,7 +72,7 @@ class WaterdataConfiguration(
     # executed concurrently -- both fan-out settings. Each group declares the
     # setting itself once, in :mod:`dataretrieval.configuration`, which also
     # defines its grammar and its coercion.
-    adapter: ClassVar[str] = "waterdata"
+    adapter: ClassVar[str] = SERVICE.name
 
 
 _register(WaterdataConfiguration)

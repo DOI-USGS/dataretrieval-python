@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._service import Service
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -56,6 +57,9 @@ BASE_URL = WATERDATA_BASE_URL
 # The National Ground-Water Monitoring Network exposes its own OGC API at a
 # separate, unversioned base.
 NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
+
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("ngwmn", NGWMN_OGC_API_URL)
 
 # --- state-filter shim -------------------------------------------------------
 # NGWMN's collections expose different state queryables: ``sites`` filters on
@@ -114,10 +118,10 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
         # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
         # this service's own base. Read here because this is the one place the
         # NGWMN base is named (ADR 0011).
-        base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
+        base_url=_configuration.service_url(_SERVICE),
         spatial=service == "sites",
         dialect=NGWMN_DIALECT,
-        adapter="ngwmn",
+        adapter=_SERVICE.name,
     )
 
 
@@ -479,7 +483,7 @@ class NgwmnConfiguration(
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
-    adapter: ClassVar[str] = "ngwmn"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(NgwmnConfiguration)

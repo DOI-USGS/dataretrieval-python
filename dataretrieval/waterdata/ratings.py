@@ -32,7 +32,7 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.endpoints import ratings_catalog_url
+from dataretrieval.waterdata.endpoints import SERVICE, ratings_catalog_url
 
 __all__ = ["get_ratings"]
 
@@ -313,7 +313,7 @@ def _search(
         raise_for_status=_raise_for_non_200,
         client_options={"verify": ssl_check},
         service="ratings",
-        adapter="waterdata",
+        adapter=SERVICE.name,
     )
     # Every page frame is built with a ``feature`` column, and the combine
     # helpers preserve it, so the empty case needs no special branch.
@@ -438,12 +438,12 @@ def _download_all(
     FanOut(
         features,
         fetch,
-        RetryPolicy.from_configuration(adapter="waterdata"),
+        RetryPolicy.from_configuration(adapter=SERVICE.name),
         client_options={"verify": ssl_check},
         # No single URL expresses "all of these assets" -- the aggregate
         # reports the first, matching what a single-feature call would show.
         canonical_url=_asset_href(features[0]),
         service="ratings",
-        adapter="waterdata",
+        adapter=SERVICE.name,
     ).resume()
     return out

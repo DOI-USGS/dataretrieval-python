@@ -667,3 +667,75 @@ def test_adr_references_resolve_to_a_record() -> None:
     assert not dangling, "citations name no such decision record:\n  " + "\n  ".join(
         dangling
     )
+
+
+def _service_declarations() -> dict[str, list[Path]]:
+    """Each ``Service("name", ...)`` call in the package, by name."""
+    found: dict[str, list[Path]] = {}
+    for path in sorted(PACKAGE_ROOT.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "Service"
+                and node.args
+                and isinstance(node.args[0], ast.Constant)
+            ):
+                found.setdefault(node.args[0].value, []).append(path)
+    return found
+
+
+def test_service_names_are_written_only_where_declared() -> None:
+    """ADR 0014: an adapter declares its service once, and everything else reads
+    the name from that declaration. A name written as a literal anywhere else is
+    a second spelling of the declaration, which is how shared code ends up
+    naming a service. The configuration roster is the one other place, because
+    a file table must be validated before its adapter is imported."""
+    from dataretrieval._configuration_core import ADAPTERS
+
+    declarations = _service_declarations()
+    assert sorted(declarations) == sorted(ADAPTERS), (
+        "declare exactly one Service per configuration roster entry"
+    )
+    duplicated = {name: paths for name, paths in declarations.items() if len(paths) > 1}
+    assert not duplicated, f"a service is declared once: {duplicated}"
+
+    roster = PACKAGE_ROOT / "_configuration_core.py"
+    found = [
+        f"{path.relative_to(PACKAGE_ROOT)}:{line} {value!r}"
+        for path in sorted(PACKAGE_ROOT.rglob("*.py"))
+        if path != roster
+        for line, value in _code_string_literals(path)
+        if value in declarations and path not in declarations[value]
+    ]
+    assert not found, f"read the name from the service declaration: {found}"
+
+
+def _code_string_literals(path: Path) -> list[tuple[int, str]]:
+    """String constants in *path*, excluding docstrings and ``__all__``, whose
+    entries name modules and symbols rather than services."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    exports = {
+        id(element)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "__all__" for t in node.targets)
+        for element in ast.walk(node.value)
+    }
+    docstrings = exports | {
+        id(node.body[0].value)
+        for node in ast.walk(tree)
+        if isinstance(
+            node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+        )
+        and node.body
+        and isinstance(node.body[0], ast.Expr)
+        and isinstance(node.body[0].value, ast.Constant)
+    }
+    return [
+        (node.lineno, node.value)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and id(node) not in docstrings
+    ]

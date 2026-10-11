@@ -9,7 +9,12 @@ leaves: the credentials host and the configuration chain (ADR 0003).
 from __future__ import annotations
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._service import Service
 from dataretrieval.credentials import WATERDATA_BASE_URL
+
+#: The Water Data service (ADR 0014). Its OGC, Samples, Statistics, and STAC
+#: APIs are endpoints below this one root, resolved by the functions below.
+SERVICE = Service("waterdata", WATERDATA_BASE_URL)
 
 #: The version of the Water Data OGC API this release requests by default and
 #: shapes responses for.
@@ -34,8 +39,7 @@ _DEFAULT_SAMPLES_URL = f"{_DEFAULT_BASE_URL}{_SAMPLES_PATH}"
 
 def _endpoint(path: str) -> str:
     """Return *path* beneath the effective Water Data root for this call."""
-    root = _configuration.base_url(adapter="waterdata", default=WATERDATA_BASE_URL)
-    return f"{root}{path}"
+    return f"{_configuration.service_url(SERVICE)}{path}"
 
 
 def ogc_api_url(*, api_version: str | None = None) -> str:
@@ -52,7 +56,7 @@ def ogc_api_url(*, api_version: str | None = None) -> str:
     """
     if api_version is None:
         api_version = _configuration.api_version(
-            adapter="waterdata", default=OGC_API_VERSION
+            adapter=SERVICE.name, default=OGC_API_VERSION
         )
     return _endpoint(f"{_OGC_API_PATH}/{api_version}")
 
