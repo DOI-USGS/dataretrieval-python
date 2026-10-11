@@ -36,7 +36,12 @@ from dataretrieval.configuration import (
     _Retrying,
 )
 from dataretrieval.credentials import WATERDATA_BASE_URL
-from dataretrieval.ogc import OgcDialect, get_ogc_data, prepare_request_args
+from dataretrieval.ogc import (
+    OgcDialect,
+    ShapingDialect,
+    get_ogc_data,
+    prepare_request_args,
+)
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
@@ -92,16 +97,18 @@ _NGWMN_OUTPUT_ID = "id"
 # HTTP 403, so an open start is sent empty (``/2016-01-01``), which it reads as
 # open; see ``DateDialect.open_start``.
 NGWMN_DIALECT = OgcDialect(
-    time_cols=frozenset({"sample_time"}),
-    numerical_cols=frozenset(
-        {
-            "water_depth_below_land_surface_ft",
-            "water_level_above_site_datum_ft",
-            "water_level_above_navd88_ft",
-        }
-    ),
-    sort_cols=("sample_time", "monitoring_location_id"),
     dates=DateDialect(open_start=""),
+    shaping=ShapingDialect(
+        time_cols=frozenset({"sample_time"}),
+        numerical_cols=frozenset(
+            {
+                "water_depth_below_land_surface_ft",
+                "water_level_above_site_datum_ft",
+                "water_level_above_navd88_ft",
+            }
+        ),
+        sort_cols=("sample_time", "monitoring_location_id"),
+    ),
 )
 
 

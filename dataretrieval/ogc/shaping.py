@@ -22,7 +22,7 @@ from dataretrieval._response_metadata import BaseMetadata
 
 if TYPE_CHECKING:
     from dataretrieval._service import Endpoint
-    from dataretrieval.ogc.policy import OgcDialect
+    from dataretrieval.ogc.policy import OgcDialect, ShapingDialect
 
 try:
     import geopandas as gpd
@@ -274,7 +274,7 @@ def _arrange_cols(
     return df.loc[:, [col for col in local_properties if col in df.columns]]
 
 
-def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
+def _type_cols(df: pd.DataFrame, dialect: ShapingDialect) -> pd.DataFrame:
     """
     Casts columns into appropriate types per the API ``dialect``.
 
@@ -282,7 +282,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     ----------
     df : pd.DataFrame
         The input DataFrame.
-    dialect : OgcDialect
+    dialect : ShapingDialect
         Supplies ``time_cols`` / ``numerical_cols`` — which columns to
         coerce to datetime/numeric. The engine itself holds no API-specific column list.
 
@@ -336,7 +336,7 @@ def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> No
         )
 
 
-def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
+def _sort_rows(df: pd.DataFrame, dialect: ShapingDialect) -> pd.DataFrame:
     """
     Sorts rows by the API ``dialect``'s ``sort_cols`` (in priority order).
 
@@ -350,7 +350,7 @@ def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     ----------
     df : pd.DataFrame
         The input DataFrame.
-    dialect : OgcDialect
+    dialect : ShapingDialect
         Supplies ``sort_cols``.
 
     Returns
@@ -401,7 +401,6 @@ def _finalize_ogc(
     geopd: bool,
     include_geometry: bool,
     max_rows: int | None = None,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
     endpoint: Endpoint[OgcDialect],
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Shape a combined OGC result into the user-facing ``(df, md)``.
@@ -423,7 +422,7 @@ def _finalize_ogc(
     bound. ``endpoint`` is captured with the finalizer so resumed calls query
     the same API's schema when their combined result is empty.
     """
-    dialect = endpoint.dialect
+    dialect = endpoint.dialect.shaping
     frame = _deal_with_empty(
         frame,
         properties,
@@ -446,7 +445,7 @@ def _finalize_ogc(
         frame = frame.rename(columns=renames)
     if convert_type:
         frame = _type_cols(frame, dialect)
-    frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
+    frame = _arrange_cols(frame, properties, output_id, dialect.extra_id_cols)
     frame = _sort_rows(frame, dialect)
     if max_rows is not None:
         frame = frame.head(max_rows)

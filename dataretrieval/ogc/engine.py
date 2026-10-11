@@ -17,7 +17,6 @@ API-specific behavior is supplied by the caller:
   passed explicitly (no collection map is defined here).
 * ``endpoint`` — the API to target, its service, and its
   :class:`OgcDialect` (ADR 0014).
-* ``extra_id_cols`` — synthetic id columns to move to the end of a result.
 """
 
 from __future__ import annotations
@@ -220,7 +219,6 @@ def get_ogc_data(
     endpoint: Endpoint[OgcDialect],
     spatial: bool,
     max_rows: int | None = None,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
     cql_body: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
@@ -253,9 +251,6 @@ def get_ogc_data(
         Whether this collection's result contract includes feature geometry.
         The adapter supplies this semantic fact; ``skip_geometry`` and
         geopandas availability then select the concrete frame representation.
-    extra_id_cols : set or frozenset, optional
-        Synthetic id columns to move to the end of a result frame (see
-        :func:`_arrange_cols`). Defaults to an empty set.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
         building the query from ``args``. With a body, only the
@@ -320,7 +315,6 @@ def get_ogc_data(
         geopd=geopd,
         include_geometry=include_geometry,
         max_rows=max_rows,
-        extra_id_cols=extra_id_cols,
         endpoint=endpoint,
     )
 

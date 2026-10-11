@@ -132,7 +132,7 @@ raise states the problem and then the action that fixes it, in that order.
   wrote `None` into the URL and returned an empty frame. Run the corrected
   call against the real service; wording review does not catch these.
 - Shared checks take the caller's argument name. `_validate_data_source`,
-  `_format_api_dates`, and `require_one_of` all accept a `name=` so the subject
+  `read_date_range`, and `require_one_of` all accept a `name=` so the subject
   of the message is the argument that was passed. A helper that hard-codes
   one noun reports the wrong parameter the moment a second call site reuses it.
 - Prefer raising over returning something empty when the library cannot distinguish

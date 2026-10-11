@@ -39,30 +39,49 @@ def _require_positive_int(
 
 
 @dataclass(frozen=True)
-class OgcDialect:
-    """Per-API differences the generic request builder must handle.
+class ShapingDialect:
+    """How an API's results are shaped into a frame: the fields the result
+    finalizer reads together. Each default leaves the result as sent.
 
     Attributes
     ----------
-    cql2_services : frozenset[str]
-        Collections that don't accept comma-separated multi-value GET
-        parameters and so must be queried via POST with a CQL2 JSON body.
     time_cols : frozenset[str]
-        Result columns to coerce to datetime when ``convert_type`` is set. Empty by
-        default, so the generic engine holds no API-specific column list; each API
-        supplies its own.
+        Result columns to coerce to datetime when ``convert_type`` is set.
     numerical_cols : frozenset[str]
         Result columns to coerce to numeric when ``convert_type`` is set.
     sort_cols : tuple[str, ...]
         Columns to sort the combined result by, in priority order. Sorting
         is applied only when the first (primary) column is present; any
         later columns also present are added as secondary keys.
-    dates : DateDialect
-        How the API's date parameters are read and written (ADR 0014).
+    extra_id_cols : frozenset[str]
+        Synthetic per-record id columns, with no meaning to a user, moved to
+        the end of a result frame when ``properties`` was not given.
     """
 
-    cql2_services: frozenset[str] = field(default_factory=frozenset)
-    time_cols: frozenset[str] = field(default_factory=frozenset)
-    numerical_cols: frozenset[str] = field(default_factory=frozenset)
-    sort_cols: tuple[str, ...] = field(default_factory=tuple)
+    time_cols: frozenset[str] = frozenset()
+    numerical_cols: frozenset[str] = frozenset()
+    sort_cols: tuple[str, ...] = ()
+    extra_id_cols: frozenset[str] = frozenset()
+
+
+@dataclass(frozen=True)
+class OgcDialect:
+    """How one OGC API departs from OGC API Features (ADR 0014).
+
+    Each default is the standard, so ``OgcDialect()`` describes an API that
+    follows it.
+
+    Attributes
+    ----------
+    cql2_collections : frozenset[str]
+        Collections that don't accept comma-separated multi-value GET
+        parameters and so must be queried via POST with a CQL2 JSON body.
+    dates : DateDialect
+        How the API's date parameters are read and written.
+    shaping : ShapingDialect
+        How the API's results are shaped into a frame.
+    """
+
+    cql2_collections: frozenset[str] = frozenset()
     dates: DateDialect = field(default_factory=DateDialect)
+    shaping: ShapingDialect = field(default_factory=ShapingDialect)

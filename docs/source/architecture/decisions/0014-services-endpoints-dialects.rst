@@ -126,8 +126,9 @@ deviations. A comment may cite a service as evidence for why the code tolerates
 a variation; the behavior may not depend on which service it is.
 
 **Dialect fields are grouped by the code that reads them.** OGC's dialect has a
-date group, a request-construction group, and a result-shaping group. A group is
-created when one part of the code reads several fields together.
+date group and a result-shaping group; request construction reads one field,
+which stays on the dialect itself. A group is created when one part of the code
+reads several fields together.
 
 **A date range is read once, at the public boundary, and written by each
 protocol.** One package-wide value holds what the caller meant. The ISO 8601
@@ -271,3 +272,14 @@ Revisions:
   an empty start as open only before an RFC 3339 datetime
   (``/2026-01-01T00:00:00Z``); ``/2026-01-01`` is HTTP 400. ``get_ratings``
   always writes datetimes.
+- *The OGC code names nothing a dialect declares.* ``OgcDialect`` has the
+  date group, ``dates``, and the result-shaping group, ``shaping``
+  (``ShapingDialect``: ``time_cols``, ``numerical_cols``, ``sort_cols``, and
+  ``extra_id_cols``, which moved there from an argument of ``get_ogc_data``).
+  Request construction reads one field, ``cql2_collections`` (renamed from
+  ``cql2_services``), so it has no group of its own. The chunk planner lists
+  no date parameter: a date argument arrives as a ``DateRange``, which is
+  never split. ``tests/architecture_test.py`` fails if a string a shipped
+  dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
+  recorded deviations, only ``monitoring_location_id`` is such a literal, so
+  it is the one allowlisted entry.

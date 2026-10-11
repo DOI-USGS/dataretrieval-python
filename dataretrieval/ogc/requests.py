@@ -182,7 +182,7 @@ def _construct_api_requests(
             kwargs[key], dialect.dates, param=key, collection=collection
         )
     params, post_params = _partition_request_params(
-        kwargs, use_cql2=collection in dialect.cql2_services
+        kwargs, use_cql2=collection in dialect.cql2_collections
     )
 
     _ogc_query_params(
@@ -246,7 +246,7 @@ _NO_NORMALIZE_PARAMS = frozenset({"bbox"})
 
 def _normalize_str_iterable(
     value: str | Iterable[str] | None,
-    param_name: str = "value",
+    param_name: str,
 ) -> str | list[str] | None:
     """Validate that ``value`` is None, a string, or an iterable of strings."""
     if value is None:
@@ -271,7 +271,7 @@ def _normalize_str_iterable(
 
 def _as_str_list(
     value: str | Iterable[str] | None,
-    param_name: str = "value",
+    param_name: str,
 ) -> list[str] | None:
     """Normalize ``value`` to ``list[str]`` (``None`` passes through)."""
     normalized = _normalize_str_iterable(value, param_name)

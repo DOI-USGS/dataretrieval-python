@@ -34,7 +34,7 @@ from dataretrieval.ogc.errors import (
     _parse_retry_after,
     _raise_for_non_200,
 )
-from dataretrieval.ogc.policy import OgcDialect
+from dataretrieval.ogc.policy import OgcDialect, ShapingDialect
 from dataretrieval.ogc.schema import _check_ogc_requests
 from dataretrieval.ogc.shaping import (
     _arrange_cols,
@@ -48,7 +48,6 @@ from dataretrieval.waterdata import get_stats_date_range, get_stats_por
 from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.stats import _handle_nesting, get_data
 from dataretrieval.waterdata.utils import (
-    _EXTRA_ID_COLS,
     OGC_API_URL,
     WATERDATA_DIALECT,
     _flatten_queryables,
@@ -59,7 +58,6 @@ from dataretrieval.waterdata.utils import (
 # exercise the same result shape the typed getters produce.
 _finalize_ogc = functools.partial(
     _ogc_finalize,
-    extra_id_cols=_EXTRA_ID_COLS,
     endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
     geopd=False,
     include_geometry=True,
@@ -863,7 +861,7 @@ def test_arrange_cols_keeps_geometry_when_present():
 
 # --- _type_cols --------------------------------------------------------------
 
-_TYPING_DIALECT = OgcDialect(
+_TYPING_DIALECT = ShapingDialect(
     time_cols=frozenset({"time"}), numerical_cols=frozenset({"value"})
 )
 
@@ -1807,7 +1805,7 @@ def test_get_ogc_data_reads_everything_about_the_service_from_its_endpoint(
     endpoint = Endpoint(
         Service("ngwmn", "https://unused.example"),
         "https://mirror.example/ogc",
-        OgcDialect(cql2_services=frozenset({"things"})),
+        OgcDialect(cql2_collections=frozenset({"things"})),
     )
     httpx_mock.add_response(
         method="POST",

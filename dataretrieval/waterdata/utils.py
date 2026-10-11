@@ -27,7 +27,7 @@ from dataretrieval._intervals import DateDialect
 from dataretrieval._service import Endpoint
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
-from dataretrieval.ogc import OgcDialect, prepare_request_args
+from dataretrieval.ogc import OgcDialect, ShapingDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
 
 # Default endpoint constants remain at their documented compatibility paths.
@@ -80,13 +80,13 @@ _EXTRA_ID_COLS = frozenset(
 # ``combined-metadata`` don't interpret comma-separated GET params as multiple
 # values (they return empty results, so multi-value filters must POST CQL2 JSON),
 # ``daily`` renders its time arguments date-only (``YYYY-MM-DD``), and the
-# ``time_cols``/``numerical_cols``/``sort_cols`` are the Water-Data column
-# vocabulary used to coerce datetime/numeric columns and to sort results.
+# shaping fields are the Water-Data column vocabulary used to coerce
+# datetime/numeric columns, sort results, and move synthetic ids to the end.
 # ``construction_date`` is deliberately not a time column: the service sends it
 # as a string at day, month, or year precision (``19950812``, ``199508``,
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
-    cql2_services=frozenset({"combined-metadata", "monitoring-locations"}),
+    cql2_collections=frozenset({"combined-metadata", "monitoring-locations"}),
     dates=DateDialect(
         params=frozenset(
             {
@@ -103,28 +103,31 @@ WATERDATA_DIALECT = OgcDialect(
         timed_params=frozenset({"last_modified"}),
         durations=True,
     ),
-    time_cols=frozenset(
-        {
-            "begin",
-            "begin_utc",
-            "end",
-            "end_utc",
-            "last_modified",
-            "time",
-        }
+    shaping=ShapingDialect(
+        time_cols=frozenset(
+            {
+                "begin",
+                "begin_utc",
+                "end",
+                "end_utc",
+                "last_modified",
+                "time",
+            }
+        ),
+        numerical_cols=frozenset(
+            {
+                "altitude",
+                "altitude_accuracy",
+                "contributing_drainage_area",
+                "drainage_area",
+                "hole_constructed_depth",
+                "value",
+                "well_constructed_depth",
+            }
+        ),
+        sort_cols=("time", "monitoring_location_id"),
+        extra_id_cols=_EXTRA_ID_COLS,
     ),
-    numerical_cols=frozenset(
-        {
-            "altitude",
-            "altitude_accuracy",
-            "contributing_drainage_area",
-            "drainage_area",
-            "hole_constructed_depth",
-            "value",
-            "well_constructed_depth",
-        }
-    ),
-    sort_cols=("time", "monitoring_location_id"),
 )
 
 # The Water-Data-specific extras in addition to the engine's own no-normalize set
@@ -298,7 +301,6 @@ def get_ogc_data(
             SERVICE, ogc_api_url(api_version=api_version), WATERDATA_DIALECT
         ),
         spatial=spatial,
-        extra_id_cols=_EXTRA_ID_COLS,
         cql_body=cql_body,
     )
 

@@ -34,6 +34,7 @@ import pytest
 
 import dataretrieval
 from dataretrieval import configuration as _configuration
+from dataretrieval._dates import read_date_range
 from dataretrieval._service import Endpoint
 from dataretrieval.combining import (
     _QUOTA_HEADER,
@@ -65,7 +66,6 @@ from dataretrieval.ogc.chunking import (
 )
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
-    _NEVER_CHUNK,
     _OR_SEP,
     ChunkPlan,
     _extract_axes,
@@ -86,7 +86,7 @@ from dataretrieval.transport.retry import (
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
 from dataretrieval.waterdata.endpoints import SERVICE
-from dataretrieval.waterdata.utils import OGC_API_URL, WATERDATA_DIALECT
+from dataretrieval.waterdata.utils import OGC_API_URL
 
 # The joint-planner stress test uses the real request builder; bind the
 # target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
@@ -151,14 +151,15 @@ def _fake_build(*, base=200, **kwargs):
     return _FakeReq("x" * bytes_)
 
 
-def test_never_chunk_covers_all_date_range_params():
-    """Every parameter the Water Data dialect reads as a date range MUST be
-    excluded from chunking -- a range value isn't an enumerable set to split."""
-    missing = WATERDATA_DIALECT.dates.params - _NEVER_CHUNK
-    assert not missing, (
-        f"Date parameters not in _NEVER_CHUNK: {sorted(missing)}. "
-        "Add them to planning._NEVER_CHUNK."
-    )
+def test_extract_axes_never_splits_a_date_range():
+    """A date argument arrives as a ``DateRange``, so it is never an axis,
+    whatever the dialect names the parameter -- the planner lists no date
+    parameter of its own."""
+    args = {
+        "monitoring_location_id": ["USGS-A", "USGS-B"],
+        "any_date_param": read_date_range(["2024-01-01", "2024-12-31"]),
+    }
+    assert [axis.arg_key for axis in _extract_axes(args)] == ["monitoring_location_id"]
 
 
 def test_extract_axes_picks_up_list_dims_and_filter():
