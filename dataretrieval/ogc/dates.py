@@ -132,7 +132,8 @@ def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
         raise ValueError(
             f"{name} is not a valid interval: {interval!r}. Pass a start and "
             "an end separated by '/', such as '2024-01-01/2024-12-31', with "
-            "'..' for an open end ('2024-01-01/..')."
+            "'..' for an open end ('2024-01-01/..'). Neither side can be a "
+            "duration."
         )
     return sides[0], sides[1]
 
