@@ -19,7 +19,7 @@ import httpx
 import pandas as pd
 
 from dataretrieval._dates import read_date_range
-from dataretrieval._intervals import DateDialect, single_value_hint, write_interval
+from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval._service import Endpoint
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
@@ -189,10 +189,10 @@ def get_ratings(
     # applies to the search (ADR 0014).
     endpoint = Endpoint(SERVICE, ratings_catalog_url(), STAC_DATES)
     time_range = read_date_range(
-        time, name="time", single_value_hint=single_value_hint(endpoint.dialect)
+        time, name="time", durations=endpoint.dialect.durations
     )
     time_str = (
-        write_interval(time_range, endpoint.dialect, param="datetime", name="time")
+        write_interval(time_range, endpoint.dialect, date_only=False)
         if time_range is not None
         else None
     )

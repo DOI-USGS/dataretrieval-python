@@ -18,6 +18,7 @@ import pandas as pd
 
 from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.utils import (
+    _NO_DATES,
     _get_args,
     _with_state,
     get_ogc_data,
@@ -1044,6 +1045,7 @@ def get_stats_por(
     params = _get_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
+        dates=_NO_DATES,
     )
 
     return stats.get_data(
@@ -1191,6 +1193,7 @@ def get_stats_date_range(
     params = _get_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
+        dates=_NO_DATES,
     )
 
     return stats.get_data(

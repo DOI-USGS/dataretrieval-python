@@ -31,7 +31,7 @@ _DATETIME_FORMATS = (
 # Anchored to ``[Pp]\d`` so a normal word containing ``p`` (e.g. ``"Apr"``)
 # doesn't get mis-classified as an ISO 8601 duration; the optional ``T``
 # admits time-only forms like ``PT36H``.
-DURATION_RE = re.compile(r"^[Pp]T?\d")
+_DURATION_RE = re.compile(r"^[Pp]T?\d")
 
 
 # The ISO 8601 spelling of an open interval bound, as in ``"2024-01-01/.."``.
@@ -122,7 +122,7 @@ def _read_bound(dt: DateLike, *, name: str) -> datetime | None:
     return None if dt is None or _is_blank(dt) else _to_datetime(dt, name=name)
 
 
-def coerce_to_list(
+def _coerce_to_list(
     value: str | _date | Sequence[DateLike],
     name: str = "date input",
 ) -> list[DateLike]:
@@ -151,7 +151,7 @@ def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
     HTTP 400.
     """
     sides = interval.split("/")
-    if len(sides) != 2 or any(DURATION_RE.match(side) for side in sides):
+    if len(sides) != 2 or any(_DURATION_RE.match(side) for side in sides):
         raise ValueError(
             f"{name} is not a valid interval: {interval!r}. Pass a start and "
             "an end separated by '/', such as '2024-01-01/2024-12-31', with "
@@ -165,7 +165,7 @@ def read_date_range(
     value: str | _date | Sequence[DateLike] | None,
     *,
     name: str = "date input",
-    single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
+    durations: bool,
 ) -> DateRange | None:
     """Read a date argument as the caller meant it.
 
@@ -182,11 +182,10 @@ def read_date_range(
         The caller's own spelling of this argument, used as the subject of
         every message raised here, so a caller correcting the error edits an
         argument their getter accepts.
-    single_value_hint : str, optional
-        How the "too many values" message describes an acceptable single
-        value. Wording only: a getter that rejects some of the default's forms
-        (``get_ratings`` rejects durations) passes a hint naming only what it
-        accepts.
+    durations : bool
+        Whether the endpoint accepts a lone ISO 8601 duration; see
+        ``DateDialect.durations``. When it does not, a duration raises, and no
+        message offers one.
 
     Returns
     -------
@@ -197,15 +196,16 @@ def read_date_range(
     Raises
     ------
     ValueError
-        For more than two elements, an unreadable interval string, or an
-        element that is not blank and matches no supported format or type.
+        For more than two elements, an unreadable interval string, a duration
+        where *durations* is false, or an element that is not blank and matches
+        no supported format or type.
     TypeError
         For a mapping.
     """
     if value is None:
         return None
 
-    items = coerce_to_list(value, name)
+    items = _coerce_to_list(value, name)
     if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
         items = list(_split_interval(items[0], name=name))
 
@@ -213,17 +213,40 @@ def read_date_range(
         return None
 
     if len(items) > 2:
-        raise ValueError(
-            f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
-            f"Pass one value for {single_value_hint}, "
-            "or two for a closed interval ('2020-01-01', '2020-12-31')."
-        )
-
+        raise _too_many_values(items, name=name, durations=durations)
     if len(items) == 1:
-        (item,) = items
-        if isinstance(item, str) and DURATION_RE.match(item):
-            return DateRange(duration=item)
-        return DateRange(start=_read_bound(item, name=name), instant=True)
+        return _read_single(items[0], name=name, durations=durations)
     return DateRange(
         start=_read_bound(items[0], name=name), end=_read_bound(items[1], name=name)
     )
+
+
+def _too_many_values(
+    items: list[DateLike], *, name: str, durations: bool
+) -> ValueError:
+    """The error for more than two elements; it offers a duration only where
+    one is accepted."""
+    single = (
+        "an instant or a duration ('2020-01-01', 'P7D')"
+        if durations
+        else "an instant ('2020-01-01')"
+    )
+    return ValueError(
+        f"{name} takes at most 2 values, got {len(items)}: {items!r}. "
+        f"Pass one value for {single}, "
+        "or two for a closed interval ('2020-01-01', '2020-12-31')."
+    )
+
+
+def _read_single(item: DateLike, *, name: str, durations: bool) -> DateRange:
+    """One non-blank element: a duration, or an instant."""
+    if isinstance(item, str) and _DURATION_RE.match(item):
+        if not durations:
+            raise ValueError(
+                f"{name} cannot be an ISO 8601 duration for this service: "
+                f"{item!r}. Pass a start and an end instead, such as "
+                "['2024-01-01', '2024-01-08'], with None for an open end "
+                "(['2024-01-01', None])."
+            )
+        return DateRange(duration=item)
+    return DateRange(start=_read_bound(item, name=name), instant=True)

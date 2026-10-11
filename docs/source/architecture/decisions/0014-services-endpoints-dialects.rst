@@ -253,9 +253,9 @@ Revisions:
   time. ``prepare_request_args`` reads every OGC date parameter into one when
   a getter is called, and drops a range whose bounds are all open, as it drops
   ``None``; ``get_ratings`` reads its ``time`` the same way. The OGC request
-  builder writes the value with ``ogc.dates._format_date_range``. Error
-  messages are unchanged; they are raised when the getter is called rather
-  than when the first request is built.
+  builder only writes the value. Error messages are unchanged; they are
+  raised when the getter is called rather than when the first request is
+  built.
 - *The shared interval grammar and* ``DateDialect``. ``dataretrieval._intervals``
   holds ``DateDialect`` and ``write_interval``, and sits below ``ogc`` because
   STAC is not OGC; ``ogc.dates`` is removed. ``DateDialect`` has five fields:
@@ -263,7 +263,12 @@ Revisions:
   ``durations``, whose default is ``False`` because neither standard defines a
   lone duration. ``OgcDialect.dates`` holds the group, and
   ``prepare_request_args`` takes it, so the reading side knows which parameters
-  carry dates. ``get_ratings`` builds an ``Endpoint`` whose dialect is a
+  carry dates and whether a duration is accepted: an endpoint that refuses one
+  raises when the getter is called. ``write_interval`` never raises; the
+  protocol code decides from ``date_only_collections`` and ``timed_params``
+  whether it writes date-only bounds, since only OGC has collections. The
+  Samples and Statistics getters, which share Water Data's argument helper,
+  read no parameter as a date range. ``get_ratings`` builds an ``Endpoint`` whose dialect is a
   ``DateDialect`` alone; STAC has no other dialect fields. Live tests cover
   ``open_start`` and ``durations`` for each of the three endpoints.
   ``date_only_collections`` and ``timed_params`` have none: they record what a

@@ -467,6 +467,6 @@ def test_stac_date_dialect_matches_the_service():
     # open_start: the standard's "../" is refused; the empty start is read as open.
     end = DateRange(end=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc))
     assert status("../2026-01-01T00:00:00Z") == 403
-    assert status(write_interval(end, STAC_DATES, param="datetime")) == 200
+    assert status(write_interval(end, STAC_DATES, date_only=False)) == 200
     # durations=False: a lone duration is refused, so none is sent.
     assert status("P7D") == 400

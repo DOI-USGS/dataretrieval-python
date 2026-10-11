@@ -45,7 +45,7 @@ class DateDialect:
     durations : bool
         Whether a lone ISO 8601 duration (``"P7D"``, the last seven days) is
         sent. Neither standard defines one, so the default is ``False`` and a
-        duration raises before sending. Observed 2026-10-11: Water Data OGC
+        duration raises when the getter is called. Observed 2026-10-11: Water Data OGC
         accepts it; NGWMN and STAC answer HTTP 400.
     """
 
@@ -54,13 +54,6 @@ class DateDialect:
     timed_params: frozenset[str] = frozenset()
     open_start: str = OPEN_BOUND
     durations: bool = False
-
-
-def single_value_hint(dialect: DateDialect) -> str:
-    """How a "too many values" message describes one acceptable value."""
-    if dialect.durations:
-        return "an instant or a duration ('2020-01-01', 'P7D')"
-    return "an instant ('2020-01-01')"
 
 
 def _write_bound(bound: datetime | None, *, date: bool) -> str:
@@ -75,55 +68,28 @@ def _write_bound(bound: datetime | None, *, date: bool) -> str:
     return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def write_interval(
-    value: DateRange,
-    dialect: DateDialect,
-    *,
-    param: str,
-    collection: str | None = None,
-    name: str | None = None,
-) -> str:
-    """Write a date range as the endpoint's *param* expects it.
+def write_interval(value: DateRange, dialect: DateDialect, *, date_only: bool) -> str:
+    """Write a date range as the endpoint's date parameter expects it.
 
     Parameters
     ----------
     value : DateRange
         What the caller meant, as read by
-        :func:`~dataretrieval._dates.read_date_range`.
+        :func:`~dataretrieval._dates.read_date_range`, which refuses a duration
+        the dialect does not accept.
     dialect : DateDialect
-        The endpoint's date dialect.
-    param : str
-        The request parameter being written; decides, with *collection*,
-        whether its bounds are written date-only.
-    collection : str, optional
-        The collection the request targets, if any.
-    name : str, optional
-        The caller's spelling of the argument, the subject of the message when
-        a duration is refused. Defaults to *param*.
-
-    Raises
-    ------
-    ValueError
-        For a duration, unless the dialect allows durations.
+        The endpoint's date dialect; supplies ``open_start``.
+    date_only : bool
+        Write each bound as ``YYYY-MM-DD`` rather than as a UTC datetime. The
+        caller decides from ``date_only_collections`` and ``timed_params``.
     """
     if value.duration is not None:
-        if not dialect.durations:
-            raise ValueError(
-                f"{name or param} cannot be an ISO 8601 duration for this "
-                f"service: {value.duration!r}. Pass a start and an end instead, "
-                "such as ['2024-01-01', '2024-01-08'], with None for an open "
-                "end (['2024-01-01', None])."
-            )
         return value.duration
-    date = (
-        collection in dialect.date_only_collections
-        and param not in dialect.timed_params
-    )
     if value.instant:
-        return _write_bound(value.start, date=date)
+        return _write_bound(value.start, date=date_only)
     start = (
         dialect.open_start
         if value.start is None
-        else _write_bound(value.start, date=date)
+        else _write_bound(value.start, date=date_only)
     )
-    return f"{start}/{_write_bound(value.end, date=date)}"
+    return f"{start}/{_write_bound(value.end, date=date_only)}"

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import ast
 import configparser
+import dataclasses
 import functools
 import re
 import sys
@@ -756,8 +757,6 @@ _RECORDED_DEVIATIONS = frozenset({"monitoring_location_id"})
 
 def _declared_strings(value: object) -> set[str]:
     """Every string a dialect value lists, through nested groups."""
-    import dataclasses
-
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return set().union(
             *(
@@ -778,21 +777,16 @@ def test_protocol_code_names_nothing_a_dialect_declares() -> None:
     in protocol code is behavior that depends on which service it is, without
     a field saying so. The standard's own names (each field's default) are not
     deviations."""
-    from dataretrieval._intervals import DateDialect
     from dataretrieval.ngwmn import NGWMN_DIALECT
     from dataretrieval.ogc import OgcDialect
     from dataretrieval.waterdata.ratings import STAC_DATES
     from dataretrieval.waterdata.utils import WATERDATA_DIALECT
 
     declared = (
-        (
-            _declared_strings(WATERDATA_DIALECT)
-            | _declared_strings(NGWMN_DIALECT)
-            | _declared_strings(STAC_DATES)
-        )
-        - _declared_strings(OgcDialect())
-        - _declared_strings(DateDialect())
-    )
+        _declared_strings(WATERDATA_DIALECT)
+        | _declared_strings(NGWMN_DIALECT)
+        | _declared_strings(STAC_DATES)
+    ) - _declared_strings(OgcDialect())
     found = [
         f"{path.relative_to(PACKAGE_ROOT)}:{line} {value!r}"
         for path in _PROTOCOL_PATHS

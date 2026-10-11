@@ -914,24 +914,17 @@ def test_type_cols_warning_is_singular_for_one_value():
         _type_cols(df, _TYPING_DIALECT)
 
 
-# --- read_date_range, then _format_date_range -------------------------------
+# --- read_date_range, then write_interval -----------------------------------
 
 
 def _wire_dates(value, date=False, *, name="date input", open_start=".."):
     """Read a date argument and write it as an interval, as a getter and the
     request builder do in turn; ``None`` when there is no filter. ``date``
-    targets a date-only collection."""
-    read = read_date_range(value, name=name)
+    writes date-only bounds."""
+    read = read_date_range(value, name=name, durations=True)
     if read is None:
         return None
-    dialect = DateDialect(
-        date_only_collections=frozenset({"days"}),
-        open_start=open_start,
-        durations=True,
-    )
-    return write_interval(
-        read, dialect, param=name, collection="days" if date else "instants"
-    )
+    return write_interval(read, DateDialect(open_start=open_start), date_only=date)
 
 
 @pytest.mark.parametrize(
@@ -1105,7 +1098,7 @@ def test_read_date_range_rejects_an_unreadable_interval_string(interval, message
     reached the service. It is now rejected like an unreadable list element,
     naming the caller's argument."""
     with pytest.raises(ValueError, match=f"^{message}"):
-        read_date_range(interval, name="time")
+        read_date_range(interval, name="time", durations=True)
 
 
 @pytest.mark.parametrize(
@@ -1125,7 +1118,7 @@ def test_read_date_range_rejects_an_unreadable_bound(value):
     which the callers send as no filter at all. The message names the caller's
     argument and the bad value, and shows the forms that are accepted."""
     with pytest.raises(ValueError) as excinfo:
-        read_date_range(value, name="last_modified")
+        read_date_range(value, name="last_modified", durations=True)
     message = str(excinfo.value)
     assert message.startswith("last_modified could not be read as a date")
     assert "'2024-01-01'" in message
@@ -1137,21 +1130,21 @@ def test_read_date_range_rejects_more_than_two_values():
     values is a caller who meant something else, and the message says which
     shapes exist rather than truncating without an error."""
     with pytest.raises(ValueError) as excinfo:
-        read_date_range(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
+        read_date_range(
+            ["2024-01-01", "2024-06-01", "2024-12-31"], name="time", durations=True
+        )
     message = str(excinfo.value)
     assert "time takes at most 2 values, got 3" in message
     assert "closed interval" in message
 
 
 def test_the_duration_example_is_withheld_where_durations_are_rejected():
-    """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
+    """Where durations are refused (STAC, NGWMN), the message must not offer
     'P7D' on that path -- a caller following it would receive a second rejection."""
     with pytest.raises(ValueError) as allowed:
-        read_date_range(["a", "b", "c"], name="time")
+        read_date_range(["a", "b", "c"], name="time", durations=True)
     with pytest.raises(ValueError) as refused:
-        read_date_range(
-            ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
-        )
+        read_date_range(["a", "b", "c"], name="time", durations=False)
 
     assert "'P7D'" in str(allowed.value)
     assert "'P7D'" not in str(refused.value)
@@ -1164,7 +1157,7 @@ def test_read_date_range_names_the_callers_parameter():
     accepts, so correcting the argument the message named sent an
     unrecognized parameter."""
     with pytest.raises(TypeError, match="^time must be a date, a string"):
-        read_date_range({"2024-01-01": "ignored"}, name="time")
+        read_date_range({"2024-01-01": "ignored"}, name="time", durations=True)
 
 
 def test_read_date_range_rejects_mapping():
@@ -1174,7 +1167,7 @@ def test_read_date_range_rejects_mapping():
     with pytest.raises(
         TypeError, match="date input must be a date, a string, or a sequence"
     ):
-        read_date_range({"2024-01-01": "ignored"})
+        read_date_range({"2024-01-01": "ignored"}, durations=True)
 
 
 @pytest.mark.parametrize(
@@ -1251,7 +1244,7 @@ def test_read_date_range_rejects_other_types_naming_the_argument(value):
     inside the formatter; the message now names the caller's argument and the
     types it accepts."""
     with pytest.raises(ValueError) as excinfo:
-        read_date_range(value, name="time")
+        read_date_range(value, name="time", durations=True)
     message = str(excinfo.value)
     assert message.startswith("time could not be read as a date")
     assert "pandas.Timestamp" in message
@@ -1796,7 +1789,7 @@ def test_get_ogc_data_reads_everything_about_the_service_from_its_endpoint(
 ):
     """ADR 0014: an endpoint is all the OGC engine is told about a service. The
     request goes to its URL, its dialect decides the request shape (a
-    ``cql2_services`` collection is POSTed), and settings resolve by its
+    ``cql2_collections`` collection is POSTed), and settings resolve by its
     service's name."""
     import dataretrieval
     from dataretrieval.ngwmn import NgwmnConfiguration

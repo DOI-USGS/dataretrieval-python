@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 import httpx
 
 from dataretrieval._dates import read_date_range
-from dataretrieval._intervals import DateDialect, single_value_hint, write_interval
+from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval.transport.http import default_headers as _default_headers
 
 if TYPE_CHECKING:
@@ -177,10 +177,12 @@ def _construct_api_requests(
     """
     service_url = _items_url(collection, endpoint.url)
     dialect = endpoint.dialect
-    for key in dialect.dates.params & kwargs.keys():
-        kwargs[key] = write_interval(
-            kwargs[key], dialect.dates, param=key, collection=collection
+    dates = dialect.dates
+    for key in dates.params & kwargs.keys():
+        date_only = (
+            collection in dates.date_only_collections and key not in dates.timed_params
         )
+        kwargs[key] = write_interval(kwargs[key], dates, date_only=date_only)
     params, post_params = _partition_request_params(
         kwargs, use_cql2=collection in dialect.cql2_collections
     )
@@ -315,9 +317,7 @@ def _normalize_arg(
     if key == "properties":
         return _as_str_list(value, key)
     if key in dates.params:
-        return read_date_range(
-            value, name=key, single_value_hint=single_value_hint(dates)
-        )
+        return read_date_range(value, name=key, durations=dates.durations)
     if (
         key in no_normalize
         and isinstance(value, Iterable)
@@ -355,7 +355,7 @@ def prepare_request_args(
 
     args: dict[str, Any] = {}
     for k, v in local_vars.items():
-        if k in to_exclude or v is None:
+        if k in to_exclude:
             continue
         normalized = _normalize_arg(k, v, no_normalize, dates)
         if normalized is not None:

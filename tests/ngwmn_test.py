@@ -684,6 +684,6 @@ def test_date_dialect_matches_the_service():
     # open_start: the standard's "../" is refused; the empty start is read as open.
     end = DateRange(end=datetime.datetime(2016, 1, 1, tzinfo=datetime.timezone.utc))
     assert status("../2016-01-01T00:00:00Z") == 403
-    assert status(write_interval(end, NGWMN_DIALECT.dates, param="datetime")) == 200
+    assert status(write_interval(end, NGWMN_DIALECT.dates, date_only=False)) == 200
     # durations=False: a lone duration is refused, so none is sent.
     assert status("P7D") == 400

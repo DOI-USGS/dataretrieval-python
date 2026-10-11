@@ -15,11 +15,11 @@ from pandas import DataFrame
 
 import dataretrieval
 from dataretrieval import configuration
-from dataretrieval._dates import read_date_range
 from dataretrieval._service import Endpoint
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
+    prepare_request_args,
 )
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
@@ -50,6 +50,9 @@ from dataretrieval.waterdata import (
 from dataretrieval.waterdata.endpoints import SERVICE
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
+    _NO_NORMALIZE_PARAMS as _WATERDATA_NO_NORMALIZE,
+)
+from dataretrieval.waterdata.utils import (
     OGC_API_URL,
     WATERDATA_DIALECT,
     _get_args,
@@ -78,14 +81,14 @@ _OGC_FIXTURES = json.loads(
 # Do both here so the tests exercise the real Water Data behavior
 # (monitoring-locations -> POST/CQL2; daily -> date-only time args).
 def _construct_api_requests(collection, **kwargs):
-    for key in WATERDATA_DIALECT.dates.params & kwargs.keys():
-        read = read_date_range(kwargs.pop(key), name=key)
-        if read is not None:
-            kwargs[key] = read
     return _construct_api_requests_explicit(
         collection,
         endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
-        **kwargs,
+        **prepare_request_args(
+            kwargs,
+            dates=WATERDATA_DIALECT.dates,
+            extra_no_normalize=_WATERDATA_NO_NORMALIZE,
+        ),
     )
 
 
@@ -1939,7 +1942,9 @@ def test_ogc_date_dialect_matches_the_service():
 
     # open_start: the default ".." is accepted; the empty start is refused.
     end = DateRange(end=datetime.datetime(2024, 1, 3, tzinfo=datetime.timezone.utc))
-    assert status(write_interval(end, dates, param="time", collection="daily")) == 200
+    assert status(write_interval(end, dates, date_only=True)) == 200
     assert status("/2024-01-03") == 400
     # durations=True: a lone duration is accepted, so it is sent.
-    assert status(write_interval(DateRange(duration="P7D"), dates, param="time")) == 200
+    assert (
+        status(write_interval(DateRange(duration="P7D"), dates, date_only=False)) == 200
+    )

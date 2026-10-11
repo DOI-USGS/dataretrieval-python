@@ -223,7 +223,7 @@ def _arrange_cols(
     df: pd.DataFrame,
     properties: list[str] | None,
     output_id: str,
-    extra_id_cols: frozenset[str] | set[str] = frozenset(),
+    extra_id_cols: frozenset[str] = frozenset(),
 ) -> pd.DataFrame:
     """
     Rearranges and renames DataFrame columns per ``properties`` and the output id.
