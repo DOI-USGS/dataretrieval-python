@@ -20,7 +20,7 @@ import pandas as pd
 
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
-from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
+from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.ogc.requests import _check_monitoring_location_id
@@ -221,7 +221,10 @@ def _validate_time_no_duration(time: str | list[str] | None) -> None:
     """Raise ValueError if ``time`` contains an ISO 8601 duration."""
     if time is None:
         return
-    if any(_DURATION_RE.match(str(v)) for v in _as_list(time)):
+    # ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
+    # ``_as_list`` would try to iterate it.
+    values = _coerce_to_list(time, "time")
+    if any(isinstance(v, str) and _DURATION_RE.match(v) for v in values):
         raise ValueError(
             "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
             "for the rating-curve service. Provide a date or interval instead."
