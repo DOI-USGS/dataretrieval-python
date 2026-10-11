@@ -5,9 +5,9 @@ This module is the one definition of the :class:`OgcDialect` type
 It depends only on the stdlib, so any OGC submodule can import it without
 creating cycles.
 
-It names no endpoint: which API an OGC call targets is the *adapter's*
-policy, supplied per call as ``base_url``. A default here would
-direct every generic OGC caller to one API.
+It names no API: which one an OGC call targets is the *adapter's* policy,
+supplied per call as an endpoint (ADR 0014). A default here would direct every
+generic OGC caller to one API.
 
 It must not import engine, shaping, or any collection adapter.
 """
