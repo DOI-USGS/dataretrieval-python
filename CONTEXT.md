@@ -253,15 +253,32 @@ value. Where the distinction matters — reporting what a call will use
 
 ## Boundaries
 
-**Adapter** — A module owning one service's conventions: its URLs, parameters,
-error shapes, and response quirks. Adapters may use shared code; shared code
-may not reference adapters.
+**Adapter** — A module owning one service's conventions: its getters, public
+parameters, and their translation, error shapes, and response quirks. Adapters
+may use shared code; shared code may not reference adapters. An adapter
+declares its service, the endpoints it calls, and their dialects as values,
+and hands those to shared code (ADR 0014).
 
-**Dialect** — The per-API quirks the shared OGC code needs in order to
-serve two services from one code path: which collections must be POSTed as
-CQL2, which render dates date-only, which columns to coerce and sort by. An
-adapter supplies one and the shared code reads it, which is how protocol code
-stays free of service names.
+**Service declaration** — The value an adapter declares for its service: the
+name configuration resolves its settings by, and the URL a `base_url` setting
+replaces. The one place that name is written outside the configuration
+roster. In code, `Service`.
+
+**Endpoint** — One API of a service, at one URL, speaking one protocol. Water
+Data is one service with four endpoints: OGC API Features, the ratings STAC
+catalog, Samples, and Statistics. An endpoint resolves its URL once when a call
+starts and carries its dialect.
+
+**Protocol** — The rules for talking to one kind of standard API, implemented
+once as functions that receive an endpoint: OGC API Features, or the ISO 8601
+interval grammar OGC and STAC share. A protocol gets its own module only when
+two endpoints speak it.
+
+**Dialect** — How one endpoint departs from its protocol's standard, as data
+the protocol code reads. Each field is one extension, restriction, or renaming,
+and its default is the standard, so a default dialect describes an endpoint
+that follows the standard. Fields are grouped by the code that reads them; the
+date group, `DateDialect`, is shared by the protocols that write intervals.
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
 WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing
