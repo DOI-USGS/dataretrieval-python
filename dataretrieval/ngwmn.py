@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._intervals import DateDialect
 from dataretrieval._service import Endpoint, Service
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import (
@@ -89,7 +90,7 @@ _NGWMN_OUTPUT_ID = "id"
 # timestamped by ``sample_time`` (not the Water Data ``time``) and report
 # depths/levels in feet. Its firewall answers ``datetime=../2016-01-01`` with
 # HTTP 403, so an open start is sent empty (``/2016-01-01``), which it reads as
-# open.
+# open; see ``DateDialect.open_start``.
 NGWMN_DIALECT = OgcDialect(
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
@@ -100,7 +101,7 @@ NGWMN_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("sample_time", "monitoring_location_id"),
-    open_start="",
+    dates=DateDialect(open_start=""),
 )
 
 
@@ -113,7 +114,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = prepare_request_args(local_vars)
+    args = prepare_request_args(local_vars, dates=NGWMN_DIALECT.dates)
     return get_ogc_data(
         args,
         service,

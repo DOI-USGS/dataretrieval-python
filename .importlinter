@@ -27,6 +27,9 @@ layers =
     wateruse
     ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
     ogc
+; The ISO 8601 interval grammar is a protocol OGC shares with STAC, which is
+; not OGC, so it sits below ``ogc`` rather than inside it (ADR 0014).
+    _intervals
     utils
     _querying
     transport

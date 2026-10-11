@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
+from dataretrieval._intervals import DateDialect
 from dataretrieval._service import Endpoint
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
@@ -86,7 +87,22 @@ _EXTRA_ID_COLS = frozenset(
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
     cql2_services=frozenset({"combined-metadata", "monitoring-locations"}),
-    date_only_services=frozenset({"daily"}),
+    dates=DateDialect(
+        params=frozenset(
+            {
+                "datetime",
+                "last_modified",
+                "begin",
+                "begin_utc",
+                "end",
+                "end_utc",
+                "time",
+            }
+        ),
+        date_only_collections=frozenset({"daily"}),
+        timed_params=frozenset({"last_modified"}),
+        durations=True,
+    ),
     time_cols=frozenset(
         {
             "begin",
@@ -183,7 +199,10 @@ def _get_args(
     """
     _flatten_queryables(local_vars)
     args = prepare_request_args(
-        local_vars, exclude, extra_no_normalize=_NO_NORMALIZE_PARAMS
+        local_vars,
+        exclude,
+        dates=WATERDATA_DIALECT.dates,
+        extra_no_normalize=_NO_NORMALIZE_PARAMS,
     )
     for name in _JSON_ARRAY_PARAMS & args.keys():
         # An empty list is dropped from the request downstream, as for any filter.

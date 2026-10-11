@@ -118,8 +118,9 @@ Shared components
     ``planning`` determines chunk boundaries; ``chunking`` connects those plans
     to the shared fan-out executor and retains compatibility aliases;
     ``interruptions`` retains its deprecated public import path; and
-    ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
-    protocol concerns. The full runtime OGC graph, including the facade, is
+    ``shaping``, ``filters``, and ``errors`` isolate their named protocol
+    concerns. Date parameters are written by ``dataretrieval._intervals``, the
+    interval grammar OGC shares with STAC. The full runtime OGC graph, including the facade, is
     acyclic -- enforced by the package-wide fitness function in
     ``tests/architecture_test.py``.
 

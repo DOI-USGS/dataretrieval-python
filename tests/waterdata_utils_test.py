@@ -15,6 +15,7 @@ import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
 from dataretrieval._dates import read_date_range
+from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval._service import Endpoint, Service
 from dataretrieval.exceptions import (
     DataRetrievalError,
@@ -24,7 +25,6 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import ServiceInterrupted
-from dataretrieval.ogc.dates import _format_date_range
 from dataretrieval.ogc.engine import (
     _next_req_url,
     _walk_pages,
@@ -920,12 +920,20 @@ def test_type_cols_warning_is_singular_for_one_value():
 
 
 def _wire_dates(value, date=False, *, name="date input", open_start=".."):
-    """Read a date argument and write it for OGC, as a getter and the request
-    builder do in turn; ``None`` when there is no filter."""
+    """Read a date argument and write it as an interval, as a getter and the
+    request builder do in turn; ``None`` when there is no filter. ``date``
+    targets a date-only collection."""
     read = read_date_range(value, name=name)
     if read is None:
         return None
-    return _format_date_range(read, date=date, open_start=open_start)
+    dialect = DateDialect(
+        date_only_collections=frozenset({"days"}),
+        open_start=open_start,
+        durations=True,
+    )
+    return write_interval(
+        read, dialect, param=name, collection="days" if date else "instants"
+    )
 
 
 @pytest.mark.parametrize(

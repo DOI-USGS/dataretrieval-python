@@ -11,6 +11,7 @@ is marked ``live``: it asserts something about the *upstream* API that a mock
 cannot tell us, because the mock is what would need updating.
 """
 
+import datetime
 import re
 from urllib.parse import parse_qs, urlsplit
 
@@ -648,3 +649,41 @@ def test_state_queryables_still_diverge_upstream():
     providers_q = queryables("providers")
     assert "state_name" in sites_q and "state" not in sites_q, sites_q
     assert "state" in providers_q and "state_name" not in providers_q, providers_q
+
+
+def test_get_water_level_refuses_a_duration_before_sending(httpx_mock):
+    """NGWMN answers a lone duration with HTTP 400, so it raises locally."""
+    with pytest.raises(ValueError, match=r"^datetime cannot be an ISO 8601 duration"):
+        ngwmn.get_water_level(monitoring_location_id=_SITE, datetime="P7D")
+    assert httpx_mock.get_requests() == []
+
+
+@pytest.mark.live
+def test_date_dialect_matches_the_service():
+    """Each ``NGWMN_DIALECT.dates`` field against the running service: the
+    request the field prevents fails, and the one it produces succeeds.
+
+    Kept live on purpose: the 403 comes from a firewall the API does not
+    describe, so only the running service can show it has changed.
+    """
+    import httpx
+
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.ngwmn import NGWMN_DIALECT, NGWMN_OGC_API_URL
+    from dataretrieval.transport.http import default_headers
+
+    url = f"{NGWMN_OGC_API_URL}/collections/waterLevelObs/items"
+
+    def status(value):
+        params = {"monitoring_location_id": _OTHER_SITE, "limit": 1, "datetime": value}
+        return httpx.get(
+            url, params=params, headers=default_headers(url), timeout=60
+        ).status_code
+
+    # open_start: the standard's "../" is refused; the empty start is read as open.
+    end = DateRange(end=datetime.datetime(2016, 1, 1, tzinfo=datetime.timezone.utc))
+    assert status("../2016-01-01T00:00:00Z") == 403
+    assert status(write_interval(end, NGWMN_DIALECT.dates, param="datetime")) == 200
+    # durations=False: a lone duration is refused, so none is sent.
+    assert status("P7D") == 400

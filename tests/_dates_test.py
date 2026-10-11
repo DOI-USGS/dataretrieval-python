@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 
 from dataretrieval._dates import DateRange, read_date_range
+from dataretrieval._intervals import DateDialect
 from dataretrieval.ogc import prepare_request_args
 
 NAIVE = datetime.datetime(2024, 1, 1)  # noqa: DTZ001 -- a naive bound is the case
@@ -42,9 +43,10 @@ def test_prepare_request_args_reads_date_arguments_on_entry():
     """A getter's date arguments are read when it is called, so an unreadable
     one raises before any request is planned, and an all-open one is dropped
     like ``None``."""
+    dates = DateDialect(params=frozenset({"time", "last_modified"}))
     args = prepare_request_args(
-        {"time": ["2024-01-01", None], "last_modified": [None, ".."]}
+        {"time": ["2024-01-01", None], "last_modified": [None, ".."]}, dates=dates
     )
     assert args == {"time": DateRange(start=NAIVE)}
     with pytest.raises(ValueError, match="^time could not be read"):
-        prepare_request_args({"time": "yesterday"})
+        prepare_request_args({"time": "yesterday"}, dates=dates)

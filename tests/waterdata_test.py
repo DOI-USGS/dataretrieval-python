@@ -17,7 +17,6 @@ import dataretrieval
 from dataretrieval import configuration
 from dataretrieval._dates import read_date_range
 from dataretrieval._service import Endpoint
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -79,7 +78,7 @@ _OGC_FIXTURES = json.loads(
 # Do both here so the tests exercise the real Water Data behavior
 # (monitoring-locations -> POST/CQL2; daily -> date-only time args).
 def _construct_api_requests(collection, **kwargs):
-    for key in _DATE_RANGE_PARAMS & kwargs.keys():
+    for key in WATERDATA_DIALECT.dates.params & kwargs.keys():
         read = read_date_range(kwargs.pop(key), name=key)
         if read is not None:
             kwargs[key] = read
@@ -1915,3 +1914,32 @@ def test_get_reference_table_docstring_lists_every_collection():
     doc = get_reference_table.__doc__ or ""
     missing = [c for c in get_args(METADATA_COLLECTIONS) if f'"{c}"' not in doc]
     assert not missing, f"collections served but undocumented: {missing}"
+
+
+@pytest.mark.live
+def test_ogc_date_dialect_matches_the_service():
+    """The ``WATERDATA_DIALECT.dates`` fields that record server behavior,
+    against the running API: it accepts the request each field produces and
+    refuses the one ``open_start`` prevents."""
+    import httpx
+
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.transport.http import default_headers
+    from dataretrieval.waterdata.endpoints import ogc_api_url
+
+    url = f"{ogc_api_url()}/collections/daily/items"
+    dates = WATERDATA_DIALECT.dates
+
+    def status(value):
+        params = {"monitoring_location_id": "USGS-05427718", "limit": 1, "time": value}
+        return httpx.get(
+            url, params=params, headers=default_headers(url), timeout=60
+        ).status_code
+
+    # open_start: the default ".." is accepted; the empty start is refused.
+    end = DateRange(end=datetime.datetime(2024, 1, 3, tzinfo=datetime.timezone.utc))
+    assert status(write_interval(end, dates, param="time", collection="daily")) == 200
+    assert status("/2024-01-03") == 400
+    # durations=True: a lone duration is accepted, so it is sent.
+    assert status(write_interval(DateRange(duration="P7D"), dates, param="time")) == 200

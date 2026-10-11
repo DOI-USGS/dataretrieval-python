@@ -63,7 +63,6 @@ from dataretrieval.ogc.chunking import (
     multi_value_chunked,
     parallel_chunks,
 )
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
@@ -87,7 +86,7 @@ from dataretrieval.transport.retry import (
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
 from dataretrieval.waterdata.endpoints import SERVICE
-from dataretrieval.waterdata.utils import OGC_API_URL
+from dataretrieval.waterdata.utils import OGC_API_URL, WATERDATA_DIALECT
 
 # The joint-planner stress test uses the real request builder; bind the
 # target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
@@ -153,17 +152,12 @@ def _fake_build(*, base=200, **kwargs):
 
 
 def test_never_chunk_covers_all_date_range_params():
-    """``_NEVER_CHUNK`` and ``_DATE_RANGE_PARAMS`` are maintained in
-    separate modules (chunker vs request builder) for layering reasons,
-    but every date-range param MUST be excluded from chunking — a
-    range value isn't an enumerable set to split. Guard against drift:
-    adding a new param to ``_DATE_RANGE_PARAMS`` without also adding
-    it to ``_NEVER_CHUNK`` would let the chunker try to
-    comma-join an interval string."""
-    missing = _DATE_RANGE_PARAMS - _NEVER_CHUNK
+    """Every parameter the Water Data dialect reads as a date range MUST be
+    excluded from chunking -- a range value isn't an enumerable set to split."""
+    missing = WATERDATA_DIALECT.dates.params - _NEVER_CHUNK
     assert not missing, (
-        f"_DATE_RANGE_PARAMS contains entries not in _NEVER_CHUNK: "
-        f"{sorted(missing)}. Add them to planning._NEVER_CHUNK."
+        f"Date parameters not in _NEVER_CHUNK: {sorted(missing)}. "
+        "Add them to planning._NEVER_CHUNK."
     )
 
 

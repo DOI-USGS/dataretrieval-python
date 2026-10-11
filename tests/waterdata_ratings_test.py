@@ -44,8 +44,9 @@ def test_get_ratings_rejects_invalid_file_type():
 
 
 def test_get_ratings_rejects_iso_8601_duration_in_time():
-    """STAC ratings doesn't accept ISO 8601 durations; raise a clear error."""
-    with pytest.raises(ValueError, match=r"durations.*not supported"):
+    """STAC answers a lone duration with HTTP 400, so it raises before sending,
+    naming the caller's argument rather than the wire's ``datetime``."""
+    with pytest.raises(ValueError, match=r"^time cannot be an ISO 8601 duration"):
         get_ratings(
             monitoring_location_id="USGS-01104475",
             time="P7D",
@@ -438,3 +439,34 @@ def test_stac_next_link_strips_embedded_credentials(httpx_mock):
     followed = httpx_mock.get_requests()[1]
     assert followed.url.userinfo == b""
     assert followed.headers.get("Authorization") is None
+
+
+@pytest.mark.live
+def test_stac_date_dialect_matches_the_service():
+    """Each ``STAC_DATES`` field against the running search: the request the
+    field prevents fails, and the one it produces succeeds. The 403 comes from
+    a firewall the API does not describe, so only the running service shows it."""
+    import datetime
+
+    import httpx
+
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.transport.http import default_headers
+    from dataretrieval.waterdata.endpoints import ratings_catalog_url
+    from dataretrieval.waterdata.ratings import STAC_DATES
+
+    url = f"{ratings_catalog_url()}/search"
+
+    def status(value):
+        params = {"limit": 1, "datetime": value}
+        return httpx.get(
+            url, params=params, headers=default_headers(url), timeout=60
+        ).status_code
+
+    # open_start: the standard's "../" is refused; the empty start is read as open.
+    end = DateRange(end=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc))
+    assert status("../2026-01-01T00:00:00Z") == 403
+    assert status(write_interval(end, STAC_DATES, param="datetime")) == 200
+    # durations=False: a lone duration is refused, so none is sent.
+    assert status("P7D") == 400

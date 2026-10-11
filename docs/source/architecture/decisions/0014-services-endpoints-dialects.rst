@@ -255,3 +255,19 @@ Revisions:
   builder writes the value with ``ogc.dates._format_date_range``. Error
   messages are unchanged; they are raised when the getter is called rather
   than when the first request is built.
+- *The shared interval grammar and* ``DateDialect``. ``dataretrieval._intervals``
+  holds ``DateDialect`` and ``write_interval``, and sits below ``ogc`` because
+  STAC is not OGC; ``ogc.dates`` is removed. ``DateDialect`` has five fields:
+  ``params``, ``date_only_collections``, ``timed_params``, ``open_start``, and
+  ``durations``, whose default is ``False`` because neither standard defines a
+  lone duration. ``OgcDialect.dates`` holds the group, and
+  ``prepare_request_args`` takes it, so the reading side knows which parameters
+  carry dates. ``get_ratings`` builds an ``Endpoint`` whose dialect is a
+  ``DateDialect`` alone; STAC has no other dialect fields. Live tests cover
+  ``open_start`` and ``durations`` for each of the three endpoints.
+  ``date_only_collections`` and ``timed_params`` have none: they record what a
+  ``daily`` value means rather than what a server refuses, since ``daily``
+  accepts full datetimes too (observed 2026-10-11). Also observed: STAC reads
+  an empty start as open only before an RFC 3339 datetime
+  (``/2026-01-01T00:00:00Z``); ``/2026-01-01`` is HTTP 400. ``get_ratings``
+  always writes datetimes.

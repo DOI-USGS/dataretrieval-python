@@ -2,8 +2,8 @@
 
 This module is the one definition of the :class:`OgcDialect` type
 (per-API quirks the generic request builder needs) and OGC control validation.
-It depends only on the stdlib, so any OGC submodule can import it without
-creating cycles.
+It depends only on the stdlib and the interval grammar's dialect type, so any
+OGC submodule can import it without creating cycles.
 
 It names no API: which one an OGC call targets is the *adapter's* policy,
 supplied per call as an endpoint (ADR 0014). A default here would direct every
@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import numbers
 from dataclasses import dataclass, field
+
+from dataretrieval._intervals import DateDialect
 
 
 def _require_positive_int(
@@ -45,11 +47,6 @@ class OgcDialect:
     cql2_services : frozenset[str]
         Collections that don't accept comma-separated multi-value GET
         parameters and so must be queried via POST with a CQL2 JSON body.
-    date_only_services : frozenset[str]
-        Collections whose time arguments are rendered date-only
-        (``YYYY-MM-DD``) rather than as a full UTC datetime. The
-        ``last_modified`` parameter is always rendered as a full datetime
-        regardless of this set.
     time_cols : frozenset[str]
         Result columns to coerce to datetime when ``convert_type`` is set. Empty by
         default, so the generic engine holds no API-specific column list; each API
@@ -60,17 +57,12 @@ class OgcDialect:
         Columns to sort the combined result by, in priority order. Sorting
         is applied only when the first (primary) column is present; any
         later columns also present are added as secondary keys.
-    open_start : str
-        How the API spells the open start of a date range: ``".."``
-        (``"../2024-01-01"``, the default) or ``""`` (``"/2024-01-01"``).
-        OGC API Features allows both, but deployments differ in which they
-        accept: the Water Data API rejects the empty start with HTTP 400, and
-        the NGWMN firewall rejects ``"../"`` with HTTP 403.
+    dates : DateDialect
+        How the API's date parameters are read and written (ADR 0014).
     """
 
     cql2_services: frozenset[str] = field(default_factory=frozenset)
-    date_only_services: frozenset[str] = field(default_factory=frozenset)
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
-    open_start: str = ".."
+    dates: DateDialect = field(default_factory=DateDialect)

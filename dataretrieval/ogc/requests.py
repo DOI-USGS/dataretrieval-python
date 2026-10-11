@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 import httpx
 
 from dataretrieval._dates import read_date_range
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_date_range
+from dataretrieval._intervals import DateDialect, single_value_hint, write_interval
 from dataretrieval.transport.http import default_headers as _default_headers
 
 if TYPE_CHECKING:
@@ -177,11 +177,9 @@ def _construct_api_requests(
     """
     service_url = _items_url(collection, endpoint.url)
     dialect = endpoint.dialect
-    for key in _DATE_RANGE_PARAMS & kwargs.keys():
-        kwargs[key] = _format_date_range(
-            kwargs[key],
-            date=(collection in dialect.date_only_services and key != "last_modified"),
-            open_start=dialect.open_start,
+    for key in dialect.dates.params & kwargs.keys():
+        kwargs[key] = write_interval(
+            kwargs[key], dialect.dates, param=key, collection=collection
         )
     params, post_params = _partition_request_params(
         kwargs, use_cql2=collection in dialect.cql2_services
@@ -309,14 +307,17 @@ def _normalize_arg(
     key: str,
     value: Any,
     no_normalize: frozenset[str],
+    dates: DateDialect,
 ) -> Any:
     """Normalize a single request argument value based on its key."""
     if key == "monitoring_location_id":
         return _check_monitoring_location_id(value)
     if key == "properties":
         return _as_str_list(value, key)
-    if key in _DATE_RANGE_PARAMS:
-        return read_date_range(value, name=key)
+    if key in dates.params:
+        return read_date_range(
+            value, name=key, single_value_hint=single_value_hint(dates)
+        )
     if (
         key in no_normalize
         and isinstance(value, Iterable)
@@ -332,14 +333,15 @@ def prepare_request_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
     *,
+    dates: DateDialect,
     extra_no_normalize: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, Any]:
     """Build OGC request kwargs from a getter's ``locals()``.
 
     Internal control keys, caller-supplied exclusions, and ``None`` values
-    are omitted. Identifiers and properties are validated, date arguments are
-    read into a ``DateRange`` (and omitted when every bound is open), and other
-    iterables are normalized unless exempted.
+    are omitted. Identifiers and properties are validated, the parameters
+    ``dates`` lists are read into a ``DateRange`` (and omitted when every bound
+    is open), and other iterables are normalized unless exempted.
 
     ``extra_no_normalize`` *adds* to the engine's own
     :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
@@ -355,7 +357,7 @@ def prepare_request_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        normalized = _normalize_arg(k, v, no_normalize)
+        normalized = _normalize_arg(k, v, no_normalize, dates)
         if normalized is not None:
             args[k] = normalized
     return args

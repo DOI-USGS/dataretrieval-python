@@ -5,8 +5,7 @@ strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
 pagination and sync dispatch are in :mod:`dataretrieval.transport`; request
 construction is in :mod:`~dataretrieval.ogc.requests`. The surrounding
 concerns are in sibling modules this one composes, each with its own reason
-to change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
-:mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
+to change: :mod:`~dataretrieval.ogc.errors` (HTTP error mapping) and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
 finalization). It is deliberately free of any Water-Data-specific constants
 so a sibling package (e.g. NGWMN) can use it without importing
