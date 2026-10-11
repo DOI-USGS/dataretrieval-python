@@ -10,7 +10,7 @@ The suite uses four dependency-oriented layers without moving established tests:
   response parsing, and documented protocol behavior.
 - **Component** (`transport_test.py`, `waterdata_chunking_test.py`,
   `waterdata_queryables_test.py`, `waterdata_endpoints_test.py`,
-  `waterdata_properties_test.py`, `rdb_test.py`, `_csv_test.py`): one internal
+  `waterdata_properties_test.py`, `rdb_test.py`, `_csv_test.py`, `_dates_test.py`): one internal
   responsibility in isolation.
 - **Cross-component** (`architecture_test.py`, `headers_host_scoping_test.py`,
   `waterdata_progress_test.py`): dependency fitness functions and behavior that

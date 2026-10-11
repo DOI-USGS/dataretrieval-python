@@ -14,6 +14,7 @@ import pytest
 import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
+from dataretrieval._dates import read_date_range
 from dataretrieval._service import Endpoint, Service
 from dataretrieval.exceptions import (
     DataRetrievalError,
@@ -23,7 +24,7 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import ServiceInterrupted
-from dataretrieval.ogc.dates import _format_api_dates
+from dataretrieval.ogc.dates import _format_date_range
 from dataretrieval.ogc.engine import (
     _next_req_url,
     _walk_pages,
@@ -915,7 +916,16 @@ def test_type_cols_warning_is_singular_for_one_value():
         _type_cols(df, _TYPING_DIALECT)
 
 
-# --- _format_api_dates -------------------------------------------------------
+# --- read_date_range, then _format_date_range -------------------------------
+
+
+def _wire_dates(value, date=False, *, name="date input", open_start=".."):
+    """Read a date argument and write it for OGC, as a getter and the request
+    builder do in turn; ``None`` when there is no filter."""
+    read = read_date_range(value, name=name)
+    if read is None:
+        return None
+    return _format_date_range(read, date=date, open_start=open_start)
 
 
 @pytest.mark.parametrize(
@@ -963,25 +973,25 @@ def test_type_cols_warning_is_singular_for_one_value():
         "open_ended_dotdot_datetime",
     ],
 )
-def test_format_api_dates(value, date, expected):
-    """``_format_api_dates`` normalizes ISO 8601 datetimes to UTC (dropping
+def test_wire_dates(value, date, expected):
+    """``_wire_dates`` normalizes ISO 8601 datetimes to UTC (dropping
     fractional seconds, converting offsets), joins a pair into an interval,
     passes durations through unchanged, and renders a None endpoint as
     ``..``."""
-    assert _format_api_dates(value, date=date) == expected
+    assert _wire_dates(value, date=date) == expected
 
 
-def test_format_api_dates_passes_none_through():
+def test_wire_dates_passes_none_through():
     """``None`` means "no date filter", not an empty one."""
-    assert _format_api_dates(None) is None
+    assert _wire_dates(None) is None
 
 
-def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
+def test_wire_dates_treats_an_all_blank_sequence_as_no_filter():
     """``[None, None]`` is an interval with no endpoints, which is no filter at
     all -- sending ``../..`` would be a query the service has to reject."""
-    assert _format_api_dates([None, None]) is None
-    assert _format_api_dates(["", ""]) is None
-    assert _format_api_dates(["..", ".."]) is None
+    assert _wire_dates([None, None]) is None
+    assert _wire_dates(["", ""]) is None
+    assert _wire_dates(["..", ".."]) is None
 
 
 @pytest.mark.parametrize(
@@ -1011,14 +1021,12 @@ def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
         "empty_end",
     ],
 )
-def test_format_api_dates_formats_an_interval_string_like_the_pair(
-    interval, pair, date
-):
+def test_wire_dates_formats_an_interval_string_like_the_pair(interval, pair, date):
     """A ``"start/end"`` string and the two-value list are two spellings of the
     same range, so they send the same value. The string used to be sent
     unchanged: a naive time was not converted from local time to UTC, and a
     date-only collection received times."""
-    assert _format_api_dates(interval, date=date) == _format_api_dates(pair, date=date)
+    assert _wire_dates(interval, date=date) == _wire_dates(pair, date=date)
 
 
 @pytest.mark.parametrize(
@@ -1029,16 +1037,14 @@ def test_format_api_dates_formats_an_interval_string_like_the_pair(
     ],
     ids=["offset_to_utc", "date_only"],
 )
-def test_format_api_dates_formats_each_side_of_an_interval_string(
-    interval, date, expected
-):
+def test_wire_dates_formats_each_side_of_an_interval_string(interval, date, expected):
     """Each side is formatted on its own, as a list element is."""
-    assert _format_api_dates(interval, date=date) == expected
+    assert _wire_dates(interval, date=date) == expected
 
 
-def test_format_api_dates_treats_an_all_open_interval_string_as_no_filter():
+def test_wire_dates_treats_an_all_open_interval_string_as_no_filter():
     """``"../.."`` is the string spelling of ``[None, None]``."""
-    assert _format_api_dates("../..") is None
+    assert _wire_dates("../..") is None
 
 
 @pytest.mark.parametrize(
@@ -1051,21 +1057,21 @@ def test_format_api_dates_treats_an_all_open_interval_string_as_no_filter():
     ],
     ids=["none", "dotdot", "dotdot_string", "empty_string"],
 )
-def test_format_api_dates_spells_an_open_start_as_the_api_does(value):
+def test_wire_dates_spells_an_open_start_as_the_api_does(value):
     """Every spelling of an open start becomes ``..`` by default and the
     caller's ``open_start`` otherwise: NGWMN and STAC reject ``"../"`` (HTTP
     403), and the Water Data API rejects an empty start (HTTP 400)."""
-    assert _format_api_dates(value) == "../2024-01-01T00:00:00Z"
-    assert _format_api_dates(value, open_start="") == "/2024-01-01T00:00:00Z"
+    assert _wire_dates(value) == "../2024-01-01T00:00:00Z"
+    assert _wire_dates(value, open_start="") == "/2024-01-01T00:00:00Z"
 
 
-def test_format_api_dates_open_start_leaves_an_open_end_and_no_filter_alone():
+def test_wire_dates_open_start_leaves_an_open_end_and_no_filter_alone():
     """``open_start`` changes only the start: an open end is ``..`` on every API,
     and a range with both ends open is still no filter."""
-    open_end = _format_api_dates(["2024-01-01T00:00:00Z", None], open_start="")
+    open_end = _wire_dates(["2024-01-01T00:00:00Z", None], open_start="")
     assert open_end == "2024-01-01T00:00:00Z/.."
-    assert _format_api_dates([None, None], open_start="") is None
-    assert _format_api_dates("../..", open_start="") is None
+    assert _wire_dates([None, None], open_start="") is None
+    assert _wire_dates("../..", open_start="") is None
 
 
 @pytest.mark.parametrize(
@@ -1088,12 +1094,12 @@ def test_format_api_dates_open_start_leaves_an_open_end_and_no_filter_alone():
         "duration_open_end",
     ],
 )
-def test_format_api_dates_rejects_an_unreadable_interval_string(interval, message):
+def test_read_date_range_rejects_an_unreadable_interval_string(interval, message):
     """An interval string used to be sent unchanged, so ``time="garbage/.."``
     reached the service. It is now rejected like an unreadable list element,
     naming the caller's argument."""
     with pytest.raises(ValueError, match=f"^{message}"):
-        _format_api_dates(interval, name="time")
+        read_date_range(interval, name="time")
 
 
 @pytest.mark.parametrize(
@@ -1108,24 +1114,24 @@ def test_format_api_dates_rejects_an_unreadable_interval_string(interval, messag
         "range_start",
     ],
 )
-def test_format_api_dates_rejects_an_unreadable_bound(value):
+def test_read_date_range_rejects_an_unreadable_bound(value):
     """An element that is not blank and matches no format used to return None,
     which the callers send as no filter at all. The message names the caller's
     argument and the bad value, and shows the forms that are accepted."""
     with pytest.raises(ValueError) as excinfo:
-        _format_api_dates(value, name="last_modified")
+        read_date_range(value, name="last_modified")
     message = str(excinfo.value)
     assert message.startswith("last_modified could not be read as a date")
     assert "'2024-01-01'" in message
     assert "None for an open end" in message
 
 
-def test_format_api_dates_rejects_more_than_two_values():
+def test_read_date_range_rejects_more_than_two_values():
     """A date filter is an instant, a duration, or a closed interval. Three
     values is a caller who meant something else, and the message says which
     shapes exist rather than truncating without an error."""
     with pytest.raises(ValueError) as excinfo:
-        _format_api_dates(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
+        read_date_range(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
     message = str(excinfo.value)
     assert "time takes at most 2 values, got 3" in message
     assert "closed interval" in message
@@ -1135,9 +1141,9 @@ def test_the_duration_example_is_withheld_where_durations_are_rejected():
     """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
     'P7D' on that path -- a caller following it would receive a second rejection."""
     with pytest.raises(ValueError) as allowed:
-        _format_api_dates(["a", "b", "c"], name="time")
+        read_date_range(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
-        _format_api_dates(
+        read_date_range(
             ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
         )
 
@@ -1146,23 +1152,23 @@ def test_the_duration_example_is_withheld_where_durations_are_rejected():
     assert "an instant ('2020-01-01')" in str(refused.value)
 
 
-def test_format_api_dates_names_the_callers_parameter():
+def test_read_date_range_names_the_callers_parameter():
     """The subject must be the argument the caller passed. It used to be
     ``datetime_input`` -- a local of this private helper that no public getter
     accepts, so correcting the argument the message named sent an
     unrecognized parameter."""
     with pytest.raises(TypeError, match="^time must be a date, a string"):
-        _format_api_dates({"2024-01-01": "ignored"}, name="time")
+        read_date_range({"2024-01-01": "ignored"}, name="time")
 
 
-def test_format_api_dates_rejects_mapping():
+def test_read_date_range_rejects_mapping():
     """`time={"2024-01-01": "x"}` would materialize as the keys list,
     accepting input the user clearly didn't intend.
     """
     with pytest.raises(
         TypeError, match="date input must be a date, a string, or a sequence"
     ):
-        _format_api_dates({"2024-01-01": "ignored"})
+        read_date_range({"2024-01-01": "ignored"})
 
 
 @pytest.mark.parametrize(
@@ -1210,36 +1216,36 @@ def test_format_api_dates_rejects_mapping():
         "mixed_string_and_timestamp",
     ],
 )
-def test_format_api_dates_accepts_date_and_datetime_objects(value, date, expected):
+def test_wire_dates_accepts_date_and_datetime_objects(value, date, expected):
     """``datetime.date``, ``datetime.datetime`` and ``pandas.Timestamp`` used to
     raise ``AttributeError`` (no ``endswith``) or ``TypeError`` (a lone datetime
     is not iterable) from inside the formatter. They are read like the
     equivalent string, and ``NaT`` is an open bound like ``None``."""
-    assert _format_api_dates(value, date=date) == expected
+    assert _wire_dates(value, date=date) == expected
 
 
 @pytest.mark.parametrize("date", [True, False], ids=["date_only", "datetime"])
-def test_format_api_dates_reads_naive_objects_like_naive_strings(date):
+def test_wire_dates_reads_naive_objects_like_naive_strings(date):
     """A naive ``datetime``/``Timestamp`` is local time, the same rule a naive
     string follows, so both spellings of one instant build the same filter in
     any time zone. A ``date`` is midnight of that day, like ``"2024-01-01"``."""
-    as_string = _format_api_dates(["2024-01-01T10:00:00", None], date=date)
+    as_string = _wire_dates(["2024-01-01T10:00:00", None], date=date)
     naive_datetime = [datetime.datetime(2024, 1, 1, 10), None]  # noqa: DTZ001
-    assert _format_api_dates(naive_datetime, date=date) == as_string
+    assert _wire_dates(naive_datetime, date=date) == as_string
     naive_timestamp = [pd.Timestamp("2024-01-01T10:00:00"), None]
-    assert _format_api_dates(naive_timestamp, date=date) == as_string
-    assert _format_api_dates(datetime.date(2024, 1, 1), date=date) == (
-        _format_api_dates("2024-01-01", date=date)
+    assert _wire_dates(naive_timestamp, date=date) == as_string
+    assert _wire_dates(datetime.date(2024, 1, 1), date=date) == (
+        _wire_dates("2024-01-01", date=date)
     )
 
 
 @pytest.mark.parametrize("value", [20240101, [20240101, None], 1.5])
-def test_format_api_dates_rejects_other_types_naming_the_argument(value):
+def test_read_date_range_rejects_other_types_naming_the_argument(value):
     """A number is not a date. It used to fail with an ``AttributeError`` from
     inside the formatter; the message now names the caller's argument and the
     types it accepts."""
     with pytest.raises(ValueError) as excinfo:
-        _format_api_dates(value, name="time")
+        read_date_range(value, name="time")
     message = str(excinfo.value)
     assert message.startswith("time could not be read as a date")
     assert "pandas.Timestamp" in message

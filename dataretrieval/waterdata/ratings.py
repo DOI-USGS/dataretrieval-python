@@ -18,9 +18,10 @@ import anyio
 import httpx
 import pandas as pd
 
+from dataretrieval._dates import DURATION_RE, coerce_to_list, read_date_range
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
-from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
+from dataretrieval.ogc.dates import _format_date_range
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _quote_cql_str
 from dataretrieval.ogc.requests import _check_monitoring_location_id
@@ -177,16 +178,14 @@ def get_ratings(
     file_types = _as_list(file_type)
     _validate_file_types(file_types)
     _validate_time_no_duration(time)
+    time_range = read_date_range(
+        time, name="time", single_value_hint="an instant ('2020-01-01')"
+    )
     time_str = (
-        _format_api_dates(
-            time,
-            name="time",
-            single_value_hint="an instant ('2020-01-01')",
-            # The STAC firewall answers ``datetime=../2026-01-01`` with HTTP
-            # 403; STAC reads an empty start (``/2026-01-01``) as open.
-            open_start="",
-        )
-        if time is not None
+        # The STAC firewall answers ``datetime=../2026-01-01`` with HTTP 403;
+        # STAC reads an empty start (``/2026-01-01``) as open.
+        _format_date_range(time_range, open_start="")
+        if time_range is not None
         else None
     )
 
@@ -226,10 +225,10 @@ def _validate_time_no_duration(time: str | list[str] | None) -> None:
     """Raise ValueError if ``time`` contains an ISO 8601 duration."""
     if time is None:
         return
-    # ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
+    # ``coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
     # ``_as_list`` would try to iterate it.
-    values = _coerce_to_list(time, "time")
-    if any(isinstance(v, str) and _DURATION_RE.match(v) for v in values):
+    values = coerce_to_list(time, "time")
+    if any(isinstance(v, str) and DURATION_RE.match(v) for v in values):
         raise ValueError(
             "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
             "for the rating-curve service. Provide a date or interval instead."

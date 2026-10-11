@@ -246,3 +246,12 @@ Revisions:
   ``configuration.service_url`` and ``waterdata.endpoints`` already resolve. They
   are still endpoints in the glossary's sense. The STAC ratings search gets an
   ``Endpoint`` with the interval grammar, where its ``DateDialect`` is read.
+- *The package-wide date range.* ``dataretrieval._dates`` is a dependency-free
+  leaf holding :class:`DateRange` and ``read_date_range``: an instant, a range
+  whose ``None`` bound is open, or a duration, with a naive bound meaning local
+  time. ``prepare_request_args`` reads every OGC date parameter into one when
+  a getter is called, and drops a range whose bounds are all open, as it drops
+  ``None``; ``get_ratings`` reads its ``time`` the same way. The OGC request
+  builder writes the value with ``ogc.dates._format_date_range``. Error
+  messages are unchanged; they are raised when the getter is called rather
+  than when the first request is built.

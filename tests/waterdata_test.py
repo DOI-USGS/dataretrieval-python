@@ -15,7 +15,9 @@ from pandas import DataFrame
 
 import dataretrieval
 from dataretrieval import configuration
+from dataretrieval._dates import read_date_range
 from dataretrieval._service import Endpoint
+from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -71,16 +73,23 @@ _OGC_FIXTURES = json.loads(
 )
 
 
-# The direct request-construction unit tests below bypass ``get_ogc_data``,
-# which is what normally binds the Water Data base URL and dialect (the OGC
-# package names no collection of its own). Bind them here the same way the
-# engine does — explicitly, via ``functools.partial`` — so the tests exercise
-# the real Water Data behavior (monitoring-locations -> POST/CQL2; daily ->
-# date-only time args).
-_construct_api_requests = functools.partial(
-    _construct_api_requests_explicit,
-    endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
-)
+# The direct request-construction unit tests below bypass the getters and
+# ``get_ogc_data``, which normally read the date arguments and bind the Water
+# Data base URL and dialect (the OGC package names no collection of its own).
+# Do both here so the tests exercise the real Water Data behavior
+# (monitoring-locations -> POST/CQL2; daily -> date-only time args).
+def _construct_api_requests(collection, **kwargs):
+    for key in _DATE_RANGE_PARAMS & kwargs.keys():
+        read = read_date_range(kwargs.pop(key), name=key)
+        if read is not None:
+            kwargs[key] = read
+    return _construct_api_requests_explicit(
+        collection,
+        endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
+        **kwargs,
+    )
+
+
 _construct_cql_request = functools.partial(
     _construct_cql_request_explicit, base_url=OGC_API_URL
 )
@@ -627,7 +636,7 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
         time=["2024-01-01", "2024-01-31"],
     )
     assert req.method == "GET"
-    # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
+    # `/` URL-encodes to %2F. Confirms the date range was written before the join.
     assert "time=2024-01-01%2F2024-01-31" in str(req.url)
 
 

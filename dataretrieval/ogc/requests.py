@@ -16,7 +16,8 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval._dates import read_date_range
+from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_date_range
 from dataretrieval.transport.http import default_headers as _default_headers
 
 if TYPE_CHECKING:
@@ -176,16 +177,12 @@ def _construct_api_requests(
     """
     service_url = _items_url(collection, endpoint.url)
     dialect = endpoint.dialect
-    for key in _DATE_RANGE_PARAMS:
-        if key in kwargs:
-            kwargs[key] = _format_api_dates(
-                kwargs[key],
-                name=key,
-                date=(
-                    collection in dialect.date_only_services and key != "last_modified"
-                ),
-                open_start=dialect.open_start,
-            )
+    for key in _DATE_RANGE_PARAMS & kwargs.keys():
+        kwargs[key] = _format_date_range(
+            kwargs[key],
+            date=(collection in dialect.date_only_services and key != "last_modified"),
+            open_start=dialect.open_start,
+        )
     params, post_params = _partition_request_params(
         kwargs, use_cql2=collection in dialect.cql2_services
     )
@@ -243,11 +240,10 @@ def _construct_cql_request(
 # ---------------------------------------------------------------------------
 
 # Iterable params that ``_get_args`` must not pass through
-# ``_normalize_str_iterable`` (date-range params may contain ``pd.NaT``/None or
-# interval strings; ``bbox`` is ``list[float]``). These apply to every OGC caller;
-# an adapter with extra numeric params names only its extras via
+# ``_normalize_str_iterable`` (``bbox`` is ``list[float]``). These apply to every
+# OGC caller; an adapter with extra numeric params names only its extras via
 # ``prepare_request_args(..., extra_no_normalize=...)``.
-_NO_NORMALIZE_PARAMS = _DATE_RANGE_PARAMS | {"bbox"}
+_NO_NORMALIZE_PARAMS = frozenset({"bbox"})
 
 
 def _normalize_str_iterable(
@@ -319,6 +315,8 @@ def _normalize_arg(
         return _check_monitoring_location_id(value)
     if key == "properties":
         return _as_str_list(value, key)
+    if key in _DATE_RANGE_PARAMS:
+        return read_date_range(value, name=key)
     if (
         key in no_normalize
         and isinstance(value, Iterable)
@@ -339,13 +337,14 @@ def prepare_request_args(
     """Build OGC request kwargs from a getter's ``locals()``.
 
     Internal control keys, caller-supplied exclusions, and ``None`` values
-    are omitted. Identifiers and properties are validated; other iterables are
-    normalized unless exempted.
+    are omitted. Identifiers and properties are validated, date arguments are
+    read into a ``DateRange`` (and omitted when every bound is open), and other
+    iterables are normalized unless exempted.
 
     ``extra_no_normalize`` *adds* to the engine's own
     :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
-    only the params it owns and cannot drop the date-range exemptions
-    by omitting them.
+    only the params it owns and cannot drop the ``bbox`` exemption by
+    omitting it.
     """
     no_normalize = _NO_NORMALIZE_PARAMS | frozenset(extra_no_normalize)
     to_exclude = {"collection", "service", "output_id"}
@@ -356,5 +355,7 @@ def prepare_request_args(
     for k, v in local_vars.items():
         if k in to_exclude or v is None:
             continue
-        args[k] = _normalize_arg(k, v, no_normalize)
+        normalized = _normalize_arg(k, v, no_normalize)
+        if normalized is not None:
+            args[k] = normalized
     return args
