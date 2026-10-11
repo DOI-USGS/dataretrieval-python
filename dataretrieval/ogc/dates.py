@@ -115,8 +115,8 @@ def _coerce_to_list(
     return list(datetime_input)
 
 
-def _split_interval(interval: str, *, name: str) -> list[str | None]:
-    """Split a ``"start/end"`` string into the two-value list form.
+def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
+    """Split a ``"start/end"`` string into its two sides.
 
     Each side is then formatted like a list element, so
     ``"2024-01-01T10:00:00/.."`` sends the same range as
@@ -134,7 +134,7 @@ def _split_interval(interval: str, *, name: str) -> list[str | None]:
             "an end separated by '/', such as '2024-01-01/2024-12-31', with "
             "'..' for an open end ('2024-01-01/..')."
         )
-    return [sides[0], sides[1]]
+    return sides[0], sides[1]
 
 
 def _all_blank(items: list[str | None]) -> bool:
@@ -214,7 +214,7 @@ def _format_api_dates(
 
     items = _coerce_to_list(datetime_input, name)
     if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
-        items = _split_interval(items[0], name=name)
+        items = list(_split_interval(items[0], name=name))
 
     if _all_blank(items):
         return None
