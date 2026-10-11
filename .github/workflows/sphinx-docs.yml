@@ -3,7 +3,15 @@
 name: Sphinx Docs Build
 
 on:
+  # Every branch, no tags. Naming ``branches`` alone is what excludes tags:
+  # "if you define only branches/branches-ignore, the workflow won't run for
+  # events affecting the undefined Git ref". A tag push builds docs that can
+  # never deploy -- the deploy step is gated on ``refs/heads/main`` -- and
+  # GitHub pushes an ``untagged-<sha>`` placeholder tag for every draft
+  # release, so tag runs are a red X for work no one asked for.
   push:
+    branches:
+      - "**"
   pull_request:
 
 # Serialize runs for the same ref so two near-simultaneous pushes to main
@@ -37,7 +45,10 @@ jobs:
           python-version: "3.13"
           cache: "pip"
       - name: Install dataretrieval, dependencies, and Sphinx then build docs
-        shell: bash -l {0}
+        # ``-e`` is not the default once ``shell:`` is overridden, and without it
+        # a failed ``pip install`` here does not stop the step: the build runs on
+        # from a stale or absent install, and a docs set built that way deploys.
+        shell: bash -leo pipefail {0}
         run: |
           python -m pip install --upgrade pip
           pip install .[doc,nldi]
