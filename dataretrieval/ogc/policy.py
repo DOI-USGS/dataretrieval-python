@@ -48,11 +48,15 @@ class OgcDialect:
         Whether a filter with more than one value is sent as a CQL2 ``in``
         predicate, rather than as a comma-joined GET value (``site=A,B``, the
         default) that the API would read as one value.
-    date_only_services : frozenset[str]
-        Collections whose time arguments are rendered date-only
-        (``YYYY-MM-DD``) rather than as a full UTC datetime. The
-        ``last_modified`` parameter is always rendered as a full datetime
-        regardless of this set.
+    date_params : frozenset[str]
+        The parameters that carry a date range. The standard has one,
+        ``datetime``; an API that filters other fields by date lists them all.
+    date_only_collections : frozenset[str]
+        Collections whose dates are written as ``YYYY-MM-DD`` rather than as a
+        UTC datetime, because their values are calendar days.
+    timed_params : frozenset[str]
+        Date parameters written as a UTC datetime even in a date-only
+        collection, because they filter a timestamp.
     time_cols : frozenset[str]
         Result columns to coerce to datetime when ``convert_type`` is set. Empty by
         default, so the generic engine holds no API-specific column list; each API
@@ -69,7 +73,9 @@ class OgcDialect:
     """
 
     lists_as_cql2: bool = False
-    date_only_services: frozenset[str] = field(default_factory=frozenset)
+    date_params: frozenset[str] = frozenset({"datetime"})
+    date_only_collections: frozenset[str] = field(default_factory=frozenset)
+    timed_params: frozenset[str] = field(default_factory=frozenset)
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)

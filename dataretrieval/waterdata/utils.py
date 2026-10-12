@@ -87,7 +87,11 @@ _EXTRA_ID_COLS = frozenset(
 # define, and rejects an empty open start (``time=/2024-01-31``, HTTP 400).
 WATERDATA_DIALECT = OgcDialect(
     lists_as_cql2=True,
-    date_only_services=frozenset({"daily"}),
+    date_params=frozenset(
+        {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
+    ),
+    date_only_collections=frozenset({"daily"}),
+    timed_params=frozenset({"last_modified"}),
     dates=DateDialect(durations=True),
     time_cols=frozenset(
         {
@@ -174,9 +178,15 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
 
 
 def _get_args(
-    local_vars: dict[str, Any], exclude: set[str] | None = None
+    local_vars: dict[str, Any],
+    exclude: set[str] | None = None,
+    *,
+    dialect: OgcDialect | None = WATERDATA_DIALECT,
 ) -> dict[str, Any]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.prepare_request_args`.
+
+    Date parameters are read with ``dialect``, the OGC API's by default; the
+    Samples and Statistics getters pass ``None``, since those APIs are not OGC.
 
     Adds the Water Data API's extra no-normalize params (numeric params such
     as ``water_year``, ``thresholds``, ``boundingBox``) so they keep their
@@ -185,7 +195,10 @@ def _get_args(
     """
     _flatten_queryables(local_vars)
     args = prepare_request_args(
-        local_vars, exclude, extra_no_normalize=_NO_NORMALIZE_PARAMS
+        local_vars,
+        exclude,
+        dialect=dialect,
+        extra_no_normalize=_NO_NORMALIZE_PARAMS,
     )
     for name in _JSON_ARRAY_PARAMS & args.keys():
         # An empty list is dropped from the request downstream, as for any filter.

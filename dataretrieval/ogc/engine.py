@@ -46,6 +46,7 @@ from dataretrieval.ogc.policy import (
 from dataretrieval.ogc.requests import (
     _construct_api_requests,
     _construct_cql_request,
+    _read_raw_dates,
     _switch_arg_id,
     _switch_properties_id,
 )
@@ -307,6 +308,7 @@ def get_ogc_data(
         # The APIs answer a blank filter with HTTP 400.
         del args["filter"]
         args.pop("filter_lang", None)
+    args = _read_raw_dates(args, dialect)
 
     # Choose one semantic frame shape for the whole request. Every page and
     # the all-empty finalizer receive these same values, so frame type never

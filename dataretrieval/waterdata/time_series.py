@@ -1044,6 +1044,7 @@ def get_stats_por(
     params = _get_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
+        dialect=None,
     )
 
     return stats.get_data(
@@ -1191,6 +1192,7 @@ def get_stats_date_range(
     params = _get_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
+        dialect=None,
     )
 
     return stats.get_data(
