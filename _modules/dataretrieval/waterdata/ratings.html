@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+g218098547 documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gebdc219cc documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=e1525283"></script>
+      <script src="../../../_static/documentation_options.js?v=41c3c29b"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -97,7 +97,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval._validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_options</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataRetrievalError</span><span class="p">,</span> <span class="n">SkippedRatingWarning</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_format_api_dates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.dates</span><span class="w"> </span><span class="kn">import</span> <span class="n">_DURATION_RE</span><span class="p">,</span> <span class="n">_coerce_to_list</span><span class="p">,</span> <span class="n">_format_api_dates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">_raise_for_non_200</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.filters</span><span class="w"> </span><span class="kn">import</span> <span class="n">_cql_in_clause</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval.ogc.requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">_check_monitoring_location_id</span>
@@ -160,7 +160,7 @@
 <span class="sd">        (the default), the parsed ``DataFrame`` is returned without</span>
 <span class="sd">        persisting the bytes to disk; ``df.attrs["url"]`` still records</span>
 <span class="sd">        where each rating came from.</span>
-<span class="sd">    time : string or list of strings, optional</span>
+<span class="sd">    time : string, date, datetime, or pandas.Timestamp, or a list of them, optional</span>
 <span class="sd">        STAC ``datetime`` filter (passed through verbatim under that name)</span>
 <span class="sd">        — a single date / datetime, an interval (``"start/end"``,</span>
 <span class="sd">        optionally half-bounded with ``..``), or a list of two values</span>
@@ -301,7 +301,10 @@
 <span class="w">    </span><span class="sd">"""Raise ValueError if ``time`` contains an ISO 8601 duration."""</span>
     <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">_DURATION_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">time</span><span class="p">)):</span>
+    <span class="c1"># ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where</span>
+    <span class="c1"># ``_as_list`` would try to iterate it.</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">_coerce_to_list</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_DURATION_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="s2">"ISO 8601 durations (e.g. 'P7D') are not supported in `time` "</span>
             <span class="s2">"for the rating-curve service. Provide a date or interval instead."</span>
