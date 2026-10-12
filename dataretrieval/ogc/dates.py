@@ -20,6 +20,8 @@ _DATETIME_FORMATS = (
     "%Y-%m-%dT%H:%M:%S%z",
     "%Y-%m-%dT%H:%M:%S.%f",
     "%Y-%m-%dT%H:%M:%S",
+    "%Y-%m-%dT%H:%M%z",
+    "%Y-%m-%dT%H:%M",
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
     "%Y-%m-%d",
@@ -118,14 +120,14 @@ def _format_one(dt: _DateLike, *, date: bool, name: str) -> str:
     if dt is None or _is_blank(dt):
         return _OPEN_BOUND
     parsed = _to_datetime(dt, name=name)
+    # As in pandas, a naive value is UTC and an aware one is converted to UTC,
+    # so the same call sends the same range on every machine.
+    utc = parsed if parsed.tzinfo is None else parsed.astimezone(ZoneInfo("UTC"))
     if date:
-        return parsed.strftime("%Y-%m-%d")
-    # Naive inputs are interpreted in the system local zone (for backwards
-    # compatibility). Use ``.astimezone()`` rather than a fixed offset so each
-    # value is resolved against the DST rules for its own date — a fixed
-    # ``datetime.now()`` offset shifted off-season inputs by an hour.
-    aware = parsed if parsed.tzinfo is not None else parsed.astimezone()
-    return aware.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return utc.strftime("%Y-%m-%d")
+    # Keep fractional seconds: truncating them changes a closed bound.
+    fraction = f".{utc.microsecond:06d}".rstrip("0") if utc.microsecond else ""
+    return f"{utc.strftime('%Y-%m-%dT%H:%M:%S')}{fraction}Z"
 
 
 def _coerce_to_list(
@@ -147,40 +149,27 @@ def _coerce_to_list(
     return list(datetime_input)
 
 
-def _is_passthrough(single: str) -> bool:
-    """True when a single-element input should be returned as-is."""
-    return bool(_DURATION_RE.match(single))
+def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
+    """Split a ``"start/end"`` string into its two sides.
 
-
-def _format_interval(interval: str, *, date: bool, name: str) -> str | None:
-    """Format each side of a pre-formatted ``"start/end"`` interval string.
-
-    Each side is formatted like an element of the two-value list form, so
+    Each side is then formatted like a list element, so
     ``"2024-01-01T10:00:00/.."`` sends the same range as
-    ``["2024-01-01T10:00:00", None]``. One side may instead be an ISO 8601
-    duration paired with an instant (``"2024-01-01/P7D"``), which is kept
-    unchanged. Returns None when both sides are open.
+    ``["2024-01-01T10:00:00", None]``.
 
-    Raises ``ValueError`` naming *name* when the string is not two sides
-    separated by one ``"/"``, or a side cannot be read.
+    Raises ``ValueError`` naming *name* unless the string is two sides
+    separated by one ``"/"``, neither of them a duration. The Water Data and
+    NGWMN services reject ``"2024-01-01/P7D"`` and ``"P7D/2024-01-08"`` with
+    HTTP 400.
     """
-    sides = interval.split("/")
-    durations = [bool(_DURATION_RE.match(side)) for side in sides]
-    if len(sides) != 2 or (
-        any(durations) and (all(durations) or any(_is_blank(s) for s in sides))
-    ):
+    sides = [side.strip() for side in interval.split("/")]
+    if len(sides) != 2 or any(_DURATION_RE.match(side) for side in sides):
         raise ValueError(
             f"{name} is not a valid interval: {interval!r}. Pass a start and "
             "an end separated by '/', such as '2024-01-01/2024-12-31', with "
-            "'..' for an open end ('2024-01-01/..')."
+            "'..' for an open end ('2024-01-01/..'). Neither side can be a "
+            "duration."
         )
-    formatted = [
-        side if is_duration else _format_one(side, date=date, name=name)
-        for side, is_duration in zip(sides, durations, strict=True)
-    ]
-    if formatted == [_OPEN_BOUND, _OPEN_BOUND]:
-        return None
-    return "/".join(formatted)
+    return sides[0], sides[1]
 
 
 def _all_blank(items: list[_DateLike]) -> bool:
@@ -194,6 +183,7 @@ def _format_api_dates(
     *,
     name: str = "date input",
     single_value_hint: str = "an instant or a duration ('2020-01-01', 'P7D')",
+    open_start: str = _OPEN_BOUND,
 ) -> str | None:
     """
     Formats date or datetime input(s) for use with an API.
@@ -225,6 +215,12 @@ def _format_api_dates(
         forms (``get_ratings`` rejects durations) enforces that itself and
         passes a hint naming only what it accepts, so the remedy does not
         direct a caller to a value that is rejected.
+    open_start : str, optional
+        The string written for an open range start (``".."`` by default).
+        OGC API Features and STAC also allow an empty string
+        (``"/2024-01-01"``), which an API whose firewall rejects ``"../"``
+        requires; see :attr:`OgcDialect.open_start`. An open end is always
+        ``".."``.
 
     Returns
     -------
@@ -244,23 +240,25 @@ def _format_api_dates(
     Notes
     -----
     - A single blank/NA value returns None. In a two-value range, a blank/NA
-      or ``".."`` endpoint is rendered as ``".."`` to denote an open bound
-      (e.g. ``"2024-01-01/.."``); the range is only None when *every* element
-      is blank/NA/``".."``.
+      or ``".."`` endpoint is an open bound. An open end is written ``".."``
+      (``"2024-01-01/.."``) and an open start as ``open_start``. The range is
+      None only when *every* element is blank/NA/``".."``.
     - Supports ISO 8601 durations such as "P7D" and "PT36H", which are passed
       through unchanged.
-    - A single string containing ``"/"`` is an interval: each side is formatted
-      like an element of the two-value form, and may also be an ISO 8601
-      duration paired with an instant (``"2024-01-01/P7D"``).
+    - A single string containing ``"/"`` is an interval: it is split into the
+      two-value form, so ``"2024-01-01/.."`` and ``["2024-01-01", None]`` are
+      formatted alike. A duration is not accepted as either side.
     - Converts datetimes to UTC and formats as ISO 8601 with 'Z' suffix when
-      `date` is False. Inputs with an explicit offset (``Z`` or ``+HH:MM``) are
-      converted from that offset to UTC; naive inputs are interpreted in the
-      local time zone for backwards compatibility.
+      `date` is False. As in pandas, an input with an offset (``Z`` or
+      ``+HH:MM``) is converted to UTC and a naive one is UTC; a date-only
+      collection gets the UTC date.
     """
     if datetime_input is None:
         return None
 
     items = _coerce_to_list(datetime_input, name)
+    if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
+        items = list(_split_interval(items[0], name=name))
 
     if _all_blank(items):
         return None
@@ -272,11 +270,11 @@ def _format_api_dates(
             "or two for a closed interval ('2020-01-01', '2020-12-31')."
         )
 
-    if len(items) == 1 and isinstance(items[0], str) and "/" in items[0]:
-        return _format_interval(items[0], date=date, name=name)
-
-    # Pass through duration ("P7D", "PT36H")
-    if len(items) == 1 and isinstance(items[0], str) and _is_passthrough(items[0]):
+    # Pass through a duration ("P7D", "PT36H")
+    if len(items) == 1 and isinstance(items[0], str) and _DURATION_RE.match(items[0]):
         return items[0]
 
-    return "/".join(_format_one(dt, date=date, name=name) for dt in items)
+    formatted = [_format_one(dt, date=date, name=name) for dt in items]
+    if len(formatted) == 2 and formatted[0] == _OPEN_BOUND:
+        formatted[0] = open_start
+    return "/".join(formatted)
