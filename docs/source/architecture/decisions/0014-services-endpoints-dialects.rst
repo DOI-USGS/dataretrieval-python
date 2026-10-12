@@ -89,9 +89,11 @@ override could change one service's behavior without adding a field.
 
 **The OGC engine receives one endpoint value.** An ``Endpoint`` holds a
 ``Service`` (the adapter's name, which configuration resolves settings by, and
-its default URL), the URL resolved when the call starts, and the dialect. The
-OGC engine, request builder, and result finalizer take it in place of the
-``base_url``, ``dialect``, and adapter-name arguments they take today.
+its default URL), the URL resolved when the call starts, and the dialect.
+``get_ogc_data`` takes it in place of the ``base_url``, ``dialect``, and
+adapter-name arguments it takes today, so every chunk and a later resume use
+the same URL and dialect. The request builder and result finalizer it binds
+keep taking the URL and dialect they read.
 
 **A protocol module exists only when two services share the protocol.** OGC
 API Features has two (Water Data, NGWMN); the interval grammar has three (those
@@ -163,4 +165,5 @@ Steps, one pull request each:
 2. The OGC date fields on ``OgcDialect`` (which parameters carry dates, which
    collections are date-only, which parameters stay timed), reading dates when
    the getter is called, and the dialect-literal test.
-3. ``Service`` and ``Endpoint``, and the service-name test.
+3. ``Service`` declarations for every adapter, ``Endpoint`` for
+   ``get_ogc_data``, and the service-name test.
