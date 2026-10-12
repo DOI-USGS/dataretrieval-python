@@ -444,27 +444,21 @@ def test_stac_next_link_strips_embedded_credentials(httpx_mock):
 
 
 @pytest.mark.live
-def test_stac_date_dialect_matches_the_service():
+def test_stac_date_dialect_matches_the_service(live_status):
     """Each ``STAC_DATES`` field against the running search: the request the
     field prevents fails, and the one it produces succeeds. The 403 comes from
     a firewall the API does not describe, so only the running service shows it."""
     import datetime
 
-    import httpx
-
     from dataretrieval._dates import DateRange
     from dataretrieval._intervals import write_interval
-    from dataretrieval.transport.http import default_headers
     from dataretrieval.waterdata.endpoints import ratings_catalog_url
     from dataretrieval.waterdata.ratings import STAC_DATES
 
     url = f"{ratings_catalog_url()}/search"
 
     def status(value):
-        params = {"limit": 1, "datetime": value}
-        return httpx.get(
-            url, params=params, headers=default_headers(url), timeout=60
-        ).status_code
+        return live_status(url, limit=1, datetime=value)
 
     # open_start: the standard's "../" is refused; the empty start is read as open.
     end = DateRange(end=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc))

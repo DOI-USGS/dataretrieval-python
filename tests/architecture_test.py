@@ -372,31 +372,15 @@ def test_credential_policy_has_one_definition() -> None:
     ``transport.http`` re-exports the predicate, it does not restate it.
     """
     host = "api.waterdata.usgs.gov"
-    # Walked as AST string *values*, not as source text. A line-substring match
-    # produces both false negatives and false positives: it missed the
-    # ``"https://…"`` form three modules use to write the same host, and it
-    # flagged docstring prose that only names the service. Docstrings are
-    # excluded here (they are documentation, not a second definition)
-    # while every other literal -- bare host or full base URL -- counts.
-    offenders: list[str] = []
-    for path in sorted(PACKAGE_ROOT.rglob("*.py")):
-        if path.name == "credentials.py":
-            continue
-        tree = ast.parse(path.read_text(encoding="utf-8"))
-        docstrings = {
-            text
-            for node in ast.walk(tree)
-            if isinstance(
-                node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
-            )
-            for text in [ast.get_docstring(node, clean=False)]
-            if text is not None
-        }
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
-                continue
-            if host in node.value and node.value not in docstrings:
-                offenders.append(f"{_module_name(path)}:{node.lineno}")
+    # String *values*, not source text: a line match missed the ``"https://…"``
+    # form and flagged docstring prose that only names the service.
+    offenders = [
+        f"{_module_name(path)}:{line}"
+        for path in sorted(PACKAGE_ROOT.rglob("*.py"))
+        if path.name != "credentials.py"
+        for line, value in _code_string_literals(path)
+        if host in value
+    ]
     assert not offenders, (
         "The API-key host must come from dataretrieval.credentials, "
         f"not be restated at: {offenders}"

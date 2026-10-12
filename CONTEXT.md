@@ -332,7 +332,7 @@ entry (ADR 0013).
   `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
   `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
   alias remain — a deprecated keyword and a permanent alias respectively. The
-  dialect field keyed by collection now says so too:
+  dialect field keyed by collection says so too:
   `DateDialect.date_only_collections`.
 
   `service` still means the external system in `transport` and `progress`,

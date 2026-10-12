@@ -4,7 +4,8 @@ The NGWMN exposes its data through a dedicated OGC API
 (``https://api.waterdata.usgs.gov/ngwmn/ogcapi``) with five collections:
 ``sites``, ``waterLevelObs``, ``lithologyObs``, ``constructionObs``, and
 ``providers``. Each getter below delegates to the shared OGC facade
-(:func:`~dataretrieval.ogc.get_ogc_data`) with ``base_url=NGWMN_OGC_API_URL``.
+(:func:`~dataretrieval.ogc.get_ogc_data`) with an endpoint carrying
+``NGWMN_DIALECT``.
 Multi-value chunking, pagination, retry/resume, and result shaping therefore
 behave as they do for the main Water Data getters.
 
@@ -90,15 +91,10 @@ _STATE_QUERYABLE = {
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
 
-# NGWMN reads comma-joined GET values as lists, and its firewall refuses a text
-# filter naming a site, so a list could not be folded into one; lists stay
-# comma-joined. It has no date-only collections, but its result columns need
-# their own coercion and sort vocabulary: water-level observations are
-# timestamped by ``sample_time`` (not the Water Data ``time``) and report
-# depths/levels in feet. Its firewall answers ``datetime=../2016-01-01`` with
-# HTTP 403, so an open start is sent empty (``/2016-01-01``), which it reads as
-# open, and it answers a lone duration (``P7D``) with HTTP 400, so durations are
-# off, as in the standard (both observed 2026-10-11).
+# Lists stay comma-joined: NGWMN reads them as lists, and its firewall refuses a
+# text filter naming a site, so a list could not be folded into one.
+# ``open_start=""``: the firewall answers ``datetime=../2016-01-01`` with HTTP
+# 403 and reads ``/2016-01-01`` as open (observed 2026-10-11).
 NGWMN_DIALECT = OgcDialect(
     dates=DateDialect(open_start=""),
     shaping=ShapingDialect(

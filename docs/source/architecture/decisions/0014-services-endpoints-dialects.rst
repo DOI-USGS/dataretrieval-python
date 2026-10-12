@@ -286,10 +286,9 @@ Revisions:
   date group, ``dates``, and the result-shaping group, ``shaping``
   (``ShapingDialect``: ``time_cols``, ``numerical_cols``, ``sort_cols``, and
   ``extra_id_cols``, which moved there from an argument of ``get_ogc_data``).
-  Request construction reads one field, ``lists_as_cql2`` (which replaced the
-  per-collection ``cql2_services`` in #446), so it has no group of its own. The chunk planner lists
-  no date parameter: a date argument arrives as a ``DateRange``, which is
-  never split. ``tests/architecture_test.py`` fails if a string a shipped
+  Request construction reads one switch, ``lists_as_cql2`` (#446), so it has
+  no group of its own. The chunk planner lists no date parameter: a date
+  argument arrives as a ``DateRange``, which is never split. ``tests/architecture_test.py`` fails if a string a shipped
   dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
   recorded deviations, only ``monitoring_location_id`` is such a literal, so
   it is the one allowlisted entry. The switch is per API because whether the

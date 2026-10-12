@@ -76,14 +76,9 @@ _EXTRA_ID_COLS = frozenset(
     - {"monitoring_location_id", "time_series_id"}
 )
 
-# The Water Data API dialect: multi-value filters are CQL2 predicates, because
-# the API reads a comma-joined GET value as one value for all but a few
-# identifiers and codes; ``daily`` renders its time arguments date-only
-# (``YYYY-MM-DD``); the API accepts a lone duration (``time=P7D``) and answers
-# an empty open start (``time=/2024-01-03``) with HTTP 400, so it keeps ``..``
-# (both observed 2026-10-11); and the shaping fields are the Water-Data column
-# vocabulary used to coerce datetime/numeric columns, sort results, and move
-# synthetic ids to the end.
+# ``lists_as_cql2``: the API reads a comma-joined GET value as one value for all
+# but a few identifiers and codes. Dates keep ``..`` for an open start (an empty
+# one is HTTP 400) and allow a lone duration (both observed 2026-10-11).
 # ``construction_date`` is deliberately not a time column: the service sends it
 # as a string at day, month, or year precision (``19950812``, ``199508``,
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.

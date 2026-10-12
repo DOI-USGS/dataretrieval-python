@@ -64,3 +64,18 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
     configuration._reset_file_cache()
+
+
+@pytest.fixture
+def live_status():
+    """``live_status(url, **params)``: the status a running service answers a GET
+    with, for the live tests that pin a dialect field to server behavior."""
+    import httpx
+
+    from dataretrieval.transport.http import default_headers
+
+    def status(url: str, **params: object) -> int:
+        headers = default_headers(url)
+        return httpx.get(url, params=params, headers=headers, timeout=60).status_code
+
+    return status

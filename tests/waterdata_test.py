@@ -2057,25 +2057,21 @@ def test_get_reference_table_docstring_lists_every_collection():
 
 
 @pytest.mark.live
-def test_ogc_date_dialect_matches_the_service():
+def test_ogc_date_dialect_matches_the_service(live_status):
     """The ``WATERDATA_DIALECT.dates`` fields that record server behavior,
     against the running API: it accepts the request each field produces and
     refuses the one ``open_start`` prevents."""
-    import httpx
-
     from dataretrieval._dates import DateRange
     from dataretrieval._intervals import write_interval
-    from dataretrieval.transport.http import default_headers
     from dataretrieval.waterdata.endpoints import ogc_api_url
 
     url = f"{ogc_api_url()}/collections/daily/items"
     dates = WATERDATA_DIALECT.dates
 
     def status(value):
-        params = {"monitoring_location_id": "USGS-05427718", "limit": 1, "time": value}
-        return httpx.get(
-            url, params=params, headers=default_headers(url), timeout=60
-        ).status_code
+        return live_status(
+            url, monitoring_location_id="USGS-05427718", limit=1, time=value
+        )
 
     # open_start: the default ".." is accepted; the empty start is refused.
     end = DateRange(end=datetime.datetime(2024, 1, 3, tzinfo=datetime.timezone.utc))
