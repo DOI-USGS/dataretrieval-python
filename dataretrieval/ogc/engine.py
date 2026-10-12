@@ -18,8 +18,8 @@ API-specific behavior is supplied by the caller:
   passed explicitly (no collection map is defined here).
 * ``base_url`` — the OGC API base to target.
 * ``extra_id_cols`` — synthetic id columns to move to the end of a result.
-* ``dialect`` — an :class:`OgcDialect` describing which collections need
-  POST/CQL2 and which use date-only (vs. full datetime) time arguments.
+* ``dialect`` — an :class:`OgcDialect` describing how lists are sent and
+  which collections use date-only (vs. full datetime) time arguments.
 """
 
 from __future__ import annotations
@@ -261,8 +261,8 @@ def get_ogc_data(
         Synthetic id columns to move to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
     dialect : OgcDialect, optional
-        Per-API request quirks (CQL2-only collections, date-only collections).
-        Defaults to a plain OGC API with neither.
+        Per-API request quirks (how lists are sent, date-only collections).
+        Defaults to a plain OGC API.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
         building the query from ``args``. With a body, only the
@@ -304,6 +304,10 @@ def get_ogc_data(
     )
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
+    if isinstance(args.get("filter"), str) and not args["filter"].strip():
+        # The APIs answer a blank filter with HTTP 400.
+        del args["filter"]
+        args.pop("filter_lang", None)
 
     # Choose one semantic frame shape for the whole request. Every page and
     # the all-empty finalizer receive these same values, so frame type never

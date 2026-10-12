@@ -80,10 +80,12 @@ _STATE_QUERYABLE = {
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
 
-# NGWMN's request shape matches the generic OGC default (no CQL2-only or
-# date-only collections), but its result columns need their own coercion and
-# sort vocabulary: water-level observations are timestamped by ``sample_time``
-# (not the Water Data ``time``) and report depths/levels in feet.
+# NGWMN's request shape matches the generic OGC default: it reads comma-joined
+# GET values as lists, and its firewall refuses a text filter naming a site, so
+# a list could not be folded into one. It has no date-only collections, but its
+# result columns need their own coercion and sort vocabulary:
+# water-level observations are timestamped by ``sample_time`` (not the Water
+# Data ``time``) and report depths/levels in feet.
 NGWMN_DIALECT = OgcDialect(
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
