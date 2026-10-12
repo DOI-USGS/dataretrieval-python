@@ -34,6 +34,7 @@ import pytest
 
 import dataretrieval
 from dataretrieval import configuration as _configuration
+from dataretrieval._dates import read_date_range
 from dataretrieval.combining import (
     _QUOTA_HEADER,
     _combine_chunk_frames,
@@ -64,14 +65,12 @@ from dataretrieval.ogc.chunking import (
 )
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
-    _NEVER_CHUNK,
     _OR_SEP,
     ChunkPlan,
     _extract_axes,
     _request_bytes,
     _safe_request_bytes,
 )
-from dataretrieval.ogc.requests import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
 )
@@ -148,19 +147,17 @@ def _fake_build(*, base=200, **kwargs):
     return _FakeReq("x" * bytes_)
 
 
-def test_never_chunk_covers_all_date_range_params():
-    """``_NEVER_CHUNK`` and ``_DATE_RANGE_PARAMS`` are maintained in
-    separate modules (chunker vs request builder) for layering reasons,
-    but every date-range param MUST be excluded from chunking — a
-    range value isn't an enumerable set to split. Guard against drift:
-    adding a new param to ``_DATE_RANGE_PARAMS`` without also adding
-    it to ``_NEVER_CHUNK`` would let the chunker try to
-    comma-join an interval string."""
-    missing = _DATE_RANGE_PARAMS - _NEVER_CHUNK
-    assert not missing, (
-        f"_DATE_RANGE_PARAMS contains entries not in _NEVER_CHUNK: "
-        f"{sorted(missing)}. Add them to planning._NEVER_CHUNK."
-    )
+def test_extract_axes_never_splits_a_date_range():
+    """A date argument arrives as a ``DateRange``, so it is never an axis,
+    whatever the dialect names the parameter -- the planner lists no date
+    parameter of its own."""
+    args = {
+        "monitoring_location_id": ["USGS-A", "USGS-B"],
+        "any_date_param": read_date_range(
+            ["2024-01-01", "2024-12-31"], name="time", durations=True
+        ),
+    }
+    assert [axis.arg_key for axis in _extract_axes(args)] == ["monitoring_location_id"]
 
 
 def test_extract_axes_picks_up_list_dims_and_filter():

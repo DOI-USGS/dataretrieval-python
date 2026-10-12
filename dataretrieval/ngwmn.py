@@ -112,7 +112,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = prepare_request_args(local_vars)
+    args = prepare_request_args(local_vars, dialect=NGWMN_DIALECT)
     return get_ogc_data(
         args,
         service,

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import ast
 import configparser
+import dataclasses
 import functools
 import re
 import sys
@@ -667,3 +668,87 @@ def test_adr_references_resolve_to_a_record() -> None:
     assert not dangling, "citations name no such decision record:\n  " + "\n  ".join(
         dangling
     )
+
+
+def _code_string_literals(path: Path) -> list[tuple[int, str]]:
+    """String constants in *path*, excluding docstrings and ``__all__``, whose
+    entries name modules and symbols."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    exports = {
+        id(element)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        and any(isinstance(t, ast.Name) and t.id == "__all__" for t in node.targets)
+        for element in ast.walk(node.value)
+    }
+    docstrings = exports | {
+        id(node.body[0].value)
+        for node in ast.walk(tree)
+        if isinstance(
+            node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
+        )
+        and node.body
+        and isinstance(node.body[0], ast.Expr)
+        and isinstance(node.body[0].value, ast.Constant)
+    }
+    return [
+        (node.lineno, node.value)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and id(node) not in docstrings
+    ]
+
+
+# Protocol code: the modules shared by more than one service (ADR 0014).
+_PROTOCOL_PATHS = (
+    *sorted((PACKAGE_ROOT / "ogc").glob("*.py")),
+    PACKAGE_ROOT / "_intervals.py",
+)
+
+# The departures ADR 0014 records as still written in the OGC code. Only this
+# one is a literal a dialect also lists; the other three (the ``skipGeometry``
+# name, the 50000 ``limit`` cap, and the unquoted-number CQL check) name
+# nothing a dialect declares.
+_RECORDED_DEPARTURES = frozenset({"monitoring_location_id"})
+
+
+def _declared_strings(value: object) -> set[str]:
+    """Every string a dialect value lists, through nested dialects."""
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        return set().union(
+            *(
+                _declared_strings(getattr(value, f.name))
+                for f in dataclasses.fields(value)
+            )
+        )
+    if isinstance(value, str):
+        return {value} if value else set()
+    if isinstance(value, (frozenset, set, tuple, list)):
+        return set().union(*(_declared_strings(v) for v in value))
+    return set()
+
+
+def test_protocol_code_names_nothing_a_dialect_declares() -> None:
+    """ADR 0014: shared protocol code reads every parameter, collection, and
+    column a service departs on from that service's dialect. A literal of one
+    in protocol code is behavior that depends on which service it is, without
+    a field saying so. The standard's own names (each field's default) are not
+    departures."""
+    from dataretrieval.ngwmn import NGWMN_DIALECT
+    from dataretrieval.ogc import OgcDialect
+    from dataretrieval.waterdata.ratings import STAC_DATES
+    from dataretrieval.waterdata.utils import WATERDATA_DIALECT
+
+    declared = (
+        _declared_strings(WATERDATA_DIALECT)
+        | _declared_strings(NGWMN_DIALECT)
+        | _declared_strings(STAC_DATES)
+    ) - _declared_strings(OgcDialect())
+    found = [
+        f"{path.relative_to(PACKAGE_ROOT)}:{line} {value!r}"
+        for path in _PROTOCOL_PATHS
+        for line, value in _code_string_literals(path)
+        if value in declared - _RECORDED_DEPARTURES
+    ]
+    assert not found, f"declare it as a dialect field and read it there: {found}"

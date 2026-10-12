@@ -37,20 +37,13 @@ from dataretrieval.ogc.filters import (
 # Any list-shaped kwarg with >1 element is chunked (comma-joined per sub-list in the
 # URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
 # maintaining a growing allowlist. Excluded because: ``properties`` defines the column
-# schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
-# enumerable sets; ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
-# ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
+# schema; ``bbox`` is a fixed coord tuple; ``filter`` is handled as its own OR-axis in
+# ``_extract_axes``; and ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by
+# contract. A date parameter needs no entry: it arrives as a ``DateRange``, not a list.
 _NEVER_CHUNK = frozenset(
     {
         "properties",
         "bbox",
-        "datetime",
-        "last_modified",
-        "begin",
-        "begin_utc",
-        "end",
-        "end_utc",
-        "time",
         "filter",
         "filter_lang",
         "limit",

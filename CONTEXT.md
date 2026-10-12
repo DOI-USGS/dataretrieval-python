@@ -312,9 +312,9 @@ entry (ADR 0013).
   OGC internals, the Water Data wrappers, and all eleven typed getters now say
   `collection`; `waterdata.get_cql` takes `collection`; and the type alias is
   `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
-  alias remain — a deprecated keyword and a permanent alias respectively. One
-  `OgcDialect` field also still says it: `date_only_services` is keyed by
-  collection.
+  alias remain — a deprecated keyword and a permanent alias respectively. The
+  dialect field keyed by collection says so too:
+  `OgcDialect.date_only_collections`.
 
   `service` still means the external system in `transport` and `progress`,
   where it labels a progress line. That usage is correct.
