@@ -14,6 +14,7 @@ import httpx
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _get_with_retry
+from dataretrieval._service import Service
 from dataretrieval.configuration import (
     BaseConfiguration,
     _Redirectable,
@@ -32,6 +33,9 @@ __all__ = [
 
 STREAMSTATS_URL = "https://streamstats.usgs.gov/streamstatsservices"
 
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("streamstats", STREAMSTATS_URL)
+
 
 def _service_base() -> str:
     """The StreamStats base this call targets: a block's redirect, or its own.
@@ -40,7 +44,7 @@ def _service_base() -> str:
     ``StreamstatsConfiguration(base_url=...)`` redirects the whole service rather
     than one endpoint (ADR 0011).
     """
-    return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
+    return _configuration.service_url(_SERVICE)
 
 
 def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
@@ -65,7 +69,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
     payload = {"workspaceID": workspaceID, "format": format}
     url = f"{_service_base()}/download"
 
-    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter=_SERVICE.name, **HTTPX_DEFAULTS)
     return r
     # data = r.raw.read()
 
@@ -168,7 +172,7 @@ def get_watershed(
     }
     url = f"{_service_base()}/watershed.geojson"
 
-    r = _get_with_retry(url, params=payload, adapter="streamstats", **HTTPX_DEFAULTS)
+    r = _get_with_retry(url, params=payload, adapter=_SERVICE.name, **HTTPX_DEFAULTS)
 
     if format == "geojson":
         return r
@@ -264,7 +268,7 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         the file and the environment refuse it.
     """
 
-    adapter: ClassVar[str] = "streamstats"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(StreamstatsConfiguration)

@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple
 from dataretrieval import configuration as _configuration
 from dataretrieval._csv import read_code_csv
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._service import Service
 from dataretrieval._validation import require_one_of
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -56,6 +57,9 @@ if TYPE_CHECKING:
 #: because the two builders below are the documented way to name a WQP URL;
 #: this is only the part they share, and the part a redirect replaces.
 _WQP_BASE_URL = "https://www.waterqualitydata.us"
+
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("wqp", _WQP_BASE_URL)
 
 result_profiles_wqx3 = ["basicPhysChem", "fullPhysChem", "narrow"]
 result_profiles_legacy = ["biological", "narrowResult", "resultPhysChem"]
@@ -150,7 +154,11 @@ def _query_wqp(
         delimiter = None
 
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
+        url,
+        payload=kwargs,
+        delimiter=delimiter,
+        ssl_check=ssl_check,
+        adapter=_SERVICE.name,
     )
     df = read_code_csv(response.text)
     # Only get_results documents the appended DateTime columns and the
@@ -652,7 +660,7 @@ def _service_base() -> str:
     different paths, so a ``WqpConfiguration(base_url=...)`` names that root and
     both use it (ADR 0011).
     """
-    return _configuration.base_url(adapter="wqp", default=_WQP_BASE_URL)
+    return _configuration.service_url(_SERVICE)
 
 
 def wqp_url(service: str) -> str:
@@ -832,7 +840,7 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         the environment refuse it.
     """
 
-    adapter: ClassVar[str] = "wqp"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(WqpConfiguration)

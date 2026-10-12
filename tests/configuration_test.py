@@ -1291,17 +1291,25 @@ def test_every_adapter_is_actually_wired_to_a_read_site():
     package-wide without an error.
     """
     import pathlib
+    import re
 
-    source = "\n".join(
-        p.read_text(encoding="utf-8")
-        for p in pathlib.Path(configuration.__file__).parent.rglob("*.py")
-        if p.name != "configuration.py"
-    )
-    missing = [a for a in configuration.ADAPTERS if f'adapter="{a}"' not in source]
+    root = pathlib.Path(configuration.__file__).parent
+    # Each adapter declares its service once (ADR 0014) and reads the name from
+    # that declaration, so a read site is ``adapter=<declaration>.name`` or an
+    # ``Endpoint(<declaration>, ...)`` in the adapter's own module or package.
+    declared = re.compile(r'(_?SERVICE) = Service\("([a-z]+)"')
+    missing = list(configuration.ADAPTERS)
+    for path in root.rglob("*.py"):
+        for variable, name in declared.findall(path.read_text(encoding="utf-8")):
+            scope = path.parent.glob("*.py") if path.parent != root else [path]
+            source = "\n".join(p.read_text(encoding="utf-8") for p in scope)
+            reads = (f"adapter={variable}.name", f"Endpoint(\n            {variable},")
+            if any(r in source for r in reads) and name in missing:
+                missing.remove(name)
     assert not missing, (
         f"adapters with a schema but no read site: {missing}. Either pass "
-        'adapter="<name>" where that adapter builds its policy or fan-out, or '
-        "drop it from configuration.ADAPTERS."
+        "adapter=<service>.name where that adapter builds its policy or "
+        "fan-out, or drop it from configuration.ADAPTERS."
     )
 
 
@@ -2228,3 +2236,17 @@ def test_show_configuration_reports_an_unresolvable_path_as_the_file_row(
     text = out.getvalue()
     assert "config file  <unresolved:" in text
     assert "working directory is unavailable" in text
+
+
+def test_service_url_prefers_the_services_base_url_setting():
+    """A service declaration resolves its URL by its own name: its default
+    unless a ``base_url`` for that adapter replaces it (ADR 0014)."""
+    from dataretrieval._service import Service
+    from dataretrieval.ngwmn import NgwmnConfiguration
+
+    service = Service("ngwmn", "https://default.example/ngwmn")
+    assert configuration.service_url(service) == "https://default.example/ngwmn"
+    with dataretrieval.configure(NgwmnConfiguration(base_url="https://mirror.example")):
+        assert configuration.service_url(service) == "https://mirror.example"
+        other = Service("wqp", "https://default.example/wqp")
+        assert configuration.service_url(other) == "https://default.example/wqp"

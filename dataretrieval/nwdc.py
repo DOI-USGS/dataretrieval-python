@@ -48,6 +48,7 @@ from dataretrieval import configuration as _configuration
 from dataretrieval._csv import read_code_csv
 from dataretrieval._querying import _raise_for_status, to_str
 from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._service import Service
 from dataretrieval._validation import render_options, require_exactly_one
 from dataretrieval.codes.states import to_state
 from dataretrieval.configuration import (
@@ -72,6 +73,9 @@ __all__ = [
 ]
 
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
+
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("nwdc", WATERUSE_URL)
 _WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
 # Hosts a ``rel="next"`` cursor may name for this same service; each is
 # rewritten to :data:`_WATERUSE_HOST` rather than followed as given.
@@ -244,7 +248,7 @@ def get_wateruse(
     # An ``NwdcConfiguration(base_url=...)`` from an enclosing block, or this
     # service's own endpoint, passed to every request and the page walk
     # (ADR 0011).
-    service_url = _configuration.base_url(adapter="nwdc", default=WATERUSE_URL)
+    service_url = _configuration.service_url(_SERVICE)
 
     # The NWDC queries one location per request, so fan a multi-value selector
     # out into one request per location, each handled by shared transport
@@ -379,8 +383,8 @@ def _fan_out(
         finalize=finalize,
         client_options={"verify": ssl_check},
         default_concurrent=DEFAULT_CONCURRENT_REQUESTS,
-        service="nwdc",
-        adapter="nwdc",
+        service=_SERVICE.name,
+        adapter=_SERVICE.name,
     )
 
 
@@ -488,7 +492,7 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     """
 
-    adapter: ClassVar[str] = "nwdc"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(NwdcConfiguration)

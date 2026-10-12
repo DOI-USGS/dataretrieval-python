@@ -257,11 +257,21 @@ value. Where the distinction matters — reporting what a call will use
 error shapes, and response quirks. Adapters may use shared code; shared code
 may not reference adapters.
 
-**Dialect** — The per-API quirks the shared OGC code needs in order to
-serve two services from one code path: which collections must be POSTed as
-CQL2, which render dates date-only, which columns to coerce and sort by. An
-adapter supplies one and the shared code reads it, which is how protocol code
-stays free of service names.
+**Dialect** — How one service departs from its protocol's standard, as data
+the shared protocol code reads: which date parameters it has, how it writes an
+open start, whether lists are sent as CQL2, which columns to coerce and sort
+by. Each field's default is the standard. An adapter declares one and the
+shared code reads it, which is how protocol code stays free of service names
+(ADR 0014). In code, `OgcDialect` and `DateDialect`.
+
+**Service declaration** — The value an adapter declares for its service: the
+name configuration resolves its settings by, and the URL a `base_url` setting
+replaces. The one place that name is written outside the configuration
+roster. In code, `Service`.
+
+**Endpoint** — The service, URL, and dialect of one OGC call, built by the
+adapter when the call starts so every chunk and a later resume use the same
+values. In code, `Endpoint`.
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
 WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing
