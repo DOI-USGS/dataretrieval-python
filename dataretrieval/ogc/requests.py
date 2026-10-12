@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from dataretrieval._dates import read_date_range
+from dataretrieval._dates import DateRange, read_date_range
 from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.transport.http import default_headers as _default_headers
@@ -335,6 +335,20 @@ def _check_monitoring_location_id(
                 f"Expected 'AGENCY-ID' format, e.g., 'USGS-01646500'."
             )
     return value
+
+
+def _read_raw_dates(args: dict[str, Any], dates: DateDialect) -> dict[str, Any]:
+    """``args`` with each date parameter not yet read (a caller's verbatim
+    ``query``, which skips :func:`prepare_request_args`) read into a
+    ``DateRange``, and dropped when every bound is open."""
+    out = dict(args)
+    for key in dates.params & out.keys():
+        if isinstance(out[key], DateRange):
+            continue
+        value = read_date_range(out.pop(key), name=key, durations=dates.durations)
+        if value is not None:
+            out[key] = value
+    return out
 
 
 def _normalize_arg(

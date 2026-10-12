@@ -177,7 +177,7 @@ def read_date_range(
         ``pandas.Timestamp``, or a string in ISO 8601 (with or without ``Z`` or
         a numeric offset) or ``"%Y-%m-%d %H:%M:%S"`` form. ``None``, ``NaN``,
         ``NaT``, ``""`` and ``".."`` are open bounds.
-    name : str, optional
+    name : str
         The caller's own spelling of this argument, used as the subject of
         every message raised here, so a caller correcting the error edits an
         argument their getter accepts.

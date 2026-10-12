@@ -1734,6 +1734,23 @@ def test_get_reference_table_serves_countries(httpx_mock):
     assert "country" in df.columns
 
 
+@pytest.mark.parametrize(
+    ("value", "sent"),
+    [
+        ("2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z"),
+        (["2024-01-01T00:00:00Z", None], "2024-01-01T00:00:00Z/.."),
+    ],
+)
+def test_get_reference_table_reads_a_date_in_its_query(httpx_mock, value, sent):
+    """A ``query`` dict skips the getters' argument reading, so the engine reads
+    its date parameters; a raw string used to raise AttributeError."""
+    _mock_items(httpx_mock, "agency-codes")
+
+    get_reference_table("agency-codes", query={"last_modified": value})
+
+    assert _sent(httpx_mock, "agency-codes")[0]["last_modified"] == [sent]
+
+
 def test_get_reference_table_with_query(httpx_mock):
     """A ``query`` dict is merged into the request's query params."""
     _mock_items(httpx_mock, "agency-codes")
