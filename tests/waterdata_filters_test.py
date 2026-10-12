@@ -9,7 +9,7 @@ import pytest
 
 from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
-    _quote_cql_str,
+    _cql_text_literal,
     _split_top_level_or,
 )
 from dataretrieval.ogc.requests import (
@@ -48,13 +48,13 @@ def _fake_response(url="https://example.test", elapsed_ms=1):
     )
 
 
-def test_quote_cql_str_doubles_embedded_quotes():
-    """The shared CQL-text escaper doubles ``'`` and leaves other input unchanged (the
-    contract ``waterdata.ratings._build_filter`` relies on).
-    """
-    assert _quote_cql_str("O'Brien") == "O''Brien"
-    assert _quote_cql_str("USGS-01646500") == "USGS-01646500"
-    assert _quote_cql_str("a'b'c") == "a''b''c"
+def test_cql_text_literal_quotes_a_value_the_api_reads():
+    """The API rejects the CQL2 ``''`` escape, so a value containing ``'`` is
+    double-quoted, and one containing both quote characters is refused."""
+    assert _cql_text_literal("USGS-01646500", remedy="") == "'USGS-01646500'"
+    assert _cql_text_literal("O'Brien", remedy="") == '"O\'Brien"'
+    with pytest.raises(ValueError, match="contains both .* Do this.$"):
+        _cql_text_literal("a'b\"c", remedy="Do this.")
 
 
 def test_construct_filter_lang_hyphenated():

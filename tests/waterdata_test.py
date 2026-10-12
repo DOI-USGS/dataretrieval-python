@@ -15,6 +15,7 @@ from pandas import DataFrame
 
 import dataretrieval
 from dataretrieval import configuration
+from dataretrieval.ogc.policy import OgcDialect
 from dataretrieval.ogc.requests import (
     _check_monitoring_location_id,
     _normalize_str_iterable,
@@ -66,6 +67,11 @@ _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 #: key -- the getters' behavior depends on the shape, not the row count.
 _OGC_FIXTURES = json.loads(
     (Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
+)
+# Real features from USGS-05435943, one per sublocation; the site in
+# ``_OGC_FIXTURES`` records none.
+_SUBLOCATION_FIXTURES = json.loads(
+    (Path(__file__).parent / "data" / "waterdata_sublocation_fixtures.json").read_text()
 )
 
 
@@ -428,16 +434,22 @@ def test_check_profiles():
         _check_profiles(service="results", profile="foo")
 
 
-def test_construct_api_requests_multivalue_get():
-    """Multi-value params use GET with comma-separated values for daily collection."""
+def test_construct_api_requests_multivalue_post():
+    """Multi-value params are CQL2 ``in`` predicates in a POST body, on every
+    collection: the API reads a comma-joined GET value as one value for most
+    parameters and returns no rows."""
     req = _construct_api_requests(
         "daily",
         monitoring_location_id=["USGS-05427718", "USGS-05427719"],
         parameter_code=["00060", "00065"],
+        statistic_id="00003",
     )
-    assert req.method == "GET"
-    assert "monitoring_location_id=USGS-05427718%2CUSGS-05427719" in str(req.url)
-    assert "parameter_code=00060%2C00065" in str(req.url)
+    assert req.method == "POST"
+    assert _cql2_in(req) == {
+        "monitoring_location_id": ["USGS-05427718", "USGS-05427719"],
+        "parameter_code": ["00060", "00065"],
+    }
+    assert "statistic_id=00003" in str(req.url)
 
 
 def test_construct_api_requests_omits_empty_list():
@@ -570,23 +582,128 @@ def test_construct_api_requests_single_value_stays_get():
     assert "%2C" not in str(req.url)  # no comma-encoded multi-value
 
 
-def test_construct_api_requests_numeric_list_joins_with_str():
-    """Numeric-list params (e.g. ``water_year=[2020, 2021]`` on get_peaks)
-    must appear in the URL as a comma-joined string, not fail on ``",".join``
-    of ints. The generator-of-``str(x)`` exists for this case."""
+def test_construct_api_requests_folds_lists_into_a_text_filter():
+    """With a CQL-text ``filter``, the API ignores a POST body, so the lists are
+    added to the filter as ``IN`` clauses and sent by GET; each value is quoted,
+    since every queryable is typed as a string."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id=["USGS-05427718", "USGS-0542'8500"],
+        water_year=[2020, 2021],
+        filter="time >= '2024-03-01' OR time < '2023-01-01'",
+    )
+    assert req.method == "GET"
+    assert req.content == b""
+    assert parse_qs(urlsplit(str(req.url)).query)["filter"] == [
+        "monitoring_location_id IN ('USGS-05427718', \"USGS-0542'8500\") "
+        "AND water_year IN ('2020', '2021') "
+        "AND (time >= '2024-03-01' OR time < '2023-01-01')"
+    ]
+
+
+def test_construct_api_requests_rejects_a_folded_value_with_both_quotes():
+    """A value with both ``'`` and ``"`` has no CQL-text literal the API reads."""
+    with pytest.raises(ValueError, match="contains both .* Remove filter="):
+        _construct_api_requests(
+            "daily", site_type_code=["ST", "a'b\"c"], filter="x = '1'"
+        )
+
+
+@pytest.mark.parametrize("blank", ["", "  "])
+def test_blank_filter_is_not_sent(httpx_mock, blank):
+    """The API answers ``filter=`` with HTTP 400, though it constrains nothing."""
+    _mock_items(httpx_mock, "daily")
+
+    get_daily(
+        approval_status=["Approved", "Provisional"],
+        filter=blank,
+        filter_lang="cql-json",
+    )
+
+    sent = _sent(httpx_mock, "daily")[0]
+    assert "filter" not in sent and "filter-lang" not in sent
+    req = _items_requests(httpx_mock, "daily")[0]
+    assert _cql2_in(req) == {"approval_status": ["Approved", "Provisional"]}
+
+
+def test_construct_api_requests_comma_joins_without_lists_as_cql2():
+    """An API whose dialect does not set ``lists_as_cql2`` (NGWMN, and the
+    default) gets comma-joined GET values."""
+    req = _construct_api_requests_explicit(
+        "things",
+        base_url=OGC_API_URL,
+        dialect=OgcDialect(),
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        filter="x = '1'",
+    )
+    assert req.method == "GET"
+    assert "monitoring_location_id=USGS-A%2CUSGS-B" in str(req.url)
+
+
+def test_construct_api_requests_sends_a_cql2_json_filter_as_the_body():
+    """A ``filter_lang="cql-json"`` filter is the POST body, ANDed with any
+    list predicates: both APIs answer one in the URL with HTTP 400."""
+    time_filter = {"op": ">=", "args": [{"property": "time"}, "2024-03-01"]}
+    alone = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        filter=json.dumps(time_filter),
+        filter_lang="cql-json",
+    )
+    assert alone.method == "POST"
+    assert json.loads(alone.content) == time_filter
+    assert "filter" not in parse_qs(urlsplit(str(alone.url)).query)
+
+    with_list = _construct_api_requests(
+        "daily",
+        monitoring_location_id=["USGS-05427718", "USGS-05428500"],
+        filter=json.dumps(time_filter),
+        filter_lang="cql-json",
+    )
+    assert json.loads(with_list.content)["args"][-1] == time_filter
+    assert _cql2_in(with_list) == {
+        "monitoring_location_id": ["USGS-05427718", "USGS-05428500"]
+    }
+
+
+def test_construct_api_requests_keeps_comma_lists_beside_a_json_filter():
+    """Without ``lists_as_cql2`` (NGWMN), lists stay comma-joined URL values
+    beside the JSON filter body."""
+    req = _construct_api_requests_explicit(
+        "things",
+        base_url=OGC_API_URL,
+        dialect=OgcDialect(),
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        filter='{"op": "=", "args": [{"property": "x"}, "1"]}',
+        filter_lang="cql-json",
+    )
+    assert req.method == "POST"
+    assert json.loads(req.content) == {"op": "=", "args": [{"property": "x"}, "1"]}
+    assert "monitoring_location_id=USGS-A%2CUSGS-B" in str(req.url)
+
+
+@pytest.mark.parametrize("bad", ["time >= '2024-03-01'", "[1, 2]"])
+def test_construct_api_requests_rejects_a_json_filter_that_is_not_an_object(bad):
+    with pytest.raises(ValueError, match="^filter is not a CQL2 JSON object"):
+        _construct_api_requests("daily", filter=bad, filter_lang="cql-json")
+
+
+def test_construct_api_requests_numeric_list_is_a_cql2_predicate():
+    """Numeric-list params (e.g. ``water_year=[2020, 2021]`` on get_peaks) go in
+    the CQL2 body with their values as given."""
     req = _construct_api_requests(
         "peaks",
         monitoring_location_id="USGS-05427718",
         water_year=[2020, 2021],
     )
-    assert req.method == "GET"
-    assert "water_year=2020%2C2021" in str(req.url)
+    assert req.method == "POST"
+    assert _cql2_in(req) == {"water_year": [2020, 2021]}
 
 
 def test_get_args_materializes_numpy_and_series_numeric_params():
     """Regression: numeric (_NO_NORMALIZE_PARAMS) params given as a numpy array
     or pandas Series must be materialized to a list of native Python scalars so
-    they comma-join in the URL (and stay JSON-serializable) — previously the
+    they stay JSON-serializable in the CQL2 body — previously the
     array/Series repr leaked into the query string."""
     for value in (np.array([2020, 2021]), pd.Series([2020, 2021])):
         args = _get_args({"water_year": value})
@@ -594,7 +711,7 @@ def test_get_args_materializes_numpy_and_series_numeric_params():
         # native Python ints, not numpy scalars (JSON-serializable, no np reprs)
         assert [type(x) for x in args["water_year"]] == [int, int]
         req = _construct_api_requests("peaks", **args)
-        assert "water_year=2020%2C2021" in str(req.url)
+        assert _cql2_in(req) == {"water_year": [2020, 2021]}
 
     # float coordinate arrays (e.g. bbox) likewise materialize to native floats
     args = _get_args({"bbox": np.array([-92.8, 44.2, -88.9, 46.0])})
@@ -617,6 +734,18 @@ def test_construct_api_requests_two_element_date_list_becomes_interval():
     assert req.method == "GET"
     # `/` URL-encodes to %2F. Confirms _format_api_dates ran before the join.
     assert "time=2024-01-01%2F2024-01-31" in str(req.url)
+
+
+def test_construct_api_requests_accepts_timestamp_bounds():
+    """A ``pandas.Timestamp`` bound, as in ``time=[df.index.min(), None]``,
+    builds the same request as its string spelling instead of raising
+    ``AttributeError``."""
+    req = _construct_api_requests(
+        "daily",
+        monitoring_location_id="USGS-05427718",
+        time=[pd.Timestamp("2024-01-01", tz="UTC"), None],
+    )
+    assert "time=2024-01-01%2F.." in str(req.url)
 
 
 # --- mocked getter smoke tests ------------------------------------------------
@@ -663,17 +792,35 @@ def _mock_items(httpx_mock, collection, body=None, *, base=_OGC_BASE, **kwargs):
     )
 
 
+def _items_requests(httpx_mock, collection=None):
+    """The ``/items`` requests sent (against ``collection``, if given), in order."""
+    path = f"/collections/{collection}/items" if collection else "/items"
+    return [r for r in httpx_mock.get_requests() if path in str(r.url)]
+
+
 def _sent(httpx_mock, collection=None):
     """Parsed query strings of the ``/items`` requests sent, in order."""
-    out = []
-    for req in httpx_mock.get_requests():
-        url = str(req.url)
-        if "/items" not in url:
-            continue
-        if collection and f"/collections/{collection}/items" not in url:
-            continue
-        out.append(parse_qs(urlsplit(url).query))
-    return out
+    return [
+        parse_qs(urlsplit(str(r.url)).query)
+        for r in _items_requests(httpx_mock, collection)
+    ]
+
+
+def _cql2_in(request):
+    """``{property: values}`` of the ``in`` predicates in a POST body, skipping
+    a caller's own filter."""
+    body = json.loads(request.content)
+    return {
+        p["args"][0]["property"]: p["args"][1]
+        for p in body["args"]
+        if p.get("op") == "in"
+    }
+
+
+def _filters(request):
+    """``{name: values}`` a request filters on, from its URL and CQL2 body."""
+    url = parse_qs(urlsplit(str(request.url)).query)
+    return {**url, **_cql2_in(request)} if request.content else url
 
 
 # --- samples (CSV) -----------------------------------------------------------
@@ -1001,8 +1148,8 @@ def test_get_continuous_sends_method_category(httpx_mock):
         method_category=["STNRD", "LMTUS"],
     )
 
-    qs = _sent(httpx_mock, "continuous")[0]
-    assert qs["method_category"] == ["STNRD,LMTUS"]
+    req = _items_requests(httpx_mock, "continuous")[0]
+    assert _cql2_in(req) == {"method_category": ["STNRD", "LMTUS"]}
 
 
 def test_get_latest_continuous(httpx_mock):
@@ -1017,10 +1164,13 @@ def test_get_latest_continuous(httpx_mock):
     assert df["time"].dtype.name.startswith("datetime64[")
     assert "UTC" in df["time"].dtype.name
     assert hasattr(md, "url")
-    # Multi-value params are comma-joined into one request when the URL fits.
-    qs = _sent(httpx_mock, "latest-continuous")[0]
-    assert qs["monitoring_location_id"] == ["USGS-05427718,USGS-05427719"]
-    assert qs["parameter_code"] == ["00060,00065"]
+    # Multi-value params go in one CQL2 POST when the request fits.
+    sent = _items_requests(httpx_mock, "latest-continuous")
+    assert len(sent) == 1
+    assert _cql2_in(sent[0]) == {
+        "monitoring_location_id": ["USGS-05427718", "USGS-05427719"],
+        "parameter_code": ["00060", "00065"],
+    }
 
 
 def test_get_latest_daily(httpx_mock):
@@ -1255,7 +1405,7 @@ def test_field_measurements_time_is_a_date_with_time_of_day_alongside(httpx_mock
             get_field_measurements,
             "field-measurements",
             ["Primary", "UPSTREAM"],
-            ["Primary,UPSTREAM"],
+            ["Primary", "UPSTREAM"],
         ),
         (
             get_field_measurements_metadata,
@@ -1271,12 +1421,13 @@ def test_sublocation_identifier_is_sent_as_a_filter(
 ):
     """The named ``sublocation_identifier`` parameter is sent as a filter and
     returned as a column."""
-    _mock_items(httpx_mock, collection)
+    _mock_items(httpx_mock, collection, body=_SUBLOCATION_FIXTURES[collection])
 
-    df, _ = getter(monitoring_location_id="USGS-05427718", sublocation_identifier=value)
+    df, _ = getter(monitoring_location_id="USGS-05435943", sublocation_identifier=value)
 
-    assert _sent(httpx_mock, collection)[0]["sublocation_identifier"] == sent
-    assert "sublocation_identifier" in df.columns
+    req = _items_requests(httpx_mock, collection)[0]
+    assert _filters(req)["sublocation_identifier"] == sent
+    assert sorted(df["sublocation_identifier"]) == ["Backup", "HWM", "Primary"]
 
 
 def test_get_field_measurements_metadata(httpx_mock):
@@ -1300,9 +1451,9 @@ def test_get_field_measurements_metadata_multi_site(httpx_mock):
         monitoring_location_id=sites, parameter_code="00060", skip_geometry=True
     )
 
-    qs = _sent(httpx_mock, "field-measurements-metadata")[0]
-    assert qs["monitoring_location_id"] == [",".join(sites)]
-    assert qs["parameter_code"] == ["00060"]
+    filters = _filters(_items_requests(httpx_mock, "field-measurements-metadata")[0])
+    assert filters["monitoring_location_id"] == sites
+    assert filters["parameter_code"] == ["00060"]
 
 
 # --- metadata collections ----------------------------------------------------
@@ -1474,7 +1625,7 @@ def test_get_peaks(httpx_mock):
 
 
 def test_get_peaks_water_year_filter(httpx_mock):
-    """``water_year`` is forwarded as a comma-joined filter.
+    """``water_year`` is forwarded as a CQL2 ``in`` filter.
 
     The live version of this test asserted only that the returned rows fell
     inside the requested years -- which an empty frame satisfies, so it could
@@ -1490,9 +1641,9 @@ def test_get_peaks_water_year_filter(httpx_mock):
         skip_geometry=True,
     )
 
-    qs = _sent(httpx_mock, "peaks")[0]
-    assert qs["water_year"] == ["2020,2021,2022"]
-    assert qs["parameter_code"] == ["00060"]
+    filters = _filters(_items_requests(httpx_mock, "peaks")[0])
+    assert filters["water_year"] == [2020, 2021, 2022]
+    assert filters["parameter_code"] == ["00060"]
 
 
 # --- channel measurements ----------------------------------------------------
@@ -1882,3 +2033,59 @@ def test_get_reference_table_docstring_lists_every_collection():
     doc = get_reference_table.__doc__ or ""
     missing = [c for c in get_args(METADATA_COLLECTIONS) if f'"{c}"' not in doc]
     assert not missing, f"collections served but undocumented: {missing}"
+
+
+@pytest.mark.live
+@pytest.mark.parametrize(
+    "filters",
+    [
+        {},
+        # The API ignores a POST body when the URL carries a text filter.
+        {"filter": "time >= '2024-01-03'"},
+    ],
+    ids=["no-filter", "text-filter"],
+)
+def test_a_multi_value_filter_returns_the_union_of_its_values(filters):
+    """``approval_status=[a, b]`` returns the rows of ``a`` plus the rows of
+    ``b``. A comma-joined GET returned no rows for it (2026-10-11), as for every
+    parameter but a few identifiers and codes."""
+    kwargs = {
+        "bbox": [-89.6, 42.9, -89.2, 43.2],
+        "time": "2024-01-01/2024-01-05",
+        **filters,
+    }
+    values = ["Approved", "Provisional"]
+    both, _ = get_daily(approval_status=values, **kwargs)
+    singles = [len(get_daily(approval_status=v, **kwargs)[0]) for v in values]
+    assert all(singles), singles
+    assert len(both) == sum(singles)
+
+
+@pytest.mark.live
+def test_a_cql2_json_filter_selects_like_its_text_form():
+    """A ``filter_lang="cql-json"`` filter, sent as the body, returns the same
+    rows as the text filter it spells. The filter is the one the error message
+    for a malformed JSON filter suggests."""
+    kwargs = {"bbox": [-89.6, 42.9, -89.2, 43.2], "time": "2024-01-01/2024-01-05"}
+    as_json, _ = get_daily(
+        filter='{"op": "=", "args": [{"property": "approval_status"}, "Approved"]}',
+        filter_lang="cql-json",
+        **kwargs,
+    )
+    as_text, _ = get_daily(filter="approval_status = 'Approved'", **kwargs)
+    assert len(as_text) > 0
+    assert sorted(as_json["daily_id"]) == sorted(as_text["daily_id"])
+
+
+@pytest.mark.live
+def test_a_list_value_with_an_apostrophe_folds_into_a_text_filter():
+    """The API rejects the CQL2 ``''`` escape with HTTP 400 (2026-10-12), so a
+    folded value containing ``'`` must be double-quoted."""
+    names = [
+        "DEVILS LAKE TRIBUTARY NEAR BARABOO, WI",
+        "KOSHKONONG CR 50' DS STP OUTFALL SUN PRAIRIE, WI",
+    ]
+    df, _ = get_monitoring_locations(
+        monitoring_location_name=names, filter="agency_code = 'USGS'"
+    )
+    assert sorted(df["monitoring_location_name"]) == names

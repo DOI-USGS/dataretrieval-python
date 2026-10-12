@@ -1,0 +1,188 @@
+{
+ "field-measurements": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "3bfe5a6f-bfc2-40da-814c-e75fce87574d",
+    "properties": {
+     "approval_status": "Provisional",
+     "control_condition": "Vegetation - Moderate",
+     "day": 24,
+     "field_measurements_series_id": "081d916a-2616-47cd-a5a9-a0130b97d68e",
+     "field_visit_id": "f3ce2054-ec8d-4ae1-b844-524ae0204a5e",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "measurement_rated": null,
+     "measuring_agency": "USGS",
+     "monitoring_location_id": "USGS-05435943",
+     "month": 8,
+     "observing_procedure": "Gage height, subm press trans",
+     "observing_procedure_code": "Z",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "Backup",
+     "time": "2026-08-24",
+     "time_of_day": "14:03:00+00:00",
+     "unit_of_measure": "ft",
+     "value": "4.35",
+     "vertical_datum": "None",
+     "year": 2026
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "683e215d-8675-4328-ae9a-3bcab3814280",
+    "properties": {
+     "approval_status": "Provisional",
+     "control_condition": "Vegetation - Moderate",
+     "day": 19,
+     "field_measurements_series_id": "a41b2b99-3f5a-4e25-acde-dcf048efbf60",
+     "field_visit_id": "d37ea63b-bda4-4fdb-8640-a99ac06c1db5",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "measurement_rated": null,
+     "measuring_agency": "USGS",
+     "monitoring_location_id": "USGS-05435943",
+     "month": 9,
+     "observing_procedure": "Gage height, reference point",
+     "observing_procedure_code": "Z",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "HWM",
+     "time": "2026-09-19",
+     "time_of_day": "15:25:00+00:00",
+     "unit_of_measure": "ft",
+     "value": "8.18",
+     "vertical_datum": "None",
+     "year": 2026
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "03ca48b9-c29a-4cdb-b79a-662a218335fc",
+    "properties": {
+     "approval_status": "Provisional",
+     "control_condition": "Clear",
+     "day": 13,
+     "field_measurements_series_id": "0e029595-0036-492b-8ec9-8d3cea75285c",
+     "field_visit_id": "5cfefadd-15cb-4665-92d2-00db86a24a17",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "measurement_rated": null,
+     "measuring_agency": "USGS",
+     "monitoring_location_id": "USGS-05435943",
+     "month": 1,
+     "observing_procedure": "Gage height, reference point",
+     "observing_procedure_code": "Z",
+     "parameter_code": "00065",
+     "qualifier": null,
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "Primary",
+     "time": "2026-01-13",
+     "time_of_day": "17:17:00+00:00",
+     "unit_of_measure": "ft",
+     "value": "4.84",
+     "vertical_datum": "None",
+     "year": 2026
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 3,
+  "type": "FeatureCollection"
+ },
+ "field-measurements-metadata": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "081d916a-2616-47cd-a5a9-a0130b97d68e",
+    "properties": {
+     "begin": "2025-07-21T18:05:00+00:00",
+     "end": "2026-08-24T16:42:00+00:00",
+     "id": "081d916a-2616-47cd-a5a9-a0130b97d68e",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "monitoring_location_id": "USGS-05435943",
+     "parameter_code": "00065",
+     "parameter_description": "Gage height, feet",
+     "parameter_name": "Gage height",
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "Backup"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "a41b2b99-3f5a-4e25-acde-dcf048efbf60",
+    "properties": {
+     "begin": "2026-09-19T14:37:00+00:00",
+     "end": "2026-09-19T15:25:00+00:00",
+     "id": "a41b2b99-3f5a-4e25-acde-dcf048efbf60",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "monitoring_location_id": "USGS-05435943",
+     "parameter_code": "00065",
+     "parameter_description": "Gage height, feet",
+     "parameter_name": "Gage height",
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "HWM"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": {
+     "coordinates": [
+      -89.5394444444444,
+      42.9769444444444
+     ],
+     "type": "Point"
+    },
+    "id": "0e029595-0036-492b-8ec9-8d3cea75285c",
+    "properties": {
+     "begin": "2023-10-03T17:45:00+00:00",
+     "end": "2026-07-21T15:13:00+00:00",
+     "id": "0e029595-0036-492b-8ec9-8d3cea75285c",
+     "last_modified": "2026-10-03T03:26:35.295455+00:00",
+     "monitoring_location_id": "USGS-05435943",
+     "parameter_code": "00065",
+     "parameter_description": "Gage height, feet",
+     "parameter_name": "Gage height",
+     "reading_type": "ReferencePrimary",
+     "sublocation_identifier": "Primary"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 3,
+  "type": "FeatureCollection"
+ }
+}
