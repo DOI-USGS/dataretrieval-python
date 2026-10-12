@@ -16,6 +16,7 @@ from typing import Any, ClassVar, Literal, cast
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _query_with_retry
+from dataretrieval._service import Service
 from dataretrieval._validation import (
     reject_together,
     render_options,
@@ -51,6 +52,9 @@ except ImportError as err:
     ) from err
 
 NLDI_API_BASE_URL = "https://api.water.usgs.gov/nldi/linked-data"
+
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("nldi", NLDI_API_BASE_URL)
 _AVAILABLE_DATA_SOURCES = None
 _CRS = "EPSG:4326"
 _VALID_NAVIGATION_MODES = ("UM", "DM", "UT", "DD")
@@ -73,7 +77,7 @@ def _api_base() -> str:
     :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
     applies to every navigation, basin, and catalog request alike (ADR 0011).
     """
-    return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
+    return _configuration.service_url(_SERVICE)
 
 
 def _query_nldi(
@@ -83,7 +87,7 @@ def _query_nldi(
     # A helper function to query the NLDI API. ``query()`` already raises a typed
     # ``DataRetrievalError`` for any HTTP error response, so a returned response is a
     # success that only needs parsing.
-    response = _query_with_retry(url, payload=query_params, adapter="nldi")
+    response = _query_with_retry(url, payload=query_params, adapter=_SERVICE.name)
     response_data: dict[str, Any] | list[Any] = {}
     try:
         response_data = response.json()
@@ -734,7 +738,7 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         environment refuse it.
     """
 
-    adapter: ClassVar[str] = "nldi"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(NldiConfiguration)
