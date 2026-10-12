@@ -211,6 +211,7 @@ def _construct_api_requests(
                 date=(
                     collection in dialect.date_only_services and key != "last_modified"
                 ),
+                open_start=dialect.open_start,
             )
     json_filter = _pop_json_filter(kwargs)
     params, post_params = _partition_request_params(

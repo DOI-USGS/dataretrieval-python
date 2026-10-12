@@ -3,6 +3,7 @@ import datetime
 import functools
 import json
 import logging
+import time
 import warnings
 from unittest import mock
 
@@ -920,7 +921,7 @@ def test_type_cols_warning_is_singular_for_one_value():
     "value, date, expected",
     [
         ("2018-02-12T23:20:50Z", False, "2018-02-12T23:20:50Z"),
-        ("2018-02-12T23:20:50.123Z", False, "2018-02-12T23:20:50Z"),
+        ("2018-02-12T23:20:50.123Z", False, "2018-02-12T23:20:50.123Z"),
         ("2018-02-12T19:20:50-04:00", False, "2018-02-12T23:20:50Z"),
         (
             ["2018-02-12T23:20:50Z", "2018-03-18T12:31:12Z"],
@@ -948,7 +949,7 @@ def test_type_cols_warning_is_singular_for_one_value():
         "fractional_seconds",
         "offset_to_utc",
         "iso8601_pair_to_interval",
-        "passthrough_interval",
+        "utc_interval_string",
         "passthrough_duration",
         "time_only_duration",
         "date_only",
@@ -964,8 +965,8 @@ def test_type_cols_warning_is_singular_for_one_value():
 def test_format_api_dates(value, date, expected):
     """``_format_api_dates`` normalizes ISO 8601 datetimes to UTC (dropping
     fractional seconds, converting offsets), joins a pair into an interval,
-    passes durations / intervals through unchanged, and renders a None
-    endpoint as ``..``."""
+    passes durations through unchanged, and renders a None endpoint as
+    ``..``."""
     assert _format_api_dates(value, date=date) == expected
 
 
@@ -980,6 +981,118 @@ def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
     assert _format_api_dates([None, None]) is None
     assert _format_api_dates(["", ""]) is None
     assert _format_api_dates(["..", ".."]) is None
+
+
+@pytest.mark.parametrize(
+    "interval, pair, date",
+    [
+        ("2024-01-01T10:00:00/..", ["2024-01-01T10:00:00", None], False),
+        ("../2024-01-01T10:00:00", [None, "2024-01-01T10:00:00"], False),
+        ("2018-02-12T19:20:50-04:00/..", ["2018-02-12T19:20:50-04:00", ".."], False),
+        (
+            "2024-01-01 10:00:00/2024-01-02",
+            ["2024-01-01 10:00:00", "2024-01-02"],
+            False,
+        ),
+        (
+            "2024-01-01T10:00:00Z/2024-02-01T00:00:00Z",
+            ["2024-01-01T10:00:00Z", "2024-02-01T00:00:00Z"],
+            True,
+        ),
+        ("2024-01-01T10:00:00Z/", ["2024-01-01T10:00:00Z", ""], False),
+    ],
+    ids=[
+        "naive_start",
+        "naive_end",
+        "offset",
+        "space_separated",
+        "date_only_truncates",
+        "empty_end",
+    ],
+)
+def test_format_api_dates_formats_an_interval_string_like_the_pair(
+    interval, pair, date
+):
+    """A ``"start/end"`` string and the two-value list are two spellings of the
+    same range, so they send the same value. The string used to be sent
+    unchanged, so an offset was not converted to ``Z`` and a date-only
+    collection received times."""
+    assert _format_api_dates(interval, date=date) == _format_api_dates(pair, date=date)
+
+
+@pytest.mark.parametrize(
+    "interval, date, expected",
+    [
+        ("2018-02-12T19:20:50-04:00/..", False, "2018-02-12T23:20:50Z/.."),
+        ("2024-01-01T10:00:00Z/2024-02-01T00:00:00Z", True, "2024-01-01/2024-02-01"),
+    ],
+    ids=["offset_to_utc", "date_only"],
+)
+def test_format_api_dates_formats_each_side_of_an_interval_string(
+    interval, date, expected
+):
+    """Each side is formatted on its own, as a list element is."""
+    assert _format_api_dates(interval, date=date) == expected
+
+
+def test_format_api_dates_treats_an_all_open_interval_string_as_no_filter():
+    """``"../.."`` is the string spelling of ``[None, None]``."""
+    assert _format_api_dates("../..") is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [None, "2024-01-01T00:00:00Z"],
+        ["..", "2024-01-01T00:00:00Z"],
+        "../2024-01-01T00:00:00Z",
+        "/2024-01-01T00:00:00Z",
+    ],
+    ids=["none", "dotdot", "dotdot_string", "empty_string"],
+)
+def test_format_api_dates_writes_an_open_start_as_open_start(value):
+    """Every spelling of an open start is written as ``..`` by default, or as
+    ``open_start`` when given: NGWMN and STAC reject ``"../"`` (HTTP 403), and
+    the Water Data API rejects an empty start (HTTP 400)."""
+    assert _format_api_dates(value) == "../2024-01-01T00:00:00Z"
+    assert _format_api_dates(value, open_start="") == "/2024-01-01T00:00:00Z"
+
+
+def test_format_api_dates_open_start_leaves_an_open_end_and_no_filter_alone():
+    """``open_start`` changes only the start: an open end is ``..`` on every API,
+    and a range with both ends open is still no filter."""
+    open_end = _format_api_dates(["2024-01-01T00:00:00Z", None], open_start="")
+    assert open_end == "2024-01-01T00:00:00Z/.."
+    assert _format_api_dates([None, None], open_start="") is None
+    assert _format_api_dates("../..", open_start="") is None
+
+
+@pytest.mark.parametrize(
+    "interval, message",
+    [
+        ("not-a-date/also-bad", "time could not be read as a date or datetime"),
+        ("2024-01-01/tomorrow", "time could not be read as a date or datetime"),
+        ("2024-01-01/2024-02-01/2024-03-01", "time is not a valid interval"),
+        # The Water Data and NGWMN services reject a duration side with HTTP 400.
+        ("2024-01-01T10:00:00Z/PT36H", "time is not a valid interval"),
+        ("P7D/2024-01-08", "time is not a valid interval"),
+        ("P7D/..", "time is not a valid interval"),
+    ],
+    ids=[
+        "both_sides",
+        "one_side",
+        "three_sides",
+        "end_duration",
+        "start_duration",
+        "start_duration_open_end",
+    ],
+)
+def test_format_api_dates_rejects_an_unreadable_interval_string(interval, message):
+    """An interval string used to be sent unchanged, so ``time="garbage/.."``
+    reached the service. It is now rejected like an unreadable list element,
+    naming the caller's argument."""
+    with pytest.raises(ValueError, match=f"^{message}"):
+        _format_api_dates(interval, name="time")
 
 
 @pytest.mark.parametrize(
@@ -1663,3 +1776,49 @@ class TestOgcJsonErrorDetail:
 
         assert _json_error_detail(httpx.Response(400, json="just a string")) is None
         assert _json_error_detail(httpx.Response(400, json=[1, 2, 3])) is None
+
+
+@pytest.mark.parametrize(
+    ("value", "sent"),
+    [
+        # Minute precision and spaces around "/" were sent unchanged before
+        # interval strings were parsed, and the service accepts both.
+        ("2024-01-01T10:00Z/..", "2024-01-01T10:00:00Z/.."),
+        ("2024-01-01T10:00:00Z / 2024-01-02T00:00:00Z", None),
+        # Truncating fractional seconds would change a closed bound. The Water
+        # Data, NGWMN, and STAC services accept them (checked 2026-10-12).
+        ("2024-01-01T10:00:00.999Z", "2024-01-01T10:00:00.999Z"),
+        (["2024-01-01T10:00:00.5Z", None], "2024-01-01T10:00:00.5Z/.."),
+    ],
+    ids=["minute_precision", "space_around_slash", "fraction", "fraction_range"],
+)
+def test_format_api_dates_accepts_minutes_spaces_and_fractions(value, sent):
+    expected = sent or "2024-01-01T10:00:00Z/2024-01-02T00:00:00Z"
+    assert _format_api_dates(value, name="time") == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "date", "sent"),
+    [
+        ("2024-03-01/2024-03-02", False, "2024-03-01T00:00:00Z/2024-03-02T00:00:00Z"),
+        (["2024-03-01T10:00:00", None], False, "2024-03-01T10:00:00Z/.."),
+        # An aware value is converted to UTC before its date is taken.
+        ("2024-03-01T22:00:00-05:00", True, "2024-03-02"),
+    ],
+    ids=["naive_dates", "naive_time", "aware_date_only"],
+)
+def test_format_api_dates_reads_a_naive_value_as_utc(monkeypatch, value, date, sent):
+    """As in pandas, a naive value is UTC rather than the machine's local time,
+    so ``time="2024-03-01/2024-03-02"`` sends the same range on every machine."""
+    # Where the process zone can be set (not Windows), use one that is not UTC,
+    # so reading a naive value as local time would fail.
+    can_set_zone = hasattr(time, "tzset")
+    if can_set_zone:
+        monkeypatch.setenv("TZ", "America/Chicago")
+        time.tzset()
+    try:
+        assert _format_api_dates(value, date=date) == sent
+    finally:
+        monkeypatch.undo()
+        if can_set_zone:
+            time.tzset()

@@ -82,10 +82,11 @@ def get_ratings(
         persisting the bytes to disk; ``df.attrs["url"]`` still records
         where each rating came from.
     time : string, date, datetime, or pandas.Timestamp, or a list of them, optional
-        STAC ``datetime`` filter (passed through verbatim under that name)
-        — a single date / datetime, an interval (``"start/end"``,
-        optionally half-bounded with ``..``), or a list of two values
-        with ``None`` for an open end (``["2026-04-29", None]``). A value
+        STAC ``datetime`` filter — a single date / datetime, an interval
+        (``"start/end"``, optionally half-bounded with ``..``), or a list of
+        two values with ``None`` for an open end (``["2026-04-29", None]``).
+        An interval string is read like the list form: each side is
+        converted to UTC, and a naive one is UTC, as in pandas. A value
         that is not a date raises ``ValueError``. ISO 8601 *durations*
         (``"P1M"``, ``"PT36H"``, …) are **not** supported by the
         rating-curve service; passing one raises ``ValueError``.
@@ -179,7 +180,12 @@ def get_ratings(
     _validate_time_no_duration(time)
     time_str = (
         _format_api_dates(
-            time, name="time", single_value_hint="an instant ('2020-01-01')"
+            time,
+            name="time",
+            single_value_hint="an instant ('2020-01-01')",
+            # The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP
+            # 403; STAC treats an empty start (``/2026-01-01``) as open.
+            open_start="",
         )
         if time is not None
         else None

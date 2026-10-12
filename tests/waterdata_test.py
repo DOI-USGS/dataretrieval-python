@@ -721,6 +721,15 @@ def test_get_args_materializes_numpy_and_series_numeric_params():
     assert "bbox=-92.8%2C44.2%2C-88.9%2C46.0" in str(req.url)
 
 
+def test_construct_api_requests_keeps_dotdot_for_an_open_start():
+    """The Water Data API rejects an empty start (``time=/2024-01-31``) with
+    HTTP 400, so its dialect keeps the default ``..``."""
+    req = _construct_api_requests(
+        "daily", monitoring_location_id="USGS-05427718", time=[None, "2024-01-31"]
+    )
+    assert "time=..%2F2024-01-31" in str(req.url)
+
+
 def test_construct_api_requests_two_element_date_list_becomes_interval():
     """A two-element date list is interpreted as start/end of an OGC datetime
     interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
@@ -948,7 +957,9 @@ def test_get_daily_keeps_a_dotdot_open_bound_in_time(httpx_mock):
 
 
 @pytest.mark.parametrize(
-    "time", ["2025-13-45", ["2025-01-01", "yesterday"]], ids=["single", "range"]
+    "time",
+    ["2025-13-45", ["2025-01-01", "yesterday"], "not-a-date/also-bad"],
+    ids=["single", "range", "interval_string"],
 )
 def test_get_daily_rejects_an_unreadable_time_before_any_request(httpx_mock, time):
     """A bound that matches no date format used to drop the whole filter, so

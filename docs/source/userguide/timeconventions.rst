@@ -10,6 +10,12 @@ continuous (instantaneous) values — ``time`` is a timezone-aware
 ``datetime64[us, UTC]`` column. Daily values represent a whole calendar day,
 so their ``time`` column is timezone-naive (dates only).
 
+The same rule applies to a getter's date arguments (``time``, ``begin``,
+``end``, ``datetime``, ``last_modified``). As in pandas, a date or time without
+an offset is UTC, and one with an offset is converted to UTC, so
+``time="2024-03-01/2024-03-02"`` selects the same UTC days on every machine.
+For a local time, include the offset: ``"2024-03-01T00:00:00-06:00"``.
+
 
 Inspecting Timestamps
 *********************
