@@ -292,8 +292,9 @@ Revisions:
   never split. ``tests/architecture_test.py`` fails if a string a shipped
   dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
   recorded deviations, only ``monitoring_location_id`` is such a literal, so
-  it is the one allowlisted entry. ``cql2_collections`` has no live test: on
-  2026-10-11 a comma-joined GET returned the same rows as the CQL2 POST for
-  two ids on ``monitoring-locations`` and ``combined-metadata``, in v0 and
-  v1, so the behavior it records did not reproduce. Whether to keep the field
-  is left to a separate change.
+  it is the one allowlisted entry. ``cql2_collections`` has no live test
+  because it records the wrong behavior: whether the Water Data API reads a
+  comma-joined GET value as a list depends on the parameter, not the
+  collection, and it does so only for a few identifiers and codes (probed
+  2026-10-11, v0 and v1). #446 replaces the field with a per-API switch,
+  ``multi_value_cql2``; this record takes that field when #446 merges.
