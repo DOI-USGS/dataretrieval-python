@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+gb3675aabc documentation</title>
+  <title>dataretrieval.waterdata.metadata &mdash; dataretrieval 0.1.dev1+g33d76c7e8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5e3d6343"></script>
+      <script src="../../../_static/documentation_options.js?v=365b86b6"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -655,6 +655,9 @@
 <span class="sd">        automatically determine if an observation is erroneous due to sensor</span>
 <span class="sd">        error, and therefore shouldn't be included in the time series.</span>
 <span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
+<span class="sd">        Where at the monitoring location the time series is recorded, a</span>
+<span class="sd">        free-text label such as "YSI DOWN" or "30 CM"; null when none is</span>
+<span class="sd">        recorded.</span>
 <span class="sd">    primary : string or iterable of strings, optional</span>
 <span class="sd">    parent_time_series_id : string or iterable of strings, optional</span>
 <span class="sd">    time_series_id : string or iterable of strings, optional</span>
@@ -862,6 +865,9 @@
 <span class="sd">        Numeric limits known for a time series (e.g. the historic maximum, or the level</span>
 <span class="sd">        below which the sensor is non-operative).</span>
 <span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
+<span class="sd">        Where at the monitoring location the time series is recorded, a</span>
+<span class="sd">        free-text label such as "YSI DOWN" or "30 CM"; null when none is</span>
+<span class="sd">        recorded.</span>
 <span class="sd">    primary : string or iterable of strings, optional</span>
 <span class="sd">        A flag identifying whether the time series is "primary". Primary</span>
 <span class="sd">        time series are standard observations that have undergone Bureau</span>
@@ -1012,7 +1018,6 @@
     <span class="n">begin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">end</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">last_modified</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sublocation_identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">properties</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">skip_geometry</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">bbox</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1021,6 +1026,7 @@
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sublocation_identifier</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get field-measurement metadata: one row per (location, parameter) series.</span>
@@ -1055,9 +1061,6 @@
 <span class="sd">        interval (``"start/end"``, optionally half-bounded with ``..``),</span>
 <span class="sd">        or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See</span>
 <span class="sd">        :func:`get_time_series_metadata` for the full grammar.</span>
-<span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
-<span class="sd">        The sublocation where the series' measurements are recorded, such</span>
-<span class="sd">        as "UPSTREAM".</span>
 <span class="sd">    properties : string or iterable of strings, optional</span>
 <span class="sd">        Subset of columns to return. Defaults to every available property.</span>
 <span class="sd">    skip_geometry : boolean, optional</span>
@@ -1085,6 +1088,10 @@
 <span class="sd">        instead of downloading the whole result. Unlike ``limit`` (the</span>
 <span class="sd">        per-page size), this bounds the total result across every page.</span>
 <span class="sd">        The default (None) follows pagination to completion.</span>
+<span class="sd">    sublocation_identifier : string or iterable of strings, optional</span>
+<span class="sd">        Where at the monitoring location the series' measurements are</span>
+<span class="sd">        recorded, such as "Primary", "Backup", or "HWM"; null when none is</span>
+<span class="sd">        recorded.</span>
 <span class="sd">    **queryables : string or iterable of strings, optional</span>
 <span class="sd">        Any other queryable property of this collection, passed through as a</span>
 <span class="sd">        server-side filter. Call :func:`get_queryables` to see the queryables a</span>
