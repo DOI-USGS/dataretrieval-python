@@ -67,6 +67,11 @@ _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 _OGC_FIXTURES = json.loads(
     (Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
 )
+# Real features from USGS-05435943, one per sublocation; the site in
+# ``_OGC_FIXTURES`` records none.
+_SUBLOCATION_FIXTURES = json.loads(
+    (Path(__file__).parent / "data" / "waterdata_sublocation_fixtures.json").read_text()
+)
 
 
 # The direct request-construction unit tests below bypass ``get_ogc_data``,
@@ -1269,12 +1274,12 @@ def test_sublocation_identifier_is_sent_as_a_filter(
 ):
     """The named ``sublocation_identifier`` parameter is sent as a filter and
     returned as a column."""
-    _mock_items(httpx_mock, collection)
+    _mock_items(httpx_mock, collection, body=_SUBLOCATION_FIXTURES[collection])
 
-    df, _ = getter(monitoring_location_id="USGS-05427718", sublocation_identifier=value)
+    df, _ = getter(monitoring_location_id="USGS-05435943", sublocation_identifier=value)
 
     assert _sent(httpx_mock, collection)[0]["sublocation_identifier"] == sent
-    assert "sublocation_identifier" in df.columns
+    assert sorted(df["sublocation_identifier"]) == ["Backup", "HWM", "Primary"]
 
 
 def test_get_field_measurements_metadata(httpx_mock):
