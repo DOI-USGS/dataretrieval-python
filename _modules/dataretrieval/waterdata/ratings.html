@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gebdc219cc documentation</title>
+  <title>dataretrieval.waterdata.ratings &mdash; dataretrieval 0.1.dev1+gb13c6b9af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=41c3c29b"></script>
+      <script src="../../../_static/documentation_options.js?v=39f4a045"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -161,10 +161,11 @@
 <span class="sd">        persisting the bytes to disk; ``df.attrs["url"]`` still records</span>
 <span class="sd">        where each rating came from.</span>
 <span class="sd">    time : string, date, datetime, or pandas.Timestamp, or a list of them, optional</span>
-<span class="sd">        STAC ``datetime`` filter (passed through verbatim under that name)</span>
-<span class="sd">        — a single date / datetime, an interval (``"start/end"``,</span>
-<span class="sd">        optionally half-bounded with ``..``), or a list of two values</span>
-<span class="sd">        with ``None`` for an open end (``["2026-04-29", None]``). A value</span>
+<span class="sd">        STAC ``datetime`` filter — a single date / datetime, an interval</span>
+<span class="sd">        (``"start/end"``, optionally half-bounded with ``..``), or a list of</span>
+<span class="sd">        two values with ``None`` for an open end (``["2026-04-29", None]``).</span>
+<span class="sd">        An interval string is read like the list form: each side is</span>
+<span class="sd">        converted to UTC, and a naive one is UTC, as in pandas. A value</span>
 <span class="sd">        that is not a date raises ``ValueError``. ISO 8601 *durations*</span>
 <span class="sd">        (``"P1M"``, ``"PT36H"``, …) are **not** supported by the</span>
 <span class="sd">        rating-curve service; passing one raises ``ValueError``.</span>
@@ -258,7 +259,12 @@
     <span class="n">_validate_time_no_duration</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
     <span class="n">time_str</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">_format_api_dates</span><span class="p">(</span>
-            <span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"time"</span><span class="p">,</span> <span class="n">single_value_hint</span><span class="o">=</span><span class="s2">"an instant ('2020-01-01')"</span>
+            <span class="n">time</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">"time"</span><span class="p">,</span>
+            <span class="n">single_value_hint</span><span class="o">=</span><span class="s2">"an instant ('2020-01-01')"</span><span class="p">,</span>
+            <span class="c1"># The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP</span>
+            <span class="c1"># 403; STAC treats an empty start (``/2026-01-01``) as open.</span>
+            <span class="n">open_start</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">else</span> <span class="kc">None</span>

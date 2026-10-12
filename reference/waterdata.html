@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gebdc219cc documentation</title>
+  <title>dataretrieval.waterdata &mdash; dataretrieval 0.1.dev1+gb13c6b9af documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=41c3c29b"></script>
+      <script src="../_static/documentation_options.js?v=39f4a045"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2291,10 +2291,11 @@ determine the result set.</p></li>
 (the default), the parsed <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> is returned without
 persisting the bytes to disk; <code class="docutils literal notranslate"><span class="pre">df.attrs[&quot;url&quot;]</span></code> still records
 where each rating came from.</p></li>
-<li><p><strong>time</strong> (<em>string</em><em>, </em><em>date</em><em>, </em><em>datetime</em><em>, or </em><em>pandas.Timestamp</em><em>, or </em><em>a list</em><em> of </em><em>them</em><em>, </em><em>optional</em>) – STAC <code class="docutils literal notranslate"><span class="pre">datetime</span></code> filter (passed through verbatim under that name)
-— a single date / datetime, an interval (<code class="docutils literal notranslate"><span class="pre">&quot;start/end&quot;</span></code>,
-optionally half-bounded with <code class="docutils literal notranslate"><span class="pre">..</span></code>), or a list of two values
-with <code class="docutils literal notranslate"><span class="pre">None</span></code> for an open end (<code class="docutils literal notranslate"><span class="pre">[&quot;2026-04-29&quot;,</span> <span class="pre">None]</span></code>). A value
+<li><p><strong>time</strong> (<em>string</em><em>, </em><em>date</em><em>, </em><em>datetime</em><em>, or </em><em>pandas.Timestamp</em><em>, or </em><em>a list</em><em> of </em><em>them</em><em>, </em><em>optional</em>) – STAC <code class="docutils literal notranslate"><span class="pre">datetime</span></code> filter — a single date / datetime, an interval
+(<code class="docutils literal notranslate"><span class="pre">&quot;start/end&quot;</span></code>, optionally half-bounded with <code class="docutils literal notranslate"><span class="pre">..</span></code>), or a list of
+two values with <code class="docutils literal notranslate"><span class="pre">None</span></code> for an open end (<code class="docutils literal notranslate"><span class="pre">[&quot;2026-04-29&quot;,</span> <span class="pre">None]</span></code>).
+An interval string is read like the list form: each side is
+converted to UTC, and a naive one is UTC, as in pandas. A value
 that is not a date raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>. ISO 8601 <em>durations</em>
 (<code class="docutils literal notranslate"><span class="pre">&quot;P1M&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;PT36H&quot;</span></code>, …) are <strong>not</strong> supported by the
 rating-curve service; passing one raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></li>

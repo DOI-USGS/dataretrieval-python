@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gebdc219cc documentation</title>
+  <title>dataretrieval.ngwmn &mdash; dataretrieval 0.1.dev1+gb13c6b9af documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=41c3c29b"></script>
+      <script src="../../_static/documentation_options.js?v=39f4a045"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -157,12 +157,13 @@
 <span class="c1"># (there is no service-specific id name as there is for the main collections).</span>
 <span class="n">_NGWMN_OUTPUT_ID</span> <span class="o">=</span> <span class="s2">"id"</span>
 
-<span class="c1"># NGWMN's request shape matches the generic OGC default: it reads comma-joined</span>
-<span class="c1"># GET values as lists, and its firewall refuses a text filter naming a site, so</span>
-<span class="c1"># a list could not be folded into one. It has no date-only collections, but its</span>
-<span class="c1"># result columns need their own coercion and sort vocabulary:</span>
-<span class="c1"># water-level observations are timestamped by ``sample_time`` (not the Water</span>
-<span class="c1"># Data ``time``) and report depths/levels in feet.</span>
+<span class="c1"># NGWMN reads comma-joined GET values as lists, and its firewall refuses a text</span>
+<span class="c1"># filter naming a site, so a list could not be folded into one. It has no</span>
+<span class="c1"># date-only collections, but its result columns need their own coercion and</span>
+<span class="c1"># sort vocabulary: water-level observations are timestamped by ``sample_time``</span>
+<span class="c1"># (not the Water Data ``time``) and report depths/levels in feet. Its firewall</span>
+<span class="c1"># rejects ``datetime=../2016-01-01`` with HTTP 403, so an open start is sent</span>
+<span class="c1"># empty (``/2016-01-01``), which NGWMN treats as open.</span>
 <span class="n">NGWMN_DIALECT</span> <span class="o">=</span> <span class="n">OgcDialect</span><span class="p">(</span>
     <span class="n">time_cols</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">({</span><span class="s2">"sample_time"</span><span class="p">}),</span>
     <span class="n">numerical_cols</span><span class="o">=</span><span class="nb">frozenset</span><span class="p">(</span>
@@ -173,6 +174,7 @@
         <span class="p">}</span>
     <span class="p">),</span>
     <span class="n">sort_cols</span><span class="o">=</span><span class="p">(</span><span class="s2">"sample_time"</span><span class="p">,</span> <span class="s2">"monitoring_location_id"</span><span class="p">),</span>
+    <span class="n">open_start</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
 <span class="p">)</span>
 
 
