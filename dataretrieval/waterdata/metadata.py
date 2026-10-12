@@ -573,6 +573,9 @@ def get_time_series_metadata(
         automatically determine if an observation is erroneous due to sensor
         error, and therefore shouldn't be included in the time series.
     sublocation_identifier : string or iterable of strings, optional
+        Where at the monitoring location the time series is recorded, a
+        free-text label such as "YSI DOWN" or "30 CM"; null when none is
+        recorded.
     primary : string or iterable of strings, optional
     parent_time_series_id : string or iterable of strings, optional
     time_series_id : string or iterable of strings, optional
@@ -777,6 +780,9 @@ def get_combined_metadata(
         Numeric limits known for a time series (e.g. the historic maximum, or the level
         below which the sensor is non-operative).
     sublocation_identifier : string or iterable of strings, optional
+        Where at the monitoring location the time series is recorded, a
+        free-text label such as "YSI DOWN" or "30 CM"; null when none is
+        recorded.
     primary : string or iterable of strings, optional
         A flag identifying whether the time series is "primary". Primary
         time series are standard observations that have undergone Bureau
@@ -924,7 +930,6 @@ def get_field_measurements_metadata(
     begin: str | Iterable[str] | None = None,
     end: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
-    sublocation_identifier: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,
@@ -933,6 +938,7 @@ def get_field_measurements_metadata(
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
     max_rows: int | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get field-measurement metadata: one row per (location, parameter) series.
@@ -967,9 +973,6 @@ def get_field_measurements_metadata(
         interval (``"start/end"``, optionally half-bounded with ``..``),
         or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
         :func:`get_time_series_metadata` for the full grammar.
-    sublocation_identifier : string or iterable of strings, optional
-        The sublocation where the series' measurements are recorded, such
-        as "UPSTREAM".
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
@@ -997,6 +1000,10 @@ def get_field_measurements_metadata(
         instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
+    sublocation_identifier : string or iterable of strings, optional
+        Where at the monitoring location the series' measurements are
+        recorded, such as "Primary", "Backup", or "HWM"; null when none is
+        recorded.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
         server-side filter. Call :func:`get_queryables` to see the queryables a
