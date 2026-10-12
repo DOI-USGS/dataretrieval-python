@@ -1037,7 +1037,7 @@ def test_format_api_dates_names_the_callers_parameter():
     ``datetime_input`` -- a local of this private helper that no public getter
     accepts, so correcting the argument the message named sent an
     unrecognized parameter."""
-    with pytest.raises(TypeError, match="^time must be a string"):
+    with pytest.raises(TypeError, match="^time must be a date, a string"):
         _format_api_dates({"2024-01-01": "ignored"}, name="time")
 
 
@@ -1045,7 +1045,9 @@ def test_format_api_dates_rejects_mapping():
     """`time={"2024-01-01": "x"}` would materialize as the keys list,
     accepting input the user clearly didn't intend.
     """
-    with pytest.raises(TypeError, match="date input must be a string or sequence"):
+    with pytest.raises(
+        TypeError, match="date input must be a date, a string, or a sequence"
+    ):
         _format_api_dates({"2024-01-01": "ignored"})
 
 
@@ -1117,7 +1119,7 @@ def test_format_api_dates_reads_naive_objects_like_naive_strings(date):
     )
 
 
-@pytest.mark.parametrize("value", [20240101, [20240101, None], 1.5])
+@pytest.mark.parametrize("value", [20240101, [20240101, None], 1.5, b"2024-01-01"])
 def test_format_api_dates_rejects_other_types_naming_the_argument(value):
     """A number is not a date. It used to fail with an ``AttributeError`` from
     inside the formatter; the message now names the caller's argument and the

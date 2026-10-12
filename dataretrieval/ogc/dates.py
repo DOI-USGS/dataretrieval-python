@@ -89,7 +89,8 @@ def _to_datetime(dt: str | _date, *, name: str) -> datetime:
     another type.
     """
     if isinstance(dt, pd.Timestamp):
-        # A plain ``datetime``: ``Timestamp.astimezone()`` needs an explicit zone.
+        # ``Timestamp.astimezone`` is ``tz_convert`` and requires a zone, so
+        # hand ``_format_one`` a plain ``datetime``.
         converted: datetime = dt.to_pydatetime(warn=False)
         return converted
     if isinstance(dt, datetime):
@@ -132,14 +133,15 @@ def _coerce_to_list(
     name: str = "date input",
 ) -> list[_DateLike]:
     """Normalize datetime input to a list, raising on invalid shapes."""
-    if isinstance(datetime_input, (str, _date)) or not isinstance(
+    if isinstance(datetime_input, (str, bytes)) or not isinstance(
         datetime_input, Iterable
     ):
-        # A lone value; anything that is not a date is rejected per element.
+        # A lone value (a ``date`` is not iterable; ``bytes`` would iterate as
+        # integers); a non-date is rejected per element.
         return [datetime_input]
     if isinstance(datetime_input, Mapping):
         raise TypeError(
-            f"{name} must be a string or sequence of strings, "
+            f"{name} must be a date, a string, or a sequence of them, "
             f"not {type(datetime_input).__name__}."
         )
     return list(datetime_input)

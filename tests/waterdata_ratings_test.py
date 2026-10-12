@@ -192,6 +192,28 @@ def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     assert params["datetime"] == ["2026-04-29T00:00:00Z/.."]
 
 
+@pytest.mark.parametrize(
+    "time",
+    [
+        pd.Timestamp("2026-04-29", tz="UTC"),
+        [pd.Timestamp("2026-04-29", tz="UTC"), None],
+    ],
+    ids=["lone", "range"],
+)
+def test_get_ratings_accepts_a_timestamp_time(httpx_mock, time):
+    """The duration check iterated a lone ``Timestamp`` and raised
+    ``TypeError`` before the date formatter could read it."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    get_ratings(
+        monitoring_location_id="USGS-01104475", time=time, download_and_parse=False
+    )
+    (request,) = httpx_mock.get_requests()
+    datetime_param = parse_qs(urlsplit(str(request.url)).query)["datetime"][0]
+    assert datetime_param.startswith("2026-04-29T00:00:00Z")
+
+
 def test_get_ratings_rejects_an_unreadable_time_before_any_request(httpx_mock):
     """An unreadable bound used to drop the ``datetime`` filter, so the search
     silently returned every rating regardless of date."""
