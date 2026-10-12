@@ -8,8 +8,9 @@ Internal helpers used by ``chunking.multi_value_chunked``'s joint
 planner: ``_split_top_level_or`` (clause partitioning),
 ``_is_chunkable`` (filter-language gate), and
 ``_check_numeric_filter_pitfall`` (the lexicographic-comparison check).
-``_quote_cql_str`` escapes a single CQL-text string literal, shared by any
-getter that *builds* a CQL filter (e.g. ``waterdata.ratings``).
+``_cql_text_literal`` quotes a CQL-text string literal and ``_cql_in_clause``
+builds a ``prop IN (...)`` clause, for any getter that *builds* a CQL filter
+(the list fold in ``ogc.requests``, ``waterdata.ratings``).
 
 Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal
 predicates, function calls) are forwarded verbatim — only top-level
@@ -20,7 +21,7 @@ can be union'd.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from typing import Any, Literal
 
 FILTER_LANG = Literal["cql-text", "cql-json"]
@@ -52,16 +53,28 @@ _BETWEEN_NUMERIC_RE = re.compile(
 _QUOTED_STR_RE = re.compile(r"'[^']*'")
 
 
-def _quote_cql_str(value: str) -> str:
-    """Escape a single-quoted CQL2-text literal by doubling embedded quotes.
+def _cql_text_literal(value: str, *, remedy: str) -> str:
+    """``value`` as a CQL-text string literal; ``remedy`` ends the error for a
+    value no literal can hold.
 
-    CQL2 text escapes a ``'`` inside a string literal by doubling it, so
-    ``O'Brien`` becomes ``O''Brien`` (wrap the result in ``'…'`` at the call
-    site). Prevents malformed filters and injection from arbitrary user
-    input. Shared by every getter that builds a CQL-text literal (e.g. the
-    STAC ``/search`` filter in ``waterdata.ratings``).
+    The Water Data parser rejects the ``''`` escape with HTTP 400, so a value
+    containing ``'`` is double-quoted instead. A double-quoted token that names
+    a property is read as that property, which no value containing ``'`` can.
     """
-    return value.replace("'", "''")
+    if "'" not in value:
+        return f"'{value}'"
+    if '"' not in value:
+        return f'"{value}"'
+    raise ValueError(
+        f"{value!r} contains both ' and \", which a CQL-text filter cannot "
+        f"express. {remedy}"
+    )
+
+
+def _cql_in_clause(prop: str, values: Iterable[Any], *, remedy: str) -> str:
+    """``prop IN ('a', 'b')``, each value a CQL-text string literal."""
+    quoted = ", ".join(_cql_text_literal(str(v), remedy=remedy) for v in values)
+    return f"{prop} IN ({quoted})"
 
 
 def _skip_space(expr: str, i: int) -> int:

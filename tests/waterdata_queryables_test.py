@@ -117,13 +117,17 @@ def _mock_daily(httpx_mock):
     """Mock the two endpoints a ``get_daily`` call requests: the items query and
     the schema fetch (used for output typing)."""
     httpx_mock.add_response(method="GET", url=_DAILY_SCHEMA_RE, json={"properties": {}})
-    httpx_mock.add_response(method="GET", url=_DAILY_ITEMS_RE, json=_EMPTY_FEATURES)
+    httpx_mock.add_response(method=None, url=_DAILY_ITEMS_RE, json=_EMPTY_FEATURES)
+
+
+def _items_request(httpx_mock):
+    """The ``/items`` request the getter sent."""
+    return next(r for r in httpx_mock.get_requests() if "/items" in str(r.url))
 
 
 def _items_query(httpx_mock):
     """Parsed query string of the ``/items`` request the getter sent."""
-    req = next(r for r in httpx_mock.get_requests() if "/items" in str(r.url))
-    return parse_qs(urlsplit(str(req.url)).query)
+    return parse_qs(urlsplit(str(_items_request(httpx_mock).url)).query)
 
 
 def test_passthrough_queryables_sent_as_filters(httpx_mock):
@@ -144,9 +148,9 @@ def test_passthrough_queryables_sent_as_filters(httpx_mock):
     assert qs["monitoring_location_id"] == ["USGS-05427718"]
 
 
-def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
-    """A list-valued passthrough queryable is normalized and comma-joined like a
-    named multi-value param."""
+def test_passthrough_list_queryable_is_a_cql2_predicate(httpx_mock):
+    """A list-valued passthrough queryable is normalized and sent in the CQL2
+    body like a named multi-value param."""
     _mock_daily(httpx_mock)
 
     waterdata.get_daily(
@@ -154,7 +158,10 @@ def test_passthrough_list_queryable_is_comma_joined(httpx_mock):
         site_type_code=["ST", "LK"],
     )
 
-    assert _items_query(httpx_mock)["site_type_code"] == ["ST,LK"]
+    body = json.loads(_items_request(httpx_mock).content)
+    assert body["args"] == [
+        {"op": "in", "args": [{"property": "site_type_code"}, ["ST", "LK"]]}
+    ]
 
 
 # --- live queryables monitor -----------------------------------------------

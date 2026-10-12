@@ -22,7 +22,7 @@ from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
 from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
-from dataretrieval.ogc.filters import _quote_cql_str
+from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
 from dataretrieval.transport.fanout import FanOut, active_client
@@ -248,11 +248,16 @@ def _build_filter(
     """
     parts: list[str] = []
     if monitoring_location_id is not None:
-        ids = _as_list(monitoring_location_id)
-        joined = "', '".join(_quote_cql_str(i) for i in ids)
-        parts.append(f"monitoring_location_id IN ('{joined}')")
+        parts.append(
+            _cql_in_clause(
+                "monitoring_location_id",
+                _as_list(monitoring_location_id),
+                remedy="Pass an 'AGENCY-ID' id, e.g., 'USGS-01646500'.",
+            )
+        )
     if file_type is not None:
-        parts.append(f"file_type = '{_quote_cql_str(file_type)}'")
+        # Already checked against _VALID_FILE_TYPES, none of which has a quote.
+        parts.append(f"file_type = '{file_type}'")
     return " AND ".join(parts) if parts else None
 
 
