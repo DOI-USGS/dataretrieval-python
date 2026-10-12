@@ -62,7 +62,6 @@ from dataretrieval.ogc.chunking import (
     multi_value_chunked,
     parallel_chunks,
 )
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
@@ -72,6 +71,7 @@ from dataretrieval.ogc.planning import (
     _request_bytes,
     _safe_request_bytes,
 )
+from dataretrieval.ogc.requests import _DATE_RANGE_PARAMS
 from dataretrieval.ogc.requests import (
     _construct_api_requests as _construct_api_requests_explicit,
 )

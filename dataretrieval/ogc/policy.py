@@ -2,8 +2,8 @@
 
 This module is the one definition of the :class:`OgcDialect` type
 (per-API quirks the generic request builder needs) and OGC control validation.
-It depends only on the stdlib, so any OGC submodule can import it without
-creating cycles.
+It depends only on the stdlib and the interval grammar's dialect type, so any
+OGC submodule can import it without creating cycles.
 
 It names no endpoint: which API an OGC call targets is the *adapter's*
 policy, supplied per call as ``base_url``. A default here would
@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import numbers
 from dataclasses import dataclass, field
+
+from dataretrieval._intervals import DateDialect
 
 
 def _require_positive_int(
@@ -61,12 +63,9 @@ class OgcDialect:
         Columns to sort the combined result by, in priority order. Sorting
         is applied only when the first (primary) column is present; any
         later columns also present are added as secondary keys.
-    open_start : str
-        The string written for the open start of a date range: ``".."``
-        (``"../2024-01-01"``, the default) or ``""`` (``"/2024-01-01"``).
-        OGC API Features allows both, but each service accepts only one: the
-        Water Data API rejects an empty start with HTTP 400, and the NGWMN
-        firewall rejects ``"../"`` with HTTP 403.
+    dates : DateDialect
+        How the API writes date ranges: the interval grammar it shares with
+        STAC. The default follows the standard.
     """
 
     lists_as_cql2: bool = False
@@ -74,7 +73,7 @@ class OgcDialect:
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
-    open_start: str = ".."
+    dates: DateDialect = field(default_factory=DateDialect)
 
 
 # Default dialect: a plain OGC API, with lists comma-joined in the URL and every

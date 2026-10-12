@@ -730,6 +730,32 @@ def test_construct_api_requests_keeps_dotdot_for_an_open_start():
     assert "time=..%2F2024-01-31" in str(req.url)
 
 
+@pytest.mark.live
+def test_ogc_date_dialect_matches_the_service(live_status):
+    """Each ``WATERDATA_DIALECT.dates`` field against the running API: it
+    accepts the request each field produces and rejects the empty start."""
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.waterdata.endpoints import ogc_api_url
+
+    url = f"{ogc_api_url()}/collections/daily/items"
+    dates = WATERDATA_DIALECT.dates
+
+    def status(value):
+        return live_status(
+            url, monitoring_location_id="USGS-05427718", limit=1, time=value
+        )
+
+    # open_start: the default ".." is accepted; the empty start is rejected.
+    end = DateRange(end=datetime.datetime(2024, 1, 3, tzinfo=datetime.timezone.utc))
+    assert status(write_interval(end, dates, date_only=True)) == 200
+    assert status("/2024-01-03") == 400
+    # durations=True: a lone duration is accepted, so it is sent.
+    assert (
+        status(write_interval(DateRange(duration="P7D"), dates, date_only=False)) == 200
+    )
+
+
 def test_construct_api_requests_two_element_date_list_becomes_interval():
     """A two-element date list is interpreted as start/end of an OGC datetime
     interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`

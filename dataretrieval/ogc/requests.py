@@ -16,10 +16,20 @@ from typing import Any
 
 import httpx
 
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval._dates import read_date_range
+from dataretrieval._intervals import write_interval
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.transport.http import default_headers as _default_headers
+
+# OGC API parameters that take a date/datetime value (single string,
+# two-element range, or interval/duration string) rather than a multi-value
+# string list. ``_construct_api_requests`` reads and writes them as dates and
+# keeps them out of the POST/CQL2 multi-value path, and ``_get_args`` does not
+# normalize them as string lists.
+_DATE_RANGE_PARAMS = frozenset(
+    {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
+)
 
 # ---------------------------------------------------------------------------
 # Monitoring location ID validation
@@ -183,6 +193,18 @@ def _cql2_post_request(
     )
 
 
+def _write_date_param(
+    value: Any, key: str, collection: str, dialect: OgcDialect
+) -> str | None:
+    """Read one date argument and write it as the API expects, or None for no
+    filter."""
+    read = read_date_range(value, name=key, durations=dialect.dates.durations)
+    if read is None:
+        return None
+    date_only = collection in dialect.date_only_services and key != "last_modified"
+    return write_interval(read, dialect.dates, date_only=date_only)
+
+
 def _construct_api_requests(
     collection: str,
     properties: list[str] | None = None,
@@ -203,16 +225,8 @@ def _construct_api_requests(
     service_url = _items_url(collection, base_url)
     if dialect is None:
         dialect = DEFAULT_DIALECT
-    for key in _DATE_RANGE_PARAMS:
-        if key in kwargs:
-            kwargs[key] = _format_api_dates(
-                kwargs[key],
-                name=key,
-                date=(
-                    collection in dialect.date_only_services and key != "last_modified"
-                ),
-                open_start=dialect.open_start,
-            )
+    for key in _DATE_RANGE_PARAMS.intersection(kwargs):
+        kwargs[key] = _write_date_param(kwargs[key], key, collection, dialect)
     json_filter = _pop_json_filter(kwargs)
     params, post_params = _partition_request_params(
         kwargs, use_cql2=dialect.lists_as_cql2
