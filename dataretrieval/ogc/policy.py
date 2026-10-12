@@ -42,9 +42,10 @@ class OgcDialect:
 
     Attributes
     ----------
-    cql2_services : frozenset[str]
-        Collections that don't accept comma-separated multi-value GET
-        parameters and so must be queried via POST with a CQL2 JSON body.
+    lists_as_cql2 : bool
+        Whether a filter with more than one value is sent as a CQL2 ``in``
+        predicate, rather than as a comma-joined GET value (``site=A,B``, the
+        default) that the API would read as one value.
     date_only_services : frozenset[str]
         Collections whose time arguments are rendered date-only
         (``YYYY-MM-DD``) rather than as a full UTC datetime. The
@@ -62,13 +63,13 @@ class OgcDialect:
         later columns also present are added as secondary keys.
     """
 
-    cql2_services: frozenset[str] = field(default_factory=frozenset)
+    lists_as_cql2: bool = False
     date_only_services: frozenset[str] = field(default_factory=frozenset)
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
 
 
-# Default dialect: a plain OGC API with no CQL2-only collections and no
-# date-only collections (every time argument rendered as a full UTC datetime).
+# Default dialect: a plain OGC API, with lists comma-joined in the URL and every
+# time argument rendered as a full UTC datetime.
 DEFAULT_DIALECT = OgcDialect()
