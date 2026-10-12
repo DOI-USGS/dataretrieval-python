@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
+from dataretrieval._intervals import DateDialect
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
@@ -82,9 +83,12 @@ _EXTRA_ID_COLS = frozenset(
 # ``construction_date`` is deliberately not a time column: the service sends it
 # as a string at day, month, or year precision (``19950812``, ``199508``,
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
+# The API accepts a lone duration (``time=P7D``), which the standard does not
+# define, and rejects an empty open start (``time=/2024-01-31``, HTTP 400).
 WATERDATA_DIALECT = OgcDialect(
     lists_as_cql2=True,
     date_only_services=frozenset({"daily"}),
+    dates=DateDialect(durations=True),
     time_cols=frozenset(
         {
             "begin",

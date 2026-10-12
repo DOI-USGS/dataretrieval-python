@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._intervals import DateDialect
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -86,7 +87,8 @@ _NGWMN_OUTPUT_ID = "id"
 # sort vocabulary: water-level observations are timestamped by ``sample_time``
 # (not the Water Data ``time``) and report depths/levels in feet. Its firewall
 # rejects ``datetime=../2016-01-01`` with HTTP 403, so an open start is sent
-# empty (``/2016-01-01``), which NGWMN treats as open.
+# empty (``/2016-01-01``), which NGWMN treats as open. It rejects a lone
+# duration (``datetime=P7D``) with HTTP 400, the standard's default.
 NGWMN_DIALECT = OgcDialect(
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
@@ -97,7 +99,7 @@ NGWMN_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("sample_time", "monitoring_location_id"),
-    open_start="",
+    dates=DateDialect(open_start=""),
 )
 
 
