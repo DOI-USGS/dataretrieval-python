@@ -76,20 +76,19 @@ _EXTRA_ID_COLS = frozenset(
     - {"monitoring_location_id", "time_series_id"}
 )
 
-# The Water Data API dialect: ``monitoring-locations`` and
-# ``combined-metadata`` don't interpret comma-separated GET params as multiple
-# values (they return empty results, so multi-value filters must POST CQL2 JSON),
-# ``daily`` renders its time arguments date-only (``YYYY-MM-DD``); the API
-# accepts a lone duration (``time=P7D``) and answers an empty open start
-# (``time=/2024-01-03``) with HTTP 400, so it keeps ``..`` (both observed
-# 2026-10-11); and the shaping fields are the Water-Data column vocabulary
-# used to coerce datetime/numeric columns, sort results, and move synthetic ids
-# to the end.
+# The Water Data API dialect: multi-value filters are CQL2 predicates, because
+# the API reads a comma-joined GET value as one value for all but a few
+# identifiers and codes; ``daily`` renders its time arguments date-only
+# (``YYYY-MM-DD``); the API accepts a lone duration (``time=P7D``) and answers
+# an empty open start (``time=/2024-01-03``) with HTTP 400, so it keeps ``..``
+# (both observed 2026-10-11); and the shaping fields are the Water-Data column
+# vocabulary used to coerce datetime/numeric columns, sort results, and move
+# synthetic ids to the end.
 # ``construction_date`` is deliberately not a time column: the service sends it
 # as a string at day, month, or year precision (``19950812``, ``199508``,
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
-    cql2_collections=frozenset({"combined-metadata", "monitoring-locations"}),
+    lists_as_cql2=True,
     dates=DateDialect(
         params=frozenset(
             {

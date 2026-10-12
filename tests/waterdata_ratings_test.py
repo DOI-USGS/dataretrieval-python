@@ -56,7 +56,9 @@ def test_get_ratings_rejects_iso_8601_duration_in_time():
 def test_build_filter_escapes_quotes():
     """Prevents malformed CQL or injection if an ID contains a quote."""
     f = _build_filter("USGS-x'-y", None)
-    assert f == "monitoring_location_id IN ('USGS-x''-y')"
+    assert f == """monitoring_location_id IN ("USGS-x'-y")"""
+    with pytest.raises(ValueError, match="contains both .* 'AGENCY-ID'"):
+        _build_filter("USGS-x'\"-y", None)
 
 
 _SAMPLE_RDB = """\

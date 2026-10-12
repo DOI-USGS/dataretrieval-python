@@ -286,15 +286,14 @@ Revisions:
   date group, ``dates``, and the result-shaping group, ``shaping``
   (``ShapingDialect``: ``time_cols``, ``numerical_cols``, ``sort_cols``, and
   ``extra_id_cols``, which moved there from an argument of ``get_ogc_data``).
-  Request construction reads one field, ``cql2_collections`` (renamed from
-  ``cql2_services``), so it has no group of its own. The chunk planner lists
+  Request construction reads one field, ``lists_as_cql2`` (which replaced the
+  per-collection ``cql2_services`` in #446), so it has no group of its own. The chunk planner lists
   no date parameter: a date argument arrives as a ``DateRange``, which is
   never split. ``tests/architecture_test.py`` fails if a string a shipped
   dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
   recorded deviations, only ``monitoring_location_id`` is such a literal, so
-  it is the one allowlisted entry. ``cql2_collections`` has no live test
-  because it records the wrong behavior: whether the Water Data API reads a
-  comma-joined GET value as a list depends on the parameter, not the
-  collection, and it does so only for a few identifiers and codes (probed
-  2026-10-11, v0 and v1). #446 replaces the field with a per-API switch,
-  ``multi_value_cql2``; this record takes that field when #446 merges.
+  it is the one allowlisted entry. The switch is per API because whether the
+  Water Data API reads a comma-joined GET value as a list depends on the
+  parameter, not the collection, and it does so only for a few identifiers and
+  codes (probed 2026-10-11, v0 and v1); a live test checks that a list returns
+  the union of its values.

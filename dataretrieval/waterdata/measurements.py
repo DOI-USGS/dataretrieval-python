@@ -36,7 +36,6 @@ def get_field_measurements(
     observing_procedure: str | Iterable[str] | None = None,
     vertical_datum: str | Iterable[str] | None = None,
     measuring_agency: str | Iterable[str] | None = None,
-    sublocation_identifier: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     time: str | Iterable[str] | None = None,
     bbox: list[float] | None = None,
@@ -45,6 +44,7 @@ def get_field_measurements(
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
     max_rows: int | None = None,
+    sublocation_identifier: str | Iterable[str] | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get discrete measurements collected in person during a site visit.
@@ -127,9 +127,6 @@ def get_field_measurements(
         monitoring location.
     measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
-    sublocation_identifier : string or iterable of strings, optional
-        The sublocation where the measurement was recorded, such as
-        "UPSTREAM".
     skip_geometry : boolean, optional
         If True, the response omits the geometry of each feature and the
         returned object is a data frame with no spatial information. The USGS
@@ -180,6 +177,9 @@ def get_field_measurements(
         instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
+    sublocation_identifier : string or iterable of strings, optional
+        Where at the monitoring location the measurement was recorded, such
+        as "Primary", "Backup", or "HWM"; null when none is recorded.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
         server-side filter. Call :func:`get_queryables` to see the queryables a

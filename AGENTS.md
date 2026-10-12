@@ -156,10 +156,12 @@ raise states the problem and then the action that fixes it, in that order.
 - Water Data request builders translate Python kwargs to API names
   (`skip_geometry` -> `skipGeometry`, `filter_lang` -> `filter-lang`); tests
   assert exact URLs and query params.
-- Multi-value OGC params are comma-joined GETs, except `monitoring-locations`
-  and `combined-metadata`, which POST CQL2 JSON because comma-joined values
-  return no rows. The OGC edge WAF caps total request bytes (URL + body)
-  at ~8200, so `dataretrieval/ogc/chunking.py` auto-splits oversized queries
+- Water Data sends a multi-value OGC filter as CQL2 JSON in a POST body
+  (`OgcDialect.lists_as_cql2`): a comma-joined GET works there only for some
+  identifier and code parameters, and returns no rows (or HTTP 400 for a numeric
+  one) for the rest. With a CQL-text `filter`, the lists are folded into it as
+  `IN (...)`. NGWMN keeps comma-joined GETs. The OGC edge WAF caps total request
+  bytes (URL + body) at ~8200, so `dataretrieval/ogc/chunking.py` auto-splits oversized queries
   across chunks (both GET and POST paths); preserve this when adding new
   list-shaped kwargs.
 - NLDI requires `geopandas` at import time (`pip install .[nldi]`); other modules

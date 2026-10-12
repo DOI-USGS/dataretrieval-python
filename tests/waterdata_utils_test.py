@@ -1779,7 +1779,7 @@ def test_get_ogc_data_reads_everything_about_the_service_from_its_endpoint(
 ):
     """ADR 0014: an endpoint is all the OGC engine is told about a service. The
     request goes to its URL, its dialect decides the request shape (a
-    ``cql2_collections`` collection is POSTed), and settings resolve by its
+    ``lists_as_cql2`` list is POSTed), and settings resolve by its
     service's name."""
     import dataretrieval
     from dataretrieval.ngwmn import NgwmnConfiguration
@@ -1788,7 +1788,7 @@ def test_get_ogc_data_reads_everything_about_the_service_from_its_endpoint(
     endpoint = Endpoint(
         Service("ngwmn", "https://unused.example"),
         "https://mirror.example/ogc",
-        OgcDialect(cql2_collections=frozenset({"things"})),
+        OgcDialect(lists_as_cql2=True),
     )
     httpx_mock.add_response(
         method="POST",

@@ -291,6 +291,10 @@ def get_ogc_data(
     )
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
+    if isinstance(args.get("filter"), str) and not args["filter"].strip():
+        # The APIs answer a blank filter with HTTP 400.
+        del args["filter"]
+        args.pop("filter_lang", None)
 
     # Choose one semantic frame shape for the whole request. Every page and
     # the all-empty finalizer receive these same values, so frame type never

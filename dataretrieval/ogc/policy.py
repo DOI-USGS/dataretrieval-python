@@ -74,15 +74,16 @@ class OgcDialect:
 
     Attributes
     ----------
-    cql2_collections : frozenset[str]
-        Collections that don't accept comma-separated multi-value GET
-        parameters and so must be queried via POST with a CQL2 JSON body.
+    lists_as_cql2 : bool
+        Whether a filter with more than one value is sent as a CQL2 ``in``
+        predicate, rather than as a comma-joined GET value (``site=A,B``, the
+        default) that the API would read as one value.
     dates : DateDialect
         How the API's date parameters are read and written.
     shaping : ShapingDialect
         How the API's results are shaped into a frame.
     """
 
-    cql2_collections: frozenset[str] = frozenset()
+    lists_as_cql2: bool = False
     dates: DateDialect = field(default_factory=DateDialect)
     shaping: ShapingDialect = field(default_factory=ShapingDialect)

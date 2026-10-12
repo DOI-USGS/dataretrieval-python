@@ -90,7 +90,9 @@ _STATE_QUERYABLE = {
 # (there is no service-specific id name as there is for the main collections).
 _NGWMN_OUTPUT_ID = "id"
 
-# NGWMN has no CQL2-only or date-only collections, but its result columns need
+# NGWMN reads comma-joined GET values as lists, and its firewall refuses a text
+# filter naming a site, so a list could not be folded into one; lists stay
+# comma-joined. It has no date-only collections, but its result columns need
 # their own coercion and sort vocabulary: water-level observations are
 # timestamped by ``sample_time`` (not the Water Data ``time``) and report
 # depths/levels in feet. Its firewall answers ``datetime=../2016-01-01`` with
