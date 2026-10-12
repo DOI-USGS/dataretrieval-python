@@ -84,22 +84,20 @@ _EXTRA_ID_COLS = frozenset(
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
 WATERDATA_DIALECT = OgcDialect(
     lists_as_cql2=True,
-    dates=DateDialect(
-        params=frozenset(
-            {
-                "datetime",
-                "last_modified",
-                "begin",
-                "begin_utc",
-                "end",
-                "end_utc",
-                "time",
-            }
-        ),
-        date_only_collections=frozenset({"daily"}),
-        timed_params=frozenset({"last_modified"}),
-        durations=True,
+    date_params=frozenset(
+        {
+            "datetime",
+            "last_modified",
+            "begin",
+            "begin_utc",
+            "end",
+            "end_utc",
+            "time",
+        }
     ),
+    date_only_collections=frozenset({"daily"}),
+    timed_params=frozenset({"last_modified"}),
+    dates=DateDialect(durations=True),
     shaping=ShapingDialect(
         time_cols=frozenset(
             {
@@ -187,21 +185,26 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     return local_vars
 
 
-# For a getter whose API is not OGC: no parameter is read as a date range.
-_NO_DATES = DateDialect(params=frozenset())
-
-
 def _get_args(
+    local_vars: dict[str, Any], exclude: set[str] | None = None
+) -> dict[str, Any]:
+    """Request arguments for a Water Data OGC getter, its date parameters read
+    by :data:`WATERDATA_DIALECT`, the dialect its endpoint carries.
+
+    See :func:`_get_query_args` for what else is done.
+    """
+    return _get_query_args(local_vars, exclude, dialect=WATERDATA_DIALECT)
+
+
+def _get_query_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
     *,
-    dates: DateDialect = WATERDATA_DIALECT.dates,
+    dialect: OgcDialect | None = None,
 ) -> dict[str, Any]:
-    """Water-Data wrapper over :func:`~dataretrieval.ogc.prepare_request_args`.
-
-    ``dates`` names the parameters read as date ranges: the OGC API's by
-    default, and none (:data:`_NO_DATES`) for the Samples and Statistics
-    getters, whose APIs take dates in their own form.
+    """Request arguments for a Water Data getter: the Samples and Statistics
+    getters call this directly, since their APIs are not OGC and read no date
+    range; the OGC getters call :func:`_get_args`.
 
     Adds the Water Data API's extra no-normalize params (numeric params such
     as ``water_year``, ``thresholds``, ``boundingBox``) so they keep their
@@ -212,7 +215,7 @@ def _get_args(
     args = prepare_request_args(
         local_vars,
         exclude,
-        dates=dates,
+        dialect=dialect,
         extra_no_normalize=_NO_NORMALIZE_PARAMS,
     )
     for name in _JSON_ARRAY_PARAMS & args.keys():
@@ -384,7 +387,7 @@ __all__ = [
     "OGC_API_URL",
     "SAMPLES_URL",
     "WATERDATA_DIALECT",
-    "_NO_DATES",
+    "_get_query_args",
     "_NO_NORMALIZE_PARAMS",
     "_OUTPUT_ID_BY_COLLECTION",
     "_accept_legacy_kwargs",

@@ -24,17 +24,6 @@ class DateDialect:
 
     Attributes
     ----------
-    params : frozenset[str]
-        The parameters that carry a date range. The standard has one,
-        ``datetime``; an endpoint that filters other fields by date lists them
-        all.
-    date_only_collections : frozenset[str]
-        Collections whose dates are written as ``YYYY-MM-DD`` rather than as a
-        UTC datetime, because their values are calendar days and a naive bound
-        converted to UTC could move to the neighboring day.
-    timed_params : frozenset[str]
-        Parameters written as a UTC datetime even in a date-only collection,
-        because they filter a timestamp.
     open_start : str
         How the open start of a range is written: ``".."`` (``"../2024-01-01"``,
         the default) or ``""`` (``"/2024-01-01"``). Both standards allow
@@ -46,9 +35,6 @@ class DateDialect:
         a duration raises when the getter is called.
     """
 
-    params: frozenset[str] = frozenset({"datetime"})
-    date_only_collections: frozenset[str] = frozenset()
-    timed_params: frozenset[str] = frozenset()
     open_start: str = OPEN_BOUND
     durations: bool = False
 
@@ -77,8 +63,8 @@ def write_interval(value: DateRange, dialect: DateDialect, *, date_only: bool) -
     dialect : DateDialect
         The endpoint's date dialect; supplies ``open_start``.
     date_only : bool
-        Write each bound as ``YYYY-MM-DD`` rather than as a UTC datetime. The
-        caller decides from ``date_only_collections`` and ``timed_params``.
+        Write each bound as ``YYYY-MM-DD`` rather than as a UTC datetime; the
+        caller's protocol decides which values are calendar days.
     """
     if value.duration is not None:
         return value.duration

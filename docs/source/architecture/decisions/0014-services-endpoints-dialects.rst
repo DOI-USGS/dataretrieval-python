@@ -250,25 +250,32 @@ Revisions:
 - *The package-wide date range.* ``dataretrieval._dates`` is a dependency-free
   leaf holding :class:`DateRange` and ``read_date_range``: an instant, a range
   whose ``None`` bound is open, or a duration, with a naive bound meaning local
-  time. ``prepare_request_args`` reads every OGC date parameter into one when
-  a getter is called, and drops a range whose bounds are all open, as it drops
-  ``None``; ``get_ratings`` reads its ``time`` the same way. The OGC request
-  builder only writes the value. Error messages are unchanged by this step;
-  they are raised when the getter is called rather than when the first
-  request is built.
+  time. ``prepare_request_args`` reads every date parameter of the
+  ``OgcDialect`` it is given into one when a getter is called, and drops a
+  range whose bounds are all open, as it drops ``None``; ``get_ratings`` reads
+  its ``time`` the same way. ``get_ogc_data`` reads any date parameter still
+  raw -- a verbatim ``query`` skips ``prepare_request_args`` -- with the
+  endpoint's dialect, and raises when a ``DateRange`` arrives under a key that
+  dialect does not list, so arguments read with one dialect are not sent with
+  another. The OGC request builder only writes the value. Error messages are
+  unchanged by this step; they are raised when the getter is called rather
+  than when the first request is built.
 - *The shared interval grammar and* ``DateDialect``. ``dataretrieval._intervals``
   holds ``DateDialect`` and ``write_interval``, and sits below ``ogc`` because
-  STAC is not OGC; ``ogc.dates`` is removed. ``DateDialect`` has five fields:
-  ``params``, ``date_only_collections``, ``timed_params``, ``open_start``, and
-  ``durations``, whose default is ``False`` because neither standard defines a
-  lone duration. ``OgcDialect.dates`` holds the group, and
-  ``prepare_request_args`` takes it, so the reading side knows which parameters
-  carry dates and whether a duration is accepted: an endpoint that refuses one
-  raises when the getter is called. ``write_interval`` never raises; the
-  protocol code decides from ``date_only_collections`` and ``timed_params``
-  whether it writes date-only bounds, since only OGC has collections. The
-  Samples and Statistics getters, which share Water Data's argument helper,
-  read no parameter as a date range. Two messages change: the duration refusal
+  STAC is not OGC; ``ogc.dates`` is removed. ``DateDialect`` holds the grammar
+  both protocols read, two fields: ``open_start``, and ``durations``, whose
+  default is ``False`` because neither standard defines a lone duration. The
+  fields only OGC reads -- ``date_params``, ``date_only_collections``, and
+  ``timed_params`` -- are fields of ``OgcDialect``, since only OGC has
+  collections and STAC names its one date parameter in ``get_ratings``.
+  ``OgcDialect.dates`` holds the grammar, and ``prepare_request_args`` takes
+  the ``OgcDialect``, so the reading side knows which parameters carry dates
+  and whether a duration is accepted: an endpoint that refuses one raises when
+  the getter is called. Given no dialect it reads no date, which is how the
+  Samples and Statistics getters call it, through their own argument helper.
+  ``write_interval`` never raises; the OGC request builder decides from
+  ``date_only_collections`` and ``timed_params`` whether it writes date-only
+  bounds. Two messages change: the duration refusal
   is one shared message naming the caller's argument (``get_ratings`` had its
   own), and the "too many values" message offers a duration only where one is
   accepted. A field's observed server behavior is recorded where the field is
@@ -286,10 +293,11 @@ Revisions:
   date group, ``dates``, and the result-shaping group, ``shaping``
   (``ShapingDialect``: ``time_cols``, ``numerical_cols``, ``sort_cols``, and
   ``extra_id_cols``, which moved there from an argument of ``get_ogc_data``).
-  Request construction reads one switch, ``lists_as_cql2`` (#446), so it has
-  no group of its own. The chunk planner lists no date parameter: a date
-  argument arrives as a ``DateRange``, which is never split. ``tests/architecture_test.py`` fails if a string a shipped
-  dialect lists appears as a literal in ``ogc`` or ``_intervals``. Of the four
+  Request construction reads ``lists_as_cql2`` (#446) and the three OGC date
+  fields, which sit on ``OgcDialect`` itself. The chunk planner lists no date
+  parameter: a date argument arrives as a ``DateRange``, which is never split.
+  ``tests/architecture_test.py`` fails if a string a shipped dialect lists
+  appears as a literal in ``ogc`` or ``_intervals``. Of the four
   recorded deviations, only ``monitoring_location_id`` is such a literal, so
   it is the one allowlisted entry. The switch is per API because whether the
   Water Data API reads a comma-joined GET value as a list depends on the

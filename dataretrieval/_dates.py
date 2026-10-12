@@ -10,7 +10,7 @@ is local time -- is package policy, so it lives here and names no service.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import date as _date
 from datetime import datetime
@@ -42,6 +42,10 @@ OPEN_BOUND = ".."
 # ``datetime`` or ``pandas.Timestamp`` (both subclasses of ``datetime.date``),
 # with ``None`` (or ``NaN`` / ``NaT``) for an open bound.
 DateLike = str | _date | None
+
+# What a getter accepts as one date argument: one element, an interval string,
+# or a list of one or two elements (a range whose ``None`` end is open).
+DateArgument = DateLike | Iterable[DateLike]
 
 
 @dataclass(frozen=True)
@@ -123,7 +127,7 @@ def _read_bound(dt: DateLike, *, name: str) -> datetime | None:
 
 
 def _coerce_to_list(
-    value: str | _date | Sequence[DateLike],
+    value: DateArgument,
     name: str,
 ) -> list[DateLike]:
     """Normalize a date argument to a list of elements, raising on a mapping."""
@@ -161,7 +165,7 @@ def _split_interval(interval: str, *, name: str) -> tuple[str, str]:
 
 
 def read_date_range(
-    value: str | _date | Sequence[DateLike] | None,
+    value: DateArgument | None,
     *,
     name: str,
     durations: bool,

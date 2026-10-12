@@ -92,7 +92,7 @@ def _construct_api_requests(collection, **kwargs):
         endpoint=Endpoint(SERVICE, OGC_API_URL, WATERDATA_DIALECT),
         **prepare_request_args(
             kwargs,
-            dates=WATERDATA_DIALECT.dates,
+            dialect=WATERDATA_DIALECT,
             extra_no_normalize=_WATERDATA_NO_NORMALIZE,
         ),
     )

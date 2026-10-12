@@ -78,12 +78,26 @@ class OgcDialect:
         Whether a filter with more than one value is sent as a CQL2 ``in``
         predicate, rather than as a comma-joined GET value (``site=A,B``, the
         default) that the API would read as one value.
+    date_params : frozenset[str]
+        The parameters that carry a date range. The standard has one,
+        ``datetime``; an API that filters other fields by date lists them all.
+    date_only_collections : frozenset[str]
+        Collections whose dates are written as ``YYYY-MM-DD`` rather than as a
+        UTC datetime, because their values are calendar days and a naive bound
+        converted to UTC could move to the neighboring day.
+    timed_params : frozenset[str]
+        Parameters written as a UTC datetime even in a date-only collection,
+        because they filter a timestamp.
     dates : DateDialect
-        How the API's date parameters are read and written.
+        How the API's date values are read and written: the interval grammar
+        it shares with STAC.
     shaping : ShapingDialect
         How the API's results are shaped into a frame.
     """
 
     lists_as_cql2: bool = False
+    date_params: frozenset[str] = frozenset({"datetime"})
+    date_only_collections: frozenset[str] = frozenset()
+    timed_params: frozenset[str] = frozenset()
     dates: DateDialect = field(default_factory=DateDialect)
     shaping: ShapingDialect = field(default_factory=ShapingDialect)

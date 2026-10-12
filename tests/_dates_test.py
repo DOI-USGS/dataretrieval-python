@@ -10,8 +10,9 @@ import pandas as pd
 import pytest
 
 from dataretrieval._dates import DateRange, read_date_range
-from dataretrieval._intervals import DateDialect
 from dataretrieval.ogc import prepare_request_args
+from dataretrieval.ogc.policy import OgcDialect
+from dataretrieval.ogc.requests import _read_raw_dates
 
 NAIVE = datetime.datetime(2024, 1, 1)  # noqa: DTZ001 -- a naive bound is the case
 UTC = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)
@@ -43,13 +44,28 @@ def test_prepare_request_args_reads_date_arguments_on_entry():
     """A getter's date arguments are read when it is called, so an unreadable
     one raises before any request is planned, and an all-open one is dropped
     like ``None``."""
-    dates = DateDialect(params=frozenset({"time", "last_modified"}))
+    dialect = OgcDialect(date_params=frozenset({"time", "last_modified"}))
     args = prepare_request_args(
-        {"time": ["2024-01-01", None], "last_modified": [None, ".."]}, dates=dates
+        {"time": ["2024-01-01", None], "last_modified": [None, ".."]},
+        dialect=dialect,
     )
     assert args == {"time": DateRange(start=NAIVE)}
     with pytest.raises(ValueError, match="^time could not be read"):
-        prepare_request_args({"time": "yesterday"}, dates=dates)
+        prepare_request_args({"time": "yesterday"}, dialect=dialect)
+
+
+def test_prepare_request_args_reads_no_date_without_a_dialect():
+    """An API that is not OGC (Samples, Statistics) gets its arguments as given."""
+    assert prepare_request_args({"time": "2024-01-01"}) == {"time": "2024-01-01"}
+
+
+def test_a_date_range_the_endpoint_does_not_list_raises():
+    """Arguments read with one dialect and sent with another would put a
+    ``DateRange`` repr in the URL."""
+    args = {"time": DateRange(start=UTC)}
+    assert _read_raw_dates(args, OgcDialect(date_params=frozenset({"time"}))) == args
+    with pytest.raises(TypeError, match="^time was read as a date range"):
+        _read_raw_dates(args, OgcDialect())
 
 
 def test_read_date_range_refuses_a_duration_where_none_is_accepted():

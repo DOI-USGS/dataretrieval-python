@@ -21,6 +21,7 @@ from dataretrieval.waterdata.utils import (
 )
 
 if TYPE_CHECKING:
+    from dataretrieval._dates import DateArgument
     from dataretrieval._response_metadata import BaseMetadata
     from dataretrieval.ogc.filters import FILTER_LANG
 
@@ -400,11 +401,11 @@ def get_time_series_metadata(
     hydrologic_unit_code: str | Iterable[str] | None = None,
     state: str | Iterable[str] | None = None,
     state_name: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
-    begin: str | Iterable[str] | None = None,
-    end: str | Iterable[str] | None = None,
-    begin_utc: str | Iterable[str] | None = None,
-    end_utc: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
+    begin: DateArgument | None = None,
+    end: DateArgument | None = None,
+    begin_utc: DateArgument | None = None,
+    end_utc: DateArgument | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
     computation_period_identifier: str | Iterable[str] | None = None,
     computation_identifier: str | Iterable[str] | None = None,
@@ -674,9 +675,9 @@ def get_combined_metadata(
     primary: str | Iterable[str] | None = None,
     parent_time_series_id: str | Iterable[str] | None = None,
     web_description: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
-    begin: str | Iterable[str] | None = None,
-    end: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
+    begin: DateArgument | None = None,
+    end: DateArgument | None = None,
     agency_code: str | Iterable[str] | None = None,
     agency_name: str | Iterable[str] | None = None,
     monitoring_location_number: str | Iterable[str] | None = None,
@@ -927,9 +928,9 @@ def get_field_measurements_metadata(
     parameter_code: str | Iterable[str] | None = None,
     parameter_name: str | Iterable[str] | None = None,
     parameter_description: str | Iterable[str] | None = None,
-    begin: str | Iterable[str] | None = None,
-    end: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    begin: DateArgument | None = None,
+    end: DateArgument | None = None,
+    last_modified: DateArgument | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
     bbox: list[float] | None = None,

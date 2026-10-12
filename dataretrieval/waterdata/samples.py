@@ -40,9 +40,8 @@ from dataretrieval.waterdata.types import (
     _check_profiles,
 )
 from dataretrieval.waterdata.utils import (
-    _NO_DATES,
     _accept_legacy_kwargs,
-    _get_args,
+    _get_query_args,
 )
 
 logger = logging.getLogger(__name__)
@@ -357,7 +356,7 @@ def get_samples(
     # Build argument dictionary, omitting None values. Parameters are the
     # public snake_case names here; translate them to the camelCase names the
     # Samples API expects just before building the request.
-    args = _get_args(locals(), exclude={"ssl_check", "profile"}, dates=_NO_DATES)
+    args = _get_query_args(locals(), exclude={"ssl_check", "profile"})
     params = {_SAMPLES_PARAM_TO_API.get(key, key): value for key, value in args.items()}
 
     params.update({"mimeType": "text/csv"})

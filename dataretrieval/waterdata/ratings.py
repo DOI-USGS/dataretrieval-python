@@ -18,7 +18,7 @@ import anyio
 import httpx
 import pandas as pd
 
-from dataretrieval._dates import read_date_range
+from dataretrieval._dates import DateArgument, read_date_range
 from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval._service import Endpoint
 from dataretrieval._validation import render_options
@@ -54,7 +54,7 @@ def get_ratings(
     monitoring_location_id: str | Iterable[str] | None = None,
     file_type: RATING_FILE_TYPE | list[RATING_FILE_TYPE] = "exsa",
     file_path: str | None = None,
-    time: str | list[str] | None = None,
+    time: DateArgument | None = None,
     bbox: list[float] | None = None,
     limit: int = 10000,
     download_and_parse: bool = True,

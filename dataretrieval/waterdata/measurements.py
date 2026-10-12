@@ -18,6 +18,7 @@ from dataretrieval.waterdata.utils import (
 )
 
 if TYPE_CHECKING:
+    from dataretrieval._dates import DateArgument
     from dataretrieval._response_metadata import BaseMetadata
     from dataretrieval.ogc.filters import FILTER_LANG
 
@@ -32,12 +33,12 @@ def get_field_measurements(
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
     observing_procedure: str | Iterable[str] | None = None,
     vertical_datum: str | Iterable[str] | None = None,
     measuring_agency: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -243,8 +244,8 @@ def get_peaks(
     parameter_code: str | Iterable[str] | None = None,
     time_series_id: str | Iterable[str] | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
-    time: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
+    last_modified: DateArgument | None = None,
     water_year: int | list[int] | None = None,
     year: int | list[int] | None = None,
     month: int | list[int] | None = None,
@@ -382,7 +383,7 @@ def get_channel(
     monitoring_location_id: str | Iterable[str] | None = None,
     field_visit_id: str | Iterable[str] | None = None,
     measurement_number: str | Iterable[str] | None = None,
-    time: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
     channel_name: str | Iterable[str] | None = None,
     channel_flow: str | Iterable[str] | None = None,
     channel_flow_unit: str | Iterable[str] | None = None,
@@ -401,7 +402,7 @@ def get_channel(
     vertical_velocity_description: str | Iterable[str] | None = None,
     longitudinal_velocity_description: str | Iterable[str] | None = None,
     measurement_type: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
     channel_measurement_type: str | Iterable[str] | None = None,
     properties: str | Iterable[str] | None = None,
     skip_geometry: bool | None = None,

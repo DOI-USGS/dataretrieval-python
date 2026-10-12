@@ -45,6 +45,7 @@ from dataretrieval.ogc import (
 )
 
 if TYPE_CHECKING:
+    from dataretrieval._dates import DateArgument
     from dataretrieval._response_metadata import BaseMetadata
 
 __all__ = [
@@ -120,7 +121,7 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = prepare_request_args(local_vars, dates=NGWMN_DIALECT.dates)
+    args = prepare_request_args(local_vars, dialect=NGWMN_DIALECT)
     return get_ogc_data(
         args,
         service,
@@ -250,7 +251,7 @@ def get_water_level(
     water_level_above_site_datum_ft: str | Iterable[str] | None = None,
     monitoring_location_vertical_datum: str | Iterable[str] | None = None,
     water_level_above_navd88_ft: str | Iterable[str] | None = None,
-    datetime: str | Iterable[str] | None = None,
+    datetime: DateArgument | None = None,
     properties: str | Iterable[str] | None = None,
     limit: int | None = None,
     convert_type: bool = True,

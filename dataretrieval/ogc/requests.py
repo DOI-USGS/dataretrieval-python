@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 import httpx
 
 from dataretrieval._dates import DateRange, read_date_range
-from dataretrieval._intervals import DateDialect, write_interval
+from dataretrieval._intervals import write_interval
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.transport.http import default_headers as _default_headers
 
@@ -204,12 +204,12 @@ def _construct_api_requests(
     """
     service_url = _items_url(collection, endpoint.url)
     dialect = endpoint.dialect
-    dates = dialect.dates
-    for key in dates.params & kwargs.keys():
+    for key in dialect.date_params & kwargs.keys():
         date_only = (
-            collection in dates.date_only_collections and key not in dates.timed_params
+            collection in dialect.date_only_collections
+            and key not in dialect.timed_params
         )
-        kwargs[key] = write_interval(kwargs[key], dates, date_only=date_only)
+        kwargs[key] = write_interval(kwargs[key], dialect.dates, date_only=date_only)
     json_filter = _pop_json_filter(kwargs)
     params, post_params = _partition_request_params(
         kwargs, use_cql2=dialect.lists_as_cql2
@@ -337,17 +337,34 @@ def _check_monitoring_location_id(
     return value
 
 
-def _read_raw_dates(args: dict[str, Any], dates: DateDialect) -> dict[str, Any]:
-    """``args`` with each date parameter not yet read (a caller's verbatim
-    ``query``, which skips :func:`prepare_request_args`) read into a
-    ``DateRange``, and dropped when every bound is open."""
-    out = dict(args)
-    for key in dates.params & out.keys():
-        if isinstance(out[key], DateRange):
-            continue
-        value = read_date_range(out.pop(key), name=key, durations=dates.durations)
-        if value is not None:
-            out[key] = value
+def _read_date(key: str, value: Any, dialect: OgcDialect) -> DateRange | None:
+    """A date argument as a ``DateRange``, read by the dialect of the endpoint
+    it is sent to; ``None`` when every bound is open."""
+    if isinstance(value, DateRange):
+        return value
+    return read_date_range(value, name=key, durations=dialect.dates.durations)
+
+
+def _read_raw_dates(args: dict[str, Any], dialect: OgcDialect) -> dict[str, Any]:
+    """``args`` with every date parameter of ``dialect`` read, so a verbatim
+    ``query`` that skipped :func:`prepare_request_args` is read too.
+
+    A ``DateRange`` under a key the dialect does not list would be sent as its
+    repr, so it raises: the arguments were read with another API's dialect.
+    """
+    out: dict[str, Any] = {}
+    for key, value in args.items():
+        if key in dialect.date_params:
+            value = _read_date(key, value, dialect)
+            if value is None:
+                continue
+        elif isinstance(value, DateRange):
+            raise TypeError(
+                f"{key} was read as a date range, but this endpoint's dialect "
+                f"has no date parameter {key!r}. Read the arguments with the "
+                f"dialect of the endpoint they are sent to."
+            )
+        out[key] = value
     return out
 
 
@@ -355,15 +372,15 @@ def _normalize_arg(
     key: str,
     value: Any,
     no_normalize: frozenset[str],
-    dates: DateDialect,
+    dialect: OgcDialect | None,
 ) -> Any:
     """Normalize a single request argument value based on its key."""
     if key == "monitoring_location_id":
         return _check_monitoring_location_id(value)
     if key == "properties":
         return _as_str_list(value, key)
-    if key in dates.params:
-        return read_date_range(value, name=key, durations=dates.durations)
+    if dialect is not None and key in dialect.date_params:
+        return _read_date(key, value, dialect)
     if (
         key in no_normalize
         and isinstance(value, Iterable)
@@ -379,15 +396,17 @@ def prepare_request_args(
     local_vars: dict[str, Any],
     exclude: set[str] | None = None,
     *,
-    dates: DateDialect,
+    dialect: OgcDialect | None = None,
     extra_no_normalize: frozenset[str] | set[str] = frozenset(),
 ) -> dict[str, Any]:
-    """Build OGC request kwargs from a getter's ``locals()``.
+    """Build request kwargs from a getter's ``locals()``.
 
     Internal control keys, caller-supplied exclusions, and ``None`` values
-    are omitted. Identifiers and properties are validated, the parameters
-    ``dates`` lists are read into a ``DateRange`` (and omitted when every bound
-    is open), and other iterables are normalized unless exempted.
+    are omitted. Identifiers and properties are validated, the date parameters
+    of ``dialect`` -- the one the call's endpoint carries -- are read into a
+    ``DateRange`` (and omitted when every bound is open), and other iterables
+    are normalized unless exempted. Without a dialect no argument is read as a
+    date, as for an API that is not OGC.
 
     ``extra_no_normalize`` *adds* to the engine's own
     :data:`_NO_NORMALIZE_PARAMS` rather than replacing it, so an adapter names
@@ -403,7 +422,7 @@ def prepare_request_args(
     for k, v in local_vars.items():
         if k in to_exclude:
             continue
-        normalized = _normalize_arg(k, v, no_normalize, dates)
+        normalized = _normalize_arg(k, v, no_normalize, dialect)
         if normalized is not None:
             args[k] = normalized
     return args

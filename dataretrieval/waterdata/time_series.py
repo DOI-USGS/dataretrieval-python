@@ -18,13 +18,14 @@ import pandas as pd
 
 from dataretrieval.waterdata import stats
 from dataretrieval.waterdata.utils import (
-    _NO_DATES,
     _get_args,
+    _get_query_args,
     _with_state,
     get_ogc_data,
 )
 
 if TYPE_CHECKING:
+    from dataretrieval._dates import DateArgument
     from dataretrieval._response_metadata import BaseMetadata
     from dataretrieval.ogc.filters import FILTER_LANG
 
@@ -40,9 +41,9 @@ def get_daily(
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -276,8 +277,8 @@ def get_continuous(
     qualifier: str | Iterable[str] | None = None,
     method_category: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
-    time: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
+    time: DateArgument | None = None,
     limit: int | None = None,
     filter: str | None = None,
     filter_lang: FILTER_LANG | None = None,
@@ -487,9 +488,9 @@ def get_latest_continuous(
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -704,9 +705,9 @@ def get_latest_daily(
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
-    last_modified: str | Iterable[str] | None = None,
+    last_modified: DateArgument | None = None,
     skip_geometry: bool | None = None,
-    time: str | Iterable[str] | None = None,
+    time: DateArgument | None = None,
     bbox: list[float] | None = None,
     limit: int | None = None,
     filter: str | None = None,
@@ -1042,10 +1043,9 @@ def get_stats_por(
         ... )
     """
     # Build argument dictionary, omitting None values
-    params = _get_args(
+    params = _get_query_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
-        dates=_NO_DATES,
     )
 
     return stats.get_data(
@@ -1190,10 +1190,9 @@ def get_stats_date_range(
         ... )
     """
     # Build argument dictionary, omitting None values
-    params = _get_args(
+    params = _get_query_args(
         _with_state(locals(), to="fips_us", into="state_code"),
         exclude={"expand_percentiles"},
-        dates=_NO_DATES,
     )
 
     return stats.get_data(

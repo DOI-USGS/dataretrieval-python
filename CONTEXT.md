@@ -279,8 +279,8 @@ two endpoints speak it.
 the protocol code reads. Each field is one extension, restriction, or renaming,
 and its default is the standard, so a default dialect describes an endpoint
 that follows the standard. Fields are grouped by the code that reads them; the
-date group, `DateDialect`, is meant to be shared by the protocols that write
-intervals (ADR 0014, proposed).
+date group, `DateDialect`, holds the interval grammar the protocols that write
+intervals share (ADR 0014, proposed).
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
 WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing
@@ -333,7 +333,7 @@ entry (ADR 0013).
   `WATERDATA_COLLECTIONS`. `service=` on `get_cql` and the `WATERDATA_SERVICES`
   alias remain — a deprecated keyword and a permanent alias respectively. The
   dialect field keyed by collection says so too:
-  `DateDialect.date_only_collections`.
+  `OgcDialect.date_only_collections`.
 
   `service` still means the external system in `transport` and `progress`,
   where it labels a progress line. That usage is correct.
