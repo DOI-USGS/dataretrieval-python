@@ -52,28 +52,39 @@ jobs:
 
       - name: Check the analysis actually resolved the package
         # pyscn infers a project root. If it chose the wrong one, it would
-        # resolve only part of the imports, which *raises* the score, because
-        # most of what it grades is dependency-derived. Record the root and the
-        # unresolved import count next to the score so a degraded run is
-        # visible rather than flattering.
+        # resolve only part of the package, which *raises* the score, because
+        # most of what it grades is dependency-derived. Its unresolved-import
+        # count does not show this: under a wrong root the package's own
+        # imports count as external. So compare the root with the checkout and
+        # the module count with the files on disk, and print each warning on
+        # its own. Missing report keys are named rather than raising, so a
+        # renamed key shows in the summary instead of dropping this line.
         if: always()
         continue-on-error: true
         run: |
-          python - <<'PY' > pyscn-sanity.txt
+          python - <<'PY' > pyscn-sanity.txt 2>&1
           import glob, json, os
           reports = sorted(glob.glob(".pyscn/reports/*.json"))
           if not reports:
               print("no pyscn JSON report found"); raise SystemExit
-          s = json.load(open(reports[-1]))["system"]["summary"]
-          root, unresolved = s["project_root"], s["unresolved_imports"]
-          print(f"modules={s['total_modules']} "
-                f"dependencies={s['total_dependencies']} "
-                f"resolved_imports={s['resolved_imports']} "
-                f"unresolved_imports={unresolved} root={root}")
-          if os.path.realpath(root) != os.path.realpath(os.getcwd()) or unresolved:
-              print(f"WARNING: project root {root!r} or {unresolved} unresolved "
-                    "imports; import resolution is probably degraded and the "
+          s = json.load(open(reports[-1])).get("system", {}).get("summary", {})
+          keys = ("project_root", "total_modules", "total_dependencies")
+          missing = [k for k in keys if k not in s]
+          if missing:
+              print(f"WARNING: the pyscn report has no system.summary {missing}; "
+                    "update this check for the pinned pyscn version.")
+              raise SystemExit
+          root, modules = s["project_root"], s["total_modules"]
+          files = len(glob.glob("dataretrieval/**/*.py", recursive=True))
+          print(f"modules={modules} files={files} "
+                f"dependencies={s['total_dependencies']} root={root}")
+          if os.path.realpath(root) != os.path.realpath(os.getcwd()):
+              print(f"WARNING: project root {root!r} is not the checkout; the "
                     "scores above are not comparable to previous runs.")
+          if modules < 0.9 * files:
+              print(f"WARNING: pyscn analyzed {modules} modules of {files} files; "
+                    "import resolution is probably degraded and the scores "
+                    "above are not comparable to previous runs.")
           PY
           cat pyscn-sanity.txt
 

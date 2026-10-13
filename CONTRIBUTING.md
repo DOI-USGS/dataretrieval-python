@@ -218,8 +218,9 @@ including for an agent working on this repo, which gets a whole-package
 structural overview from one command:
 
 ```bash
-pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64/ARM64, Windows x86-64
-                             # (no source distribution or other platform wheels)
+pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64/ARM64 with
+                             # glibc 2.34+, Windows x86-64 (no source distribution
+                             # or other platform wheels)
 pyscn analyze dataretrieval  # HTML report; --json --html writes both
 ```
 
