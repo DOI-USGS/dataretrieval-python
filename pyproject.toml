@@ -69,10 +69,11 @@ metrics = [
   "import-linter==2.13",
 ]
 # Advisory weekly deep sweep -- see .github/workflows/code-health.yml. Pyscn has
-# wheels only for macOS ARM64, Linux x86-64, and Windows x86-64, with no sdist,
-# so keep it separate from the extra used by merge gates and contributors.
+# wheels only for macOS ARM64, Linux x86-64 and ARM64 (glibc 2.34 or later), and
+# Windows x86-64, with no sdist, so keep it separate from the extra used by
+# merge gates and contributors.
 health = [
-  "pyscn==1.29.0",
+  "pyscn==1.32.4",
 ]
 test = [
   "pytest > 5.0.0",
