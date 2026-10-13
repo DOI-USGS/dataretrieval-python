@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
+from dataretrieval._intervals import DateDialect
+from dataretrieval._service import Endpoint, Service
 from dataretrieval.codes.states import apply_state
 from dataretrieval.configuration import (
     BaseConfiguration,
@@ -57,6 +59,9 @@ BASE_URL = WATERDATA_BASE_URL
 # separate, unversioned base.
 NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 
+#: This adapter's service (ADR 0014).
+_SERVICE = Service("ngwmn", NGWMN_OGC_API_URL)
+
 # --- state-filter shim -------------------------------------------------------
 # NGWMN's collections expose different state queryables: ``sites`` filters on
 # the full ``state_name`` (e.g. "Wisconsin"), while ``providers`` filters on the
@@ -86,7 +91,8 @@ _NGWMN_OUTPUT_ID = "id"
 # sort vocabulary: water-level observations are timestamped by ``sample_time``
 # (not the Water Data ``time``) and report depths/levels in feet. Its firewall
 # rejects ``datetime=../2016-01-01`` with HTTP 403, so an open start is sent
-# empty (``/2016-01-01``), which NGWMN treats as open.
+# empty (``/2016-01-01``), which NGWMN treats as open. It rejects a lone
+# duration (``datetime=P7D``) with HTTP 400, the standard's default.
 NGWMN_DIALECT = OgcDialect(
     time_cols=frozenset({"sample_time"}),
     numerical_cols=frozenset(
@@ -97,7 +103,7 @@ NGWMN_DIALECT = OgcDialect(
         }
     ),
     sort_cols=("sample_time", "monitoring_location_id"),
-    open_start="",
+    dates=DateDialect(open_start=""),
 )
 
 
@@ -110,18 +116,17 @@ def _get(service: str, local_vars: dict[str, Any]) -> tuple[pd.DataFrame, BaseMe
     queryable = _STATE_QUERYABLE.get(service)
     if queryable is not None:
         apply_state(local_vars, to=queryable["to"], into=queryable["into"])
-    args = prepare_request_args(local_vars)
+    args = prepare_request_args(local_vars, dialect=NGWMN_DIALECT)
     return get_ogc_data(
         args,
         service,
         output_id=_NGWMN_OUTPUT_ID,
         # A ``NgwmnConfiguration(base_url=...)`` from an enclosing block, or
-        # this service's own base. Read here because this is the one place the
-        # NGWMN base is named (ADR 0011).
-        base_url=_configuration.base_url(adapter="ngwmn", default=NGWMN_OGC_API_URL),
+        # this service's own base, resolved once per call (ADR 0011).
+        endpoint=Endpoint(
+            _SERVICE, _configuration.service_url(_SERVICE), NGWMN_DIALECT
+        ),
         spatial=service == "sites",
-        dialect=NGWMN_DIALECT,
-        adapter="ngwmn",
     )
 
 
@@ -483,7 +488,7 @@ class NgwmnConfiguration(
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
-    adapter: ClassVar[str] = "ngwmn"
+    adapter: ClassVar[str] = _SERVICE.name
 
 
 _register(NgwmnConfiguration)

@@ -472,6 +472,39 @@ def test_get_water_level_sends_an_open_start_empty(httpx_mock, datetime):
     assert qs["datetime"] == ["/2016-01-01T00:00:00Z"]
 
 
+def test_get_water_level_rejects_a_duration_before_any_request(httpx_mock):
+    """NGWMN rejects a lone duration with HTTP 400, so it raises before sending."""
+    with pytest.raises(ValueError, match="^datetime cannot be an ISO 8601 duration"):
+        ngwmn.get_water_level(monitoring_location_id=_SITE, datetime="P7D")
+    assert httpx_mock.get_requests() == []
+
+
+@pytest.mark.live
+def test_date_dialect_matches_the_service(live_status):
+    """Each ``NGWMN_DIALECT.dates`` field against the running service: the
+    request the field prevents fails, and the one it produces succeeds. Kept
+    live because the 403 comes from a firewall the API does not describe."""
+    import datetime
+
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.ngwmn import NGWMN_DIALECT, NGWMN_OGC_API_URL
+
+    url = f"{NGWMN_OGC_API_URL}/collections/waterLevelObs/items"
+
+    def status(value):
+        return live_status(
+            url, monitoring_location_id=_OTHER_SITE, limit=1, datetime=value
+        )
+
+    # open_start: "../" is rejected; the empty start is treated as open.
+    end = DateRange(end=datetime.datetime(2016, 1, 1, tzinfo=datetime.timezone.utc))
+    assert status("../2016-01-01T00:00:00Z") == 403
+    assert status(write_interval(end, NGWMN_DIALECT.dates, date_only=False)) == 200
+    # durations=False: a lone duration is rejected, so none is sent.
+    assert status("P7D") == 400
+
+
 def test_get_lithology(httpx_mock):
     _mock(httpx_mock, "lithologyObs", _LITHOLOGY)
 

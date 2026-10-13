@@ -18,9 +18,10 @@ import anyio
 import httpx
 import pandas as pd
 
+from dataretrieval._dates import read_date_range
+from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
-from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.requests import _check_monitoring_location_id
@@ -32,13 +33,18 @@ from dataretrieval.transport.http import (
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.endpoints import ratings_catalog_url
+from dataretrieval.waterdata.endpoints import SERVICE, ratings_catalog_url
 
 __all__ = ["get_ratings"]
 
 
 RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
 _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
+
+# The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP 403, and STAC
+# treats an empty start (``/2026-01-01T00:00:00Z``) as open. A lone duration
+# (``datetime=P7D``) is rejected with HTTP 400, the standard's default.
+STAC_DATES = DateDialect(open_start="")
 
 
 def get_ratings(
@@ -177,18 +183,11 @@ def get_ratings(
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     file_types = _as_list(file_type)
     _validate_file_types(file_types)
-    _validate_time_no_duration(time)
+    time_range = read_date_range(time, name="time", durations=STAC_DATES.durations)
     time_str = (
-        _format_api_dates(
-            time,
-            name="time",
-            single_value_hint="an instant ('2020-01-01')",
-            # The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP
-            # 403; STAC treats an empty start (``/2026-01-01``) as open.
-            open_start="",
-        )
-        if time is not None
-        else None
+        None
+        if time_range is None
+        else write_interval(time_range, STAC_DATES, date_only=False)
     )
 
     # Match R: set file_type server-side only when one type is requested.
@@ -220,20 +219,6 @@ def _validate_file_types(file_types: list[str]) -> None:
         raise ValueError(
             f"Invalid file_type: {render_options(invalid)}. "
             f"Valid options are: {render_options(_VALID_FILE_TYPES)}."
-        )
-
-
-def _validate_time_no_duration(time: str | list[str] | None) -> None:
-    """Raise ValueError if ``time`` contains an ISO 8601 duration."""
-    if time is None:
-        return
-    # ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
-    # ``_as_list`` would try to iterate it.
-    values = _coerce_to_list(time, "time")
-    if any(isinstance(v, str) and _DURATION_RE.match(v) for v in values):
-        raise ValueError(
-            "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
-            "for the rating-curve service. Provide a date or interval instead."
         )
 
 
@@ -327,7 +312,7 @@ def _search(
         raise_for_status=_raise_for_non_200,
         client_options={"verify": ssl_check},
         service="ratings",
-        adapter="waterdata",
+        adapter=SERVICE.name,
     )
     # Every page frame is built with a ``feature`` column, and the combine
     # helpers preserve it, so the empty case needs no special branch.
@@ -452,12 +437,12 @@ def _download_all(
     FanOut(
         features,
         fetch,
-        RetryPolicy.from_configuration(adapter="waterdata"),
+        RetryPolicy.from_configuration(adapter=SERVICE.name),
         client_options={"verify": ssl_check},
         # No single URL expresses "all of these assets" -- the aggregate
         # reports the first, matching what a single-feature call would show.
         canonical_url=_asset_href(features[0]),
         service="ratings",
-        adapter="waterdata",
+        adapter=SERVICE.name,
     ).resume()
     return out

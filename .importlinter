@@ -27,6 +27,9 @@ layers =
     wateruse
     ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
     ogc
+; The ISO 8601 interval grammar is shared by OGC and STAC, which is not OGC,
+; so it sits below ``ogc`` rather than inside it (ADR 0014).
+    _intervals
     utils
     _querying
     transport
@@ -38,11 +41,14 @@ layers =
     credentials
     configuration
     _configuration_core
+; The service declaration type is a dependency-free leaf, so every layer
+; above may accept one (ADR 0014).
+    _service
     exceptions
 ; Pure dependency-free mechanisms sit together at the floor: none imports
 ; first-party code, so every layer can use them without reaching sideways or
 ; creating artificial dependencies among them.
-    _ambient | _csv | _deprecation | _validation
+    _ambient | _csv | _dates | _deprecation | _validation
 ; Every top-level module must be placed in the stack deliberately. A new
 ; top-level module fails this contract until someone decides where it sits.
 exhaustive = True

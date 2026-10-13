@@ -730,6 +730,32 @@ def test_construct_api_requests_keeps_dotdot_for_an_open_start():
     assert "time=..%2F2024-01-31" in str(req.url)
 
 
+@pytest.mark.live
+def test_ogc_date_dialect_matches_the_service(live_status):
+    """Each ``WATERDATA_DIALECT.dates`` field against the running API: it
+    accepts the request each field produces and rejects the empty start."""
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.waterdata.endpoints import ogc_api_url
+
+    url = f"{ogc_api_url()}/collections/daily/items"
+    dates = WATERDATA_DIALECT.dates
+
+    def status(value):
+        return live_status(
+            url, monitoring_location_id="USGS-05427718", limit=1, time=value
+        )
+
+    # open_start: the default ".." is accepted; the empty start is rejected.
+    end = DateRange(end=datetime.datetime(2024, 1, 3, tzinfo=datetime.timezone.utc))
+    assert status(write_interval(end, dates, date_only=True)) == 200
+    assert status("/2024-01-03") == 400
+    # durations=True: a lone duration is accepted, so it is sent.
+    assert (
+        status(write_interval(DateRange(duration="P7D"), dates, date_only=False)) == 200
+    )
+
+
 def test_construct_api_requests_two_element_date_list_becomes_interval():
     """A two-element date list is interpreted as start/end of an OGC datetime
     interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
@@ -1720,6 +1746,32 @@ def test_get_reference_table_serves_countries(httpx_mock):
     df, _ = get_reference_table("countries")
 
     assert "country" in df.columns
+
+
+@pytest.mark.parametrize(
+    ("value", "sent"),
+    [
+        ("2024-01-01T00:00:00Z", "2024-01-01T00:00:00Z"),
+        (["2024-01-01T00:00:00Z", None], "2024-01-01T00:00:00Z/.."),
+    ],
+)
+def test_get_reference_table_reads_a_date_in_its_query(httpx_mock, value, sent):
+    """A ``query`` dict skips the getters' argument reading, so the engine reads
+    its date parameters."""
+    _mock_items(httpx_mock, "agency-codes")
+
+    get_reference_table("agency-codes", query={"last_modified": value})
+
+    assert _sent(httpx_mock, "agency-codes")[0]["last_modified"] == [sent]
+
+
+def test_get_reference_table_drops_an_all_open_date_in_its_query(httpx_mock):
+    """``[None, None]`` means no date filter, in a ``query`` as in a getter."""
+    _mock_items(httpx_mock, "agency-codes")
+
+    get_reference_table("agency-codes", query={"last_modified": [None, None]})
+
+    assert "last_modified" not in _sent(httpx_mock, "agency-codes")[0]
 
 
 def test_get_reference_table_with_query(httpx_mock):

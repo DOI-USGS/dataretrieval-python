@@ -32,4 +32,5 @@ belong here rather than in a docstring, an inline comment, or a commit message.
    0011-configuration-profiles
    0012-deprecation-horizons
    0013-core-and-domain-terms
+   0014-services-endpoints-dialects
    template

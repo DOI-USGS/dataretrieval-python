@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING, Any, TypeVar
 import pandas as pd
 
 from dataretrieval._deprecation import warn_deprecated
+from dataretrieval._intervals import DateDialect
+from dataretrieval._service import Endpoint
 from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
@@ -34,6 +36,7 @@ from dataretrieval.waterdata.endpoints import (
     _DEFAULT_BASE_URL,
     _DEFAULT_OGC_API_URL,
     _DEFAULT_SAMPLES_URL,
+    SERVICE,
     ogc_api_url,
 )
 
@@ -82,9 +85,16 @@ _EXTRA_ID_COLS = frozenset(
 # ``construction_date`` is deliberately not a time column: the service sends it
 # as a string at day, month, or year precision (``19950812``, ``199508``,
 # ``2005``), and no one datetime parse keeps all three, so it stays as sent.
+# The API accepts a lone duration (``time=P7D``), which the standard does not
+# define, and rejects an empty open start (``time=/2024-01-31``, HTTP 400).
 WATERDATA_DIALECT = OgcDialect(
     lists_as_cql2=True,
-    date_only_services=frozenset({"daily"}),
+    date_params=frozenset(
+        {"datetime", "last_modified", "begin", "begin_utc", "end", "end_utc", "time"}
+    ),
+    date_only_collections=frozenset({"daily"}),
+    timed_params=frozenset({"last_modified"}),
+    dates=DateDialect(durations=True),
     time_cols=frozenset(
         {
             "begin",
@@ -170,9 +180,15 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
 
 
 def _get_args(
-    local_vars: dict[str, Any], exclude: set[str] | None = None
+    local_vars: dict[str, Any],
+    exclude: set[str] | None = None,
+    *,
+    dialect: OgcDialect | None = WATERDATA_DIALECT,
 ) -> dict[str, Any]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.prepare_request_args`.
+
+    Date parameters are read with ``dialect``, the OGC API's by default; the
+    Samples and Statistics getters pass ``None``, since those APIs are not OGC.
 
     Adds the Water Data API's extra no-normalize params (numeric params such
     as ``water_year``, ``thresholds``, ``boundingBox``) so they keep their
@@ -181,7 +197,10 @@ def _get_args(
     """
     _flatten_queryables(local_vars)
     args = prepare_request_args(
-        local_vars, exclude, extra_no_normalize=_NO_NORMALIZE_PARAMS
+        local_vars,
+        exclude,
+        dialect=dialect,
+        extra_no_normalize=_NO_NORMALIZE_PARAMS,
     )
     for name in _JSON_ARRAY_PARAMS & args.keys():
         # An empty list is dropped from the request downstream, as for any filter.
@@ -270,19 +289,17 @@ def get_ogc_data(
         collection,
         output_id,
         max_rows=max_rows,
-        # The endpoint is resolved from the active ContextVar at request time;
-        # the documented ``OGC_API_URL`` constant remains the default-value
-        # compatibility path rather than a production request destination.
-        base_url=ogc_api_url(api_version=api_version),
+        # Built when the call starts, from the configuration in effect; the
+        # documented ``OGC_API_URL`` constant remains the default-value
+        # compatibility path rather than a request destination. The service,
+        # not the URL, names the settings table: NGWMN is served from the same
+        # host (ADR 0010).
+        endpoint=Endpoint(
+            SERVICE, ogc_api_url(api_version=api_version), WATERDATA_DIALECT
+        ),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
-        dialect=WATERDATA_DIALECT,
         cql_body=cql_body,
-        # Which settings table these calls read. Declared here, in the one
-        # wrapper every Water Data getter goes through, rather than derived
-        # from ``base_url``: NGWMN is served from the same host, so a URL
-        # does not distinguish the two adapters (ADR 0010).
-        adapter="waterdata",
     )
 
 

@@ -64,7 +64,7 @@ from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import TextIO, overload
+from typing import TYPE_CHECKING, TextIO, overload
 
 # Explicit same-name aliases preserve the facade's public and private compatibility
 # symbols for runtime users and static analyzers. Ruff otherwise expands these
@@ -118,6 +118,9 @@ from dataretrieval._configuration_core import (
     config_path as config_path,
     settings_for as settings_for,
 )
+
+if TYPE_CHECKING:
+    from dataretrieval._service import Service
 
 # isort: on
 from dataretrieval.exceptions import ConfigurationError as ConfigurationError
@@ -656,6 +659,11 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
     if raw is None:
         return default
     return _parse_base_url(raw, label)
+
+
+def service_url(service: Service) -> str:
+    """*service*'s base URL: its ``base_url`` setting, or its default."""
+    return base_url(adapter=service.name, default=service.default_url)
 
 
 @overload

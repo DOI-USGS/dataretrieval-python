@@ -14,6 +14,8 @@ import pytest
 import dataretrieval.ogc.shaping as _shaping_module
 import dataretrieval.waterdata.stats as _stats_module
 import dataretrieval.waterdata.utils as _utils_module
+from dataretrieval._dates import read_date_range
+from dataretrieval._intervals import DateDialect, write_interval
 from dataretrieval.exceptions import (
     DataRetrievalError,
     HTTPError,
@@ -22,7 +24,6 @@ from dataretrieval.exceptions import (
     TransientError,
 )
 from dataretrieval.interruptions import ServiceInterrupted
-from dataretrieval.ogc.dates import _format_api_dates
 from dataretrieval.ogc.engine import (
     _next_req_url,
     _walk_pages,
@@ -64,6 +65,14 @@ _finalize_ogc = functools.partial(
 )
 
 _LOGGER_NAME = _utils_module.__name__
+
+
+def _format_api_dates(value, date=False, *, name="date input", open_start=".."):
+    """Read a date argument and write it as an API that accepts durations
+    would receive it."""
+    dialect = DateDialect(open_start=open_start, durations=True)
+    read = read_date_range(value, name=name, durations=dialect.durations)
+    return None if read is None else write_interval(read, dialect, date_only=date)
 
 
 def _run_walk_pages(*, geopd, req, client, row_cap=None):
@@ -1131,18 +1140,28 @@ def test_format_api_dates_rejects_more_than_two_values():
 
 
 def test_the_duration_example_is_withheld_where_durations_are_rejected():
-    """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
-    'P7D' on that path -- a caller following it would receive a second rejection."""
+    """An API that refuses ISO 8601 durations must not be offered 'P7D' in the
+    message -- a caller following it would receive a second rejection."""
     with pytest.raises(ValueError) as allowed:
-        _format_api_dates(["a", "b", "c"], name="time")
+        read_date_range(["a", "b", "c"], name="time", durations=True)
     with pytest.raises(ValueError) as refused:
-        _format_api_dates(
-            ["a", "b", "c"], name="time", single_value_hint="an instant ('2020-01-01')"
-        )
+        read_date_range(["a", "b", "c"], name="time", durations=False)
 
     assert "'P7D'" in str(allowed.value)
     assert "'P7D'" not in str(refused.value)
     assert "an instant ('2020-01-01')" in str(refused.value)
+
+
+@pytest.mark.parametrize("value", ["P7D", ["PT36H"]], ids=["string", "list"])
+def test_a_duration_raises_where_the_api_refuses_one(value):
+    """Neither standard defines a lone duration, so an API whose dialect does not
+    accept one raises before any request rather than receiving HTTP 400."""
+    with pytest.raises(ValueError, match="^time cannot be an ISO 8601 duration"):
+        read_date_range(value, name="time", durations=False)
+    assert read_date_range(value, name="time", durations=True).duration in {
+        "P7D",
+        "PT36H",
+    }
 
 
 def test_format_api_dates_names_the_callers_parameter():

@@ -356,7 +356,7 @@ def get_samples(
     # Build argument dictionary, omitting None values. Parameters are the
     # public snake_case names here; translate them to the camelCase names the
     # Samples API expects just before building the request.
-    args = _get_args(locals(), exclude={"ssl_check", "profile"})
+    args = _get_args(locals(), exclude={"ssl_check", "profile"}, dialect=None)
     params = {_SAMPLES_PARAM_TO_API.get(key, key): value for key, value in args.items()}
 
     params.update({"mimeType": "text/csv"})

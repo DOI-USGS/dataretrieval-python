@@ -5,8 +5,7 @@ strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
 pagination and sync dispatch are in :mod:`dataretrieval.transport`; request
 construction is in :mod:`~dataretrieval.ogc.requests`. The surrounding
 concerns are in sibling modules this one composes, each with its own reason
-to change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
-:mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
+to change: :mod:`~dataretrieval.ogc.errors` (HTTP error mapping) and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
 finalization). It is deliberately free of any Water-Data-specific constants
 so a sibling package (e.g. NGWMN) can use it without importing
@@ -16,7 +15,8 @@ API-specific behavior is supplied by the caller:
 
 * ``output_id`` — the user-facing column the wire ``id`` is renamed to,
   passed explicitly (no collection map is defined here).
-* ``base_url`` — the OGC API base to target.
+* ``endpoint`` — the API to target, its service, and its
+  :class:`OgcDialect` (ADR 0014).
 * ``extra_id_cols`` — synthetic id columns to move to the end of a result.
 * ``dialect`` — an :class:`OgcDialect` describing how lists are sent and
   which collections use date-only (vs. full datetime) time arguments.
@@ -37,7 +37,6 @@ import pandas as pd
 import dataretrieval.ogc.chunking as chunking
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
-    DEFAULT_DIALECT,
     OgcDialect,
     _require_positive_int,
 )
@@ -47,6 +46,7 @@ from dataretrieval.ogc.policy import (
 from dataretrieval.ogc.requests import (
     _construct_api_requests,
     _construct_cql_request,
+    _read_raw_dates,
     _switch_arg_id,
     _switch_properties_id,
 )
@@ -58,6 +58,7 @@ from dataretrieval.transport.retry import RetryPolicy
 
 if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
+    from dataretrieval._service import Endpoint
 
 # Set up logger for this module
 logger = logging.getLogger(__name__)
@@ -219,13 +220,11 @@ def get_ogc_data(
     collection: str,
     output_id: str,
     *,
-    base_url: str,
+    endpoint: Endpoint[OgcDialect],
     spatial: bool,
     max_rows: int | None = None,
     extra_id_cols: frozenset[str] | set[str] = frozenset(),
-    dialect: OgcDialect | None = None,
     cql_body: str | None = None,
-    adapter: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -249,10 +248,10 @@ def get_ogc_data(
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result. Intended for few-request previews of large,
         un-chunked tables (e.g. :func:`get_reference_table`).
-    base_url : str
-        OGC API base URL to target. Required: this package is API-neutral and
-        names no API of its own, so each adapter passes its own base (e.g.
-        ``waterdata.utils.OGC_API_URL``, ``ngwmn.NGWMN_OGC_API_URL``).
+    endpoint : Endpoint[OgcDialect]
+        The API to target, built by the adapter when the call starts: its URL,
+        the service whose settings apply, and how it departs from the standard
+        (ADR 0014). This package names no API of its own.
     spatial : bool
         Whether this collection's result contract includes feature geometry.
         The adapter supplies this semantic fact; ``skip_geometry`` and
@@ -260,9 +259,6 @@ def get_ogc_data(
     extra_id_cols : set or frozenset, optional
         Synthetic id columns to move to the end of a result frame (see
         :func:`_arrange_cols`). Defaults to an empty set.
-    dialect : OgcDialect, optional
-        Per-API request quirks (how lists are sent, date-only collections).
-        Defaults to a plain OGC API.
     cql_body : str, optional
         A verbatim CQL2 JSON body to POST against ``collection`` instead of
         building the query from ``args``. With a body, only the
@@ -291,8 +287,7 @@ def get_ogc_data(
     if max_rows is not None:
         _require_positive_int(max_rows, "max_rows")
 
-    if dialect is None:
-        dialect = DEFAULT_DIALECT
+    base_url, dialect, adapter = endpoint.url, endpoint.dialect, endpoint.service.name
     args = args.copy()
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
@@ -308,6 +303,7 @@ def get_ogc_data(
         # The APIs answer a blank filter with HTTP 400.
         del args["filter"]
         args.pop("filter_lang", None)
+    args = _read_raw_dates(args, dialect)
 
     # Choose one semantic frame shape for the whole request. Every page and
     # the all-empty finalizer receive these same values, so frame type never

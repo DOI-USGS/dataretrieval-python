@@ -45,11 +45,36 @@ def test_get_ratings_rejects_invalid_file_type():
 
 def test_get_ratings_rejects_iso_8601_duration_in_time():
     """STAC ratings doesn't accept ISO 8601 durations; raise a clear error."""
-    with pytest.raises(ValueError, match=r"durations.*not supported"):
+    with pytest.raises(ValueError, match=r"^time cannot be an ISO 8601 duration"):
         get_ratings(
             monitoring_location_id="USGS-01104475",
             time="P7D",
         )
+
+
+@pytest.mark.live
+def test_stac_date_dialect_matches_the_service(live_status):
+    """Each ``STAC_DATES`` field against the running search: the request the
+    field prevents fails, and the one it produces succeeds. Kept live because
+    the 403 comes from a firewall the API does not describe."""
+    import datetime
+
+    from dataretrieval._dates import DateRange
+    from dataretrieval._intervals import write_interval
+    from dataretrieval.waterdata.endpoints import ratings_catalog_url
+    from dataretrieval.waterdata.ratings import STAC_DATES
+
+    url = f"{ratings_catalog_url()}/search"
+
+    def status(value):
+        return live_status(url, limit=1, datetime=value)
+
+    # open_start: "../" is rejected; the empty start is treated as open.
+    end = DateRange(end=datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc))
+    assert status("../2026-01-01T00:00:00Z") == 403
+    assert status(write_interval(end, STAC_DATES, date_only=False)) == 200
+    # durations=False: a lone duration is rejected, so none is sent.
+    assert status("P7D") == 400
 
 
 def test_build_filter_escapes_quotes():
@@ -216,8 +241,8 @@ def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     ids=["lone", "range"],
 )
 def test_get_ratings_accepts_a_timestamp_time(httpx_mock, time):
-    """The duration check iterated a lone ``Timestamp`` and raised
-    ``TypeError`` before the date formatter could read it."""
+    """A lone ``Timestamp`` used to raise ``TypeError`` in a separate duration
+    check that iterated it before the date was read."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
     )
