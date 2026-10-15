@@ -114,9 +114,16 @@ about the upstream service rather than about this package.
 The Water Data service publishes its own description of every queryable a
 collection accepts. A typed argument of a Water Data getter that filters on a
 queryable must be described in the service's words: its docstring description
-must *contain* the service's description once whitespace is normalised. Text of
-our own -- a usage note, an example, a Python-specific caveat -- may come before
-or after it.
+must *contain* the service's description once both are reduced to plain text.
+The service writes Markdown and docstrings write reStructuredText, so the check
+drops the markup on each side: a literal (`` `x` `` or ``` ``x`` ```) and
+emphasis keep their contents, a role (`` :func:`x` ``) keeps its target, a link
+(`[text](url)` or `` `text <url>`_ ``) becomes its text followed by its URL,
+written once when the two are the same, and a bullet becomes a plain line.
+Whitespace is then collapsed; case is kept. Write the docstring in proper
+reStructuredText -- double-backtick literals, `` `text <url>`_ `` links, or a bare
+URL -- never pasted Markdown. Text of our own -- a usage note, an example, a
+Python-specific caveat -- may come before or after it.
 
 [`tests/data/waterdata_queryables.json`](tests/data/waterdata_queryables.json)
 records each queryable's `type`, `title`, and `description` per collection, and

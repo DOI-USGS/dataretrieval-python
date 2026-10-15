@@ -5,13 +5,15 @@ The committed snapshot (``tests/data/waterdata_queryables.json``) records each
 collection's queryables with the ``type``, ``title``, and ``description`` the
 service publishes. Offline, each typed argument of a getter that is a queryable
 of its collection must have a documented description containing the service's
-description once whitespace is normalised; our own notes may surround it. The
-live monitor (:func:`test_queryables_match_snapshot`) compares the queryables
-each collection publishes against the snapshot. When the service has changed,
-regenerate the snapshot with ``python -m tests.waterdata_queryables_test``: it
-rewrites the file and reports which queryables appeared, disappeared, or
-changed, and which getters document them. ``--check`` reports without
-rewriting.
+description once both are reduced to plain text: the service's Markdown and the
+docstring's reStructuredText lose their markup, and whitespace is collapsed.
+Our own notes may surround the service's text. The snapshot keeps the service's
+raw text, so a change of markup alone still shows as drift. The live monitor
+(:func:`test_queryables_match_snapshot`) compares the queryables each collection
+publishes against the snapshot. When the service has changed, regenerate the
+snapshot with ``python -m tests.waterdata_queryables_test``: it rewrites the
+file and reports which queryables appeared, disappeared, or changed, and which
+getters document them. ``--check`` reports without rewriting.
 """
 
 from __future__ import annotations
@@ -207,9 +209,48 @@ class Target:
 _SECTION_RULE = re.compile(r"^-{3,}\s*$")
 
 
+_BULLET = re.compile(r"^[ \t]*[-*][ \t]+", re.MULTILINE)
+
+# Inline markup of either syntax, one alternative per construct. The service
+# writes Markdown and the docstrings reStructuredText; scanning both with one
+# pattern, left to right, consumes each construct once, so a literal's
+# contents are never read as emphasis or a link.
+_MARKUP = re.compile(
+    r"`(?P<rst_text>[^`<]*?)\s*<(?P<rst_url>[^`<>]+)>`__?"  # `text <url>`_
+    r"|:[\w.+-]+(?::[\w.+-]+)*:`(?P<role>[^`]+)`"  # :role:`x`
+    r"|(?P<ticks>`+)(?P<literal>.+?)(?P=ticks)"  # `x` and ``x``
+    r"|\[(?P<md_text>[^\[\]]*)\]\((?P<md_url>[^()\s]+)\)"  # [text](url)
+    r"|\*\*(?P<strong>\S(?:.*?\S)?)\*\*"  # **x**
+    r"|\*(?P<emphasis>\S(?:.*?\S)?)\*"  # *x*
+)
+
+
+def _link(text: str, url: str) -> str:
+    """A link as plain text: its text then its URL, or the URL once if equal."""
+    text = text.strip()
+    return url if text in ("", url) else f"{text} {url}"
+
+
+def _unmarked(match: re.Match[str]) -> str:
+    if match["rst_url"] is not None:
+        return _link(match["rst_text"], match["rst_url"])
+    if match["md_url"] is not None:
+        return _link(match["md_text"], match["md_url"])
+    return match["role"] or match["literal"] or match["strong"] or match["emphasis"]
+
+
 def _normalise(text: str) -> str:
-    """Collapse whitespace runs, wrapping, and trailing newlines; keep case."""
-    return " ".join(text.split())
+    """Reduce Markdown (the service's) or reStructuredText (a docstring's) to
+    plain text, so the two compare by what they say rather than how it is
+    marked up.
+
+    Literals and emphasis keep their contents, a role keeps its target, a link
+    becomes its text followed by its URL (the URL once when the two are the
+    same), and a bullet becomes a plain line. Whitespace runs, wrapping, and
+    trailing newlines then collapse to single spaces. Case is kept.
+    """
+    flat = " ".join(_BULLET.sub("", text).split())
+    return " ".join(_MARKUP.sub(_unmarked, flat).split())
 
 
 def _is_section_header(lines: list[str], index: int) -> bool:
@@ -753,6 +794,108 @@ def test_containment_ignores_wrapping_and_allows_added_prose():
     assert not description_mismatches(
         "get_things", _fake_getter, _FAKE_TARGET, _FAKE_SNAPSHOT, frozenset({"limit"})
     )
+
+
+@pytest.mark.parametrize(
+    ("markdown", "plain"),
+    [
+        ("compare the `time` field", "compare the time field"),
+        ("at [https://a.gov/x](https://a.gov/x).", "at https://a.gov/x."),
+        ("undergo [review](https://a.gov/r).", "undergo review https://a.gov/r."),
+        ("Examples:\n\n  - one\n  - two", "Examples: one two"),
+        ("Examples:\n\n* one\n* two", "Examples: one two"),
+        ("a **strong** word", "a strong word"),
+        ("an *emphasised* word", "an emphasised word"),
+    ],
+    ids=[
+        "literal",
+        "link-once",
+        "link",
+        "dash-bullets",
+        "star-bullets",
+        "strong",
+        "em",
+    ],
+)
+def test_normalise_reduces_the_services_markdown(markdown, plain):
+    assert _normalise(markdown) == plain
+
+
+@pytest.mark.parametrize(
+    ("rst", "plain"),
+    [
+        ("compare the ``time`` field", "compare the time field"),
+        ("at `https://a.gov/x <https://a.gov/x>`_.", "at https://a.gov/x."),
+        ("undergo `review <https://a.gov/r>`_.", "undergo review https://a.gov/r."),
+        ("undergo `review <https://a.gov/r>`__.", "undergo review https://a.gov/r."),
+        ("call :func:`get_queryables` first", "call get_queryables first"),
+        ("Examples:\n\n- one\n- two", "Examples: one two"),
+        ("Examples:\n\n    * one\n    * two", "Examples: one two"),
+        ("a **strong** word", "a strong word"),
+        ("an *emphasised* word", "an emphasised word"),
+    ],
+    ids=[
+        "literal",
+        "link-once",
+        "link",
+        "anonymous-link",
+        "role",
+        "dash-bullets",
+        "star-bullets",
+        "strong",
+        "em",
+    ],
+)
+def test_normalise_reduces_a_docstrings_restructuredtext(rst, plain):
+    assert _normalise(rst) == plain
+
+
+def test_normalise_keeps_case_and_what_is_not_markup():
+    assert _normalise("  Keep  CASE,\n2 * 3, and -1.\n") == "Keep CASE, 2 * 3, and -1."
+    # A literal's contents are not read as markup.
+    assert _normalise("``*args*`` and ``[a](b)``") == "*args* and [a](b)"
+    # A stray bracket before a link stays; only the link is reduced.
+    assert _normalise("[A list at [https://a.gov](https://a.gov).") == (
+        "[A list at https://a.gov."
+    )
+
+
+def test_an_rst_docstring_contains_the_services_markdown():
+    """A docstring may use RST links and literals for the service's Markdown."""
+    snapshot: Snapshot = {
+        "things": {
+            "colour": {
+                "type": "string",
+                "title": "Colour",
+                "description": (
+                    "The `colour` field. Codes are listed at\n"
+                    "[https://a.gov/codes](https://a.gov/codes); see the\n"
+                    "[style guide](https://a.gov/style)."
+                ),
+            }
+        }
+    }
+
+    def get_things(colour: str | None = None) -> None:
+        """Get things.
+
+        Parameters
+        ----------
+        colour : string, optional
+            The ``colour`` field. Codes are listed at
+            `https://a.gov/codes <https://a.gov/codes>`_; see the
+            `style guide <https://a.gov/style>`_. Accepts a list.
+        """
+
+    target = Target("things")
+    assert not description_mismatches(
+        "get_things", get_things, target, snapshot, frozenset()
+    )
+    snapshot["things"]["colour"]["description"] = "The `hue` field."
+    (failure,) = description_mismatches(
+        "get_things", get_things, target, snapshot, frozenset()
+    )
+    assert "service: The hue field." in failure
 
 
 def test_a_dropped_description_fails_naming_collection_queryable_and_getter():
