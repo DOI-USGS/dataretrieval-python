@@ -266,14 +266,10 @@ def get_monitoring_locations(
         surface (water table) is at atmospheric pressure, and thus is able to rise and
         fall.
 
-        Groundwater occurs in aquifers under two different conditions. Where water
-        only partly fills an aquifer, the upper surface is free to rise and decline.
-        These aquifers are referred to as unconfined (or water-table) aquifers. Where
-        water completely fills an aquifer that is overlain by a confining bed, the
-        aquifer is referred to as a confined (or artesian) aquifer. When a confined
-        aquifer is penetrated by a well, the water level in the well will rise above
-        the top of the aquifer (but not necessarily above land surface). Additional
-        information is available `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
+        A confined aquifer is also called artesian. When a confined aquifer is
+        penetrated by a well, the water level in the well will rise above the top of
+        the aquifer (but not necessarily above land surface). Additional information
+        is available `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
     well_constructed_depth : string or iterable of strings, optional
         The depth of the finished well, in feet below land surface datum. Note: Not
         all groundwater monitoring locations have information on Well Depth. Such
@@ -827,7 +823,7 @@ def get_combined_metadata(
 
     All ~35 location-catalog kwargs are accepted (``agency_code``,
     ``state_name``, ``drainage_area``, ``aquifer_code``, …), each
-    described below as in :func:`get_monitoring_locations`.
+    described below.
 
     Parameters
     ----------

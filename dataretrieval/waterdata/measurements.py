@@ -569,6 +569,8 @@ def get_channel(
         The channel name.
     channel_flow : string or iterable of strings, optional
         Channel discharge.
+
+        That is, the flow in the channel.
     channel_flow_unit : string or iterable of strings, optional
         The units for channel discharge.
     channel_width : string or iterable of strings, optional
