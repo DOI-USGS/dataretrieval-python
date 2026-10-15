@@ -231,14 +231,17 @@ def _unmarked(match: re.Match[str]) -> str:
         return _link(match["rst_text"], match["rst_url"])
     if match["md_url"] is not None:
         return _link(match["md_text"], match["md_url"])
-    return match["role"] or match["literal"] or match["strong"] or match["emphasis"]
+    if match["role"] is not None:
+        return match["role"].lstrip("~")
+    return match["literal"] or match["strong"] or match["emphasis"]
 
 
-def _normalise(text: str) -> str:
+def _normalize(text: str) -> str:
     """Reduce the service's Markdown or a docstring's RST to plain text.
 
-    Literals, emphasis and roles keep their contents, a link keeps its text and
-    URL, and bullets become plain lines; whitespace then collapses. Case is kept.
+    Literals, emphasis and roles keep their contents (a role without its ``~``),
+    a link keeps its text and URL, and bullets become plain lines; whitespace
+    then collapses. Case is kept.
     """
     flat = " ".join(_BULLET.sub("", text).split())
     return " ".join(_MARKUP.sub(_unmarked, flat).split())
@@ -328,8 +331,8 @@ def description_mismatches(
         queryable = target.queryable(argument)
         if queryable not in queryables:
             continue  # an unknown argument, reported by unknown_arguments
-        service = _normalise(queryables[queryable].get("description") or "")
-        ours = _normalise(documented.get(argument, ""))
+        service = _normalize(queryables[queryable].get("description") or "")
+        ours = _normalize(documented.get(argument, ""))
         if ours and service in ours:
             continue
         failures.append(
@@ -726,10 +729,10 @@ def test_unexposed_queryables_are_reported():
 _FAKE_SNAPSHOT: Snapshot = {
     "things": {
         "id": {"type": "string", "title": "Id", "description": "The record id."},
-        "colour": {
+        "color": {
             "type": "string",
-            "title": "Colour",
-            "description": "The colour of the thing,\nas the service records it.",
+            "title": "Color",
+            "description": "The color of the thing,\nas the service records it.",
         },
         "size": {"type": "number", "title": "Size", "description": "Its size."},
     }
@@ -739,7 +742,7 @@ _FAKE_TARGET = Target("things", id_argument="thing_id")
 
 def _fake_getter(
     thing_id: str | None = None,
-    colour: str | None = None,
+    color: str | None = None,
     limit: int | None = None,
     **queryables: Any,
 ) -> None:
@@ -749,8 +752,8 @@ def _fake_getter(
     ----------
     thing_id : string, optional
         The record id.
-    colour : string, optional
-        The colour of the thing, as the
+    color : string, optional
+        The color of the thing, as the
         service records it. Accepts a list.
     limit, other : int, optional
         Page size.
@@ -766,7 +769,7 @@ def _fake_getter(
 
 def test_parameter_descriptions_reads_the_parameters_section():
     descriptions = parameter_descriptions(_fake_getter.__doc__)
-    assert set(descriptions) == {"thing_id", "colour", "limit", "other", "queryables"}
+    assert set(descriptions) == {"thing_id", "color", "limit", "other", "queryables"}
     assert descriptions["limit"] == descriptions["other"]
     assert "Nothing" not in "".join(descriptions.values())
     assert parameter_descriptions("No sections.") == {}
@@ -788,7 +791,7 @@ def test_containment_ignores_wrapping_and_allows_added_prose():
         ("Examples:\n\n  - one\n  - two", "Examples: one two"),
         ("Examples:\n\n* one\n* two", "Examples: one two"),
         ("a **strong** word", "a strong word"),
-        ("an *emphasised* word", "an emphasised word"),
+        ("an *emphasized* word", "an emphasized word"),
     ],
     ids=[
         "literal",
@@ -800,8 +803,8 @@ def test_containment_ignores_wrapping_and_allows_added_prose():
         "em",
     ],
 )
-def test_normalise_reduces_the_services_markdown(markdown, plain):
-    assert _normalise(markdown) == plain
+def test_normalize_reduces_the_services_markdown(markdown, plain):
+    assert _normalize(markdown) == plain
 
 
 @pytest.mark.parametrize(
@@ -812,10 +815,11 @@ def test_normalise_reduces_the_services_markdown(markdown, plain):
         ("undergo `review <https://a.gov/r>`_.", "undergo review https://a.gov/r."),
         ("undergo `review <https://a.gov/r>`__.", "undergo review https://a.gov/r."),
         ("call :func:`get_queryables` first", "call get_queryables first"),
+        ("see :mod:`~dataretrieval.ogc.filters`", "see dataretrieval.ogc.filters"),
         ("Examples:\n\n- one\n- two", "Examples: one two"),
         ("Examples:\n\n    * one\n    * two", "Examples: one two"),
         ("a **strong** word", "a strong word"),
-        ("an *emphasised* word", "an emphasised word"),
+        ("an *emphasized* word", "an emphasized word"),
     ],
     ids=[
         "literal",
@@ -823,22 +827,23 @@ def test_normalise_reduces_the_services_markdown(markdown, plain):
         "link",
         "anonymous-link",
         "role",
+        "short-role",
         "dash-bullets",
         "star-bullets",
         "strong",
         "em",
     ],
 )
-def test_normalise_reduces_a_docstrings_restructuredtext(rst, plain):
-    assert _normalise(rst) == plain
+def test_normalize_reduces_a_docstrings_restructuredtext(rst, plain):
+    assert _normalize(rst) == plain
 
 
-def test_normalise_keeps_case_and_what_is_not_markup():
-    assert _normalise("  Keep  CASE,\n2 * 3, and -1.\n") == "Keep CASE, 2 * 3, and -1."
+def test_normalize_keeps_case_and_what_is_not_markup():
+    assert _normalize("  Keep  CASE,\n2 * 3, and -1.\n") == "Keep CASE, 2 * 3, and -1."
     # A literal's contents are not read as markup.
-    assert _normalise("``*args*`` and ``[a](b)``") == "*args* and [a](b)"
+    assert _normalize("``*args*`` and ``[a](b)``") == "*args* and [a](b)"
     # A stray bracket before a link stays; only the link is reduced.
-    assert _normalise("[A list at [https://a.gov](https://a.gov).") == (
+    assert _normalize("[A list at [https://a.gov](https://a.gov).") == (
         "[A list at https://a.gov."
     )
 
@@ -847,11 +852,11 @@ def test_an_rst_docstring_contains_the_services_markdown():
     """A docstring may use RST links and literals for the service's Markdown."""
     snapshot: Snapshot = {
         "things": {
-            "colour": {
+            "color": {
                 "type": "string",
-                "title": "Colour",
+                "title": "Color",
                 "description": (
-                    "The `colour` field. Codes are listed at\n"
+                    "The `color` field. Codes are listed at\n"
                     "[https://a.gov/codes](https://a.gov/codes); see the\n"
                     "[style guide](https://a.gov/style)."
                 ),
@@ -859,13 +864,13 @@ def test_an_rst_docstring_contains_the_services_markdown():
         }
     }
 
-    def get_things(colour: str | None = None) -> None:
+    def get_things(color: str | None = None) -> None:
         """Get things.
 
         Parameters
         ----------
-        colour : string, optional
-            The ``colour`` field. Codes are listed at
+        color : string, optional
+            The ``color`` field. Codes are listed at
             `https://a.gov/codes <https://a.gov/codes>`_; see the
             `style guide <https://a.gov/style>`_. Accepts a list.
         """
@@ -874,7 +879,7 @@ def test_an_rst_docstring_contains_the_services_markdown():
     assert not description_mismatches(
         "get_things", get_things, target, snapshot, frozenset()
     )
-    snapshot["things"]["colour"]["description"] = "The `hue` field."
+    snapshot["things"]["color"]["description"] = "The `hue` field."
     (failure,) = description_mismatches(
         "get_things", get_things, target, snapshot, frozenset()
     )
@@ -883,19 +888,19 @@ def test_an_rst_docstring_contains_the_services_markdown():
 
 def test_a_dropped_description_fails_naming_collection_queryable_and_getter():
     snapshot = json.loads(json.dumps(_FAKE_SNAPSHOT))
-    snapshot["things"]["colour"]["description"] = "The hue, as revised."
+    snapshot["things"]["color"]["description"] = "The hue, as revised."
     (failure,) = description_mismatches(
         "get_things", _fake_getter, _FAKE_TARGET, snapshot, frozenset({"limit"})
     )
     assert "things" in failure
-    assert "'colour'" in failure
-    assert "get_things(colour=...)" in failure
+    assert "'color'" in failure
+    assert "get_things(color=...)" in failure
     assert "service: The hue, as revised." in failure
-    assert "ours:    The colour of the thing, as the service records it." in failure
+    assert "ours:    The color of the thing, as the service records it." in failure
 
 
 def test_an_undocumented_queryable_argument_fails():
-    def bare(colour: str | None = None) -> None:
+    def bare(color: str | None = None) -> None:
         """No parameters documented."""
 
     (failure,) = description_mismatches(
@@ -904,7 +909,7 @@ def test_an_undocumented_queryable_argument_fails():
     assert "(not documented)" in failure
 
     snapshot = json.loads(json.dumps(_FAKE_SNAPSHOT))
-    snapshot["things"]["colour"]["description"] = ""
+    snapshot["things"]["color"]["description"] = ""
     (failure,) = description_mismatches(
         "bare", bare, _FAKE_TARGET, snapshot, frozenset()
     )
@@ -949,7 +954,7 @@ def test_drift_report_names_what_moved_and_who_documents_it():
     del new["things"]["size"]
     del new["things"]["id"]
     new["things"]["weight"] = {"type": "number", "title": "W", "description": "W."}
-    new["things"]["colour"]["description"] = "The hue."
+    new["things"]["color"]["description"] = "The hue."
 
     def documenting(collection: str, queryable: str) -> list[str]:
         return documenting_getters(
@@ -965,7 +970,7 @@ def test_drift_report_names_what_moved_and_who_documents_it():
     # A disappeared queryable a getter still takes names that getter.
     assert "things: id: disappeared; documented by get_things" in report
     assert not any(line.startswith("things: size:") for line in report)
-    assert "things: colour: changed description; documented by get_things" in report
+    assert "things: color: changed description; documented by get_things" in report
     assert "    description now: The hue." in report
     assert drift_report(_FAKE_SNAPSHOT, _FAKE_SNAPSHOT, documenting) == []
 
