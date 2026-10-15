@@ -207,26 +207,21 @@ class Target:
 
 
 _SECTION_RULE = re.compile(r"^-{3,}\s*$")
-
-
 _BULLET = re.compile(r"^[ \t]*[-*][ \t]+", re.MULTILINE)
-
-# Inline markup of either syntax, one alternative per construct. The service
-# writes Markdown and the docstrings reStructuredText; scanning both with one
-# pattern, left to right, consumes each construct once, so a literal's
-# contents are never read as emphasis or a link.
+# Markdown and RST in one pattern, so each construct is consumed once and a
+# literal's contents are never read as a link or emphasis.
 _MARKUP = re.compile(
-    r"`(?P<rst_text>[^`<]*?)\s*<(?P<rst_url>[^`<>]+)>`__?"  # `text <url>`_
-    r"|:[\w.+-]+(?::[\w.+-]+)*:`(?P<role>[^`]+)`"  # :role:`x`
-    r"|(?P<ticks>`+)(?P<literal>.+?)(?P=ticks)"  # `x` and ``x``
-    r"|\[(?P<md_text>[^\[\]]*)\]\((?P<md_url>[^()\s]+)\)"  # [text](url)
-    r"|\*\*(?P<strong>\S(?:.*?\S)?)\*\*"  # **x**
-    r"|\*(?P<emphasis>\S(?:.*?\S)?)\*"  # *x*
+    r"`(?P<rst_text>[^`<]*?)\s*<(?P<rst_url>[^`<>]+)>`__?"
+    r"|:[\w.+-]+(?::[\w.+-]+)*:`(?P<role>[^`]+)`"
+    r"|(?P<ticks>`+)(?P<literal>.+?)(?P=ticks)"
+    r"|\[(?P<md_text>[^\[\]]*)\]\((?P<md_url>[^()\s]+)\)"
+    r"|\*\*(?P<strong>\S(?:.*?\S)?)\*\*"
+    r"|\*(?P<emphasis>\S(?:.*?\S)?)\*"
 )
 
 
 def _link(text: str, url: str) -> str:
-    """A link as plain text: its text then its URL, or the URL once if equal."""
+    """A link's text followed by its URL, or the URL alone when they match."""
     text = text.strip()
     return url if text in ("", url) else f"{text} {url}"
 
@@ -240,14 +235,10 @@ def _unmarked(match: re.Match[str]) -> str:
 
 
 def _normalise(text: str) -> str:
-    """Reduce Markdown (the service's) or reStructuredText (a docstring's) to
-    plain text, so the two compare by what they say rather than how it is
-    marked up.
+    """Reduce the service's Markdown or a docstring's RST to plain text.
 
-    Literals and emphasis keep their contents, a role keeps its target, a link
-    becomes its text followed by its URL (the URL once when the two are the
-    same), and a bullet becomes a plain line. Whitespace runs, wrapping, and
-    trailing newlines then collapse to single spaces. Case is kept.
+    Literals, emphasis and roles keep their contents, a link keeps its text and
+    URL, and bullets become plain lines; whitespace then collapses. Case is kept.
     """
     flat = " ".join(_BULLET.sub("", text).split())
     return " ".join(_MARKUP.sub(_unmarked, flat).split())
