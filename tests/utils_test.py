@@ -434,6 +434,27 @@ class Test_attach_datetime_columns:
             "2024-01-09 18:00:00", tz="UTC"
         )
 
+    @pytest.mark.parametrize(
+        ("zone", "utc"),
+        [
+            # Guam Standard Time, UTC+10, in both the USGS time-zone codes and
+            # the WQX TimeZone domain -- not Gulf Standard Time (UTC+4).
+            ("GST", "2024-06-01 00:00:00"),
+            # Hawaii-Aleutian Daylight Time, UTC-9, from the USGS codes.
+            ("HDT", "2024-06-01 19:00:00"),
+        ],
+    )
+    def test_zone_resolves_as_the_services_define_it(self, zone, utc):
+        df = pd.DataFrame(
+            {
+                "Activity_StartDate": ["2024-06-01"],
+                "Activity_StartTime": ["10:00:00"],
+                "Activity_StartTimeZone": [zone],
+            }
+        )
+        df = _wqx._attach_datetime_columns(df)
+        assert df["Activity_StartDateTime"][0] == pd.Timestamp(utc, tz="UTC")
+
     def test_unknown_timezone_is_NaT(self):
         df = pd.DataFrame(
             {
