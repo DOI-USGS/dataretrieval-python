@@ -273,7 +273,6 @@ def get_continuous(
     approval_status: str | Iterable[str] | None = None,
     unit_of_measure: str | Iterable[str] | None = None,
     qualifier: str | Iterable[str] | None = None,
-    method_category: str | Iterable[str] | None = None,
     value: str | Iterable[str] | None = None,
     last_modified: str | Iterable[str] | None = None,
     time: str | Iterable[str] | None = None,
@@ -282,6 +281,8 @@ def get_continuous(
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
     max_rows: int | None = None,
+    *,
+    method_category: str | Iterable[str] | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get continuous sensor observations, typically at a 15-minute interval.

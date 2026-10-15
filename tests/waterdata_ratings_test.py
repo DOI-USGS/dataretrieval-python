@@ -55,7 +55,9 @@ def test_get_ratings_rejects_iso_8601_duration_in_time():
 def test_build_filter_escapes_quotes():
     """Prevents malformed CQL or injection if an ID contains a quote."""
     f = _build_filter("USGS-x'-y", None)
-    assert f == "monitoring_location_id IN ('USGS-x''-y')"
+    assert f == """monitoring_location_id IN ("USGS-x'-y")"""
+    with pytest.raises(ValueError, match="contains both .* 'AGENCY-ID'"):
+        _build_filter("USGS-x'\"-y", None)
 
 
 _SAMPLE_RDB = """\
@@ -169,6 +171,23 @@ def test_get_ratings_download_and_parse_false_returns_features(httpx_mock):
     assert features[0]["id"] == "USGS-01104475.exsa.rdb"
 
 
+@pytest.mark.parametrize(
+    "time", [[None, "2026-04-29T00:00:00Z"], "../2026-04-29T00:00:00Z"]
+)
+def test_get_ratings_sends_an_open_start_empty(httpx_mock, time):
+    """The STAC firewall rejects ``datetime=../2026-04-29`` with HTTP 403, so an
+    open start is sent as an empty string, which STAC treats as open."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    get_ratings(
+        monitoring_location_id="USGS-01104475", time=time, download_and_parse=False
+    )
+    (request,) = httpx_mock.get_requests()
+    params = parse_qs(urlsplit(str(request.url)).query)
+    assert params["datetime"] == ["/2026-04-29T00:00:00Z"]
+
+
 def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     """``time=[start, ".."]`` is the documented open-ended range. The ``..``
     endpoint used to fail to parse, which discarded the whole range, so the
@@ -180,14 +199,34 @@ def test_get_ratings_keeps_a_dotdot_open_bound_in_time(httpx_mock):
     )
     get_ratings(
         monitoring_location_id="USGS-01104475",
-        # A UTC instant, so the expected bound does not depend on the local zone
-        # a naive date is read in.
         time=["2026-04-29T00:00:00Z", ".."],
         download_and_parse=False,
     )
     (request,) = httpx_mock.get_requests()
     params = parse_qs(urlsplit(str(request.url)).query)
     assert params["datetime"] == ["2026-04-29T00:00:00Z/.."]
+
+
+@pytest.mark.parametrize(
+    "time",
+    [
+        pd.Timestamp("2026-04-29", tz="UTC"),
+        [pd.Timestamp("2026-04-29", tz="UTC"), None],
+    ],
+    ids=["lone", "range"],
+)
+def test_get_ratings_accepts_a_timestamp_time(httpx_mock, time):
+    """The duration check iterated a lone ``Timestamp`` and raised
+    ``TypeError`` before the date formatter could read it."""
+    httpx_mock.add_response(
+        method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
+    )
+    get_ratings(
+        monitoring_location_id="USGS-01104475", time=time, download_and_parse=False
+    )
+    (request,) = httpx_mock.get_requests()
+    datetime_param = parse_qs(urlsplit(str(request.url)).query)["datetime"][0]
+    assert datetime_param.startswith("2026-04-29T00:00:00Z")
 
 
 def test_get_ratings_rejects_an_unreadable_time_before_any_request(httpx_mock):

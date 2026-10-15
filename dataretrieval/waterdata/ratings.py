@@ -20,9 +20,9 @@ import pandas as pd
 
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
-from dataretrieval.ogc.dates import _DURATION_RE, _format_api_dates
+from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
-from dataretrieval.ogc.filters import _quote_cql_str
+from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.requests import _check_monitoring_location_id
 from dataretrieval.rdb import extract_rdb_comment, read_rdb
 from dataretrieval.transport.fanout import FanOut, active_client
@@ -81,11 +81,12 @@ def get_ratings(
         (the default), the parsed ``DataFrame`` is returned without
         persisting the bytes to disk; ``df.attrs["url"]`` still records
         where each rating came from.
-    time : string or list of strings, optional
-        STAC ``datetime`` filter (passed through verbatim under that name)
-        — a single date / datetime, an interval (``"start/end"``,
-        optionally half-bounded with ``..``), or a list of two values
-        with ``None`` for an open end (``["2026-04-29", None]``). A value
+    time : string, date, datetime, or pandas.Timestamp, or a list of them, optional
+        STAC ``datetime`` filter — a single date / datetime, an interval
+        (``"start/end"``, optionally half-bounded with ``..``), or a list of
+        two values with ``None`` for an open end (``["2026-04-29", None]``).
+        An interval string is read like the list form: each side is
+        converted to UTC, and a naive one is UTC, as in pandas. A value
         that is not a date raises ``ValueError``. ISO 8601 *durations*
         (``"P1M"``, ``"PT36H"``, …) are **not** supported by the
         rating-curve service; passing one raises ``ValueError``.
@@ -179,7 +180,12 @@ def get_ratings(
     _validate_time_no_duration(time)
     time_str = (
         _format_api_dates(
-            time, name="time", single_value_hint="an instant ('2020-01-01')"
+            time,
+            name="time",
+            single_value_hint="an instant ('2020-01-01')",
+            # The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP
+            # 403; STAC treats an empty start (``/2026-01-01``) as open.
+            open_start="",
         )
         if time is not None
         else None
@@ -221,7 +227,10 @@ def _validate_time_no_duration(time: str | list[str] | None) -> None:
     """Raise ValueError if ``time`` contains an ISO 8601 duration."""
     if time is None:
         return
-    if any(_DURATION_RE.match(str(v)) for v in _as_list(time)):
+    # ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
+    # ``_as_list`` would try to iterate it.
+    values = _coerce_to_list(time, "time")
+    if any(isinstance(v, str) and _DURATION_RE.match(v) for v in values):
         raise ValueError(
             "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
             "for the rating-curve service. Provide a date or interval instead."
@@ -248,11 +257,16 @@ def _build_filter(
     """
     parts: list[str] = []
     if monitoring_location_id is not None:
-        ids = _as_list(monitoring_location_id)
-        joined = "', '".join(_quote_cql_str(i) for i in ids)
-        parts.append(f"monitoring_location_id IN ('{joined}')")
+        parts.append(
+            _cql_in_clause(
+                "monitoring_location_id",
+                _as_list(monitoring_location_id),
+                remedy="Pass an 'AGENCY-ID' id, e.g., 'USGS-01646500'.",
+            )
+        )
     if file_type is not None:
-        parts.append(f"file_type = '{_quote_cql_str(file_type)}'")
+        # Already checked against _VALID_FILE_TYPES, none of which has a quote.
+        parts.append(f"file_type = '{file_type}'")
     return " AND ".join(parts) if parts else None
 
 

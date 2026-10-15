@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.policy import DEFAULT_DIALECT, OgcDialect
 from dataretrieval.transport.http import default_headers as _default_headers
 
@@ -63,16 +64,38 @@ def _switch_properties_id(
     return [p for p in normalized if p not in drop]
 
 
-def _cql2_param(args: dict[str, Any]) -> str:
-    """Convert query parameters to CQL2 JSON format for POST requests."""
-    query = {
-        "op": "and",
-        "args": [
-            {"op": "in", "args": [{"property": key}, values]}
-            for key, values in args.items()
-        ],
-    }
-    return json.dumps(query, separators=(",", ":"))
+def _cql2_param(args: dict[str, Any], json_filter: dict[str, Any] | None = None) -> str:
+    """Convert query parameters, and a caller's CQL2 JSON filter, to the CQL2
+    JSON body of a POST request."""
+    if not args and json_filter is not None:
+        return json.dumps(json_filter, separators=(",", ":"))
+    predicates: list[dict[str, Any]] = [
+        {"op": "in", "args": [{"property": key}, values]}
+        for key, values in args.items()
+    ]
+    if json_filter is not None:
+        predicates.append(json_filter)
+    return json.dumps({"op": "and", "args": predicates}, separators=(",", ":"))
+
+
+def _pop_json_filter(params: dict[str, Any]) -> dict[str, Any] | None:
+    """Remove a ``filter_lang="cql-json"`` filter from ``params`` and return it
+    parsed, for the POST body: the APIs answer one in the URL with HTTP 400."""
+    if params.get("filter_lang") != "cql-json" or "filter" not in params:
+        return None
+    del params["filter_lang"]
+    raw = params.pop("filter")
+    try:
+        parsed = json.loads(raw)
+    except (TypeError, ValueError):
+        parsed = None
+    if not isinstance(parsed, dict):
+        raise ValueError(
+            f"filter is not a CQL2 JSON object: {raw!r}. Pass one as a string, "
+            'such as \'{"op": "=", "args": [{"property": "approval_status"}, '
+            '"Approved"]}\', or pass filter_lang="cql-text" with a text filter.'
+        )
+    return parsed
 
 
 def _ogc_query_params(
@@ -94,46 +117,50 @@ def _ogc_query_params(
     return params
 
 
-def _is_post_param(value: Any) -> bool:
-    """True when ``value`` is a multi-value list suitable for CQL2 POST."""
-    return isinstance(value, (list, tuple)) and len(value) > 1
-
-
-def _partition_cql2(
-    params: dict[str, Any],
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    """CQL2 path: multi-value lists are placed in the POST body, the rest remain URL
-    params.
-    """
-    post_params = {key: value for key, value in params.items() if _is_post_param(value)}
-    url_params = {key: value for key, value in params.items() if key not in post_params}
-    return url_params, post_params
+def _is_list(value: Any) -> bool:
+    return isinstance(value, (list, tuple))
 
 
 def _join_get_value(value: Any) -> Any:
     """Comma-join list/tuple values for GET params; pass scalars through."""
-    if isinstance(value, (list, tuple)):
+    if _is_list(value):
         return ",".join(str(item) for item in value)
     return value
-
-
-def _partition_get(params: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
-    """GET path: comma-join multi-value lists, drop empty lists."""
-    get_params = {
-        key: _join_get_value(value)
-        for key, value in params.items()
-        if not (isinstance(value, (list, tuple)) and len(value) == 0)
-    }
-    return get_params, {}
 
 
 def _partition_request_params(
     params: dict[str, Any], *, use_cql2: bool
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Split URL parameters from multi-value CQL2 POST predicates."""
-    if use_cql2:
-        return _partition_cql2(params)
-    return _partition_get(params)
+    """Split URL parameters from multi-value CQL2 predicates.
+
+    Empty lists are dropped. With ``use_cql2``, a list of more than one value is
+    a predicate; otherwise every list is comma-joined into the URL.
+    """
+    params = {k: v for k, v in params.items() if not (_is_list(v) and len(v) == 0)}
+    predicates = (
+        {k: v for k, v in params.items() if _is_list(v) and len(v) > 1}
+        if use_cql2
+        else {}
+    )
+    url_params = {
+        k: _join_get_value(v) for k, v in params.items() if k not in predicates
+    }
+    return url_params, predicates
+
+
+_FOLD_REMEDY = (
+    "Remove filter= so the list is sent in the request body, or write the "
+    'filter as CQL2 JSON with filter_lang="cql-json".'
+)
+
+
+def _and_in_clauses(predicates: dict[str, Any], filter_text: str) -> str:
+    """``prop IN ('a', 'b') AND ... AND (filter_text)``."""
+    clauses = [
+        _cql_in_clause(key, values, remedy=_FOLD_REMEDY)
+        for key, values in predicates.items()
+    ]
+    return " AND ".join([*clauses, f"({filter_text})"])
 
 
 def _items_url(collection: str, base_url: str) -> str:
@@ -184,10 +211,16 @@ def _construct_api_requests(
                 date=(
                     collection in dialect.date_only_services and key != "last_modified"
                 ),
+                open_start=dialect.open_start,
             )
+    json_filter = _pop_json_filter(kwargs)
     params, post_params = _partition_request_params(
-        kwargs, use_cql2=collection in dialect.cql2_services
+        kwargs, use_cql2=dialect.lists_as_cql2
     )
+    if post_params and params.get("filter"):
+        # The server ignores a POST body when the URL carries a text filter.
+        params["filter"] = _and_in_clauses(post_params, params["filter"])
+        post_params = {}
 
     _ogc_query_params(
         params,
@@ -200,9 +233,9 @@ def _construct_api_requests(
     if "filter_lang" in params:
         params["filter-lang"] = params.pop("filter_lang")
 
-    if post_params:
+    if post_params or json_filter is not None:
         return _cql2_post_request(
-            service_url, content=_cql2_param(post_params), params=params
+            service_url, content=_cql2_param(post_params, json_filter), params=params
         )
     return httpx.Request(
         method="GET",
