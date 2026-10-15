@@ -132,7 +132,7 @@ checks the getters against it. Which checks block and which advise:
 
 | Check | Runs | Effect |
 | --- | --- | --- |
-| Docstrings contain the snapshot's descriptions | every push, offline | expected to fail until the docstring sweep for #379 lands; blocks a merge from then on |
+| Docstrings contain the snapshot's descriptions | every push, offline | blocks a merge |
 | Every typed argument is a queryable or package-owned | every push, offline | blocks a merge |
 | Every getter declares the collection it queries | every push, offline | blocks a merge |
 | Every collection is in the snapshot and queried by a getter | every push, offline | blocks a merge |

@@ -682,14 +682,6 @@ def test_target_declarations_name_real_arguments():
     assert not failures, "\n".join(failures)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason=(
-        "#379: the getter docstrings have not yet been revised to contain the "
-        "service's descriptions; the sweep that does so removes this marker."
-    ),
-)
 def test_documented_descriptions_contain_the_service_text():
     """Each documented queryable argument contains the service's description.
 

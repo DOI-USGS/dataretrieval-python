@@ -826,21 +826,22 @@ def get_combined_metadata(
     https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/combined-metadata
 
     All ~35 location-catalog kwargs are accepted (``agency_code``,
-    ``state_name``, ``drainage_area``, ``aquifer_code``, …) but only
-    the most-used ones are documented below; see
-    :func:`get_monitoring_locations` for per-field descriptions.
+    ``state_name``, ``drainage_area``, ``aquifer_code``, …), each
+    described below as in :func:`get_monitoring_locations`.
 
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location.
-        Created by combining the agency code (e.g. ``USGS``) with the ID
-        number (e.g. ``02238500``), separated by a hyphen
-        (e.g. ``"USGS-02238500"``).
+        A unique identifier representing a single monitoring location. This corresponds
+        to the ``id`` field in the ``monitoring-locations`` endpoint. Monitoring
+        location IDs are created by combining the agency code of the agency responsible
+        for the monitoring location (e.g. USGS) with the ID number of the monitoring
+        location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        5-digit codes used to identify the constituent measured and the
-        units of measure. See
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        Parameter codes are 5-digit codes used to identify the constituent measured and
+        the units of measure. A complete list of parameter codes and associated
+        groupings can be found at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items.
     parameter_name : string or iterable of strings, optional
         A human-understandable name corresponding to ``parameter_code``.
     parameter_description : string or iterable of strings, optional
@@ -850,54 +851,278 @@ def get_combined_metadata(
         A human-readable description of the units of measurement
         associated with an observation.
     statistic_id : string or iterable of strings, optional
-        A code corresponding to the statistic an observation represents
-        (e.g. ``00001`` max, ``00002`` min, ``00003`` mean). Full list at
-        https://help.waterdata.usgs.gov/code/stat_cd_nm_query?stat_nm_cd=%25&fmt=html.
+        A code corresponding to the statistic an observation represents. Example codes
+        include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and
+        their descriptions can be found at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items.
     data_type : string or iterable of strings, optional
-        The type of data the time series represents, e.g.
-        ``"Continuous values"``, ``"Daily values"``,
+        The computational period type of data collected at the monitoring location.
+
+        For example ``"Continuous values"``, ``"Daily values"``, or
         ``"Field measurements"``.
     computation_identifier : string or iterable of strings, optional
-        Indicates whether the data from this time series represent a
-        specific statistical computation.
+        Indicates the computation performed to calculate this time series. Values of
+        "Instantaneous" reflect point measurements.
     thresholds : number or list of numbers, optional
-        Numeric limits known for a time series (e.g. the historic maximum, or the level
-        below which the sensor is non-operative).
+        Thresholds represent known numeric limits for a time series, for example the
+        historic maximum value for a parameter or a level below which a sensor is
+        non-operative. These thresholds are sometimes used to automatically determine if
+        an observation is erroneous due to sensor error, and therefore shouldn't be
+        included in the time series.
     sublocation_identifier : string or iterable of strings, optional
-        Where at the monitoring location the time series is recorded, a
-        free-text label such as "YSI DOWN" or "30 CM"; null when none is
-        recorded.
+        An optional human-readable identifier used to specify where measurements are
+        recorded at a monitoring location.
+
+        A free-text label such as "YSI DOWN" or "30 CM"; null when none is recorded.
     primary : string or iterable of strings, optional
-        A flag identifying whether the time series is "primary". Primary
-        time series are standard observations that have undergone Bureau
-        review and approval. Non-primary (provisional) time series have a
-        missing ``primary`` value, are produced for timely best-science
-        use, and are retained by this system for only 120 days.
+        A flag identifying if the time series is a "primary" time series. "Primary" time
+        series (which have this flag) are standard observations which undergo `Bureau
+        review and approval processes
+        <https://www.usgs.gov/survey-manual/5028-fundamental-science-practices-review-and-approval-scientific-data-release>`_.
+        Non-primary time series, which will have missing values for "primary", are
+        provisional datasets made available to meet the need for timely best science and
+        to assist with daily operations which need real-time information. Non-primary
+        time series data are only retained by this system for 120 days. See the `USGS
+        Provisional Data Statement
+        <https://waterdata.usgs.gov/provisional-data-statement/>`_ for more information.
     parent_time_series_id : string or iterable of strings, optional
+        The unique identifier representing the parent or "upchain" time series that a
+        daily values time series is generated from. Daily values time series have one
+        and only one parent time series.
     web_description : string or iterable of strings, optional
-        A description of what this time series represents, as used by
-        WDFN and other USGS data dissemination products.
-    last_modified, begin, end : string, optional
-        Datetime fields that accept either an RFC 3339 datetime, an
-        interval (``"start/end"``, optionally half-bounded with ``..``),
-        or an ISO 8601 duration (e.g. ``"P1M"``, ``"PT36H"``). See
-        :func:`get_time_series_metadata` for the full grammar.
+        An optional description of the time series. WDFN and other USGS data
+        dissemination products use this field, in combination with
+        sublocation_identifier, to distinguish the differences between multiple time
+        series for the same parameter code, statistic code, and monitoring location.
+    last_modified : string, optional
+        The last time a record was refreshed in our database. This may happen due to
+        regular operational processes and does not necessarily indicate anything about
+        the measurement has changed. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``last_modified`` that intersects the value of
+        datetime are selected.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
+    begin : string, optional
+        The datetime of the earliest observation in the time series. Together with
+        ``end_utc``, this field represents the period of record of a time series. Note
+        that some time series may have large gaps in their collection record. You can
+        query this field using date-times or intervals, adhering to RFC 3339, or using
+        ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots
+        at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``begin_utc`` that intersects the value of datetime
+        are selected.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
+    end : string, optional
+        The datetime of the most recent observation in the time series. Data returned by
+        this endpoint updates at most once per day, and potentially less frequently than
+        that, and as such there may be more recent observations within a time series
+        than the time series ``end_utc`` value reflects. Together with ``begin_utc``,
+        this field represents the period of record of a time series. It is additionally
+        used to determine whether a time series is "active". You can query this field
+        using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration
+        objects. Intervals may be bounded or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``end_utc`` that intersects the value of datetime are
+        selected.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full
         name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
         two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument rather
         than an API field: it is sent as the API's ``state_name``.
-    state_name, county_name, hydrologic_unit_code, site_type, \
-site_type_code : string or iterable of strings, optional
-        Common location-catalog filters shared with the
-        ``monitoring-locations`` collection. The function also accepts
-        the full list of location-catalog kwargs (agency, district,
-        altitude, vertical/horizontal datum, drainage area, aquifer,
-        well construction, …); see :func:`get_monitoring_locations` for
-        descriptions of each.
+    agency_code : string or iterable of strings, optional
+        The agency that is reporting the data. Agency codes are fixed values assigned by
+        the National Water Information System (NWIS). A list of agency codes is
+        available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items.
+    agency_name : string or iterable of strings, optional
+        The name of the agency that is reporting the data.
+    monitoring_location_number : string or iterable of strings, optional
+        Each monitoring location in the USGS data base has a unique 8- to 15-digit
+        identification number.
+    monitoring_location_name : string or iterable of strings, optional
+        This is the official name of the monitoring location in the database. For well
+        information this can be a district-assigned local number.
+    district_code : string or iterable of strings, optional
+        The Water Science Centers (WSCs) across the United States use the FIPS state
+        code as the district code. In some case, monitoring locations and samples may be
+        managed by a water science center that is adjacent to the state in which the
+        monitoring location actually resides. For example a monitoring location may have
+        a district code of 30 which translates to Montana, but the state code could be
+        56 for Wyoming because that is where the monitoring location actually is
+        located.
+    country_code : string or iterable of strings, optional
+        The code for the country in which the monitoring location is located.
+    country_name : string or iterable of strings, optional
+        The name of the country in which the monitoring location is located.
+    state_code : string or iterable of strings, optional
+        State code. A `two-digit ANSI code
+        <https://www2.census.gov/geo/docs/reference/state.txt>`_ (formerly FIPS code) as
+        defined by the American National Standards Institute, to define States and
+        equivalents. A three-digit ANSI code is used to define counties and county
+        equivalents. `A lookup table is available.
+        <https://www.census.gov/library/reference/code-lists/ansi.html#states>`_ The
+        only countries with political subdivisions other than the US are Mexico and
+        Canada. The Mexican states have US state codes ranging from 81-86 and Canadian
+        provinces have state codes ranging from 90-98.
+    state_name : string or iterable of strings, optional
+        The name of the state or state equivalent in which the monitoring location is
+        located.
+    county_code : string or iterable of strings, optional
+        The code for the county or county equivalent (parish, borough, etc.) in which
+        the monitoring location is located. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items.
+    county_name : string or iterable of strings, optional
+        The name of the county or county equivalent (parish, borough, etc.) in which the
+        monitoring location is located. [A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items.
+    minor_civil_division_code : string or iterable of strings, optional
+        Codes for primary governmental or administrative divisions of the county or
+        county equivalent in which the monitoring location is located.
+    site_type_code : string or iterable of strings, optional
+        A code describing the hydrologic setting of the monitoring location. A list of
+        codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
+    site_type : string or iterable of strings, optional
+        A description of the hydrologic setting of the monitoring location. A list of
+        codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items.
+    hydrologic_unit_code : string or iterable of strings, optional
+        The hydrologic unit code (HUC) for the monitoring location. Supports prefix
+        matching — querying with a shorter HUC (e.g. "04") matches all locations within
+        that hydrologic region.
+    basin_code : string or iterable of strings, optional
+        The Basin Code or "drainage basin code" is a two-digit code that further
+        subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined
+        by the USGS State Office where the monitoring location is located.
+    altitude : string or iterable of strings, optional
+        Altitude of the monitoring location referenced to the specified Vertical Datum.
+    altitude_accuracy : string or iterable of strings, optional
+        Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered
+        as “.1”. Many altitudes are interpolated from the contours on topographic maps;
+        accuracies determined in this way are generally entered as one-half of the
+        contour interval.
+    altitude_method_code : string or iterable of strings, optional
+        Codes representing the method used to measure altitude.
+    altitude_method_name : string or iterable of strings, optional
+        The name of the method used to measure altitude.
+    vertical_datum : string or iterable of strings, optional
+        The datum used to determine altitude and vertical position at the monitoring
+        location. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items.
+    vertical_datum_name : string or iterable of strings, optional
+        The datum used to determine altitude and vertical position at the monitoring
+        location. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items.
+    horizontal_positional_accuracy_code : string or iterable of strings, optional
+        Indicates the accuracy of the latitude longitude values. A list of codes is
+        available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items.
+    horizontal_positional_accuracy : string or iterable of strings, optional
+        Indicates the accuracy of the latitude longitude values. A list of codes is
+        available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items.
+    horizontal_position_method_code : string or iterable of strings, optional
+        Indicates the method used to determine latitude longitude values. A list of
+        codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items.
+    horizontal_position_method_name : string or iterable of strings, optional
+        Indicates the method used to determine latitude longitude values. A list of
+        codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items.
+    original_horizontal_datum : string or iterable of strings, optional
+        Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984.
+        This field indicates the original datum used to determine coordinates before
+        they were converted. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items.
+    original_horizontal_datum_name : string or iterable of strings, optional
+        Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984.
+        This field indicates the original datum used to determine coordinates before
+        they were converted. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items.
+    drainage_area : string or iterable of strings, optional
+        The area enclosed by a topographic divide from which direct surface runoff from
+        precipitation normally drains by gravity into the stream above that point.
+    contributing_drainage_area : string or iterable of strings, optional
+        The contributing drainage area of a lake, stream, wetland, or estuary monitoring
+        location, in square miles. This item should be present only if the contributing
+        area is different from the total drainage area. This situation can occur when
+        part of the drainage area consists of very porous soil or depressions that
+        either allow all runoff to enter the groundwater or traps the water in ponds so
+        that rainfall does not contribute to runoff. A transbasin diversion can also
+        affect the total drainage area.
+    time_zone_abbreviation : string or iterable of strings, optional
+        A short code describing the time zone used by a monitoring location.
+    uses_daylight_savings : string or iterable of strings, optional
+        A flag indicating whether or not a monitoring location uses daylight savings.
+    construction_date : string or iterable of strings, optional
+        Date the well was completed.
+    aquifer_code : string or iterable of strings, optional
+        Local aquifers in the USGS water resources data base are identified by a
+        geohydrologic unit code (a three-digit number related to the age of the
+        formation, followed by a 4 or 5 character abbreviation for the geologic unit or
+        aquifer name).
+    national_aquifer_code : string or iterable of strings, optional
+        National aquifers are the principal aquifers or aquifer systems in the United
+        States, defined as regionally extensive aquifers or aquifer systems that have
+        the potential to be used as a source of potable water. Not all groundwater
+        monitoring locations can be associated with a National Aquifer. Such monitoring
+        locations will not be retrieved using this search criteria. A list of National
+        aquifer codes and names is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items.
+    aquifer_type_code : string or iterable of strings, optional
+        Describes the confinement status of an aquifer at the monitoring location. A
+        confined aquifer is an aquifer below the land surface that is saturated with
+        water. A water table--or unconfined--aquifer is an aquifer whose upper water
+        surface (water table) is at atmospheric pressure, and thus is able to rise and
+        fall.
+    well_constructed_depth : string or iterable of strings, optional
+        The depth of the finished well, in feet below land surface datum. Note: Not all
+        groundwater monitoring locations have information on Well Depth. Such monitoring
+        locations will not be retrieved using this search criteria.
+    hole_constructed_depth : string or iterable of strings, optional
+        The total depth to which the hole is drilled, in feet below land surface datum.
+        Note: Not all groundwater monitoring locations have information on Hole Depth.
+        Such monitoring locations will not be retrieved using this search criteria.
+    depth_source_code : string or iterable of strings, optional
+        A code indicating the source of water-level data.
     data_gap_interval : string or iterable of strings, optional
-        The time interval threshold used for gap detection in the time series, as an
-        ISO 8601 duration.
+        The time interval threshold used for gap detection in the time series.
+
+        The value is an ISO 8601 duration.
     reading_type : string or iterable of strings, optional
         Distinguishes field-measurement readings from measurements. Readings have a
         value of ReferencePrimary; measurements are Discharge or MeanGageHeight.
