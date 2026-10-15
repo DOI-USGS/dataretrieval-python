@@ -67,15 +67,16 @@ def get_field_measurements(
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location,
-        corresponding to the id field in the monitoring-locations endpoint. IDs
-        combine the agency code of the agency responsible for the monitoring
-        location (e.g. USGS) with the location's ID number (e.g. 02238500),
-        separated by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location. This corresponds
+        to the ``id`` field in the ``monitoring-locations`` endpoint. Monitoring
+        location IDs are created by combining the agency code of the agency responsible
+        for the monitoring location (e.g. USGS) with the ID number of the monitoring
+        location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        A 5-digit code identifying the constituent measured and the units of
-        measure. A complete list of parameter codes and associated groupings is
-        available at https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        Parameter codes are 5-digit codes used to identify the constituent measured and
+        the units of measure. A complete list of parameter codes and associated
+        groupings can be found at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items.
     observing_procedure_code : string or iterable of strings, optional
         A short code corresponding to the observing procedure for the field
         measurement.
@@ -85,10 +86,10 @@ def get_field_measurements(
         The day of the month the field measurement was taken. If null, the day is
         unknown.
     field_measurements_series_id : string or iterable of strings, optional
-        A unique identifier representing a single collection series, corresponding to
-        the id field in the field-measurements-metadata endpoint. A collection series
-        is the set of field measurements at one monitoring location for a single
-        parameter code using a single reading type.
+        A unique identifier representing a single collection series. This corresponds to
+        the ``id`` field in the ``field-measurements-metadata`` endpoint. Collection
+        series are defined as the set of field measurements at a given monitoring
+        location for a single parameter code using a single reading type.
     measurement_rated : string or iterable of strings, optional
         A qualitative estimate of the quality of a measurement.
     month : integer or list of integers, optional
@@ -112,51 +113,54 @@ def get_field_measurements(
         A universally unique identifier (UUID) for the field visit.
         Multiple measurements may be made during a single field visit.
     approval_status : string or iterable of strings, optional
-        The approval status of each record: either "Approved", meaning
-        processing review has been completed and the data are approved for
-        publication, or "Provisional", meaning the data are subject to revision.
-        Some of the data you obtain from this U.S. Geological Survey database
-        may not have received Director's approval. Any such data values are
-        qualified as provisional and are subject to revision. Provisional data
-        are released on the condition that neither the USGS nor the United
-        States Government may be held liable for any damages resulting from
-        their use. For more information about provisional data, see
-        https://waterdata.usgs.gov/provisional-data-statement/.
+        Some of the data that you have obtained from this U.S. Geological Survey
+        database may not have received Director's approval. Any such data values are
+        qualified as provisional and are subject to revision. Provisional data are
+        released on the condition that neither the USGS nor the United States Government
+        may be held liable for any damages resulting from its use. This field reflects
+        the approval status of each record, and is either "Approved", meaining
+        processing review has been completed and the data is approved for publication,
+        or "Provisional" and subject to revision. For more information about provisional
+        data, go to https://waterdata.usgs.gov/provisional-data-statement/.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
         with an observation.
     qualifier : string or iterable of strings, optional
-        Any qualifiers associated with an observation, for instance whether a
-        sensor may have been impacted by ice or whether values were estimated.
+        This field indicates any qualifiers associated with an observation, for instance
+        if a sensor may have been impacted by ice or if values were estimated.
+
         Matches observations whose qualifiers are exactly these, in this order:
         ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     value : string or iterable of strings, optional
-        The value of the observation. Values are transmitted as strings in
-        the JSON response format to preserve precision.
+        The value of the observation. Values are transmitted as strings in the JSON
+        response format in order to preserve precision.
     last_modified : string, optional
-        The last time a record was refreshed in our database. A refresh may
-        happen due to regular operational processes and does not necessarily
-        indicate that anything about the measurement has changed. You can query
-        this field using date-times or intervals, adhering to RFC 3339, or using
-        ISO 8601 duration objects. Intervals may be bounded or half-bounded
-        (double-dots at start or end). Only features whose last_modified
-        intersects the requested value are selected.
+        The last time a record was refreshed in our database. This may happen due to
+        regular operational processes and does not necessarily indicate anything about
+        the measurement has changed. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-                "../2018-03-18T12:31:12Z"
-            * A list of two values: ["2018-02-12", "2018-03-18"], with None
-                for an open end: ["2018-02-12", None]
-            * Duration objects: "P1M" for data from the past month or
-                "PT36H" for the last 36 hours
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``last_modified`` that intersects the value of
+        datetime are selected.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
 
     observing_procedure : string or iterable of strings, optional
         Water measurement or water-quality observing procedure descriptions.
     vertical_datum : string or iterable of strings, optional
-        The datum used to determine altitude and vertical position at the
-        monitoring location.
+        The datum used to determine altitude and vertical position at the monitoring
+        location. A list of codes is available at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items.
     measuring_agency : string or iterable of strings, optional
         The agency performing the measurement.
     skip_geometry : boolean, optional
@@ -164,23 +168,25 @@ def get_field_measurements(
         returned object is a data frame with no spatial information. The USGS
         Water Data APIs use camelCase "skipGeometry" in CQL2 queries.
     time : string, optional
-        The date an observation represents. You can query this field using
-        date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features whose time intersects the requested
-        value are selected. If a feature has multiple temporal properties, the
-        server decides whether to use a single property or all relevant ones to
-        determine the extent.
+        The date an observation represents. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-                "../2018-03-18T12:31:12Z"
-            * A list of two values: ["2018-02-12", "2018-03-18"], with None
-                for an open end: ["2018-02-12", None]
-            * Duration objects: "P1M" for data from the past month or
-                "PT36H" for the last 36 hours
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``time`` that intersects the value of datetime are
+        selected. If a feature has multiple temporal properties, it is the decision of
+        the server whether only a single temporal property is used to determine the
+        extent or all relevant temporal properties.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
 
     bbox : list of numbers, optional
         Only features whose geometry intersects the bounding box are selected.
@@ -210,8 +216,10 @@ def get_field_measurements(
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     sublocation_identifier : string or iterable of strings, optional
-        Where at the monitoring location the measurement was recorded, such
-        as "Primary", "Backup", or "HWM"; null when none is recorded.
+        An optional human-readable identifier used to specify where measurements are
+        recorded at a monitoring location.
+
+        For example "Primary", "Backup", or "HWM"; null when none is recorded.
     **queryables : string or iterable of strings, optional
         Any other queryable property of this collection, passed through as a
         server-side filter. Call :func:`get_queryables` to see the queryables a
@@ -312,39 +320,98 @@ def get_peaks(
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location, in
-        ``AGENCY-ID`` form (e.g. ``"USGS-02238500"``).
+        A unique identifier representing a single monitoring location. This corresponds
+        to the ``id`` field in the ``monitoring-locations`` endpoint. Monitoring
+        location IDs are created by combining the agency code of the agency responsible
+        for the monitoring location (e.g. USGS) with the ID number of the monitoring
+        location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).
     parameter_code : string or iterable of strings, optional
-        5-digit parameter code. Most peaks records are ``"00060"`` (discharge)
-        or ``"00065"`` (stage / gage height). Full list at
-        https://help.waterdata.usgs.gov/codes-and-parameters/parameters.
+        Parameter codes are 5-digit codes used to identify the constituent measured and
+        the units of measure. A complete list of parameter codes and associated
+        groupings can be found at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items.
+
+        Most peaks records are ``"00060"`` (discharge) or ``"00065"`` (stage / gage
+        height).
     time_series_id : string or iterable of strings, optional
-        ID of the time series the peak belongs to.
+        A unique identifier representing a single time series. This corresponds to the
+        ``id`` field in the ``time-series-metadata`` endpoint.
     unit_of_measure : string or iterable of strings, optional
-        Human-readable units (e.g. ``"ft^3/s"``, ``"ft"``).
+        A human-readable description of the units of measurement associated with an
+        observation.
+
+        For example ``"ft^3/s"`` or ``"ft"``.
     time : string, optional
-        Datetime, interval, or duration filter on the peak's date.
-        See :func:`get_time_series_metadata` for the full grammar.
+        The date an observation represents. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``time`` that intersects the value of datetime are
+        selected. If a feature has multiple temporal properties, it is the decision of
+        the server whether only a single temporal property is used to determine the
+        extent or all relevant temporal properties.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
     last_modified : string, optional
-        Same datetime grammar as ``time``; filters on the database
-        last-modified timestamp (useful for incremental ETL polling).
-    water_year, year, month, day : int or list of ints, optional
-        Calendar / water-year filters on the peak event. The water year ends
-        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).
+        The last time a record was refreshed in our database. This may happen due to
+        regular operational processes and does not necessarily indicate anything about
+        the measurement has changed. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``last_modified`` that intersects the value of
+        datetime are selected.
+
+        Useful for incremental ETL polling. A list of two values is also accepted:
+        ["2018-02-12", "2018-03-18"], with None for an open end: ["2018-02-12", None].
+    water_year : int or list of ints, optional
+        The water year (running from October 1st to September 30th) a peak occurred.
+
+        For example, water year 2024 runs from October 1, 2023 to September 30, 2024.
+    year : int or list of ints, optional
+        The calendar year a peak occurred.
+    month : int or list of ints, optional
+        The calendar month a peak occurred. If null, the month a peak occurred is
+        unknown.
+    day : int or list of ints, optional
+        The day of the month a peak occurred. If null, the day a peak occurred is
+        unknown.
     peak_since : int or list of ints, optional
-        Filter on the year since which the peak value has been the record (the API
-        serves this field as an integer; many rows are ``null``).
+        If not null, this record represents the peak value for the parameter code since
+        the year contained in "peak_since".
+
+        The API serves this field as an integer; many rows are ``null``.
     qualifier : string or iterable of strings, optional
-        Any qualifiers associated with an observation, for instance whether a
-        sensor may have been impacted by ice or whether values were estimated.
+        This field indicates any qualifiers associated with an observation, for instance
+        if a sensor may have been impacted by ice or if values were estimated.
+
         Matches observations whose qualifiers are exactly these, in this order:
         ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
     time_of_day : string or iterable of strings, optional
-        The time of day a peak occurred. If null, the time of day is unknown, as is
-        common for historical peaks recorded only to the day.
+        The time of day a peak occurred. If null, the time of day a peak occurred is
+        unknown.
+
+        This is common for historical peaks recorded only to the day.
     value : string or iterable of strings, optional
-        The value of the observation. Values are transmitted as strings in
-        the JSON response format to preserve precision.
+        The value of the observation. Values are transmitted as strings in the JSON
+        response format in order to preserve precision.
     properties : string or iterable of strings, optional
         Subset of columns to return. Defaults to every available property.
     skip_geometry : boolean, optional
@@ -467,39 +534,41 @@ def get_channel(
     Parameters
     ----------
     monitoring_location_id : string or iterable of strings, optional
-        A unique identifier representing a single monitoring location,
-        corresponding to the id field in the monitoring-locations endpoint. IDs
-        combine the agency code of the agency responsible for the monitoring
-        location (e.g. USGS) with the location's ID number (e.g. 02238500),
-        separated by a hyphen (e.g. USGS-02238500).
+        A unique identifier representing a single monitoring location. This corresponds
+        to the ``id`` field in the ``monitoring-locations`` endpoint. Monitoring
+        location IDs are created by combining the agency code of the agency responsible
+        for the monitoring location (e.g. USGS) with the ID number of the monitoring
+        location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).
     field_visit_id : string or iterable of strings, optional
         A universally unique identifier (UUID) for the field visit. Multiple
         measurements may be made during a single field visit.
     measurement_number : string or iterable of strings, optional
         Measurement number.
     time : string or iterable of strings, optional
-        The date an observation represents. You can query this field using
-        date-times or intervals, adhering to RFC 3339, or using ISO 8601
-        duration objects. Intervals may be bounded or half-bounded (double-dots
-        at start or end). Only features whose time intersects the requested
-        value are selected. If a feature has multiple temporal properties, the
-        server decides whether to use a single property or all relevant ones to
-        determine the extent.
+        The date an observation represents. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
               "../2018-03-18T12:31:12Z"
-            * A list of two values: ["2018-02-12", "2018-03-18"], with None
-              for an open end: ["2018-02-12", None]
-            * Duration objects: "P1M" for data from the past month or "PT36H"
-              for the last 36 hours
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``time`` that intersects the value of datetime are
+        selected. If a feature has multiple temporal properties, it is the decision of
+        the server whether only a single temporal property is used to determine the
+        extent or all relevant temporal properties.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
 
     channel_name : string or iterable of strings, optional
         The channel name.
     channel_flow : string or iterable of strings, optional
-        The channel discharge (flow).
+        Channel discharge.
     channel_flow_unit : string or iterable of strings, optional
         The units for channel discharge.
     channel_width : string or iterable of strings, optional
@@ -531,25 +600,27 @@ def get_channel(
     longitudinal_velocity_description : string or iterable of strings, optional
         The longitudinal velocity description.
     measurement_type : string or iterable of strings, optional
-        The type of channel measurement.
+        The measurement type.
     last_modified : string, optional
-        The last time a record was refreshed in our database. A refresh may
-        happen due to regular operational processes and does not necessarily
-        indicate that anything about the measurement has changed. You can query
-        this field using date-times or intervals, adhering to RFC 3339, or using
-        ISO 8601 duration objects. Intervals may be bounded or half-bounded
-        (double-dots at start or end). Only features whose last_modified
-        intersects the requested value are selected.
+        The last time a record was refreshed in our database. This may happen due to
+        regular operational processes and does not necessarily indicate anything about
+        the measurement has changed. You can query this field using date-times or
+        intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals
+        may be bounded or half-bounded (double-dots at start or end).
         Examples:
 
             * A date-time: "2018-02-12T23:20:50Z"
             * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
             * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
-                "../2018-03-18T12:31:12Z"
-            * A list of two values: ["2018-02-12", "2018-03-18"], with None
-                for an open end: ["2018-02-12", None]
-            * Duration objects: "P1M" for data from the past month or
-                "PT36H" for the last 36 hours
+              "../2018-03-18T12:31:12Z"
+            * Duration objects: "P1M" for data from the past month or "PT36H" for the
+              last 36 hours
+
+        Only features that have a ``last_modified`` that intersects the value of
+        datetime are selected.
+
+        A list of two values is also accepted: ["2018-02-12", "2018-03-18"], with None
+        for an open end: ["2018-02-12", None].
 
     skip_geometry : boolean, optional
         If True, the response omits the geometry of each feature and the
