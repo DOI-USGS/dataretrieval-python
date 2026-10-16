@@ -7,13 +7,14 @@ usage:
 
 * the WQX TimeZone domain, used by the Water Quality Portal
   (``tests/data/wqx_timezones.csv``), and
-* the USGS NWIS time-zone list, used by the USGS Samples database
+* the USGS NWIS time-zone list, used by the USGS Samples database and by the
+  USGS records the Water Quality Portal passes through
   (``tests/data/usgs_timezones.xml``).
 
 Where the two lists disagree -- ``SST`` (American Samoa in WQX, Swedish Summer
 Time in USGS) and ``BST`` (retired Bering Standard Time in WQX, British Summer
 Time in USGS) -- WQX wins: the Water Quality Portal returns ``SST`` for American
-Samoa, and the Samples database writes that zone as ``ZP-11``. Abbreviations in
+Samoa, and USGS records write that zone as ``ZP-11``. Abbreviations in
 neither list keep their common meaning. ``tests/timezones_test.py`` checks the
 table against both lists.
 """

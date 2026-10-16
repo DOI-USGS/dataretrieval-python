@@ -26,8 +26,8 @@ USGS_URL = "https://water.usgs.gov/XML/NWIS/5.0/ReferenceLists/TimeZoneList.xml"
 WQX_URL = "https://cdx.epa.gov/wqx/download/DomainValues/TimeZone.CSV"
 
 # Codes the two lists define differently. The table follows WQX for these: the
-# Water Quality Portal returns ``SST`` for American Samoa, while the Samples
-# database writes that zone as ``ZP-11`` and uses neither code.
+# Water Quality Portal returns ``SST`` for American Samoa, while USGS records
+# (in Samples, and passed through by WQP) write that zone as ``ZP-11``.
 WQX_WINS = {"SST", "BST"}
 
 
@@ -115,6 +115,7 @@ def _wqp(location):
         (_samples, "USGS-141037169391201", "ZP-11"),  # American Samoa
         (_samples, "USGS-16854500", "GST"),  # Guam
         (_wqp, "11NPSWRD_WQX-NPSA_F_07TUT_FW", "SST"),  # American Samoa
+        (_wqp, "USGS-141037169391201", "ZP-11"),  # USGS code passed through
         (_wqp, "USGS-16854500", "GST"),  # Guam
     ],
 )
