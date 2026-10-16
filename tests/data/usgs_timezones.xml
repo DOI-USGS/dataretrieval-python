@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ReferenceList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="C:/XML/ReferenceList.xsd">
+  <ListName>Time Zone</ListName>
+  <ListDescription>Time zone offset. An ANSI SQL/92 time zone offset string. Some examples are '-07:00' (Eastern), '+02:00' (Eastern Europe), and '+03:30' (India).</ListDescription>
+  <ListAuthority>United States Geological Survey, National Water Information System</ListAuthority>
+  <List>
+    <ListItem>
+      <Code>UTC</Code>
+      <SortOrderNumber>1</SortOrderNumber>
+      <UTCOffset> 00:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Universal Coordinated Time</Name>
+      <Description>Universal Coordinated Time</Description>
+    </ListItem>
+    <ListItem>
+      <Code>NST</Code>
+      <SortOrderNumber>2</SortOrderNumber>
+      <UTCOffset>-03:30</UTCOffset>
+      <DSTCode>NDT</DSTCode>
+      <DSTName>Newfoundland Daylight Time</DSTName>
+      <DSTUTCOffset>-02:30</DSTUTCOffset>
+      <Name>Newfoundland Standard Time</Name>
+      <Description>Newfoundland</Description>
+    </ListItem>
+    <ListItem>
+      <Code>AST</Code>
+      <SortOrderNumber>3</SortOrderNumber>
+      <UTCOffset>-04:00</UTCOffset>
+      <DSTCode>ADT</DSTCode>
+      <DSTName>Atlantic Daylight Time</DSTName>
+      <DSTUTCOffset>-03:00</DSTUTCOffset>
+      <Name>Atlantic Standard Time (Canada)</Name>
+      <Description>Atlantic (Canada)</Description>
+    </ListItem>
+    <ListItem>
+      <Code>EST</Code>
+      <SortOrderNumber>4</SortOrderNumber>
+      <UTCOffset>-05:00</UTCOffset>
+      <DSTCode>EDT</DSTCode>
+      <DSTName>Eastern Daylight Time</DSTName>
+      <DSTUTCOffset>-04:00</DSTUTCOffset>
+      <Name>Eastern Standard Time</Name>
+      <Description>Eastern North America</Description>
+    </ListItem>
+    <ListItem>
+      <Code>CST</Code>
+      <SortOrderNumber>5</SortOrderNumber>
+      <UTCOffset>-06:00</UTCOffset>
+      <DSTCode>CDT</DSTCode>
+      <DSTName>Central Daylight Time</DSTName>
+      <DSTUTCOffset>-05:00</DSTUTCOffset>
+      <Name>Central Standard Time</Name>
+      <Description>Central North America</Description>
+    </ListItem>
+    <ListItem>
+      <Code>MST</Code>
+      <SortOrderNumber>6</SortOrderNumber>
+      <UTCOffset>-07:00</UTCOffset>
+      <DSTCode>MDT</DSTCode>
+      <DSTName>Mountain Daylight Time</DSTName>
+      <DSTUTCOffset>-06:00</DSTUTCOffset>
+      <Name>Mountain Standard Time</Name>
+      <Description>Mountain North America</Description>
+    </ListItem>
+    <ListItem>
+      <Code>PST</Code>
+      <SortOrderNumber>7</SortOrderNumber>
+      <UTCOffset>-08:00</UTCOffset>
+      <DSTCode>PDT</DSTCode>
+      <DSTName>Pacific Daylight Time</DSTName>
+      <DSTUTCOffset>-07:00</DSTUTCOffset>
+      <Name>Pacific Standard Time</Name>
+      <Description>Pacific North America</Description>
+    </ListItem>
+    <ListItem>
+      <Code>AKST</Code>
+      <SortOrderNumber>8</SortOrderNumber>
+      <UTCOffset>-09:00</UTCOffset>
+      <DSTCode>AKDT</DSTCode>
+      <DSTName>Alaska Daylight Time</DSTName>
+      <DSTUTCOffset>-08:00</DSTUTCOffset>
+      <Name>Alaska Standard Time</Name>
+      <Description>Alaska</Description>
+    </ListItem>
+    <ListItem>
+      <Code>HST</Code>
+      <SortOrderNumber>9</SortOrderNumber>
+      <UTCOffset>-10:00</UTCOffset>
+      <DSTCode>HDT</DSTCode>
+      <DSTName>Hawaii Daylight Time</DSTName>
+      <DSTUTCOffset>-09:00</DSTUTCOffset>
+      <Name>Hawaii Standard Time</Name>
+      <Description>Hawaii</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP-11</Code>
+      <SortOrderNumber>10</SortOrderNumber>
+      <UTCOffset>-11:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT -11 hours</Name>
+      <Description>GMT -11 hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>IDLW</Code>
+      <SortOrderNumber>11</SortOrderNumber>
+      <UTCOffset>-12:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>International Date Line, West</Name>
+      <Description>International Date Line, West</Description>
+    </ListItem>
+    <ListItem>
+      <Code>IDLE</Code>
+      <SortOrderNumber>12</SortOrderNumber>
+      <UTCOffset>+12:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>International Date Line, East</Name>
+      <Description>International Date Line, East</Description>
+    </ListItem>
+    <ListItem>
+      <Code>NZST</Code>
+      <SortOrderNumber>13</SortOrderNumber>
+      <UTCOffset>+12:00</UTCOffset>
+      <DSTCode>NZDT</DSTCode>
+      <DSTName>New Zealand Daylight Time</DSTName>
+      <DSTUTCOffset>+13:00</DSTUTCOffset>
+      <Name>New Zealand Standard Time</Name>
+      <Description>New Zealand</Description>
+    </ListItem>
+    <ListItem>
+      <Code>NZT</Code>
+      <SortOrderNumber>14</SortOrderNumber>
+      <UTCOffset>+12:00</UTCOffset>
+      <DSTCode>NZDT</DSTCode>
+      <DSTName>New Zealand Daylight Time</DSTName>
+      <DSTUTCOffset>+13:00</DSTUTCOffset>
+      <Name>New Zealand Time</Name>
+      <Description>New Zealand</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP11</Code>
+      <SortOrderNumber>15</SortOrderNumber>
+      <UTCOffset>+11:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT +11 hours</Name>
+      <Description>Zone GMT +11 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>AEST</Code>
+      <SortOrderNumber>16</SortOrderNumber>
+      <UTCOffset>+10:00</UTCOffset>
+      <DSTCode>AESST</DSTCode>
+      <DSTName>Australia Eastern Summer Time</DSTName>
+      <DSTUTCOffset>+11:00</DSTUTCOffset>
+      <Name>Australia Eastern Standard Time</Name>
+      <Description>Eastern Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>EAST</Code>
+      <SortOrderNumber>17</SortOrderNumber>
+      <UTCOffset>+10:00</UTCOffset>
+      <DSTCode>EASST</DSTCode>
+      <DSTName>East Australian Summer Time</DSTName>
+      <DSTUTCOffset>+11:00</DSTUTCOffset>
+      <Name>East Australian Standard Time</Name>
+      <Description>East Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>GST</Code>
+      <SortOrderNumber>18</SortOrderNumber>
+      <UTCOffset>+10:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Guam Standard Time</Name>
+      <Description>Guam Standard Time, Russia Zone 9</Description>
+    </ListItem>
+    <ListItem>
+      <Code>LIGT</Code>
+      <SortOrderNumber>19</SortOrderNumber>
+      <UTCOffset>+10:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Melbourne, Australia</Name>
+      <Description>Melbourne</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ACST</Code>
+      <SortOrderNumber>20</SortOrderNumber>
+      <UTCOffset>+09:30</UTCOffset>
+      <DSTCode>ACSST</DSTCode>
+      <DSTName>Central Australia Summer Time</DSTName>
+      <DSTUTCOffset>+10:30</DSTUTCOffset>
+      <Name>Central Australia Standard Time</Name>
+      <Description>Central Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>CAST</Code>
+      <SortOrderNumber>21</SortOrderNumber>
+      <UTCOffset>+09:30</UTCOffset>
+      <DSTCode>CADT</DSTCode>
+      <DSTName>Central Australia Daylight Time</DSTName>
+      <DSTUTCOffset>+10:30</DSTUTCOffset>
+      <Name>Central Australia Standard Time</Name>
+      <Description>Central Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>SAT</Code>
+      <SortOrderNumber>22</SortOrderNumber>
+      <UTCOffset>+09:30</UTCOffset>
+      <DSTCode>SADT</DSTCode>
+      <DSTName>South Australian Daylight Time</DSTName>
+      <DSTUTCOffset>+10:30</DSTUTCOffset>
+      <Name>South Australian Standard Time</Name>
+      <Description>South Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>JST</Code>
+      <SortOrderNumber>23</SortOrderNumber>
+      <UTCOffset>+09:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Japan Standard Time</Name>
+      <Description>Japan Standard Time, Russia Zone 8</Description>
+    </ListItem>
+    <ListItem>
+      <Code>KST</Code>
+      <SortOrderNumber>24</SortOrderNumber>
+      <UTCOffset>+09:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Korea Standard Time</Name>
+      <Description>Korea</Description>
+    </ListItem>
+    <ListItem>
+      <Code>MT</Code>
+      <SortOrderNumber>25</SortOrderNumber>
+      <UTCOffset>+08:30</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Moluccas Time</Name>
+      <Description>Moluccas</Description>
+    </ListItem>
+    <ListItem>
+      <Code>AWST</Code>
+      <SortOrderNumber>26</SortOrderNumber>
+      <UTCOffset>+08:00</UTCOffset>
+      <DSTCode>AWSST</DSTCode>
+      <DSTName>Australia Western Summer Time</DSTName>
+      <DSTUTCOffset>+09:00</DSTUTCOffset>
+      <Name>Australia Western Standard Time</Name>
+      <Description>Western Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>CCT</Code>
+      <SortOrderNumber>27</SortOrderNumber>
+      <UTCOffset>+08:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>China Coastal Time</Name>
+      <Description>China Coastal</Description>
+    </ListItem>
+    <ListItem>
+      <Code>WST</Code>
+      <SortOrderNumber>28</SortOrderNumber>
+      <UTCOffset>+08:00</UTCOffset>
+      <DSTCode>WDT</DSTCode>
+      <DSTName>West Australian Daylight Time</DSTName>
+      <DSTUTCOffset>+09:00</DSTUTCOffset>
+      <Name>West Australian Standard Time</Name>
+      <Description>West Australian</Description>
+    </ListItem>
+    <ListItem>
+      <Code>JT</Code>
+      <SortOrderNumber>29</SortOrderNumber>
+      <UTCOffset>+07:30</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Java Time</Name>
+      <Description>Java</Description>
+    </ListItem>
+    <ListItem>
+      <Code>WAST</Code>
+      <SortOrderNumber>30</SortOrderNumber>
+      <UTCOffset>+07:00</UTCOffset>
+      <DSTCode>WADT</DSTCode>
+      <DSTName>West Australian Daylight Time</DSTName>
+      <DSTUTCOffset>+08:00</DSTUTCOffset>
+      <Name>West Australian Standard Time</Name>
+      <Description>West Australia</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP6</Code>
+      <SortOrderNumber>31</SortOrderNumber>
+      <UTCOffset>+06:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT +6 hours</Name>
+      <Description>Zone GMT +6 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP5</Code>
+      <SortOrderNumber>32</SortOrderNumber>
+      <UTCOffset>+05:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT +5 hours</Name>
+      <Description>Zone GMT +5 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP4</Code>
+      <SortOrderNumber>33</SortOrderNumber>
+      <UTCOffset>+04:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT +4 hours</Name>
+      <Description>Zone GMT +4 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>IT</Code>
+      <SortOrderNumber>34</SortOrderNumber>
+      <UTCOffset>+03:30</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Iran Time</Name>
+      <Description>Iran</Description>
+    </ListItem>
+    <ListItem>
+      <Code>BT</Code>
+      <SortOrderNumber>35</SortOrderNumber>
+      <UTCOffset>+03:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Baghdad Time</Name>
+      <Description>Baghdad</Description>
+    </ListItem>
+    <ListItem>
+      <Code>EET</Code>
+      <SortOrderNumber>36</SortOrderNumber>
+      <UTCOffset>+02:00</UTCOffset>
+      <DSTCode>EETDST</DSTCode>
+      <DSTName>Eastern Europe Daylight Time</DSTName>
+      <DSTUTCOffset>+03:00</DSTUTCOffset>
+      <Name>Eastern Europe Standard Time</Name>
+      <Description>Eastern Europe, Russia Zone 1</Description>
+    </ListItem>
+    <ListItem>
+      <Code>IST</Code>
+      <SortOrderNumber>37</SortOrderNumber>
+      <UTCOffset>+02:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Israel Standard Time</Name>
+      <Description>Israel</Description>
+    </ListItem>
+    <ListItem>
+      <Code>CET</Code>
+      <SortOrderNumber>38</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>CETDST</DSTCode>
+      <DSTName>Central European Daylight Time</DSTName>
+      <DSTUTCOffset>+02:00</DSTUTCOffset>
+      <Name>Central European Time</Name>
+      <Description>Central Europe</Description>
+    </ListItem>
+    <ListItem>
+      <Code>DNT</Code>
+      <SortOrderNumber>39</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Dansk Normal Time</Name>
+      <Description>Dansk</Description>
+    </ListItem>
+    <ListItem>
+      <Code>DST</Code>
+      <SortOrderNumber>40</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Dansk Summer Time</Name>
+      <Description>Dansk</Description>
+    </ListItem>
+    <ListItem>
+      <Code>FST</Code>
+      <SortOrderNumber>41</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>FWT</DSTCode>
+      <DSTName>French Winter Time</DSTName>
+      <DSTUTCOffset>+02:00</DSTUTCOffset>
+      <Name>French Summer Time</Name>
+      <Description>French</Description>
+    </ListItem>
+    <ListItem>
+      <Code>MET</Code>
+      <SortOrderNumber>42</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>METDST</DSTCode>
+      <DSTName>Middle Europe Daylight Time</DSTName>
+      <DSTUTCOffset>+02:00</DSTUTCOffset>
+      <Name>Middle Europe Time</Name>
+      <Description>Middle Europe</Description>
+    </ListItem>
+    <ListItem>
+      <Code>MEWT</Code>
+      <SortOrderNumber>43</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>MEST</DSTCode>
+      <DSTName>Middle Europe Summer Time</DSTName>
+      <DSTUTCOffset>+02:00</DSTUTCOffset>
+      <Name>Middle Europe Winter Time</Name>
+      <Description>Middle Europe</Description>
+    </ListItem>
+    <ListItem>
+      <Code>MEZ</Code>
+      <SortOrderNumber>44</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Middle Europe Zone</Name>
+      <Description>Middle Europe</Description>
+    </ListItem>
+    <ListItem>
+      <Code>NOR</Code>
+      <SortOrderNumber>45</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Norway Standard Time</Name>
+      <Description>Norway</Description>
+    </ListItem>
+    <ListItem>
+      <Code>SET</Code>
+      <SortOrderNumber>46</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Seychelles Time</Name>
+      <Description>Seychelles</Description>
+    </ListItem>
+    <ListItem>
+      <Code>SWT</Code>
+      <SortOrderNumber>47</SortOrderNumber>
+      <UTCOffset>+01:00</UTCOffset>
+      <DSTCode>SST</DSTCode>
+      <DSTName>Swedish Summer Time</DSTName>
+      <DSTUTCOffset>+02:00</DSTUTCOffset>
+      <Name>Swedish Winter Time</Name>
+      <Description>Swedish</Description>
+    </ListItem>
+    <ListItem>
+      <Code>GMT</Code>
+      <SortOrderNumber>48</SortOrderNumber>
+      <UTCOffset> 00:00</UTCOffset>
+      <DSTCode>BST</DSTCode>
+      <DSTName>British Summer Time</DSTName>
+      <DSTUTCOffset>+01:00</DSTUTCOffset>
+      <Name>Greenwich Mean Time</Name>
+      <Description>Great Britain</Description>
+    </ListItem>
+    <ListItem>
+      <Code>WET</Code>
+      <SortOrderNumber>49</SortOrderNumber>
+      <UTCOffset> 00:00</UTCOffset>
+      <DSTCode>WETDST</DSTCode>
+      <DSTName>Western Europe Daylight Time</DSTName>
+      <DSTUTCOffset>+01:00</DSTUTCOffset>
+      <Name>Western Europe</Name>
+      <Description>Western Europe</Description>
+    </ListItem>
+    <ListItem>
+      <Code>WAT</Code>
+      <SortOrderNumber>50</SortOrderNumber>
+      <UTCOffset>-01:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>West Africa Time</Name>
+      <Description>West Africa</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP-2</Code>
+      <SortOrderNumber>51</SortOrderNumber>
+      <UTCOffset>-02:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT -2 hours</Name>
+      <Description>Zone GMT -2 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>ZP-3</Code>
+      <SortOrderNumber>52</SortOrderNumber>
+      <UTCOffset>-03:00</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>GMT -3 hours</Name>
+      <Description>Zone GMT -3 Hours</Description>
+    </ListItem>
+    <ListItem>
+      <Code>NFT</Code>
+      <SortOrderNumber>53</SortOrderNumber>
+      <UTCOffset>-03:30</UTCOffset>
+      <DSTCode>NDT</DSTCode>
+      <DSTName>Newfoundland Daylight Time</DSTName>
+      <DSTUTCOffset>-02:30</DSTUTCOffset>
+      <Name>Newfoundland Standard Time</Name>
+      <Description>Newfoundland</Description>
+    </ListItem>
+    <ListItem>
+      <Code>AFT</Code>
+      <SortOrderNumber>54</SortOrderNumber>
+      <UTCOffset>+04:30</UTCOffset>
+      <DSTCode>null</DSTCode>
+      <DSTName>null</DSTName>
+      <DSTUTCOffset>null</DSTUTCOffset>
+      <Name>Afghanistan Time</Name>
+      <Description>Afghanistan</Description>
+    </ListItem>
+  </List>
+</ReferenceList>

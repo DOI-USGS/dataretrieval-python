@@ -1,0 +1,28 @@
+Domain,Unique Identifier,Code,Name,Offset,Last Change Date
+Time Zone(TimeZoneCode),5,ADT,Atlantic Daylight Time,-3,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),3,AHST,Alaska-Hawaii Standard Time (*retired: >1983 use AKST),-10,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),1,AKDT,Alaska Daylight Time,-8,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),2,AKST,Alaska Standard Time,-9,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),6,AST,Atlantic Standard Time,-4,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),7,BST,Bering Standard Time (*retired: >1983 use HAST),-11,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),8,CDT,Central Daylight Time,-5,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),25,CEST,Sweden Daylight Time or Central European Standard Time,2,7/12/2016 9:39:33 AM
+Time Zone(TimeZoneCode),24,CET,Stockholm Sweden Time or Central European Time,1,7/12/2016 9:39:33 AM
+Time Zone(TimeZoneCode),9,CST,Central Standard Time,-6,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),10,EDT,Eastern Daylight Time,-4,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),11,EST,Eastern Standard Time,-5,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),23,GMT,Greenwich Mean Time ,0,6/19/2009 11:19:08 AM
+Time Zone(TimeZoneCode),12,GST,Guam Standard Time Zone (also Chamorro Standard Time),10,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),13,HADT,Hawaii-Aleutian Daylight Time,-9,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),14,HAST,Hawaii-Aleutian Standard Time,-10,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),26,KST,Korea Standard Time,9,7/12/2016 9:39:33 AM
+Time Zone(TimeZoneCode),15,MDT,Mountain Daylight Time,-6,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),16,MST,Mountain Standard Time,-7,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),17,NDT,Newfoundland Daylight Time,-2.5,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),18,NST,Newfoundland Standard Time,-3.5,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),19,PDT,Pacific Daylight Time,-7,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),20,PST,Pacific Standard Time,-8,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),4,SST,American Samoa Standard Time,-11,8/11/2006 10:57:50 AM
+Time Zone(TimeZoneCode),22,UTC,Coordinated Universal Time,0,1/15/2010 1:10:00 PM
+Time Zone(TimeZoneCode),21,YST,Yukon Standard Time: U.S.-Yukatat (*retired: >1983 use AKST),-9,8/11/2006 10:57:50 AM
+

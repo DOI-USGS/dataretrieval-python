@@ -442,6 +442,8 @@ class Test_attach_datetime_columns:
             ("GST", "2024-06-01 00:00:00"),
             # Hawaii-Aleutian Daylight Time, UTC-9, from the USGS codes.
             ("HDT", "2024-06-01 19:00:00"),
+            # American Samoa as the Samples database writes it (USGS codes).
+            ("ZP-11", "2024-06-01 21:00:00"),
         ],
     )
     def test_zone_resolves_as_the_services_define_it(self, zone, utc):
