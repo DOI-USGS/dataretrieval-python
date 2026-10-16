@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g7dea458c2 documentation</title>
+  <title>Python Equivalents to R Vignette Examples &mdash; dataretrieval 0.1.dev1+g776c8b039 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=ddb0178a"></script>
+      <script src="../_static/documentation_options.js?v=7d14b0cf"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -655,13 +655,13 @@ The above exception was the direct cause of the following exception:
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/tmp/ipykernel_6905/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_lower&#39; instead.
+/tmp/ipykernel_6818/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateLower&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_lower&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6905/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_upper&#39; instead.
+/tmp/ipykernel_6818/2092726829.py:12: DeprecationWarning: The &#39;activityStartDateUpper&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;activity_start_date_upper&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6905/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
+/tmp/ipykernel_6818/2092726829.py:12: DeprecationWarning: The &#39;usgsPCode&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;usgs_pcode&#39; instead.
   dfLong, md = waterdata.get_samples(
-/tmp/ipykernel_6905/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
+/tmp/ipykernel_6818/2092726829.py:12: DeprecationWarning: The &#39;monitoringLocationIdentifier&#39; argument is deprecated and will be removed from `dataretrieval` in a future release; use &#39;monitoring_location_id&#39; instead.
   dfLong, md = waterdata.get_samples(
 </pre></div></div>
 </div>
@@ -890,6 +890,14 @@ The above exception was the direct cause of the following exception:
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: ratings · 1 page · 1 rows
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
@@ -913,20 +921,15 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">    286</span> credit_wait(time.monotonic() - started)
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">287</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> afn()
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:192</span>, in <span class="ansi-cyan-fg">run_paginated.&lt;locals&gt;.fetch</span><span class="ansi-blue-fg">(request)</span>
-<span class="ansi-green-fg">    191</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">fetch</span>(request: httpx.Request) -&gt; <span style="color: rgb(0,135,0)">tuple</span>[pd.DataFrame, httpx.Response]:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">192</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> paginate(
-<span class="ansi-green-fg">    193</span>         request,
-<span class="ansi-green-fg">    194</span>         parse_response=parse_response,
-<span class="ansi-green-fg">    195</span>         follow_up=follow_up,
-<span class="ansi-green-fg">    196</span>         client=client,
-<span class="ansi-green-fg">    197</span>         raise_for_status=raise_for_status,
-<span class="ansi-green-fg">    198</span>     )
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:434</span>, in <span class="ansi-cyan-fg">_download_all.&lt;locals&gt;.fetch</span><span class="ansi-blue-fg">(feature)</span>
+<span class="ansi-green-fg">    433</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">434</span>     df, response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> _fetch_rating(feature, file_path)
+<span class="ansi-green-fg">    435</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> (DataRetrievalError, <span class="ansi-bold" style="color: rgb(215,95,95)">LookupError</span>, <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>) <span class="ansi-bold" style="color: rgb(0,135,0)">as</span> e:
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:112</span>, in <span class="ansi-cyan-fg">paginate</span><span class="ansi-blue-fg">(initial_req, parse_response, follow_up, raise_for_status, client, row_cap)</span>
-<span class="ansi-green-fg">    111</span> response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> session.send(initial_req)
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">112</span> <span class="ansi-black-fg ansi-yellow-bg">raise_for_status</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    113</span> initial_response = response
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:385</span>, in <span class="ansi-cyan-fg">_fetch_rating</span><span class="ansi-blue-fg">(feature, file_path)</span>
+<span class="ansi-green-fg">    384</span> response = <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> session.get(href, headers=headers)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">385</span> <span class="ansi-black-fg ansi-yellow-bg">_raise_for_non_200</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">response</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    387</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> file_path <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
 
 <span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/ogc/errors.py:139</span>, in <span class="ansi-cyan-fg">_raise_for_non_200</span><span class="ansi-blue-fg">(resp)</span>
 <span class="ansi-green-fg">    138</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span>
@@ -936,7 +939,7 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">    142</span>     retry_after=_parse_retry_after(resp.headers.get(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">Retry-After</span><span class="ansi-yellow-fg">&#34;</span>)),
 <span class="ansi-green-fg">    143</span> )
 
-<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later. (URL: https://api.waterdata.usgs.gov/stac/v0/search?limit=10000&amp;filter=monitoring_location_id+IN+%28%27USGS-01594440%27%29+AND+file_type+%3D+%27base%27)
+<span class="ansi-red-fg">RateLimited</span>: 429: Too many requests made. Please obtain an API token or try again later. (URL: https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01594440.base.rdb)
 
 The above exception was the direct cause of the following exception:
 
@@ -951,43 +954,28 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">      8</span> )
 <span class="ansi-green-fg">      9</span> list(ratings_data.keys())
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:198</span>, in <span class="ansi-cyan-fg">get_ratings</span><span class="ansi-blue-fg">(monitoring_location_id, file_type, file_path, time, bbox, limit, download_and_parse, ssl_check)</span>
-<span class="ansi-green-fg">    195</span> server_file_type = file_types[<span class="ansi-green-fg">0</span>] <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">len</span>(file_types) == <span class="ansi-green-fg">1</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>
-<span class="ansi-green-fg">    196</span> filter_str = _build_filter(monitoring_location_id, server_file_type)
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">198</span> features = <span class="ansi-black-fg ansi-yellow-bg">_search</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">filter_str</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">time_str</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">bbox</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">limit</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    200</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> download_and_parse:
-<span class="ansi-green-fg">    201</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> features
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:208</span>, in <span class="ansi-cyan-fg">get_ratings</span><span class="ansi-blue-fg">(monitoring_location_id, file_type, file_path, time, bbox, limit, download_and_parse, ssl_check)</span>
+<span class="ansi-green-fg">    205</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> file_path <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">    206</span>     os.makedirs(file_path, exist_ok=<span class="ansi-bold" style="color: rgb(0,135,0)">True</span>)
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">208</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">_download_all</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">matching</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">file_path</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:323</span>, in <span class="ansi-cyan-fg">_search</span><span class="ansi-blue-fg">(filter_str, time_str, bbox, limit, ssl_check)</span>
-<span class="ansi-green-fg">    320</span> <span class="ansi-bold" style="color: rgb(0,135,0)">async</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">follow_up</span>(cursor: <span style="color: rgb(0,135,0)">str</span>, sess: httpx.AsyncClient) -&gt; httpx.Response:
-<span class="ansi-green-fg">    321</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> sess.get(cursor, headers=_default_headers(cursor))
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">323</span> df, _ = <span class="ansi-black-fg ansi-yellow-bg">run_paginated</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
-<span class="ansi-green-fg">    324</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">[</span><span class="ansi-black-fg ansi-yellow-bg">req</span><span class="ansi-black-fg ansi-yellow-bg">]</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    325</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">parse_response</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">parse_response</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    326</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">follow_up</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">follow_up</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    327</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">raise_for_status</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_raise_for_non_200</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    328</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">client_options</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">{</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">:</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">}</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    329</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">ratings</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    330</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">waterdata</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    331</span> <span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    332</span> <span style="color: rgb(95,135,135)"># Every page frame is built with a ``feature`` column, and the combine</span>
-<span class="ansi-green-fg">    333</span> <span style="color: rgb(95,135,135)"># helpers preserve it, so the empty case needs no special branch.</span>
-<span class="ansi-green-fg">    334</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span style="color: rgb(0,135,0)">list</span>(df[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">feature</span><span class="ansi-yellow-fg">&#34;</span>])
-
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/transport/pagination.py:212</span>, in <span class="ansi-cyan-fg">run_paginated</span><span class="ansi-blue-fg">(requests, parse_response, follow_up, raise_for_status, service, finalize, client, client_options, default_concurrent, canonical_url, adapter)</span>
-<span class="ansi-green-fg">    200</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> canonical_url <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> requests:
-<span class="ansi-green-fg">    201</span>     canonical_url = <span style="color: rgb(0,135,0)">str</span>(requests[<span class="ansi-green-fg">0</span>].url)
-<span class="ansi-green-fg">    202</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-black-fg ansi-yellow-bg">FanOut</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
-<span class="ansi-green-fg">    203</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">requests</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    204</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    205</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">RetryPolicy</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">from_configuration</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    206</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">finalize</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    207</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">client_options</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">client_options</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    208</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">default_concurrent</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">default_concurrent</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    209</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">canonical_url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">canonical_url</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    210</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">    211</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">212</span> <span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/waterdata/ratings.py:462</span>, in <span class="ansi-cyan-fg">_download_all</span><span class="ansi-blue-fg">(features, file_path, ssl_check)</span>
+<span class="ansi-green-fg">    447</span>     out[fid] = df
+<span class="ansi-green-fg">    448</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> df, _inert_response(
+<span class="ansi-green-fg">    449</span>         response.status_code, <span style="color: rgb(0,135,0)">str</span>(response.url), response.headers
+<span class="ansi-green-fg">    450</span>     )
+<span class="ansi-green-fg">    452</span> <span class="ansi-black-fg ansi-yellow-bg">FanOut</span><span class="ansi-black-fg ansi-yellow-bg">(</span>
+<span class="ansi-green-fg">    453</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">features</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    454</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">fetch</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    455</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">RetryPolicy</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">from_configuration</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">waterdata</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    456</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">client_options</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">{</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">verify</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">:</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">ssl_check</span><span class="ansi-black-fg ansi-yellow-bg">}</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    457</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg"># No single URL expresses &#34;all of these assets&#34; -- the aggregate</span>
+<span class="ansi-green-fg">    458</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg"># reports the first, matching what a single-feature call would show.</span>
+<span class="ansi-green-fg">    459</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">canonical_url</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">_asset_href</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">features</span><span class="ansi-black-fg ansi-yellow-bg">[</span><span class="ansi-black-fg ansi-yellow-bg">0</span><span class="ansi-black-fg ansi-yellow-bg">]</span><span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    460</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">service</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">ratings</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">    461</span> <span class="ansi-black-fg ansi-yellow-bg">    </span><span class="ansi-black-fg ansi-yellow-bg">adapter</span><span class="ansi-black-fg ansi-yellow-bg">=</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">waterdata</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">,</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">462</span> <span class="ansi-black-fg ansi-yellow-bg">)</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">resume</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    463</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> out
 
 <span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages/dataretrieval/transport/fanout.py:494</span>, in <span class="ansi-cyan-fg">FanOut.resume</span><span class="ansi-blue-fg">(self)</span>
 <span class="ansi-green-fg">    486</span> concurrency = _configuration.concurrency(
@@ -1054,7 +1042,7 @@ The above exception was the direct cause of the following exception:
 <span class="ansi-green-fg">    539</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span style="color: rgb(0,135,0)">self</span>._normalize_failure(first_transient)
 <span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">540</span> <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> interrupted <span class="ansi-bold" style="color: rgb(0,135,0)">from</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-intense-fg ansi-bold">first_transient</span>
 
-<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 chunks; catch QuotaExhausted (or FanOutInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has reset. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later. (URL: https://api.waterdata.usgs.gov/stac/v0/search?limit=10000&amp;filter=monitoring_location_id+IN+%28%27USGS-01594440%27%29+AND+file_type+%3D+%27base%27)
+<span class="ansi-red-fg">QuotaExhausted</span>: HTTP 429 after 0/1 chunks; catch QuotaExhausted (or FanOutInterrupted) to access .partial_frame or .call.resume() once the rate-limit window has reset. Cause: RateLimited: 429: Too many requests made. Please obtain an API token or try again later. (URL: https://api.waterdata.usgs.gov/stac-files/ratings/USGS.01594440.base.rdb)
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
