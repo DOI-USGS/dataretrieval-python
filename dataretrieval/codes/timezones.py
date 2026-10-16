@@ -1,9 +1,18 @@
-"""Time zone information."""
+"""Time zone information.
+
+Maps the time-zone abbreviations that services put beside a local date and
+time to UTC offsets. Several abbreviations name more than one zone worldwide.
+``GST`` follows the USGS time-zone codes and the WQX TimeZone domain, which
+both define it as Guam Standard Time (UTC+10), not Gulf Standard Time. Other
+entries that differ from the USGS list (``CCT``, ``EAST``, ``NFT``, ``NZDT``,
+``SST``, ``WAT``) have not been reconciled, and the two lists disagree with
+each other on ``SST``.
+"""
 
 tz_str = """-1200 Y
 -1100 X NUT SST
 -1000 W CKT HAST HST TAHT TKT
--0900 V AKST GAMT GIT HADT HNY
+-0900 V AKST GAMT GIT HADT HDT HNY
 -0800 U AKDT CIST HAY HNP PST PT
 -0700 T HAP HNR MST PDT
 -0600 S CST EAST GALT HAR HNC MDT
@@ -16,13 +25,13 @@ tz_str = """-1200 Y
 +0100 A CET DFT WAT WEDT WEST
 +0200 B CAT CEDT CEST EET SAST WAST
 +0300 C EAT EEDT EEST IDT MSK
-+0400 D AMT AZT GET GST KUYT MSD MUT RET SAMT SCT
++0400 D AMT AZT GET KUYT MSD MUT RET SAMT SCT
 +0500 E AMST AQTT AZST HMT MAWT MVT PKT TFT TJT TMT UZT YEKT
 +0600 F ALMT BIOT BTT IOT KGT NOVT OMST YEKST
 +0700 G CXT DAVT HOVT ICT KRAT NOVST OMSST THA WIB
 +0800 H ACT AWST BDT BNT CAST HKT IRKT KRAST MYT PHT SGT ULAT WITA WST
 +0900 I AWDT IRKST JST KST PWT TLT WDT WIT YAKT
-+1000 K AEST ChST PGT VLAT YAKST YAPT
++1000 K AEST ChST GST PGT VLAT YAKST YAPT
 +1100 L AEDT LHDT MAGT NCT PONT SBT VLAST VUT
 +1200 M ANAST ANAT FJT GILT MAGST MHT NZST PETST PETT TVT WFT
 +1330 FJST NZDT
