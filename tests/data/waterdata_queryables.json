@@ -1,513 +1,2469 @@
 {
-  "channel-measurements": [
-    "channel_area",
-    "channel_area_unit",
-    "channel_evenness",
-    "channel_flow",
-    "channel_flow_unit",
-    "channel_location_direction",
-    "channel_location_distance",
-    "channel_location_distance_unit",
-    "channel_material",
-    "channel_measurement_type",
-    "channel_name",
-    "channel_stability",
-    "channel_velocity",
-    "channel_velocity_unit",
-    "channel_width",
-    "channel_width_unit",
-    "field_visit_id",
-    "geometry",
-    "horizontal_velocity_description",
-    "id",
-    "last_modified",
-    "longitudinal_velocity_description",
-    "measurement_number",
-    "measurement_type",
-    "monitoring_location_id",
-    "time",
-    "vertical_velocity_description"
-  ],
-  "combined-metadata": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "begin",
-    "computation_identifier",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "data_type",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "end",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "parameter_description",
-    "parameter_name",
-    "parent_time_series_id",
-    "primary",
-    "reading_type",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "statistic_id",
-    "sublocation_identifier",
-    "thresholds",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "vertical_datum",
-    "vertical_datum_name",
-    "web_description",
-    "well_constructed_depth"
-  ],
-  "continuous": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "approval_status",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "method_category",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "qualifier",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "statistic_id",
-    "time",
-    "time_series_id",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "well_constructed_depth"
-  ],
-  "daily": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "approval_status",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "qualifier",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "statistic_id",
-    "time",
-    "time_series_id",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "well_constructed_depth"
-  ],
-  "field-measurements": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "approval_status",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "control_condition",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "day",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "field_measurements_series_id",
-    "field_visit_id",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "measurement_rated",
-    "measuring_agency",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "month",
-    "national_aquifer_code",
-    "observing_procedure",
-    "observing_procedure_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "qualifier",
-    "reading_type",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "sublocation_identifier",
-    "time",
-    "time_of_day",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "vertical_datum_site",
-    "well_constructed_depth",
-    "year"
-  ],
-  "field-measurements-metadata": [
-    "begin",
-    "end",
-    "geometry",
-    "id",
-    "last_modified",
-    "monitoring_location_id",
-    "parameter_code",
-    "parameter_description",
-    "parameter_name",
-    "reading_type",
-    "sublocation_identifier"
-  ],
-  "latest-continuous": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "approval_status",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "qualifier",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "statistic_id",
-    "time",
-    "time_series_id",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "well_constructed_depth"
-  ],
-  "latest-daily": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "approval_status",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "qualifier",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "statistic_id",
-    "time",
-    "time_series_id",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "well_constructed_depth"
-  ],
-  "monitoring-locations": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "minor_civil_division_code",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "revision_created",
-    "revision_modified",
-    "revision_note",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "time_zone_abbreviation",
-    "uses_daylight_savings",
-    "vertical_datum",
-    "vertical_datum_name",
-    "well_constructed_depth"
-  ],
-  "peaks": [
-    "agency_code",
-    "agency_name",
-    "altitude",
-    "altitude_accuracy",
-    "altitude_method_code",
-    "altitude_method_name",
-    "aquifer_code",
-    "aquifer_type_code",
-    "basin_code",
-    "construction_date",
-    "contributing_drainage_area",
-    "country_code",
-    "country_name",
-    "county_code",
-    "county_name",
-    "data_gap_interval",
-    "day",
-    "depth_source_code",
-    "district_code",
-    "drainage_area",
-    "geometry",
-    "hole_constructed_depth",
-    "horizontal_position_method_code",
-    "horizontal_position_method_name",
-    "horizontal_positional_accuracy",
-    "horizontal_positional_accuracy_code",
-    "hydrologic_unit_code",
-    "id",
-    "last_modified",
-    "minor_civil_division_code",
-    "monitoring_location_id",
-    "monitoring_location_name",
-    "monitoring_location_number",
-    "month",
-    "national_aquifer_code",
-    "original_horizontal_datum",
-    "original_horizontal_datum_name",
-    "parameter_code",
-    "peak_since",
-    "qualifier",
-    "site_type",
-    "site_type_code",
-    "state_code",
-    "state_name",
-    "time",
-    "time_of_day",
-    "time_series_id",
-    "time_zone_abbreviation",
-    "unit_of_measure",
-    "uses_daylight_savings",
-    "value",
-    "vertical_datum",
-    "vertical_datum_name",
-    "water_year",
-    "well_constructed_depth",
-    "year"
-  ],
-  "time-series-metadata": [
-    "begin",
-    "computation_identifier",
-    "computation_period_identifier",
-    "data_gap_interval",
-    "end",
-    "geometry",
-    "id",
-    "last_modified",
-    "monitoring_location_id",
-    "parameter_code",
-    "parameter_description",
-    "parameter_name",
-    "parent_time_series_id",
-    "primary",
-    "statistic_id",
-    "statistics_begin",
-    "sublocation_identifier",
-    "thresholds",
-    "unit_of_measure",
-    "web_description"
-  ]
+  "channel-measurements": {
+    "channel_area": {
+      "description": "The channel area.",
+      "title": "Channel area",
+      "type": "string"
+    },
+    "channel_area_unit": {
+      "description": "The units for channel area.",
+      "title": "Channel area unit",
+      "type": "string"
+    },
+    "channel_evenness": {
+      "description": "The channel evenness from bank to bank.",
+      "title": "Channel evenness",
+      "type": "string"
+    },
+    "channel_flow": {
+      "description": "Channel discharge.",
+      "title": "Channel flow",
+      "type": "string"
+    },
+    "channel_flow_unit": {
+      "description": "The units for channel discharge.",
+      "title": "Channel flow unit",
+      "type": "string"
+    },
+    "channel_location_direction": {
+      "description": "Location of the measurement from the gage.",
+      "title": "Channel Location Direction",
+      "type": "string"
+    },
+    "channel_location_distance": {
+      "description": "The channel location distance.",
+      "title": "Channel location distance",
+      "type": "string"
+    },
+    "channel_location_distance_unit": {
+      "description": "The units for channel location distance.",
+      "title": "Channel location distance unit",
+      "type": "string"
+    },
+    "channel_material": {
+      "description": "The channel material.",
+      "title": "Channel material",
+      "type": "string"
+    },
+    "channel_measurement_type": {
+      "description": "The channel measurement type.",
+      "title": "Channel measurement type",
+      "type": "string"
+    },
+    "channel_name": {
+      "description": "The channel name.",
+      "title": "Channel name",
+      "type": "string"
+    },
+    "channel_stability": {
+      "description": "The stability of the channel material.",
+      "title": "Channel stability",
+      "type": "string"
+    },
+    "channel_velocity": {
+      "description": "The mean channel velocity.",
+      "title": "Channel velocity",
+      "type": "string"
+    },
+    "channel_velocity_unit": {
+      "description": "The units for channel velocity.",
+      "title": "Channel velocity unit",
+      "type": "string"
+    },
+    "channel_width": {
+      "description": "The channel width.",
+      "title": "Channel width",
+      "type": "string"
+    },
+    "channel_width_unit": {
+      "description": "The units for channel width.",
+      "title": "Channel width unit",
+      "type": "string"
+    },
+    "field_visit_id": {
+      "description": "A universally unique identifier (UUID) for the field visit. Multiple measurements may be made during a single field visit.",
+      "title": "Field visit ID",
+      "type": "string"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "horizontal_velocity_description": {
+      "description": "The horizontal velocity description.",
+      "title": "Horizontal velocity description",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. To uniquely identify a single observation over time, compare the `time` and `time_series_id` fields; each time series will only have a single observation at a given `time`.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "longitudinal_velocity_description": {
+      "description": "The longitudinal velocity description.",
+      "title": "Longitudinal velocity description",
+      "type": "string"
+    },
+    "measurement_number": {
+      "description": "Measurement number.",
+      "title": "Measurement number",
+      "type": "string"
+    },
+    "measurement_type": {
+      "description": "The measurement type.",
+      "title": "Measurement type",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "vertical_velocity_description": {
+      "description": "The vertical velocity description.",
+      "title": "Vertical velocity description",
+      "type": "string"
+    }
+  },
+  "combined-metadata": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "begin": {
+      "description": "The datetime of the earliest observation in the time series. Together with `end_utc`, this field represents the period of record of a time series. Note that some time series may have large gaps in their collection record.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `begin_utc` that intersects the value of datetime are selected.",
+      "title": "Time series first observation timestamp - UTC",
+      "type": "string"
+    },
+    "computation_identifier": {
+      "description": "Indicates the computation performed to calculate this time series. Values of \"Instantaneous\" reflect point measurements.",
+      "title": "Computation identifier",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "data_type": {
+      "description": "The computational period type of data collected at the monitoring location.",
+      "title": "Data type",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "end": {
+      "description": "The datetime of the most recent observation in the time series. Data returned by this endpoint updates at most once per day, and potentially less frequently than that, and as such there may be more recent observations within a time series than the time series `end_utc` value reflects. Together with `begin_utc`, this field represents the period of record of a time series. It is additionally used to determine whether a time series is \"active\".\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `end_utc` that intersects the value of datetime are selected.",
+      "title": "Time series most recent observation timestamp - UTC",
+      "type": "string"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "The ID of the time series or field measurement series (identified by `data_type`) that collection metadata corresponds to.",
+      "title": "Data series ID",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "parameter_description": {
+      "description": "A description of what the parameter code represents, as used by WDFN and other USGS data dissemination products.",
+      "title": "Parameter description",
+      "type": "string"
+    },
+    "parameter_name": {
+      "description": "A human-understandable name corresponding to `parameter_code`.",
+      "title": "Parameter name",
+      "type": "string"
+    },
+    "parent_time_series_id": {
+      "description": "The unique identifier representing the parent or \"upchain\" time series that a daily values time series is generated from. Daily values time series have one and only one parent time series.",
+      "title": "Parent time series ID",
+      "type": "string"
+    },
+    "primary": {
+      "description": "A flag identifying if the time series is a \"primary\" time series. \"Primary\" time series (which have this flag) are standard observations which undergo [Bureau review and approval processes](https://www.usgs.gov/survey-manual/5028-fundamental-science-practices-review-and-approval-scientific-data-release). Non-primary time series, which will have missing values for \"primary\", are provisional datasets made available to meet the need for timely best science and to assist with daily operations which need real-time information. Non-primary time series data are only retained by this system for 120 days. See the [USGS Provisional Data Statement](https://waterdata.usgs.gov/provisional-data-statement/) for more information.",
+      "title": "Primary flag",
+      "type": "string"
+    },
+    "reading_type": {
+      "description": "Distinguishes field-measurement readings from measurements. Readings have a value of ReferencePrimary; measurements are Discharge or MeanGageHeight.",
+      "title": "Reading type",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "sublocation_identifier": {
+      "description": "An optional human-readable identifier used to specify where measurements are recorded at a monitoring location.",
+      "title": "Sublocation identifier",
+      "type": "string"
+    },
+    "thresholds": {
+      "description": "Thresholds represent known numeric limits for a time series, for example the historic maximum value for a parameter or a level below which a sensor is non-operative. These thresholds are sometimes used to automatically determine if an observation is erroneous due to sensor error, and therefore shouldn't be included in the time series.",
+      "title": "Operational thresholds",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "web_description": {
+      "description": "An optional description of the time series. WDFN and other USGS data dissemination products use this field, in combination with sublocation_identifier, to distinguish the differences between multiple time series for the same parameter code, statistic code, and monitoring location.",
+      "title": "Time series description",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "continuous": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "approval_status": {
+      "description": "Some of the data that you have obtained from this U.S. Geological Survey database may not have received Director's approval.  Any such data values are qualified as provisional and are subject to revision.  Provisional data are released on the condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its use. This field reflects the approval status of each record, and is either \"Approved\", meaining processing review has been completed and the data is approved for publication, or \"Provisional\" and subject to revision. For more information about provisional data, go to [https://waterdata.usgs.gov/provisional-data-statement/](https://waterdata.usgs.gov/provisional-data-statement/).",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. To uniquely identify a single observation over time, compare the `time` and `time_series_id` fields; each time series will only have a single observation at a given `time`.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "method_category": {
+      "description": "The RLMS method category code classifying the method in effect for this interval.",
+      "title": "Method category",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_series_id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the `id` field in the `time-series-metadata` endpoint.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "daily": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "approval_status": {
+      "description": "Some of the data that you have obtained from this U.S. Geological Survey database may not have received Director's approval.  Any such data values are qualified as provisional and are subject to revision.  Provisional data are released on the condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its use. This field reflects the approval status of each record, and is either \"Approved\", meaining processing review has been completed and the data is approved for publication, or \"Provisional\" and subject to revision. For more information about provisional data, go to [https://waterdata.usgs.gov/provisional-data-statement/](https://waterdata.usgs.gov/provisional-data-statement/).",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. To uniquely identify a single observation over time, compare the `time` and `time_series_id` fields; each time series will only have a single observation at a given `time`.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_series_id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the `id` field in the `time-series-metadata` endpoint.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "field-measurements": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "approval_status": {
+      "description": "Some of the data that you have obtained from this U.S. Geological Survey database may not have received Director's approval.  Any such data values are qualified as provisional and are subject to revision.  Provisional data are released on the condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its use. This field reflects the approval status of each record, and is either \"Approved\", meaining processing review has been completed and the data is approved for publication, or \"Provisional\" and subject to revision. For more information about provisional data, go to [https://waterdata.usgs.gov/provisional-data-statement/](https://waterdata.usgs.gov/provisional-data-statement/).",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "control_condition": {
+      "description": "The state of the control feature at the time of observation.",
+      "title": "Control condition",
+      "type": "string"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "day": {
+      "description": "The day of the month the field measurement was taken. If null, the day is unknown.",
+      "title": "Day",
+      "type": "integer"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "field_measurements_series_id": {
+      "description": "A unique identifier representing a single collection series. This corresponds to the `id` field in the `field-measurements-metadata` endpoint. Collection series are defined as the set of field measurements at a given monitoring location for a single parameter code using a single reading type.",
+      "title": "Field measurements series ID",
+      "type": "string"
+    },
+    "field_visit_id": {
+      "description": "A universally unique identifier (UUID) for the field visit. Multiple measurements may be made during a single field visit.",
+      "title": "Field visit ID",
+      "type": "string"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. There may be multiple readings occurring at identical times during a single field visit; to uniquely identify a set of readings over time, use the `field_visit_id` field.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "measurement_rated": {
+      "description": "A qualitative estimate of the quality of a measurement.",
+      "title": "Measurement rating",
+      "type": "string"
+    },
+    "measuring_agency": {
+      "description": "The agency performing the measurement.",
+      "title": "Measuring agency",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "month": {
+      "description": "The calendar month the field measurement was taken. If null, the month is unknown.",
+      "title": "Month",
+      "type": "integer"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "observing_procedure": {
+      "description": "Water measurement or water-quality observing procedure descriptions.",
+      "title": "Observing procedure",
+      "type": "string"
+    },
+    "observing_procedure_code": {
+      "description": "A short code corresponding to the observing procedure for the field measurement.",
+      "title": "Observing procedure code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "reading_type": {
+      "description": "Distinguishes field-measurement readings from measurements. Readings have a value of ReferencePrimary; measurements are Discharge or MeanGageHeight.",
+      "title": "Reading type",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "sublocation_identifier": {
+      "description": "An optional human-readable identifier used to specify where measurements are recorded at a monitoring location.",
+      "title": "Sublocation identifier",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_of_day": {
+      "description": "The time of day the field measurement was taken. If null, the time of day is unknown.",
+      "title": "Time of Day",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "vertical_datum_site": {
+      "description": "The vertical datum used to determine altitude at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum (site)",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    },
+    "year": {
+      "description": "The calendar year the field measurement was taken.",
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "field-measurements-metadata": {
+    "begin": {
+      "description": "The datetime of the earliest observation in the time series. Together with `end_utc`, this field represents the period of record of a time series. Note that some time series may have large gaps in their collection record.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `begin_utc` that intersects the value of datetime are selected.",
+      "title": "Time series first observation timestamp - UTC",
+      "type": "string"
+    },
+    "end": {
+      "description": "The datetime of the most recent observation in the time series. Data returned by this endpoint updates at most once per day, and potentially less frequently than that, and as such there may be more recent observations within a time series than the time series `end_utc` value reflects. Together with `begin_utc`, this field represents the period of record of a time series. It is additionally used to determine whether a time series is \"active\".\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `end_utc` that intersects the value of datetime are selected.",
+      "title": "Time series most recent observation timestamp - UTC",
+      "type": "string"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "id": {
+      "description": "A unique identifier representing a single collection series. This corresponds to the `field_measurement_series_id` field in the `field-measurements` endpoint. Collection series are defined as the set of field measurements at a given monitoring location for a single parameter code using a single reading type.",
+      "title": "Field measurement series ID",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "parameter_description": {
+      "description": "A description of what the parameter code represents, as used by WDFN and other USGS data dissemination products.",
+      "title": "Parameter description",
+      "type": "string"
+    },
+    "parameter_name": {
+      "description": "A human-understandable name corresponding to `parameter_code`.",
+      "title": "Parameter name",
+      "type": "string"
+    },
+    "reading_type": {
+      "description": "Distinguishes field-measurement readings from measurements. Readings have a value of ReferencePrimary; measurements are Discharge or MeanGageHeight.",
+      "title": "Reading type",
+      "type": "string"
+    },
+    "sublocation_identifier": {
+      "description": "An optional human-readable identifier used to specify where measurements are recorded at a monitoring location.",
+      "title": "Sublocation identifier",
+      "type": "string"
+    }
+  },
+  "latest-continuous": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "approval_status": {
+      "description": "Some of the data that you have obtained from this U.S. Geological Survey database may not have received Director's approval.  Any such data values are qualified as provisional and are subject to revision.  Provisional data are released on the condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its use. This field reflects the approval status of each record, and is either \"Approved\", meaining processing review has been completed and the data is approved for publication, or \"Provisional\" and subject to revision. For more information about provisional data, go to [https://waterdata.usgs.gov/provisional-data-statement/](https://waterdata.usgs.gov/provisional-data-statement/).",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. To uniquely identify a single observation over time, compare the `time` and `time_series_id` fields; each time series will only have a single observation at a given `time`.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_series_id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the `id` field in the `time-series-metadata` endpoint.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "latest-daily": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "approval_status": {
+      "description": "Some of the data that you have obtained from this U.S. Geological Survey database may not have received Director's approval.  Any such data values are qualified as provisional and are subject to revision.  Provisional data are released on the condition that neither the USGS nor the United States Government may be held liable for any damages resulting from its use. This field reflects the approval status of each record, and is either \"Approved\", meaining processing review has been completed and the data is approved for publication, or \"Provisional\" and subject to revision. For more information about provisional data, go to [https://waterdata.usgs.gov/provisional-data-statement/](https://waterdata.usgs.gov/provisional-data-statement/).",
+      "title": "Approval Status",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A universally unique identifier (UUID) representing a single version of a record. It is not stable over time. Every time the record is refreshed in our database (which may happen as part of normal operations and does not imply any change to the data itself) a new ID will be generated. To uniquely identify a single observation over time, compare the `time` and `time_series_id` fields; each time series will only have a single observation at a given `time`.",
+      "title": "Record identifier",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_series_id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the `id` field in the `time-series-metadata` endpoint.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "monitoring-locations": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `monitoring_location_id` field in other endpoints. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "revision_created": {
+      "description": "The date a revision statement was created.",
+      "title": "Date revision created",
+      "type": "string"
+    },
+    "revision_modified": {
+      "description": "The most recent date a revision statement was modified.",
+      "title": "Date revision modified",
+      "type": "string"
+    },
+    "revision_note": {
+      "description": "Approved water data are considered published record, but on occasion changes or deletions (revisions) must be made to data after they are approved. Data revisions are rare because of USGS quality assurance practices, including documentation of all data before they are officially approved. This field contains text explanations for data revisions at this monitoring location. Changes to data also are indicated with revision qualifier codes alongside the data. Text explanations before 2017 are not necessarily available online, but can be requested.",
+      "title": "Revision note",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    }
+  },
+  "peaks": {
+    "agency_code": {
+      "description": "The agency that is reporting the data. Agency codes are fixed values assigned by the National Water Information System (NWIS). A list of agency codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/agency-codes/items).",
+      "title": "Agency code",
+      "type": "string"
+    },
+    "agency_name": {
+      "description": "The name of the agency that is reporting the data.",
+      "title": "Agency name",
+      "type": "string"
+    },
+    "altitude": {
+      "description": "Altitude of the monitoring location referenced to the specified Vertical Datum.",
+      "title": "Altitude",
+      "type": "number"
+    },
+    "altitude_accuracy": {
+      "description": "Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be entered as “.1”. Many altitudes are interpolated from the contours on topographic maps; accuracies determined in this way are generally entered as one-half of the contour interval.",
+      "title": "Altitude accuracy",
+      "type": "number"
+    },
+    "altitude_method_code": {
+      "description": "Codes representing the method used to measure altitude.",
+      "title": "Altitude method code",
+      "type": "string"
+    },
+    "altitude_method_name": {
+      "description": "The name of the method used to measure altitude.",
+      "title": "Altitude method name",
+      "type": "string"
+    },
+    "aquifer_code": {
+      "description": "Local aquifers in the USGS water resources data base are identified by a geohydrologic unit code (a three-digit number related to the age of the formation, followed by a 4 or 5 character abbreviation for the geologic unit or aquifer name).",
+      "title": "Aquifer code",
+      "type": "string"
+    },
+    "aquifer_type_code": {
+      "description": "Describes the confinement status of an aquifer at the monitoring location. A confined aquifer is an aquifer below the land surface that is saturated with water. A water table--or unconfined--aquifer is an aquifer whose upper water surface (water table) is at atmospheric pressure, and thus is able to rise and fall.",
+      "title": "Aquifer type code",
+      "type": "string"
+    },
+    "basin_code": {
+      "description": "The Basin Code or \"drainage basin code\" is a two-digit code that further subdivides the 8-digit hydrologic-unit code. The drainage basin code is defined by the USGS State Office where the monitoring location is located.",
+      "title": "Basin code",
+      "type": "string"
+    },
+    "construction_date": {
+      "description": "Date the well was completed.",
+      "title": "Construction date",
+      "type": "string"
+    },
+    "contributing_drainage_area": {
+      "description": "The contributing drainage area of a lake, stream, wetland, or estuary monitoring location, in square miles. This item should be present only if the contributing area is different from the total drainage area. This situation can occur when part of the drainage area consists of very porous soil or depressions that either allow all runoff to enter the groundwater or traps the water in ponds so that rainfall does not contribute to runoff. A transbasin diversion can also affect the total drainage area.",
+      "title": "Contributing drainage area",
+      "type": "number"
+    },
+    "country_code": {
+      "description": "The code for the country in which the monitoring location is located.",
+      "title": "Country code",
+      "type": "string"
+    },
+    "country_name": {
+      "description": "The name of the country in which the monitoring location is located.",
+      "title": "Country name",
+      "type": "string"
+    },
+    "county_code": {
+      "description": "The code for the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County code",
+      "type": "string"
+    },
+    "county_name": {
+      "description": "The name of the county or county equivalent (parish, borough, etc.) in which the monitoring location is located. [A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/counties/items).",
+      "title": "County name",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "day": {
+      "description": "The day of the month a peak occurred. If null, the day a peak occurred is unknown.",
+      "title": "Day",
+      "type": "integer"
+    },
+    "depth_source_code": {
+      "description": "A code indicating the source of water-level data.",
+      "title": "Depth source code",
+      "type": "string"
+    },
+    "district_code": {
+      "description": "The Water Science Centers (WSCs) across the United States use the FIPS state code as the district code. In some case, monitoring locations and samples may be managed by a water science center that is adjacent to the state in which the monitoring location actually resides. For example a monitoring location may have a district code of 30 which translates to Montana, but the state code could be 56 for Wyoming because that is where the monitoring location actually is located.",
+      "title": "District code",
+      "type": "string"
+    },
+    "drainage_area": {
+      "description": "The area enclosed by a topographic divide from which direct surface runoff from precipitation normally drains by gravity into the stream above that point.",
+      "title": "Drainage area",
+      "type": "number"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "hole_constructed_depth": {
+      "description": "The total depth to which the hole is drilled, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Hole Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Hole constructed depth",
+      "type": "number"
+    },
+    "horizontal_position_method_code": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method code",
+      "type": "string"
+    },
+    "horizontal_position_method_name": {
+      "description": "Indicates the method used to determine latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-method-codes/items).",
+      "title": "Horizontal position method name",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy",
+      "type": "string"
+    },
+    "horizontal_positional_accuracy_code": {
+      "description": "Indicates the accuracy of the latitude longitude values. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-accuracy-codes/items).",
+      "title": "Horizontal positional accuracy code",
+      "type": "string"
+    },
+    "hydrologic_unit_code": {
+      "description": "The hydrologic unit code (HUC) for the monitoring location. Supports prefix matching — querying with a shorter HUC (e.g. \"04\") matches all locations within that hydrologic region.",
+      "title": "Hydrologic unit code (HUC)",
+      "type": "string"
+    },
+    "id": {
+      "description": "A unique identifier for the peak value record.",
+      "title": "ID",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "minor_civil_division_code": {
+      "description": "Codes for primary governmental or administrative divisions of the county or county equivalent in which the monitoring location is located.",
+      "title": "Minor civil division code",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "monitoring_location_name": {
+      "description": "This is the official name of the monitoring location in the database. For well information this can be a district-assigned local number.",
+      "title": "Monitoring location name",
+      "type": "string"
+    },
+    "monitoring_location_number": {
+      "description": "Each monitoring location in the USGS data base has a unique 8- to 15-digit identification number.",
+      "title": "Monitoring location number",
+      "type": "string"
+    },
+    "month": {
+      "description": "The calendar month a peak occurred. If null, the month a peak occurred is unknown.",
+      "title": "Month",
+      "type": "integer"
+    },
+    "national_aquifer_code": {
+      "description": "National aquifers are the principal aquifers or aquifer systems in the United States, defined as regionally extensive aquifers or aquifer systems that have the potential to be used as a source of potable water. Not all groundwater monitoring locations can be associated with a National Aquifer. Such monitoring locations will not be retrieved using this search criteria. A list of National aquifer codes and names is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/national-aquifer-codes/items).",
+      "title": "National aquifer code",
+      "type": "string"
+    },
+    "original_horizontal_datum": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum",
+      "type": "string"
+    },
+    "original_horizontal_datum_name": {
+      "description": "Coordinates are published in EPSG:4326 / WGS84 / World Geodetic System 1984. This field indicates the original datum used to determine coordinates before they were converted. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/coordinate-datum-codes/items).",
+      "title": "Original horizontal datum name",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "peak_since": {
+      "description": "If not null, this record represents the peak value for the parameter code since the year contained in \"peak_since\".",
+      "title": "Peak since",
+      "type": "integer"
+    },
+    "qualifier": {
+      "description": "This field indicates any qualifiers associated with an observation, for instance if a sensor may have been impacted by ice or if values were estimated.",
+      "title": "Qualifier",
+      "type": "string"
+    },
+    "site_type": {
+      "description": "A description of the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type",
+      "type": "string"
+    },
+    "site_type_code": {
+      "description": "A code describing the hydrologic setting of the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/site-types/items).",
+      "title": "Monitoring location type code",
+      "type": "string"
+    },
+    "state_code": {
+      "description": "State code. A [two-digit ANSI code](https://www2.census.gov/geo/docs/reference/state.txt) (formerly FIPS code) as defined by the American National Standards Institute, to define States and equivalents. A three-digit ANSI code is used to define counties and county equivalents. [A lookup table is available.](https://www.census.gov/library/reference/code-lists/ansi.html#states) The only countries with political subdivisions other than the US are Mexico and Canada. The Mexican states have US state codes ranging from 81-86 and Canadian provinces have state codes ranging from 90-98.",
+      "title": "State code",
+      "type": "string"
+    },
+    "state_name": {
+      "description": "The name of the state or state equivalent in which the monitoring location is located.",
+      "title": "State name",
+      "type": "string"
+    },
+    "time": {
+      "description": "The date an observation represents. You can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `time` that intersects the value of datetime are selected. If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.",
+      "title": "Time",
+      "type": "string"
+    },
+    "time_of_day": {
+      "description": "The time of day a peak occurred. If null, the time of day a peak occurred is unknown.",
+      "title": "Time of Day",
+      "type": "string"
+    },
+    "time_series_id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the `id` field in the `time-series-metadata` endpoint.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "time_zone_abbreviation": {
+      "description": "A short code describing the time zone used by a monitoring location.",
+      "title": "Time zone abbreviation",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "uses_daylight_savings": {
+      "description": "A flag indicating whether or not a monitoring location uses daylight savings.",
+      "title": "Uses daylight savings flag",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value of the observation. Values are transmitted as strings in the JSON response format in order to preserve precision.",
+      "title": "Value",
+      "type": "string"
+    },
+    "vertical_datum": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum",
+      "type": "string"
+    },
+    "vertical_datum_name": {
+      "description": "The datum used to determine altitude and vertical position at the monitoring location. A list of codes is available at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/altitude-datums/items).",
+      "title": "Vertical datum name",
+      "type": "string"
+    },
+    "water_year": {
+      "description": "The water year (running from October 1st to September 30th) a peak occurred.",
+      "title": "Water Year",
+      "type": "integer"
+    },
+    "well_constructed_depth": {
+      "description": "The depth of the finished well, in feet below land surface datum. Note: Not all groundwater monitoring locations have information on Well Depth. Such monitoring locations will not be retrieved using this search criteria.",
+      "title": "Well constructed depth",
+      "type": "number"
+    },
+    "year": {
+      "description": "The calendar year a peak occurred.",
+      "title": "Year",
+      "type": "integer"
+    }
+  },
+  "time-series-metadata": {
+    "begin": {
+      "description": "The datetime of the earliest observation in the time series. Together with `end`, this field represents the period of record of a time series. Note that some time series may have large gaps in their collection record.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `begin` that intersects the value of datetime are selected.",
+      "title": "Time series first observation timestamp - UTC",
+      "type": "string"
+    },
+    "computation_identifier": {
+      "description": "Indicates the computation performed to calculate this time series. Values of \"Instantaneous\" reflect point measurements.",
+      "title": "Computation identifier",
+      "type": "string"
+    },
+    "computation_period_identifier": {
+      "description": "Indicates the period of data used for any statistical computations.",
+      "title": "Computation period identifier",
+      "type": "string"
+    },
+    "data_gap_interval": {
+      "description": "The time interval threshold used for gap detection in the time series.",
+      "title": "Data gap interval",
+      "type": "string"
+    },
+    "end": {
+      "description": "The datetime of the most recent observation in the time series. Data returned by this endpoint updates at most once per day, and potentially less frequently than that, and as such there may be more recent observations within a time series than the time series `end` value reflects. Together with `begin`, this field represents the period of record of a time series. It is additionally used to determine whether a time series is \"active\".\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `end` that intersects the value of datetime are selected.",
+      "title": "Time series most recent observation timestamp - UTC",
+      "type": "string"
+    },
+    "geometry": {
+      "description": "",
+      "title": null,
+      "type": null
+    },
+    "id": {
+      "description": "A unique identifier representing a single time series. This corresponds to the \"time_series_id\" field in other endpoints.",
+      "title": "Time series ID",
+      "type": "string"
+    },
+    "last_modified": {
+      "description": "The last time a record was refreshed in our database. This may happen due to regular operational processes and does not necessarily indicate anything about the measurement has changed.\nYou can query this field using date-times or intervals, adhering to RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded or half-bounded (double-dots at start or end).\nExamples:\n\n  - A date-time: \"2018-02-12T23:20:50Z\"\n  - A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n  - Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n  - Duration objects: \"P1M\" for data from the past month or \"PT36H\" for the last 36 hours\n\nOnly features that have a `last_modified` that intersects the value of datetime are selected.",
+      "title": "Last modified date",
+      "type": "string"
+    },
+    "monitoring_location_id": {
+      "description": "A unique identifier representing a single monitoring location. This corresponds to the `id` field in the `monitoring-locations` endpoint. Monitoring location IDs are created by combining the agency code of the agency responsible for the monitoring location (e.g. USGS) with the ID number of the monitoring location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).",
+      "title": "Monitoring location ID",
+      "type": "string"
+    },
+    "parameter_code": {
+      "description": "Parameter codes are 5-digit codes used to identify the constituent measured and the units of measure. A complete list of parameter codes and associated groupings can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items).",
+      "title": "Parameter code",
+      "type": "string"
+    },
+    "parameter_description": {
+      "description": "A description of what the parameter code represents, as used by WDFN and other USGS data dissemination products.",
+      "title": "Parameter description",
+      "type": "string"
+    },
+    "parameter_name": {
+      "description": "A human-understandable name corresponding to `parameter_code`.",
+      "title": "Parameter name",
+      "type": "string"
+    },
+    "parent_time_series_id": {
+      "description": "The unique identifier representing the parent or \"upchain\" time series that a daily values time series is generated from. Daily values time series have one and only one parent time series.",
+      "title": "Parent time series ID",
+      "type": "string"
+    },
+    "primary": {
+      "description": "A flag identifying if the time series is a \"primary\" time series. \"Primary\" time series (which have this flag) are standard observations which undergo [Bureau review and approval processes](https://www.usgs.gov/survey-manual/5028-fundamental-science-practices-review-and-approval-scientific-data-release). Non-primary time series, which will have missing values for \"primary\", are provisional datasets made available to meet the need for timely best science and to assist with daily operations which need real-time information. Non-primary time series data are only retained by this system for 120 days. See the [USGS Provisional Data Statement](https://waterdata.usgs.gov/provisional-data-statement/) for more information.",
+      "title": "Primary flag",
+      "type": "string"
+    },
+    "statistic_id": {
+      "description": "A code corresponding to the statistic an observation represents. Example codes include 00001 (max), 00002 (min), and 00003 (mean). A complete list of codes and their descriptions can be found at [https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items](https://api.waterdata.usgs.gov/ogcapi/v1/collections/statistic-codes/items).",
+      "title": "Statistic ID",
+      "type": "string"
+    },
+    "statistics_begin": {
+      "description": "When this field is populated, WDFN does not include data before this year when computing statistics. If the field is not populated, the full period of record is used.",
+      "title": "Year to begin computing statistics",
+      "type": "string"
+    },
+    "sublocation_identifier": {
+      "description": "An optional human-readable identifier used to specify where measurements are recorded at a monitoring location.",
+      "title": "Sublocation identifier",
+      "type": "string"
+    },
+    "thresholds": {
+      "description": "Thresholds represent known numeric limits for a time series, for example the historic maximum value for a parameter or a level below which a sensor is non-operative. These thresholds are sometimes used to automatically determine if an observation is erroneous due to sensor error, and therefore shouldn't be included in the time series.",
+      "title": "Operational thresholds",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "A human-readable description of the units of measurement associated with an observation.",
+      "title": "Unit of measure",
+      "type": "string"
+    },
+    "web_description": {
+      "description": "An optional description of the time series. WDFN and other USGS data dissemination products use this field, in combination with sublocation_identifier, to distinguish the differences between multiple time series for the same parameter code, statistic code, and monitoring location.",
+      "title": "Time series description",
+      "type": "string"
+    }
+  }
 }
