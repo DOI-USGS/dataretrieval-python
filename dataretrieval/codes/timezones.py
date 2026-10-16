@@ -1,10 +1,12 @@
 """Time zone information.
 
 Maps the time-zone abbreviations that services put beside a local date and
-time to UTC offsets. Several abbreviations name more than one zone worldwide;
-where they do, the entry follows the services' own code lists (the USGS
-time-zone codes and the WQX TimeZone domain), so ``GST`` is Guam Standard
-Time rather than Gulf Standard Time.
+time to UTC offsets. Several abbreviations name more than one zone worldwide.
+``GST`` follows the USGS time-zone codes and the WQX TimeZone domain, which
+both define it as Guam Standard Time (UTC+10), not Gulf Standard Time. Other
+entries that differ from the USGS list (``CCT``, ``EAST``, ``NFT``, ``NZDT``,
+``SST``, ``WAT``) have not been reconciled, and the two lists disagree with
+each other on ``SST``.
 """
 
 tz_str = """-1200 Y
