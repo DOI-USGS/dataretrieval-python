@@ -40,7 +40,8 @@ jobs:
       - name: Install analysis tooling
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[metrics,health]
+          # ``test`` for the queryables check, which lives in the test suite.
+          pip install -e .[metrics,health,test]
 
       - name: Structural analysis (pyscn)
         # One run writes both the JSON report (the numbers) and the HTML report.
@@ -100,6 +101,19 @@ jobs:
             echo '```'
           } > wily-summary.txt
 
+      - name: Queryables snapshot vs service
+        # The merge gate compares getter docstrings with the committed
+        # queryables snapshot offline, so it cannot see the snapshot itself
+        # go stale; this live read can. It is the refresh command a maintainer
+        # runs, with --check so nothing is rewritten. A non-zero exit means
+        # drift, or that the service could not be read; the log says which.
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          python -m tests.waterdata_queryables_test --check 2>&1 \
+            | tee queryables-drift.txt
+
       - name: Publish report
         # ``always()`` so a partial report still lands rather than a bare red X.
         if: always()
@@ -115,6 +129,11 @@ jobs:
             cat pyscn-sanity.txt 2>/dev/null || true
             echo '```'
             cat wily-summary.txt 2>/dev/null || true
+            echo '## Queryables snapshot vs service'
+            echo '```'
+            cat queryables-drift.txt 2>/dev/null \
+              || echo 'the queryables check produced no output'
+            echo '```'
             echo
             echo 'Full reports are attached to this run as the'
             echo '`code-health-report` artifact. Findings are advisory --'
@@ -132,5 +151,6 @@ jobs:
             pyscn-summary.txt
             pyscn-sanity.txt
             wily-summary.txt
+            queryables-drift.txt
           retention-days: 90
           if-no-files-found: warn

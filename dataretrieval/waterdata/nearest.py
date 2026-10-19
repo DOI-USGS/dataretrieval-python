@@ -139,8 +139,19 @@ def get_nearest_continuous(
         timestamp. Missing timestamps (``NaT``, ``None``, ``NaN``, or
         ``""``) are rejected.
     monitoring_location_id : string or iterable of strings, optional
+        A unique identifier representing a single monitoring location. This corresponds
+        to the ``id`` field in the ``monitoring-locations`` endpoint. Monitoring
+        location IDs are created by combining the agency code of the agency responsible
+        for the monitoring location (e.g. USGS) with the ID number of the monitoring
+        location (e.g. 02238500), separated by a hyphen (e.g. USGS-02238500).
+
         Forwarded to ``get_continuous``.
     parameter_code : string or iterable of strings, optional
+        Parameter codes are 5-digit codes used to identify the constituent measured and
+        the units of measure. A complete list of parameter codes and associated
+        groupings can be found at
+        https://api.waterdata.usgs.gov/ogcapi/v1/collections/parameter-codes/items.
+
         Forwarded to ``get_continuous``.
     window : string or ``pandas.Timedelta``, default ``"PT7M30S"``
         How far before and after each target to search, as an ISO 8601
