@@ -415,9 +415,9 @@ def get_providers(
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
         The 50 States, the District of Columbia, and the five U.S. territories.
-        Sent as the API's ``state`` field, as a postal code. Only one
-        State at a time — a multi-value state filter
-        returns no records for this collection.
+        Sent as the API's ``state`` field, as a postal code. Only one State at
+        a time — a multi-value state filter returns no records for this
+        collection.
     agency_code : str or iterable of str, optional
         Provider agency code.
     organization_type : str or iterable of str, optional

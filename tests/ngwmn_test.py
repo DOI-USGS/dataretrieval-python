@@ -616,7 +616,7 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
 def test_state_queryables_still_diverge_upstream():
     """The NGWMN ``sites`` and ``providers`` collections expose different state
     queryables (``sites`` -> ``state_name`` full name; ``providers`` -> ``state``
-    2-letter code). The single-``state`` shim (``ngwmn._STATE_QUERYABLE``) exists only
+    two-letter code). The single-``state`` shim (``ngwmn._STATE_QUERYABLE``) exists only
     to hide that asymmetry.
 
     If this test fails, the upstream API has unified the two queryables and the

@@ -872,7 +872,7 @@ def _display_progress(_adapter: str | None = None) -> str:
 #: How each setting renders in :func:`show_configuration`. Keyed by the same
 #: names as :data:`_ALL_SETTINGS`, and asserted to cover them, so a setting
 #: added to one without the other fails at import instead of printing a
-#: neighbouring setting's value in the one report that exists to report
+#: neighboring setting's value in the one report that exists to report
 #: provenance accurately.
 #:
 #: Every renderer takes the adapter to resolve for, so the adapter-override

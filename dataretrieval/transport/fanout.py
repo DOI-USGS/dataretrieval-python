@@ -100,7 +100,7 @@ class FanOutPlan(Protocol[_ChunkCo]):
     :meth:`FanOut.resume` keys completed work by position. The item type is
     whatever an adapter's own ``fetch`` accepts -- this executor passes each
     item through unchanged and never inspects it, so the OGC getters yield
-    kwargs dicts whereas Water Use yields ready :class:`httpx.Request` objects.
+    kwargs dicts, whereas Water Use yields ready :class:`httpx.Request` objects.
     The query's ``canonical_url`` is not part of the plan; it is an argument to
     :class:`FanOut`.
 

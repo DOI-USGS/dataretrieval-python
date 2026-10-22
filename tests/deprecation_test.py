@@ -1,4 +1,4 @@
-"""The behavioural claim: a downstream ``-W error::DeprecationWarning``
+"""The behavioral claim: a downstream ``-W error::DeprecationWarning``
 filter must not break the library."""
 
 import warnings

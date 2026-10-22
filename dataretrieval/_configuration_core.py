@@ -682,7 +682,7 @@ def _cwd_id() -> tuple[int, int]:
     Only identifies the directory; :func:`_resolve_against_cwd` is what turns a
     missing cwd into a :class:`ConfigurationError`. Both are needed, because ``stat``
     on a *deleted* working directory still succeeds -- the process holds the
-    open handle -- while resolving its path does not.
+    open handle -- whereas resolving its path does not.
     """
     try:
         st = os.stat(".")
@@ -773,7 +773,7 @@ def _coerce_count(value: object, label: str, optional: str) -> str:
 #: :data:`_VALIDATORS` holds its grammar. A roster with the completeness guard
 #: below rather than an if/elif chain with an implicit integer fallback, so a new
 #: setting must declare its type here or fail at import -- rather than parse as an
-#: integer without any error from the typed surfaces while the untyped environment
+#: integer without any error from the typed surfaces whereas the untyped environment
 #: accepts it. (Integers are matched as :class:`numbers.Integral` -- a numpy or pandas
 #: integer is a legitimate count from Python, and ``tomllib`` only ever yields ``int``,
 #: so the wider check cannot change a TOML outcome.)

@@ -7,7 +7,7 @@ whose URL byte length is a deterministic function of its inputs:
 - every multi-value list contributes ``len(",".join(map(str, v)))``,
 - the ``filter`` kwarg contributes ``len(filter)``.
 
-That isolates planner behaviour from the real HTTP request builder.
+That isolates planner behavior from the real HTTP request builder.
 The one exception is
 ``test_joint_planner_url_construction_long_filter_and_long_sites``,
 which uses the real ``_construct_api_requests`` so URL-encoding

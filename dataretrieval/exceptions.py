@@ -381,7 +381,7 @@ def parse_retry_after(value: str | None) -> float | None:
     the client retry sooner against a service that just named a long delay,
     and would deny the caller the number it needs on ``.retry_after``. Clock
     skew can inflate a date-form value, but accepting one leads to a recoverable
-    escalation while ignoring it leads to re-sending to a service that has
+    escalation whereas ignoring it leads to re-sending to a service that has
     already named a delay.
 
     A date that has *already* passed yields no value at all rather than

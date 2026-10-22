@@ -1990,7 +1990,7 @@ class TestNormalizeStrIterable:
 
         Regression for the gap PR #229 originally left on every multi-value
         parameter other than ``monitoring_location_id``. Pre-fix, the Series
-        was passed through to ``requests`` which str-serialized it into the
+        was passed through to ``requests``, which str-serialized it into the
         URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
         it to ``list`` at the function boundary.
         """

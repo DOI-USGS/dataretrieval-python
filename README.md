@@ -111,7 +111,7 @@ print(f"Retrieved {len(df)} records")
 print(f"Site: {df['monitoring_location_id'].iloc[0]}")
 print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
 ```
-Retrieve streamflow at multiple locations from October 1, 2024 to the present:
+Retrieve streamflow at multiple locations from October 1, 2024, to the present:
 
 ```python
 df, metadata = waterdata.get_daily(
@@ -229,7 +229,7 @@ sites, metadata = ngwmn.get_sites(state="Wisconsin")
 
 print(f"Found {len(sites)} NGWMN sites in Wisconsin")
 
-# Pull water levels from the first twenty sites over a time window.
+# Pull water levels from the first 20 sites over a time window.
 water_levels, metadata = ngwmn.get_water_level(
     monitoring_location_id=sites["monitoring_location_id"][:20],
     datetime=["2022-01-01", "2024-01-01"],

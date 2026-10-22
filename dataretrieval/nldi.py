@@ -89,7 +89,7 @@ def _query_nldi(
         response_data = response.json()
     except JSONDecodeError:
         # even with a 200 status code, the response sometimes does not return JSON
-        # data which causes a JSONDecodeError
+        # data, which causes a JSONDecodeError
         pass
     return response_data
 

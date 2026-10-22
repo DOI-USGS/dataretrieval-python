@@ -100,7 +100,7 @@ def require_one_of(
         A further step, for a vocabulary narrower than the service's: how to
         obtain what this function does not accept. Added rather than
         substituted -- unlike the checks below, there is no derived remedy
-        here, since naming the options *is* the message.
+        here, because naming the options *is* the message.
 
     Raises
     ------

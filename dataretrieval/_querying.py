@@ -2,7 +2,7 @@
 
 "Compose a USGS query URL, send it, map the status, retry a transient" -- the
 half of the old ``utils`` module that issues requests, as used by ``wqp``,
-``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
+``nldi``, ``streamstats``, and ``nwdc``. Its other half (pandas
 column reshaping) shared nothing with this but a filename: no caller used both,
 and the two have disjoint dependencies -- this one needs ``exceptions`` and
 ``transport``, that one needs ``codes`` and pandas.

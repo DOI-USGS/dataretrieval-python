@@ -115,7 +115,7 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
     A usability check, not a security control (ADR 0009). It gives the caller who
     guesses that a credential goes here a ``TypeError`` naming ``with
     configure(Configuration(api_key=...)):`` instead of a token in a URL -- the bare
-    call is a no-op, since ``configure`` is a context manager.
+    call is a no-op, because ``configure`` is a context manager.
     """
     forbidden = set()
     for name in names:

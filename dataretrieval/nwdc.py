@@ -149,9 +149,10 @@ def get_wateruse(
         variable; omitting it returns a 400 listing the model's valid variable
         IDs (raised as a :class:`~dataretrieval.exceptions.DataRetrievalError`).
     state : string, int, or iterable, optional
-        One or more U.S. States or territories to query. Each accepts a full name
-        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS
-        code (``"55"`` or ``55``), matching :func:`dataretrieval.ngwmn.get_sites`.
+        One or more U.S. States or territories to query. Each accepts a full
+        name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
+        two-digit ANSI/FIPS code (``"55"`` or ``55``), matching
+        :func:`dataretrieval.ngwmn.get_sites`.
     county : string or iterable, optional
         One or more five-digit county FIPS codes — State FIPS + county FIPS,
         e.g. ``"55025"`` for Dane County, Wisconsin.

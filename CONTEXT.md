@@ -66,7 +66,7 @@ rate limit, a service error, a timeout. Distinguished from a **deterministic
 failure**, which would fail identically every time — an unresolvable hostname,
 an unsupported scheme, a malformed request. Only transient failures are
 retried, and only transient failures produce a resumable interruption. Both
-answers follow from one judgement about what a failure means, and must be
+answers follow from one judgment about what a failure means, and must be
 consistent.
 
 **Stall timeout** — How long a call may receive nothing at all before retrying

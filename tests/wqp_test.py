@@ -85,7 +85,7 @@ def test_get_results_preserves_leading_zero_codes(httpx_mock):
 
 
 def test_get_results(httpx_mock):
-    """Tests water quality portal ratings query"""
+    """Tests Water Quality Portal ratings query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762"
         "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
@@ -110,7 +110,7 @@ def test_get_results(httpx_mock):
 
 
 def test_get_results_WQX3(httpx_mock):
-    """Tests water quality portal results query with new WQX3.0 profile"""
+    """Tests Water Quality Portal results query with new WQX3.0 profile"""
     request_url = (
         "https://www.waterqualitydata.us/wqx3/Result/search?siteid=WIDNR_WQX-10032762"
         "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"

@@ -133,9 +133,9 @@ def get_monitoring_locations(
         county equivalents. A `lookup table
         <https://www.census.gov/library/reference/code-lists/ansi.html#states>`_
         is available. The only countries with
-        political subdivisions other than the US are Mexico and Canada. The Mexican
-        states have U.S. State codes ranging from 81 to 86 and Canadian provinces have
-        State codes ranging from 90 to 98.
+        political subdivisions other than the US are Mexico and Canada. The
+        Mexican states have U.S. state codes ranging from 81 to 86 and Canadian
+        provinces have state codes ranging from 90 to 98.
     state_name : string or iterable of strings, optional
         The name of the State or State equivalent in which the monitoring location
         is located.
@@ -163,7 +163,7 @@ def get_monitoring_locations(
         each other, from the smallest (cataloging units) to the largest
         (regions).
     basin_code : string or iterable of strings, optional
-        The Basin Code or "drainage basin code" is a two-digit code that further
+        The Basin Code or "drainage basin code" is a 2-digit code that further
         subdivides the 8-digit hydrologic-unit code. The drainage basin code is
         defined by the USGS State Office where the monitoring location is
         located.

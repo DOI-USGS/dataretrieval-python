@@ -1720,7 +1720,7 @@ def test_a_loaded_profile_beats_the_environment(config_file, monkeypatch):
     those two rules alone predict that ``API_USGS_CONCURRENT`` in the shell takes
     precedence. It does not: what enters the chain is the caller *naming* the profile in
     code, which is a more deliberate act than a variable inherited from whatever started
-    the process, and being overridden by that variable is the behaviour a caller would
+    the process, and being overridden by that variable is the behavior a caller would
     report as a bug.
 
     The inversion is also bounded, which the second half asserts: it covers
@@ -1813,9 +1813,9 @@ def test_the_package_built_in_default_is_the_floor(config_file):
 def test_the_top_two_rungs_cannot_tie(config_file):
     """Rungs 1 and 2 both target one adapter, so no block can hold both.
 
-    That is what sis the highest rung of the ladder needing a tie-break rule nobody
-    could remember: the same-adapter rule rejects the pairing where the order would
-    matter, and between *nested* blocks the ordinary rule applies -- the innermost
+    That is what spares the highest rung of the ladder from needing a tie-break rule
+    nobody could remember: the same-adapter rule rejects the pairing where the order
+    would matter, and between *nested* blocks the ordinary rule applies -- the innermost
     decides, whichever kind of configuration it holds.
     """
     config_file(_LADDER_FILE)
