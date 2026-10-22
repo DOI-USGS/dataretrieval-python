@@ -4,7 +4,8 @@ ADR 0005: Quarantine and retire legacy NWIS
 Status
 ------
 
-Accepted
+Accepted; completed -- ``dataretrieval.nwis`` removed in the next major release
+(2026-10), ahead of the 2027-05-06 horizon.
 
 Context
 -------
@@ -43,7 +44,8 @@ Consequences
 Compliance
 ----------
 
-Deprecation tests verify one warning per public call and validate named Water
-Data replacements. The ``nwis-quarantine`` contract in ``.importlinter``
-prevents modern package modules from importing ``dataretrieval.nwis``, directly
-or through an intermediary.
+Note (2026-10): ``dataretrieval.nwis`` has been removed, so
+``import dataretrieval.nwis`` raises ``ModuleNotFoundError`` and the
+``nwis-quarantine`` contract that once kept modern modules from importing it is
+deleted. The deprecation tests that verified one warning per public call and
+named Water Data replacements are gone with the module.

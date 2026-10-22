@@ -95,7 +95,9 @@ collection families independent of each other, restricts the facade-only
 consumers (NGWMN and ``waterdata.cql``) to the OGC facade, and prevents one
 adapter from importing another. The identifier-column rule is covered by
 ``tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero`` and the equivalent
-leading-zero assertions in the WQP and NWIS adapter tests.
+leading-zero assertions in the WQP adapter tests. Note (2026-10): the NWIS
+adapter tests that once asserted the same rule were removed with
+``dataretrieval.nwis``.
 
 Notes
 -----

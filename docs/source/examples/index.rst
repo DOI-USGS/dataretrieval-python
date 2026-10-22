@@ -6,9 +6,9 @@ Examples
 
 Introduction to the ``waterdata`` module of ``dataretrieval``
 -------------------------------------------------------------
-The ``waterdata`` module will replace the ``nwis`` module as the primary
-set of data download functions for USGS water data. This Jupyter notebook
-covers a basic introduction to module functions and usage.
+The ``waterdata`` module is the primary set of data download functions for
+USGS water data. This Jupyter notebook covers a basic introduction to module
+functions and usage.
 
 .. toctree::
     :maxdepth: 1
@@ -31,6 +31,7 @@ functions and is executed against the live USGS Water Data API.
     USGS_WaterData_DailyStatistics_Examples
     USGS_WaterData_ContinuousData_Examples
     USGS_WaterData_ReferenceLists_Examples
+    USGS_WaterUse_Examples
     USGS_NGWMN_Examples
 
 Simple uses of the ``dataretrieval`` package
@@ -70,7 +71,8 @@ project repository.
     USGS_WaterData_Statistics_Examples
     USGS_WaterData_UnitValues_Examples
     USGS_WaterData_Samples_Examples
-    USGS_NWIS_WaterUse_Examples
+    USGS_NLDI_Examples
+    USGS_NWDC_WaterUse_Examples
 
 
 Using ``dataretrieval`` to obtain nation trends in peak annual streamflow

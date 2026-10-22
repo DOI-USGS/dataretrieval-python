@@ -91,7 +91,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     A per-call setting rather than an environment variable, and scoped to a
     ``with`` block: ADR 0009. Outside any block the getters use the
     conservative default. Only the OGC getters (Water Data, NGWMN) read this;
-    wrapping a legacy NWIS call in the block is a no-op.
+    wrapping a single-shot call (WQP, NLDI, StreamStats) in the block is a no-op.
 
     Parameters
     ----------

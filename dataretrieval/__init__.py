@@ -6,14 +6,9 @@ Access each service through its submodule::
 
     df, meta = waterdata.get_daily(monitoring_location_id="USGS-05427718")
 
-    from dataretrieval import nwis  # legacy NWIS services
-
-    df, meta = nwis.get_dv(sites="05427718")
-
 Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
 ``nwdc`` (National Water Availability Assessment Data Companion, incl.
-water use), ``nldi``, ``streamstats``, and the
-deprecated ``nwis``.
+water use), ``nldi``, and ``streamstats``.
 
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
@@ -56,7 +51,6 @@ from dataretrieval.exceptions import (
     DataRetrievalError,
     HTTPError,
     NetworkError,
-    NoSitesError,
     RateLimited,
     RequestTooLarge,
     ServiceUnavailable,
@@ -89,7 +83,6 @@ from . import (
     exceptions,
     ngwmn,
     nwdc,
-    nwis,
     streamstats,
     utils,
     waterdata,
@@ -105,7 +98,6 @@ __all__ = [
     # service modules
     "ngwmn",
     "nwdc",
-    "nwis",
     "streamstats",
     "utils",
     "waterdata",
@@ -117,7 +109,6 @@ __all__ = [
     "DataRetrievalError",
     "HTTPError",
     "NetworkError",
-    "NoSitesError",
     "RateLimited",
     "RequestTooLarge",
     "ServiceUnavailable",

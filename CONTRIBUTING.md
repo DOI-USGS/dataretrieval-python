@@ -177,8 +177,8 @@ restructuring.
 
 `lint-imports` checks the dependency contracts declared in
 [`.importlinter`](.importlinter) against the *transitive* import graph: the layer
-stack, which modules may consume OGC, NGWMN's facade-only seam, the NWIS
-quarantine, and collection-family independence.
+stack, which modules may consume OGC, NGWMN's facade-only seam, and
+collection-family independence.
 
 **That file is the only place dependency direction is enforced.** These rules
 were once asserted a second time in `tests/architecture_test.py` by hand-parsing
@@ -246,16 +246,14 @@ link checking.
 * The public interface should emphasize functions over classes; classes can and
   should be used internally and in tests.
 * Group public download functions by service. For example, modern Water
-  Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
-  remain quarantined in `dataretrieval.nwis` during deprecation.
+  Data functions belong in `dataretrieval.waterdata`.
 * Treat a change to a service's documented return shape or metadata type as a
   public compatibility change; update contract tests and architecture
   documentation and follow the deprecation process where required.
 * Preserve the dependency direction documented in
   [`docs/source/architecture`](docs/source/architecture/index.rst): public
   facades depend on service/protocol adapters, which depend on stable shared
-  policy and infrastructure. Shared OGC code must not import service adapters,
-  and modern modules must not depend on legacy NWIS.
+  policy and infrastructure. Shared OGC code must not import service adapters.
 * Treat underscore-prefixed helpers as implementation details. Existing
   cross-package uses are documented variances, not extension points for new
   code.

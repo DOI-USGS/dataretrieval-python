@@ -105,7 +105,8 @@ Consequences
 - The recurring question -- may this docstring say *site*? -- has an answer that
   does not depend on who is reviewing. In ``nwis`` it may, because that is the
   spelling its service and its parameters use. In ``transport`` it may not,
-  because nothing there is about NWIS.
+  because nothing there is about NWIS. (Note (2026-10): the ``nwis`` module has
+  since been removed; the example stands as the reasoning that applied to it.)
 - Enforcement splits. A core term can be checked mechanically, since one
   spelling is correct everywhere. A domain term cannot: the correct spelling
   depends on which adapter the prose is about, so it stays a review judgement.

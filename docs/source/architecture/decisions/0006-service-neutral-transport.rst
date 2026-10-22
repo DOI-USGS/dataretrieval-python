@@ -76,8 +76,7 @@ gateway statuses, because its service responds to a *rejected query* with a
 500, and re-sending that would spend a caller's quota on a request that
 cannot succeed. Both sets are narrower than ``DataRetrievalError.retryable``,
 deliberately: that field indicates re-issuing might work, where spending
-someone's quota unasked needs a stricter criterion. Deprecated NWIS calls
-retain their compatibility behavior. A failed pagination or fan-out operation
+someone's quota unasked needs a stricter criterion. A failed pagination or fan-out operation
 raises rather than returning successful siblings as an apparently complete
 result -- with one narrow exception for a fan-out over independent items,
 recorded in :doc:`0004-error-retry-resume`.

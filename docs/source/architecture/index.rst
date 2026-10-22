@@ -54,7 +54,7 @@ The package is the layer between Python callers and remote hydrologic services::
                     |
                     v
     USGS Water Data APIs, NGWMN, NWDC Water Use,
-    Water Quality Portal, NLDI, StreamStats, legacy NWIS
+    Water Quality Portal, NLDI, StreamStats
 
 The remote services own their schemas, paging mechanisms, rate limits, and
 availability. The library adapts those differences to documented Python
@@ -88,10 +88,6 @@ Public service adapters
 ``dataretrieval.wqp``, ``dataretrieval.nldi``, and ``dataretrieval.streamstats``
     Service-specific adapters over shared synchronous HTTP and bounded retry
     policy. Their return types intentionally reflect their upstream data models.
-
-``dataretrieval.nwis``
-    Deprecated legacy NWIS adapter, scheduled for removal on or after
-    2027-05-06. Modern code must not depend on it.
 
 Shared components
 ^^^^^^^^^^^^^^^^^
@@ -169,8 +165,8 @@ Shared components
     behavior there.
 
 ``dataretrieval._querying``
-    The one-shot HTTP query path the single-request adapters (``nwis``,
-    ``wqp``, ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
+    The one-shot HTTP query path the single-request adapters (``wqp``,
+    ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
     it, map the status, retry a transient. It was moved out of ``utils`` because the two
     halves were in one file for no other reason -- this one depends on
     ``exceptions`` and ``transport``, the shaping half on ``codes`` and
@@ -240,8 +236,6 @@ service into one return shape:
 - StreamStats functions return raw ``httpx.Response`` objects or the
   service-specific ``Watershed`` domain object, depending on the requested
   format.
-- Deprecated NWIS functions retain their established DataFrame and legacy
-  metadata contracts through the published deprecation window.
 
 Changing one of these shapes is a public compatibility change and requires the
 project's deprecation process; consistency alone is not sufficient reason.
@@ -296,8 +290,7 @@ architecturally is the behavior around them:
     bounded ``Retry-After`` values. Only failures that may not recur on a later
     attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
     itself, and not a transport failure that is determined before the request
-    is sent (unresolvable host, unsupported scheme). Deprecated NWIS
-    compatibility paths do not opt in.
+    is sent (unresolvable host, unsupported scheme).
 
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and

@@ -7,7 +7,7 @@ import numpy
 import pandas as pd
 import pytest
 
-from dataretrieval import _querying, _wqx, exceptions, nwis, utils
+from dataretrieval import _querying, _wqx, exceptions, utils
 
 
 class Test_Ambient:
@@ -28,19 +28,20 @@ class Test_Ambient:
 
 
 class Test_query:
-    """Tests of the query function (mocked — no live NWIS calls)."""
+    """Tests of the query function (mocked — no live calls)."""
 
     def test_url_too_long(self, httpx_mock):
         """A 413 / 414 from the service (an over-long query URL, Issue #64) is
         raised as the typed URLTooLong."""
+        url = "https://example.invalid/x"
         httpx_mock.add_response(method="GET", status_code=414)
         with pytest.raises(exceptions.URLTooLong):
-            nwis.get_iv(sites=["01491000", "01491001"])
+            utils.query(url, {"sites": ["01491000", "01491001"]})
 
     def test_header(self, httpx_mock):
         """query() sends a User-Agent header and returns the response."""
         httpx_mock.add_response(method="GET", json={"value": {"timeSeries": []}})
-        url = "https://waterservices.usgs.gov/nwis/dv"
+        url = "https://example.invalid/x"
         payload = {
             "format": "json",
             "startDT": "2010-10-01",
@@ -52,22 +53,8 @@ class Test_query:
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
-    def test_no_sites_detection_respects_response_charset(self, httpx_mock):
-        """The legacy sentinel is checked after HTTP charset decoding."""
-        url = "https://example.invalid/x"
-        body = "No sites/data found".encode("utf-16")
-        httpx_mock.add_response(
-            method="GET",
-            url=url,
-            content=body,
-            headers={"Content-Type": "text/plain; charset=utf-16"},
-        )
-
-        with pytest.raises(exceptions.NoSitesError):
-            utils.query(url, {})
-
     def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
-        """The public legacy adapter still raises the first transient failure."""
+        """The public legacy query path still raises the first transient failure."""
         url = "https://example.invalid/x"
         request_url = f"{url}?a=1"
         httpx_mock.add_response(method="GET", url=request_url, status_code=503)
@@ -80,7 +67,8 @@ class Test_query:
         assert len(httpx_mock.get_requests()) == 1
 
     def test_opt_in_retry_recovers_from_transient(self, httpx_mock, monkeypatch):
-        """Active adapters can opt into bounded retry without changing NWIS."""
+        """Active adapters can opt into bounded retry without changing the
+        single-shot query path."""
         import dataretrieval.transport.retry as retry
 
         url = "https://example.invalid/x"
@@ -168,10 +156,8 @@ class Test_error_taxonomy:
         """Every error exposes ``.status_code`` / ``.retry_after`` / ``.retryable``
         so a base ``except DataRetrievalError as e`` can branch and retry without
         an ``AttributeError`` on the types that lack a status (URLTooLong,
-        NetworkError, NoSitesError, ...). ``.retryable`` marks the 429/5xx and
+        NetworkError, ...). ``.retryable`` marks the 429/5xx and
         connection failures."""
-        import httpx
-
         # (error, status_code, retry_after, retryable)
         cases = [
             (exceptions.error_for_status(404, "x"), 404, None, False),
@@ -179,7 +165,6 @@ class Test_error_taxonomy:
             (exceptions.error_for_status(503, "x"), 503, None, True),
             (exceptions.error_for_status(414, "x"), None, None, False),  # URLTooLong
             (exceptions.NetworkError("x"), None, None, True),
-            (exceptions.NoSitesError(httpx.URL("https://x/y")), None, None, False),
             (exceptions.Unchunkable("x"), None, None, False),
         ]
         for err, status, retry_after, retryable in cases:
@@ -187,31 +172,18 @@ class Test_error_taxonomy:
             assert err.retry_after == retry_after, err
             assert err.retryable is retryable, err
 
-    def test_no_sites_error_is_data_retrieval_error(self):
-        """``NoSitesError`` (the legacy nwis no-data signal) derives from
-        ``DataRetrievalError`` and is not a builtin ``ValueError``, so it is
-        caught by the unified ``except dataretrieval.DataRetrievalError``."""
-        assert issubclass(exceptions.NoSitesError, exceptions.DataRetrievalError)
-        assert not issubclass(exceptions.NoSitesError, ValueError)
-        import dataretrieval
-
-        assert dataretrieval.NoSitesError is exceptions.NoSitesError
-
     def test_typed_errors_survive_pickle_and_deepcopy(self):
         """Typed errors round-trip through pickle/deepcopy -- they get pickled
         back from multiprocessing / lithops workers, and their constructor fields
-        (status_code, retry_after, url) must be preserved."""
+        (status_code, retry_after) must be preserved."""
         import copy
         import pickle
-
-        import httpx
 
         samples = [
             exceptions.error_for_status(404, "not found"),  # bare HTTPError
             exceptions.error_for_status(429, "slow down", retry_after=5.0),
             exceptions.error_for_status(503, "down"),
             exceptions.TransientError("boom", status_code=502, retry_after=1.5),
-            exceptions.NoSitesError(httpx.URL("https://example.invalid/x?a=1")),
             exceptions.NetworkError("could not reach the service"),
         ]
         for err in samples:
@@ -222,8 +194,6 @@ class Test_error_taxonomy:
                     assert revived.status_code == err.status_code
                 if isinstance(err, exceptions.TransientError):
                     assert revived.retry_after == err.retry_after
-                if isinstance(err, exceptions.NoSitesError):
-                    assert revived.url == err.url
 
     def test_waterdata_exceptions_share_the_root(self):
         """waterdata's typed exceptions are ``DataRetrievalError`` too, so one
@@ -338,7 +308,7 @@ class Test_BaseMetadata:
         assert md.query_time is not None
         assert md.header is not None
 
-        # site_info is abstract on BaseMetadata; only nwis/wqp implement it.
+        # site_info is abstract on BaseMetadata; only wqp implements it.
         with pytest.raises(NotImplementedError):
             _ = md.site_info
 

@@ -1,17 +1,16 @@
-"""The one-shot HTTP query path behind the legacy service adapters.
+"""The one-shot HTTP query path behind the single-request service adapters.
 
 "Compose a USGS query URL, send it, map the status, retry a transient" -- the
-half of the old ``utils`` module that issues requests, as used by ``nwis``,
-``wqp``, ``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
+half of the old ``utils`` module that issues requests, as used by ``wqp``,
+``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
 column reshaping) shared nothing with this but a filename: no caller used both,
 and the two have disjoint dependencies -- this one needs ``exceptions`` and
 ``transport``, that one needs ``codes`` and pandas.
 
 The module is private because the *names* are not: ``query`` and ``to_str`` keep
 their documented ``dataretrieval.utils`` path, the way ``Ambient`` and
-``BaseMetadata`` do from their own implementation leaves. This is legacy
-code for the deprecated single-request adapters; new service code uses
-the chunked transport instead.
+``BaseMetadata`` do from their own implementation leaves. This path serves the
+single-request adapters; the chunked services use the chunked transport instead.
 """
 
 from __future__ import annotations
@@ -22,7 +21,6 @@ from typing import Any
 import httpx
 
 from dataretrieval.exceptions import (
-    NoSitesError,
     URLTooLong,
     error_for_status,
     parse_retry_after,
@@ -81,8 +79,7 @@ _URL_TOO_LONG_EXAMPLE = """
                     data_list = []  # list to store chunk results in \n
                     # loop through chunks and make requests \n
                     for site_list in split_list: \n
-                        data = nwis.get_record(sites=site_list, service='dv', \n
-                                               start=start, end=end) \n
+                        data, _ = wqp.get_results(siteid=site_list) \n
                         data_list.append(data)  # append results to list"""
 
 
@@ -101,7 +98,7 @@ def _raise_for_status(
 ) -> None:
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response.
 
-    A success status returns ``None``. Shared by the legacy :func:`query` path
+    A success status returns ``None``. Shared by the single-request :func:`query` path
     (and ``streamstats`` / ``nwdc``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
@@ -215,11 +212,6 @@ def _query_with_retry(
         **HTTPX_DEFAULTS,
     )
 
-    # USGS waterservices reports an empty result with a 200 whose body starts
-    # "No sites/data ..." (its legacy wording); raise it as NoSitesError.
-    if response.text.startswith("No sites/data"):
-        raise NoSitesError(response.url)
-
     return response
 
 
@@ -255,8 +247,7 @@ def query(
     DataRetrievalError
         On an HTTP error response, the typed subclass for the status (see
         :func:`dataretrieval.exceptions.error_for_status` for the mapping); or
-        :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response
-        reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`
+        :class:`~dataretrieval.exceptions.NetworkError`
         on a connection-level failure (timeout, DNS), with the underlying
         ``httpx`` exception on ``__cause__``.
     """

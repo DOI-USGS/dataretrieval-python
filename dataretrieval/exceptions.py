@@ -1,6 +1,6 @@
 """Exception taxonomy for ``dataretrieval``.
 
-Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
+Every service module (``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
@@ -12,7 +12,7 @@ Most failures are an :class:`HTTPError` holding the response ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
-:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
+and :class:`ConfigurationError` for an unusable setting.
 :func:`error_for_status` maps a status to its type. ``ConfigurationError`` is
 the one member that is not a request failure at all: it reports an unusable
 setting or config file, raised from wherever a setting is first resolved --
@@ -32,10 +32,7 @@ from __future__ import annotations
 import math
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import TYPE_CHECKING, Any, ClassVar
-
-if TYPE_CHECKING:
-    import httpx
+from typing import Any, ClassVar
 
 __all__ = [
     "DataRetrievalError",
@@ -47,7 +44,6 @@ __all__ = [
     "URLTooLong",
     "Unchunkable",
     "NetworkError",
-    "NoSitesError",
     "ConfigurationError",
     "DataCurrencyWarning",
     "SkippedItemWarning",
@@ -209,7 +205,7 @@ class RateLimited(TransientError):
 class ServiceUnavailable(TransientError):
     """A request was rejected with a server error (HTTP 5xx).
 
-    Raised by both the legacy ``query`` path and the Water Data path, so a 5xx
+    Raised by both the single-request ``query`` path and the Water Data path, so a 5xx
     is raised as one type whichever subsystem issued the request. ``.status_code``
     holds the actual 5xx; it falls back to 503 only on a bare hand-construction.
     """
@@ -233,7 +229,7 @@ class RequestTooLarge(DataRetrievalError):
 class URLTooLong(RequestTooLarge):
     """A single request URL was too long for the service.
 
-    Raised on the legacy ``query`` path (which sends one un-chunked request),
+    Raised on the single-request ``query`` path (which sends one un-chunked request),
     whether the URL is rejected client-side before sending or by the server
     (see :func:`error_for_status`). Remediation: query fewer sites, or split the
     call manually.
@@ -280,27 +276,6 @@ class ConfigurationError(DataRetrievalError, ValueError):
     catches it, and code that already treats an invalid setting as a
     :class:`ValueError` keeps working. The dual base is ADR 0009.
     """
-
-
-# --- Empty result --------------------------------------------------------
-
-
-class NoSitesError(DataRetrievalError):
-    """A request succeeded (HTTP 200) but matched no sites/data.
-
-    A no-data result is normally **not** an error: the modern getters
-    (``waterdata``, ``wqp``, ``nldi``) return an empty ``DataFrame``. Only the
-    deprecated ``nwis`` (waterservices) path still raises this.
-    """
-
-    def __init__(self, url: httpx.URL) -> None:
-        self.url = url
-
-    def __str__(self) -> str:
-        return (
-            "No sites/data found using the selection criteria specified in "
-            f"url: {self.url}"
-        )
 
 
 # --- Upstream data currency -----------------------------------------------
@@ -364,7 +339,7 @@ def error_for_status(
 ) -> DataRetrievalError:
     """Return the typed :class:`DataRetrievalError` for an HTTP error *status*.
 
-    The one status-to-type mapping every request path shares (the legacy
+    The one status-to-type mapping every request path shares (the single-request
     ``query`` path, ``waterdata``, ``streamstats``), so a given status
     becomes the same type everywhere:
 

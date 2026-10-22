@@ -171,7 +171,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-unused-arguments]
-# Retired ``nwis`` functions accept unused ``**kwargs`` to report replacements.
+# Getters with a ``**kwargs`` passthrough (Water Data's ``**queryables``, WQP's
+# search filters) accept variadic parameters a given call may not consume.
 # Exempt variadic parameters while checking named parameters with ARG001.
 ignore-variadic-names = true
 

@@ -44,8 +44,10 @@ Compliance
 ----------
 
 ``.importlinter`` prevents shared OGC infrastructure from importing service
-adapters and prevents modern modules from depending on legacy NWIS;
-``lint-imports`` checks it in pre-commit and CI. A package-wide fitness function
-requires the runtime import graph, including package facades, to stay acyclic.
-The installed-wheel CI job verifies that the whole monolith ships as one usable
-artifact.
+adapters; ``lint-imports`` checks it in pre-commit and CI. A package-wide
+fitness function requires the runtime import graph, including package facades,
+to stay acyclic. The installed-wheel CI job verifies that the whole monolith
+ships as one usable artifact.
+
+Note (2026-10): ``dataretrieval.nwis`` was removed, so the contract that kept
+modern modules from depending on legacy NWIS is deleted with the module.

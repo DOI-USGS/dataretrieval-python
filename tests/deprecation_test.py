@@ -33,9 +33,11 @@ def test_data_currency_is_not_a_deprecation():
 
 def test_warn_deprecated_names_replacement_and_horizon():
     with pytest.warns(
-        DeprecationWarning, match=r"on or after 2027-05-06.*use `x` instead"
+        DeprecationWarning, match=r"on or after 2027-08-11.*use `x` instead"
     ):
-        warn_deprecated("`nwis.get_dv`", replacement="`x`", removal=REMOVALS["nwis"])
+        warn_deprecated(
+            "`dataretrieval.wateruse`", replacement="`x`", removal=REMOVALS["wateruse"]
+        )
 
 
 def test_warn_deprecated_without_a_date_promises_nothing_specific():

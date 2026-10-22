@@ -106,8 +106,11 @@ what the service offers.
 **NLDI** — The Network Linked Data Index, which navigates the hydrologic network
 from an origin to connected features, flowlines, or basins.
 
-**NWIS** — The legacy USGS waterservices interface. Deprecated: it is retained
-for compatibility and should receive no new work.
+**NWIS** — The legacy USGS waterservices interface. Retired: the
+`dataretrieval.nwis` adapter was removed in the next major release (2026-10),
+so `import dataretrieval.nwis` raises `ModuleNotFoundError`. The term is kept
+because "NWIS" survives as a data-provider name and data value in other services
+(WQP `providers=NWIS`, the USGS NWIS time-zone code list) and in this history.
 
 **StreamStats** — Basin characteristics and delineation for a point on a stream.
 
@@ -121,14 +124,10 @@ collections. The distinction matters because the OGC code is shared: the
 same code path retrieves a Water Data collection and an NGWMN one, and only the
 service differs.
 
-*Domain term.* Water Data and NGWMN say `collection`; legacy NWIS says
-`service=` (`'dv'`, `'peaks'`); WQP names its collections as profiles
-(`Result`, `Station`, `Activity`). Those parameters are frozen public surface
-and keep their spelling. Prose says *collection*, including prose about the
-adapters that spell it otherwise — with one exception: deprecated NWIS keeps
-`service` in its docstrings as well as its parameters. Describing a parameter
-in a term its own module never uses helps nobody, and a module being retired is
-not where new vocabulary should be introduced.
+*Domain term.* Water Data and NGWMN say `collection`; WQP names its collections
+as profiles (`Result`, `Station`, `Activity`). Those parameters are frozen
+public surface and keep their spelling. Prose says *collection*, including prose
+about the adapters that spell it otherwise.
 
 **Collection family** — A group of collections sharing a shape and therefore a
 getter signature. Their getters deliberately resemble one another; the
@@ -137,8 +136,8 @@ resemblance is the public contract, not duplication to be removed.
 **Monitoring location** — A place where measurements are recorded.
 
 *Domain term.* The services differ, and each adapter keeps its own service's
-spelling in its parameters: NWIS `site_no` and `sites=`, WQP `Station` and
-`siteid`, Water Data `monitoring_location_id`, NGWMN's `sites` collection. Where
+spelling in its parameters: WQP `Station` and `siteid`, Water Data
+`monitoring_location_id`, NGWMN's `sites` collection. Where
 a service names a thing `site-types` or `site_type_code`, that is its vocabulary
 and is reproduced rather than translated. Prose that is not about one particular
 adapter says *monitoring location*.
@@ -264,7 +263,7 @@ adapter supplies one and the shared code reads it, which is how protocol code
 stays free of service names.
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
-WQP, NLDI, StreamStats, and deprecated NWIS. Nothing divides and nothing
+WQP, NLDI, and StreamStats. Nothing divides and nothing
 distributes, so `concurrency` and `parallel_chunks` are not part of its
 vocabulary. NWDC is not one: its query fans out per location even though it
 never chunks by bytes.

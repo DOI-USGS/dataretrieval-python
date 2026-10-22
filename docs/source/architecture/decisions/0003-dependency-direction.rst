@@ -48,10 +48,14 @@ Compliance
 
 ``.importlinter`` is the single authority for dependency direction. It declares
 the layer stack, the allowlist of OGC consumers, the facade-only seam, OGC's
-independence from legacy utilities, the NWIS quarantine, and collection-family
+independence from legacy utilities, and collection-family
 independence; ``lint-imports`` checks all of it against the transitive import
 graph in pre-commit and CI. A boundary that legitimately moves is one edit, in
 that file, alongside the ADR it cites.
+
+Note (2026-10): ``dataretrieval.nwis`` was removed, so the NWIS quarantine
+contract and the Decision's two rules naming NWIS above are deleted along with
+the module.
 
 These rules were previously asserted a second time in
 ``tests/architecture_test.py``, by hand-parsing the AST. That duplication is
