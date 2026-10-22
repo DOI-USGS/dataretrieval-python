@@ -896,8 +896,8 @@ def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
     1's status check is outside its ``try``), so the typed cause is only reachable
     through ``__cause__``. ``_classify_chunk_error`` walks that chain for this reason;
     were it a single ``isinstance`` check, a mid-walk rate limit would propagate as a
-    bare error and lose ``.call.resume()`` -- inconsistently, since page 1 would still
-    be resumable.
+    bare error and lose ``.call.resume()`` -- inconsistently, because page 1 would
+    still be resumable.
     """
     httpx_mock.add_response(
         method="GET",

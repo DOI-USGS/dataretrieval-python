@@ -729,7 +729,7 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         stops.
     base_url : str, optional
         Linked-data base to send NLDI requests to, instead of the
-        service's own (``NLDI_API_BASE_URL``). Every navigation, basin
+        service's own (``NLDI_API_BASE_URL``). Every navigation, basin,
         and catalog request is built on it. Code only: the file and the
         environment refuse it.
     """

@@ -80,8 +80,8 @@ def parallel_chunks(n: int) -> Iterator[None]:
     server's ~8 KB URL-byte limit forces — the fewest chunks that fit. That default can
     split less than a large pull benefits from. Because every chunk paginates, splitting
     a large result further costs little or no extra quota *as long as each chunk still
-    spans many pages* — rows-per-chunk far exceeding the page size (ten states pulled as
-    one request page nearly as many times as ten per-state requests would). When a split
+    spans many pages* — rows-per-chunk far exceeding the page size (ten States pulled as
+    one request page nearly as many times as ten per-State requests would). When a split
     leaves each chunk only a page or two, its partial final page is extra, so finer
     chunks do add some requests. This context manager lets a caller who knows their pull
     is large request that finer split. The result is roughly the same pages in more,

@@ -216,14 +216,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 ### National Ground-Water Monitoring Network (NGWMN)
 
-Access groundwater data aggregated from many state, federal, and local
+Access groundwater data aggregated from many State, Federal, and local
 agencies. NGWMN uses the same OGC engine as the Water Data API,
 so chunking and pagination behave the same way:
 
 ```python
 from dataretrieval import ngwmn
 
-# Find the groundwater monitoring sites in a state
+# Find the groundwater monitoring sites in a State
 # (state accepts a full name, a postal code like 'WI', or a FIPS code like '55')
 sites, metadata = ngwmn.get_sites(state="Wisconsin")
 
@@ -240,12 +240,12 @@ print(f"Retrieved {len(water_levels)} water-level observations")
 
 ### Water Quality Portal (WQP)
 
-Access water quality data from multiple agencies:
+Access water-quality data from multiple agencies:
 
 ```python
 from dataretrieval import wqp
 
-# Find water quality monitoring sites (returns a DataFrame and metadata)
+# Find water-quality monitoring sites (returns a DataFrame and metadata)
 sites, metadata = wqp.what_sites(
     statecode="US:55",  # Wisconsin
     siteType="Stream",
@@ -253,7 +253,7 @@ sites, metadata = wqp.what_sites(
 
 print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
 
-# Get water quality results
+# Get water-quality results
 results, metadata = wqp.get_results(
     siteid="USGS-05427718", characteristicName="Temperature, water"
 )

@@ -114,7 +114,7 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
     drain_area_sq_mi = site_df["drainage_area"].values[0]
     length = _estimate_watershed_length_km(drain_area_sq_mi)
     search_distance = length * search_factor * fudge_factor
-    # clip between 1 and 9999km
+    # clip between 1 and 9,999 km
     search_distance = max(1.0, min(9999.0, search_distance))
 
     # get upstream and downstream sites

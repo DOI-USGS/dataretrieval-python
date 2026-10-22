@@ -96,11 +96,11 @@ class FanOutPlan(Protocol[_ChunkCo]):
 
     A **plan** is defined in ``CONTEXT.md``. This protocol is that enumeration and
     nothing more: ``len`` must equal the number of items iteration yields, and iteration
-    must repeat the same items in the same order, since
+    must repeat the same items in the same order, because
     :meth:`FanOut.resume` keys completed work by position. The item type is
     whatever an adapter's own ``fetch`` accepts -- this executor passes each
     item through unchanged and never inspects it, so the OGC getters yield
-    kwargs dicts while Water Use yields ready :class:`httpx.Request` objects.
+    kwargs dicts whereas Water Use yields ready :class:`httpx.Request` objects.
     The query's ``canonical_url`` is not part of the plan; it is an argument to
     :class:`FanOut`.
 

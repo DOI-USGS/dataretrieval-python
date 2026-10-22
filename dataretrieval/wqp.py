@@ -191,9 +191,9 @@ def get_results(
         Monitoring location identifier: an agency code, a hyphen, and an
         identification number (Example: "USGS-05586100").
     statecode : string
-        US state FIPS code (Example: Illinois is "US:17").
+        U.S. State FIPS code (Example: Illinois is "US:17").
     countycode : string
-        US county FIPS code.
+        U.S. county FIPS code.
     huc : string or iterable of strings
         Eight-digit hydrologic unit (HUC).
     bBox : string

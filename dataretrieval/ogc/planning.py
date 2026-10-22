@@ -98,7 +98,7 @@ def _try_build(
     """Attempt to construct a request, returning ``None`` on overflow.
 
     ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
-    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes` and
+    ``httpx.InvalidURL`` for anything bigger. Both :func:`_safe_request_bytes` and
     :class:`ChunkPlan`'s initial-request probe need this build-or-None step, so it is
     defined here once.
 

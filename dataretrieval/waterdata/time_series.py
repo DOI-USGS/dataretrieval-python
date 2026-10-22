@@ -53,14 +53,14 @@ def get_daily(
     """Get daily values: one value per monitoring location, parameter, and day.
 
     Throughout much of the history of the USGS, the primary water data available
-    was daily data collected manually at the monitoring location once each day.
+    were daily data collected manually at the monitoring location once each day.
     With improved availability of computer storage and automated transmission of
     data, the daily data published today are generally a statistical summary or
     metric of the continuous data collected each day, such as the daily mean,
     minimum, or maximum value. Daily data are automatically calculated from the
     continuous data of the same parameter code and are described by parameter
-    code and a statistic code. These data have also been referred to as “daily
-    values” or “DV”.
+    code and a statistic code. These data have also been referred to as "daily
+    values" or "DV".
 
     Parameters
     ----------
@@ -722,14 +722,14 @@ def get_latest_daily(
 
     Daily data provide one data value to represent water conditions for the day.
     Throughout much of the history of the USGS, the primary water data available
-    was daily data collected manually at the monitoring location once each day.
+    were daily data collected manually at the monitoring location once each day.
     With improved availability of computer storage and automated transmission of
     data, the daily data published today are generally a statistical summary or
     metric of the continuous data collected each day, such as the daily mean,
     minimum, or maximum value. Daily data are automatically calculated from the
     continuous data of the same parameter code and are described by parameter
-    code and a statistic code. These data have also been referred to as “daily
-    values” or “DV”.
+    code and a statistic code. These data have also been referred to as "daily
+    values" or "DV".
 
     Parameters
     ----------
@@ -958,10 +958,10 @@ def get_stats_por(
         field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
-        the two-digit state code. API defaults to "US:42" (Pennsylvania).
+        the two-digit State code. API defaults to "US:42" (Pennsylvania).
     county_code: string, optional
         County query parameter. Takes the format "US:XX:YYY", where XX is
-        the two-digit state code and YYY is the three-digit county code.
+        the two-digit State code and YYY is the three-digit county code.
         API defaults to "US:42:103" (Pennsylvania, Pike County).
     start_date: string or datetime, optional
         Start day for the query in the month-day format (MM-DD).
@@ -1099,10 +1099,10 @@ def get_stats_date_range(
         field: it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
-        the two-digit state code. API defaults to "US:42" (Pennsylvania).
+        the two-digit State code. API defaults to "US:42" (Pennsylvania).
     county_code: string, optional
         County query parameter. Takes the format "US:XX:YYY", where XX is
-        the two-digit state code and YYY is the three-digit county code.
+        the two-digit State code and YYY is the three-digit county code.
         API defaults to "US:42:103" (Pennsylvania, Pike County).
     start_date: string or datetime, optional
         Start date for the query in the year-month-day format

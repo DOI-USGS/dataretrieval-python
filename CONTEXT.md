@@ -48,7 +48,7 @@ the reason is not part of the term.
 
 **Plan** — An enumeration of a query's chunks: how many there are, and what each
 one is. A plan describes how a query divides; it does not execute. Computing a plan
-is protocol-specific — a byte budget, a per-location rule — while executing one
+is protocol-specific — a byte budget, a per-location rule — whereas executing one
 is not, which is why the two are kept in separate modules.
 
 **Fan-out** — Executing a query's chunks concurrently. Chunking is how the work

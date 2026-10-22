@@ -95,7 +95,7 @@ def get_ratings(
         selected. Format: ``[xmin, ymin, xmax, ymax]`` in CRS 4326
         (longitude / latitude, west-south-east-north).
     limit : int, default 10000
-        Page size for the STAC ``/search`` request (capped at 10000).
+        Page size for the STAC ``/search`` request (capped at 10,000).
     download_and_parse : bool, default ``True``
         If ``True``, download every matching RDB file and parse it into a
         ``DataFrame``. If ``False``, return the raw list of STAC feature

@@ -59,9 +59,9 @@ NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 
 # --- state-filter shim -------------------------------------------------------
 # NGWMN's collections expose different state queryables: ``sites`` filters on
-# the full ``state_name`` (e.g. "Wisconsin"), while ``providers`` filters on the
-# two-letter postal ``state`` (uppercase, e.g. "WI"). The state-aware getters
-# take a single ``state`` parameter accepting any US-state encoding (full name,
+# the full ``state_name`` (e.g. "Wisconsin"), whereas ``providers`` filters on
+# the two-letter postal ``state`` (uppercase, e.g. "WI"). The state-aware getters
+# take a single ``state`` parameter accepting any U.S.-state encoding (full name,
 # postal code, or FIPS code); ``_get`` resolves it into the one queryable each
 # collection accepts via the shared ``codes.states.apply_state``, keyed by
 # ``_STATE_QUERYABLE`` below.
@@ -181,8 +181,8 @@ def get_sites(
     state : str or iterable of str, optional
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
-        The 50 states, DC, and the five US territories. Sent as the API's
-        ``state_name`` field.
+        The 50 States, the District of Columbia, and the five U.S. territories.
+        Sent as the API's ``state_name`` field.
     county_name : str or iterable of str, optional
         County name filter.
     aquifer_name, site_type, aquifer_type_code : str or iterable, optional
@@ -414,9 +414,9 @@ def get_providers(
     state : str or iterable of str, optional
         State filter. Accepts a full name (``"Wisconsin"``), a two-letter
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
-        The 50 states, DC, and the five US territories. Sent as the API's
-        ``state`` field, as a postal code. Only one
-        state at a time — a multi-value state filter
+        The 50 States, the District of Columbia, and the five U.S. territories.
+        Sent as the API's ``state`` field, as a postal code. Only one
+        State at a time — a multi-value state filter
         returns no records for this collection.
     agency_code : str or iterable of str, optional
         Provider agency code.

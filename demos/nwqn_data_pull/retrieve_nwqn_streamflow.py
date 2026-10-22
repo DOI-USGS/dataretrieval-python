@@ -121,7 +121,7 @@ def update_dataframe(
 ) -> pd.DataFrame:
     """Update a DataFrame with values from another DataFrame.
 
-    NOTE: this fuction does not handle MultiIndex DataFrames.
+    NOTE: this function does not handle MultiIndex DataFrames.
     """
     # Identify new rows in new_df that are not in original_df
     new_rows = new_df[~new_df.index.isin(original_df.index)]

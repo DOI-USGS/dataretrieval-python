@@ -52,7 +52,8 @@ def mock_request_data_sources(httpx_mock):
 
 
 def test_query_nldi_opts_into_retry(monkeypatch):
-    """NLDI explicitly enables shared retry while the default path stays unchanged."""
+    """NLDI explicitly enables shared retry whereas the default path stays
+    unchanged."""
     response = mock.Mock()
     response.json.return_value = {}
     query = mock.Mock(return_value=response)

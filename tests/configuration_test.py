@@ -458,7 +458,7 @@ def test_loading_an_undefined_profile_raises(config_file):
 
     The message lists what the file *does* define, because a misspelling is
     only recognizable next to the spelling that was meant -- and only for this
-    adapter, since selecting a profile is per adapter and another service's
+    adapter, because selecting a profile is per adapter and another service's
     profile names are not candidates for what the caller meant to type.
     """
     config_file(
@@ -1284,11 +1284,11 @@ def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
 def test_every_adapter_is_actually_wired_to_a_read_site():
     """A schema nothing passes gives the caller a report that may be wrong.
 
-    ``show_configuration()`` would report a ``[streamstats]`` override as live while
-    every call ignored it -- the report that exists to say what a call will use being
-    wrong. Importability is the weaker half of the invariant: it passed while
-    ``waterdata.get_cql``, eight of nine WQP getters, and all of ``streamstats``
-    resolved package-wide without an error.
+    ``show_configuration()`` would report a ``[streamstats]`` override as live
+    whereas every call ignored it -- the report that exists to say what a call
+    will use being wrong. Importability is the weaker half of the invariant: it
+    passed whereas ``waterdata.get_cql``, eight of nine WQP getters, and all of
+    ``streamstats`` resolved package-wide without an error.
     """
     import pathlib
 
@@ -1665,8 +1665,8 @@ def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
 # The tests below test it as a chain: each one removes the rung above and asserts the
 # next takes over. Seven independent single-rung assertions would all still pass if two
 # rungs collapsed into one, which is the mistake this exists to catch -- rungs 2 and 3
-# are the pair a refactor is most likely to merge, since 2 above 3 is the one place ADR
-# 0011 inverts ADR 0009.
+# are the pair a refactor is most likely to merge, because 2 above 3 is the one place
+# ADR 0011 inverts ADR 0009.
 #
 # ``nwdc`` and ``concurrency`` are the pair that can express all seven. NWDC is the
 # adapter that has a built-in preference of its own -- 4 concurrent requests, because
@@ -1838,7 +1838,7 @@ def test_the_top_two_rungs_cannot_tie(config_file):
     # instance is not the thing it is talking about: it targets no adapter at
     # all. Alongside a loaded profile in one block the adapter-scoped value is
     # the more specific of the two and takes precedence for that adapter (ADR
-    # 0010), while the package-wide value still governs every other adapter.
+    # 0010), whereas the package-wide value still governs every other adapter.
     with dataretrieval.configure(
         Configuration(concurrency=_LADDER_INSTANCE), NwdcConfiguration.load("tuned")
     ):

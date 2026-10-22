@@ -155,7 +155,7 @@ class TransientError(HTTPError):
     This only classifies the condition; it does not itself retry. Whether to
     retry is up to the calling path: a single-shot request raises it for the
     caller to handle (e.g. wait :attr:`retry_after` seconds, then re-issue),
-    while the Water Data chunker retries and resumes automatically.
+    whereas the Water Data chunker retries and resumes automatically.
 
     Parameters
     ----------

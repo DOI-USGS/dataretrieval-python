@@ -229,7 +229,7 @@ class ServiceInterrupted(FanOutInterrupted):
 # ones (notably EAI_AGAIN -- "try again", raised while a resolver is still starting, on
 # VPN reconnect, or after a laptop resumes from sleep) are deliberately absent: those
 # are retried. Looked up with ``getattr`` defaults because the EAI_* constants are
-# platform-dependent; an unrecognized code stays retryable, since a few seconds on a
+# platform-dependent; an unrecognized code stays retryable, because a few seconds on a
 # retry cost less than a dropped recoverable call.
 _PERMANENT_DNS_ERRORS = frozenset(
     code

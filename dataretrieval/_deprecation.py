@@ -2,8 +2,8 @@
 
 Every deprecation is announced through this module, with a horizon in
 :data:`REMOVALS` (ADR 0012). A ``DeprecationWarning`` states that a *name in
-this package* is being removed, while an advisory that an upstream *dataset* has
-stopped being updated belongs under
+this package* is being removed, whereas an advisory that an upstream *dataset*
+has stopped being updated belongs under
 :class:`~dataretrieval.exceptions.DataCurrencyWarning` (ADR 0004).
 """
 

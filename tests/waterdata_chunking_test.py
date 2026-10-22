@@ -1707,12 +1707,12 @@ def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
     scale, a batch of large, slowly-streaming pages).
 
     Chunks here send real HTTP to a slow localhost server through the chunker's shared
-    client — fakes can't catch this, since ``MockTransport`` bypasses the connection
-    pool. With the pool as the only throttle, 2 connections busy for 0.35 s each and the
-    0.2 s pool timeout pinned below, the 2 queued chunks waited the full timeout with no
-    completion to reset their timers → ``httpx.PoolTimeout`` → (retries exhausted,
-    ``API_USGS_RETRIES=0``) a spurious resumable ``ServiceInterrupted``. Gated by the
-    semaphore, queued chunks never reach the pool and the call completes.
+    client — fakes can't catch this, because ``MockTransport`` bypasses the connection
+    pool. With the pool as the only throttle, 2 connections busy for 0.35 s each and
+    the 0.2 s pool timeout pinned below, the 2 queued chunks waited the full timeout
+    with no completion to reset their timers → ``httpx.PoolTimeout`` → (retries
+    exhausted, ``API_USGS_RETRIES=0``) a spurious resumable ``ServiceInterrupted``.
+    Gated by the semaphore, queued chunks never reach the pool and the call completes.
     """
 
     class _SlowHandler(http.server.BaseHTTPRequestHandler):
