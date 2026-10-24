@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -49,5 +52,9 @@ fitness function requires the runtime import graph, including package facades,
 to stay acyclic. The installed-wheel CI job verifies that the whole monolith
 ships as one usable artifact.
 
-Note (2026-10): ``dataretrieval.nwis`` was removed, so the contract that kept
-modern modules from depending on legacy NWIS is deleted with the module.
+Notes
+-----
+
+The Compliance paragraph was corrected after acceptance. It also named the
+contract that kept modern modules from depending on legacy NWIS, which was
+deleted with ``dataretrieval.nwis`` (:doc:`0005-legacy-nwis`).

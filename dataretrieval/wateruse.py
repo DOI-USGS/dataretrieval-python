@@ -34,9 +34,7 @@ from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval.nwdc import *  # noqa: F403 # re-export the public surface
 
 #: When the alias may be deleted. Read from the shared horizon table rather than spelled
-#: here, so it is reviewed and extended with every other published removal; this follows
-#: the dated-removal convention every entry in
-#: :data:`~dataretrieval._deprecation.REMOVALS` uses.
+#: here, so it is reviewed and extended with every other published removal.
 NWDC_RENAME_REMOVAL_DATE = REMOVALS["wateruse"]
 
 __all__ = list(_nwdc.__all__)

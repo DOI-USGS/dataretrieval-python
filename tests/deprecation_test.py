@@ -6,7 +6,7 @@ import warnings
 import pytest
 
 import dataretrieval.wqp as wqp
-from dataretrieval._deprecation import REMOVALS, warn_deprecated
+from dataretrieval._deprecation import warn_deprecated
 from dataretrieval.exceptions import DataCurrencyWarning
 
 
@@ -33,11 +33,9 @@ def test_data_currency_is_not_a_deprecation():
 
 def test_warn_deprecated_names_replacement_and_horizon():
     with pytest.warns(
-        DeprecationWarning, match=r"on or after 2027-08-11.*use `x` instead"
+        DeprecationWarning, match=r"on or after 2027-01-01.*use `x` instead"
     ):
-        warn_deprecated(
-            "`dataretrieval.wateruse`", replacement="`x`", removal=REMOVALS["wateruse"]
-        )
+        warn_deprecated("`a`", replacement="`x`", removal="2027-01-01")
 
 
 def test_warn_deprecated_without_a_date_promises_nothing_specific():

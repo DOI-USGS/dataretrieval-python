@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -53,10 +56,6 @@ independence; ``lint-imports`` checks all of it against the transitive import
 graph in pre-commit and CI. A boundary that legitimately moves is one edit, in
 that file, alongside the ADR it cites.
 
-Note (2026-10): ``dataretrieval.nwis`` was removed, so the NWIS quarantine
-contract and the Decision's two rules naming NWIS above are deleted along with
-the module.
-
 These rules were previously asserted a second time in
 ``tests/architecture_test.py``, by hand-parsing the AST. That duplication is
 gone. The tests now cover only what the configured contracts cannot express —
@@ -80,3 +79,11 @@ The OGC consumer list is an allowlist, so a new service module fails the contrac
 someone places it deliberately. It should shrink as private seams move. Any
 growth requires explicit architecture review, and a change to the dependency
 policy requires this ADR to be superseded.
+
+Notes
+-----
+
+The first Compliance paragraph was corrected after acceptance to drop the NWIS
+quarantine contract, which was deleted with ``dataretrieval.nwis``
+(:doc:`0005-legacy-nwis`). The Decision's two rules naming NWIS are kept as
+accepted; with the module removed, they constrain nothing.

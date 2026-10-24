@@ -30,17 +30,14 @@ def map_retrieval(site):
     print(f"Retrieving samples from site {site}")
     # skip bad sites
     if site in BAD_NLDI_SITES:
-        site_list = [site]
+        location_ids = [f"USGS-{site}"]
     # else query slowly
     else:
         sleep(randint(0, 5))
-        site_list = find_neighboring_sites(site)
-
-    # reformat for wqp
-    site_list = [f"USGS-{site}" for site in site_list]
+        location_ids = find_neighboring_sites(site)
 
     df, _ = wqp_get_results(
-        siteid=site_list,
+        siteid=location_ids,
         project=PROJECT,
     )
 
@@ -82,11 +79,6 @@ def exponential_backoff(max_retries=5, base_delay=1):
 
 
 @exponential_backoff(max_retries=5, base_delay=1)
-def get_monitoring_locations(*args, **kwargs):
-    return waterdata.get_monitoring_locations(*args, **kwargs)
-
-
-@exponential_backoff(max_retries=5, base_delay=1)
 def wqp_get_results(*args, **kwargs):
     return wqp.get_results(*args, **kwargs)
 
@@ -107,8 +99,14 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
     fudge_factor : float, optional
         An additional fudge factor to apply to the search distance, because
         watersheds are not circular.
+
+    Returns
+    -------
+    list of str
+        Monitoring location IDs (``USGS-`` prefixed) of the site and its
+        neighbors.
     """
-    site_df, _ = get_monitoring_locations(
+    site_df, _ = waterdata.get_monitoring_locations(
         monitoring_location_id=f"USGS-{site}", skip_geometry=True
     )
     drain_area_sq_mi = site_df["drainage_area"].values[0]
@@ -131,22 +129,18 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
 
     features = pd.concat(gdfs, ignore_index=True)
 
-    df, _ = get_monitoring_locations(
+    df, _ = waterdata.get_monitoring_locations(
         monitoring_location_id=list(features.identifier), skip_geometry=True
     )
     # drop sites with dissimilar drainage areas
-    df = df.where(
-        (df["drainage_area"] / drain_area_sq_mi) > search_factor,
-    ).dropna(how="all")
-
-    # return bare site numbers (strip the "USGS-" agency prefix)
-    site_list = df["monitoring_location_id"].str.removeprefix("USGS-").to_list()
+    df = df[df["drainage_area"] / drain_area_sq_mi > search_factor]
+    location_ids = df["monitoring_location_id"].to_list()
 
     # include the original search site among the neighbors
-    if site not in site_list:
-        site_list.append(site)
+    if f"USGS-{site}" not in location_ids:
+        location_ids.append(f"USGS-{site}")
 
-    return site_list
+    return location_ids
 
 
 def _estimate_watershed_length_km(drain_area_sq_mi):

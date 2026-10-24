@@ -44,18 +44,11 @@ class BaseMetadata:
         self.header = response.headers
         self.comment: str | None = None
 
-        # # not sure what statistic_info is
-        # self.statistic_info = None
-
-        # # disclaimer seems to be only part of importWaterML1
-        # self.disclaimer = None
-
     @property
     def site_info(self) -> Any:
         raise NotImplementedError(
-            "This metadata object has no site_info: only the wqp "
-            "metadata class implements it, and the getter that produced this "
-            "result does not return site descriptions alongside data. Fetch "
+            "This metadata object has no site_info: the getter that produced "
+            "this result does not return site descriptions alongside data. Fetch "
             "them using a separate function from the same adapter -- "
             "dataretrieval.waterdata.get_monitoring_locations("
             "monitoring_location_id=...) for Water Data, "

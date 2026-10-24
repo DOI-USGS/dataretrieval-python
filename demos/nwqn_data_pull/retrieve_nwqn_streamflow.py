@@ -7,11 +7,7 @@ from time import sleep
 import lithops
 import numpy as np
 import pandas as pd
-from retrieve_nwqn_samples import (
-    BAD_NLDI_SITES,
-    find_neighboring_sites,
-    get_monitoring_locations,
-)
+from retrieve_nwqn_samples import BAD_NLDI_SITES, find_neighboring_sites
 
 from dataretrieval import waterdata
 
@@ -23,17 +19,18 @@ END_DATE = "2023-12-31"
 def map_retrieval(site):
     """Map function to pull daily streamflow from the USGS Water Data API"""
     print(f"Retrieving daily streamflow from site {site}")
+    site_id = f"USGS-{site}"
 
     if site in BAD_NLDI_SITES:
-        site_list = [site]
+        location_ids = [site_id]
     # else query slowly
     else:
         sleep(randint(0, 5))
-        site_list = find_neighboring_sites(site)
+        location_ids = find_neighboring_sites(site)
 
     # Daily mean discharge, approved values only (filtered by the service).
     df, _ = waterdata.get_daily(
-        monitoring_location_id=[f"USGS-{s}" for s in site_list],
+        monitoring_location_id=location_ids,
         parameter_code="00060",
         statistic_id="00003",
         approval_status="Approved",
@@ -44,23 +41,16 @@ def map_retrieval(site):
     print(len(df), "records retrieved")
     # process the results
     if not df.empty:
-        # index by bare site number and day, keeping only the discharge value
-        df["site_no"] = df["monitoring_location_id"].str.removeprefix("USGS-")
-        df = df.set_index(["site_no", "time"])[["value"]].dropna()
+        # index by monitoring location and day, keeping only the discharge value
+        df = df.set_index(["monitoring_location_id", "time"])[["value"]].dropna()
 
-        site_info, _ = get_monitoring_locations(
-            monitoring_location_id=[f"USGS-{s}" for s in site_list],
+        site_info, _ = waterdata.get_monitoring_locations(
+            monitoring_location_id=location_ids,
             skip_geometry=True,
         )
-        # keep only USGS sites; USACE sites may share a site number, which
-        # creates index conflicts later
-        site_info = site_info[site_info["agency_code"] == "USGS"]
-        site_info["site_no"] = site_info["monitoring_location_id"].str.removeprefix(
-            "USGS-"
-        )
-        site_info = site_info.set_index("site_no")
+        site_info = site_info.set_index("monitoring_location_id")
 
-        main_site = site_info.loc[site]
+        main_site = site_info.loc[site_id]
         main_site_drainage_area = main_site["drainage_area"]
 
         # compute fraction of drainage area
@@ -72,15 +62,13 @@ def map_retrieval(site):
 
         # apply drainage area fraction
         df = pd.merge(df, site_info, left_index=True, right_index=True)
-        df["value"] *= site_info.loc[
-            df.index.get_level_values("site_no"), "drain_fraction"
-        ].values
+        df["value"] *= df["drain_fraction"]
 
         # order sites by the difference in drainage area fraction
         fill_order = site_info.sort_values("fraction_diff", ascending=True)
         fill_order = fill_order.index.values
 
-        flow_sites = df.index.get_level_values("site_no").values
+        flow_sites = df.index.get_level_values("monitoring_location_id").values
         fill_order = set(fill_order).intersection(flow_sites)
 
         output = pd.DataFrame()

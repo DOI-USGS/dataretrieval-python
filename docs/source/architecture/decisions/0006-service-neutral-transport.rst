@@ -164,3 +164,6 @@ One sentence of the original Decision was also corrected rather than added to:
 it scoped automatic retry to "gateway 5xx", which was never true of a fanned-out
 call -- those re-send any 5xx, and only the single-shot adapters are limited to
 the gateway statuses. The decision is unchanged; the sentence now describes it.
+
+The sentence saying deprecated NWIS calls retain their compatibility behavior
+was removed with ``dataretrieval.nwis`` (:doc:`0005-legacy-nwis`).

@@ -1,4 +1,4 @@
-"""The one-shot HTTP query path behind the single-request service adapters.
+"""The HTTP query path behind the single-shot service adapters.
 
 "Compose a USGS query URL, send it, map the status, retry a transient" -- the
 half of the old ``utils`` module that issues requests, as used by ``wqp``,
@@ -10,7 +10,8 @@ and the two have disjoint dependencies -- this one needs ``exceptions`` and
 The module is private because the *names* are not: ``query`` and ``to_str`` keep
 their documented ``dataretrieval.utils`` path, the way ``Ambient`` and
 ``BaseMetadata`` do from their own implementation leaves. This path serves the
-single-request adapters; the chunked services use the chunked transport instead.
+single-shot adapters, and NWDC borrows its status mapping; the services that
+chunk or fan out send their requests through ``transport`` instead.
 """
 
 from __future__ import annotations
@@ -73,21 +74,11 @@ def to_str(listlike: object, delimiter: str = ",") -> str | None:
     return None
 
 
-_URL_TOO_LONG_EXAMPLE = """
-                    # n is the number of chunks to divide the query into \n
-                    split_list = np.array_split(site_list, n)
-                    data_list = []  # list to store chunk results in \n
-                    # loop through chunks and make requests \n
-                    for site_list in split_list: \n
-                        data, _ = wqp.get_results(siteid=site_list) \n
-                        data_list.append(data)  # append results to list"""
-
-
 def _url_too_long_error(detail: str) -> URLTooLong:
     return URLTooLong(
-        "Request URL too long. Modify your query to use fewer sites. "
-        f"{detail}. Pseudo-code example of how to split your query: "
-        f"\n {_URL_TOO_LONG_EXAMPLE}"
+        f"Request URL too long ({detail}). Modify your query to pass fewer "
+        "values in its list arguments, or split a long list across several "
+        "calls and concatenate the results."
     )
 
 
@@ -98,7 +89,7 @@ def _raise_for_status(
 ) -> None:
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response.
 
-    A success status returns ``None``. Shared by the single-request :func:`query` path
+    A success status returns ``None``. Shared by the :func:`query` path
     (and ``streamstats`` / ``nwdc``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
@@ -187,7 +178,7 @@ def _query_with_retry(
     retry_policy: RetryPolicy | None = None,
     adapter: str | None = None,
 ) -> httpx.Response:
-    """Send an active-service query with bounded transient retry by default.
+    """Send a query with bounded transient retry by default.
 
     When ``delimiter`` is ``None``, iterable values are materialized for
     ``httpx`` to encode as repeated query parameters. Strings remain scalar.
@@ -224,7 +215,8 @@ def query(
     """Send a query.
 
     Wrapper for ``httpx.get`` that handles errors, converts listed query
-    parameters to comma-separated strings, and returns the response.
+    parameters to comma-separated strings, and returns the response. It sends
+    one attempt and does not retry, regardless of ``API_USGS_RETRIES``.
 
     Parameters
     ----------
