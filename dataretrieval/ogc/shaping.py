@@ -32,8 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Water Data OGC coordinates are published in WGS84, so attach that CRS where the
 # GeoDataFrame is built (otherwise the result is CRS-naive and ``to_crs`` /
-# spatial joins fail). Matches the constants in ``nldi`` (EPSG:4326) and ``nwis``
-# (EPSG:4269).
+# spatial joins fail). Matches the constant in ``nldi`` (EPSG:4326).
 _CRS = "EPSG:4326"
 
 # Whether geopandas is present is a static, environment-level fact, so warn
@@ -340,7 +339,7 @@ def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     Sorting is applied only when the primary (first) sort column is
     present; any later sort columns also present become secondary keys.
     This matches the historical Water Data behavior (sort by ``time``,
-    then ``monitoring_location_id``) while letting other APIs sort by
+    then ``monitoring_location_id``), whereas other APIs sort by
     their own columns (e.g. NGWMN's ``sample_time``).
 
     Parameters

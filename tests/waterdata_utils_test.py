@@ -303,7 +303,7 @@ def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
 
 
 def test_walk_pages_raises_on_5xx_mid_pagination():
-    """A 5xx mid-pagination must raise — partial data is no longer returned
+    """A 5xx mid-pagination must raise — partial data are no longer returned
     because the API has no resume cursor, so truncating without an error would return
     an incomplete frame the caller cannot distinguish from a complete one."""
     page2_503 = mock.MagicMock()
@@ -339,7 +339,7 @@ def test_walk_pages_raises_on_mid_pagination_429():
 
 def test_walk_pages_wraps_initial_page_parse_error():
     """A 200 response whose body fails to parse on the FIRST page used to propagate out
-    of ``_walk_pages`` as a raw ``JSONDecodeError``, while the SAME failure on a
+    of ``_walk_pages`` as a raw ``JSONDecodeError``, whereas the SAME failure on a
     subsequent page was wrapped via ``_paginated_failure_message``. The asymmetry meant
     operators got different exception types for the same logical bug depending on
     which page encountered it. The initial-parse wrapper removes the asymmetry."""

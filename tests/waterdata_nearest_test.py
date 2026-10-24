@@ -140,7 +140,7 @@ def test_tie_mean_averages_numeric_and_uses_target_time(patch_get_continuous):
         window="PT7M30S",
     )
     assert result.iloc[0]["value"] == pytest.approx(22.2)
-    # Time is set to the target since no real observation falls at the midpoint
+    # Time is set to the target because no real observation falls at the midpoint
     assert result.iloc[0]["time"] == targets[0]
 
 

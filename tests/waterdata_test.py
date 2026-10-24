@@ -558,7 +558,7 @@ def test_get_cql_unknown_service_raises():
 
 def test_waterdata_services_literal_matches_output_id_map():
     """The WATERDATA_SERVICES Literal and _OUTPUT_ID_BY_COLLECTION must enumerate
-    the same collections: get_cql validates against the dict while the Literal
+    the same collections: get_cql validates against the dict, whereas the Literal
     types the public signature, so drift would let one accept a collection the other
     rejects."""
     from typing import get_args
@@ -585,7 +585,7 @@ def test_construct_api_requests_single_value_stays_get():
 def test_construct_api_requests_folds_lists_into_a_text_filter():
     """With a CQL-text ``filter``, the API ignores a POST body, so the lists are
     added to the filter as ``IN`` clauses and sent by GET; each value is quoted,
-    since every queryable is typed as a string."""
+    because every queryable is typed as a string."""
     req = _construct_api_requests(
         "daily",
         monitoring_location_id=["USGS-05427718", "USGS-0542'8500"],
@@ -1990,7 +1990,7 @@ class TestNormalizeStrIterable:
 
         Regression for the gap PR #229 originally left on every multi-value
         parameter other than ``monitoring_location_id``. Pre-fix, the Series
-        was passed through to ``requests`` which str-serialized it into the
+        was passed through to ``requests``, which str-serialized it into the
         URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
         it to ``list`` at the function boundary.
         """

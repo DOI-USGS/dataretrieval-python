@@ -72,8 +72,8 @@ def resolve_next_url(
     error : type of Exception, optional
         Exception type to raise. Defaults to
         :class:`~dataretrieval.exceptions.DataRetrievalError`; the OGC engine
-        passes ``RuntimeError`` to keep the type it has always raised, since changing
-        that type would be a released behavior change.
+        passes ``RuntimeError`` to keep the type it has always raised, because
+        changing that type would be a released behavior change.
 
     Returns
     -------

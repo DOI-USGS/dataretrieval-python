@@ -19,7 +19,7 @@ Background information for reviewers [here](https://www.usgs.gov/products/softwa
 
 - [ ] No proprietary code is included
 - [ ] No Personally Identifiable Information (PII) is included
-- [ ] No other sensitive information such as data base passwords are included
+- [ ] No other sensitive information such as database passwords are included
 
 ### General checks
 

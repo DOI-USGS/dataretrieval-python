@@ -5,8 +5,7 @@ Retrieving USGS water data with the ``waterdata`` module
 .. note::
 
     The ``waterdata`` module accesses the USGS `Water Data API`_ and is the
-    recommended way to retrieve USGS water data. The legacy ``nwis`` module
-    remains available but is deprecated.
+    recommended way to retrieve USGS water data.
 
 .. _Water Data API: https://api.waterdata.usgs.gov/
 

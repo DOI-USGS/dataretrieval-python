@@ -47,7 +47,7 @@ def get_reference_table(
         "time-zone-codes".
     limit : int, optional
         The number of features returned in each page. The maximum allowable
-        limit is 50000; the default (None) requests that maximum. Set a lower
+        limit is 50,000; the default (None) requests that maximum. Set a lower
         number if your internet connection is unreliable.
     query: dictionary, optional
         A dictionary of extra query parameters to pass to the collection API
@@ -56,7 +56,7 @@ def get_reference_table(
         Cap the total number of rows returned, stopping pagination early
         instead of downloading the whole table. Useful for previewing
         large tables in a few requests (e.g. ``hydrologic-unit-codes`` has
-        ~125k rows). Unlike ``limit`` (the per-page size), this bounds the total
+        ~125,000 rows). Unlike ``limit`` (the per-page size), this bounds the total
         result. The default (None) downloads every page.
 
     Returns

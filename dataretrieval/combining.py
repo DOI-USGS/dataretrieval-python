@@ -6,7 +6,7 @@ network state — they're pure data transforms shared by protocol-specific
 chunk execution, service fan-out, and cursor-driven pagination.
 
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
-focused on *what* to split, while this module owns *how* to reassemble.
+focused on *what* to split, whereas this module owns *how* to reassemble.
 
 A top-level leaf rather than part of :mod:`dataretrieval.transport` -- ADR 0006.
 """

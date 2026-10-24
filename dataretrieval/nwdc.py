@@ -4,9 +4,8 @@ The National Water Availability Assessment Data Companion (NWDC) web services
 provide national-scale, USGS-modeled water-use data that underlie the `USGS
 National Water Availability Assessment <https://water.usgs.gov/nwaa-data/>`_.
 Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
-be queried for any county, state, or hydrologic unit. This is the modern
-replacement for the defunct legacy NWIS water-use service
-(``nwis.get_water_use``).
+be queried for any county, State, or hydrologic unit. This is the modern
+replacement for the defunct legacy NWIS water-use service.
 
 Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
@@ -119,7 +118,7 @@ def get_wateruse(
     Availability Assessment Data Companion. The area is given as exactly one of
     ``state``, ``county``, or ``huc``; results are always returned on a HUC12
     grid, in a long (tidy) frame with one row per HUC12 and time step. Large
-    areas (e.g. a whole region or a populous state) are served across multiple
+    areas (e.g. a whole region or a populous State) are served across multiple
     pages; this function follows those pages automatically and concatenates
     them into one frame.
 
@@ -150,11 +149,12 @@ def get_wateruse(
         variable; omitting it returns a 400 listing the model's valid variable
         IDs (raised as a :class:`~dataretrieval.exceptions.DataRetrievalError`).
     state : string, int, or iterable, optional
-        One or more US states/territories to query. Each accepts a full name
-        (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS
-        code (``"55"`` or ``55``), matching :func:`dataretrieval.ngwmn.get_sites`.
+        One or more U.S. States or territories to query. Each accepts a full
+        name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
+        two-digit ANSI/FIPS code (``"55"`` or ``55``), matching
+        :func:`dataretrieval.ngwmn.get_sites`.
     county : string or iterable, optional
-        One or more five-digit county FIPS codes — state FIPS + county FIPS,
+        One or more five-digit county FIPS codes — State FIPS + county FIPS,
         e.g. ``"55025"`` for Dane County, Wisconsin.
     huc : string or iterable, optional
         One or more hydrologic unit codes. Each code's level is taken from its
@@ -199,7 +199,7 @@ def get_wateruse(
     ------
     ValueError
         If not exactly one of ``state``, ``county``, or ``huc`` is given, or a
-        given selector is malformed (an unrecognized state, a county code that
+        given selector is malformed (an unrecognized State, a county code that
         is not five digits, or a HUC of invalid length).
     DataRetrievalError
         On an HTTP error response, the typed subclass for the status (see
@@ -269,7 +269,7 @@ _HUC_LENGTHS = (2, 4, 6, 8, 10, 12)
 # A value may be a single code or a list; ``_as_list`` normalizes both (``state``
 # additionally normalizes to the two-letter postal code, and ``to_state`` may
 # itself return a scalar or list, which ``_as_list`` flattens the same way).
-# Since NWDC takes one location per request, a list value fans out — one request
+# Because NWDC takes one location per request, a list value fans out — one request
 # per location (see :func:`_fan_out`).
 _LOCATION_BUILDERS: dict[str, Callable[[Any], list[str]]] = {
     "state": lambda v: [f"stateCd:{c}" for c in _as_list(to_state(v, to="postal"))],
@@ -482,7 +482,7 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
     base_url : str, optional
         Endpoint to send NWDC requests to, instead of the service's own
         (``WATERUSE_URL``). A ``rel="next"`` cursor is then followed only
-        back to that host, since the service's own host aliases mean
+        back to that host, because the service's own host aliases mean
         nothing there. Code only: the file and the environment refuse it.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.

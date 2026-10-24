@@ -5,10 +5,10 @@
 
 This example uses Lithops to retrieve data from every NWQN
 monitoring site, then writes the results to Parquet files on S3. Each
-retrieval also searches the NLDI for neighboring sites with NWQN data and
-merges those data. In the streamflow retrieval, the neighborhood search
-progressively fill in gaps in the record by taking data from the
-nearest streamgage and rescaling it by the drainage area ratio.
+retrieval also searches the Network Linked Data Index (NLDI) for neighboring
+sites with NWQN data and merges those data. In the streamflow retrieval, the
+neighborhood search progressively fills in gaps in the record by taking data
+from the nearest streamgage and rescaling it by the drainage area ratio.
 
 1. Set up a Python environment
 ```bash
@@ -27,12 +27,12 @@ export LITHOPS_CONFIG_FILE=$(pwd)/lithops.yaml
 lithops runtime build -b aws_lambda -f Dockerfile_dataretrieval dataretrieval-runtime
 ```
 
-4. Download the site list from ScienceBase using `wget` or navigate to the URL and copy the CVS into `nwqn_data_pull/`.
+4. Download the site list from ScienceBase using `wget` or navigate to the URL and copy the CSV into `nwqn_data_pull/`.
 ```bash
 wget https://www.sciencebase.gov/catalog/file/get/655d2063d34ee4b6e05cc9e6?f=__disk__b3%2F3e%2F5b%2Fb33e5b0038f004c2a48818d0fcc88a0921f3f689 -O NWQN_sites.csv
 ```
 
-5. Create a s3 bucket for the output, then set it as an environmental variable
+5. Create an S3 bucket for the output, then set it as an environment variable
 ```bash
 export DESTINATION_BUCKET=<path/to/bucket>
 ```

@@ -8,7 +8,7 @@ from time import sleep
 import lithops
 import pandas as pd
 
-from dataretrieval import nldi, nwis, wqp
+from dataretrieval import nldi, waterdata, wqp
 
 DESTINATION_BUCKET = os.environ.get("DESTINATION_BUCKET")
 PROJECT = "National Water Quality Assessment Program (NAWQA)"
@@ -26,21 +26,19 @@ BAD_NLDI_SITES = NOT_FOUND_SITES + BAD_GEOMETRY_SITES
 
 
 def map_retrieval(site):
-    """Map function to pull data from NWIS and WQP"""
+    """Map function to pull sample data from the Water Quality Portal"""
     print(f"Retrieving samples from site {site}")
     # skip bad sites
     if site in BAD_NLDI_SITES:
-        site_list = [site]
+        location_ids = [f"USGS-{site}"]
     # else query slowly
     else:
         sleep(randint(0, 5))
-        site_list = find_neighboring_sites(site)
-
-    # reformat for wqp
-    site_list = [f"USGS-{site}" for site in site_list]
+        neighbors = find_neighboring_sites(site)
+        location_ids = neighbors["monitoring_location_id"].to_list()
 
     df, _ = wqp_get_results(
-        siteid=site_list,
+        siteid=location_ids,
         project=PROJECT,
     )
 
@@ -82,11 +80,6 @@ def exponential_backoff(max_retries=5, base_delay=1):
 
 
 @exponential_backoff(max_retries=5, base_delay=1)
-def nwis_get_info(*args, **kwargs):
-    return nwis.get_info(*args, **kwargs)
-
-
-@exponential_backoff(max_retries=5, base_delay=1)
 def wqp_get_results(*args, **kwargs):
     return wqp.get_results(*args, **kwargs)
 
@@ -107,12 +100,20 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
     fudge_factor : float, optional
         An additional fudge factor to apply to the search distance, because
         watersheds are not circular.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Monitoring locations of the site and its neighbors, as returned by
+        ``waterdata.get_monitoring_locations``.
     """
-    site_df, _ = nwis_get_info(sites=site)
-    drain_area_sq_mi = site_df["drain_area_va"].values[0]
+    site_df, _ = waterdata.get_monitoring_locations(
+        monitoring_location_id=f"USGS-{site}", skip_geometry=True
+    )
+    drain_area_sq_mi = site_df["drainage_area"].values[0]
     length = _estimate_watershed_length_km(drain_area_sq_mi)
     search_distance = length * search_factor * fudge_factor
-    # clip between 1 and 9999km
+    # clip between 1 and 9,999 km
     search_distance = max(1.0, min(9999.0, search_distance))
 
     # get upstream and downstream sites
@@ -129,19 +130,17 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
 
     features = pd.concat(gdfs, ignore_index=True)
 
-    df, _ = nwis_get_info(sites=list(features.identifier.str.removeprefix("USGS-")))
-    # drop sites with disimilar different drainage areas
-    df = df.where(
-        (df["drain_area_va"] / drain_area_sq_mi) > search_factor,
-    ).dropna(how="all")
-
-    site_list = df["site_no"].to_list()
+    df, _ = waterdata.get_monitoring_locations(
+        monitoring_location_id=list(features.identifier), skip_geometry=True
+    )
+    # drop sites with dissimilar drainage areas
+    df = df[df["drainage_area"] / drain_area_sq_mi > search_factor]
 
     # include the original search site among the neighbors
-    if site not in site_list:
-        site_list.append(site)
+    if f"USGS-{site}" not in df["monitoring_location_id"].values:
+        df = pd.concat([df, site_df], ignore_index=True)
 
-    return site_list
+    return df
 
 
 def _estimate_watershed_length_km(drain_area_sq_mi):
@@ -164,8 +163,6 @@ def _estimate_watershed_length_km(drain_area_sq_mi):
 
 
 if __name__ == "__main__":
-    project = "National Water Quality Assessment Program (NAWQA)"
-
     site_df = pd.read_csv(
         "NWQN_sites.csv",
         comment="#",

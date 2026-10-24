@@ -896,8 +896,8 @@ def test_mid_page_walk_transient_is_still_resumable(httpx_mock):
     1's status check is outside its ``try``), so the typed cause is only reachable
     through ``__cause__``. ``_classify_chunk_error`` walks that chain for this reason;
     were it a single ``isinstance`` check, a mid-walk rate limit would propagate as a
-    bare error and lose ``.call.resume()`` -- inconsistently, since page 1 would still
-    be resumable.
+    bare error and lose ``.call.resume()`` -- inconsistently, because page 1 would
+    still be resumable.
     """
     httpx_mock.add_response(
         method="GET",
@@ -950,7 +950,7 @@ def test_wateruse_alias_warns_and_names_the_replacement():
     message = str(deprecations[0].message)
     assert "`dataretrieval.wateruse` is deprecated" in message
     assert "`dataretrieval.nwdc`" in message
-    # Dated removal, per the convention nwis follows.
+    # Dated removal, per the shared REMOVALS horizon convention.
     from dataretrieval.wateruse import NWDC_RENAME_REMOVAL_DATE
 
     assert NWDC_RENAME_REMOVAL_DATE in message

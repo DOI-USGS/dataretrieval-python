@@ -203,7 +203,8 @@ def get_samples(
             * organizations - "organization", "count"
 
     activity_media_name : string or iterable of strings, optional
-        Name or code indicating environmental medium in which sample was taken.
+        Name or code indicating the environmental medium in which a sample was
+        taken.
         Call ``get_codes("samplemedia")`` for the valid inputs.
         Example: "Water". (Samples API: ``activityMediaName``)
     activity_start_date_lower : string, optional
@@ -265,14 +266,14 @@ def get_samples(
         for the valid inputs.
         Example: "Well" (Samples API: ``siteTypeName``)
     usgs_pcode : string or iterable of strings, optional
-        5-digit number used in the US Geological Survey computerized
-        data system, National Water Information System (NWIS), to
+        A 5-digit number used in the U.S. Geological Survey computerized
+        data system, the National Water Information System (NWIS), to
         uniquely identify a specific constituent (the ``parameterCode`` column
         of ``get_codes("characteristics")``).
         Example: "00060" (Discharge, cubic feet per second)
         (Samples API: ``usgsPCode``)
     hydrologic_unit : string or iterable of strings, optional
-        Max 12-digit number used to describe a hydrologic unit.
+        A number of up to 12 digits used to describe a hydrologic unit.
         Example: "070900020502" (Samples API: ``hydrologicUnit``)
     monitoring_location_id : string or iterable of strings, optional
         A monitoring location identifier has two parts: the agency code
@@ -300,7 +301,7 @@ def get_samples(
         identifiers are specific to an organization (e.g. USGS).
         Example: "ZH003QW03" (Samples API: ``projectIdentifier``)
     record_identifier_user_supplied : string or iterable of strings, optional
-        Internal AQS record identifier that returns 1 entry. Only available
+        Internal AQS record identifier that returns one entry. Only available
         for the "results" service.
         (Samples API: ``recordIdentifierUserSupplied``)
 
@@ -384,7 +385,7 @@ def get_samples_summary(
     row per (characteristic group, characteristic, user-supplied characteristic)
     combination with result and activity counts and the first / most recent
     activity dates — useful for taking inventory of what discrete-sample data
-    exists at a monitoring location before pulling the underlying observations
+    exist at a monitoring location before pulling the underlying observations
     with :func:`get_samples`.
 
     The summary service is single-site only: it accepts exactly one monitoring

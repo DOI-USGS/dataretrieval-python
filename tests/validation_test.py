@@ -10,7 +10,6 @@ import pytest
 
 from dataretrieval._validation import (
     reject_together,
-    require_any_of,
     require_argument,
     require_exactly_one,
     require_one_of,
@@ -98,35 +97,6 @@ class TestRequireTogether:
     def test_reports_every_missing_member_of_a_larger_group(self):
         with pytest.raises(ValueError, match="Missing: b and c"):
             require_together({"a": 1, "b": None, "c": None})
-
-
-class TestRequireAnyOf:
-    def test_accepts_one_supplied(self):
-        require_any_of({"sites": "01491000", "stateCd": None})
-
-    def test_accepts_more_than_one(self):
-        """Two filters narrow the query; only none of them is an error."""
-        require_any_of({"sites": "01491000", "stateCd": "WI"})
-
-    def test_message_names_every_argument_that_would_have_served(self):
-        with pytest.raises(ValueError) as excinfo:
-            require_any_of({"sites": None, "stateCd": None, "huc": None})
-        message = str(excinfo.value)
-        assert "At least one of sites, stateCd or huc is required" in message
-        assert "Pass one of sites, stateCd or huc." in message
-
-    def test_context_says_what_the_group_is_for(self):
-        with pytest.raises(ValueError, match="as a major filter"):
-            require_any_of({"sites": None}, context="as a major filter")
-
-    def test_remedy_replaces_the_default(self):
-        with pytest.raises(ValueError, match="Pass all four corners."):
-            require_any_of({"sites": None}, remedy="Pass all four corners.")
-
-    def test_an_explicit_none_is_not_a_filter(self):
-        """``sites=None`` counted as supplied is how ``None`` reaches a URL."""
-        with pytest.raises(ValueError):
-            require_any_of({"sites": None})
 
 
 class TestRequireExactlyOne:

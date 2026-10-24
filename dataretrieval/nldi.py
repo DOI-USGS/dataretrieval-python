@@ -89,7 +89,7 @@ def _query_nldi(
         response_data = response.json()
     except JSONDecodeError:
         # even with a 200 status code, the response sometimes does not return JSON
-        # data which causes a JSONDecodeError
+        # data, which causes a JSONDecodeError
         pass
     return response_data
 
@@ -729,7 +729,7 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         stops.
     base_url : str, optional
         Linked-data base to send NLDI requests to, instead of the
-        service's own (``NLDI_API_BASE_URL``). Every navigation, basin
+        service's own (``NLDI_API_BASE_URL``). Every navigation, basin,
         and catalog request is built on it. Code only: the file and the
         environment refuse it.
     """

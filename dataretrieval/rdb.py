@@ -11,10 +11,8 @@ file has the same shape:
   it is informational only and skipped during parsing.
 - Tab-separated data rows.
 
-This module exposes the parsing primitives that both ``dataretrieval.nwis``
-and ``dataretrieval.waterdata.ratings`` use. Callers layer their own
-post-processing (NWIS-specific datetime indexing, ratings-specific
-``df.attrs`` provenance, etc.) on top of the raw frame.
+This module exposes the parsing primitives. Callers layer their own
+post-processing (such as ``df.attrs`` provenance) on top of the raw frame.
 """
 
 from __future__ import annotations
@@ -46,9 +44,8 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     Returns
     -------
     pandas.DataFrame
-        The parsed data. An RDB consisting only of comment lines (e.g. a
-        "no sites found" response) returns an empty DataFrame rather than
-        raising.
+        The parsed data. An RDB consisting only of comment lines returns an
+        empty DataFrame rather than raising.
 
     Raises
     ------
@@ -62,9 +59,8 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
             "the service is degraded, has moved, or returned an error page "
             "rather than that the query was wrong. Retry once after a short "
             "wait; if the same HTML comes back, the endpoint has most likely "
-            "been retired -- see "
-            "https://waterdata.usgs.gov/blog/api-waterservices-decom/ and "
-            "migrate to the dataretrieval.waterdata getters."
+            "moved -- report it at "
+            "https://github.com/DOI-USGS/dataretrieval-python/issues."
         )
 
     lines = text.splitlines()

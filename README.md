@@ -111,7 +111,7 @@ print(f"Retrieved {len(df)} records")
 print(f"Site: {df['monitoring_location_id'].iloc[0]}")
 print(f"Mean discharge: {df['value'].mean():.2f} {df['unit_of_measure'].iloc[0]}")
 ```
-Retrieve streamflow at multiple locations from October 1, 2024 to the present:
+Retrieve streamflow at multiple locations from October 1, 2024, to the present:
 
 ```python
 df, metadata = waterdata.get_daily(
@@ -216,20 +216,20 @@ logging.basicConfig(level=logging.DEBUG)
 
 ### National Ground-Water Monitoring Network (NGWMN)
 
-Access groundwater data aggregated from many state, federal, and local
+Access groundwater data aggregated from many State, Federal, and local
 agencies. NGWMN uses the same OGC engine as the Water Data API,
 so chunking and pagination behave the same way:
 
 ```python
 from dataretrieval import ngwmn
 
-# Find the groundwater monitoring sites in a state
+# Find the groundwater monitoring sites in a State
 # (state accepts a full name, a postal code like 'WI', or a FIPS code like '55')
 sites, metadata = ngwmn.get_sites(state="Wisconsin")
 
 print(f"Found {len(sites)} NGWMN sites in Wisconsin")
 
-# Pull water levels from the first twenty sites over a time window.
+# Pull water levels from the first 20 sites over a time window.
 water_levels, metadata = ngwmn.get_water_level(
     monitoring_location_id=sites["monitoring_location_id"][:20],
     datetime=["2022-01-01", "2024-01-01"],
@@ -240,12 +240,12 @@ print(f"Retrieved {len(water_levels)} water-level observations")
 
 ### Water Quality Portal (WQP)
 
-Access water quality data from multiple agencies:
+Access water-quality data from multiple agencies:
 
 ```python
 from dataretrieval import wqp
 
-# Find water quality monitoring sites (returns a DataFrame and metadata)
+# Find water-quality monitoring sites (returns a DataFrame and metadata)
 sites, metadata = wqp.what_sites(
     statecode="US:55",  # Wisconsin
     siteType="Stream",
@@ -253,7 +253,7 @@ sites, metadata = wqp.what_sites(
 
 print(f"Found {len(sites)} stream monitoring sites in Wisconsin")
 
-# Get water quality results
+# Get water-quality results
 results, metadata = wqp.get_results(
     siteid="USGS-05427718", characteristicName="Temperature, water"
 )
@@ -333,13 +333,6 @@ print(statewide.head())
 - `get_lithology`: Geologic-material logs by depth interval
 - `get_well_construction`: Casing, screen, and build-out records
 - `get_providers`: Contributing data-provider organizations
-
-### Legacy NWIS Services (Deprecated) — `dataretrieval.nwis`
-- `get_dv`: Legacy daily statistical data
-- `get_iv`: Legacy continuous (instantaneous) data
-- `get_info`: Basic site information
-- `get_stats`: Statistical summaries
-- `get_discharge_peaks`: Annual peak discharge events
 
 ### Water Quality Portal — `dataretrieval.wqp`
 - `get_results`: Water-quality analytical results from USGS, EPA, and other agencies
