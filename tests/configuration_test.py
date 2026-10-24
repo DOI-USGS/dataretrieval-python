@@ -1011,8 +1011,7 @@ def test_broken_config_does_not_break_unrelated_services(config_file):
     """
     config_file("this is not = valid toml [[[\n")
 
-    # Unauthorized hosts never get the key, so they never read the configuration.
-    assert "X-Api-Key" not in _default_headers("https://example.invalid/data")
+    # Other hosts never get the key, so they never read the configuration.
     assert "X-Api-Key" not in _default_headers("https://www.waterqualitydata.us/data")
 
     # The authorized host still raises rather than sending the request

@@ -165,12 +165,13 @@ Shared components
     behavior there.
 
 ``dataretrieval._querying``
-    The one-shot HTTP query path the single-request adapters (``wqp``,
-    ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
-    it, map the status, retry a transient. It was moved out of ``utils`` because the two
-    halves were in one file for no other reason -- this one depends on
-    ``exceptions`` and ``transport``, the shaping half on ``codes`` and
-    pandas, and no caller used both. The implementation module is private; the established public
+    The one-shot HTTP query path the single-shot adapters (``wqp``,
+    ``nldi``, ``streamstats``) use, and whose status mapping ``nwdc`` borrows:
+    compose the URL, send it, map the status, retry a transient. It was moved
+    out of ``utils`` because the two halves were in one file for no other
+    reason -- this one depends on ``exceptions`` and ``transport``, the shaping
+    half on ``codes`` and pandas, and no caller used both. The implementation
+    module is private; the established public
     function paths remain ``dataretrieval.utils.query`` and
     ``dataretrieval.utils.to_str``.
 
@@ -285,12 +286,13 @@ config-file format -- are catalogued once in the
 architecturally is the behavior around them:
 
 ``API_USGS_RETRIES``
-    Number of retries after the first attempt on supported active request paths;
-    defaults to four. Backoff is exponential with full jitter and waits for
-    bounded ``Retry-After`` values. Only failures that may not recur on a later
-    attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
-    itself, and not a transport failure that is determined before the request
-    is sent (unresolvable host, unsupported scheme).
+    Number of retries after the first attempt; defaults to four. Backoff is
+    exponential with full jitter and waits for bounded ``Retry-After`` values.
+    Only failures that may not recur on a later attempt are re-sent: 429 and
+    gateway 5xx, not a 500 rejecting the query itself, and not a transport
+    failure that is determined before the request is sent (unresolvable host,
+    unsupported scheme). The public ``dataretrieval.utils.query`` does not opt
+    in.
 
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and

@@ -59,7 +59,6 @@ def format_datetime(
         The data frame with a formatted 'datetime' column.
 
     """
-    # create a datetime index from the columns in qwdata response
     df[tz_field] = df[tz_field].map(tz)
 
     df["datetime"] = pd.to_datetime(
@@ -72,8 +71,8 @@ def format_datetime(
     if df["datetime"].isna().any():
         count = df["datetime"].isna().sum()
         warnings.warn(
-            f"Warning: {count} incomplete dates found, "
-            + "consider setting datetime_index to False.",
+            f"{count} incomplete dates found; those rows are NaT in 'datetime'. "
+            f"Check their {date_field!r}, {time_field!r}, and {tz_field!r} values.",
             UserWarning,
             stacklevel=2,
         )

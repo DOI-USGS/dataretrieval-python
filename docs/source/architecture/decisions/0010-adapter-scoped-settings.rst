@@ -19,6 +19,9 @@ decision 8. Decisions 2, 3, 4, 6 and 7 remain in effect: the tiers,
 source-major precedence, package-wide environment variables, the host-scoped
 key, and the adapter names.
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -65,10 +68,15 @@ from shows the premise is false. The settings themselves differ:
      - no
      - gateway only
      - no
+   * - ``nwis`` (deprecated, not an adapter key)
+     - ``waterservices.usgs.gov``
+     - no
+     - fixed, no retry
+     - yes
 
 ``concurrency`` and ``parallel_chunks`` are meaningless for the four
 single-shot adapters -- there is nothing to fan out. ``ssl_check`` applies to
-three adapters (``waterdata``, ``nwdc``, ``wqp``) and is currently a
+four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is currently a
 per-call keyword outside the chain entirely; it is passed to ``httpx``'s ``verify``,
 verified by spying on the client. A flat namespace accepts
 ``configure(streamstats={"parallel_chunks": 8})`` without error, which is
@@ -160,8 +168,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    ``waterdata``, ``ngwmn``, ``nwdc``, ``wqp``, ``nldi``, ``streamstats``.
    The deprecated ``nwis`` is deliberately absent: its calls pin
    ``max_retries=0``, so a ``[nwis]`` table could only be reported as in effect and
-   then ignored -- the failure this decision exists to prevent. Note (2026-10):
-   ``nwis`` has since been removed entirely.
+   then ignored -- the failure this decision exists to prevent.
 
 8. **Each adapter is a named, typed parameter on** ``configure()``, annotated
    with its own ``TypedDict``, so a type checker rejects a setting the adapter
@@ -227,13 +234,11 @@ Consequences
   the package that reads ``os.environ`` for a setting.
 
 - **``ssl_check`` stays a per-call argument and does not become a setting.**
-  It is a defaulted keyword on 13 shipped getters across three adapters --
-  ``wqp`` (9), ``waterdata`` (3) and ``nwdc`` (1) -- and it is
+  It is a defaulted keyword on 23 shipped getters across four adapters --
+  ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it is
   passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the only
   modules; the OGC getters were added later and never adopted it, so its
-  distribution records the package's history rather than a boundary. (Note
-  (2026-10): the ``nwis`` adapter, which held 10 of the getters, has been
-  removed.)
+  distribution records the package's history rather than a boundary.
 
   Three reasons not to promote it. It disables certificate verification, so as
   a per-call keyword it is a visible, scoped decision, while a config-file key
@@ -284,3 +289,7 @@ Notes
 - The ``wateruse`` module is renamed ``nwdc`` in a separate change; the service
   names itself "National Water Availability Assessment Data Companion" and
   serves ten models, only five of which are water use.
+- ``dataretrieval.nwis`` has since been removed (:doc:`0005-legacy-nwis`). The
+  survey table, decision 7, and the ``ssl_check`` counts describe the package
+  when this record was accepted; ``ssl_check`` is now a keyword on 13 getters
+  across three adapters.

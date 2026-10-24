@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -105,8 +108,7 @@ Consequences
 - The recurring question -- may this docstring say *site*? -- has an answer that
   does not depend on who is reviewing. In ``nwis`` it may, because that is the
   spelling its service and its parameters use. In ``transport`` it may not,
-  because nothing there is about NWIS. (Note (2026-10): the ``nwis`` module has
-  since been removed; the example stands as the reasoning that applied to it.)
+  because nothing there is about NWIS.
 - Enforcement splits. A core term can be checked mechanically, since one
   spelling is correct everywhere. A domain term cannot: the correct spelling
   depends on which adapter the prose is about, so it stays a review judgement.
@@ -146,3 +148,6 @@ made the gap visible rather than creating it.
 
 The per-service spellings in the table above were read from the adapters on
 2026-09-01.
+
+The ``nwis`` example under Consequences names a module that has since been
+removed (:doc:`0005-legacy-nwis`); the reasoning it illustrates is unchanged.

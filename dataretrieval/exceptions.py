@@ -1,7 +1,6 @@
 """Exception taxonomy for ``dataretrieval``.
 
-Every service module (``wqp``, ``nldi``, ``waterdata``,
-``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
+Every service module raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
 remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
@@ -22,9 +21,8 @@ which, because resolution is lazy, is inside whichever getter runs first. The
 batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
 that has stopped being updated.
 
-This module has no third-party runtime dependencies -- ``httpx`` is imported only for
-type checking. Any module can therefore import it without importing pandas or httpx, and
-without risking an import cycle.
+This module has no third-party dependencies, so any module can import it without
+importing pandas or httpx, and without risking an import cycle.
 """
 
 from __future__ import annotations
@@ -83,7 +81,7 @@ class DataRetrievalError(Exception):
     """
 
     #: HTTP status that triggered the error, or ``None`` for errors without one
-    #: (connection failure, too-long URL, no data). Set by :class:`HTTPError`.
+    #: (connection failure, too-long URL). Set by :class:`HTTPError`.
     status_code: int | None = None
     #: Seconds the server specified to wait before retrying (its ``Retry-After``
     #: header), or ``None`` when it sent none. Set by :class:`TransientError`.
@@ -205,7 +203,7 @@ class RateLimited(TransientError):
 class ServiceUnavailable(TransientError):
     """A request was rejected with a server error (HTTP 5xx).
 
-    Raised by both the single-request ``query`` path and the Water Data path, so a 5xx
+    Raised by both the single-shot ``query`` path and the Water Data path, so a 5xx
     is raised as one type whichever subsystem issued the request. ``.status_code``
     holds the actual 5xx; it falls back to 503 only on a bare hand-construction.
     """
@@ -229,7 +227,7 @@ class RequestTooLarge(DataRetrievalError):
 class URLTooLong(RequestTooLarge):
     """A single request URL was too long for the service.
 
-    Raised on the single-request ``query`` path (which sends one un-chunked request),
+    Raised on the single-shot ``query`` path (which sends one un-chunked request),
     whether the URL is rejected client-side before sending or by the server
     (see :func:`error_for_status`). Remediation: query fewer sites, or split the
     call manually.
@@ -339,7 +337,7 @@ def error_for_status(
 ) -> DataRetrievalError:
     """Return the typed :class:`DataRetrievalError` for an HTTP error *status*.
 
-    The one status-to-type mapping every request path shares (the single-request
+    The one status-to-type mapping every request path shares (the single-shot
     ``query`` path, ``waterdata``, ``streamstats``), so a given status
     becomes the same type everywhere:
 

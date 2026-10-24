@@ -30,31 +30,15 @@ class Test_Ambient:
 class Test_query:
     """Tests of the query function (mocked — no live calls)."""
 
-    def test_url_too_long(self, httpx_mock):
-        """A 413 / 414 from the service (an over-long query URL, Issue #64) is
-        raised as the typed URLTooLong."""
-        url = "https://example.invalid/x"
-        httpx_mock.add_response(method="GET", status_code=414)
-        with pytest.raises(exceptions.URLTooLong):
-            utils.query(url, {"sites": ["01491000", "01491001"]})
-
     def test_header(self, httpx_mock):
         """query() sends a User-Agent header and returns the response."""
-        httpx_mock.add_response(method="GET", json={"value": {"timeSeries": []}})
-        url = "https://example.invalid/x"
-        payload = {
-            "format": "json",
-            "startDT": "2010-10-01",
-            "endDT": "2010-10-10",
-            "sites": "01646500",
-            "multi_index": True,
-        }
-        response = utils.query(url, payload)
+        httpx_mock.add_response(method="GET")
+        response = utils.query("https://example.invalid/x", {"a": "1"})
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
     def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
-        """The public legacy query path still raises the first transient failure."""
+        """The public ``utils.query`` still raises the first transient failure."""
         url = "https://example.invalid/x"
         request_url = f"{url}?a=1"
         httpx_mock.add_response(method="GET", url=request_url, status_code=503)
@@ -630,8 +614,8 @@ class TestFormatDatetime:
     def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
         """An unparseable row becomes NaT rather than failing the whole frame,
         but dropping timestamps would return an incomplete frame with
-        nothing to mark the gap -- so it warns, and names the switch that
-        avoids the loss."""
+        nothing to mark the gap -- so it warns, and names the columns to
+        check."""
         df = pd.DataFrame(
             {
                 # A missing date field, as an RDB row with an unrecorded

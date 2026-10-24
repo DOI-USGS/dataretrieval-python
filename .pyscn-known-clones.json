@@ -78,9 +78,5 @@
       "clone_type": 4,
       "rationale": "Two Water Data getters matched as a semantic (type-4) clone at 0.672, just above the 0.65 threshold. Expect this pair to appear and disappear between runs as either getter is edited; that churn is not a new clone."
     }
-  ],
-  "sub_threshold_accepted": {
-    "_comment": "Families that pyscn 1.29.0 did NOT report at its defaults (they sat under its min_lines=10 / min_nodes=20) but that a deliberate scan at min_nodes=8 found on 2026-08-09. Not re-scanned with 1.32.4, whose min_lines is 8. Recorded so they are not rediscovered and re-litigated. They are NOT counted in `observed` above.",
-    "groups": []
-  }
+  ]
 }
