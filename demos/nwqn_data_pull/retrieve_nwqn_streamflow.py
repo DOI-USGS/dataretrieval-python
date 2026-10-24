@@ -22,11 +22,14 @@ def map_retrieval(site):
     site_id = f"USGS-{site}"
 
     if site in BAD_NLDI_SITES:
-        location_ids = [site_id]
+        site_info, _ = waterdata.get_monitoring_locations(
+            monitoring_location_id=site_id, skip_geometry=True
+        )
     # else query slowly
     else:
         sleep(randint(0, 5))
-        location_ids = find_neighboring_sites(site)
+        site_info = find_neighboring_sites(site)
+    location_ids = site_info["monitoring_location_id"].to_list()
 
     # Daily mean discharge, approved values only (filtered by the service).
     df, _ = waterdata.get_daily(
@@ -35,6 +38,7 @@ def map_retrieval(site):
         statistic_id="00003",
         approval_status="Approved",
         time=f"{START_DATE}/{END_DATE}",
+        properties=["monitoring_location_id", "time", "value"],
         skip_geometry=True,
     )
 
@@ -44,10 +48,6 @@ def map_retrieval(site):
         # index by monitoring location and day, keeping only the discharge value
         df = df.set_index(["monitoring_location_id", "time"])[["value"]].dropna()
 
-        site_info, _ = waterdata.get_monitoring_locations(
-            monitoring_location_id=location_ids,
-            skip_geometry=True,
-        )
         site_info = site_info.set_index("monitoring_location_id")
 
         main_site = site_info.loc[site_id]
@@ -105,7 +105,6 @@ def map_retrieval(site):
 def update_dataframe(
     original_df: pd.DataFrame,
     new_df: pd.DataFrame,
-    overwrite: bool = False,
 ) -> pd.DataFrame:
     """Update a DataFrame with values from another DataFrame.
 
@@ -121,8 +120,6 @@ def update_dataframe(
 
 
 if __name__ == "__main__":
-    project = "National Water Quality Assessment Program (NAWQA)"
-
     site_df = pd.read_csv(
         "NWQN_sites.csv",
         comment="#",

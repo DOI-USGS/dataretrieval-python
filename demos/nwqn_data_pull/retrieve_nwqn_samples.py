@@ -34,7 +34,8 @@ def map_retrieval(site):
     # else query slowly
     else:
         sleep(randint(0, 5))
-        location_ids = find_neighboring_sites(site)
+        neighbors = find_neighboring_sites(site)
+        location_ids = neighbors["monitoring_location_id"].to_list()
 
     df, _ = wqp_get_results(
         siteid=location_ids,
@@ -102,9 +103,9 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
 
     Returns
     -------
-    list of str
-        Monitoring location IDs (``USGS-`` prefixed) of the site and its
-        neighbors.
+    pandas.DataFrame
+        Monitoring locations of the site and its neighbors, as returned by
+        ``waterdata.get_monitoring_locations``.
     """
     site_df, _ = waterdata.get_monitoring_locations(
         monitoring_location_id=f"USGS-{site}", skip_geometry=True
@@ -134,13 +135,12 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
     )
     # drop sites with dissimilar drainage areas
     df = df[df["drainage_area"] / drain_area_sq_mi > search_factor]
-    location_ids = df["monitoring_location_id"].to_list()
 
     # include the original search site among the neighbors
-    if f"USGS-{site}" not in location_ids:
-        location_ids.append(f"USGS-{site}")
+    if f"USGS-{site}" not in df["monitoring_location_id"].values:
+        df = pd.concat([df, site_df], ignore_index=True)
 
-    return location_ids
+    return df
 
 
 def _estimate_watershed_length_km(drain_area_sq_mi):
@@ -163,8 +163,6 @@ def _estimate_watershed_length_km(drain_area_sq_mi):
 
 
 if __name__ == "__main__":
-    project = "National Water Quality Assessment Program (NAWQA)"
-
     site_df = pd.read_csv(
         "NWQN_sites.csv",
         comment="#",
