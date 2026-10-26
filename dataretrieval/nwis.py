@@ -13,5 +13,5 @@ raise ImportError(
     "waterservices endpoints it called. Use dataretrieval.waterdata instead, or "
     "dataretrieval.nwdc for water use. To keep using nwis while the endpoints "
     "remain online, pin the last release that includes it: "
-    'pip install "dataretrieval==1.4.0"'
+    'pip install "dataretrieval<=1.4.0"'
 )

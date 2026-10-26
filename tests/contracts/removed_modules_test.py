@@ -17,4 +17,4 @@ def test_nwis_import_names_the_replacement_and_the_pin(statement: str) -> None:
         exec(statement, {})
     message = str(excinfo.value)
     assert "dataretrieval.waterdata" in message
-    assert 'pip install "dataretrieval==1.4.0"' in message
+    assert 'pip install "dataretrieval<=1.4.0"' in message
