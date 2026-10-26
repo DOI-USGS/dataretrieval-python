@@ -24,7 +24,8 @@ layers =
 ; The deprecated ``wateruse`` alias re-exports ``nwdc``, so it sits above the
 ; adapters rather than beside them. A compatibility facade may depend on the
 ; adapter it forwards to; nothing may depend on the facade.
-    wateruse
+; The removed ``nwis`` stub only raises ``ImportError``, so nothing may import it.
+    nwis | wateruse
     ngwmn | nldi | nwdc | streamstats | waterdata | wqp
     ogc
     utils
