@@ -1,12 +1,12 @@
-"""State code lookups and normalization, keyed by full state name.
+"""State code lookups and normalization, keyed by full State name.
 
-``state_codes`` maps each state name to its two-letter postal abbreviation
+``state_codes`` maps each State name to its two-letter postal abbreviation
 (e.g. ``"Alabama": "al"``); ``fips_codes`` maps the same names to their
 two-digit FIPS codes (e.g. ``"Alabama": "01"``). :func:`to_state` normalizes
-a state identifier -- a full name, postal code, or two-digit /
+a State identifier -- a full name, postal code, or two-digit /
 ``US:``-prefixed FIPS code (or an iterable of them) -- to a chosen
 representation. An unrecognized value raises ``ValueError``. Coverage is the
-50 states, the District of Columbia, and the five US territories.
+50 states, the District of Columbia, and the five U.S. territories.
 """
 
 from __future__ import annotations
@@ -140,7 +140,7 @@ fips_codes = {
 _name_by_postal = {code: name for name, code in state_codes.items()}
 _name_by_fips = {fips: name for name, fips in fips_codes.items()}
 _name_by_lower = {name.lower(): name for name in state_codes}
-# The table names each state as the Water Data and NGWMN ``state_name`` fields
+# The table names each State as the Water Data and NGWMN ``state_name`` fields
 # do. "US Virgin Islands" is the Census Bureau's name, accepted as input only.
 _name_by_lower["us virgin islands"] = "Virgin Islands"
 
@@ -148,7 +148,7 @@ _name_by_lower["us virgin islands"] = "Virgin Islands"
 def to_state(
     value: str | int | Iterable[str | int], to: str = "name"
 ) -> str | list[str]:
-    """Normalize a US state/territory identifier to a chosen representation.
+    """Normalize a U.S. state/territory identifier to a chosen representation.
 
     ``value`` may be given as a full name (``"Wisconsin"``), a two-letter
     postal code (``"WI"``), or an ANSI/FIPS code as a string or integer
@@ -165,10 +165,10 @@ def to_state(
     * ``"fips"``    -> two-digit ANSI/FIPS code, e.g. ``"55"``
     * ``"fips_us"`` -> ``"US:"`` + FIPS code, e.g. ``"US:55"``
 
-    Coverage is the 50 states, DC, and the five US territories, each under its
-    real ANSI/FIPS code. A ``value`` that isn't recognized in one of those
-    encodings raises ``ValueError``, so a typo raises rather than
-    matching nothing.
+    Coverage is the 50 States, the District of Columbia, and the five U.S.
+    territories, each under its real ANSI/FIPS code. A ``value`` that is not
+    recognized in one of those encodings raises ``ValueError``, so a typo
+    raises rather than matching nothing.
     """
     if isinstance(value, str):
         return _to_state_one(value, to)
@@ -178,7 +178,7 @@ def to_state(
 
 
 def _to_state_one(value: str | int, to: str) -> str:
-    """Resolve a single state identifier; see :func:`to_state`."""
+    """Resolve a single State identifier; see :func:`to_state`."""
     s = str(value).strip()
     if s[:3].upper() == "US:":  # prefixed FIPS, e.g. "US:55"
         name = _name_by_fips.get(s[3:].strip().zfill(2))
@@ -200,7 +200,7 @@ def _to_state_one(value: str | int, to: str) -> str:
 
 
 def _format_state(name: str, to: str) -> str:
-    """Render a canonical state *name* in the ``to`` representation."""
+    """Render a canonical State *name* in the ``to`` representation."""
     require_one_of(to, ("name", "postal", "fips", "fips_us"), name="to")
     if to == "name":
         return name

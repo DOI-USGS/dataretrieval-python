@@ -33,7 +33,7 @@ class TestDefaultHeadersHostScoping:
 
     def test_key_excluded_for_external_host(self):
         """The key is not added for an external (non-USGS) host."""
-        url = "https://nwis.waterservices.usgs.gov/nwis/iv/"
+        url = "https://example.invalid/data/"
         headers = _default_headers(url)
         assert "X-Api-Key" not in headers
 

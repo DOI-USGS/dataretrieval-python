@@ -320,7 +320,7 @@ def get_ogc_data(
     # ``exc.call.resume()`` after a ChunkInterrupted (which never re-enters
     # this function). ``_finalize_ogc`` is the one place result shape is applied;
     # it also applies ``max_rows`` to the *combined* frame so the cap is the
-    # exact total even when the plan chunks or the call is resumed, while
+    # exact total even when the plan chunks or the call is resumed, whereas
     # the per-chunk ``row_cap`` bound below only early-stops each chunk's
     # pagination.
     finalize = functools.partial(

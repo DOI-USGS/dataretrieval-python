@@ -1,7 +1,6 @@
 """Exception taxonomy for ``dataretrieval``.
 
-Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
-``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
+Every service module raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
 remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
@@ -12,7 +11,7 @@ Most failures are an :class:`HTTPError` holding the response ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
-:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
+and :class:`ConfigurationError` for an unusable setting.
 :func:`error_for_status` maps a status to its type. ``ConfigurationError`` is
 the one member that is not a request failure at all: it reports an unusable
 setting or config file, raised from wherever a setting is first resolved --
@@ -22,9 +21,8 @@ which, because resolution is lazy, is inside whichever getter runs first. The
 batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
 that has stopped being updated.
 
-This module has no third-party runtime dependencies -- ``httpx`` is imported only for
-type checking. Any module can therefore import it without importing pandas or httpx, and
-without risking an import cycle.
+This module has no third-party dependencies, so any module can import it without
+importing pandas or httpx, and without risking an import cycle.
 """
 
 from __future__ import annotations
@@ -32,10 +30,7 @@ from __future__ import annotations
 import math
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import TYPE_CHECKING, Any, ClassVar
-
-if TYPE_CHECKING:
-    import httpx
+from typing import Any, ClassVar
 
 __all__ = [
     "DataRetrievalError",
@@ -47,7 +42,6 @@ __all__ = [
     "URLTooLong",
     "Unchunkable",
     "NetworkError",
-    "NoSitesError",
     "ConfigurationError",
     "DataCurrencyWarning",
     "SkippedItemWarning",
@@ -87,7 +81,7 @@ class DataRetrievalError(Exception):
     """
 
     #: HTTP status that triggered the error, or ``None`` for errors without one
-    #: (connection failure, too-long URL, no data). Set by :class:`HTTPError`.
+    #: (connection failure, too-long URL). Set by :class:`HTTPError`.
     status_code: int | None = None
     #: Seconds the server specified to wait before retrying (its ``Retry-After``
     #: header), or ``None`` when it sent none. Set by :class:`TransientError`.
@@ -159,7 +153,7 @@ class TransientError(HTTPError):
     This only classifies the condition; it does not itself retry. Whether to
     retry is up to the calling path: a single-shot request raises it for the
     caller to handle (e.g. wait :attr:`retry_after` seconds, then re-issue),
-    while the Water Data chunker retries and resumes automatically.
+    whereas the Water Data chunker retries and resumes automatically.
 
     Parameters
     ----------
@@ -209,7 +203,7 @@ class RateLimited(TransientError):
 class ServiceUnavailable(TransientError):
     """A request was rejected with a server error (HTTP 5xx).
 
-    Raised by both the legacy ``query`` path and the Water Data path, so a 5xx
+    Raised by both the single-shot ``query`` path and the Water Data path, so a 5xx
     is raised as one type whichever subsystem issued the request. ``.status_code``
     holds the actual 5xx; it falls back to 503 only on a bare hand-construction.
     """
@@ -233,7 +227,7 @@ class RequestTooLarge(DataRetrievalError):
 class URLTooLong(RequestTooLarge):
     """A single request URL was too long for the service.
 
-    Raised on the legacy ``query`` path (which sends one un-chunked request),
+    Raised on the single-shot ``query`` path (which sends one un-chunked request),
     whether the URL is rejected client-side before sending or by the server
     (see :func:`error_for_status`). Remediation: query fewer sites, or split the
     call manually.
@@ -280,27 +274,6 @@ class ConfigurationError(DataRetrievalError, ValueError):
     catches it, and code that already treats an invalid setting as a
     :class:`ValueError` keeps working. The dual base is ADR 0009.
     """
-
-
-# --- Empty result --------------------------------------------------------
-
-
-class NoSitesError(DataRetrievalError):
-    """A request succeeded (HTTP 200) but matched no sites/data.
-
-    A no-data result is normally **not** an error: the modern getters
-    (``waterdata``, ``wqp``, ``nldi``) return an empty ``DataFrame``. Only the
-    deprecated ``nwis`` (waterservices) path still raises this.
-    """
-
-    def __init__(self, url: httpx.URL) -> None:
-        self.url = url
-
-    def __str__(self) -> str:
-        return (
-            "No sites/data found using the selection criteria specified in "
-            f"url: {self.url}"
-        )
 
 
 # --- Upstream data currency -----------------------------------------------
@@ -364,7 +337,7 @@ def error_for_status(
 ) -> DataRetrievalError:
     """Return the typed :class:`DataRetrievalError` for an HTTP error *status*.
 
-    The one status-to-type mapping every request path shares (the legacy
+    The one status-to-type mapping every request path shares (the single-shot
     ``query`` path, ``waterdata``, ``streamstats``), so a given status
     becomes the same type everywhere:
 
@@ -406,7 +379,7 @@ def parse_retry_after(value: str | None) -> float | None:
     the client retry sooner against a service that just named a long delay,
     and would deny the caller the number it needs on ``.retry_after``. Clock
     skew can inflate a date-form value, but accepting one leads to a recoverable
-    escalation while ignoring it leads to re-sending to a service that has
+    escalation whereas ignoring it leads to re-sending to a service that has
     already named a delay.
 
     A date that has *already* passed yields no value at all rather than

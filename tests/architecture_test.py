@@ -348,7 +348,7 @@ def test_transport_is_execution_policy_only() -> None:
         "dataretrieval/transport/combining.py",
         # An exception taxonomy is not HTTP execution policy either. ``fanout``
         # raises ``FanOutInterrupted`` and belongs here; defining it here would
-        # not, since adapters catch it whether or not they went through
+        # not, because adapters catch it whether or not they went through
         # transport.
         "dataretrieval/transport/interruptions.py",
     }
@@ -376,7 +376,7 @@ def test_credential_policy_has_one_definition() -> None:
     # ``"https://…"`` form three modules use to write the same host, and it
     # flagged docstring prose that only names the service. Docstrings are
     # excluded here (they are documentation, not a second definition)
-    # while every other literal -- bare host or full base URL -- counts.
+    # whereas every other literal -- bare host or full base URL -- counts.
     offenders: list[str] = []
     for path in sorted(PACKAGE_ROOT.rglob("*.py")):
         if path.name == "credentials.py":

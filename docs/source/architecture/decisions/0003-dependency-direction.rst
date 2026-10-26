@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -48,7 +51,7 @@ Compliance
 
 ``.importlinter`` is the single authority for dependency direction. It declares
 the layer stack, the allowlist of OGC consumers, the facade-only seam, OGC's
-independence from legacy utilities, the NWIS quarantine, and collection-family
+independence from legacy utilities, and collection-family
 independence; ``lint-imports`` checks all of it against the transitive import
 graph in pre-commit and CI. A boundary that legitimately moves is one edit, in
 that file, alongside the ADR it cites.
@@ -76,3 +79,11 @@ The OGC consumer list is an allowlist, so a new service module fails the contrac
 someone places it deliberately. It should shrink as private seams move. Any
 growth requires explicit architecture review, and a change to the dependency
 policy requires this ADR to be superseded.
+
+Notes
+-----
+
+The first Compliance paragraph was corrected after acceptance to drop the NWIS
+quarantine contract, which was deleted with ``dataretrieval.nwis``
+(:doc:`0005-legacy-nwis`). The Decision's two rules naming NWIS are kept as
+accepted; with the module removed, they constrain nothing.

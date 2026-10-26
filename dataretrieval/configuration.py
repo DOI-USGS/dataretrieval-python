@@ -173,10 +173,11 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
     Parameters
     ----------
     *configurations : BaseConfiguration
-        A package-wide :class:`Configuration` and/or one configuration per
-        adapter, in any order. Each adapter's class is defined in that adapter's
-        module -- ``WaterdataConfiguration`` in :mod:`dataretrieval.waterdata`,
-        ``NgwmnConfiguration`` in :mod:`dataretrieval.ngwmn`, and so on.
+        A package-wide :class:`Configuration`, one configuration per
+        adapter, or both, in any order. Each adapter's class is defined in that
+        adapter's module -- ``WaterdataConfiguration`` in
+        :mod:`dataretrieval.waterdata`, ``NgwmnConfiguration`` in
+        :mod:`dataretrieval.ngwmn`, and so on.
 
     Yields
     ------
@@ -584,7 +585,7 @@ def progress() -> bool | None:
     if raw is None:
         return None
     # Preserve the legacy environment behavior (any value outside the false
-    # set enables progress), while new block/file values are validated strictly.
+    # set enables progress), whereas new block/file values are validated strictly.
     return _parse_progress(raw, label, strict=source != _ENV)
 
 
@@ -631,7 +632,7 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
     the file and the environment refuse it -- the file at :func:`_accepted_keys`
     and the environment at :data:`_REFUSED_ENV_VARS`, each with an error naming
     the block to write instead. A file that redirects a data-retrieval
-    library to another host is a supply-chain hazard, while a
+    library to another host is a supply-chain hazard, whereas a
     ``configure`` block keeps the redirect where a reader of the script sees it
     (ADR 0011).
 
@@ -650,7 +651,7 @@ def base_url(*, adapter: str | None = None, default: str | None = None) -> str |
     default : str, optional
         The service's own base, returned when nothing configured one. Omitted,
         ``None`` is returned -- which is what :func:`show_configuration` passes,
-        since it has no service default to supply.
+        because it has no service default to supply.
     """
     raw, label, _source = _resolve("base_url", adapter)
     if raw is None:
@@ -871,7 +872,7 @@ def _display_progress(_adapter: str | None = None) -> str:
 #: How each setting renders in :func:`show_configuration`. Keyed by the same
 #: names as :data:`_ALL_SETTINGS`, and asserted to cover them, so a setting
 #: added to one without the other fails at import instead of printing a
-#: neighbouring setting's value in the one report that exists to report
+#: neighboring setting's value in the one report that exists to report
 #: provenance accurately.
 #:
 #: Every renderer takes the adapter to resolve for, so the adapter-override

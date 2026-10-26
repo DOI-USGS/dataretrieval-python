@@ -44,7 +44,7 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
     Pinning ``API_USGS_CONCURRENT=1`` keeps chunk dispatch
     deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
-    a single transient is raised immediately rather than retried.
+    a single transient raise immediately rather than be retried.
     Concurrency and retry tests opt in by overriding the env inside
     their body.
 

@@ -19,7 +19,7 @@ transport modules report *into* it and the execution layer owns no rendering
 (ADR 0006), so every service adapter -- OGC or not -- uses the same reporter.
 
 By default the line is shown for interactive use — an interactive terminal or a
-Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI get no line.
+Jupyter/IPython kernel, like ``tqdm`` — whereas redirected logs and CI get no line.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
 """
 
@@ -232,7 +232,7 @@ class ProgressReporter:
 
         If the query targeted the API-key host and no key is configured (no
         ``API_USGS_PAT``), append a one-time pointer to API-key registration,
-        since unauthenticated callers are subject to much lower rate limits.
+        because unauthenticated callers are subject to much lower rate limits.
         """
         if self._closed:
             return

@@ -76,7 +76,7 @@ def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
 
 
 def get_sample_watershed() -> Watershed:
-    """Get a watershed object for a sample location in NY.
+    """Get a watershed object for a sample location in New York.
 
     Calls :obj:`dataretrieval.streamstats.get_watershed` with the parameters
     'NY', -74.524, and 43.939, and returns the resulting watershed object.

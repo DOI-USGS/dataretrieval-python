@@ -23,7 +23,7 @@ _last_progress: contextvars.ContextVar[float | None] = contextvars.ContextVar(
 
 
 def note_progress() -> None:
-    """Restart the no-progress budget: data has arrived."""
+    """Restart the no-progress budget: data have arrived."""
     _last_progress.set(time.monotonic())
 
 
@@ -49,7 +49,7 @@ def credit_wait(seconds: float) -> None:
 
     The credit never moves the timestamp past the present. A wait longer than the whole
     budget would otherwise set the timestamp in the *future*, making
-    :func:`elapsed_since_progress` negative -- and since nothing ever reduces
+    :func:`elapsed_since_progress` negative -- and because nothing ever reduces
     it, that one long queue wait would disable the bound for the rest of the
     call, which is the case the budget exists to bound.
     """

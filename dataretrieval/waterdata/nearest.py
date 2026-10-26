@@ -167,7 +167,7 @@ def get_nearest_continuous(
         - ``"first"``: keep the earlier observation.
         - ``"last"``:  keep the later observation.
         - ``"mean"``:  average numeric columns; set the ``time`` column to
-          the target, since no real observation exists at the midpoint.
+          the target, because no real observation exists at the midpoint.
 
     **kwargs
         Additional keyword arguments forwarded to ``get_continuous`` (e.g.

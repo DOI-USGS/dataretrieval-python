@@ -86,7 +86,7 @@ def get_monitoring_locations(
     Location information includes the name, identifier, agency responsible for
     data collection, and the date the location was established. It also includes
     the type of location, such as stream, lake, or groundwater, and geographic
-    information such as state, county, latitude and longitude, and hydrologic
+    information such as State, county, latitude and longitude, and hydrologic
     unit code (HUC).
 
     Parameters
@@ -111,11 +111,11 @@ def get_monitoring_locations(
         For well information this can be a district-assigned local number.
     district_code : string or iterable of strings, optional
         The Water Science Centers (WSCs) across the United States use the FIPS
-        state code as the district code. In some cases, monitoring locations and
+        State code as the district code. In some cases, monitoring locations and
         samples may be managed by a water science center that is adjacent to the
-        state in which the monitoring location actually resides. For example, a
+        State in which the monitoring location actually resides. For example, a
         monitoring location may have a district code of 30, which translates to
-        Montana, but a state code of 56 for Wyoming, because that is where the
+        Montana, but a State code of 56 for Wyoming, because that is where the
         monitoring location is actually located.
     country_code : string or iterable of strings, optional
         The code for the country in which the monitoring location is located.
@@ -133,11 +133,11 @@ def get_monitoring_locations(
         county equivalents. A `lookup table
         <https://www.census.gov/library/reference/code-lists/ansi.html#states>`_
         is available. The only countries with
-        political subdivisions other than the US are Mexico and Canada. The Mexican
-        states have US state codes ranging from 81-86 and Canadian provinces have
-        state codes ranging from 90-98.
+        political subdivisions other than the US are Mexico and Canada. The
+        Mexican states have U.S. state codes ranging from 81 to 86 and Canadian
+        provinces have state codes ranging from 90 to 98.
     state_name : string or iterable of strings, optional
-        The name of the state or state equivalent in which the monitoring location
+        The name of the State or State equivalent in which the monitoring location
         is located.
     county_code : string or iterable of strings, optional
         The code for the county or county equivalent (parish, borough, etc.) in which
@@ -157,13 +157,13 @@ def get_monitoring_locations(
     hydrologic_unit_code : string or iterable of strings, optional
         A unique hydrologic unit code (HUC) of two to eight digits, based on the
         four levels of classification in the hydrologic unit system. The United
-        States is divided and sub-divided into successively smaller hydrologic
-        units, classified into four levels: regions, sub-regions, accounting
+        States is divided and subdivided into successively smaller hydrologic
+        units, classified into four levels: regions, subregions, accounting
         units, and cataloging units. The hydrologic units are arranged within
         each other, from the smallest (cataloging units) to the largest
         (regions).
     basin_code : string or iterable of strings, optional
-        The Basin Code or "drainage basin code" is a two-digit code that further
+        The Basin Code or "drainage basin code" is a 2-digit code that further
         subdivides the 8-digit hydrologic-unit code. The drainage basin code is
         defined by the USGS State Office where the monitoring location is
         located.
@@ -172,7 +172,7 @@ def get_monitoring_locations(
         Datum.
     altitude_accuracy : string or iterable of strings, optional
         Accuracy of the altitude, in feet. An accuracy of +/- 0.1 foot would be
-        entered as “.1”. Many altitudes are interpolated from the contours on
+        entered as ".1". Many altitudes are interpolated from the contours on
         topographic maps; accuracies determined in this way are generally
         entered as one-half of the contour interval.
     altitude_method_code : string or iterable of strings, optional
@@ -223,9 +223,9 @@ def get_monitoring_locations(
         year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the
         returned column holds these strings as sent.
     aquifer_code : string or iterable of strings, optional
-        Local aquifers in the USGS water resources data base are identified by a
+        Local aquifers in the USGS water resources database are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
-        formation, followed by a 4 or 5 character abbreviation for the geologic
+        formation, followed by a 4- or 5-character abbreviation for the geologic
         unit or aquifer name). Additional information is available
         `at this link <https://help.waterdata.usgs.gov/faq/groundwater/local-aquifer-description>`_.
     national_aquifer_code : string or iterable of strings, optional
@@ -490,21 +490,21 @@ def get_time_series_metadata(
         :func:`get_combined_metadata` with ``hydrologic_unit_code`` instead.
         A unique hydrologic unit code (HUC) of two to eight digits, based on the
         four levels of classification in the hydrologic unit system. The United
-        States is divided and sub-divided into successively smaller hydrologic
-        units, classified into four levels: regions, sub-regions, accounting
+        States is divided and subdivided into successively smaller hydrologic
+        units, classified into four levels: regions, subregions, accounting
         units, and cataloging units. The hydrologic units are arranged within
         each other, from the smallest (cataloging units) to the largest
         (regions).
     state : string or iterable of strings, optional
         Deprecated, as ``hydrologic_unit_code`` is: v1 does not filter this
-        collection by state. Use :func:`get_combined_metadata` with ``state``
+        collection by State. Use :func:`get_combined_metadata` with ``state``
         instead. ``state`` is a dataretrieval argument rather than an API
         field: it accepts a full name (``"Wisconsin"``), a two-letter postal
         code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``) and is sent
         as ``state_name``.
     state_name : string or iterable of strings, optional
         Deprecated, as ``state`` is. Use :func:`get_combined_metadata` with
-        ``state_name`` instead. The name of the state or state equivalent in
+        ``state_name`` instead. The name of the State or State equivalent in
         which the monitoring location is located.
     last_modified : string, optional
         The last time a record was refreshed in our database. A refresh may

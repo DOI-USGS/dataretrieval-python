@@ -405,7 +405,7 @@ def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
 
     ``credit_wait`` moves the progress stamp forward; without a ceiling at
     "now", one long queue wait pushed it into the future, made
-    ``elapsed_since_progress`` negative, and -- since nothing ever reduces it
+    ``elapsed_since_progress`` negative, and -- because nothing ever reduces it
     -- left that call exempt from the stall bound until it returned.
     """
     now = 0.0
@@ -463,8 +463,8 @@ def test_queued_work_keeps_its_retries() -> None:
 
     The no-progress budget starts when a retry loop is entered, but a fan-out
     task may wait on a full semaphore long after that. Without crediting the
-    wait, the last chunks of a wide fan-out enter their first attempt with the budget
-    already spent, while the tasks dispatched ahead of it get the full
+    wait, the last chunks of a wide fan-out enter their first attempt with the
+    budget already spent, whereas the tasks dispatched ahead of it get the full
     allowance.
     """
 
@@ -506,7 +506,8 @@ def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
     The gated body is what the retry loop re-invokes, so stamping "now" on every
     slot acquisition would restart the budget each attempt and turn a bound on
     *total* time without data into a per-attempt latency bound -- five slow
-    failures would each look brief while the call received nothing for their sum.
+    failures would each look brief whereas the call received nothing for their
+    sum.
     """
 
     async def drive() -> int:
