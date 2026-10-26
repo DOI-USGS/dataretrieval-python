@@ -108,7 +108,8 @@ from an origin to connected features, flowlines, or basins.
 
 **NWIS** — The legacy USGS waterservices interface. Retired: the
 `dataretrieval.nwis` adapter has been removed (ADR 0005), so
-`import dataretrieval.nwis` raises `ModuleNotFoundError`. The term is kept
+`import dataretrieval.nwis` raises `ImportError` naming the replacements
+and the last release that includes it (1.4.0). The term is kept
 because "NWIS" survives as a data-provider name and data value in other services
 (WQP `providers=NWIS`, the USGS NWIS time-zone code list) and in this history.
 

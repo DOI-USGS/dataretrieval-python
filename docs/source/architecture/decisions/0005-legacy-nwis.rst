@@ -46,7 +46,9 @@ Consequences
 Compliance
 ----------
 
-``import dataretrieval.nwis`` raises ``ModuleNotFoundError``.
+``dataretrieval/nwis.py`` is a stub: importing it raises ``ImportError`` naming
+the Water Data replacements and the last release that includes the module
+(1.4.0).
 
 Notes
 -----
