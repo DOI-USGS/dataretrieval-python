@@ -2,8 +2,8 @@
 
 This leaf module owns recurring validation shapes and their message vocabulary;
 adapter-specific vocabularies remain with the adapters that define them. The
-checks cover closed vocabularies, required arguments and groups, sufficient
-alternatives, and mutually exclusive arguments.
+checks cover closed vocabularies, required arguments and groups, and mutually
+exclusive arguments.
 
 Every check raises ``ValueError`` about an argument's *value*, so calling code
 needs no inventory of which check raised. Every message states the problem and
@@ -207,47 +207,6 @@ def require_together(
         f"{_render_names(values)} must be given together{where}. "
         f"Missing: {_render_names(missing)}. {fix}"
     )
-
-
-def require_any_of(
-    values: Mapping[str, object],
-    *,
-    context: str = "",
-    remedy: str = "",
-) -> None:
-    """Raise ``ValueError`` unless at least one of *values* was supplied.
-
-    For a query that needs to be narrowed but does not care how -- the NWIS
-    major filters, where any one of five is enough for the service to respond.
-    The permissive counterpart of :func:`require_exactly_one`: two of them is a
-    narrower query rather than a contradiction, so only none is an error.
-    ``None`` counts as not supplied, so ``sites=None`` is refused rather than
-    reaching the URL.
-
-    Parameters
-    ----------
-    values
-        Parameter name to supplied value, in the order the message should
-        list them.
-    context
-        What the group is for, when the parameter names do not say --
-        ``context="to narrow the query"``.
-    remedy
-        Overrides the default remedy, which names the arguments to choose
-        among.
-
-    Raises
-    ------
-    ValueError
-        If none of *values* were supplied.
-    """
-    supplied, _ = _supplied(values)
-    if supplied:
-        return
-    where = _qualify(context)
-    names = _render_names(values, conjunction="or")
-    fix = remedy or f"Pass one of {names}."
-    raise ValueError(f"At least one of {names} is required{where}. {fix}")
 
 
 def require_exactly_one(

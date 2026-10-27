@@ -5,8 +5,7 @@ provide national-scale, USGS-modeled water-use data that underlie the `USGS
 National Water Availability Assessment <https://water.usgs.gov/nwaa-data/>`_.
 Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
 be queried for any county, state, or hydrologic unit. This is the modern
-replacement for the defunct legacy NWIS water-use service
-(``nwis.get_water_use``).
+replacement for the defunct legacy NWIS water-use service.
 
 Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
 (:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than

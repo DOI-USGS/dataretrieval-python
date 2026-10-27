@@ -11,7 +11,6 @@ API reference
     exceptions
     ngwmn
     nldi
-    nwis
     streamstats
     utils
     waterdata

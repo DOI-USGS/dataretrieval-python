@@ -34,20 +34,11 @@
     ]
   },
   "observed": {
-    "total_fragments": 351,
-    "cloned_fragments": 13,
-    "groups": 5
+    "total_fragments": 349,
+    "cloned_fragments": 11,
+    "groups": 4
   },
   "groups": [
-    {
-      "members": [
-        "dataretrieval/_validation.py::reject_together",
-        "dataretrieval/_validation.py::require_any_of"
-      ],
-      "similarity": 0.85,
-      "clone_type": 4,
-      "rationale": "Shared argument checks (AGENTS.md, Error messages): each returns early when the arguments are valid and otherwise raises one message from the same parts. Each check owns its wording, so a common helper would only move the message apart from the check that states it."
-    },
     {
       "members": [
         "dataretrieval/nwdc.py::_validate_county",
@@ -87,21 +78,5 @@
       "clone_type": 4,
       "rationale": "Two Water Data getters matched as a semantic (type-4) clone at 0.672, just above the 0.65 threshold. Expect this pair to appear and disappear between runs as either getter is edited; that churn is not a new clone."
     }
-  ],
-  "sub_threshold_accepted": {
-    "_comment": "Families that pyscn 1.29.0 did NOT report at its defaults (they sat under its min_lines=10 / min_nodes=20) but that a deliberate scan at min_nodes=8 found on 2026-08-09. Not re-scanned with 1.32.4, whose min_lines is 8. Recorded so they are not rediscovered and re-litigated. They are NOT counted in `observed` above.",
-    "groups": [
-      {
-        "members": [
-          "dataretrieval/nwis.py::get_discharge_measurements",
-          "dataretrieval/nwis.py::get_gwlevels",
-          "dataretrieval/nwis.py::get_pmcodes",
-          "dataretrieval/nwis.py::get_qwdata",
-          "dataretrieval/nwis.py::get_water_use"
-        ],
-        "similarity": 0.83,
-        "rationale": "Deprecated NWIS getters (ADR 0005). The surface is frozen pending removal, so collapsing it buys nothing and churns a public API users are being migrated off."
-      }
-    ]
-  }
+  ]
 }

@@ -6,6 +6,9 @@ Status
 
 Accepted
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -145,3 +148,6 @@ made the gap visible rather than creating it.
 
 The per-service spellings in the table above were read from the adapters on
 2026-09-01.
+
+The ``nwis`` example under Consequences names a module that has since been
+removed (:doc:`0005-legacy-nwis`); the reasoning it illustrates is unchanged.

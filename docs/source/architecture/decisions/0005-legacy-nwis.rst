@@ -4,7 +4,10 @@ ADR 0005: Quarantine and retire legacy NWIS
 Status
 ------
 
-Accepted
+Accepted. Carried out: ``dataretrieval.nwis`` has been removed.
+
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
 
 Context
 -------
@@ -43,7 +46,16 @@ Consequences
 Compliance
 ----------
 
-Deprecation tests verify one warning per public call and validate named Water
-Data replacements. The ``nwis-quarantine`` contract in ``.importlinter``
-prevents modern package modules from importing ``dataretrieval.nwis``, directly
-or through an intermediary.
+``dataretrieval/nwis.py`` is a stub: importing it raises ``ImportError`` naming
+the Water Data replacements and the last release that includes the module
+(1.4.0).
+
+Notes
+-----
+
+The module was removed before the 2027-05-06 horizon, because USGS is
+decommissioning the waterservices endpoints it called. The Compliance section
+was rewritten at removal: it described the deprecation tests that verified one
+warning per public call and named Water Data replacements, and the
+``nwis-quarantine`` contract in ``.importlinter``. Both were removed with the
+module.

@@ -9,8 +9,8 @@
   and takes one spelling everywhere *including identifiers*, so a name in the
   code that conflicts with it is a defect. A **domain** term -- *monitoring
   location*, *collection* -- is fixed for prose only: each adapter keeps its
-  own service's spelling in its parameters, so `nwis.get_record(service="dv")`
-  and WQP's `Station` are that service's vocabulary rather than drift. Each
+  own service's spelling in its parameters, so WQP's `siteid` and `Station`
+  are that service's vocabulary rather than drift. Each
   entry states which kind it is.
 - Architectural decisions and their rationale: `docs/source/architecture/decisions/`
   (ADRs, referenced by number throughout the code and by `.importlinter`).
@@ -21,8 +21,8 @@ Use `ls`/`grep` for the file list; what follows is the placement logic, so you
 can predict where a thing is defined.
 
 - `dataretrieval/` — the public surface is one *adapter* module per service,
-  named for the service (`nldi`, `nwdc`, `ngwmn`, `streamstats`, `wqp`, and
-  legacy `nwis`); each owns that service's URLs, parameters, and response
+  named for the service (`nldi`, `nwdc`, `ngwmn`, `streamstats`, and `wqp`);
+  each owns that service's URLs, parameters, and response
   quirks. `waterdata/` is the one adapter large enough to be a package, split by
   collection family; its `api.py` is a compatibility facade holding no logic.
   Everything else in the package is shared code the adapters depend on
@@ -112,8 +112,8 @@ raise states the problem and then the action that fixes it, in that order.
 - Don't invent a phrasing for a check that recurs. `dataretrieval/_validation.py`
   owns the wording for the shared cases — bad value in a closed vocabulary
   (`require_one_of`), missing argument (`require_argument`), incomplete group
-  (`require_together`), no filter at all (`require_any_of`), and conflicting
-  arguments (`require_exactly_one`, `reject_together`). Use one before
+  (`require_together`), and conflicting arguments
+  (`require_exactly_one`, `reject_together`). Use one before
   hand-writing a message. A service-specific pointer is not a reason to
   hand-write: every check takes a `remedy=` for the action it cannot derive.
   Every check raises `ValueError` -- one class for a bad argument value, so a
@@ -146,7 +146,7 @@ raise states the problem and then the action that fixes it, in that order.
 - Public getters return `(DataFrame, metadata)`.
 - `dataretrieval/__init__.py` imports the service modules by name and lists them
   in `__all__`; it does not star-import them, so a getter is accessed through its
-  module (`dataretrieval.nwis.get_record`), never from the top level. `nldi` is
+  module (`dataretrieval.wqp.get_results`), never from the top level. `nldi` is
   deliberately absent — it needs `geopandas` at import time, so it is imported on
   demand. `dataretrieval/waterdata/__init__.py` controls Water Data exports via
   `__all__`.
