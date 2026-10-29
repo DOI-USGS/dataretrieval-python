@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+gc926c7020 documentation</title>
+  <title>dataretrieval.waterdata.time_series &mdash; dataretrieval 0.1.dev1+g2846fff54 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=f1ab59ff"></script>
+      <script src="../../../_static/documentation_options.js?v=11c91b61"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -581,6 +581,8 @@
     <span class="n">filter_lang</span><span class="p">:</span> <span class="n">FILTER_LANG</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">convert_type</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">max_rows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">method_category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">queryables</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">BaseMetadata</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get only the most recent observation of each continuous time series.</span>
@@ -618,7 +620,7 @@
 <span class="sd">        The columns to return from the query. Available</span>
 <span class="sd">        options are: geometry, id, time_series_id, monitoring_location_id,</span>
 <span class="sd">        parameter_code, statistic_id, time, value, unit_of_measure,</span>
-<span class="sd">        approval_status, qualifier, last_modified</span>
+<span class="sd">        approval_status, qualifier, method_category, last_modified</span>
 <span class="sd">    time_series_id : string or iterable of strings, optional</span>
 <span class="sd">        A unique identifier representing a single time series, corresponding to</span>
 <span class="sd">        the id field in the time-series-metadata endpoint.</span>
@@ -649,6 +651,12 @@
 <span class="sd">        sensor may have been impacted by ice or whether values were estimated.</span>
 <span class="sd">        Matches observations whose qualifiers are exactly these, in this order:</span>
 <span class="sd">        ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.</span>
+<span class="sd">    method_category : string or iterable of strings, optional</span>
+<span class="sd">        The RLMS method category code for the method in effect over the</span>
+<span class="sd">        observation's interval: "STNRD" (standardized, with known uncertainty</span>
+<span class="sd">        and full QA/QC), "LMTUS" (limited use: a modified or externally</span>
+<span class="sd">        sourced method), "EXPER" (experimental), or "UNKWN" (unknown).</span>
+<span class="sd">        Null for time series that have not been categorized.</span>
 <span class="sd">    value : string or iterable of strings, optional</span>
 <span class="sd">        The value of the observation. Values are transmitted as strings in</span>
 <span class="sd">        the JSON response format to preserve precision.</span>
