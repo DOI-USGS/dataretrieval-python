@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+g776c8b039 documentation</title>
+  <title>USGS dataretrieval Python Package Groundwater-Level get_field_measurements() Examples &mdash; dataretrieval 0.1.dev1+gc926c7020 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=7d14b0cf"></script>
+      <script src="../_static/documentation_options.js?v=f1ab59ff"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,18 +128,19 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (0.1.dev1+g776c8b039)
-Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
-Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
-Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.4)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
-Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
-Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.7.22)
-Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
-Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (0.1.dev1+gc926c7020)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.0)
+Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
+Requirement already satisfied: numpy&gt;=2.0.2 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.4)
+Requirement already satisfied: python-dateutil&gt;=2.9.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (3.0.0)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
+Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
+Requirement already satisfied: six&gt;=1.6 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: tzdata in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2026.6)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.10.23)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -861,18 +862,18 @@ Retrieved 933 data values.
     <tr>
       <th>928</th>
       <td>POINT (-91.72294 37.98615)</td>
-      <td>3c26120c-0be9-4e52-8435-370bd37ed6c0</td>
+      <td>f2ee268b-e080-45db-be0b-926150fb0fae</td>
       <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
-      <td>62611</td>
+      <td>72019</td>
       <td>USGS-375907091432201</td>
       <td>V</td>
       <td>GW level, calib electric tape</td>
-      <td>878.68</td>
+      <td>310.46</td>
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -880,7 +881,7 @@ Retrieved 933 data values.
       <td>19</td>
       <td>16:04:00+00:00</td>
       <td>None</td>
-      <td>8292a0c9-805d-4c0f-88c3-329c2fd55110</td>
+      <td>6fd6f05b-4370-4133-a3ba-e9b6d92bd721</td>
     </tr>
     <tr>
       <th>929</th>
@@ -896,7 +897,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -904,34 +905,10 @@ Retrieved 933 data values.
       <td>19</td>
       <td>16:04:00+00:00</td>
       <td>None</td>
-      <td>cd830698-9ccb-4f65-b598-56108ae94896</td>
+      <td>9ec235c6-ca2b-48b6-b825-bfd0981ead31</td>
     </tr>
     <tr>
       <th>930</th>
-      <td>POINT (-91.72294 37.98615)</td>
-      <td>4d3667e7-6eb2-4cde-8458-b4a24096cfd1</td>
-      <td>ReferencePrimary</td>
-      <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
-      <td>62610</td>
-      <td>USGS-375907091432201</td>
-      <td>V</td>
-      <td>GW level, calib electric tape</td>
-      <td>875.52</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>2020</td>
-      <td>8</td>
-      <td>31</td>
-      <td>13:00:00+00:00</td>
-      <td>None</td>
-      <td>5d195a38-6634-46d3-825e-83cd97a2ed67</td>
-    </tr>
-    <tr>
-      <th>931</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>3c26120c-0be9-4e52-8435-370bd37ed6c0</td>
       <td>ReferencePrimary</td>
@@ -944,7 +921,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -952,7 +929,31 @@ Retrieved 933 data values.
       <td>31</td>
       <td>13:00:00+00:00</td>
       <td>None</td>
-      <td>81b81738-5ca7-42e6-8172-fda2e3addefa</td>
+      <td>82159f75-87da-4ae0-9264-5b35e9647d50</td>
+    </tr>
+    <tr>
+      <th>931</th>
+      <td>POINT (-91.72294 37.98615)</td>
+      <td>4d3667e7-6eb2-4cde-8458-b4a24096cfd1</td>
+      <td>ReferencePrimary</td>
+      <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
+      <td>62610</td>
+      <td>USGS-375907091432201</td>
+      <td>V</td>
+      <td>GW level, calib electric tape</td>
+      <td>875.52</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>MO005</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
+      <td>None</td>
+      <td>b6fc2e2c-b158-4400-b172-130ac1f93a7c</td>
     </tr>
     <tr>
       <th>932</th>
@@ -968,7 +969,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -976,7 +977,7 @@ Retrieved 933 data values.
       <td>31</td>
       <td>13:00:00+00:00</td>
       <td>None</td>
-      <td>d4b6c34e-40a7-4242-a9cc-09e22cd0de9f</td>
+      <td>f29ec961-5ba1-441c-9b2e-9448ef8721fc</td>
     </tr>
   </tbody>
 </table>
@@ -1204,18 +1205,18 @@ Retrieved 933 data values.
     <tr>
       <th>928</th>
       <td>POINT (-91.72294 37.98615)</td>
-      <td>3c26120c-0be9-4e52-8435-370bd37ed6c0</td>
+      <td>f2ee268b-e080-45db-be0b-926150fb0fae</td>
       <td>ReferencePrimary</td>
       <td>48bfbbaa-5db8-4ba2-9e90-742166552bec</td>
-      <td>62611</td>
+      <td>72019</td>
       <td>USGS-375907091432201</td>
       <td>V</td>
       <td>GW level, calib electric tape</td>
-      <td>878.68</td>
+      <td>310.46</td>
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -1223,7 +1224,7 @@ Retrieved 933 data values.
       <td>19</td>
       <td>16:04:00+00:00</td>
       <td>None</td>
-      <td>8292a0c9-805d-4c0f-88c3-329c2fd55110</td>
+      <td>6fd6f05b-4370-4133-a3ba-e9b6d92bd721</td>
     </tr>
     <tr>
       <th>929</th>
@@ -1239,7 +1240,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -1247,34 +1248,10 @@ Retrieved 933 data values.
       <td>19</td>
       <td>16:04:00+00:00</td>
       <td>None</td>
-      <td>cd830698-9ccb-4f65-b598-56108ae94896</td>
+      <td>9ec235c6-ca2b-48b6-b825-bfd0981ead31</td>
     </tr>
     <tr>
       <th>930</th>
-      <td>POINT (-91.72294 37.98615)</td>
-      <td>4d3667e7-6eb2-4cde-8458-b4a24096cfd1</td>
-      <td>ReferencePrimary</td>
-      <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
-      <td>62610</td>
-      <td>USGS-375907091432201</td>
-      <td>V</td>
-      <td>GW level, calib electric tape</td>
-      <td>875.52</td>
-      <td>ft</td>
-      <td>...</td>
-      <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
-      <td>None</td>
-      <td>None</td>
-      <td>2020</td>
-      <td>8</td>
-      <td>31</td>
-      <td>13:00:00+00:00</td>
-      <td>None</td>
-      <td>5d195a38-6634-46d3-825e-83cd97a2ed67</td>
-    </tr>
-    <tr>
-      <th>931</th>
       <td>POINT (-91.72294 37.98615)</td>
       <td>3c26120c-0be9-4e52-8435-370bd37ed6c0</td>
       <td>ReferencePrimary</td>
@@ -1287,7 +1264,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -1295,7 +1272,31 @@ Retrieved 933 data values.
       <td>31</td>
       <td>13:00:00+00:00</td>
       <td>None</td>
-      <td>81b81738-5ca7-42e6-8172-fda2e3addefa</td>
+      <td>82159f75-87da-4ae0-9264-5b35e9647d50</td>
+    </tr>
+    <tr>
+      <th>931</th>
+      <td>POINT (-91.72294 37.98615)</td>
+      <td>4d3667e7-6eb2-4cde-8458-b4a24096cfd1</td>
+      <td>ReferencePrimary</td>
+      <td>68eeb933-ea4d-4e8c-be48-605c06cb36fc</td>
+      <td>62610</td>
+      <td>USGS-375907091432201</td>
+      <td>V</td>
+      <td>GW level, calib electric tape</td>
+      <td>875.52</td>
+      <td>ft</td>
+      <td>...</td>
+      <td>MO005</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
+      <td>None</td>
+      <td>None</td>
+      <td>2020</td>
+      <td>8</td>
+      <td>31</td>
+      <td>13:00:00+00:00</td>
+      <td>None</td>
+      <td>b6fc2e2c-b158-4400-b172-130ac1f93a7c</td>
     </tr>
     <tr>
       <th>932</th>
@@ -1311,7 +1312,7 @@ Retrieved 933 data values.
       <td>ft</td>
       <td>...</td>
       <td>MO005</td>
-      <td>2026-07-26 03:32:44.418864+00:00</td>
+      <td>2026-10-25 04:14:27.241239+00:00</td>
       <td>None</td>
       <td>None</td>
       <td>2020</td>
@@ -1319,7 +1320,7 @@ Retrieved 933 data values.
       <td>31</td>
       <td>13:00:00+00:00</td>
       <td>None</td>
-      <td>d4b6c34e-40a7-4242-a9cc-09e22cd0de9f</td>
+      <td>f29ec961-5ba1-441c-9b2e-9448ef8721fc</td>
     </tr>
   </tbody>
 </table>

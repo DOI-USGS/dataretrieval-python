@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g776c8b039 documentation</title>
+  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+gc926c7020 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=7d14b0cf"></script>
+      <script src="../_static/documentation_options.js?v=f1ab59ff"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,18 +133,19 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (0.1.dev1+g776c8b039)
-Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (3.0.6)
-Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
-Requirement already satisfied: numpy&gt;=1.26.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.4)
-Requirement already satisfied: python-dateutil&gt;=2.8.2 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.9.0.post0)
-Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
-Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
-Requirement already satisfied: six&gt;=1.5 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.8.2-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.7.22)
-Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
-Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (0.1.dev1+gc926c7020)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.0)
+Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
+Requirement already satisfied: numpy&gt;=2.0.2 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.4)
+Requirement already satisfied: python-dateutil&gt;=2.9.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (3.0.0)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
+Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
+Requirement already satisfied: six&gt;=1.6 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
+Requirement already satisfied: tzdata in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2026.6)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.10.23)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -698,18 +699,18 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>US</td>
       <td>45</td>
       <td>015</td>
-      <td>1942-05-01</td>
-      <td>1942-05-31</td>
+      <td>2005-04-01</td>
+      <td>2005-04-30</td>
       <td>month</td>
-      <td>584.032</td>
+      <td>15.757</td>
       <td>NaN</td>
-      <td>31</td>
+      <td>30</td>
       <td>approved</td>
-      <td>043dcd51-8a2f-48ca-bb20-20933651f633</td>
+      <td>e428b093-0199-4831-8530-060afeb7d91f</td>
       <td>arithmetic_mean</td>
-      <td>00060</td>
-      <td>ft^3/s</td>
-      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>71568057ac754741ab92d5c0cb48c159</td>
     </tr>
     <tr>
       <th>1</th>
@@ -721,18 +722,18 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>US</td>
       <td>45</td>
       <td>015</td>
-      <td>1942-06-01</td>
-      <td>1942-06-30</td>
+      <td>2005-05-01</td>
+      <td>2005-05-31</td>
       <td>month</td>
-      <td>2571.333</td>
+      <td>20.081</td>
       <td>NaN</td>
-      <td>30</td>
+      <td>31</td>
       <td>approved</td>
-      <td>0a96c646-ca99-45de-b8ea-b85954d5e029</td>
+      <td>cb6a3cc8-23f2-4267-be65-ec42133bdc5e</td>
       <td>arithmetic_mean</td>
-      <td>00060</td>
-      <td>ft^3/s</td>
-      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>71568057ac754741ab92d5c0cb48c159</td>
     </tr>
     <tr>
       <th>2</th>
@@ -744,18 +745,18 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>US</td>
       <td>45</td>
       <td>015</td>
-      <td>1942-07-01</td>
-      <td>1942-07-31</td>
+      <td>2005-06-01</td>
+      <td>2005-06-30</td>
       <td>month</td>
-      <td>400.742</td>
+      <td>24.711</td>
       <td>NaN</td>
-      <td>31</td>
+      <td>28</td>
       <td>approved</td>
-      <td>88991dcf-0994-4d18-be50-378146f193fe</td>
+      <td>26bd8cde-dddb-4aff-885c-c1372981002d</td>
       <td>arithmetic_mean</td>
-      <td>00060</td>
-      <td>ft^3/s</td>
-      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>71568057ac754741ab92d5c0cb48c159</td>
     </tr>
     <tr>
       <th>3</th>
@@ -767,18 +768,18 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>US</td>
       <td>45</td>
       <td>015</td>
-      <td>1942-08-01</td>
-      <td>1942-08-31</td>
+      <td>2005-07-01</td>
+      <td>2005-07-31</td>
       <td>month</td>
-      <td>549.581</td>
+      <td>28.616</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>64fd8688-07e2-4710-8cd4-57ee0e25ff66</td>
+      <td>ae1e1b23-27ac-482f-af1f-7c752ad5e098</td>
       <td>arithmetic_mean</td>
-      <td>00060</td>
-      <td>ft^3/s</td>
-      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>71568057ac754741ab92d5c0cb48c159</td>
     </tr>
     <tr>
       <th>4</th>
@@ -790,18 +791,18 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>US</td>
       <td>45</td>
       <td>015</td>
-      <td>1942-09-01</td>
-      <td>1942-09-30</td>
+      <td>2005-08-01</td>
+      <td>2005-08-31</td>
       <td>month</td>
-      <td>1338.467</td>
+      <td>28.723</td>
       <td>NaN</td>
-      <td>30</td>
+      <td>31</td>
       <td>approved</td>
-      <td>c8b93535-460a-4dfd-91ab-a5ec4a16c827</td>
+      <td>a675b1e5-222d-413f-89cf-53748f39decf</td>
       <td>arithmetic_mean</td>
-      <td>00060</td>
-      <td>ft^3/s</td>
-      <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00010</td>
+      <td>degC</td>
+      <td>71568057ac754741ab92d5c0cb48c159</td>
     </tr>
     <tr>
       <th>...</th>
@@ -839,15 +840,15 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>2021-10-01</td>
       <td>2022-09-30</td>
       <td>water_year</td>
-      <td>21.14</td>
+      <td>20.784</td>
       <td>NaN</td>
       <td>351</td>
       <td>approved</td>
-      <td>c0b9a9f4-ccc2-4340-9b5e-dc1bce9d2e9f</td>
+      <td>6bdfe85c-4494-4143-84ce-e30849f1e68b</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>eee9f59ead4b40abb0ba7e08377dc0d0</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
     </tr>
     <tr>
       <th>2128</th>
@@ -862,15 +863,15 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>2022-10-01</td>
       <td>2023-09-30</td>
       <td>water_year</td>
-      <td>21.509</td>
+      <td>21.121</td>
       <td>NaN</td>
       <td>361</td>
       <td>approved</td>
-      <td>b379a1fb-86d3-4c22-aa8c-a73422d4822f</td>
+      <td>c4ec6635-83cf-4d54-9fd8-caed23b96a98</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>eee9f59ead4b40abb0ba7e08377dc0d0</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
     </tr>
     <tr>
       <th>2129</th>
@@ -885,15 +886,15 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>2023-10-01</td>
       <td>2024-09-30</td>
       <td>water_year</td>
-      <td>20.697</td>
+      <td>20.383</td>
       <td>NaN</td>
       <td>342</td>
       <td>approved</td>
-      <td>24a0acbb-c45f-42bd-b4da-e59d65d337fb</td>
+      <td>e533a96f-655a-4753-b960-0560b0be2d97</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>eee9f59ead4b40abb0ba7e08377dc0d0</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
     </tr>
     <tr>
       <th>2130</th>
@@ -908,15 +909,15 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>2024-10-01</td>
       <td>2025-09-30</td>
       <td>water_year</td>
-      <td>21.316</td>
+      <td>20.928</td>
       <td>NaN</td>
       <td>348</td>
       <td>approved</td>
-      <td>e954b089-e129-494b-b969-b9f7c71e0a9f</td>
+      <td>197d9815-4ecd-4b89-a01e-50e128e4dbd6</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>eee9f59ead4b40abb0ba7e08377dc0d0</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
     </tr>
     <tr>
       <th>2131</th>
@@ -931,15 +932,15 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>2025-10-01</td>
       <td>2026-05-10</td>
       <td>water_year</td>
-      <td>20.274</td>
+      <td>19.779</td>
       <td>NaN</td>
       <td>216</td>
       <td>approved</td>
-      <td>3a66d0e2-d4ab-4c79-bd5c-cd5decd2ef3b</td>
+      <td>15823025-6316-43cc-a0d8-aef8f85ca0fb</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>eee9f59ead4b40abb0ba7e08377dc0d0</td>
+      <td>ea8d8089780f48428cff4a5ba344f1aa</td>
     </tr>
   </tbody>
 </table>

@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+g776c8b039 documentation</title>
+  <title>dataretrieval.nwis &mdash; dataretrieval 0.1.dev1+gc926c7020 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=7d14b0cf"></script>
+      <script src="../../_static/documentation_options.js?v=f1ab59ff"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -293,11 +293,14 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span>
 
-    <span class="c1"># Index our own frame, never the caller's. The shallow copy shares the</span>
-    <span class="c1"># columns; ``set_index`` without ``inplace`` duplicates them, because</span>
-    <span class="c1"># pandas deep-copies the frame whenever copy-on-write is off.</span>
+    <span class="c1"># Index our own frame, never the caller's. Popping the keys off a shallow</span>
+    <span class="c1"># copy leaves the other columns shared; ``set_index`` copies them when</span>
+    <span class="c1"># copy-on-write is off, and pandas 3.1 deprecates its ``inplace``.</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># noqa: PD002 # our copy, not the caller's</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">)</span>
 
     <span class="c1"># Retag the index alone; ``DataFrame.tz_localize`` relabels the axis by</span>
     <span class="c1"># duplicating every column whenever copy-on-write is off.</span>
