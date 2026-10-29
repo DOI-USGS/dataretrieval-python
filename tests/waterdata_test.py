@@ -1172,6 +1172,9 @@ def test_get_latest_continuous(httpx_mock):
     assert df.columns[-1] == "latest_continuous_id"
     assert df["time"].dtype.name.startswith("datetime64[")
     assert "UTC" in df["time"].dtype.name
+    # One fixture series is categorized and one is not.
+    assert df["method_category"].iloc[0] == "UNKWN"
+    assert pd.isna(df["method_category"].iloc[1])
     assert hasattr(md, "url")
     # Multi-value params go in one CQL2 POST when the request fits.
     sent = _items_requests(httpx_mock, "latest-continuous")
