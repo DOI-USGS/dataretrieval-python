@@ -202,11 +202,14 @@ def format_response(
     else:
         keys = ["datetime"]
 
-    # Index our own frame, never the caller's. The shallow copy shares the
-    # columns; ``set_index`` without ``inplace`` duplicates them, because
-    # pandas deep-copies the frame whenever copy-on-write is off.
+    # Index our own frame, never the caller's. Popping the keys off a shallow
+    # copy leaves the other columns shared; ``set_index`` copies them when
+    # copy-on-write is off, and pandas 3.1 deprecates its ``inplace``.
     df = df.copy(deep=False)
-    df.set_index(keys, inplace=True)  # noqa: PD002 # our copy, not the caller's
+    levels = [df.pop(key) for key in keys]
+    df.index = (
+        pd.MultiIndex.from_arrays(levels) if len(levels) > 1 else pd.Index(levels[0])
+    )
 
     # Retag the index alone; ``DataFrame.tz_localize`` relabels the axis by
     # duplicating every column whenever copy-on-write is off.
