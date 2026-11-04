@@ -142,6 +142,21 @@ def active_client() -> httpx.AsyncClient | None:
     return _active_client.get()
 
 
+def _failed_url(canonical_url: str | None, exc: httpx.TransportError) -> str:
+    """Name the URL a transport failure reached for.
+
+    A query that needed no chunking plan has no ``canonical_url``; the failed
+    request still carries its own, which tells the caller far more than a
+    placeholder.
+    """
+    if canonical_url:
+        return canonical_url
+    try:
+        return str(exc.request.url)
+    except RuntimeError:  # httpx raises this when no request is attached
+        return "unknown service"
+
+
 # ---------------------------------------------------------------------------
 # Type aliases for the FanOut contract
 # ---------------------------------------------------------------------------
@@ -329,7 +344,7 @@ class FanOut(Generic[_Chunk]):
         for current in _walk_causes(exc):
             if isinstance(current, httpx.TransportError):
                 wrapped = network_error(
-                    self.canonical_url or "unknown service", current
+                    _failed_url(self.canonical_url, current), current
                 )
                 wrapped.__cause__ = current
                 return wrapped
