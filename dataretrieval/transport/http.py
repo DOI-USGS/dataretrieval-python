@@ -17,6 +17,7 @@ from dataretrieval.credentials import (
     strip_api_key_from_untrusted_host_async,
 )
 from dataretrieval.exceptions import NetworkError
+from dataretrieval.interruptions import _certificate_rejected
 
 # Re-exported for the adapters that import credential policy through the
 # transport module they already import. ``dataretrieval.credentials`` is the
@@ -77,10 +78,28 @@ HTTPX_ASYNC_DEFAULTS: dict[str, Any] = {
 }
 
 
+#: Remedy for a server certificate the local trust store rejects.
+_CERTIFICATE_REMEDY = (
+    "To recover: the server's certificate is not signed by an authority that "
+    "Python trusts, often because a network proxy or firewall re-signs HTTPS "
+    "traffic. Retrying will fail the same way. Either verify against your "
+    "operating system's certificates by running `pip install truststore` and "
+    "then calling `import truststore; truststore.inject_into_ssl()` before "
+    "the first request, or set the SSL_CERT_FILE environment variable to a "
+    "PEM bundle that contains your organization's root certificate."
+)
+
+
 def network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkError:
-    """Build a typed error for a failed round trip with no HTTP response."""
+    """Build a typed error for a failed round trip with no HTTP response.
+
+    A certificate verification failure gets the steps that fix it appended.
+    """
     detail = str(exc) or type(exc).__name__
-    return NetworkError(f"Could not reach the service at {url}: {detail}")
+    message = f"Could not reach the service at {url}: {detail}"
+    if _certificate_rejected(exc):
+        message = f"{message}. {_CERTIFICATE_REMEDY}"
+    return NetworkError(message)
 
 
 def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:

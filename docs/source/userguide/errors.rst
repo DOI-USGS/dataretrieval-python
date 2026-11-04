@@ -27,6 +27,33 @@ inline retries during fan-out is a resumable ``ServiceInterrupted``. A *no-data*
 result is **not** an error: the modern getters return an empty ``DataFrame`` when
 nothing matches, so check ``df.empty`` rather than catching anything.
 
+Certificate verification failures
+=================================
+
+A ``NetworkError`` whose message contains ``CERTIFICATE_VERIFY_FAILED`` means
+Python does not trust the certificate the server presented. The usual cause is a
+network that intercepts HTTPS -- common on agency and corporate networks -- and
+re-signs it with a root certificate that your operating system trusts but
+Python's default bundle (``certifi``) does not contain. Retrying fails the same
+way, so the error is raised immediately rather than retried.
+
+Either verify against the operating system's certificates with
+`truststore <https://truststore.readthedocs.io/>`_ (``pip install truststore``),
+called once at the start of your script or notebook:
+
+.. code-block:: python
+
+    import truststore
+
+    truststore.inject_into_ssl()
+
+or point ``SSL_CERT_FILE`` at a PEM bundle that contains your organization's
+root certificate, before the first request:
+
+.. code-block:: bash
+
+    export SSL_CERT_FILE=/path/to/org-ca-bundle.pem
+
 Branch without knowing the concrete type
 =========================================
 

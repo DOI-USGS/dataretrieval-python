@@ -6,8 +6,10 @@ import asyncio
 import datetime
 import itertools
 import socket
+import ssl
 from unittest import mock
 
+import httpcore
 import httpx
 import pandas as pd
 import pytest
@@ -25,6 +27,7 @@ from dataretrieval.exceptions import (
     ServiceUnavailable,
 )
 from dataretrieval.transport.fanout import FanOut
+from dataretrieval.transport.http import network_error
 from dataretrieval.transport.pagination import paginate
 
 
@@ -578,6 +581,99 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
     assert retry._retryable(temporary) == (True, None)
     assert _classify_chunk_error(temporary) is not None
+
+
+_FAILED_URL = "https://example.test/collections/daily/items"
+
+
+def _certificate_failure() -> httpx.ConnectError:
+    """A certificate rejection shaped the way httpx raises one.
+
+    httpx raises its ``ConnectError`` from httpcore's (so both ``__cause__`` and
+    ``__context__`` point at it), and httpcore raises its own while handling the
+    ``ssl`` error, so the ``ssl`` error is reachable only through ``__context__``.
+    """
+    rejected = ssl.SSLCertVerificationError(
+        1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed"
+    )
+    transport_failed = httpcore.ConnectError(rejected)
+    transport_failed.__context__ = rejected
+    failure = httpx.ConnectError(
+        "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed",
+        request=httpx.Request("GET", _FAILED_URL),
+    )
+    failure.__cause__ = failure.__context__ = transport_failed
+    return failure
+
+
+def test_certificate_failure_is_neither_retried_nor_resumable() -> None:
+    """A rejected certificate is rejected again on every attempt.
+
+    Classed as transient, it spent the retry budget and then surfaced as a
+    ``ServiceInterrupted`` telling the caller to resume once the service
+    recovers, when the fault is in the local trust store.
+    """
+    from dataretrieval.interruptions import _classify_chunk_error
+
+    assert retry._retryable(_certificate_failure()) == (False, None)
+    assert _classify_chunk_error(_certificate_failure()) is None
+
+
+def test_certificate_failure_names_the_fix() -> None:
+    """The fan-out raises a ``NetworkError`` whose message says what to change.
+
+    The query has no ``canonical_url`` (nothing was chunked), so the message
+    names the failed request's URL rather than a placeholder.
+    """
+    attempts = 0
+
+    async def operation(_item: str) -> tuple[pd.DataFrame, httpx.Response]:
+        nonlocal attempts
+        attempts += 1
+        raise _certificate_failure()
+
+    policy = retry.RetryPolicy(max_retries=3, base_backoff=0.0)
+    with pytest.raises(NetworkError) as excinfo:
+        FanOut(["only"], operation, policy).resume()
+
+    message = str(excinfo.value)
+    assert attempts == 1
+    assert f"Could not reach the service at {_FAILED_URL}" in message
+    assert "CERTIFICATE_VERIFY_FAILED" in message
+    assert "To recover:" in message
+    assert "pip install truststore" in message
+    assert "truststore.inject_into_ssl()" in message
+    assert "SSL_CERT_FILE" in message
+    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+
+
+def test_other_connection_failures_get_no_certificate_advice() -> None:
+    """Only a certificate rejection is told to change the trust store."""
+    message = str(network_error(_FAILED_URL, httpx.ConnectTimeout("timed out")))
+
+    assert message == f"Could not reach the service at {_FAILED_URL}: timed out"
+
+
+@pytest.mark.parametrize(
+    ("canonical_url", "request_url", "named"),
+    [
+        # The query's own URL wins over the chunk that happened to fail.
+        ("https://example.test/query", _FAILED_URL, "https://example.test/query"),
+        (None, _FAILED_URL, _FAILED_URL),
+        # An error raised with no request attached has no URL to report.
+        (None, None, "unknown service"),
+    ],
+)
+def test_fan_out_failure_names_the_best_url_available(
+    canonical_url: str | None, request_url: str | None, named: str
+) -> None:
+    request = httpx.Request("GET", request_url) if request_url else None
+
+    async def operation(_item: str) -> tuple[pd.DataFrame, httpx.Response]:
+        raise httpx.UnsupportedProtocol("no scheme", request=request)
+
+    with pytest.raises(NetworkError, match=f"service at {named}: no scheme$"):
+        FanOut(["only"], operation, canonical_url=canonical_url).resume()
 
 
 def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:

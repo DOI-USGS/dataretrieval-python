@@ -32,6 +32,7 @@ would make that leaf depend on pandas and httpx.
 from __future__ import annotations
 
 import socket
+import ssl
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -276,8 +277,9 @@ def _walk_causes(
 def _deterministic_failure(exc: BaseException) -> bool:
     """Whether a transport failure would fail identically on every retry.
 
-    True for an unsupported scheme, a malformed request, or a hostname the
-    resolver rejects permanently. A *temporary* resolver failure is not in that
+    True for an unsupported scheme, a malformed request, a server certificate
+    the local trust store rejects, or a hostname the resolver rejects
+    permanently. A *temporary* resolver failure is not in that
     class and stays retryable (see :data:`_PERMANENT_DNS_ERRORS`). Bounding
     retry to failures a later attempt might not repeat is ADR 0006.
 
@@ -292,10 +294,25 @@ def _deterministic_failure(exc: BaseException) -> bool:
     for current in _walk_causes(exc, follow_context=True):
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
+        if isinstance(current, ssl.SSLCertVerificationError):
+            return True
         if isinstance(current, socket.gaierror):
             # Return, not continue: the first resolver code found decides.
             return current.errno in _PERMANENT_DNS_ERRORS
     return False
+
+
+def _certificate_rejected(exc: BaseException) -> bool:
+    """Whether a transport failure is a server certificate the trust store rejected.
+
+    One of the :func:`_deterministic_failure` cases, asked separately so the error
+    message can name its remedy. httpcore chains the ``ssl`` error implicitly, so
+    ``__context__`` is walked.
+    """
+    return any(
+        isinstance(current, ssl.SSLCertVerificationError)
+        for current in _walk_causes(exc, follow_context=True)
+    )
 
 
 def _classify_transient(
