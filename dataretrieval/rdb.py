@@ -11,7 +11,8 @@ file has the same shape:
   it is informational only and skipped during parsing.
 - Tab-separated data rows.
 
-This module exposes the parsing primitives. Callers layer their own
+This module exposes the parsing primitives used by
+``dataretrieval.waterdata.get_ratings``. Callers layer their own
 post-processing (such as ``df.attrs`` provenance) on top of the raw frame.
 """
 

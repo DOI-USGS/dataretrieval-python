@@ -6,7 +6,7 @@ Examples
 
 Introduction to the ``waterdata`` module of ``dataretrieval``
 -------------------------------------------------------------
-The ``waterdata`` module is the primary set of data download functions for
+The ``waterdata`` module contains the set of data download functions for
 USGS water data. This Jupyter notebook covers a basic introduction to module
 functions and usage.
 
