@@ -1845,6 +1845,9 @@ def test_get_stats_por(httpx_mock):
     assert len(df) == 11
     assert df.loc[df["computation"] == "minimum", "percentile"].tolist() == [0.0]
     assert df.loc[df["computation"] == "arithmetic_mean", "percentile"].isna().all()
+    # Every row names the daily statistic its normals are computed from.
+    assert (df["parent_statistic_id"] == "00003").all()
+    assert (df["parent_statistic_name"] == "Mean").all()
 
 
 def test_get_stats_por_expanded_false(httpx_mock):

@@ -582,6 +582,54 @@ def test_handle_nesting_tolerates_missing_drop_columns():
     assert df["monitoring_location_id"].iloc[0] == "USGS-12345"
 
 
+def test_handle_nesting_keeps_parent_statistic():
+    """A parameter can have several daily series (max, min, mean), each with
+    its own normals. The parent statistic is what tells those rows apart, so
+    it is kept beside ``parent_time_series_id``.
+    """
+    body = {
+        "next": None,
+        "features": [
+            {
+                "properties": {
+                    "monitoring_location_id": "USGS-12345",
+                    "data": [
+                        {
+                            "parameter_code": "00060",
+                            "unit_of_measure": "ft^3/s",
+                            "parent_time_series_id": ts,
+                            "parent_statistic_id": stat_id,
+                            "parent_statistic_name": stat_name,
+                            "values": [
+                                {
+                                    "time_of_year": "07-01",
+                                    "computation": "median",
+                                    "value": value,
+                                }
+                            ],
+                        }
+                        for ts, stat_id, stat_name, value in [
+                            ("ts-max", "00001", "Max", "373.5"),
+                            ("ts-min", "00002", "Min", "267.0"),
+                            ("ts-mean", "00003", "Mean", "320.0"),
+                        ]
+                    ],
+                },
+            }
+        ],
+    }
+
+    df = _handle_nesting(body, geopd=False)
+
+    assert df[
+        ["parent_statistic_id", "parent_statistic_name", "value"]
+    ].to_numpy().tolist() == [
+        ["00001", "Max", "373.5"],
+        ["00002", "Min", "267.0"],
+        ["00003", "Mean", "320.0"],
+    ]
+
+
 def test_handle_nesting_returns_empty_on_empty_features():
     """A mid-pagination empty page ({\"features\": [], \"next\": <tok>})
     must not fail the downstream merge with
