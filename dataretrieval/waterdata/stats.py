@@ -82,6 +82,8 @@ def _handle_nesting(
             ["features", "properties", "data", "parameter_code"],
             ["features", "properties", "data", "unit_of_measure"],
             ["features", "properties", "data", "parent_time_series_id"],
+            ["features", "properties", "data", "parent_statistic_id"],
+            ["features", "properties", "data", "parent_statistic_name"],
         ],
         meta_prefix="",
         errors="ignore",
