@@ -28,7 +28,7 @@ importing pandas or httpx2, and without risking an import cycle.
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from typing import Any, ClassVar
 
@@ -408,6 +408,6 @@ def parse_retry_after(value: str | None) -> float | None:
     except (TypeError, ValueError, OverflowError):
         return None
     if retry_at.tzinfo is None:
-        retry_at = retry_at.replace(tzinfo=timezone.utc)
-    delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+        retry_at = retry_at.replace(tzinfo=UTC)
+    delay = (retry_at - datetime.now(UTC)).total_seconds()
     return delay if delay > 0 else None

@@ -49,8 +49,8 @@ Each adapter declares the settings it accepts on its own
 (ADR 0011). The API key is not among them -- it belongs to the gateway fronting
 a host, not to an adapter (ADR 0010).
 
-This module is a leaf: it imports only the standard library plus the Python 3.11
-``tomli`` backport (ADR 0009). That is also why it holds the adapter *names* but
+This module is a leaf: it imports only the standard library (ADR 0009). That is
+also why it holds the adapter *names* but
 never imports an adapter -- see :data:`ADAPTERS`. It centralizes each setting's
 parser while retaining legacy environment behavior and stricter validation for
 the new Python/TOML surfaces.

@@ -156,7 +156,9 @@ def _get_with_retry(
             _single_request_policy(adapter) if retry_policy is None else retry_policy,
         )
     except httpx2.InvalidURL as exc:
-        raise _url_too_long_error(f"httpx2 rejected the URL client-side: {exc}") from exc
+        raise _url_too_long_error(
+            f"httpx2 rejected the URL client-side: {exc}"
+        ) from exc
 
 
 def _materialize_query_iterables(payload: dict[str, Any]) -> dict[str, Any]:

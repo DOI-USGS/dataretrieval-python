@@ -189,7 +189,7 @@ def test_parse_retry_after_accepts_http_date() -> None:
     our clock running ahead of the server's, and acting on it would re-send
     almost immediately against a service that just named a delay.
     """
-    soon = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=30)
+    soon = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=30)
     parsed = exceptions.parse_retry_after(soon.strftime("%a, %d %b %Y %H:%M:%S GMT"))
     assert parsed is not None and 0 < parsed <= 30
 
@@ -206,9 +206,7 @@ def test_both_retry_after_forms_are_honored_alike() -> None:
     sooner against a service that named a long delay, and dropped the number
     the caller needs from ``.retry_after``.
     """
-    far_future = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-        minutes=30
-    )
+    far_future = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=30)
     header = far_future.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     parsed = exceptions.parse_retry_after(header)
