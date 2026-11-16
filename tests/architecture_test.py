@@ -610,17 +610,17 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     differed -- a generator mistaken for a collection, say -- would re-issue chunks that
     no longer match the completed positions.
     """
-    import httpx
+    import httpx2
 
     from dataretrieval.ogc.planning import ChunkPlan
 
-    def _build(**args: object) -> httpx.Request:
-        return httpx.Request("GET", "https://example.invalid/items", params=args)
+    def _build(**args: object) -> httpx2.Request:
+        return httpx2.Request("GET", "https://example.invalid/items", params=args)
 
     plans = [
         ChunkPlan({"sites": ["a", "b"]}, _build, url_limit=8000),
         # Water Use passes its request list directly to ``FanOut``.
-        [httpx.Request("GET", "https://example.invalid/data")],
+        [httpx2.Request("GET", "https://example.invalid/data")],
     ]
     for plan in plans:
         name = type(plan).__name__

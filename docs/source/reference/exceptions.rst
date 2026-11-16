@@ -12,7 +12,7 @@ Resumable fan-out interruptions
 
 These are raised when a fanned-out request is interrupted partway; the
 completed work is preserved and ``exc.call.resume()`` continues it. They are
-defined in ``dataretrieval.interruptions`` (they hold pandas/httpx state) but
+defined in ``dataretrieval.interruptions`` (they hold pandas/httpx2 state) but
 are importable from the top level, e.g.
 ``from dataretrieval import FanOutInterrupted``.
 

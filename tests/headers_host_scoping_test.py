@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from unittest import mock
 
-import httpx
+import httpx2
 import pytest
 
 from dataretrieval.transport.http import HTTPX_ASYNC_DEFAULTS
@@ -91,24 +91,24 @@ class TestDefaultHeadersHostScoping:
 
     def test_sync_transport_withholds_key_on_downgrade_to_cleartext(self):
         """The guard runs at send time, not only where headers are built."""
-        seen: list[httpx.Request] = []
+        seen: list[httpx2.Request] = []
 
-        def handler(request: httpx.Request) -> httpx.Response:
+        def handler(request: httpx2.Request) -> httpx2.Response:
             seen.append(request)
             if len(seen) == 1:
-                return httpx.Response(
+                return httpx2.Response(
                     302,
                     headers={"Location": "http://api.waterdata.usgs.gov/next"},
                     request=request,
                 )
-            return httpx.Response(200, request=request)
+            return httpx2.Response(200, request=request)
 
         url = "https://api.waterdata.usgs.gov/start"
         _get(
             url,
             headers=_default_headers(url),
             follow_redirects=True,
-            transport=httpx.MockTransport(handler),
+            transport=httpx2.MockTransport(handler),
         )
 
         assert seen[0].headers.get("X-Api-Key") == self.FAKE_TOKEN
@@ -134,7 +134,7 @@ class TestDefaultHeadersHostScoping:
 
         asset_url = "https://objects.example.org/ratings/site.rdb"
         feature = {"id": "site.rdb", "assets": {"data": {"href": asset_url}}}
-        client = mock.AsyncMock(spec=httpx.AsyncClient)
+        client = mock.AsyncMock(spec=httpx2.AsyncClient)
         client.get.return_value = mock.Mock(text="rating body")
         with (
             mock.patch.object(ratings, "active_client", return_value=client),
@@ -149,24 +149,24 @@ class TestDefaultHeadersHostScoping:
 
     def test_sync_redirect_strips_key_before_cross_host_request(self):
         """The synchronous transport guard runs again for redirects."""
-        seen: list[httpx.Request] = []
+        seen: list[httpx2.Request] = []
 
-        def handler(request: httpx.Request) -> httpx.Response:
+        def handler(request: httpx2.Request) -> httpx2.Response:
             seen.append(request)
             if len(seen) == 1:
-                return httpx.Response(
+                return httpx2.Response(
                     302,
                     headers={"Location": "https://outside.example.org/next"},
                     request=request,
                 )
-            return httpx.Response(200, request=request)
+            return httpx2.Response(200, request=request)
 
         url = "https://api.waterdata.usgs.gov/start"
         _get(
             url,
             headers=_default_headers(url),
             follow_redirects=True,
-            transport=httpx.MockTransport(handler),
+            transport=httpx2.MockTransport(handler),
         )
 
         assert seen[0].headers.get("X-Api-Key") == self.FAKE_TOKEN
@@ -174,22 +174,22 @@ class TestDefaultHeadersHostScoping:
 
     def test_async_redirect_strips_key_before_cross_host_request(self):
         """The shared asynchronous client policy guards redirects too."""
-        seen: list[httpx.Request] = []
+        seen: list[httpx2.Request] = []
 
-        def handler(request: httpx.Request) -> httpx.Response:
+        def handler(request: httpx2.Request) -> httpx2.Response:
             seen.append(request)
             if len(seen) == 1:
-                return httpx.Response(
+                return httpx2.Response(
                     302,
                     headers={"Location": "https://outside.example.org/next"},
                     request=request,
                 )
-            return httpx.Response(200, request=request)
+            return httpx2.Response(200, request=request)
 
         async def run() -> None:
             url = "https://api.waterdata.usgs.gov/start"
-            async with httpx.AsyncClient(
-                transport=httpx.MockTransport(handler),
+            async with httpx2.AsyncClient(
+                transport=httpx2.MockTransport(handler),
                 **HTTPX_ASYNC_DEFAULTS,
             ) as client:
                 await client.get(url, headers=_default_headers(url))

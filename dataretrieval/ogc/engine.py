@@ -31,7 +31,7 @@ from collections.abc import (
 )
 from typing import TYPE_CHECKING, Any
 
-import httpx
+import httpx2
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
@@ -64,14 +64,14 @@ logger = logging.getLogger(__name__)
 
 
 def _next_req_url(
-    resp: httpx.Response, *, body: dict[str, Any] | None = None
+    resp: httpx2.Response, *, body: dict[str, Any] | None = None
 ) -> str | None:
     """
     Extracts the next-page URL from a water data endpoint's HTTP response.
 
     Parameters
     ----------
-    resp : httpx.Response
+    resp : httpx2.Response
         The HTTP response object containing JSON data and headers.
     body : dict, optional
         Pre-parsed JSON body for ``resp``. When provided, skips the
@@ -117,7 +117,7 @@ def _next_req_url(
 
 
 def _ogc_parse_response(
-    resp: httpx.Response,
+    resp: httpx2.Response,
     *,
     geopd: bool,
     include_geometry: bool = True,
@@ -144,12 +144,12 @@ def _ogc_parse_response(
 
 async def _walk_pages(
     geopd: bool,
-    req: httpx.Request,
-    client: httpx.AsyncClient | None = None,
+    req: httpx2.Request,
+    client: httpx2.AsyncClient | None = None,
     *,
     include_geometry: bool = True,
     row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
+) -> tuple[pd.DataFrame, httpx2.Response]:
     """
     Iterate paginated OGC API responses and aggregate them into one DataFrame.
 
@@ -166,9 +166,9 @@ async def _walk_pages(
     include_geometry : bool, optional
         Whether plain-DataFrame pages retain raw coordinate lists. False for
         nonspatial collections and requests using ``skip_geometry=True``.
-    req : httpx.Request
+    req : httpx2.Request
         The initial HTTP request to send.
-    client : httpx.AsyncClient, optional
+    client : httpx2.AsyncClient, optional
         Caller-supplied client; ``None`` leaves client management to
         :func:`~dataretrieval.transport.pagination.paginate`.
     row_cap : int, optional
@@ -181,7 +181,7 @@ async def _walk_pages(
     -------
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
-    httpx.Response
+    httpx2.Response
         Aggregated response — initial-request URL (for query identity), final page's
         headers (so downstream code receives current rate-limit state), and cumulative
         ``elapsed`` summed across pages.
@@ -190,14 +190,14 @@ async def _walk_pages(
     ------
     DataRetrievalError
         See :func:`~dataretrieval.transport.pagination.paginate`.
-    httpx.HTTPError
+    httpx2.HTTPError
         See :func:`~dataretrieval.transport.pagination.paginate`.
     """
-    method = req.method  # ``httpx.Request.method`` is already upper-cased.
+    method = req.method  # ``httpx2.Request.method`` is already upper-cased.
     headers = req.headers
     content = req.content if method == "POST" else None
 
-    async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
+    async def follow_up(cursor: str, sess: httpx2.AsyncClient) -> httpx2.Response:
         return await sess.request(method, cursor, headers=headers, content=content)
 
     return await paginate(
@@ -397,11 +397,11 @@ def get_ogc_data(
 async def _fetch_once(
     args: dict[str, Any],
     *,
-    build_request: Callable[..., httpx.Request],
+    build_request: Callable[..., httpx2.Request],
     geopd: bool,
     include_geometry: bool,
     row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
+) -> tuple[pd.DataFrame, httpx2.Response]:
     """Send one prepared-args OGC request asynchronously; return (frame, response).
 
     The undecorated per-chunk fetcher: ``get_ogc_data`` binds
@@ -411,7 +411,7 @@ async def _fetch_once(
     axis, greedy-halves the biggest chunk across all axes until each chunk
     URL fits, and iterates the cartesian product. With no chunkable inputs
     the decorator passes args through unchanged. The decorator gathers every
-    chunk over one shared :class:`httpx.AsyncClient` (concurrency
+    chunk over one shared :class:`httpx2.AsyncClient` (concurrency
     bounded by a semaphore, sized from the effective ``concurrency``
     setting) and returns a *synchronous* wrapper, so ``get_ogc_data`` calls
     it synchronously. The return shape is ``(frame, response)``.

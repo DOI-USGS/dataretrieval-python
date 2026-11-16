@@ -19,7 +19,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 from typing import Any
 
-import httpx
+import httpx2
 
 from dataretrieval.exceptions import (
     NoSitesError,
@@ -95,9 +95,9 @@ def _url_too_long_error(detail: str) -> URLTooLong:
 
 
 def _raise_for_status(
-    response: httpx.Response,
+    response: httpx2.Response,
     *,
-    detail_from: Callable[[httpx.Response], str | None] | None = None,
+    detail_from: Callable[[httpx2.Response], str | None] | None = None,
 ) -> None:
     """Raise the typed :class:`DataRetrievalError` for an HTTP error response.
 
@@ -148,16 +148,16 @@ def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
 
 
 def _get_with_retry(
-    url: str | httpx.URL,
+    url: str | httpx2.URL,
     *,
-    detail_from: Callable[[httpx.Response], str | None] | None = None,
+    detail_from: Callable[[httpx2.Response], str | None] | None = None,
     retry_policy: RetryPolicy | None = None,
     adapter: str | None = None,
     **kwargs: Any,
-) -> httpx.Response:
+) -> httpx2.Response:
     """GET with status mapping and bounded retry on typed transients."""
 
-    def attempt() -> httpx.Response:
+    def attempt() -> httpx2.Response:
         response = _get(url, **kwargs)
         _raise_for_status(response, detail_from=detail_from)
         return response
@@ -167,8 +167,8 @@ def _get_with_retry(
             attempt,
             _single_request_policy(adapter) if retry_policy is None else retry_policy,
         )
-    except httpx.InvalidURL as exc:
-        raise _url_too_long_error(f"httpx rejected the URL client-side: {exc}") from exc
+    except httpx2.InvalidURL as exc:
+        raise _url_too_long_error(f"httpx2 rejected the URL client-side: {exc}") from exc
 
 
 def _materialize_query_iterables(payload: dict[str, Any]) -> dict[str, Any]:
@@ -189,18 +189,18 @@ def _query_with_retry(
     *,
     retry_policy: RetryPolicy | None = None,
     adapter: str | None = None,
-) -> httpx.Response:
+) -> httpx2.Response:
     """Send an active-service query with bounded transient retry by default.
 
     When ``delimiter`` is ``None``, iterable values are materialized for
-    ``httpx`` to encode as repeated query parameters. Strings remain scalar.
+    ``httpx2`` to encode as repeated query parameters. Strings remain scalar.
     """
 
     if delimiter is None:
         payload = _materialize_query_iterables(payload)
     else:
         payload = {key: to_str(value, delimiter) for key, value in payload.items()}
-    # httpx serializes None params as ``foo=``; USGS rejects with 400. Drop them.
+    # httpx2 serializes None params as ``foo=``; USGS rejects with 400. Drop them.
     payload = {key: value for key, value in payload.items() if value is not None}
 
     user_agent = {"user-agent": USER_AGENT}
@@ -228,10 +228,10 @@ def query(
     payload: dict[str, Any],
     delimiter: str = ",",
     ssl_check: bool = True,
-) -> httpx.Response:
+) -> httpx2.Response:
     """Send a query.
 
-    Wrapper for ``httpx.get`` that handles errors, converts listed query
+    Wrapper for ``httpx2.get`` that handles errors, converts listed query
     parameters to comma-separated strings, and returns the response.
 
     Parameters
@@ -239,7 +239,7 @@ def query(
     url: string
         URL to query.
     payload: dict
-        Query parameters passed to ``httpx.get``.
+        Query parameters passed to ``httpx2.get``.
     delimiter: string
         Delimiter to use with lists.
     ssl_check: bool
@@ -247,8 +247,8 @@ def query(
 
     Returns
     -------
-    response: ``httpx.Response``
-        The response from the API query ``httpx.get`` function call.
+    response: ``httpx2.Response``
+        The response from the API query ``httpx2.get`` function call.
 
     Raises
     ------
@@ -258,7 +258,7 @@ def query(
         :class:`~dataretrieval.exceptions.NoSitesError` when a 200 response
         reports no data matched; or :class:`~dataretrieval.exceptions.NetworkError`
         on a connection-level failure (timeout, DNS), with the underlying
-        ``httpx`` exception on ``__cause__``.
+        ``httpx2`` exception on ``__cause__``.
     """
     return _query_with_retry(
         url,

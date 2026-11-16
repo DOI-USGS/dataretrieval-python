@@ -4,7 +4,7 @@ Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,
 ``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
-remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
+remain inside this taxonomy rather than leaking ``httpx2`` exceptions. A
 deterministic failure is :class:`NetworkError`; a recoverable failure that
 exhausts retries during fan-out is a resumable ``ServiceInterrupted``.
 
@@ -22,8 +22,8 @@ which, because resolution is lazy, is inside whichever getter runs first. The
 batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
 that has stopped being updated.
 
-This module has no third-party runtime dependencies -- ``httpx`` is imported only for
-type checking. Any module can therefore import it without importing pandas or httpx, and
+This module has no third-party runtime dependencies -- ``httpx2`` is imported only for
+type checking. Any module can therefore import it without importing pandas or httpx2, and
 without risking an import cycle.
 """
 
@@ -35,7 +35,7 @@ from email.utils import parsedate_to_datetime
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
-    import httpx
+    import httpx2
 
 __all__ = [
     "DataRetrievalError",
@@ -260,7 +260,7 @@ class NetworkError(DataRetrievalError):
     A DNS failure, refused connection, or timeout stopped it, so no HTTP
     response arrived to classify.
 
-    Wraps the underlying ``httpx`` transport exception, preserved on
+    Wraps the underlying ``httpx2`` transport exception, preserved on
     ``__cause__``. Retryable (:attr:`~DataRetrievalError.retryable` is
     ``True``), but has no ``.status_code`` because no response came back.
     """
@@ -293,7 +293,7 @@ class NoSitesError(DataRetrievalError):
     deprecated ``nwis`` (waterservices) path still raises this.
     """
 
-    def __init__(self, url: httpx.URL) -> None:
+    def __init__(self, url: httpx2.URL) -> None:
         self.url = url
 
     def __str__(self) -> str:

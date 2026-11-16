@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-import httpx
+import httpx2
 
 from dataretrieval import configuration as _configuration
 
@@ -44,7 +44,7 @@ _AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
 WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
 
 
-def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
+def accepts_api_key(target_url: str | httpx2.URL | None) -> bool:
     """Whether ``target_url`` names the host that accepts :data:`API_KEY_ENV`.
 
     The one predicate for whether a destination gets the key -- used when
@@ -59,17 +59,17 @@ def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
     if target_url is None:
         return False
     try:
-        url = target_url if isinstance(target_url, httpx.URL) else httpx.URL(target_url)
-    except (httpx.InvalidURL, TypeError):
+        url = target_url if isinstance(target_url, httpx2.URL) else httpx2.URL(target_url)
+    except (httpx2.InvalidURL, TypeError):
         return False
     return bool(url.scheme == "https" and url.host == _AUTHORIZED_API_KEY_HOST)
 
 
-def without_embedded_credentials(url: httpx.URL) -> httpx.URL:
+def without_embedded_credentials(url: httpx2.URL) -> httpx2.URL:
     """Drop any ``user:pass@`` from a URL received from the server rather than built
     here.
 
-    A next-page link is data, not configuration, and ``httpx`` derives an
+    A next-page link is data, not configuration, and ``httpx2`` derives an
     ``Authorization: Basic`` header from userinfo in a URL (ADR 0009). No USGS
     service authenticates that way, so stripping it removes nothing a caller needs.
     """
@@ -144,12 +144,12 @@ def api_key() -> str | None:
     return _configuration.api_key()
 
 
-def strip_api_key_from_untrusted_host(request: httpx.Request) -> None:
+def strip_api_key_from_untrusted_host(request: httpx2.Request) -> None:
     """Remove Water Data credentials before sending to any other host."""
     if not accepts_api_key(request.url):
         request.headers.pop("X-Api-Key", None)
 
 
-async def strip_api_key_from_untrusted_host_async(request: httpx.Request) -> None:
+async def strip_api_key_from_untrusted_host_async(request: httpx2.Request) -> None:
     """Async-client form of :func:`strip_api_key_from_untrusted_host`."""
     strip_api_key_from_untrusted_host(request)

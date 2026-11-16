@@ -8,7 +8,7 @@ import socket
 import warnings
 from urllib.parse import parse_qs, urlsplit
 
-import httpx
+import httpx2
 import pandas as pd
 import pytest
 
@@ -421,13 +421,13 @@ def test_empty_selector_is_not_reported_as_the_wrong_selector_count():
 
 def test_a_non_prose_detail_is_not_forwarded_into_the_message():
     """A validation envelope spells ``detail`` as a list of error objects."""
-    response = httpx.Response(422, json={"detail": [{"loc": ["q"], "msg": "bad"}]})
+    response = httpx2.Response(422, json={"detail": [{"loc": ["q"], "msg": "bad"}]})
 
     assert _nwdc_error_detail(response) is None
 
 
 def test_a_detail_that_already_ends_in_a_period_is_not_double_punctuated():
-    response = httpx.Response(400, json={"detail": "Invalid model name: bad."})
+    response = httpx2.Response(400, json={"detail": "Invalid model name: bad."})
 
     assert "bad.. " not in _nwdc_error_detail(response)
 
@@ -445,12 +445,12 @@ def test_resolve_locations_rejects_malformed_selectors():
 
 
 def test_next_page_url_none_when_no_link():
-    resp = httpx.Response(200, text="")
+    resp = httpx2.Response(200, text="")
     assert _next_page_url(resp) is None
 
 
 def test_next_page_url_none_when_link_has_no_next():
-    resp = httpx.Response(
+    resp = httpx2.Response(
         200,
         text="",
         headers={"link": '<https://api.water.usgs.gov/x>; rel="prev"'},
@@ -459,7 +459,7 @@ def test_next_page_url_none_when_link_has_no_next():
 
 
 def test_next_page_url_rewrites_bare_host():
-    resp = httpx.Response(
+    resp = httpx2.Response(
         200,
         text="",
         headers={
@@ -473,7 +473,7 @@ def test_next_page_url_rewrites_bare_host():
 
 def test_next_page_url_leaves_api_host_untouched():
     url = "https://api.water.usgs.gov/nwaa-data/data?skip=600"
-    resp = httpx.Response(200, text="", headers={"link": f'<{url}>; rel="next"'})
+    resp = httpx2.Response(200, text="", headers={"link": f'<{url}>; rel="next"'})
     # Must not double-prefix into ``api.api.water.usgs.gov``.
     assert _next_page_url(resp) == url
 
@@ -484,7 +484,7 @@ def test_next_page_url_normalizes_other_spellings_of_the_same_service():
     A plain-http or relative ``next`` link is the same service; refusing it
     would discard every page already collected for that location.
     """
-    plain_http = httpx.Response(
+    plain_http = httpx2.Response(
         200,
         text="",
         headers={"link": '<http://water.usgs.gov/nwaa-data/data?skip=600>; rel="next"'},
@@ -493,11 +493,11 @@ def test_next_page_url_normalizes_other_spellings_of_the_same_service():
         "https://api.water.usgs.gov/nwaa-data/data?skip=600"
     )
 
-    relative = httpx.Response(
+    relative = httpx2.Response(
         200,
         text="",
         headers={"link": '</nwaa-data/data?skip=600>; rel="next"'},
-        request=httpx.Request("GET", "https://api.water.usgs.gov/nwaa-data/data"),
+        request=httpx2.Request("GET", "https://api.water.usgs.gov/nwaa-data/data"),
     )
     assert _next_page_url(relative) == (
         "https://api.water.usgs.gov/nwaa-data/data?skip=600"
@@ -507,13 +507,13 @@ def test_next_page_url_normalizes_other_spellings_of_the_same_service():
 def test_next_page_url_strips_credentials_from_the_cursor():
     """Userinfo on a cursor must not become an Authorization header.
 
-    httpx derives ``Authorization: Basic ...`` from a URL's userinfo, so a cursor
+    httpx2 derives ``Authorization: Basic ...`` from a URL's userinfo, so a cursor
     spelled ``http://user:pass@water.usgs.gov/...`` would send a credential the caller
     never configured to the rewritten host -- what the host check exists to prevent,
     reached through the host check's own normalization. The port is dropped for the same
     reason.
     """
-    response = httpx.Response(
+    response = httpx2.Response(
         200,
         text="",
         headers={
@@ -528,18 +528,18 @@ def test_next_page_url_strips_credentials_from_the_cursor():
 
     assert cursor == "https://api.water.usgs.gov/nwaa-data/data?skip=600"
     assert "s3cret" not in cursor
-    assert httpx.URL(cursor).userinfo == b""
+    assert httpx2.URL(cursor).userinfo == b""
 
-    # Assert at the layer that synthesizes the header: ``httpx.Request``
+    # Assert at the layer that synthesizes the header: ``httpx2.Request``
     # never derives Basic auth from userinfo (so asserting there would pass for
     # any URL) -- the ``Client`` does it at send time.
     sent: dict[str, str | None] = {}
 
-    def capture(request: httpx.Request) -> httpx.Response:
+    def capture(request: httpx2.Request) -> httpx2.Response:
         sent["auth"] = request.headers.get("Authorization")
-        return httpx.Response(200, text="")
+        return httpx2.Response(200, text="")
 
-    with httpx.Client(transport=httpx.MockTransport(capture)) as client:
+    with httpx2.Client(transport=httpx2.MockTransport(capture)) as client:
         client.get(cursor)
     assert sent["auth"] is None
 
@@ -582,11 +582,11 @@ def test_next_page_url_drops_the_service_rewrite_when_redirected():
     the rewrite would send page two of a mirrored query to the USGS -- and
     refusing the mirror's own cursor would discard page one.
     """
-    mirrored = httpx.Response(
+    mirrored = httpx2.Response(
         200,
         text="",
         headers={"link": '<https://mirror.example/data?skip=600>; rel="next"'},
-        request=httpx.Request("GET", "https://mirror.example/data"),
+        request=httpx2.Request("GET", "https://mirror.example/data"),
     )
 
     assert _next_page_url(mirrored, host="mirror.example") == (
@@ -595,11 +595,11 @@ def test_next_page_url_drops_the_service_rewrite_when_redirected():
 
     # A cursor back to the real service is now the cross-host case, refused for
     # the same reason a foreign link is refused on an ordinary call.
-    strayed = httpx.Response(
+    strayed = httpx2.Response(
         200,
         text="",
         headers={"link": '<https://api.water.usgs.gov/nwaa-data/data>; rel="next"'},
-        request=httpx.Request("GET", "https://mirror.example/data"),
+        request=httpx2.Request("GET", "https://mirror.example/data"),
     )
     with pytest.raises(DataRetrievalError, match="cross-host"):
         _next_page_url(strayed, host="mirror.example")
@@ -630,7 +630,7 @@ def test_initial_transient_is_retried(httpx_mock, monkeypatch):
 def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch):
     """A fan-out failure must not close the client while its siblings still use it.
 
-    Every location shares one ``httpx.AsyncClient`` scoped to the fan-out. When the
+    Every location shares one ``httpx2.AsyncClient`` scoped to the fan-out. When the
     first failure propagated straight out of the ``gather``, that block exited while
     siblings were still walking pages, and the next page they requested failed with
     "Cannot send a request, as the client has been closed" -- on a task nobody was
@@ -642,9 +642,9 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
 
     pages = {"n": 0}
 
-    async def handler(request: httpx.Request) -> httpx.Response:
+    async def handler(request: httpx2.Request) -> httpx2.Response:
         if request.url.params.get("location") == "stateCd:AA":
-            return httpx.Response(400, json={"detail": "Invalid model name: bad"})
+            return httpx2.Response(400, json={"detail": "Invalid model name: bad"})
         pages["n"] += 1
         # A real suspension window, deliberately: the sibling has to still be
         # mid-walk when the failure propagates, and an ``Event`` set by the
@@ -652,7 +652,7 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
         # without suspending, and the test then passes against the old code too.
         await asyncio.sleep(0.05)
         if pages["n"] == 1:
-            return httpx.Response(
+            return httpx2.Response(
                 200,
                 text=_CSV_P1,
                 headers={
@@ -662,20 +662,20 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
                     )
                 },
             )
-        return httpx.Response(200, text=_CSV_P2)
+        return httpx2.Response(200, text=_CSV_P2)
 
     @asynccontextmanager
     async def open_mock_client(**overrides):
         overrides.pop("verify", None)
-        async with httpx.AsyncClient(
-            transport=httpx.MockTransport(handler), **overrides
+        async with httpx2.AsyncClient(
+            transport=httpx2.MockTransport(handler), **overrides
         ) as client:
             yield client
 
     monkeypatch.setattr(_fanout, "open_async_client", open_mock_client)
 
     requests = [
-        httpx.Request("GET", nwdc.WATERUSE_URL, params={"location": location})
+        httpx2.Request("GET", nwdc.WATERUSE_URL, params={"location": location})
         for location in ("stateCd:AA", "stateCd:BB")
     ]
 
@@ -685,7 +685,7 @@ def test_fatal_failure_waits_for_siblings_before_closing_the_client(monkeypatch)
 
 
 def test_next_page_url_rejects_cross_host_link():
-    response = httpx.Response(
+    response = httpx2.Response(
         200,
         headers={"link": '<https://outside.example/next>; rel="next"'},
     )
@@ -850,7 +850,7 @@ def test_permanent_transport_failure_remains_a_network_error(monkeypatch):
 
     async def fail(*_args, **_kwargs):
         resolution = socket.gaierror(socket.EAI_NONAME, "name not known")
-        failure = httpx.ConnectError("name not known")
+        failure = httpx2.ConnectError("name not known")
         failure.__context__ = resolution
         raise failure
 
@@ -861,7 +861,7 @@ def test_permanent_transport_failure_remains_a_network_error(monkeypatch):
     with pytest.raises(dataretrieval.NetworkError) as excinfo:
         get_wateruse(model="wu-public-supply-wd", state="RI")
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+    assert isinstance(excinfo.value.__cause__, httpx2.ConnectError)
 
 
 def test_permanent_later_page_failure_remains_a_network_error(httpx_mock):
@@ -875,7 +875,7 @@ def test_permanent_later_page_failure_remains_a_network_error(httpx_mock):
         },
     )
     resolution = socket.gaierror(socket.EAI_NONAME, "name not known")
-    failure = httpx.ConnectError("name not known")
+    failure = httpx2.ConnectError("name not known")
     failure.__context__ = resolution
     httpx_mock.add_exception(
         failure,
@@ -886,7 +886,7 @@ def test_permanent_later_page_failure_remains_a_network_error(httpx_mock):
     with pytest.raises(dataretrieval.NetworkError) as excinfo:
         get_wateruse(model="wu-public-supply-wd", state="RI")
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+    assert isinstance(excinfo.value.__cause__, httpx2.ConnectError)
 
 
 def test_mid_page_walk_transient_is_still_resumable(httpx_mock):

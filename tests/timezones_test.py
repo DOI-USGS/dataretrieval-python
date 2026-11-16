@@ -15,7 +15,7 @@ import io
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import httpx
+import httpx2
 import pytest
 
 from dataretrieval import waterdata, wqp
@@ -91,7 +91,7 @@ def test_the_lists_disagree_only_where_the_table_says_so():
 def test_published_list_matches_the_snapshot(url, parse, snapshot):
     """If this fails, the published list changed: refresh its snapshot in
     ``tests/data`` from ``url`` and reconcile the table with the new entries."""
-    resp = httpx.get(url, timeout=60, follow_redirects=True)
+    resp = httpx2.get(url, timeout=60, follow_redirects=True)
     resp.raise_for_status()
     assert parse(resp.content) == snapshot
 

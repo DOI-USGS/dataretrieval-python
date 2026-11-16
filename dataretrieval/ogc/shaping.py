@@ -15,7 +15,7 @@ import re
 import warnings
 from typing import Any
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
@@ -119,7 +119,7 @@ def _spatial_feature_frame(features: list[dict[str, Any]]) -> pd.DataFrame:
 
 
 def _get_resp_data(
-    resp: httpx.Response,
+    resp: httpx2.Response,
     geopd: bool,
     *,
     include_geometry: bool = True,
@@ -130,7 +130,7 @@ def _get_resp_data(
 
     Parameters
     ----------
-    resp : httpx.Response
+    resp : httpx2.Response
         The HTTP response object expected to contain a JSON body
         with a "features" key.
     geopd : bool
@@ -389,7 +389,7 @@ def _to_snake_case(name: str) -> str:
 
 def _finalize_ogc(
     frame: pd.DataFrame,
-    response: httpx.Response,
+    response: httpx2.Response,
     *,
     properties: list[str] | None,
     output_id: str,

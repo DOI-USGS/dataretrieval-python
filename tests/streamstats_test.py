@@ -48,7 +48,7 @@ def test_get_watershed_object_returns_instance(httpx_mock):
 
 
 def test_get_watershed_geojson_returns_raw_response(httpx_mock):
-    """The default ``format='geojson'`` returns the raw httpx response."""
+    """The default ``format='geojson'`` returns the raw httpx2 response."""
     httpx_mock.add_response(text=json.dumps(_SAMPLE))
     r = get_watershed("NY", -74.524, 43.939)
     assert r.status_code == 200
@@ -99,7 +99,7 @@ def test_watershed_constructor_delineates_and_parses(monkeypatch):
     """``Watershed(...)`` is the entry point that returns an object: it must issue the
     geojson request and set the parsed fields on the instance, so a caller
     never handles the raw response."""
-    import httpx
+    import httpx2
 
     from dataretrieval import streamstats
 
@@ -107,7 +107,7 @@ def test_watershed_constructor_delineates_and_parses(monkeypatch):
 
     def fake_get_watershed(rcode, x, y, **kwargs):
         captured.update(rcode=rcode, x=x, y=y, format=kwargs.get("format"))
-        return httpx.Response(200, text=json.dumps(_SAMPLE))
+        return httpx2.Response(200, text=json.dumps(_SAMPLE))
 
     monkeypatch.setattr(streamstats, "get_watershed", fake_get_watershed)
 

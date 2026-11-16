@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
@@ -204,7 +204,7 @@ def get_data(
     args: dict[str, Any],
     service: str,
     expand_percentiles: bool,
-    client: httpx.AsyncClient | None = None,
+    client: httpx2.AsyncClient | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Retrieve statistical data from a statistics endpoint.
 
@@ -225,7 +225,7 @@ def get_data(
         its own row in the returned dataframe. If True and the caller requests a
         computation_type other than percentiles, a percentile column is still
         returned.
-    client : httpx.AsyncClient, optional
+    client : httpx2.AsyncClient, optional
         Caller-supplied async client. ``None`` (default) uses the one this
         call's :class:`~dataretrieval.transport.fanout.FanOut` opened, which
         runs in the same event loop as the page walk. Primarily a test seam.
@@ -245,7 +245,7 @@ def get_data(
         :func:`transport.pagination.paginate`);
         or :class:`~dataretrieval.exceptions.NetworkError` if the request
         can't reach the service in a way retrying cannot fix (unsupported scheme,
-        a hostname that does not resolve), the ``httpx`` exception chained
+        a hostname that does not resolve), the ``httpx2`` exception chained
         on ``__cause__``.
     FanOutInterrupted
         A transient failure (429 / 5xx / timeout) was not resolved by the built-in
@@ -254,7 +254,7 @@ def get_data(
     """
 
     url = f"{statistics_api_url()}/{service}"
-    req = httpx.Request(
+    req = httpx2.Request(
         method="GET",
         url=url,
         headers=default_headers(url),
@@ -263,14 +263,14 @@ def get_data(
     method = req.method
     headers = req.headers
 
-    def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+    def parse_response(resp: httpx2.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
         # Coerce falsy cursors ("", 0) to None so _paginate terminates.
         # USGS uses "next": null on the last page, but the coercion
         # also covers any "" sentinel a future schema might use.
         return _handle_nesting(body, geopd=GEOPANDAS), body.get("next") or None
 
-    async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
+    async def follow_up(cursor: str, sess: httpx2.AsyncClient) -> httpx2.Response:
         # Build a new params dict per page so the caller's ``args``
         # is never mutated.
         return await sess.request(

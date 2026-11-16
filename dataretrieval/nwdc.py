@@ -41,7 +41,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
@@ -72,7 +72,7 @@ __all__ = [
 ]
 
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
-_WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
+_WATERUSE_HOST = httpx2.URL(WATERUSE_URL).host
 # Hosts a ``rel="next"`` cursor may name for this same service; each is
 # rewritten to :data:`_WATERUSE_HOST` rather than followed as given.
 _WATERUSE_HOST_ALIASES = frozenset({_WATERUSE_HOST, "water.usgs.gov"})
@@ -251,7 +251,7 @@ def get_wateruse(
     # pagination, and concatenate the results.
     headers = default_headers(service_url)
     requests = [
-        httpx.Request(
+        httpx2.Request(
             "GET",
             service_url,
             params={**base_params, "location": location},
@@ -259,7 +259,7 @@ def get_wateruse(
         )
         for location in _resolve_locations(state, county, huc)
     ]
-    return _fan_out(requests, headers, ssl_check, host=httpx.URL(service_url).host)
+    return _fan_out(requests, headers, ssl_check, host=httpx2.URL(service_url).host)
 
 
 # Valid HUC code lengths (digits) → the hydrologic-unit level they query.
@@ -336,7 +336,7 @@ def _validate_huc(value: object) -> str:
 
 
 def _fan_out(
-    requests: list[httpx.Request],
+    requests: list[httpx2.Request],
     headers: dict[str, str],
     ssl_check: bool,
     *,
@@ -357,17 +357,17 @@ def _fan_out(
     is an upstream fault that re-sending can resolve.
     """
 
-    def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+    def parse(response: httpx2.Response) -> tuple[pd.DataFrame, str | None]:
         return _read_csv_page(response), _next_page_url(response, host=host)
 
-    async def follow(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
+    async def follow(cursor: str, sess: httpx2.AsyncClient) -> httpx2.Response:
         return await sess.get(cursor, headers=headers)
 
-    def raise_for_status(response: httpx.Response) -> None:
+    def raise_for_status(response: httpx2.Response) -> None:
         _raise_for_status(response, detail_from=_nwdc_error_detail)
 
     def finalize(
-        frame: pd.DataFrame, response: httpx.Response
+        frame: pd.DataFrame, response: httpx2.Response
     ) -> tuple[pd.DataFrame, BaseMetadata]:
         return frame, BaseMetadata(response)
 
@@ -384,7 +384,7 @@ def _fan_out(
     )
 
 
-def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
+def _read_csv_page(response: httpx2.Response) -> pd.DataFrame:
     """Parse one CSV page through the shared code-preserving reader.
 
     ``huc12_id`` is a code column by name, so its leading zeros survive
@@ -405,11 +405,11 @@ def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
 
 
 def _next_page_url(
-    response: httpx.Response, *, host: str = _WATERUSE_HOST
+    response: httpx2.Response, *, host: str = _WATERUSE_HOST
 ) -> str | None:
     """Return the absolute URL of the next page, or None if this is the last.
 
-    Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx into
+    Reads the standard ``Link: <...>; rel="next"`` header (parsed by httpx2 into
     ``response.links``). The cursor is normalized before it is used, because the service
     writes it inconsistently. A relative reference is resolved against the page it came
     from, and the bare ``water.usgs.gov`` host is rewritten to the public
@@ -439,7 +439,7 @@ def _next_page_url(
     )
 
 
-def _nwdc_error_detail(response: httpx.Response) -> str | None:
+def _nwdc_error_detail(response: httpx2.Response) -> str | None:
     """Pull the ``detail`` message out of an NWDC JSON error envelope, if any.
 
     The NWDC reports errors as ``{"detail": "Invalid model name: ..."}``. Passed

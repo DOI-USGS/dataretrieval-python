@@ -13,7 +13,7 @@ from collections.abc import Callable
 from json import JSONDecodeError
 from typing import Any, NoReturn, TypeVar, cast
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._deprecation import REMOVALS, warn_deprecated
@@ -126,7 +126,7 @@ def _deprecated(func: F) -> F:
     return cast("F", wrapper)
 
 
-def _parse_json_or_raise(response: httpx.Response) -> pd.DataFrame:
+def _parse_json_or_raise(response: httpx2.Response) -> pd.DataFrame:
     """Parse a JSON NWIS response, raising an error that names an HTML body."""
     try:
         return _read_json(response.json())
@@ -415,7 +415,7 @@ def get_stats(
 @_deprecated
 def query_waterdata(
     service: str, ssl_check: bool = True, **kwargs: Any
-) -> httpx.Response:
+) -> httpx2.Response:
     """Query the waterdata service.
 
     Parameters
@@ -431,7 +431,7 @@ def query_waterdata(
 
     Returns
     -------
-    request: ``httpx.Response``
+    request: ``httpx2.Response``
         The response object from the API request to the web service.
     """
     require_any_of(
@@ -476,7 +476,7 @@ def query_waterdata(
 @_deprecated
 def query_waterservices(
     service: str, ssl_check: bool = True, **kwargs: Any
-) -> httpx.Response:
+) -> httpx2.Response:
     """Query waterservices.usgs.gov.
 
     For more documentation see https://waterservices.usgs.gov/docs/
@@ -511,7 +511,7 @@ def query_waterservices(
 
     Returns
     -------
-    request: ``httpx.Response``
+    request: ``httpx2.Response``
         The response object from the API request to the web service.
 
     """
@@ -1262,7 +1262,7 @@ class NWIS_Metadata(BaseMetadata):
         Response url.
     query_time: datetime.timedelta
         Response elapsed time.
-    header: httpx.Headers
+    header: httpx2.Headers
         Response headers.
     comments: str | None
         Metadata comments, if any.
@@ -1274,13 +1274,13 @@ class NWIS_Metadata(BaseMetadata):
 
     """
 
-    def __init__(self, response: httpx.Response, **parameters: Any) -> None:
+    def __init__(self, response: httpx2.Response, **parameters: Any) -> None:
         """Generate the standard metadata set, plus NWIS-specific metadata.
 
         Parameters
         ----------
         response: Response
-            Response object from the ``httpx`` module.
+            Response object from the ``httpx2`` module.
         parameters: unpacked dictionary
             Unpacked dictionary of the parameters supplied in the request.
 

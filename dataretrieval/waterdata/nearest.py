@@ -9,7 +9,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, Protocol, cast, get_args
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._validation import require_one_of
@@ -40,7 +40,7 @@ class _ResumableCall(Protocol):
     def partial_frame(self) -> pd.DataFrame: ...
 
     @property
-    def partial_response(self) -> httpx.Response | None: ...
+    def partial_response(self) -> httpx2.Response | None: ...
 
     def resume(self) -> tuple[pd.DataFrame, BaseMetadata]: ...
 
@@ -83,7 +83,7 @@ class _NearestCall:
         return self._selector.select_partial(self._inner.partial_frame)
 
     @property
-    def partial_response(self) -> httpx.Response | None:
+    def partial_response(self) -> httpx2.Response | None:
         """Pass through the inner call's live aggregate response."""
         return self._inner.partial_response
 

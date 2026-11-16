@@ -13,7 +13,7 @@ import sys
 import types
 from unittest import mock
 
-import httpx
+import httpx2
 import pandas as pd
 import pytest
 
@@ -34,7 +34,7 @@ def _run_walk_pages(*, geopd, req, client):
     """Run the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
-    ``AsyncMock(spec=httpx.AsyncClient)`` whose ``.send``/``.request`` are
+    ``AsyncMock(spec=httpx2.AsyncClient)`` whose ``.send``/``.request`` are
     awaitable and run the coroutine via ``asyncio.run``. The progress
     reporter is bound on a contextvar, which the coroutine inherits when
     ``asyncio.run`` copies the calling context.
@@ -373,9 +373,9 @@ def test_nested_context_reuses_outer_reporter():
 
 def _resp(features, *, next_url=None, rate_remaining=None):
     resp = mock.MagicMock()
-    # A real response always has an ``httpx.URL``; the next-page check
+    # A real response always has an ``httpx2.URL``; the next-page check
     # resolves and host-checks the ``next`` link against it.
-    resp.url = httpx.URL("https://example.com/p1")
+    resp.url = httpx2.URL("https://example.com/p1")
     links = [{"rel": "next", "href": next_url}] if next_url else []
     resp.json.return_value = {
         "numberReturned": len(features),
@@ -398,11 +398,11 @@ def test_walk_pages_reports_pages_and_rate_limit():
     )
     resp2 = _resp([{"id": "2", "properties": {"v": "b"}}], rate_remaining="4998")
 
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = resp1
     client.request.return_value = resp2
 
-    req = mock.MagicMock(spec=httpx.Request)
+    req = mock.MagicMock(spec=httpx2.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -424,10 +424,10 @@ def test_walk_pages_reports_pages_and_rate_limit():
 def test_walk_pages_without_context_does_not_error():
     # No active reporter: pagination must still work and print nothing.
     resp = _resp([{"id": "1", "properties": {"v": "a"}}])
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = resp
 
-    req = mock.MagicMock(spec=httpx.Request)
+    req = mock.MagicMock(spec=httpx2.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -444,11 +444,11 @@ def test_broken_progress_stream_does_not_truncate_pagination():
         [{"id": "1", "properties": {"v": "a"}}], next_url="https://example.com/p2"
     )
     resp2 = _resp([{"id": "2", "properties": {"v": "b"}}])
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = resp1
     client.request.return_value = resp2
 
-    req = mock.MagicMock(spec=httpx.Request)
+    req = mock.MagicMock(spec=httpx2.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -491,10 +491,10 @@ def test_paginate_reports_pages_through_active_reporter(monkeypatch):
     async def follow_up(cursor, sess):
         return resp2
 
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = resp1
 
-    req = mock.MagicMock(spec=httpx.Request)
+    req = mock.MagicMock(spec=httpx2.Request)
     req.method = "GET"
     req.headers = {}
     req.url = "https://example.com/p1"
@@ -529,7 +529,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
 
     # Fake build_request whose URL length scales with the sites list,
     # matching the planner's _request_bytes contract. _FakeReq has the
-    # same shape as httpx.Request for sizing purposes.
+    # same shape as httpx2.Request for sizing purposes.
     class _FakeReq:
         __slots__ = ("url", "content")
 
