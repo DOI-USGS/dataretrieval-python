@@ -13,7 +13,7 @@ response)``. Dividing a query is protocol-specific and is defined in OGC; distri
 the pieces is protocol-neutral and is defined here. That split is ADR 0008.
 
 Concurrency: :meth:`FanOut._run` dispatches every pending chunk under one
-``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
+``asyncio.gather`` sharing a single ``httpx2.AsyncClient``. An
 ``asyncio.Semaphore`` -- not the client's connection pool, which is only sized
 to match -- caps the chunks in flight at ``N`` (ADR 0008).
 The ``concurrency`` setting resolves ``N`` -- a ``configure()`` block, then
@@ -50,7 +50,7 @@ import functools
 from collections.abc import Awaitable, Callable, Iterator
 from typing import Any, Generic, Protocol, TypeVar, cast
 
-import httpx
+import httpx2
 import pandas as pd
 from anyio.from_thread import start_blocking_portal
 
@@ -74,7 +74,7 @@ from dataretrieval.transport.retry import retry_async as _retry
 #: executor never inspects it — see :class:`FanOutPlan`.
 _Chunk = TypeVar("_Chunk")
 #: The same thing in :class:`FanOutPlan`, where it is only ever produced by the plan.
-#: Covariant so a ``list[httpx.Request]`` satisfies a plan of any supertype, the way
+#: Covariant so a ``list[httpx2.Request]`` satisfies a plan of any supertype, the way
 #: ``Iterable`` is covariant for the same reason.
 _ChunkCo = TypeVar("_ChunkCo", covariant=True)
 
@@ -100,7 +100,7 @@ class FanOutPlan(Protocol[_ChunkCo]):
     :meth:`FanOut.resume` keys completed work by position. The item type is
     whatever an adapter's own ``fetch`` accepts -- this executor passes each
     item through unchanged and never inspects it, so the OGC getters yield
-    kwargs dicts while Water Use yields ready :class:`httpx.Request` objects.
+    kwargs dicts while Water Use yields ready :class:`httpx2.Request` objects.
     The query's ``canonical_url`` is not part of the plan; it is an argument to
     :class:`FanOut`.
 
@@ -118,16 +118,16 @@ class FanOutPlan(Protocol[_ChunkCo]):
 # Shared per-call client
 # ---------------------------------------------------------------------------
 
-# The per-call ``httpx.AsyncClient``, set for the duration of
+# The per-call ``httpx2.AsyncClient``, set for the duration of
 # ``FanOut._run`` so paginated-loop helpers reuse the same connection pool
 # across every chunk. ``None`` outside a fan-out — paginated helpers then
 # open their own short-lived client. Deliberately a plain ContextVar-backed
 # ambient rather than a parameter: the fetch closure an adapter injects is often
 # several frames below the client's owner.
-_active_client: Ambient[httpx.AsyncClient | None] = Ambient("_fanout_client", None)
+_active_client: Ambient[httpx2.AsyncClient | None] = Ambient("_fanout_client", None)
 
 
-def active_client() -> httpx.AsyncClient | None:
+def active_client() -> httpx2.AsyncClient | None:
     """
     Return the fan-out's currently set client, or ``None``.
 
@@ -135,7 +135,7 @@ def active_client() -> httpx.AsyncClient | None:
 
     Returns
     -------
-    httpx.AsyncClient or None
+    httpx2.AsyncClient or None
         The client set for the duration of a :meth:`FanOut._run`;
         ``None`` outside one.
     """
@@ -149,18 +149,18 @@ def active_client() -> httpx.AsyncClient | None:
 # The per-chunk fetcher an adapter injects and ``FanOut`` calls: an
 # ``async def fetch(item) -> (df, response)``, where ``item`` is whatever the
 # adapter's plan yields.
-_Fetch = Callable[[_Chunk], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
+_Fetch = Callable[[_Chunk], Awaitable[tuple[pd.DataFrame, httpx2.Response]]]
 
 # Caller-supplied transform applied to the combined result, so a resumed call
 # returns the same shape as an un-interrupted one rather than the executor's raw
-# ``(frame, httpx.Response)``. This keeps the executor generic: the OGC getters
+# ``(frame, httpx2.Response)``. This keeps the executor generic: the OGC getters
 # inject their post-processing (type coercion, column arrangement,
 # ``BaseMetadata``) through ``_finalize_ogc``. The default is identity.
-_Finalize = Callable[[pd.DataFrame, httpx.Response], tuple[pd.DataFrame, Any]]
+_Finalize = Callable[[pd.DataFrame, httpx2.Response], tuple[pd.DataFrame, Any]]
 
 
 def _passthrough_result(
-    frame: pd.DataFrame, response: httpx.Response
+    frame: pd.DataFrame, response: httpx2.Response
 ) -> tuple[pd.DataFrame, Any]:
     """Default :data:`_Finalize`: return the raw combined pair unchanged."""
     return frame, response
@@ -177,7 +177,7 @@ class FanOut(Generic[_Chunk]):
     :class:`~dataretrieval.interruptions.FanOutInterrupted`.
 
     :meth:`_run` gathers every pending chunk over one shared
-    :class:`httpx.AsyncClient`, applies the failure-precedence rules, and
+    :class:`httpx2.AsyncClient`, applies the failure-precedence rules, and
     combines; :meth:`resume` runs it through an ``anyio`` blocking
     portal so it works whether or not the caller is already inside an
     event loop. Concurrency is bounded by a per-run ``asyncio.Semaphore``
@@ -206,7 +206,7 @@ class FanOut(Generic[_Chunk]):
         ``async def`` that issues a single chunk, given one item from
         ``plan``, and returns ``(frame, response)``.
     client_options : dict, optional
-        Extra ``httpx.AsyncClient`` options for the shared client this run
+        Extra ``httpx2.AsyncClient`` options for the shared client this run
         opens (e.g. ``{"verify": False}``).
     default_concurrent : int, optional
         This adapter's preferred in-flight cap for when nothing is
@@ -235,7 +235,7 @@ class FanOut(Generic[_Chunk]):
     partial_frame : pandas.DataFrame
         Raw combined frame of completed chunks (live; recomputed per
         access). Not finalized — call :meth:`resume` for the finished shape.
-    partial_response : httpx.Response or None
+    partial_response : httpx2.Response or None
         Raw aggregate response (canonical URL restored), or ``None`` when
         nothing has completed yet (live; recomputed per access).
     """
@@ -274,7 +274,7 @@ class FanOut(Generic[_Chunk]):
         # :func:`dataretrieval.configuration.concurrency` for why a service preference
         # must not override an explicit setting.
         self.default_concurrent = default_concurrent
-        # Extra ``httpx.AsyncClient`` options merged into the shared client this
+        # Extra ``httpx2.AsyncClient`` options merged into the shared client this
         # run opens (``verify`` for the Water Use ``ssl_check`` flag, say). The
         # executor owns client lifecycle, so an adapter with a per-call client
         # requirement has to pass it in rather than open its own — opening its
@@ -291,7 +291,7 @@ class FanOut(Generic[_Chunk]):
         # (gathered chunks complete out of order — see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
         # order is completion order (relied on by :meth:`_combine_raw`).
-        self._chunks: dict[int, tuple[pd.DataFrame, httpx.Response]] = {}
+        self._chunks: dict[int, tuple[pd.DataFrame, httpx2.Response]] = {}
 
     def wrap_failure(self, exc: BaseException) -> FanOutInterrupted | None:
         """
@@ -327,7 +327,7 @@ class FanOut(Generic[_Chunk]):
     def _normalize_failure(self, exc: BaseException) -> BaseException:
         """Map an explicitly caused transport failure into the public taxonomy."""
         for current in _walk_causes(exc):
-            if isinstance(current, httpx.TransportError):
+            if isinstance(current, httpx2.TransportError):
                 wrapped = network_error(
                     self.canonical_url or "unknown service", current
                 )
@@ -340,7 +340,7 @@ class FanOut(Generic[_Chunk]):
         """Number of chunks completed so far."""
         return len(self._chunks)
 
-    def _combine_raw(self) -> tuple[pd.DataFrame, httpx.Response]:
+    def _combine_raw(self) -> tuple[pd.DataFrame, httpx2.Response]:
         """Assemble the raw ``(frame, response)`` from completed chunks,
         before :attr:`finalize` runs.
 
@@ -354,7 +354,7 @@ class FanOut(Generic[_Chunk]):
 
         Returns
         -------
-        tuple of (pandas.DataFrame, httpx.Response)
+        tuple of (pandas.DataFrame, httpx2.Response)
             The concatenated frame and the aggregated response, before
             :attr:`finalize` is applied.
         """
@@ -364,7 +364,7 @@ class FanOut(Generic[_Chunk]):
         """Combine completed frames in deterministic chunk order."""
         return _combine_chunk_frames([self._chunks[i][0] for i in sorted(self._chunks)])
 
-    def _combine_responses(self) -> httpx.Response:
+    def _combine_responses(self) -> httpx2.Response:
         """Aggregate completed responses under the canonical request URL."""
         responses = [response for _, response in self._chunks.values()]
         return _combine_chunk_responses(responses, self.canonical_url)
@@ -393,18 +393,18 @@ class FanOut(Generic[_Chunk]):
         return self._combine_frames() if self._chunks else pd.DataFrame()
 
     @property
-    def partial_response(self) -> httpx.Response | None:
+    def partial_response(self) -> httpx2.Response | None:
         """
         Raw aggregate response with the canonical URL restored to the
         user's full original query.
 
         Live — recomputed on each access. Like :attr:`partial_frame`, this
-        is the *raw* aggregate (an :class:`httpx.Response`), not the
+        is the *raw* aggregate (an :class:`httpx2.Response`), not the
         finalized result, so inspecting it is side-effect-free.
 
         Returns
         -------
-        httpx.Response or None
+        httpx2.Response or None
             Aggregated response when at least one chunk has
             completed, ``None`` otherwise.
         """
@@ -450,7 +450,7 @@ class FanOut(Generic[_Chunk]):
         df : pandas.DataFrame
             Combined data from every successful chunk.
         response
-            The finalized aggregate — a raw :class:`httpx.Response`
+            The finalized aggregate — a raw :class:`httpx2.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
             or whatever :attr:`finalize` produces (e.g. ``BaseMetadata`` for
@@ -495,7 +495,7 @@ class FanOut(Generic[_Chunk]):
                 )
 
     def _handle_gather_failures(
-        self, results: list[tuple[pd.DataFrame, httpx.Response] | BaseException]
+        self, results: list[tuple[pd.DataFrame, httpx2.Response] | BaseException]
     ) -> None:
         """Apply failure-precedence rules to gather results.
 
@@ -542,14 +542,14 @@ class FanOut(Generic[_Chunk]):
     async def _run(self, max_concurrent: int | None) -> tuple[pd.DataFrame, Any]:
         """
         Gather every pending chunk over one shared
-        :class:`httpx.AsyncClient` and return the combined, finalized result.
+        :class:`httpx2.AsyncClient` and return the combined, finalized result.
 
         Pending chunks (:meth:`_pending`) fan out under
         ``asyncio.gather`` with ``return_exceptions=True`` so completed
         chunks are kept after a sibling's transient failure. On a
         recognized transient (:class:`~dataretrieval.exceptions.RateLimited`,
         :class:`~dataretrieval.exceptions.ServiceUnavailable`, or a bare
-        ``httpx.HTTPError`` / ``httpx.InvalidURL``) a :class:`FanOutInterrupted`
+        ``httpx2.HTTPError`` / ``httpx2.InvalidURL``) a :class:`FanOutInterrupted`
         subclass is raised with ``self`` on ``.call``; ``exc.call.resume()`` then
         re-issues only the unfinished indices through this same runner.
 
@@ -557,7 +557,7 @@ class FanOut(Generic[_Chunk]):
         ``asyncio.Semaphore`` caps the number of concurrent fetches at
         ``N = max_concurrent`` — ``None`` removes the cap, ``N=1`` runs them
         one at a time. The connection pool is sized to the same ``N``
-        (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)
+        (``httpx2.Limits(max_connections=N, max_keepalive_connections=N)``)
         so the in-flight fetches reuse keepalive connections.
 
         The semaphore, not the pool, is the throttle (ADR 0008); holding
@@ -578,7 +578,7 @@ class FanOut(Generic[_Chunk]):
         df : pandas.DataFrame
             Combined data from every chunk.
         response
-            The finalized aggregate — a raw :class:`httpx.Response`
+            The finalized aggregate — a raw :class:`httpx2.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
             or whatever :attr:`finalize` produces.
@@ -590,12 +590,12 @@ class FanOut(Generic[_Chunk]):
             holding the sparse completed chunks; ``.call.resume()``
             re-issues the unfinished ones.
         """
-        # At httpx's default client limits (``max_connections=100``,
+        # At httpx2's default client limits (``max_connections=100``,
         # keepalive 20), the pool would limit a wider cap, or would open and close
         # connections repeatedly by keeping too few alive. ``unbounded``
         # (``max_concurrent=None``) is a cap equal to the plan total — a
         # semaphore that can never block — so the gated path is the only code path.
-        limits = httpx.Limits(
+        limits = httpx2.Limits(
             max_connections=max_concurrent, max_keepalive_connections=max_concurrent
         )
         semaphore = asyncio.Semaphore(
@@ -610,7 +610,7 @@ class FanOut(Generic[_Chunk]):
 
                 async def track(
                     index: int, item: _Chunk
-                ) -> tuple[pd.DataFrame, httpx.Response]:
+                ) -> tuple[pd.DataFrame, httpx2.Response]:
                     """One chunk (with retry) + result-store + progress update."""
                     result = await _retry(
                         lambda: self.fetch(item), self.retry_policy, gate=semaphore

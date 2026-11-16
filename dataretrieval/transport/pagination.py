@@ -11,7 +11,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from typing import Any, TypeVar
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
@@ -41,8 +41,8 @@ _Cursor = TypeVar("_Cursor")
 
 @asynccontextmanager
 async def _client_for(
-    client: httpx.AsyncClient | None,
-) -> AsyncIterator[httpx.AsyncClient]:
+    client: httpx2.AsyncClient | None,
+) -> AsyncIterator[httpx2.AsyncClient]:
     """Choose a client: the caller's, else the running fan-out's, else a new one.
 
     Preferring the executor's shared client over a new one keeps every
@@ -59,7 +59,7 @@ async def _client_for(
 def paginated_failure_message(
     pages_collected: int,
     cause: BaseException,
-    url: str | httpx.URL | None = None,
+    url: str | httpx2.URL | None = None,
 ) -> str:
     """Build a message that names the recovery action for an interrupted page walk."""
     cause_str = str(cause).removesuffix(".")
@@ -80,14 +80,14 @@ def paginated_failure_message(
 
 
 async def paginate(
-    initial_req: httpx.Request,
+    initial_req: httpx2.Request,
     *,
-    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, _Cursor | None]],
-    follow_up: Callable[[_Cursor, httpx.AsyncClient], Awaitable[httpx.Response]],
-    raise_for_status: Callable[[httpx.Response], None],
-    client: httpx.AsyncClient | None = None,
+    parse_response: Callable[[httpx2.Response], tuple[pd.DataFrame, _Cursor | None]],
+    follow_up: Callable[[_Cursor, httpx2.AsyncClient], Awaitable[httpx2.Response]],
+    raise_for_status: Callable[[httpx2.Response], None],
+    client: httpx2.AsyncClient | None = None,
     row_cap: int | None = None,
-) -> tuple[pd.DataFrame, httpx.Response]:
+) -> tuple[pd.DataFrame, httpx2.Response]:
     """Fetch and combine pages until the injected parser returns no cursor.
 
     The service adapter supplies response parsing, cursor following, and status
@@ -98,7 +98,7 @@ async def paginate(
     logger.debug("Requesting: %s", initial_req.url)
     reporter = _progress.current()
 
-    def report_page(page: httpx.Response, frame: pd.DataFrame) -> None:
+    def report_page(page: httpx2.Response, frame: pd.DataFrame) -> None:
         note_progress()  # a walk still receiving pages is not stalled
         if reporter is not None:
             reporter.set_rate_remaining(
@@ -160,14 +160,14 @@ async def paginate(
 
 
 def run_paginated(
-    requests: list[httpx.Request],
+    requests: list[httpx2.Request],
     *,
-    parse_response: Callable[[httpx.Response], tuple[pd.DataFrame, Any]],
-    follow_up: Callable[[Any, httpx.AsyncClient], Awaitable[httpx.Response]],
-    raise_for_status: Callable[[httpx.Response], None],
+    parse_response: Callable[[httpx2.Response], tuple[pd.DataFrame, Any]],
+    follow_up: Callable[[Any, httpx2.AsyncClient], Awaitable[httpx2.Response]],
+    raise_for_status: Callable[[httpx2.Response], None],
     service: str,
     finalize: _Finalize = _passthrough_result,
-    client: httpx.AsyncClient | None = None,
+    client: httpx2.AsyncClient | None = None,
     client_options: dict[str, Any] | None = None,
     default_concurrent: int = _configuration.DEFAULT_CONCURRENCY,
     canonical_url: str | None = None,
@@ -188,7 +188,7 @@ def run_paginated(
     scopes to that adapter alone.
     """
 
-    async def fetch(request: httpx.Request) -> tuple[pd.DataFrame, httpx.Response]:
+    async def fetch(request: httpx2.Request) -> tuple[pd.DataFrame, httpx2.Response]:
         return await paginate(
             request,
             parse_response=parse_response,

@@ -62,7 +62,7 @@ belongs in ``finalize``.
 
 **The concurrency bound is an ``asyncio.Semaphore``, not the connection pool.**
 The pool is sized to match the semaphore rather than used as the throttle: a
-pool smaller than the fan-out would queue chunks inside ``httpx`` and appear as
+pool smaller than the fan-out would queue chunks inside ``httpx2`` and appear as
 ``PoolTimeout``, which the taxonomy classifies as a transient failure and
 reports as a resumable interruption -- a spurious one, caused entirely by the
 package's own settings rather than by the service. There is one throttle, and
@@ -79,7 +79,7 @@ identifiers along a comma.
 item type -- a sized, iterable collection of chunk descriptions, and
 nothing more. The executor passes each item to the adapter's own ``fetch``
 without inspecting it, so the item type is the adapter's concern: the OGC
-getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
+getters yield kwargs dicts, Water Use yields ready ``httpx2.Request`` objects.
 
 The standard protocols, rather than custom members, are a deliberate choice.
 A plan declaring ``total`` and ``iter_chunk_args()`` would be stating ``len``

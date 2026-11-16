@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote_plus
 
-import httpx
+import httpx2
 
 from dataretrieval.exceptions import Unchunkable
 from dataretrieval.ogc.filters import (
@@ -68,9 +68,9 @@ _LIST_SEP = ","
 _OR_SEP = " OR "
 
 
-def _request_bytes(req: httpx.Request) -> int:
+def _request_bytes(req: httpx2.Request) -> int:
     """
-    Return the total bytes of an httpx request: URL + body.
+    Return the total bytes of an httpx2 request: URL + body.
 
     GET routes have empty ``.content`` and reduce to URL length. POST
     routes (CQL2 JSON body) need body bytes — the URL stays short
@@ -79,65 +79,65 @@ def _request_bytes(req: httpx.Request) -> int:
 
     Parameters
     ----------
-    req : httpx.Request
+    req : httpx2.Request
         The request to size.
 
     Returns
     -------
     int
-        ``len(str(req.url)) + len(req.content)``. ``httpx.URL`` doesn't
+        ``len(str(req.url)) + len(req.content)``. ``httpx2.URL`` doesn't
         support ``len()`` directly, so the str-coercion is required.
     """
     return len(str(req.url)) + len(req.content)
 
 
 def _try_build(
-    build_request: Callable[..., httpx.Request],
+    build_request: Callable[..., httpx2.Request],
     args: dict[str, Any],
-) -> httpx.Request | None:
+) -> httpx2.Request | None:
     """Attempt to construct a request, returning ``None`` on overflow.
 
-    ``httpx.URL`` enforces a hard 64 KB cap per URL component and raises
-    ``httpx.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes` and
+    ``httpx2.URL`` enforces a hard 64 KB cap per URL component and raises
+    ``httpx2.InvalidURL`` for anything bigger.  Both :func:`_safe_request_bytes` and
     :class:`ChunkPlan`'s initial-request probe need this build-or-None step, so it is
     defined here once.
 
     Parameters
     ----------
-    build_request : Callable[..., httpx.Request]
+    build_request : Callable[..., httpx2.Request]
         Factory that turns a kwargs dict into a sized request.
     args : dict[str, Any]
         Per-chunk kwargs to pass through to ``build_request``.
 
     Returns
     -------
-    httpx.Request or None
+    httpx2.Request or None
         The built request, or ``None`` when construction raised
-        ``httpx.InvalidURL``.
+        ``httpx2.InvalidURL``.
     """
     try:
         return build_request(**args)
-    except httpx.InvalidURL:
+    except httpx2.InvalidURL:
         return None
 
 
 def _safe_request_bytes(
-    build_request: Callable[..., httpx.Request],
+    build_request: Callable[..., httpx2.Request],
     args: dict[str, Any],
     url_limit: int,
 ) -> int:
     """
-    Size a candidate chunk, treating ``httpx.InvalidURL`` as "too large".
+    Size a candidate chunk, treating ``httpx2.InvalidURL`` as "too large".
 
-    ``httpx.URL`` enforces a hard 64 KB cap per URL component
-    (``MAX_URL_LENGTH``) and raises ``httpx.InvalidURL`` for anything
+    ``httpx2.URL`` enforces a hard 64 KB cap per URL component
+    (``MAX_URL_LENGTH``) and raises ``httpx2.InvalidURL`` for anything
     bigger. ``url_limit + 1`` is reported on overflow so the greedy
     halving loop in :meth:`ChunkPlan._plan` keeps shrinking the
-    largest axis until ``httpx.Request`` can be constructed.
+    largest axis until ``httpx2.Request`` can be constructed.
 
     Parameters
     ----------
-    build_request : Callable[..., httpx.Request]
+    build_request : Callable[..., httpx2.Request]
         Factory that turns a kwargs dict into a sized request.
     args : dict[str, Any]
         Per-chunk kwargs to pass through to ``build_request``.
@@ -157,7 +157,7 @@ def _safe_request_bytes(
 
 def _check_unchunkable_request(
     args: dict[str, Any],
-    build_request: Callable[..., httpx.Request],
+    build_request: Callable[..., httpx2.Request],
     url_limit: int,
 ) -> None:
     """Enforce the byte budget on a request with no chunkable axis.
@@ -341,8 +341,8 @@ class ChunkPlan:
     ----------
     args : dict[str, Any]
         The user-level request kwargs.
-    build_request : Callable[..., httpx.Request]
-        Factory that turns a kwargs dict into a sized httpx request,
+    build_request : Callable[..., httpx2.Request]
+        Factory that turns a kwargs dict into a sized httpx2 request,
         e.g. ``_construct_api_requests``.
     url_limit : int
         Byte budget for the request (URL + body) — a hard ceiling every
@@ -390,7 +390,7 @@ class ChunkPlan:
     def __init__(
         self,
         args: dict[str, Any],
-        build_request: Callable[..., httpx.Request],
+        build_request: Callable[..., httpx2.Request],
         url_limit: int,
         max_chunks: int = 1,
     ) -> None:
@@ -427,12 +427,12 @@ class ChunkPlan:
         self._refine(max_chunks)
 
         if self.canonical_url is None:
-            with suppress(httpx.InvalidURL):
+            with suppress(httpx2.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
 
     def _plan(
         self,
-        build_request: Callable[..., httpx.Request],
+        build_request: Callable[..., httpx2.Request],
         url_limit: int,
     ) -> None:
         """

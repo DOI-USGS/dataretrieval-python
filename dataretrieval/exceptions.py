@@ -3,7 +3,7 @@
 Every service module raises a subclass of :class:`DataRetrievalError` when a request
 fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
-remain inside this taxonomy rather than leaking ``httpx`` exceptions. A
+remain inside this taxonomy rather than leaking ``httpx2`` exceptions. A
 deterministic failure is :class:`NetworkError`; a recoverable failure that
 exhausts retries during fan-out is a resumable ``ServiceInterrupted``.
 
@@ -22,7 +22,7 @@ batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
 that has stopped being updated.
 
 This module has no third-party dependencies, so any module can import it without
-importing pandas or httpx, and without risking an import cycle.
+importing pandas or httpx2, and without risking an import cycle.
 """
 
 from __future__ import annotations
@@ -254,7 +254,7 @@ class NetworkError(DataRetrievalError):
     A DNS failure, refused connection, or timeout stopped it, so no HTTP
     response arrived to classify.
 
-    Wraps the underlying ``httpx`` transport exception, preserved on
+    Wraps the underlying ``httpx2`` transport exception, preserved on
     ``__cause__``. Retryable (:attr:`~DataRetrievalError.retryable` is
     ``True``), but has no ``.status_code`` because no response came back.
     """

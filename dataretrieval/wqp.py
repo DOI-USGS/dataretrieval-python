@@ -48,7 +48,7 @@ __all__ = [
 
 
 if TYPE_CHECKING:
-    import httpx
+    import httpx2
     from pandas import DataFrame
 
 
@@ -680,7 +680,7 @@ class WQP_Metadata(BaseMetadata):
         Response url
     query_time : datetime.timedelta
         Response elapsed time
-    header : httpx.Headers
+    header : httpx2.Headers
         Response headers
     comment : None
         WQP does not return comments.
@@ -688,13 +688,13 @@ class WQP_Metadata(BaseMetadata):
         Site information (via ``what_sites``) if the query included a ``siteid``.
     """
 
-    def __init__(self, response: httpx.Response, **parameters: Any) -> None:
+    def __init__(self, response: httpx2.Response, **parameters: Any) -> None:
         """Generate the standard metadata set, plus WQP-specific metadata.
 
         Parameters
         ----------
-        response : ``httpx.Response``
-            Response object from the ``httpx`` module.
+        response : ``httpx2.Response``
+            Response object from the ``httpx2`` module.
 
         parameters : dict
             Unpacked dictionary of the parameters supplied in the request.

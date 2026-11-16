@@ -21,7 +21,7 @@ with 404.
 
 import re
 
-import httpx
+import httpx2
 import pytest
 
 from dataretrieval.waterdata import endpoints
@@ -49,7 +49,7 @@ def _split_version(url: str) -> tuple[str, str]:
 
 def _served_version(root: str) -> str:
     """The version in *root*'s ``self`` link, e.g. ``.../ogcapi/v1?f=json``."""
-    response = httpx.get(root, timeout=_TIMEOUT, follow_redirects=True)
+    response = httpx2.get(root, timeout=_TIMEOUT, follow_redirects=True)
     response.raise_for_status()
     links = response.json().get("links") or []
     self_links = [link["href"] for link in links if link.get("rel") == "self"]
@@ -78,12 +78,12 @@ def test_statistics_has_published_no_version_beyond_the_one_we_request():
     root, current = _split_version(url)
     following = f"v{int(current.removeprefix('v')) + 1}"
 
-    assert httpx.get(f"{url}/docs", timeout=_TIMEOUT).status_code == 200, (
+    assert httpx2.get(f"{url}/docs", timeout=_TIMEOUT).status_code == 200, (
         f"the statistics service stopped serving {current}, which this package "
         "requests; check what replaced it."
     )
 
-    probe = httpx.get(f"{root}{following}/docs", timeout=_TIMEOUT)
+    probe = httpx2.get(f"{root}{following}/docs", timeout=_TIMEOUT)
     assert probe.status_code == 404, (
         f"the statistics service now responds to {following}/docs with HTTP "
         f"{probe.status_code}; check whether the package should move to "
@@ -98,7 +98,7 @@ def test_the_version_this_package_requests_still_returns_data(family):
     """Checked on content, not status: OGC responds with 200 and an empty body
     for a version that does not exist."""
     url = _FAMILIES[family]()
-    response = httpx.get(f"{url}/collections", timeout=_TIMEOUT)
+    response = httpx2.get(f"{url}/collections", timeout=_TIMEOUT)
     response.raise_for_status()
     assert response.content and response.json().get("collections"), (
         f"{url}/collections returned no collections, so the "

@@ -260,7 +260,7 @@ def test_get_samples_summary_rejects_list():
 def test_get_samples_raises_typed_error_on_429(httpx_mock):
     """Non-200 from the Samples endpoint now raises the module's typed error
     (RateLimited on 429) — consistent with the OGC/stats path — instead of a
-    bare httpx.HTTPStatusError."""
+    bare httpx2.HTTPStatusError."""
     from dataretrieval.exceptions import RateLimited
 
     httpx_mock.add_response(status_code=429, headers={"Retry-After": "30"})

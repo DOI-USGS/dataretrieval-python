@@ -898,7 +898,7 @@ def _parse_base_url(raw: str, label: str) -> str:
     Only the scheme is checked, and deliberately so. This module cannot know
     what a given service's paths look like, but it can refuse the shapes that
     are never a base URL and would fail later, in the request -- a bare hostname that
-    ``httpx`` would reject, or a ``file://`` that is not a service at all.
+    ``httpx2`` would reject, or a ``file://`` that is not a service at all.
     """
     value = raw.strip()
     if not value.startswith(("http://", "https://")):

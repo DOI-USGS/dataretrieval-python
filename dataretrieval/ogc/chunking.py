@@ -40,7 +40,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from typing import Any
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval import configuration as _configuration
@@ -172,7 +172,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
 
 def multi_value_chunked(
     *,
-    build_request: Callable[..., httpx.Request],
+    build_request: Callable[..., httpx2.Request],
     url_limit: int | None = None,
     adapter: str | None = None,
 ) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
@@ -190,8 +190,8 @@ def multi_value_chunked(
 
     Parameters
     ----------
-    build_request : Callable[..., httpx.Request]
-        Factory that turns a kwargs dict into a sized httpx request,
+    build_request : Callable[..., httpx2.Request]
+        Factory that turns a kwargs dict into a sized httpx2 request,
         e.g. ``_construct_api_requests``. Called during planning to
         measure each candidate plan.
     url_limit : int, optional

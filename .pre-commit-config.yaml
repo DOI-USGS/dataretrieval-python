@@ -37,7 +37,7 @@ repos:
       - id: ruff-format
 
   # Type-check with mypy --strict (config lives in pyproject [tool.mypy]).
-  # Pinned to the same major as CI's `mypy<2`. httpx/anyio are installed into
+  # Pinned to the same major as CI's `mypy<2`. httpx2/anyio are installed into
   # the isolated hook env so their types resolve — without them mypy falls back
   # to `Any` and mis-reports (the runtime deps aren't in the hook's venv).
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -45,7 +45,7 @@ repos:
     hooks:
       - id: mypy
         pass_filenames: false
-        additional_dependencies: [httpx, anyio]
+        additional_dependencies: [httpx2, anyio]
 
   # Complexity ratchet. Thresholds are the tightest the package currently
   # passes, so this holds the line rather than demanding a refactor: no block

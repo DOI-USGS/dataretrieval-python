@@ -123,7 +123,7 @@ Supporting decisions:
   matched as well as the host, because redirects and server-supplied next-page
   links are attacker-influenced data and a downgrade to http would send the
   credential in clear text. Userinfo on a caller-supplied URL is
-  stripped before the request is built, so ``httpx`` cannot build an
+  stripped before the request is built, so ``httpx2`` cannot build an
   ``Authorization`` header nobody configured. This states the predicate ADR
   0006 defers to the credentials leaf.
 - **TOML, read with** ``tomllib``. Stdlib from Python 3.11; the ``tomli``

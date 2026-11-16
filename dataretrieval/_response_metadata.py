@@ -2,7 +2,7 @@
 
 A dependency-free leaf on purpose (ADR 0003). This class is the second half of
 the ``(DataFrame, metadata)`` return contract (ADR 0007), so nearly every
-service module needs it; importing it imports nothing but ``httpx``.
+service module needs it; importing it imports nothing but ``httpx2``.
 
 ``dataretrieval.utils.BaseMetadata`` remains the public import.
 """
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import httpx
+import httpx2
 
 
 class BaseMetadata:
@@ -23,22 +23,22 @@ class BaseMetadata:
         Response url.
     query_time: datetime.timedelta
         Response elapsed time.
-    header: httpx.Headers
+    header: httpx2.Headers
         Response headers.
 
     """
 
-    def __init__(self, response: httpx.Response) -> None:
+    def __init__(self, response: httpx2.Response) -> None:
         """Generate a standard set of metadata from the response.
 
         Parameters
         ----------
-        response: ``httpx.Response``
-            Response object from the ``httpx`` module.
+        response: ``httpx2.Response``
+            Response object from the ``httpx2`` module.
 
         """
 
-        # Coerce httpx.URL -> str: BaseMetadata.url has always been str.
+        # Coerce httpx2.URL -> str: BaseMetadata.url has always been str.
         self.url = str(response.url)
         self.query_time = response.elapsed
         self.header = response.headers

@@ -14,7 +14,7 @@ from collections.abc import Iterable
 from typing import Any, get_args
 from urllib.parse import quote
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._csv import read_code_csv
@@ -82,7 +82,7 @@ def get_codes(code_service: CODE_SERVICES) -> tuple[pd.DataFrame, BaseMetadata]:
 
 def _get_samples_csv(
     url: str, params: dict[str, Any], ssl_check: bool
-) -> tuple[pd.DataFrame, httpx.Response]:
+) -> tuple[pd.DataFrame, httpx2.Response]:
     """Issue a Samples CSV request and parse the body into a DataFrame.
 
     Shared final step for the Samples getters: sends the GET with the standard
@@ -91,7 +91,7 @@ def _get_samples_csv(
     ``HTTPStatusError``, and reads the CSV. The caller wraps the response
     as metadata and applies any per-getter post-step.
     """
-    logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
+    logger.debug("Request: %s", httpx2.URL(url).copy_merge_params(params))
     response = _get(
         url,
         params=params,

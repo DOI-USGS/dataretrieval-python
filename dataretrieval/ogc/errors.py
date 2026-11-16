@@ -8,19 +8,19 @@ mid-pagination failure. Changes here track the API's error contract.
 
 from __future__ import annotations
 
-import httpx
+import httpx2
 
 from dataretrieval.exceptions import error_for_status
 from dataretrieval.exceptions import parse_retry_after as _parse_retry_after
 
 
-def _error_body(resp: httpx.Response) -> str:
+def _error_body(resp: httpx2.Response) -> str:
     """
     Build an informative error message from an HTTP response.
 
     Parameters
     ----------
-    resp : httpx.Response
+    resp : httpx2.Response
         The HTTP response object to extract the error message from.
 
     Returns
@@ -74,7 +74,7 @@ def _clean_field(value: object | None) -> str | None:
     return text or None
 
 
-def _json_error_detail(resp: httpx.Response) -> str | None:
+def _json_error_detail(resp: httpx2.Response) -> str | None:
     """Render a supported JSON error body, or ``None`` for another shape."""
     try:
         body = resp.json()
@@ -95,10 +95,10 @@ def _json_error_detail(resp: httpx.Response) -> str | None:
     return ". ".join(parts) + "." if parts else None
 
 
-def _url_suffix(resp: httpx.Response) -> str:
+def _url_suffix(resp: httpx2.Response) -> str:
     """`` (URL: ...)``, or empty when no request is attached.
 
-    ``httpx`` raises on ``.url`` for a hand-built response; an error path must
+    ``httpx2`` raises on ``.url`` for a hand-built response; an error path must
     not fail while reporting a failure.
     """
     try:
@@ -107,7 +107,7 @@ def _url_suffix(resp: httpx.Response) -> str:
         return ""
 
 
-def _raise_for_non_200(resp: httpx.Response) -> None:
+def _raise_for_non_200(resp: httpx2.Response) -> None:
     """
     Raise a typed exception for any non-200 response.
 
@@ -118,7 +118,7 @@ def _raise_for_non_200(resp: httpx.Response) -> None:
 
     Parameters
     ----------
-    resp : httpx.Response
+    resp : httpx2.Response
         The HTTP response to inspect.
 
     Raises

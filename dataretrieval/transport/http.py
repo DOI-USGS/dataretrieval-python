@@ -8,7 +8,7 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 from typing import Any
 
-import httpx
+import httpx2
 
 from dataretrieval.credentials import (
     accepts_api_key,
@@ -43,11 +43,11 @@ USER_AGENT = f"python-dataretrieval/{_PACKAGE_VERSION}"
 
 HTTPX_DEFAULTS: dict[str, Any] = {
     "follow_redirects": True,
-    "timeout": httpx.Timeout(60.0, connect=10.0),
+    "timeout": httpx2.Timeout(60.0, connect=10.0),
 }
 
 
-def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]:
+def default_headers(target_url: str | httpx2.URL | None = None) -> dict[str, str]:
     """Build standard headers, scoping the API key to its authorized host.
 
     The host is checked *before* the key is resolved, and the key is resolved only for
@@ -77,13 +77,13 @@ HTTPX_ASYNC_DEFAULTS: dict[str, Any] = {
 }
 
 
-def network_error(url: str | httpx.URL, exc: httpx.TransportError) -> NetworkError:
+def network_error(url: str | httpx2.URL, exc: httpx2.TransportError) -> NetworkError:
     """Build a typed error for a failed round trip with no HTTP response."""
     detail = str(exc) or type(exc).__name__
     return NetworkError(f"Could not reach the service at {url}: {detail}")
 
 
-def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
+def get(url: str | httpx2.URL, **kwargs: Any) -> httpx2.Response:
     """Issue one guarded synchronous GET and map transport failures."""
     client_options: dict[str, Any] = {
         key: kwargs.pop(key)
@@ -92,15 +92,15 @@ def get(url: str | httpx.URL, **kwargs: Any) -> httpx.Response:
     }
     client_options["event_hooks"] = {"request": [strip_api_key_from_untrusted_host]}
     try:
-        with httpx.Client(**client_options) as client:
+        with httpx2.Client(**client_options) as client:
             return client.get(url, **kwargs)
-    except httpx.TransportError as exc:
+    except httpx2.TransportError as exc:
         raise network_error(url, exc) from exc
 
 
 @asynccontextmanager
-async def open_async_client(**overrides: Any) -> AsyncIterator[httpx.AsyncClient]:
+async def open_async_client(**overrides: Any) -> AsyncIterator[httpx2.AsyncClient]:
     """Open a short-lived async client with redirect-safe shared defaults."""
     options = {**HTTPX_ASYNC_DEFAULTS, **overrides}
-    async with httpx.AsyncClient(**options) as client:
+    async with httpx2.AsyncClient(**options) as client:
         yield client

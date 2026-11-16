@@ -9,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import NamedTuple, TypeVar
 
-import httpx
+import httpx2
 
 from dataretrieval import configuration as _configuration
 from dataretrieval import progress as _progress
@@ -213,7 +213,7 @@ def _retryable(
         if exc.status_code is not None and exc.status_code not in statuses:
             return False, None
         return True, exc.retry_after
-    if isinstance(exc, (NetworkError, httpx.TransportError)):
+    if isinstance(exc, (NetworkError, httpx2.TransportError)):
         return not _deterministic_failure(exc), None
     return False, None
 

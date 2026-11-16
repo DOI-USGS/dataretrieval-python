@@ -8,7 +8,7 @@ import itertools
 import socket
 from unittest import mock
 
-import httpx
+import httpx2
 import pandas as pd
 import pytest
 
@@ -30,8 +30,8 @@ from dataretrieval.transport.pagination import paginate
 
 def _response(
     status: int = 200, *, url: str = "https://example.test/page"
-) -> httpx.Response:
-    return httpx.Response(status, request=httpx.Request("GET", url))
+) -> httpx2.Response:
+    return httpx2.Response(status, request=httpx2.Request("GET", url))
 
 
 def test_paginate_follows_cursor_and_aggregates_response() -> None:
@@ -39,22 +39,22 @@ def test_paginate_follows_cursor_and_aggregates_response() -> None:
     second = _response(url="https://example.test/page/2")
     first.headers["x-ratelimit-remaining"] = "9"
     second.headers["x-ratelimit-remaining"] = "8"
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = first
     client.get.return_value = second
 
     cursors = {str(first.url): "next", str(second.url): None}
 
-    def parse(response: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+    def parse(response: httpx2.Response) -> tuple[pd.DataFrame, str | None]:
         return pd.DataFrame({"value": [str(response.url)]}), cursors[str(response.url)]
 
-    async def follow(cursor: str, session: httpx.AsyncClient) -> httpx.Response:
+    async def follow(cursor: str, session: httpx2.AsyncClient) -> httpx2.Response:
         assert cursor == "next"
         return await session.get("https://example.test/page/2")
 
     frame, response = asyncio.run(
         paginate(
-            httpx.Request("GET", first.url),
+            httpx2.Request("GET", first.url),
             parse_response=parse,
             follow_up=follow,
             raise_for_status=_raise_for_status,
@@ -70,19 +70,19 @@ def test_paginate_follows_cursor_and_aggregates_response() -> None:
 def test_paginate_stops_on_repeated_cursor_and_respects_row_cap() -> None:
     first = _response(url="https://example.test/page/1")
     second = _response(url="https://example.test/page/2")
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = first
     client.get.return_value = second
 
-    def parse(response: httpx.Response) -> tuple[pd.DataFrame, str]:
+    def parse(response: httpx2.Response) -> tuple[pd.DataFrame, str]:
         return pd.DataFrame({"value": [1, 2]}), "same-cursor"
 
-    async def follow(cursor: str, session: httpx.AsyncClient) -> httpx.Response:
+    async def follow(cursor: str, session: httpx2.AsyncClient) -> httpx2.Response:
         return await session.get(str(second.url))
 
     frame, _ = asyncio.run(
         paginate(
-            httpx.Request("GET", first.url),
+            httpx2.Request("GET", first.url),
             parse_response=parse,
             follow_up=follow,
             raise_for_status=_raise_for_status,
@@ -137,10 +137,10 @@ def test_retry_sync_honors_cap_and_does_not_catch_cancellation(monkeypatch) -> N
 
 
 def test_shared_status_mapping_preserves_retry_after() -> None:
-    response = httpx.Response(
+    response = httpx2.Response(
         429,
         headers={"Retry-After": "2.5"},
-        request=httpx.Request("GET", "https://example.test"),
+        request=httpx2.Request("GET", "https://example.test"),
     )
     with pytest.raises(RateLimited) as exc_info:
         _raise_for_status(response)
@@ -157,7 +157,7 @@ def test_sync_bridge_runs_async_operation() -> None:
     frame = pd.DataFrame({"value": ["ok"]})
     response = _response()
 
-    async def operation(item: str) -> tuple[pd.DataFrame, httpx.Response]:
+    async def operation(item: str) -> tuple[pd.DataFrame, httpx2.Response]:
         assert item == "only"
         return frame, response
 
@@ -242,12 +242,12 @@ def test_elapsed_retry_after_still_backs_off() -> None:
 def _dns_failure(errno: int) -> NetworkError:
     """A DNS failure shaped the way one reaches the retry loop.
 
-    httpx and httpcore link their wrappers with ``__context__`` (implicit
+    httpx2 and httpcore link their wrappers with ``__context__`` (implicit
     chaining), not ``__cause__``, so a walker following only explicit causes
     never reaches the ``gaierror``.
     """
     resolution_failed = socket.gaierror(errno, "name resolution failed")
-    transport_failed = httpx.ConnectError("name resolution failed")
+    transport_failed = httpx2.ConnectError("name resolution failed")
     transport_failed.__context__ = resolution_failed
     wrapped = NetworkError("could not reach host")
     wrapped.__context__ = transport_failed
@@ -263,8 +263,8 @@ def test_deterministic_failures_are_not_retried() -> None:
     written on.
     """
     assert retry._retryable(_dns_failure(socket.EAI_NONAME)) == (False, None)
-    assert retry._retryable(httpx.UnsupportedProtocol("no scheme")) == (False, None)
-    assert retry._retryable(httpx.ConnectTimeout("timed out")) == (True, None)
+    assert retry._retryable(httpx2.UnsupportedProtocol("no scheme")) == (False, None)
+    assert retry._retryable(httpx2.ConnectTimeout("timed out")) == (True, None)
 
 
 def test_temporary_name_resolution_is_still_retried() -> None:
@@ -538,13 +538,13 @@ def _wrapped_dns_failure(errno: int) -> NetworkError:
     """A DNS failure shaped the way one reaches the chunker.
 
     Our own wrapper uses ``raise ... from``, so the outer error links to the
-    httpx one explicitly; only the layers beneath it chain implicitly. The
+    httpx2 one explicitly; only the layers beneath it chain implicitly. The
     chunker follows explicit links only, so this shape -- not
     :func:`_dns_failure`'s -- is the one that decides whether an unresolvable
     host is offered as resumable.
     """
     resolution_failed = socket.gaierror(errno, "name resolution failed")
-    transport_failed = httpx.ConnectError("name resolution failed")
+    transport_failed = httpx2.ConnectError("name resolution failed")
     transport_failed.__context__ = resolution_failed
     wrapped = NetworkError("Could not reach the service at https://nope.invalid")
     wrapped.__cause__ = transport_failed
@@ -567,7 +567,7 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     assert retry._retryable(permanent) == (False, None)
     assert _classify_chunk_error(permanent) is None
 
-    unsupported = httpx.UnsupportedProtocol("no scheme")
+    unsupported = httpx2.UnsupportedProtocol("no scheme")
     assert retry._retryable(unsupported) == (False, None)
     assert _classify_chunk_error(unsupported) is None
 
@@ -617,8 +617,8 @@ def test_an_unusable_next_page_link_is_reported_not_swallowed():
     indistinguishable from a complete one."""
     from dataretrieval.transport.links import resolve_next_url
 
-    response = httpx.Response(
-        200, request=httpx.Request("GET", "https://api.waterdata.usgs.gov/x")
+    response = httpx2.Response(
+        200, request=httpx2.Request("GET", "https://api.waterdata.usgs.gov/x")
     )
     with pytest.raises(exceptions.DataRetrievalError) as excinfo:
         resolve_next_url(None, response, service="Water Data")

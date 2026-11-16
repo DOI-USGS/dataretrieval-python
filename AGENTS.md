@@ -141,8 +141,8 @@ raise states the problem and then the action that fixes it, in that order.
   with a non-JSON body becomes an empty GeoDataFrame by design.
 
 ## Implementation notes
-- HTTP client is `httpx` (migrated from `requests` in #289); new code uses
-  `httpx` and tests mock with `httpx_mock`.
+- HTTP client is `httpx2` (migrated from `requests` in #289); new code uses
+  `httpx2` and tests mock with `httpx_mock`.
 - Public getters return `(DataFrame, metadata)`.
 - `dataretrieval/__init__.py` imports the service modules by name and lists them
   in `__all__`; it does not star-import them, so a getter is accessed through its

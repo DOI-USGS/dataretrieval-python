@@ -634,7 +634,7 @@ organization's CA bundle:
    # or, for a directory of hashed certificates:
    export SSL_CERT_DIR=/etc/ssl/certs
 
-``httpx`` reads these natively, so they apply to **every** getter in the
+``httpx2`` reads these natively, so they apply to **every** getter in the
 package — including the OGC collection getters (``get_daily``,
 ``get_continuous``, and the rest), which take no SSL parameter of their own.
 

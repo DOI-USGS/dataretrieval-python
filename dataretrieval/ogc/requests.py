@@ -14,7 +14,7 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-import httpx
+import httpx2
 
 from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
 from dataretrieval.ogc.filters import _cql_in_clause
@@ -170,11 +170,11 @@ def _items_url(collection: str, base_url: str) -> str:
 
 def _cql2_post_request(
     service_url: str, *, content: str, params: dict[str, Any]
-) -> httpx.Request:
+) -> httpx2.Request:
     """A POST/CQL2 request: the media type the API requires, in one place."""
     headers = _default_headers(service_url)
     headers["Content-Type"] = "application/query-cql-json"
-    return httpx.Request(
+    return httpx2.Request(
         method="POST",
         url=service_url,
         headers=headers,
@@ -193,7 +193,7 @@ def _construct_api_requests(
     base_url: str,
     dialect: OgcDialect | None = None,
     **kwargs: Any,
-) -> httpx.Request:
+) -> httpx2.Request:
     """Construct an HTTP request object for the specified OGC API collection.
 
     ``base_url`` is required: this package is API-neutral and names no API of
@@ -237,7 +237,7 @@ def _construct_api_requests(
         return _cql2_post_request(
             service_url, content=_cql2_param(post_params, json_filter), params=params
         )
-    return httpx.Request(
+    return httpx2.Request(
         method="GET",
         url=service_url,
         headers=_default_headers(service_url),
@@ -254,7 +254,7 @@ def _construct_cql_request(
     bbox: list[float] | None = None,
     limit: int | None = None,
     skip_geometry: bool | None = None,
-) -> httpx.Request:
+) -> httpx2.Request:
     """Build a POST/CQL2 request from a verbatim CQL2 body.
 
     ``base_url`` is required for the same reason as in
