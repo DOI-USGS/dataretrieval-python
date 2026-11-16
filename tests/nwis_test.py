@@ -35,7 +35,7 @@ END_DATE = "2018-01-25"
 DATETIME_COL = "datetime"
 SITENO_COL = "site_no"
 
-# Legacy NWIS site endpoint these tests mock — this module makes no live calls.
+# Legacy NWIS site endpoint these tests mock; this module makes no live calls.
 _SITE_RE = re.compile(r"^https://waterservices\.usgs\.gov/nwis/site(\?.*)?$")
 
 
@@ -117,7 +117,7 @@ def test_iv_service_answer(httpx_mock):
 def test_preformat_peaks_response_keeps_every_peak(peak_dt, expected):
     """A peak is never dropped because its date cannot be parsed.
 
-    NWIS zero-fills the unknown part of a historical peak's date -- ``YYYY-MM-00`` when
+    NWIS zero-fills the unknown part of a historical peak's date: ``YYYY-MM-00`` when
     the day is not known, ``YYYY-00-00`` when the month is not either (the ``Bd`` and
     ``Bm`` ``peak_cd`` qualifiers). Those are real peaks, often a site's largest, and
     dropping them loses the discharge value with the date. A date NWIS records only
@@ -139,7 +139,7 @@ def test_preformat_peaks_response_preserves_peak_dt():
     """``peak_dt`` must be kept through the reformat.
 
     The peaks response has no ``water_yr``, so ``peak_dt`` is the only
-    column holding the year of a censored peak -- and the only way a caller can
+    column holding the year of a censored peak, and the only way a caller can
     tell an unknown day from a known one, since ``peak_cd`` does not always
     include the qualifier.
     """
@@ -152,8 +152,8 @@ def test_preformat_peaks_response_preserves_peak_dt():
 
 def test_preformat_peaks_response_malformed_frame_still_raises():
     """Only an *empty* peaks frame is a legitimate empty result. A non-empty
-    frame with no ``peak_dt`` column is a malformed response -- a truncated or
-    altered RDB header -- and must raise rather than be returned
+    frame with no ``peak_dt`` column is a malformed response (a truncated or
+    altered RDB header) and must raise rather than be returned
     without its datetime index.
     """
     df = pd.DataFrame({"peak_va": [1000]})
@@ -316,7 +316,7 @@ class TestDefunctRecordOptions:
         ):
             assert sum(subject in m for m in messages) == 1
         # Pins the advisories' hand-counted ``stacklevel``: every one must
-        # blame the caller's own line, not a frame inside the package.
+        # blame the caller's own line.
         assert {Path(w.filename).name for w in deprecations} == {Path(__file__).name}
 
 
@@ -426,7 +426,7 @@ class TestReadRdb:
     """Tests for the NWIS-specific parse-then-format path.
 
     The format-agnostic parser is exercised in tests/rdb_test.py; this
-    class pins the wrapper-specific contract — that an empty parser
+    class pins the wrapper-specific contract: an empty parser
     result passes through format_response without raising (issue #171),
     on the plain arm and on the peaks arm alike.
     """
@@ -438,10 +438,10 @@ class TestReadRdb:
     )
 
     def test_no_sites_flows_through_format_response(self):
-        """A "No sites found" response is a legitimate empty result, not an
-        error, so callers can check ``df.empty`` rather than catching an
-        exception. Regression for issue #171 (previously raised IndexError),
-        which now also covers the empty-frame path through ``format_response``.
+        """A "No sites found" response is a legitimate empty result, so
+        callers can check ``df.empty``. Regression for issue #171 (previously
+        raised IndexError), which now also covers the empty-frame path through
+        ``format_response``.
         """
         df = _read_rdb(self.NO_RESULTS_RDB)
         assert isinstance(df, pd.DataFrame)
@@ -456,7 +456,7 @@ class TestReadRdb:
         other service returned an empty frame (issue #171's contract).
 
         Both functions are public API, so any caller parsing a peaks RDB
-        reaches this -- it is not unreachable behind ``NoSitesError``.
+        reaches this; it is not unreachable behind ``NoSitesError``.
         """
         # Match get_discharge_peaks: raw read_rdb, then the peaks-specific
         # format_response.
@@ -467,8 +467,8 @@ class TestReadRdb:
 
     def test_malformed_peaks_frame_still_raises(self):
         """Only an *empty* peaks frame is a legitimate empty result. A
-        non-empty frame with no ``peak_dt`` column is a malformed response --
-        a truncated or altered RDB header -- and must raise rather than be
+        non-empty frame with no ``peak_dt`` column is a malformed response
+        (a truncated or altered RDB header) and must raise rather than be
         returned without its datetime index.
         """
         df = pd.DataFrame({"peak_va": [1000]})
@@ -512,8 +512,8 @@ class TestFormatResponseArgument:
         pd.testing.assert_frame_equal(df, before)
 
     def test_the_peaks_path_keeps_them_too(self):
-        """The peaks arm derives ``datetime`` from ``peak_dt``, and the derived
-        column belongs to the result rather than to the frame it was handed.
+        """The peaks arm derives ``datetime`` from ``peak_dt`` and adds it to
+        the result, leaving the frame it was handed unchanged.
         ``preformat_peaks_response`` is public, so a caller reaches that
         derivation without going through ``format_response`` at all.
         """
@@ -595,7 +595,7 @@ def test_html_error_page_instead_of_json_says_what_to_do():
 
 def test_a_non_html_parse_failure_is_re_raised_unchanged():
     """Only HTML gets the rewrite; a malformed-JSON body must not be
-    relabelled as a service outage."""
+    relabeled as a service outage."""
     response = mock.Mock()
     response.json.side_effect = ValueError("Expecting value")
     response.text = "{not json"
@@ -609,9 +609,8 @@ def test_a_non_html_parse_failure_is_re_raised_unchanged():
 
 def test_deprecating_a_getter_with_no_named_replacement_is_refused():
     """``@_deprecated`` guarantees the caller a replacement, so applying it to a
-    function with no recorded replacement raises -- a deprecation warning naming nothing
-    leaves the caller with nothing to
-    migrate to."""
+    function with no recorded replacement raises: a deprecation warning naming nothing
+    leaves the caller with nothing to migrate to."""
     with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
 
         @nwis._deprecated

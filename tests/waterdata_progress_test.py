@@ -234,8 +234,8 @@ def test_hints_api_key_when_no_key_configured(monkeypatch):
 
 
 def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
-    # Anonymous responses still include a rate-limit header, so absence of a key
-    # — not absence of the header — is what decides the pointer.
+    # Anonymous responses still include a rate-limit header, so the absence of a
+    # key is what decides the pointer.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)
@@ -525,7 +525,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     """The async fan-out core (``ChunkedCall._run``) records
     ``plan.total`` on the active reporter so the progress line has the count of chunks
     in flight, and increments ``current_chunk`` via ``start_chunk(len(completed))`` as
-    each gathered chunk finishes — reaching ``plan.total`` in the all-success case."""
+    each gathered chunk finishes, reaching ``plan.total`` in the all-success case."""
 
     # Fake build_request whose URL length scales with the sites list,
     # matching the planner's _request_bytes contract. _FakeReq has the
@@ -563,7 +563,7 @@ def test_fan_out_async_sets_chunks_on_active_reporter(monkeypatch):
     assert total_recorded == plan.total
     # Each chunk that completes increments current_chunk via
     # start_chunk(len(completed)), so by the time the gather finishes
-    # current_chunk reflects the total number of successful chunks —
+    # current_chunk reflects the total number of successful chunks, which is
     # plan.total in the all-success case.
     assert current_recorded == plan.total
 

@@ -1,6 +1,6 @@
 """Generic OGC API engine shared by the Water Data and NGWMN getters.
 
-This module holds OGC API Features orchestration — OGC cursor/response
+This module holds OGC API Features orchestration: OGC cursor/response
 strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
 pagination and sync dispatch are in :mod:`dataretrieval.transport`; request
 construction is in :mod:`~dataretrieval.ogc.requests`. The surrounding
@@ -8,17 +8,17 @@ concerns are in sibling modules this one composes, each with its own reason
 to change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
 :mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
-finalization). It is deliberately free of any Water-Data-specific constants
+finalization). It holds no Water-Data-specific constants,
 so a sibling package (e.g. NGWMN) can use it without importing
 ``dataretrieval.waterdata``.
 
 API-specific behavior is supplied by the caller:
 
-* ``output_id`` — the user-facing column the wire ``id`` is renamed to,
+* ``output_id``: the user-facing column the wire ``id`` is renamed to,
   passed explicitly (no collection map is defined here).
-* ``base_url`` — the OGC API base to target.
-* ``extra_id_cols`` — synthetic id columns to move to the end of a result.
-* ``dialect`` — an :class:`OgcDialect` describing how lists are sent and
+* ``base_url``: the OGC API base to target.
+* ``extra_id_cols``: synthetic id columns to move to the end of a result.
+* ``dialect``: an :class:`OgcDialect` describing how lists are sent and
   which collections use date-only (vs. full datetime) time arguments.
 """
 
@@ -75,8 +75,8 @@ def _next_req_url(
         The HTTP response object containing JSON data and headers.
     body : dict, optional
         Pre-parsed JSON body for ``resp``. When provided, skips the
-        ``resp.json()`` call — useful when the caller has already
-        decoded the body for its own use (avoids a second parse pass).
+        ``resp.json()`` call, which avoids a second parse when the caller
+        has already decoded the body.
 
     Returns
     -------
@@ -111,7 +111,7 @@ def _next_req_url(
         # the other two. ``RuntimeError`` rather than the taxonomy's
         # ``DataRetrievalError`` because that is what this walk has always
         # raised; retyping it is a released behavior change to make
-        # deliberately, not a side effect of sharing the check.
+        # deliberately.
         return resolve_next_url(href, resp, service="OGC", error=RuntimeError)
     return None
 
@@ -127,8 +127,8 @@ def _ogc_parse_response(
     The parse strategy :func:`_walk_pages` passes to
     :func:`~dataretrieval.transport.pagination.paginate`. Coerces falsy
     cursors (empty href, etc.) to ``None`` so the paginate loop's
-    ``while cursor is not None`` terminates instead of looping forever on an
-    empty href, which ``is not None`` and so never ends the walk.
+    ``while cursor is not None`` terminates: an empty href ``is not None``
+    and would never end the walk.
     """
     body = resp.json()
     return (
@@ -174,7 +174,7 @@ async def _walk_pages(
     row_cap : int, optional
         Stop following pages once this many rows have accumulated and
         truncate to exactly this many. ``None`` (default) walks every page.
-        An early-stop download bound only — the combined-result cap is
+        An early-stop download bound only; the combined-result cap is
         applied in :func:`~dataretrieval.ogc.shaping._finalize_ogc`.
 
     Returns
@@ -182,7 +182,7 @@ async def _walk_pages(
     pd.DataFrame
         A DataFrame containing the aggregated results from all pages.
     httpx.Response
-        Aggregated response — initial-request URL (for query identity), final page's
+        Aggregated response: initial-request URL (for query identity), final page's
         headers (so downstream code receives current rate-limit state), and cumulative
         ``elapsed`` summed across pages.
 
@@ -242,8 +242,8 @@ def get_ogc_data(
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
     output_id : str
-        The user-facing id column the wire ``id`` is renamed to. Required —
-        the per-API collection-to-id map is the caller's, not this function's.
+        The user-facing id column the wire ``id`` is renamed to. Required:
+        the caller owns the per-API collection-to-id map.
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
@@ -264,8 +264,7 @@ def get_ogc_data(
         Per-API request quirks (how lists are sent, date-only collections).
         Defaults to a plain OGC API.
     cql_body : str, optional
-        A verbatim CQL2 JSON body to POST against ``collection`` instead of
-        building the query from ``args``. With a body, only the
+        A verbatim CQL2 JSON body to POST against ``collection``. With a body, only the
         ``properties``, ``bbox``, ``limit``, ``skip_geometry``, and
         ``convert_type`` keys of ``args`` are consulted; there are no
         multi-value axes to chunk, and the body's size is for the server
@@ -297,7 +296,7 @@ def get_ogc_data(
     args["collection"] = collection
     args = _switch_arg_id(args, id_name=output_id, collection=collection)
     # Capture `properties` before the id-switch so post-processing receives the
-    # user-facing names, not the wire-format ones.
+    # user-facing names.
     properties = args.get("properties")
     args["properties"] = _switch_properties_id(
         properties, id_name=output_id, collection=collection
@@ -305,7 +304,7 @@ def get_ogc_data(
     convert_type = args.pop("convert_type", False)
     args = {k: v for k, v in args.items() if v is not None}
     if isinstance(args.get("filter"), str) and not args["filter"].strip():
-        # The APIs answer a blank filter with HTTP 400.
+        # The APIs return HTTP 400 for a blank filter.
         del args["filter"]
         args.pop("filter_lang", None)
 
@@ -315,7 +314,7 @@ def get_ogc_data(
     include_geometry = spatial and not bool(args.get("skip_geometry", False))
     geopd = GEOPANDAS and include_geometry
 
-    # Post-processing is injected into the chunker rather than applied here,
+    # Inject post-processing into the chunker
     # so it runs on every exit: the normal return and a later
     # ``exc.call.resume()`` after a ChunkInterrupted (which never re-enters
     # this function). ``_finalize_ogc`` is the one place result shape is applied;
@@ -352,9 +351,9 @@ def get_ogc_data(
         )
 
         # A one-item fan-out: same executor, retry, progress line, and
-        # resumable-interruption semantics as the chunked path — and the same
+        # resumable-interruption semantics as the chunked path, and the same
         # ``finalize``, so a later ``exc.call.resume()`` returns the finished
-        # ``(df, BaseMetadata)`` shape rather than a raw response pair.
+        # ``(df, BaseMetadata)`` shape.
         return FanOut(
             [req],
             functools.partial(
@@ -374,8 +373,8 @@ def get_ogc_data(
     # same way ``finalize`` binds its own state: with ``functools.partial``.
     # The plan sizes candidate chunks and a later ``exc.call.resume()``
     # rebuilds them through these same bound callables, so the values the
-    # call was created with apply to every chunk — even a resume invoked long
-    # after this function returned — without any ambient state to snapshot.
+    # call was created with apply to every chunk, even on a resume invoked long
+    # after this function returned, without any ambient state to snapshot.
     build_request = functools.partial(
         _construct_api_requests, base_url=base_url, dialect=dialect
     )

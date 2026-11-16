@@ -5,14 +5,14 @@ Datetime Information
 
 ``dataretrieval`` normalizes time data to UTC when converting Water Data API
 responses into data frames. The ``time`` column holds the timestamps; the
-dataframe itself uses a default integer index. For sub-daily data — such as
-continuous (instantaneous) values — ``time`` is a timezone-aware
+dataframe itself uses a default integer index. For sub-daily data, such as
+continuous (instantaneous) values, ``time`` is a timezone-aware
 ``datetime64[us, UTC]`` column. Daily values represent a whole calendar day,
 so their ``time`` column is timezone-naive (dates only).
 
 The same rule applies to a getter's date arguments (``time``, ``begin``,
 ``end``, ``datetime``, ``last_modified``). As in pandas, a date or time without
-an offset is UTC, and one with an offset is converted to UTC, so
+an offset is UTC, and the getter converts one with an offset to UTC, so
 ``time="2024-03-01/2024-03-02"`` selects the same UTC days on every machine.
 For a local time, include the offset: ``"2024-03-01T00:00:00-06:00"``.
 
@@ -53,7 +53,7 @@ them to any local timezone with the pandas ``.dt`` accessor.
     4   2024-02-29 20:00:00-05:00
     Name: time, dtype: datetime64[us, America/New_York]
 
-After conversion the timestamps have New York's offset — ``-05:00`` during
+After conversion the timestamps have New York's offset: ``-05:00`` during
 standard time, or ``-04:00`` during daylight saving time, since New York is 4
 or 5 hours behind UTC depending on the time of year. The first midnight-UTC
 reading falls on the previous calendar day (``2024-02-29``) once shifted
@@ -64,7 +64,7 @@ Daily values
 ************
 
 Daily data summarize a whole calendar day, so the ``time`` column is
-timezone-naive — no offset is applied.
+timezone-naive, with no offset.
 
 .. code:: python
 

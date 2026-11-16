@@ -1,7 +1,7 @@
 """Retrieve hydrologic network features from the Network Linked Data Index (NLDI).
 
-The getters below navigate the hydrologic network from an origin -- a feature
-source and id, a ``comid``, or a lat/long point -- and return flowlines, basins,
+The getters below navigate the hydrologic network from an origin (a feature
+source and id, a ``comid``, or a lat/long point) and return flowlines, basins,
 or registered features as a ``geopandas.GeoDataFrame``, or as raw JSON when
 ``as_json=True``. This module requires geopandas.
 
@@ -69,8 +69,7 @@ _ORIGIN_REMEDY_NEITHER = f"{_ORIGIN_HINT}, and not neither."
 def _api_base() -> str:
     """The NLDI base this call targets: a block's redirect, or the service's.
 
-    Every URL below is built from this rather than from
-    :data:`NLDI_API_BASE_URL` directly, so a ``NldiConfiguration(base_url=...)``
+    Every URL below is built from this, so a ``NldiConfiguration(base_url=...)``
     applies to every navigation, basin, and catalog request alike (ADR 0011).
     """
     return _configuration.base_url(adapter="nldi", default=NLDI_API_BASE_URL)
@@ -101,8 +100,7 @@ def _features_to_gdf(feature_collection: dict[str, Any]) -> gpd.GeoDataFrame:
     NLDI can validly return no features (e.g. a feature with nothing upstream), and
     :func:`_query_nldi` returns ``{}`` when a 200 response has no JSON body.
     ``GeoDataFrame.from_features`` raises on both cases (there's no geometry column to
-    attach the CRS to), so return an empty GeoDataFrame with ``_CRS`` set instead of
-    raising.
+    attach the CRS to), so return an empty GeoDataFrame with ``_CRS`` set.
     """
     features = feature_collection.get("features") if feature_collection else None
     if not features:
@@ -257,7 +255,7 @@ def get_features(
 ) -> gpd.GeoDataFrame | dict[str, Any]:
     """Get all features along a navigation, either by comid or by feature source.
 
-    Features are returned as points in WGS84 lat/long coordinates - a
+    Features are returned as points in WGS84 lat/long coordinates as a
     GeoDataFrame containing a point geometry.
 
     Parameters
@@ -337,8 +335,8 @@ def _navigation_request(
 ) -> tuple[str, dict[str, str]]:
     """URL and query params for an NLDI navigation from a validated origin.
 
-    The one definition of the navigation path grammar — ``{origin}/navigation/
-    {mode}/{tail}`` — and its ``distance`` parameter. Callers add the
+    The one definition of the navigation path grammar (``{origin}/navigation/
+    {mode}/{tail}``) and its ``distance`` parameter. Callers add the
     parameters specific to their endpoint (``trimStart``, ``stopComid``)
     afterwards, so the query string keeps its documented parameter order.
     """
@@ -401,7 +399,7 @@ def _get_features_request(
         return f"{_api_base()}/{feature_source}/{feature_id}", {}
 
     # Before the data_source check below: a caller who mistyped the mode should
-    # be told about the mode, not told to fix a second argument first.
+    # be told about the mode first.
     navigation_mode = _validate_navigation_mode(navigation_mode)
     # The navigation's tail is the data source, so a missing one is written as
     # "None" into the path and the service returns 200 with zero features.
@@ -430,8 +428,8 @@ def _get_features_request(
     return url, query_params
 
 
-# TODO: This function can cause a timeout error for some data sources
-#  - maybe we shouldn't provide this function?
+# TODO: This function can cause a timeout error for some data sources;
+#  maybe we shouldn't provide this function?
 def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     """Get all features for the specified data source.
 
@@ -646,7 +644,7 @@ def _validate_data_source(data_source: str, *, name: str = "data source") -> Non
 
     global _AVAILABLE_DATA_SOURCES
 
-    # get the available data/feature sources - if not already cached
+    # get the available data/feature sources, if not already cached
     if _AVAILABLE_DATA_SOURCES is None:
         url = f"{_api_base()}/"
         available_data_sources = _query_nldi(url, {})
@@ -682,9 +680,8 @@ def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
 ) -> None:
     if comid is not None:
-        # Half a feature pair with a comid is a conflict, not a missing argument:
-        # advising the caller to complete the pair would only raise the conflict
-        # next.
+        # Half a feature pair with a comid is a conflict: advising the caller
+        # to complete the pair would only raise the conflict next.
         reject_together(
             {
                 "comid": comid,
@@ -713,12 +710,11 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     No fan-out settings: an NLDI query is served by a single request.
 
     This adapter is imported on demand for the geopandas extra, so this
-    class registers itself later than the rest -- which is why
+    class registers itself later than the rest, which is why
     the adapter roster is :data:`~dataretrieval.configuration.ADAPTERS`
     rather than being derived from what has been imported.
 
-    Declared here rather than in :mod:`dataretrieval.configuration`
-    (ADR 0011).
+    Declared here, in the module that reads it (ADR 0011).
 
     Parameters
     ----------
@@ -728,8 +724,8 @@ class NldiConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Linked-data base to send NLDI requests to, instead of the
-        service's own (``NLDI_API_BASE_URL``). Every navigation, basin
+        Linked-data base to send NLDI requests to, replacing
+        ``NLDI_API_BASE_URL``. Every navigation, basin
         and catalog request is built on it. Code only: the file and the
         environment refuse it.
     """

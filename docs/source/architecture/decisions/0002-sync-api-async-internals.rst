@@ -27,7 +27,7 @@ details, not a second public API contract.
 
 Ambient per-call policy (the progress reporter) must propagate into the worker
 context. A resumable OGC call binds the state needed to rebuild its remaining
-requests -- base URL, dialect, row cap -- into its fetch closures, so a resume
+requests (base URL, dialect, row cap) into its fetch closures, so a resume
 invoked after the original getter has returned rebuilds against the values the
 call was created with.
 
@@ -39,7 +39,7 @@ Consequences
 - Each top-level async-backed call incurs worker-thread and portal startup cost.
 - Cancellation, context propagation, and client ownership need explicit tests.
 - A future public async API, if justified, should be additive and share the same
-  lower-level contracts rather than duplicate behavior.
+  lower-level contracts.
 
 Compliance
 ----------

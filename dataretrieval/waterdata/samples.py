@@ -1,7 +1,7 @@
 """Getters for the Aquarius Samples API, and its wire-parameter policy.
 
 Discrete water-quality results, which come from a different upstream service
-than the rest of Water Data -- with its own parameter spellings and its own
+than the rest of Water Data, with its own parameter spellings and its own
 error envelope. The translation between this package's argument names and that
 service's wire names is defined here, next to the getters that need it.
 """
@@ -87,9 +87,8 @@ def _get_samples_csv(
 
     Shared final step for the Samples getters: sends the GET with the standard
     headers (including ``X-Api-Key``), raises a typed error on a non-200
-    (consistent with the OGC/stats path) instead of a bare
-    ``HTTPStatusError``, and reads the CSV. The caller wraps the response
-    as metadata and applies any per-getter post-step.
+    (consistent with the OGC/stats path), and reads the CSV. The caller wraps
+    the response as metadata and applies any per-getter post-step.
     """
     logger.debug("Request: %s", httpx.URL(url).copy_merge_params(params))
     response = _get(
@@ -194,13 +193,13 @@ def get_samples(
         One of the available profiles associated with a service. Options for
         each service are:
 
-            * results - "fullphyschem", "basicphyschem", "fullbio", "basicbio",
+            * results: "fullphyschem", "basicphyschem", "fullbio", "basicbio",
               "narrow", "resultdetectionquantitationlimit", "labsampleprep",
               "count"
-            * locations - "site", "count"
-            * activities - "sampact", "actmetric", "actgroup", "count"
-            * projects - "project", "projectmonitoringlocationweight"
-            * organizations - "organization", "count"
+            * locations: "site", "count"
+            * activities: "sampact", "actmetric", "actgroup", "count"
+            * projects: "project", "projectmonitoringlocationweight"
+            * organizations: "organization", "count"
 
     activity_media_name : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
@@ -383,7 +382,7 @@ def get_samples_summary(
     https://api.waterdata.usgs.gov/samples-data/docs. The service returns one
     row per (characteristic group, characteristic, user-supplied characteristic)
     combination with result and activity counts and the first / most recent
-    activity dates — useful for taking inventory of what discrete-sample data
+    activity dates. Use it to take inventory of what discrete-sample data
     exists at a monitoring location before pulling the underlying observations
     with :func:`get_samples`.
 

@@ -1,8 +1,8 @@
 """Getters for the API's own vocabularies.
 
-Reference tables and per-collection queryables -- the parameter codes, statistic
+Reference tables and per-collection queryables: the parameter codes, statistic
 codes, and filterable properties the other getters accept. These describe the
-service rather than the measurements, so they are the one family whose results are
+service, so they are the one family whose results are
 mostly stable between calls.
 """
 
@@ -53,8 +53,8 @@ def get_reference_table(
         A dictionary of extra query parameters to pass to the collection API
         call.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole table. Useful for previewing
+        Cap the total number of rows returned, stopping pagination early.
+        Useful for previewing
         large tables in a few requests (e.g. ``hydrologic-unit-codes`` has
         ~125k rows). Unlike ``limit`` (the per-page size), this bounds the total
         result. The default (None) downloads every page.
@@ -96,9 +96,8 @@ def get_reference_table(
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
     # Give the ID column the collection name, singularized and underscored.
-    # ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm
-    # was unreachable; ``removesuffix`` returns a singular collection name
-    # unchanged if one appears.
+    # ``removesuffix`` returns a singular collection name unchanged if one
+    # appears.
     if collection in ("counties", "countries"):
         output_id = collection.removesuffix("ies") + "y"
     else:
@@ -120,7 +119,7 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
     """List the queryable properties of a Water Data API collection.
 
     Every OGC collection (``daily``, ``continuous``, ``monitoring-locations``,
-    ...) lists the set of properties that can be filtered on -- exposed as
+    ...) lists the set of properties that can be filtered on, exposed as
     the typed keyword arguments of the matching ``get_*`` function, and usable
     directly in a CQL2 ``filter``. This function returns that set, so you can
     discover the available filters programmatically and monitor them for
@@ -160,7 +159,7 @@ def get_queryables(collection: str) -> tuple[pd.DataFrame, BaseMetadata]:
         'string'
     """
     # Reading the queryables document is OGC protocol work; this getter only
-    # names the API to query -- which is the redirected one when a ``configure``
+    # names the API to query, which is the redirected one when a ``configure``
     # block set a base URL, so the queryables describe the API the getters are
     # querying.
     return queryables_frame(collection, base_url=ogc_api_url())

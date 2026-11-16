@@ -1,14 +1,14 @@
 """Result recombination: merge per-chunk frames and responses (no I/O).
 
 These utilities assemble the output of a chunked/fan-out call from its
-individual per-chunk results.  They have no event-loop, retry, or
-network state — they're pure data transforms shared by protocol-specific
+individual per-chunk results. They have no event-loop, retry, or
+network state; they're pure data transforms shared by protocol-specific
 chunk execution, service fan-out, and cursor-driven pagination.
 
 Separated from :mod:`dataretrieval.ogc.planning` so that module stays
 focused on *what* to split, while this module owns *how* to reassemble.
 
-A top-level leaf rather than part of :mod:`dataretrieval.transport` -- ADR 0006.
+A top-level leaf, outside :mod:`dataretrieval.transport` (ADR 0006).
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import pandas as pd
 
 # Response header USGS uses to report remaining hourly quota.  Defined in this
 # module so every layer (the combine helpers below, the engine's per-page
-# progress reporter) reads it from one place rather than hard-coding the string.
+# progress reporter) reads it from one place.
 _QUOTA_HEADER = "x-ratelimit-remaining"
 
 
@@ -104,7 +104,7 @@ def _merge_response(
     ``headers_from``, ``.elapsed`` is set to ``elapsed``, and ``.url`` is
     overridden when ``url`` is given.  ``base`` and ``headers_from`` are never
     mutated, and the new ``httpx.Headers`` means downstream mutations don't
-    back-propagate into any underlying response — so callers may re-merge
+    back-propagate into any underlying response, so callers may re-merge
     idempotently.  This is the one low-level merge used by both pagination
     (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
     fan-out aggregation (:func:`_combine_chunk_responses`)."""
@@ -163,7 +163,7 @@ def _combine_chunk_responses(
     observation; see :func:`_lowest_remaining`), ``.elapsed`` set to the sum of
     the per-response elapsed durations, and ``.url`` set to the
     canonical original-query URL (when supplied) so ``BaseMetadata``
-    reflects the user's full request rather than the first chunk.
+    reflects the user's full request.
 
     For a single-response input with no canonical-URL override,
     ``responses[0]`` is returned unchanged to skip the copy on the
@@ -175,7 +175,7 @@ def _combine_chunk_responses(
         One response per completed chunk, in caller-provided order.
     canonical_url : str or None
         URL of the unchunked original request. ``None`` skips the URL
-        override — used by the passthrough path (the fetcher's
+        override: used by the passthrough path (the fetcher's
         response already has the original-query URL) and by the
         worst-case overflow path (no buildable canonical URL exists).
 

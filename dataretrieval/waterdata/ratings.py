@@ -2,7 +2,7 @@
 
 Wraps ``https://api.waterdata.usgs.gov/stac/v0/search`` and the per-feature
 RDB downloads that follow. The STAC endpoint hosts standard NWIS rating
-files (``exsa``, ``base``, ``corr``) for active streamgages — see the
+files (``exsa``, ``base``, ``corr``) for active streamgages; see the
 service overview at https://api.waterdata.usgs.gov/docs/stac/ and the
 WDFN announcement at https://waterdata.usgs.gov/blog/wdfn-rating-curves/.
 """
@@ -56,12 +56,12 @@ def get_ratings(
     Returns the current rating tables for one or more active USGS streamgages.
     The catalog hosts three file types:
 
-    - ``"exsa"`` — expanded shift-adjusted rating (default). Adds a ``SHIFT``
+    - ``"exsa"``: expanded shift-adjusted rating (default). Adds a ``SHIFT``
       column to ``"base"`` indicating the current shift for each ``INDEP``.
-    - ``"base"`` — three columns: ``INDEP`` (typically gage height, ft);
+    - ``"base"`` has three columns: ``INDEP`` (typically gage height, ft);
       ``DEP`` (typically discharge, ft^3/s); ``STOR`` ("``*``" marks fixed
       points of the rating).
-    - ``"corr"`` — three columns: ``INDEP``; ``CORR`` (correction for that
+    - ``"corr"`` has three columns: ``INDEP``; ``CORR`` (correction for that
       value); ``CORRINDEP`` (corrected INDEP).
 
     See https://api.waterdata.usgs.gov/docs/stac/ for the upstream service
@@ -82,7 +82,7 @@ def get_ratings(
         persisting the bytes to disk; ``df.attrs["url"]`` still records
         where each rating came from.
     time : string, date, datetime, or pandas.Timestamp, or a list of them, optional
-        STAC ``datetime`` filter — a single date / datetime, an interval
+        STAC ``datetime`` filter: a single date / datetime, an interval
         (``"start/end"``, optionally half-bounded with ``..``), or a list of
         two values with ``None`` for an open end (``["2026-04-29", None]``).
         An interval string is read like the list form: each side is
@@ -134,11 +134,11 @@ def get_ratings(
     Warns
     -----
     SkippedRatingWarning
-        One feature of the batch failed *deterministically* -- a stale catalog entry
-        (404 on its data asset), a feature with no data asset, a malformed RDB file.
+        One feature of the batch failed *deterministically*: a stale catalog entry
+        (404 on its data asset), a feature with no data asset, or a malformed RDB file.
         That feature is skipped and its id is absent from the returned dict; the rest of
         the batch is unaffected. A monitoring location with no published rating never
-        produces a warning -- it matches no feature in the search, so there is nothing
+        produces a warning: it matches no feature in the search, so there is nothing
         to skip. See
         :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy
         (transients never skip) and the ``filterwarnings`` call that makes a skip fatal.
@@ -284,7 +284,7 @@ def _search(
     one page is not truncated.
 
     The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`
-    with STAC strategies. Pages hold features rather than rows, so each page
+    with STAC strategies. Pages hold features, so each page
     frame wraps the raw feature dicts in a single ``feature`` column.
     """
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
@@ -303,7 +303,7 @@ def _search(
         page = pd.DataFrame({"feature": body.get("features", [])})
         # The STAC ``next`` link is a complete GET href that includes the
         # limit/filter/bbox and a continuation token, so it becomes the
-        # cursor verbatim -- except for the shared safety policy: the href is
+        # cursor verbatim, after the shared safety policy: the href is
         # response data, so it is checked before it becomes a request. A link
         # to another host would send this request's API key to a host
         # other than the authorized one, and one with ``user:pass@`` would
@@ -346,8 +346,8 @@ def _inert_response(
     """A body-less stand-in the executor can aggregate.
 
     The executor keeps every completed item's response until the run ends,
-    but its aggregation reads only status, headers, and URL -- never the
-    body. Passing it a stand-in keeps a large batch from holding every
+    but its aggregation reads only status, headers, and URL.
+    Passing it a stand-in keeps a large batch from holding every
     downloaded file in memory for the whole run. ``elapsed`` is left
     unset; the aggregate's ``_safe_elapsed`` treats that as zero.
     """
@@ -365,7 +365,7 @@ async def _fetch_rating(
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Fetch one feature's data asset, parse RDB, optionally persist to disk.
 
-    Headers are evaluated against each asset href -- assets can be on a different host
+    Headers are evaluated against each asset href: assets can be on a different host
     than the catalog, and must not receive its credentials. Runs inside a fan-out run:
     the executor sets the shared client before any fetch starts.
     """
@@ -402,8 +402,8 @@ def _download_all(
 ) -> dict[str, pd.DataFrame]:
     """Download every feature's rating over the shared fan-out executor.
 
-    The plan is the feature list itself -- ``FanOut`` requires a plan only to be
-    sized and iterable -- so the downloads get bounded concurrency,
+    The plan is the feature list itself (``FanOut`` requires a plan only to be
+    sized and iterable), so the downloads get bounded concurrency,
     per-attempt retry, the progress line, and the resumable interruption
     taxonomy.
 
@@ -412,15 +412,15 @@ def _download_all(
     failure (429 / 5xx / timeout / connection drop) re-raises so the executor
     retries and then raises resumable; a *deterministic* per-feature failure
     warns with :class:`~dataretrieval.exceptions.SkippedRatingWarning` and
-    skips the feature. ``OSError`` writing ``file_path`` propagates -- a
+    skips the feature. ``OSError`` writing ``file_path`` propagates: a
     local disk problem is not a per-feature condition. Raw ``httpx`` errors
     pass through unchanged so the executor can classify and retry them.
 
     The public result is a dict keyed by feature id, so the fetch closure
     accumulates it; the executor's combined frame is not the return shape and
     is discarded. Both outcomes return to the executor a body-less
-    :func:`_inert_response` -- a skip so the item counts as complete (a later
-    ``resume()`` continues past it rather than re-attempting), a success so
+    :func:`_inert_response`: a skip so the item counts as complete (a later
+    ``resume()`` continues past it), a success so
     the run does not hold every downloaded file in memory while keeping the
     response's status and quota headers for aggregation.
     """
@@ -454,7 +454,7 @@ def _download_all(
         fetch,
         RetryPolicy.from_configuration(adapter="waterdata"),
         client_options={"verify": ssl_check},
-        # No single URL expresses "all of these assets" -- the aggregate
+        # No single URL expresses "all of these assets", so the aggregate
         # reports the first, matching what a single-feature call would show.
         canonical_url=_asset_href(features[0]),
         service="ratings",

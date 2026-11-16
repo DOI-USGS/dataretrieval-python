@@ -12,7 +12,7 @@ from dataretrieval import nldi, nwis, wqp
 
 DESTINATION_BUCKET = os.environ.get("DESTINATION_BUCKET")
 PROJECT = "National Water Quality Assessment Program (NAWQA)"
-# some sites are not found in NLDI, avoid them for now
+# NLDI does not find some sites; avoid them for now
 NOT_FOUND_SITES = [
     "15565447",  # "USGS-"
     "15292700",
@@ -130,7 +130,7 @@ def find_neighboring_sites(site, search_factor=0.1, fudge_factor=3.0):
     features = pd.concat(gdfs, ignore_index=True)
 
     df, _ = nwis_get_info(sites=list(features.identifier.str.removeprefix("USGS-")))
-    # drop sites with disimilar different drainage areas
+    # drop sites with dissimilar drainage areas
     df = df.where(
         (df["drain_area_va"] / drain_area_sq_mi) > search_factor,
     ).dropna(how="all")

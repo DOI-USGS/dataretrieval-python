@@ -24,7 +24,7 @@ def test_read_rdb_parses_basic_shape():
 
 
 def test_read_rdb_skips_format_spec_row():
-    """The "5s 15s 10n 10n" row is metadata, not data."""
+    """The reader treats the "5s 15s 10n 10n" row as metadata."""
     df = read_rdb(_BASIC_RDB)
     # If the format-spec row had been treated as data, df would have 4 rows
     # and "5s" / "15s" would appear in the parsed values.
@@ -35,8 +35,8 @@ def test_read_rdb_dtype_hints_applied():
     """Caller-supplied dtype hints are forwarded to pandas; unknown names ignored."""
     df = read_rdb(_BASIC_RDB, dtypes={"site_no": str, "DEP": float, "unknown": int})
     # Without the str hint, pandas would parse "01104475" as int and drop the
-    # leading zero. Check the values, not the dtype name (which varies across
-    # pandas versions: object, StringDtype, etc.).
+    # leading zero. Check the values: the dtype name varies across pandas
+    # versions (object, StringDtype, etc.).
     assert df["site_no"].iloc[0] == "01104475"
     assert df["DEP"].dtype == float
 
@@ -63,7 +63,7 @@ def test_read_rdb_detects_code_columns():
 
 
 def test_read_rdb_empty_when_only_comments():
-    """All-comments input is a legitimate "no data" response, not an error."""
+    """All-comments input is a legitimate "no data" response: an empty frame."""
     df = read_rdb("# only a comment\n# and another\n")
     assert isinstance(df, pd.DataFrame)
     assert df.empty

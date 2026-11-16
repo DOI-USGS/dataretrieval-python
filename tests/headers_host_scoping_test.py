@@ -83,14 +83,14 @@ class TestDefaultHeadersHostScoping:
         """The authorized host over plain http is still an unauthorized destination.
 
         Matching on the host alone would send a bearer token in the clear
-        because of a hostname an attacker chose to keep -- reachable via a
+        because of a hostname an attacker chose to keep, reachable via a
         redirect or a server-supplied ``http://`` next-page link.
         """
         headers = _default_headers("http://api.waterdata.usgs.gov/ogcapi/v1/daily")
         assert "X-Api-Key" not in headers
 
     def test_sync_transport_withholds_key_on_downgrade_to_cleartext(self):
-        """The guard runs at send time, not only where headers are built."""
+        """The guard also runs at send time, after the headers are built."""
         seen: list[httpx.Request] = []
 
         def handler(request: httpx.Request) -> httpx.Response:

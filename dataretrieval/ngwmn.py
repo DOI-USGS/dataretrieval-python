@@ -49,7 +49,7 @@ __all__ = [
 ]
 
 
-# The Water Data API base URL, from the credentials leaf -- the one place the
+# The Water Data API base URL, from the credentials leaf, the one place the
 # API-key host is named (ADR 0006).
 BASE_URL = WATERDATA_BASE_URL
 
@@ -67,8 +67,8 @@ NGWMN_OGC_API_URL = f"{BASE_URL}/ngwmn/ogcapi"
 # ``_STATE_QUERYABLE`` below.
 #
 # This shim exists only to handle that upstream asymmetry.
-# ``tests/ngwmn_test.py::test_state_queryables_still_diverge_upstream`` fails --
-# the indication that it can be removed -- if the API ever unifies the two queryables.
+# ``tests/ngwmn_test.py::test_state_queryables_still_diverge_upstream`` fails
+# if the API ever unifies the two queryables; the shim can then be removed.
 _STATE_QUERYABLE = {
     # service -> ``apply_state`` kwargs (destination queryable + to_state format)
     "sites": {"into": "state_name", "to": "name"},
@@ -84,7 +84,7 @@ _NGWMN_OUTPUT_ID = "id"
 # filter naming a site, so a list could not be folded into one. It has no
 # date-only collections, but its result columns need their own coercion and
 # sort vocabulary: water-level observations are timestamped by ``sample_time``
-# (not the Water Data ``time``) and report depths/levels in feet. Its firewall
+# (Water Data uses ``time``) and report depths/levels in feet. Its firewall
 # rejects ``datetime=../2016-01-01`` with HTTP 403, so an open start is sent
 # empty (``/2016-01-01``), which NGWMN treats as open.
 NGWMN_DIALECT = OgcDialect(
@@ -159,7 +159,7 @@ def get_sites(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get NGWMN monitoring-location (site) metadata.
 
-    Site records describe each NGWMN monitoring location — its identifier,
+    Site records describe each NGWMN monitoring location: its identifier,
     responsible agency, location, aquifer, and whether it participates in the
     network's water-quality (``qw_*``) and water-level (``wl_*``) sub-networks.
 
@@ -268,7 +268,7 @@ def get_water_level(
     monitoring_location_vertical_datum : str or iterable of str, optional
         Vertical datum of the reported water level.
     datetime : str or iterable of str, optional
-        Temporal filter — a single instant or a two-element ``[start, end]``
+        Temporal filter: a single instant or a two-element ``[start, end]``
         range (ISO-8601 dates/datetimes); ``None`` or ``".."`` denotes an
         open end.
     properties : str or iterable of str, optional
@@ -360,8 +360,8 @@ def get_well_construction(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get NGWMN well-construction observations.
 
-    Construction records describe a well's physical build-out — casing,
-    screens, and similar elements — with depth intervals, materials, and
+    Construction records describe a well's physical build-out (casing,
+    screens, and similar elements) with depth intervals, materials, and
     diameters.
 
     Parameters
@@ -416,7 +416,7 @@ def get_providers(
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
         The 50 states, DC, and the five US territories. Sent as the API's
         ``state`` field, as a postal code. Only one
-        state at a time — a multi-value state filter
+        state at a time: a multi-value state filter
         returns no records for this collection.
     agency_code : str or iterable of str, optional
         Provider agency code.
@@ -461,8 +461,7 @@ class NgwmnConfiguration(
     settings. The API key is not among them: one gateway fronts both
     adapters, so they share one key and one quota pool (ADR 0010).
 
-    Declared here rather than in :mod:`dataretrieval.configuration`
-    (ADR 0011).
+    Declared here, in the module that reads it (ADR 0011).
 
     Parameters
     ----------
@@ -472,8 +471,8 @@ class NgwmnConfiguration(
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        OGC API base to send NGWMN requests to, instead of the service's
-        own (``NGWMN_OGC_API_URL``). Code only: the file and the
+        OGC API base to send NGWMN requests to, replacing
+        ``NGWMN_OGC_API_URL``. Code only: the file and the
         environment refuse it. The API key is scoped to the host that
         accepts it, so a redirected call sends no key.
     concurrency : int or str, optional

@@ -20,7 +20,7 @@ from dataretrieval.exceptions import NetworkError
 
 # Re-exported for the adapters that import credential policy through the
 # transport module they already import. ``dataretrieval.credentials`` is the
-# single definition; these names refer to the same objects; they are not copies.
+# single definition; these names refer to the same objects.
 __all__ = [
     "HTTPX_ASYNC_DEFAULTS",
     "HTTPX_DEFAULTS",

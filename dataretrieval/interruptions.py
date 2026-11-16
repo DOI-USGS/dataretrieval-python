@@ -1,4 +1,4 @@
-"""Resumable fan-out interruption exceptions — the public resume contract.
+"""Resumable fan-out interruption exceptions: the public resume contract.
 
 When a fanned-out request fails partway (a 429, a 5xx, or a bare transport
 error), the work already completed is preserved and the call is resumable: the
@@ -8,25 +8,24 @@ re-exported at the top level (``from dataretrieval import ChunkInterrupted``).
 The executor that raises and resumes them is
 :class:`dataretrieval.transport.fanout.FanOut`.
 
-Terms, as ``CONTEXT.md`` defines them: a **chunk** is one of the
-requests a query was split into, named for being a piece rather than for why it
-became one; **chunking** is how a query is split; and a **fan-out** is the
-concurrent execution of a query's chunks. Water Use chunks one request per
-location, Water Data chunks to fit a URL byte budget -- different reasons, the
-same word. The base class is named :class:`FanOutInterrupted` because the
-failure interrupts the *execution*, not the split.
+Terms, as ``CONTEXT.md`` defines them: a **chunk** is one of the requests a
+query was split into, whatever the reason for the split; **chunking** is how a
+query is split; and a **fan-out** is the concurrent execution of a query's
+chunks. Water Use chunks one request per location, Water Data chunks to fit a
+URL byte budget: different reasons, the same word. The base class is named
+:class:`FanOutInterrupted` because the failure interrupts the *execution*.
 
-``ChunkInterrupted`` is retained as an alias of that same class, not a
-deprecated shim to delete later: it is the name published in the user guide and
-caught in user code, and the alias has no maintenance cost. ``except
-ChunkInterrupted`` and ``except FanOutInterrupted`` are the same handler.
+``ChunkInterrupted`` is retained as a permanent alias of that same class: it is
+the name published in the user guide and caught in user code, and the alias has
+no maintenance cost. ``except ChunkInterrupted`` and
+``except FanOutInterrupted`` are the same handler.
 
-This is a top-level leaf rather than a member of ``ogc`` or ``transport``,
-for the reason ADR 0006 gives for ``combining``, ``progress``, and
-``credentials``: adapters need it whether or not they go through transport, and
-an exception taxonomy is not HTTP execution policy. It stays out of
-:mod:`dataretrieval.exceptions` because it holds pandas/httpx state, which
-would make that leaf depend on pandas and httpx.
+This is a top-level leaf, outside ``ogc`` and ``transport``, for the reason ADR
+0006 gives for ``combining``, ``progress``, and ``credentials``: adapters need
+it whether or not they go through transport, and an exception taxonomy is not
+HTTP execution policy. It stays out of :mod:`dataretrieval.exceptions` because
+it holds pandas/httpx state, which would make that leaf depend on pandas and
+httpx.
 """
 
 from __future__ import annotations
@@ -49,17 +48,15 @@ class FanOutInterrupted(DataRetrievalError):
     Base class for partway chunk failures whose completed work
     is preserved and resumable.
 
-    A ``FanOutInterrupted`` subclass means: a chunk failed, but
-    ``FanOut`` still holds whatever completed successfully before
-    the failure. Call ``self.call.resume()`` to continue from where the
-    failure stopped — only still-pending chunks are
-    re-issued.
+    A ``FanOutInterrupted`` subclass means: a chunk failed, but ``FanOut`` still holds
+    whatever completed successfully before the failure. Call ``self.call.resume()`` to
+    continue from where the failure stopped; only still-pending chunks are re-issued.
 
     Subclasses describe *why* ``FanOut`` stopped so callers can choose a retry policy:
     :class:`QuotaExhausted` for 429 (wait for the rate-limit window),
     :class:`ServiceInterrupted` for 5xx (wait for the upstream to recover). The
     ``.call`` handle is the same object across every interruption of a single fanned-out
-    call — frames accumulate across retries.
+    call: frames accumulate across retries.
 
     Attributes
     ----------
@@ -75,28 +72,28 @@ class FanOutInterrupted(DataRetrievalError):
     total_chunks : int
         Total chunks in the plan.
     partial_frame : pandas.DataFrame
-        Combined frame of work completed by the moment this exception
-        was raised. Snapshot at raise time — does not advance on a
-        later ``call.resume()`` (use ``exc.call.partial_frame`` for
-        the live view).
+        Combined frame of work completed by the moment this exception was
+        raised. Snapshot at raise time: it does not advance on a later
+        ``call.resume()`` (use ``exc.call.partial_frame`` for the live
+        view).
     partial_response : httpx.Response or None
-        Raw aggregate response covering the completed chunks at
-        raise time; ``None`` if nothing had completed yet. Same snapshot
-        semantics as ``partial_frame``. (Raw, not finalized — use
-        ``exc.call.resume()`` for the finalized ``(df, metadata)`` result.)
+        Raw aggregate response covering the completed chunks at raise time;
+        ``None`` if nothing had completed yet. Same snapshot semantics as
+        ``partial_frame``. (Raw; use ``exc.call.resume()`` for the finalized
+        ``(df, metadata)`` result.)
 
     Examples
     --------
     Retry on any transient interruption, applying the server's ``Retry-After`` value
     when present and falling back to a fixed wait otherwise. Each new interruption keeps
-    the already-completed work intact — only the still-pending chunks are re-issued.
+    the already-completed work intact; only the still-pending chunks are re-issued.
 
     .. code-block:: python
 
         import time
         from dataretrieval import ChunkInterrupted
 
-        # ``getter`` is any chunked OGC getter — e.g.
+        # ``getter`` is any chunked OGC getter, e.g.
         # ``waterdata.get_daily`` or ``ngwmn.get_water_level``.
         try:
             df, md = getter(monitoring_location_id=long_list_of_sites)
@@ -138,10 +135,9 @@ class FanOutInterrupted(DataRetrievalError):
         # the failure moment: ``exc.partial_frame`` / ``.partial_response`` do not
         # advance on a later ``call.resume()`` (that live view is on
         # ``call.partial_frame`` / ``.partial_response``). This keeps each interruption
-        # in a resume loop an accurate record of the state when it was raised, rather
-        # than every exception aliasing the shared call's advancing state. ``.copy()``
-        # protects the single-chunk fast path, where the combined frame may be returned
-        # verbatim.
+        # in a resume loop an accurate record of the state when it was raised.
+        # ``.copy()`` protects the single-chunk fast path, where the combined frame may
+        # be returned verbatim.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
             self.partial_response: httpx.Response | None = None
@@ -178,20 +174,20 @@ class FanOutInterrupted(DataRetrievalError):
         return None
 
     def __getstate__(self) -> dict[str, Any]:
-        # Drop the FanOut before pickling: its ``.fetch`` is an
-        # undecorated module function pickle can't reference by name, so the
-        # interruption can't cross a process boundary with ``.call`` attached.
-        # The ``call=None`` form keeps the counts, retry-after value, and the
-        # snapshotted partial frame / response — plain instance attributes the
-        # base ``__getstate__`` already pickles; only ``.resume()`` is lost
+        # Drop the FanOut before pickling: its ``.fetch`` is an undecorated
+        # module function pickle can't reference by name, so the interruption
+        # can't cross a process boundary with ``.call`` attached. The
+        # ``call=None`` form keeps the counts, retry-after value, and the
+        # snapshotted partial frame / response (plain instance attributes the
+        # base ``__getstate__`` already pickles); only ``.resume()`` is lost
         # (cross-process resume was never possible).
         return {**super().__getstate__(), "call": None}
 
 
 class QuotaExhausted(FanOutInterrupted):
     """
-    A chunk returned HTTP 429 — the per-key rate-limit window
-    is exhausted. Subclass of :class:`FanOutInterrupted`.
+    A chunk returned HTTP 429: the per-key rate-limit window is
+    exhausted. Subclass of :class:`FanOutInterrupted`.
 
     The completed chunks are preserved on ``.call``; once the
     rate-limit window resets, ``.call.resume()`` re-issues only the
@@ -210,7 +206,7 @@ class QuotaExhausted(FanOutInterrupted):
 
 class ServiceInterrupted(FanOutInterrupted):
     """
-    A chunk returned HTTP 5xx — the upstream service failed
+    A chunk returned HTTP 5xx: the upstream service failed
     transiently. Subclass of :class:`FanOutInterrupted`.
 
     The completed chunks are preserved on ``.call``; once the
@@ -226,7 +222,7 @@ class ServiceInterrupted(FanOutInterrupted):
 
 
 # Resolver failures that will not resolve differently on a later attempt. The temporary
-# ones (notably EAI_AGAIN -- "try again", raised while a resolver is still starting, on
+# ones (notably EAI_AGAIN, "try again", raised while a resolver is still starting, on
 # VPN reconnect, or after a laptop resumes from sleep) are deliberately absent: those
 # are retried. Looked up with ``getattr`` defaults because the EAI_* constants are
 # platform-dependent; an unrecognized code stays retryable, since a few seconds on a
@@ -245,16 +241,15 @@ def _walk_causes(
 ) -> Iterator[BaseException]:
     """Yield ``exc`` and the exceptions it chains to, each at most once.
 
-    Every question this module asks about a failure -- is it transient, is it
-    deterministic, what status did it carry -- is "find the first exception in
-    this chain that satisfies P". One traversal answers all of them, so the
-    cycle guard and the choice of links cannot drift between callers.
+    Every question this module asks about a failure (is it transient, is it
+    deterministic, what status did it have) is "find the first exception in this
+    chain that satisfies P". One traversal answers all of them, so the cycle
+    guard and the choice of links cannot drift between callers.
 
     ``__cause__`` (explicit ``raise ... from``) is always followed.
-    ``__context__`` (implicit chaining, from raising inside an ``except``
-    block) is followed only when ``follow_context`` is set, because it can
-    reach an unrelated error that happened to be in flight rather than the
-    failure being classified.
+    ``__context__`` (implicit chaining, from raising inside an ``except`` block)
+    is followed only when ``follow_context`` is set, because it can reach an
+    unrelated error that happened to be in flight.
 
     The ``seen`` set keeps a chain that rejoins itself, or points back at an
     ancestor, from looping.
@@ -281,19 +276,19 @@ def _deterministic_failure(exc: BaseException) -> bool:
     class and stays retryable (see :data:`_PERMANENT_DNS_ERRORS`). Bounding
     retry to failures a later attempt might not repeat is ADR 0006.
 
-    Walks ``__context__`` as well as ``__cause__``, because the original
-    failure is several links down the chain and not always an explicit ``raise ...
-    from``: a DNS failure arrives as ``NetworkError`` ->
+    Walks ``__context__`` as well as ``__cause__``, because the original failure
+    is several links down the chain and not always an explicit
+    ``raise ... from``: a DNS failure arrives as ``NetworkError`` ->
     ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
-    linked by implicit chaining. Following only the cause would follow
-    the explicit branch and miss a ``gaierror`` on the implicit one --
-    spending the whole retry budget on a hostname that will never resolve.
+    linked by implicit chaining. Following only the cause would follow the
+    explicit branch and miss a ``gaierror`` on the implicit one, spending the
+    whole retry budget on a hostname that will never resolve.
     """
     for current in _walk_causes(exc, follow_context=True):
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
-            # Return, not continue: the first resolver code found decides.
+            # Return: the first resolver code found decides.
             return current.errno in _PERMANENT_DNS_ERRORS
     return False
 
@@ -307,9 +302,9 @@ def _classify_transient(
     if isinstance(exc, TransientError):
         return ServiceInterrupted, exc.retry_after
     if isinstance(exc, (httpx.HTTPError, httpx.InvalidURL)):
-        # Some failures will fail the same way every time -- an unsupported
-        # scheme, a hostname that doesn't resolve. Offering to resume one
-        # would replace the underlying error with a retry that can never succeed.
+        # Some failures will fail the same way every time: an unsupported scheme, a
+        # hostname that doesn't resolve. Offering to resume one would replace the
+        # underlying error with a retry that can never succeed.
         if _deterministic_failure(exc):
             return None
         return ServiceInterrupted, None
@@ -331,7 +326,7 @@ def _classify_chunk_error(
 
 
 #: The name this taxonomy was published under, kept as a permanent alias so
-#: ``except ChunkInterrupted`` keeps working. Same class object, not a subclass.
+#: ``except ChunkInterrupted`` keeps working. Same class object.
 ChunkInterrupted = FanOutInterrupted
 
 __all__ = [

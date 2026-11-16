@@ -1,8 +1,8 @@
 """Every Water Data endpoint this package requests, in one place.
 
-The credentials leaf defines the host -- the host that serves these
-endpoints is the host that accepts the API key -- and the paths below are
-defined here rather than importing OGC policy internals. This module imports only
+The credentials leaf defines the host (the host that serves these
+endpoints is the host that accepts the API key), and the paths below are
+defined here. This module imports only
 leaves: the credentials host and the configuration chain (ADR 0003).
 """
 

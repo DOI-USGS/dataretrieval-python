@@ -12,15 +12,15 @@ The architecture favors incremental evolution and stable user-facing functions
 over a framework that forces unlike upstream APIs into one shape.
 
 This document records the current structure, the rules contributors should
-preserve, and known variances that later changes may remove. Rationale for
-architecturally significant choices is recorded in
-:doc:`Architecture Decision Records <decisions/index>`.
+preserve, and known variances that later changes may remove.
+:doc:`Architecture Decision Records <decisions/index>` record the rationale for
+architecturally significant choices.
 
 Architecture characteristics
 ----------------------------
 
-The characteristics below are prioritized in descending order when trade-offs
-are necessary:
+When trade-offs are necessary, the characteristics below take priority in
+descending order:
 
 #. **Installability and artifact integrity.** A built wheel must contain every
    supported package and work outside a source checkout.
@@ -32,7 +32,7 @@ are necessary:
 #. **Resilience.** Retry, rate-limit, interruption, and resume behavior must be
    explicit and bounded. Capabilities may differ where upstream protocols do.
 #. **Maintainability.** Modules should have cohesive responsibilities and
-   dependencies should point toward stable policies rather than service details.
+   dependencies should point from service details toward stable policies.
 #. **Bounded performance and resource use.** Concurrency, connection pools,
    retries, and page accumulation require explicit limits.
 #. **Observability.** Logs, metadata, progress, and typed failures should make
@@ -72,8 +72,7 @@ Public service adapters
     ``metadata``, ``measurements``, ``reference``, ``samples``, and ``cql``.
     Separate modules own ratings, nearest-value selection, statistics execution,
     shared service policy, and type vocabularies. Internal modules import
-    protocol helpers from their canonical OGC modules rather than re-exporting
-    them through Water Data utilities.
+    protocol helpers from their canonical OGC modules.
 
 ``dataretrieval.ngwmn``
     NGWMN adapter. Its only OGC dependency is the public OGC facade, which it
@@ -120,8 +119,8 @@ Shared components
     ``interruptions`` retains its deprecated public import path; and
     ``shaping``, ``dates``, ``filters``, and ``errors`` isolate their named
     protocol concerns. The full runtime OGC graph, including the facade, is
-    acyclic -- enforced by the package-wide fitness function in
-    ``tests/architecture_test.py``.
+    acyclic; the package-wide fitness function in
+    ``tests/architecture_test.py`` enforces this.
 
 ``dataretrieval.transport``
     Internal service-neutral execution layer. Owns guarded client lifecycle and
@@ -131,10 +130,10 @@ Shared components
     callback, owning bounded concurrency, deterministic failure precedence,
     sparse completion state, resume, and the progress line. It is also the one
     entry point from synchronous getter code into the async internals: a query
-    with nothing to divide runs as a one-item fan-out rather than through a
-    separate bridge. Internally, ``liveness`` is a stdlib-only leaf recording
-    when data last arrived, so the page loop that observes progress and the
-    retry loop that acts on it depend on ``liveness`` rather than on each other.
+    with nothing to divide runs as a one-item fan-out. Internally,
+    ``liveness`` is a stdlib-only leaf recording when data last arrived, so
+    the page loop that observes progress and the retry loop that acts on it
+    both depend on ``liveness`` and neither imports the other.
     Transport imports no service adapter or OGC protocol module, and is not
     exposed as a public framework API.
 
@@ -171,11 +170,11 @@ Shared components
 ``dataretrieval._querying``
     The one-shot HTTP query path the single-request adapters (``nwis``,
     ``wqp``, ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
-    it, map the status, retry a transient. It was moved out of ``utils`` because the two
-    halves were in one file for no other reason -- this one depends on
+    it, map the status, retry a transient. It moved out of ``utils`` because
+    the two halves shared only a file: this one depends on
     ``exceptions`` and ``transport``, the shaping half on ``codes`` and
-    pandas, and no caller used both. The implementation module is private; the established public
-    function paths remain ``dataretrieval.utils.query`` and
+    pandas, and no caller used both. The implementation module is private; the
+    established public function paths remain ``dataretrieval.utils.query`` and
     ``dataretrieval.utils.to_str``.
 
 ``dataretrieval.codes`` and ``dataretrieval.rdb``
@@ -192,12 +191,12 @@ adapter. ``.importlinter`` declares this as a layer stack and ``lint-imports``
 checks it over the transitive import graph, so a violation routed through an
 intermediary fails like a direct one. The stack is exhaustive: a new
 top-level module fails the contract until it is placed, so where a module
-belongs is decided when it is added rather than inferred later.
+belongs is decided when it is added.
 
 ``tests/architecture_test.py`` complements those contracts without repeating
 their direction rules. It covers which symbols cross a seam, declared
-``__all__`` surfaces, the AST shape of a facade, imports that must exist rather
-than be forbidden, and full-graph cycle detection (see ADR 0003).
+``__all__`` surfaces, the AST shape of a facade, imports that must exist,
+and full-graph cycle detection (see ADR 0003).
 
 Interface view
 --------------
@@ -208,21 +207,21 @@ contracts.
 
 Failed requests derive from ``dataretrieval.DataRetrievalError``. Callers can
 inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
-concrete subtype. A fanned-out call -- an over-large OGC request, or a Water Use
-query naming several locations -- may raise ``FanOutInterrupted`` subclasses
+concrete subtype. A fanned-out call (an over-large OGC request, or a Water Use
+query naming several locations) may raise ``FanOutInterrupted`` subclasses
 (formerly, and still aliased as, ``ChunkInterrupted``) that hold a resumable
 call handle and completed partial state.
 
 Package/module exports and documentation define the public surface.
 Underscore-prefixed symbols are implementation details even where existing
-internal adapters currently import them; those imports are known variances, not
-new extension points.
+internal adapters currently import them; those imports are known variances,
+and the symbols remain private.
 
 Service return contracts
 ------------------------
 
-The library preserves meaningful upstream differences rather than forcing every
-service into one return shape:
+The library preserves meaningful upstream differences in each service's return
+shape:
 
 - Water Data, NGWMN, and Water Use tabular getters return ``(DataFrame,
   BaseMetadata)``. Water Data and NGWMN results that include geometry may use a
@@ -270,8 +269,8 @@ precedence over retry/resume wrapping.
 
 Non-OGC services use the same transport policy only where their protocols have
 matching semantics. Retry, cursor pagination, and fan-out remain explicit
-adapter choices. Chunk planning remains OGC-specific; resumable fan-out is also
-used by Water Use because the NWDC accepts only one location per request.
+adapter choices. Chunk planning remains OGC-specific; Water Use also uses
+resumable fan-out because the NWDC accepts only one location per request.
 
 Resource and configuration view
 -------------------------------
@@ -279,45 +278,46 @@ Resource and configuration view
 Every setting resolves per key through an active ``configure()`` block, its
 environment variable when one exists, the adapter's own table and the top-level
 values in ``~/.dataretrieval/config.toml``, then its built-in default.
-``configure()`` takes configuration objects -- a package-wide ``Configuration``
-and at most one per adapter -- and each adapter's class is defined in the module
+``configure()`` takes configuration objects (a package-wide ``Configuration``
+and at most one per adapter), and each adapter's class is defined in the module
 that reads those settings, so ``configuration`` stays a leaf holding only the
 adapter roster. ``show_configuration()`` reports the effective source while
 redacting credentials.
 
-The settings themselves -- names, defaults, environment variables, and the
-config-file format -- are catalogued once in the
-:doc:`configuration guide </userguide/configuration>`. What matters
-architecturally is the behavior around them:
+The :doc:`configuration guide </userguide/configuration>` catalogs the
+settings themselves (names, defaults, environment variables, and the
+config-file format) once. What matters architecturally is the behavior around
+them:
 
 ``API_USGS_RETRIES``
     Number of retries after the first attempt on supported active request paths;
     defaults to four. Backoff is exponential with full jitter and waits for
-    bounded ``Retry-After`` values. Only failures that may not recur on a later
-    attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
-    itself, and not a transport failure that is determined before the request
-    is sent (unresolvable host, unsupported scheme). Deprecated NWIS
-    compatibility paths do not opt in.
+    bounded ``Retry-After`` values. The retry loop re-sends only failures that
+    may not recur on a later attempt: 429 and gateway 5xx. It does not re-send
+    a 500 rejecting the query itself, or a transport failure determined before
+    the request is sent (unresolvable host, unsupported scheme). Deprecated
+    NWIS compatibility paths do not opt in.
 
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and
-    the failure is raised; defaults to 60, and ``0`` disables the bound. It
-    complements ``API_USGS_RETRIES``, which caps attempts rather than elapsed
-    time: without this bound, four retries of a request that times out after a
-    minute add up to four minutes without data. Progress restarts the budget --
+    the call raises the failure; defaults to 60, and ``0`` disables the bound.
+    It complements ``API_USGS_RETRIES``, which caps attempts: without this
+    bound, four retries of a request that times out after a
+    minute add up to four minutes without data. Progress restarts the budget:
     a page received, or a queued chunk acquiring its concurrency slot. Neither a
     slow but productive download nor the last chunks of a large fan-out are
     stopped early, and an attempt already in flight is never interrupted. This bound
     never blocks the first retry, so one slow attempt cannot disable retry by
     itself; after that, the budget determines whether retrying continues. A dead
-    connection therefore costs about two read timeouts rather than five full
-    attempts.
+    connection therefore costs about two read timeouts; without the bound it
+    costs five full attempts.
 
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
     retrieval results.
 
-* The API token is attached only to requests for ``api.waterdata.usgs.gov``.
+* Transport attaches the API token only to requests for
+  ``api.waterdata.usgs.gov``.
   Shared synchronous and asynchronous clients re-check every redirected request
   and strip the token before following a link to any other host, including
   external rating assets.
@@ -347,8 +347,7 @@ This view records categories and representative locations of debt.
   and the OGC engine wrappers.
 
 These are documented so the checks distinguish accepted current dependencies
-from new violations. They should be removed through small, test-protected
-changes, not a rewrite.
+from new violations. Remove them through small, test-protected changes.
 
 Change process
 --------------

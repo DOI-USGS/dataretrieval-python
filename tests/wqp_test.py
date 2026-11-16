@@ -85,7 +85,7 @@ def test_get_results_preserves_leading_zero_codes(httpx_mock):
 
 
 def test_get_results(httpx_mock):
-    """Tests water quality portal ratings query"""
+    """Tests water quality portal results query"""
     request_url = (
         "https://www.waterqualitydata.us/data/Result/Search?siteid=WIDNR_WQX-10032762"
         "&characteristicName=Specific+conductance&startDateLo=05-01-2011&startDateHi=09-30-2011"
@@ -103,9 +103,9 @@ def test_get_results(httpx_mock):
     assert df.shape == (5, 65)
     _assert_wqp_metadata(md, request_url)
     assert df["ActivityStartDateTime"].notna().all()
-    # Regression: the getter must pass the query kwargs into the metadata
-    # (it previously built WQP_Metadata(response), dropping them), so that
-    # md.site_info has a siteid to look up instead of always returning None.
+    # Regression: the getter must pass the query kwargs into the metadata so
+    # md.site_info has a siteid to look up. It previously built
+    # WQP_Metadata(response), dropping them, and site_info always returned None.
     assert md._parameters.get("siteid") == "WIDNR_WQX-10032762"
 
 
@@ -262,8 +262,8 @@ def test_a_configured_base_url_moves_both_interfaces():
     assert legacy == f"{mirror}/data/Result/Search?"
     assert wqx3 == f"{mirror}/wqx3/Result/search?"
 
-    # Outside the block, the portal's own root again -- the redirect is scoped
-    # to the ``with`` statement, not fixed at import.
+    # Outside the block, the portal's own root again: the redirect is scoped
+    # to the ``with`` statement.
     with pytest.warns(DataCurrencyWarning):
         assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
 
@@ -294,7 +294,7 @@ def test_wqp_url_profiles_reject_unknown_service(
 # endpoint and returns the parsed DataFrame + metadata; they differ only by the
 # service path segment and the response fixture. Each case names one column that
 # is unique to that service's profile, which is what distinguishes "parsed the
-# right response" from a row count -- a count only says the fixture has not been
+# right response" from a row count. A count only says the fixture has not been
 # re-captured, and pinning one made the fixtures grow to tens of megabytes.
 _WHAT_CASES = [
     (what_sites, "Station", "wqp_sites.txt", "MonitoringLocationIdentifier"),
@@ -370,8 +370,8 @@ def test_credential_shaped_wqp_kwargs_are_rejected(name):
     """WQP has the widest ``**kwargs`` passthrough in the package.
 
     Its ten getters forward whatever the caller names straight into the query
-    string, so ``api_key=`` -- the plausible guess now that ``configure()``
-    takes ``Configuration(api_key=...)`` -- would put a secret in a URL that
+    string, so ``api_key=`` (the plausible guess now that ``configure()``
+    takes ``Configuration(api_key=...)``) would put a secret in a URL that
     clients, proxies and logs retain. Same predicate and same message as Water
     Data's ``**queryables`` guard, because it is the same mistake.
     """
@@ -427,7 +427,7 @@ def test_wqp_metadata_site_info_is_accessible_property():
     must now be a real property that returns ``None`` (no site param)
     without raising."""
     assert isinstance(type(_wqp_metadata()).site_info, property)
-    assert _wqp_metadata().site_info is None  # must NOT raise
+    assert _wqp_metadata().site_info is None  # must not raise
 
 
 def test_wqp_metadata_site_info_routes_to_what_sites(monkeypatch):

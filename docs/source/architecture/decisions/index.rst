@@ -3,8 +3,7 @@ Architecture Decision Records
 
 Architecture Decision Records (ADRs) capture why a significant structural or
 cross-cutting choice was made, the trade-offs it accepts, and how compliance is
-checked. They complement code and API documentation rather than repeating
-implementation details.
+checked. They complement code and API documentation.
 
 Statuses are ``Proposed``, ``Accepted``, ``Superseded``, or ``Rejected``. Do not
 edit an accepted decision to reverse its meaning; a later ADR supersedes it and

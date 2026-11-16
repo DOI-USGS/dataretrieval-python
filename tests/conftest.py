@@ -5,8 +5,8 @@ Test scaffolding for the dataretrieval test suite.
   unmatched requests don't fail the suite (keeps mocked-URL setup terse).
 * Pins the chunker env for every test (see ``_pin_chunker_env``), so
   chunk dispatch is deterministic and mocked retries measure attempt
-  counts rather than wall clock. Concurrency and retry tests opt in by
-  re-setting the env vars inside their body via ``monkeypatch.setenv``.
+  counts. Concurrency and retry tests opt in by re-setting the env vars
+  inside their body via ``monkeypatch.setenv``.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture
 def non_mocked_hosts() -> list[str]:
-    """No hosts are exempted from mocking; every HTTP call must match a mock registered
+    """No host is exempt from mocking; every HTTP call must match a mock registered
     through the ``httpx_mock`` fixture.
     """
     return []
@@ -43,24 +43,22 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     Production defaults ``API_USGS_CONCURRENT`` to 32,
     ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
     Pinning ``API_USGS_CONCURRENT=1`` keeps chunk dispatch
-    deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
-    a single transient is raised immediately rather than retried.
-    Concurrency and retry tests opt in by overriding the env inside
-    their body.
+    deterministic for the mocked suite, and ``API_USGS_RETRIES=0``
+    raises a single transient immediately. Concurrency and retry tests
+    opt in by overriding the env inside their body.
 
-    ``API_USGS_STALL_TIMEOUT=0`` is pinned too so that an opting-in retry test measures
-    the thing it names -- attempt counts -- and not the wall clock of the machine
-    running it. Left at the production 60 s, a test that sets ``API_USGS_RETRIES`` would
-    have its retries capped, without any signal, by whatever real time its mocked
-    attempts consumed, which is both flaky on a busy CI machine and would let a passing
+    The fixture also pins ``API_USGS_STALL_TIMEOUT=0``, so an opting-in retry test
+    measures attempt counts. Left at the production 60 s, the real time the mocked
+    attempts consume would cap the retries of a test that sets ``API_USGS_RETRIES``,
+    without any signal, which is flaky on a busy CI machine and lets a passing
     retry test conceal a stall-budget bug. Tests of the budget itself set it explicitly.
     """
     monkeypatch.setenv("API_USGS_CONCURRENT", "1")
     monkeypatch.setenv("API_USGS_RETRIES", "0")
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "0")
     # Point DATARETRIEVAL_CONFIG at a path that does not exist, so a developer's
-    # real ~/.dataretrieval/config.toml -- which may hold an API key or a raised
-    # concurrency -- can never influence a test run. Config tests opt in by
+    # real ~/.dataretrieval/config.toml (which may hold an API key or a raised
+    # concurrency) can never influence a test run. Config tests opt in by
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
     configuration._reset_file_cache()

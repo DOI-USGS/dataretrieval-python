@@ -21,11 +21,11 @@ _T = TypeVar("_T")
 def render_options(options: Collection[object]) -> str:
     """Format *options* for a message: ``'a', 'b', 'c'``.
 
-    Renders the values rather than their container so ``dict_keys([...])`` and
-    a bare tuple read the same to a caller, who never sees the container.
-    Shared with adapters that mention a vocabulary outside a rejection -- a
-    hint constant, a message appended to a service's own error -- so every
-    list of values reads the same everywhere.
+    Renders the values alone, so ``dict_keys([...])`` and a bare tuple read the
+    same to a caller, who never sees the container. Shared with adapters that
+    mention a vocabulary outside a rejection (a hint constant, a message
+    appended to a service's own error) so every list of values reads the same
+    everywhere.
     """
     return ", ".join(repr(option) for option in options)
 
@@ -33,9 +33,9 @@ def render_options(options: Collection[object]) -> str:
 def _render_names(names: Collection[str], *, conjunction: str = "and") -> str:
     """Format parameter *names* for a message: ``a``, ``a and b``, ``a, b and c``.
 
-    Bare, not quoted: these are the caller's own parameter names, so they read
-    as identifiers to paste back into the call rather than as data values --
-    which is what :func:`render_options` is for.
+    Bare: these are the caller's own parameter names, so they read as
+    identifiers to paste back into the call. :func:`render_options` quotes data
+    values.
     """
     listed = list(names)
     if len(listed) <= 1:
@@ -58,9 +58,9 @@ def _supplied(values: Mapping[str, object]) -> tuple[list[str], list[str]]:
 
     ``None`` is the package's "not supplied" marker throughout the public
     signatures, so it is the one this module tests for. A caller whose sentinel
-    differs -- an empty string that should count as missing -- normalizes to
-    ``None`` before calling, rather than this module deciding which falsy values
-    were meant.
+    differs (an empty string that should count as missing) normalizes to
+    ``None`` before calling; this module does not decide which falsy values were
+    meant.
     """
     supplied: list[str] = []
     missing: list[str] = []
@@ -84,7 +84,7 @@ def require_one_of(
     value
         The argument the caller supplied.
     options
-        The closed vocabulary it must belong to -- typically
+        The closed vocabulary it must belong to, typically
         ``get_args(SomeLiteral)``, a module constant, or a mapping's keys.
         Rendered in iteration order, so pass a sorted view when the source is
         unordered and the order would otherwise be arbitrary.
@@ -98,9 +98,9 @@ def require_one_of(
         service.
     remedy
         A further step, for a vocabulary narrower than the service's: how to
-        obtain what this function does not accept. Added rather than
-        substituted -- unlike the checks below, there is no derived remedy
-        here, since naming the options *is* the message.
+        obtain what this function does not accept. Appended to the message:
+        unlike the checks below, there is no derived remedy here to override,
+        since naming the options *is* the message.
 
     Raises
     ------
@@ -108,8 +108,8 @@ def require_one_of(
         If *value* is not in *options*.
     """
     if isinstance(options, str):
-        # ``str`` is a Collection, so this type-checks -- and then ``in``
-        # means "substring" without any error, accepting any fragment of a valid option.
+        # ``str`` is a Collection, so this type-checks, and then ``in`` means
+        # "substring" without any error, accepting any fragment of a valid option.
         raise TypeError(f"options must be a collection of values, not {options!r}")
     if value in options:
         return
@@ -130,12 +130,11 @@ def require_argument(
 ) -> _T:
     """Return *value*, or raise ``ValueError`` if it was not supplied.
 
-    Returns the value rather than ``None`` so the check also narrows the type:
-    a caller that must pass an optional argument to something requiring a
-    concrete one writes ``x = require_argument("x", x)``. The
-    alternative -- validating here and re-testing for ``None`` to satisfy the
-    type checker -- puts a second, unreachable message next to this one, and
-    the two drift.
+    Returns the value so the check also narrows the type: a caller that must
+    pass an optional argument to something requiring a concrete one writes
+    ``x = require_argument("x", x)``. The alternative (validating here and
+    re-testing for ``None`` to satisfy the type checker) puts a second,
+    unreachable message next to this one, and the two drift.
 
     Parameters
     ----------
@@ -144,12 +143,12 @@ def require_argument(
     value
         What they passed; ``None`` means not supplied.
     context
-        When the requirement is conditional, the condition that triggered it --
+        When the requirement is conditional, the condition that triggered it:
         ``context="when comid is given"``. Omitted when the argument is always
         required.
     remedy
         What to do instead, when the default ("pass a value") is not enough to
-        act on -- typically the accepted forms or an example value.
+        act on, typically the accepted forms or an example value.
 
     Returns
     -------
@@ -174,7 +173,7 @@ def require_together(
 ) -> None:
     """Raise ``ValueError`` unless *values* are all supplied or all omitted.
 
-    For arguments that only mean something as a set -- a ``lat``/``long`` pair, a
+    For arguments that only mean something as a set: a ``lat``/``long`` pair, a
     ``feature_source``/``feature_id`` pair. Passing none of them is allowed: that is the
     caller omitting the whole group, which is a different case from whether the group is
     complete.
@@ -185,7 +184,7 @@ def require_together(
         Parameter name to supplied value, in the order the message should
         list them.
     context
-        Where the group applies, when more than one exists --
+        Where the group applies, when more than one exists:
         ``context="for find='basin'"``.
     remedy
         Overrides the default remedy, which names the missing arguments to
@@ -217,12 +216,11 @@ def require_any_of(
 ) -> None:
     """Raise ``ValueError`` unless at least one of *values* was supplied.
 
-    For a query that needs to be narrowed but does not care how -- the NWIS
-    major filters, where any one of five is enough for the service to respond.
-    The permissive counterpart of :func:`require_exactly_one`: two of them is a
-    narrower query rather than a contradiction, so only none is an error.
-    ``None`` counts as not supplied, so ``sites=None`` is refused rather than
-    reaching the URL.
+    For a query that needs to be narrowed but does not care how: the NWIS major
+    filters, where any one of five is enough for the service to respond. The
+    permissive counterpart of :func:`require_exactly_one`: two of them is a
+    narrower query, so only none is an error. ``None`` counts as not supplied,
+    so ``sites=None`` is refused before it reaches the URL.
 
     Parameters
     ----------
@@ -230,7 +228,7 @@ def require_any_of(
         Parameter name to supplied value, in the order the message should
         list them.
     context
-        What the group is for, when the parameter names do not say --
+        What the group is for, when the parameter names do not say:
         ``context="to narrow the query"``.
     remedy
         Overrides the default remedy, which names the arguments to choose
@@ -258,8 +256,8 @@ def require_exactly_one(
 ) -> tuple[str, _T]:
     """Return the one supplied ``(name, value)``, or raise ``ValueError``.
 
-    For a choice between alternatives that are each sufficient on their own -- the
-    origin of an NLDI navigation, the location selector of an NWDC query. Both failure
+    For a choice between alternatives that are each sufficient on their own: the origin
+    of an NLDI navigation, the location selector of an NWDC query. Both failure
     directions are reported by the same check because they have the same fix in either
     direction: supply one, or drop the rest. The selected pair is returned for the same
     reason :func:`require_argument` returns its value: the caller's next step is to
@@ -272,7 +270,7 @@ def require_exactly_one(
         Parameter name to supplied value, in the order the message should
         list them.
     context
-        What the choice is for, when the parameter names do not say --
+        What the choice is for, when the parameter names do not say:
         ``context="as the query's location"``.
     remedy
         Overrides the default remedy, which is derived from which way the
@@ -322,7 +320,7 @@ def reject_together(
         Parameter name to supplied value, in the order the message should
         list them.
     context
-        Why they conflict, when the names do not make it evident --
+        Why they conflict, when the names do not make it evident:
         ``context="they name different origins"``.
     remedy
         Overrides the default remedy, which names the supplied arguments to

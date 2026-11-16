@@ -4,9 +4,9 @@ ADR 0011: Configuration profiles, scoped to one adapter
 Status
 ------
 
-Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings` --
+Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings`,
 decision 5 (adapter schemas held centrally as ``TypedDict``) and decision 8
-(each adapter a named keyword on ``configure``) -- and three of
+(each adapter a named keyword on ``configure``), and three of
 :doc:`0009-layered-configuration`: the global ``[profiles.<name>]`` table; the
 environment-above-file rule, inverted for a profile selected in code; and the
 refusal of a configuration object, which ADR 0010 had already narrowed to a
@@ -34,7 +34,7 @@ multi-service caller has:
   asked for it, and it is the primary use case.
 
 Two further problems ADR 0010 left open bear on the same decision. The
-adapter roster is listed in four places, only one of which is derived --
+adapter roster is listed in four places, only one of which is derived:
 adding an adapter needs coordinated edits, and forgetting one leaves a schema
 no call site can use, which happened to three adapters and shipped
 undetected until a fitness test was written. And a setting's definition is
@@ -73,7 +73,7 @@ adapter, and nothing else::
         ...
 
 The adapter an instance targets is a property of its class, so the caller
-never restates it -- which is what removes the roster duplication. Naming two
+never restates it, which removes the roster duplication. Naming two
 configurations for one adapter raises: they would be the one pairing the
 precedence rules do not order.
 
@@ -118,8 +118,8 @@ original rule.
 
 **Validation is lazy.** A file's structure is checked when it is parsed; a
 table's keys are checked when that adapter first resolves a setting. This
-keeps the isolation rule ADR 0010 established -- a malformed ``[nldi]``
-table must not fail a Water Data call -- and it is what allows the schema to
+keeps the isolation rule ADR 0010 established (a malformed ``[nldi]``
+table must not fail a Water Data call), and it allows the schema to
 be defined in a module the parser cannot import.
 
 **Base URLs may be configured, from code only.** An adapter's configuration
@@ -172,8 +172,7 @@ names the groups it composes and adds only what is its own. Declaring
 ``retries: int | None = _UNSET`` directly in an adapter module satisfies this
 record literally while losing what it protects: the annotation would enforce
 nothing, could drift from the shared parser, and ``mypy --strict`` would not
-detect it, because it checks the annotation, not whether the field still matches
-the shared group.
+detect it, because it checks only the annotation.
 
 Consequences
 ------------
@@ -182,7 +181,7 @@ Consequences
   most one configuration each, any of them from the file or from code.
 - **The roster stops being duplicated.** An adapter declares itself once. The
   failure mode where a schema exists that nothing passes becomes impossible by
-  construction rather than caught by a fitness test.
+  construction.
 - **A setting's definition moves next to the code that reads it.** Adding a
   Water Data setting no longer edits a service-neutral module.
 - **``configure(api_key=...)`` breaks.** The README, the configuration guide,
@@ -190,15 +189,16 @@ Consequences
   the same commit.
 - **``show_configuration()`` can only resolve the settings an adapter accepts
   once that adapter has been imported.** It names the adapters it could not
-  check rather than omitting them, which is the cost of lazy
+  check, which is the cost of lazy
   validation. The *profile list* is not import-limited: what a profile is
   called is a fact about the file, so every ``[<adapter>.<name>]`` table it
-  defines is listed, imported or not -- withholding one would make the
+  defines is listed, imported or not; withholding one would make the
   section's contents depend on which optional extras happened to be installed.
-- **Two names differ only by case** -- the ``configuration`` module and the
+- **Two names differ only by case**: the ``configuration`` module and the
   ``Configuration`` class. The module stays out of the package's public
-  exports, so ``from dataretrieval import configuration, Configuration`` cannot arise.
-- **Separate quota pools are still not modelled.** Three exist. Nothing in the
+  exports, so ``from dataretrieval import configuration, Configuration`` cannot
+  arise.
+- **Separate quota pools are still not modeled.** Three exist. Nothing in the
   library depends on them yet.
 - **``ssl_check`` is unaffected** and remains a per-call argument, for the
   reasons in ADR 0010.
@@ -208,39 +208,38 @@ Compliance
 
 Satisfied. In ``tests/configuration_test.py``:
 
-- ``test_several_named_profiles_are_selected_independently`` -- one block,
+- ``test_several_named_profiles_are_selected_independently``: one block,
   a different profile per adapter.
 - ``test_a_named_profile_layers_per_key_over_the_rungs_below`` (named
-  ``..._the_tiers_below`` when this decision was taken) -- a profile
+  ``..._the_tiers_below`` when this decision was taken): a profile
   inherits its adapter's default profile and the package-wide keys per key.
-- ``test_adding_a_named_profile_changes_nothing_until_it_is_selected`` -- a
+- ``test_adding_a_named_profile_changes_nothing_until_it_is_selected``: a
   named profile is inert until something selects it.
 - ``test_two_configurations_for_one_adapter_raise``.
 - ``test_a_code_selected_profile_outranks_the_environment``, plus a case per
   rung of the seven-rung ladder above, each written against one file that
   populates every rung with a distinct value.
-- ``test_inner_block_can_lower_a_setting_an_outer_block_scoped`` -- the
+- ``test_inner_block_can_lower_a_setting_an_outer_block_scoped``: the
   innermost block takes precedence, including over an adapter-scoped outer one.
 - ``test_a_table_for_an_unimported_adapter_stays_valid`` and
-  ``test_a_malformed_table_does_not_fail_another_adapters_call`` -- the
+  ``test_a_malformed_table_does_not_fail_another_adapters_call``: the
   isolation rule under lazy validation.
 - ``test_base_url_applies_from_code_and_is_refused_from_the_file``, with
   ``test_base_url_is_refused_from_the_environment`` for the other source, and
-  ``test_base_url_changes_every_endpoint_family_and_api_version_only_ogc`` -- one
+  ``test_base_url_changes_every_endpoint_family_and_api_version_only_ogc``: one
   public-getter contract covering OGC, Samples, Statistics, and Ratings. The
   endpoint module exposes functions that build each URL at request time rather
   than ready-made endpoint constants, so a family module gets the root in effect
   for the call without wrapping every use site.
 - ``test_adapter_roster_names_real_modules_that_register_themselves`` and
-  ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
+  ``test_every_adapter_is_actually_wired_to_a_read_site``: the roster
   resolves, and no configuration exists that nothing reads. An adapter name
   not in the roster now raises out of ``_resolve`` rather than
-  falling through to the package-wide value, so the grep is a secondary check
-  rather than the only one.
+  falling through to the package-wide value, so the grep is a secondary check.
 
 ``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
-asserts the module imports no adapter -- ``dataretrieval.exceptions`` is its
-only first-party import -- and ``lint-imports`` keeps ``configuration`` below
+asserts the module imports no adapter (``dataretrieval.exceptions`` is its
+only first-party import), and ``lint-imports`` keeps ``configuration`` below
 ``credentials``.
 
 Notes
@@ -250,7 +249,7 @@ Notes
   ``api.water.usgs.gov``.
 - Open, not decided here: whether ``parallel_chunks`` is renamed. ``fan_out``
   was suggested and conflicts with the glossary, where fan-out is *executing*
-  chunks concurrently -- which ``concurrency`` already controls -- while
+  chunks concurrently (which ``concurrency`` already controls), while
   ``parallel_chunks`` instructs the planner to *divide* more finely. ADR 0009
   rejected ``parallelism`` and ``chunk_parallelism`` for the same conflation.
   ``chunk_count`` or ``target_chunks`` would not conflate the two.

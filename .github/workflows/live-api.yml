@@ -1,13 +1,13 @@
 # Runs the tests that talk to real USGS services.
 #
-# These are separated from the push suite on purpose. A mocked test tells us
-# whether *our* parsing still works; only a live one tells us whether the
+# These are separated from the push suite on purpose. A mocked test shows
+# whether *our* parsing still works; only a live one shows whether the
 # upstream API still returns what we parse. That signal is worth having, but not
 # on every push: it makes an unrelated commit's CI depend on USGS uptime, and a
 # transient 503 then reads as "your branch is broken".
 #
-# So they run on a schedule, where a failure means what it should -- something
-# upstream moved -- and nobody is blocked while we look into it.
+# So they run on a schedule, where a failure means that something upstream
+# changed, and nobody is blocked while we look into it.
 
 name: Live API Tests
 
@@ -40,7 +40,7 @@ jobs:
           pip install .[test,nldi]
       - name: Run live API tests
         # ``-m live`` overrides the ``-m 'not live'`` in pyproject's addopts, so
-        # this runs exactly the complement of the push suite. ``--reruns`` here
-        # rather than on the marker: a transient 5xx should cost a retry, not a
-        # red build, and this is the only job where that trade-off applies.
+        # this runs the complement of the push suite. ``--reruns`` here rather
+        # than on the marker: a transient 5xx should cost a retry, and this is
+        # the only job where that trade-off applies.
         run: pytest tests/ -m live -v --reruns 2 --reruns-delay 5

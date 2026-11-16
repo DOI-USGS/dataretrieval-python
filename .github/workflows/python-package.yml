@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow installs Python dependencies, runs tests, and lints with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: Python package
@@ -42,20 +42,20 @@ jobs:
       - name: Install metrics tooling
         # Versions pinned in the extra so CI and pre-commit grade identically.
         run: pip install -e .[metrics]
-      # Ratchets, not aspirations: thresholds sit where the package already is,
-      # so they fail on regression rather than demanding a refactor. Each
-      # mirrors a pre-commit hook, so a clean local run means CI agrees.
+      # Ratchets: thresholds are set to the package's current scores, so they
+      # fail only on regression. Each matches a pre-commit hook, so a clean
+      # local run means CI passes.
       - name: Complexity gate
         run: xenon --max-absolute C --max-modules B --max-average A dataretrieval
       - name: Cognitive complexity gate
         run: complexipy dataretrieval
       - name: Dependency-direction contracts
-        # Rules and rationale live in .importlinter and the ADRs it cites.
+        # Rules and rationale are in .importlinter and the ADRs it cites.
         run: lint-imports
       - name: Complexity trend vs base
         # Advisory: reports which files moved and by how much, so a reviewer
-        # can see direction rather than a pass/fail. Never fails the build --
-        # the gate above is what blocks.
+        # can see direction. Never fails the build; the gate above is what
+        # blocks.
         if: github.event_name == 'pull_request'
         continue-on-error: true
         run: |
@@ -147,14 +147,14 @@ jobs:
       - name: Test with pytest
         # Pinned to bash on every OS. The default Windows shell is PowerShell,
         # which does not stop on a failing native command and takes the step's
-        # exit code from the last one -- so a pytest failure was masked by the
+        # exit code from the last one, so a pytest failure was masked by the
         # coverage report that followed it, and the Windows matrix reported
         # success while tests were red.
         shell: bash
         run: coverage run -m pytest tests/
       - name: Coverage ratchet
         # Windows skips POSIX-only tests, so its number measures a smaller
-        # suite. Negative condition: a matrix edit cannot silently unenforce it.
+        # suite. Negative condition: a matrix edit cannot unenforce it unnoticed.
         if: runner.os != 'Windows'
         shell: bash
         run: coverage report

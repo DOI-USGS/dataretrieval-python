@@ -1,10 +1,10 @@
 # Contributing Guidelines
 
-Contributions to `dataretrieval` are welcome and greatly appreciated, but
-please read this document for information on *how* to contribute.
+Contributions to `dataretrieval` are welcome. This document explains *how* to
+contribute.
 
-`dataretrieval` broadly follows a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects),
-however writing code is not the only way to contribute.
+`dataretrieval` broadly follows a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
+Writing code is not the only way to contribute.
 
 ---
 
@@ -29,7 +29,7 @@ however writing code is not the only way to contribute.
   - [Feedback and Feature Requests](#feedback-and-feature-requests)
     - [Submitting Feedback](#submitting-feedback)
     - [Feature Requests](#feature-requests)
-  - [Acknowledgements](#acknowledgements)
+  - [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -59,7 +59,7 @@ two contributors do not do the same work.
 
 ## Code Contributions
 
-Code contributions should be made following a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
+Make code contributions through a ["forking" workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects).
 First *fork* the repository, creating a personal mirror of the project. Next,
 create a *feature branch* in your fork and push your code changes to it. Once
 your modifications and additions are complete, open a pull request from the
@@ -77,13 +77,13 @@ Please do not combine multiple feature enhancements into a single pull request.
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. If the pull request adds or modifies package functionality, unit tests
-   should be written to test the new functionality.
+1. If the pull request adds or modifies package functionality, write unit
+   tests for it.
 2. If the pull request adds or modifies functionality, update the documentation
    or function docstrings that describe it.
 3. The pull request should work for Python 3.10 and later. Refer to the
    [Python package workflow](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/python-package.yml)
-   for the versions and operating systems currently tested by CI.
+   for the versions and operating systems CI currently tests.
 4. Build-related changes should preserve the installed-wheel smoke test; tests
    run from a source checkout are not sufficient to prove package contents.
 5. Architecturally significant changes should update the
@@ -96,8 +96,8 @@ Before you submit a pull request, check that it meets these guidelines:
 test run neither depends on USGS uptime nor spends anyone's rate limit.
 
 The exception is a small set of tests marked `live`, which query the real
-services to notice when an upstream API changes -- something a mock cannot
-detect, because the mock is what would need updating. They are deselected by
+services to notice when an upstream API changes, which a mock cannot detect
+because the mock is what would need updating. They are deselected by
 default and run on a nightly schedule
 ([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
 Run them locally with:
@@ -107,13 +107,13 @@ pytest tests/ -m live
 ```
 
 New tests should be offline. Use `live` only when the assertion is a claim
-about the upstream service rather than about this package.
+about the upstream service.
 
 ### Coding Standards and Style
 
 **Before adding a small helper, check whether a leaf already generalizes it.**
-This package keeps its general mechanisms in dependency-free leaves --
-`_ambient.Ambient` for scoped context values, `config` for every setting
+This package keeps its general mechanisms in dependency-free leaves:
+`_ambient.Ambient` for scoped context values, `configuration` for every setting
 (`API_USGS_*`, the config file, and `configure()` blocks all resolve through
 it, and it is the only module that reads the environment for a setting),
 `transport.links.resolve_next_url` for pagination cursors. Each of those has
@@ -143,18 +143,17 @@ hook running the identical check, so a clean pre-commit run means CI will pass.
 
 `coverage report` is a ratchet too. The threshold is in
 `[tool.coverage.report]` in `pyproject.toml` and is set to the measured value,
-so it fails on regression rather than demanding new tests of a change that
-added none. Raise it when coverage rises; lower it only deliberately, and say
-why in the commit.
+so it fails only on regression. Raise it when coverage rises; lower it only
+deliberately, and say why in the commit.
 
 Coverage is measured with branches on, because most of what this package gets
-wrong is a branch rather than a line -- a dispatch arm routing to the wrong
-getter, an error path that never executes, a fallback that becomes the
-norm unnoticed. Cover the *uncovered branch*, not the percentage: a test written only to
-mark a line as covered adds maintenance and catches nothing. If a path cannot be
-reached without restructuring the code, exclude it in
+wrong is a branch: a dispatch arm routing to the wrong getter, an error path
+that never executes, a fallback that becomes the norm unnoticed. Cover the
+*uncovered branch*, not the percentage: a test written only to mark a line as
+covered adds maintenance and catches nothing. If a path cannot be reached
+without restructuring the code, exclude it in
 `[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
-it is. Either costs less than a test that adds maintenance and catches nothing.
+it is.
 
 The blocking run is a single Linux job. The OS/Python matrix reports its own
 number with `--fail-under=0`, because several tests are POSIX-only and a
@@ -168,12 +167,11 @@ ratchet.
 
 `xenon` and `complexipy` are complexity ratchets: the thresholds are the
 tightest the package passes today, so they fail only when a change raises a
-score above today's. Their scores differ because they count different things. `xenon` counts
-branches (cyclomatic complexity), so a large flat dispatch scores high;
-`complexipy` counts how hard the control flow is to follow (cognitive
+score above today's. Their scores differ because they count different things.
+`xenon` counts branches (cyclomatic complexity), so a large flat dispatch scores
+high; `complexipy` counts how hard the control flow is to follow (cognitive
 complexity), so it scores that dispatch lower and nesting higher. Both name the
-offending block, so the fix is local -- usually extracting a branch rather than
-restructuring.
+offending block, so the fix is local, usually extracting a branch.
 
 `lint-imports` checks the dependency contracts declared in
 [`.importlinter`](.importlinter) against the *transitive* import graph: the layer
@@ -184,14 +182,14 @@ quarantine, and collection-family independence.
 were once asserted a second time in `tests/architecture_test.py` by hand-parsing
 the AST; that duplication is gone, and re-adding it would mean one rule in two
 places that drift apart. What the tests still own is everything an import graph
-cannot see -- which *symbols* cross a seam, declared `__all__` surfaces, the AST
+cannot see: which *symbols* cross a seam, declared `__all__` surfaces, the AST
 shape of a facade, boundaries that must be asserted positively (`lint-imports`
 can forbid an edge, never require one), and package-wide cycle detection (see
 ADR 0003). If you are adding a rule and it is purely "module A must not import
 module B", it belongs in `.importlinter`. A boundary that legitimately moves is
 one edit there, plus the ADR it cites.
 
-To see the *trend* rather than a pass/fail, that extra also installs
+To see the *trend*, that extra also installs
 [`wily`](https://github.com/tonybaloney/wily), which indexes metrics across git
 history:
 
@@ -202,8 +200,8 @@ wily diff dataretrieval --revision main       # what your branch changed
 wily rank dataretrieval maintainability.mi    # worst-maintained files today
 ```
 
-`wily` is advisory and is never a merge gate -- rising complexity in a file that
-gained a complex feature is information, not a failure.
+`wily` is advisory and is never a merge gate: rising complexity in a file that
+gained a complex feature is information for a reviewer.
 
 #### The periodic whole-package analysis
 
@@ -211,9 +209,9 @@ Duplication, coupling, cohesion, dependency depth, and dead code are tracked by
 [`pyscn`](https://github.com/ludo-technologies/pyscn) on a weekly schedule
 ([code-health.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/code-health.yml)),
 which attaches an HTML and a JSON report to each run. Nothing gates on it. These
-measures change over months rather than commits.
+measures change over months.
 
-You do not need it to contribute. It identifies what to clean up next --
+You do not need it to contribute. It identifies what to clean up next,
 including for an agent working on this repo, which gets a whole-package
 structural overview from one command:
 
@@ -224,10 +222,10 @@ pip install -e '.[health]'   # wheels: macOS ARM64, Linux x86-64/ARM64 with
 pyscn analyze dataretrieval  # HTML report; --json --html writes both
 ```
 
-Read its findings as suggestions, not conclusions. Its clone detector flags this
-package's per-collection getters -- thin, extensively documented wrappers whose
-bodies are necessarily similar -- and collapsing them into one parameterized
-function would give up the documented public surface for a metric. Its
+Read its findings as suggestions. Its clone detector flags this package's
+per-collection getters (thin, extensively documented wrappers whose bodies are
+necessarily similar), and collapsing them into one parameterized function would
+give up the documented public surface for a metric. Its
 dependency-injection heuristics expect a class-oriented design this package
 deliberately does not have.
 
@@ -243,8 +241,8 @@ link checking.
 #### Style
 
 * Follow the [PEP8 style guidelines](https://peps.python.org/pep-0008/).
-* The public interface should emphasize functions over classes; classes can and
-  should be used internally and in tests.
+* The public interface should emphasize functions over classes; use classes
+  internally and in tests.
 * Group public download functions by service. For example, modern Water
   Data functions belong in `dataretrieval.waterdata`; legacy NWIS functions
   remain quarantined in `dataretrieval.nwis` during deprecation.
@@ -257,8 +255,7 @@ link checking.
   policy and infrastructure. Shared OGC code must not import service adapters,
   and modern modules must not depend on legacy NWIS.
 * Treat underscore-prefixed helpers as implementation details. Existing
-  cross-package uses are documented variances, not extension points for new
-  code.
+  cross-package uses are documented variances; do not add new ones.
 
 #### Docstrings
 * A docstring documents the *contract*. Rationale that argues for a rule binding
@@ -327,9 +324,9 @@ link checking.
 
 ### Updating Package Version
 
-The package version is derived automatically from Git tags by
-`setuptools_scm` (see `[tool.setuptools_scm]` in `pyproject.toml`), so there is
-no version string to edit by hand. To make a release, tag the commit (for
+`setuptools_scm` derives the package version from Git tags (see
+`[tool.setuptools_scm]` in `pyproject.toml`), so there is no version string to
+edit by hand. To make a release, tag the commit (for
 example, `git tag v1.2.3`) and push the tag; both the installed package version
 and the documentation's `version` and `release` values follow from it.
 
@@ -339,9 +336,9 @@ and the documentation's `version` and `release` values follow from it.
 
 ### Contributing to the Documentation
 
-Documentation is built using [sphinx](https://www.sphinx-doc.org/en/master/),
-and is located within the `docs/source/` subdirectory in the repository.
-Documentation is written using [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html).
+[Sphinx](https://www.sphinx-doc.org/en/master/) builds the documentation from
+the `docs/source/` subdirectory in the repository.
+The source is [reStructuredText](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html).
 
 Contributions to the documentation follow the same forking workflow as code
 contributions. Before opening a pull request, test your documentation changes
@@ -389,5 +386,5 @@ Please be sure to:
 
 ---
 
-## Acknowledgements
+## Acknowledgments
 This document was adapted from the cookiecutter project's [CONTRIBUTING file](https://github.com/audreyr/cookiecutter/blob/master/CONTRIBUTING.rst).
