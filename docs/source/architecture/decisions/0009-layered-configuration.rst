@@ -158,7 +158,7 @@ Supporting decisions:
   ``[profiles.<name>]`` table is opt-in per run, which is the scope this setting
   needs; the top-level form still works, but warns.
 - **``dataretrieval.configuration`` is a lightweight leaf.** It uses only the
-  standard library, the ``tomli`` backport on Python 3.11, and
+  standard library, the ``tomli`` backport on Python 3.10, and
   ``dataretrieval.exceptions`` -- itself a dependency-free leaf, so this adds no
   dependencies and cannot create an import cycle. It is read by ``utils``
   (headers), ``ogc.chunking``, ``ogc.retry``, and ``ogc.progress``, so under

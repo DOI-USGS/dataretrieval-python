@@ -33,10 +33,6 @@ dependencies = [
     # Directly imported by ``waterdata`` (``anyio.from_thread.start_blocking_portal``),
     # so declared here rather than relied on transitively via httpx2.
     "anyio>=4.0",
-    # ``dataretrieval.config`` reads a TOML config file. ``tomllib`` is stdlib
-    # from 3.11, so this marker installs the backport only on 3.11 and drops
-    # itself when ``requires-python`` moves to >=3.11.
-    "tomli>=1.1.0; python_version < '3.11'",
 ]
 dynamic = ["version"]
 
@@ -114,7 +110,7 @@ repository = "https://github.com/DOI-USGS/dataretrieval-python.git"
 write_to = "dataretrieval/_version.py"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 88
 extend-exclude = ["demos"]
 

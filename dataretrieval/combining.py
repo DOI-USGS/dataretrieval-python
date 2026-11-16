@@ -67,7 +67,9 @@ def _set_response_url(response: httpx2.Response, url: str | httpx2.URL) -> None:
         # synthesize a minimal one to hold the URL.
         response.request = httpx2.Request("GET", target)
         return
-    response.request = httpx2.Request(method=old.method, url=target, headers=old.headers)
+    response.request = httpx2.Request(
+        method=old.method, url=target, headers=old.headers
+    )
 
 
 def _lowest_remaining(responses: list[httpx2.Response]) -> httpx2.Response:

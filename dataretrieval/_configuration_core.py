@@ -13,7 +13,6 @@ import math
 import os
 import re
 import stat
-import sys
 import warnings
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, fields
@@ -227,7 +226,7 @@ _NO_FILE = _ParsedFile()
 
 #: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is
 #: typed as a ``WaterdataConfiguration`` rather than the base. ``typing.Self``
-#: would say this in one word and arrives in 3.11; the minimum is 3.11.
+#: (available since the 3.11 minimum) could replace this TypeVar.
 _C = TypeVar("_C", bound="BaseConfiguration")
 
 
@@ -580,10 +579,8 @@ def _toml_parser() -> Any:
     ``import dataretrieval`` imports this module, but the parser is needed only once a
     configuration file exists -- the minority case.
     """
-    if sys.version_info >= (3, 11):
-        import tomllib
-    else:  # pragma: no cover - exercised only on Python 3.11
-        import tomli as tomllib
+    import tomllib
+
     return tomllib
 
 

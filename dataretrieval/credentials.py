@@ -59,7 +59,9 @@ def accepts_api_key(target_url: str | httpx2.URL | None) -> bool:
     if target_url is None:
         return False
     try:
-        url = target_url if isinstance(target_url, httpx2.URL) else httpx2.URL(target_url)
+        url = (
+            target_url if isinstance(target_url, httpx2.URL) else httpx2.URL(target_url)
+        )
     except (httpx2.InvalidURL, TypeError):
         return False
     return bool(url.scheme == "https" and url.host == _AUTHORIZED_API_KEY_HOST)
