@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g2846fff54 documentation</title>
+  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=11c91b61"></script>
+      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -133,19 +133,18 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (0.1.dev1+g2846fff54)
-Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
-Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.0)
-Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from dataretrieval) (4.15.1)
-Requirement already satisfied: numpy&gt;=2.0.2 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.4)
-Requirement already satisfied: python-dateutil&gt;=2.9.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (3.0.0)
-Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
-Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
-Requirement already satisfied: six&gt;=1.6 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (1.17.0)
-Requirement already satisfied: tzdata in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2026.6)
-Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.10.23)
-Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
-Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.17/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (0.1.dev1+g2c7311c93)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.1)
+Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (4.16.0)
+Requirement already satisfied: numpy&gt;=2.0.2 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.5)
+Requirement already satisfied: python-dateutil&gt;=2.9.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (4.0.0)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
+Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
+Requirement already satisfied: tzdata in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2026.6)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.10.23)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
 </pre></div></div>
 </div>
 <p>Load the package so you can use it along with other packages used in this notebook.</p>
@@ -254,8 +253,7 @@ Retrieved 344 statistic values.
       <th>county_code</th>
       <th>start_date</th>
       <th>end_date</th>
-      <th>interval_type</th>
-      <th>value</th>
+      <th>...</th>
       <th>percentile</th>
       <th>sample_count</th>
       <th>approval_status</th>
@@ -264,6 +262,8 @@ Retrieved 344 statistic values.
       <th>parameter_code</th>
       <th>unit_of_measure</th>
       <th>parent_time_series_id</th>
+      <th>parent_statistic_id</th>
+      <th>parent_statistic_name</th>
     </tr>
   </thead>
   <tbody>
@@ -279,8 +279,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2000-11-01</td>
       <td>2000-11-30</td>
-      <td>month</td>
-      <td>600.967</td>
+      <td>...</td>
       <td>NaN</td>
       <td>30</td>
       <td>approved</td>
@@ -289,6 +288,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>1</th>
@@ -302,8 +303,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2000-12-01</td>
       <td>2000-12-31</td>
-      <td>month</td>
-      <td>812.903</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
@@ -312,6 +312,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>2</th>
@@ -325,8 +327,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2001-01-01</td>
       <td>2001-01-31</td>
-      <td>month</td>
-      <td>1668.387</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
@@ -335,6 +336,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>3</th>
@@ -348,8 +351,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2001-02-01</td>
       <td>2001-02-28</td>
-      <td>month</td>
-      <td>1234.286</td>
+      <td>...</td>
       <td>NaN</td>
       <td>28</td>
       <td>approved</td>
@@ -358,6 +360,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>4</th>
@@ -371,8 +375,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2001-03-01</td>
       <td>2001-03-31</td>
-      <td>month</td>
-      <td>3782.581</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
@@ -381,9 +384,12 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -417,8 +423,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2021-10-01</td>
       <td>2022-09-30</td>
-      <td>water_year</td>
-      <td>2034.863</td>
+      <td>...</td>
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
@@ -427,6 +432,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>340</th>
@@ -440,8 +447,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2022-10-01</td>
       <td>2023-09-30</td>
-      <td>water_year</td>
-      <td>1731.784</td>
+      <td>...</td>
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
@@ -450,6 +456,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>341</th>
@@ -463,8 +471,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2023-10-01</td>
       <td>2024-09-30</td>
-      <td>water_year</td>
-      <td>3392.778</td>
+      <td>...</td>
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
@@ -473,6 +480,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>342</th>
@@ -486,8 +495,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2024-10-01</td>
       <td>2025-09-30</td>
-      <td>water_year</td>
-      <td>1938.863</td>
+      <td>...</td>
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
@@ -496,6 +504,8 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>343</th>
@@ -509,8 +519,7 @@ Retrieved 344 statistic values.
       <td>079</td>
       <td>2025-10-01</td>
       <td>2026-02-08</td>
-      <td>water_year</td>
-      <td>394.382</td>
+      <td>...</td>
       <td>NaN</td>
       <td>131</td>
       <td>approved</td>
@@ -519,10 +528,12 @@ Retrieved 344 statistic values.
       <td>00060</td>
       <td>ft^3/s</td>
       <td>dabac917c8ea4f66a163ddc9d3bb4840</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
   </tbody>
 </table>
-<p>344 rows × 20 columns</p>
+<p>344 rows × 22 columns</p>
 </div></div>
 </div>
 <p>Show the data types of the columns in the resulting data frame.</p>
@@ -559,6 +570,8 @@ computation                      str
 parameter_code                   str
 unit_of_measure                  str
 parent_time_series_id            str
+parent_statistic_id              str
+parent_statistic_name            str
 dtype: object
 </pre></div></div>
 </div>
@@ -676,8 +689,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <th>county_code</th>
       <th>start_date</th>
       <th>end_date</th>
-      <th>interval_type</th>
-      <th>value</th>
+      <th>...</th>
       <th>percentile</th>
       <th>sample_count</th>
       <th>approval_status</th>
@@ -686,6 +698,8 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <th>parameter_code</th>
       <th>unit_of_measure</th>
       <th>parent_time_series_id</th>
+      <th>parent_statistic_id</th>
+      <th>parent_statistic_name</th>
     </tr>
   </thead>
   <tbody>
@@ -701,16 +715,17 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>015</td>
       <td>2005-04-01</td>
       <td>2005-04-30</td>
-      <td>month</td>
-      <td>15.757</td>
+      <td>...</td>
       <td>NaN</td>
       <td>30</td>
       <td>approved</td>
-      <td>e428b093-0199-4831-8530-060afeb7d91f</td>
+      <td>280c7946-57f1-4263-8193-69d654e9eecc</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>71568057ac754741ab92d5c0cb48c159</td>
+      <td>f7db6d5b53e34034bb9f995cd52b0ad0</td>
+      <td>00001</td>
+      <td>Max</td>
     </tr>
     <tr>
       <th>1</th>
@@ -724,16 +739,17 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>015</td>
       <td>2005-05-01</td>
       <td>2005-05-31</td>
-      <td>month</td>
-      <td>20.081</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>cb6a3cc8-23f2-4267-be65-ec42133bdc5e</td>
+      <td>07af980d-acea-4156-b26c-44b50cd4808f</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>71568057ac754741ab92d5c0cb48c159</td>
+      <td>f7db6d5b53e34034bb9f995cd52b0ad0</td>
+      <td>00001</td>
+      <td>Max</td>
     </tr>
     <tr>
       <th>2</th>
@@ -747,16 +763,17 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>015</td>
       <td>2005-06-01</td>
       <td>2005-06-30</td>
-      <td>month</td>
-      <td>24.711</td>
+      <td>...</td>
       <td>NaN</td>
       <td>28</td>
       <td>approved</td>
-      <td>26bd8cde-dddb-4aff-885c-c1372981002d</td>
+      <td>06eb6941-b505-4b7e-851d-0139b4651d0a</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>71568057ac754741ab92d5c0cb48c159</td>
+      <td>f7db6d5b53e34034bb9f995cd52b0ad0</td>
+      <td>00001</td>
+      <td>Max</td>
     </tr>
     <tr>
       <th>3</th>
@@ -770,16 +787,17 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>015</td>
       <td>2005-07-01</td>
       <td>2005-07-31</td>
-      <td>month</td>
-      <td>28.616</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>ae1e1b23-27ac-482f-af1f-7c752ad5e098</td>
+      <td>9ef5344a-88ac-4536-8d64-471d46e99ee0</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>71568057ac754741ab92d5c0cb48c159</td>
+      <td>f7db6d5b53e34034bb9f995cd52b0ad0</td>
+      <td>00001</td>
+      <td>Max</td>
     </tr>
     <tr>
       <th>4</th>
@@ -793,19 +811,21 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>015</td>
       <td>2005-08-01</td>
       <td>2005-08-31</td>
-      <td>month</td>
-      <td>28.723</td>
+      <td>...</td>
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>a675b1e5-222d-413f-89cf-53748f39decf</td>
+      <td>bf60f1d5-17a3-4e99-8708-c347c2271f55</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
-      <td>71568057ac754741ab92d5c0cb48c159</td>
+      <td>f7db6d5b53e34034bb9f995cd52b0ad0</td>
+      <td>00001</td>
+      <td>Max</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -839,8 +859,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>079</td>
       <td>2021-10-01</td>
       <td>2022-09-30</td>
-      <td>water_year</td>
-      <td>20.784</td>
+      <td>...</td>
       <td>NaN</td>
       <td>351</td>
       <td>approved</td>
@@ -849,6 +868,8 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>00010</td>
       <td>degC</td>
       <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+      <td>00002</td>
+      <td>Min</td>
     </tr>
     <tr>
       <th>2128</th>
@@ -862,8 +883,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>079</td>
       <td>2022-10-01</td>
       <td>2023-09-30</td>
-      <td>water_year</td>
-      <td>21.121</td>
+      <td>...</td>
       <td>NaN</td>
       <td>361</td>
       <td>approved</td>
@@ -872,6 +892,8 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>00010</td>
       <td>degC</td>
       <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+      <td>00002</td>
+      <td>Min</td>
     </tr>
     <tr>
       <th>2129</th>
@@ -885,8 +907,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>079</td>
       <td>2023-10-01</td>
       <td>2024-09-30</td>
-      <td>water_year</td>
-      <td>20.383</td>
+      <td>...</td>
       <td>NaN</td>
       <td>342</td>
       <td>approved</td>
@@ -895,6 +916,8 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>00010</td>
       <td>degC</td>
       <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+      <td>00002</td>
+      <td>Min</td>
     </tr>
     <tr>
       <th>2130</th>
@@ -908,8 +931,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>079</td>
       <td>2024-10-01</td>
       <td>2025-09-30</td>
-      <td>water_year</td>
-      <td>20.928</td>
+      <td>...</td>
       <td>NaN</td>
       <td>348</td>
       <td>approved</td>
@@ -918,6 +940,8 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>00010</td>
       <td>degC</td>
       <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+      <td>00002</td>
+      <td>Min</td>
     </tr>
     <tr>
       <th>2131</th>
@@ -931,8 +955,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>079</td>
       <td>2025-10-01</td>
       <td>2026-05-10</td>
-      <td>water_year</td>
-      <td>19.779</td>
+      <td>...</td>
       <td>NaN</td>
       <td>216</td>
       <td>approved</td>
@@ -941,10 +964,12 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>00010</td>
       <td>degC</td>
       <td>ea8d8089780f48428cff4a5ba344f1aa</td>
+      <td>00002</td>
+      <td>Min</td>
     </tr>
   </tbody>
 </table>
-<p>2132 rows × 20 columns</p>
+<p>2132 rows × 22 columns</p>
 </div></div>
 </div>
 </section>
@@ -1004,7 +1029,7 @@ Retrieving: observationNormals · 1 page · 756 rows
       <th>county_code</th>
       <th>time_of_year</th>
       <th>time_of_year_type</th>
-      <th>value</th>
+      <th>...</th>
       <th>percentile</th>
       <th>sample_count</th>
       <th>approval_status</th>
@@ -1013,6 +1038,8 @@ Retrieving: observationNormals · 1 page · 756 rows
       <th>parameter_code</th>
       <th>unit_of_measure</th>
       <th>parent_time_series_id</th>
+      <th>parent_statistic_id</th>
+      <th>parent_statistic_name</th>
     </tr>
   </thead>
   <tbody>
@@ -1028,15 +1055,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>01-01</td>
       <td>day_of_year</td>
-      <td>2046.695</td>
+      <td>...</td>
       <td>NaN</td>
       <td>82</td>
       <td>approved</td>
-      <td>e7827589-ff6e-472d-9864-1bfe558b9639</td>
+      <td>e1fdac04-fddc-4567-8b8d-5d93f344d8dc</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1050,15 +1079,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>01-02</td>
       <td>day_of_year</td>
-      <td>2041.866</td>
+      <td>...</td>
       <td>NaN</td>
       <td>82</td>
       <td>approved</td>
-      <td>9e8feb48-3652-4bca-82dc-c2f2a65650e5</td>
+      <td>6362d803-c3ea-4995-9fed-133fc9e866c3</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1072,15 +1103,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>01-03</td>
       <td>day_of_year</td>
-      <td>2080.963</td>
+      <td>...</td>
       <td>NaN</td>
       <td>82</td>
       <td>approved</td>
-      <td>35c0af68-80d2-4635-865c-bb224bfb5e9a</td>
+      <td>967c4645-1a80-4c7e-85f2-30a6ce168ae9</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1094,15 +1127,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>01-04</td>
       <td>day_of_year</td>
-      <td>2434.256</td>
+      <td>...</td>
       <td>NaN</td>
       <td>82</td>
       <td>approved</td>
-      <td>eacd3baa-e0ab-4c08-8334-bb3ed3b916c8</td>
+      <td>8275a876-ad42-4084-91c9-b651c073130a</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1116,18 +1151,22 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>01-05</td>
       <td>day_of_year</td>
-      <td>2597.819</td>
+      <td>...</td>
       <td>NaN</td>
       <td>83</td>
       <td>approved</td>
-      <td>19f28744-96cb-4cfa-9d28-5f114b82fcc6</td>
+      <td>3eb7a658-822d-4764-ba64-f0865b5cc732</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>...</th>
+      <td>...</td>
+      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -1160,15 +1199,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>08</td>
       <td>month_of_year</td>
-      <td>563.0</td>
+      <td>...</td>
       <td>50.0</td>
       <td>84</td>
       <td>approved</td>
-      <td>b3fc0cec-1732-4bac-b153-a18bef567453</td>
+      <td>43d2e28e-aec0-43f5-8017-54ecfa00ac05</td>
       <td>median</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>752</th>
@@ -1182,15 +1223,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>09</td>
       <td>month_of_year</td>
-      <td>563.0</td>
+      <td>...</td>
       <td>50.0</td>
       <td>84</td>
       <td>approved</td>
-      <td>8cd55012-5b16-42f7-8cb3-b234aa15f859</td>
+      <td>bb3c559a-c817-4a70-b7bd-fff66c634327</td>
       <td>median</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>753</th>
@@ -1204,15 +1247,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>10</td>
       <td>month_of_year</td>
-      <td>563.0</td>
+      <td>...</td>
       <td>50.0</td>
       <td>84</td>
       <td>approved</td>
-      <td>a1b160db-bc3f-44e7-a150-881474373276</td>
+      <td>ff826c80-9362-4c38-827d-1967425e54be</td>
       <td>median</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>754</th>
@@ -1226,15 +1271,17 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>11</td>
       <td>month_of_year</td>
-      <td>561.5</td>
+      <td>...</td>
       <td>50.0</td>
       <td>84</td>
       <td>approved</td>
-      <td>48757820-8d5e-4407-bced-bca2717c6c97</td>
+      <td>9b12252e-b12e-4971-9884-bbeae61dbd21</td>
       <td>median</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
     <tr>
       <th>755</th>
@@ -1248,19 +1295,21 @@ Retrieving: observationNormals · 1 page · 756 rows
       <td>015</td>
       <td>12</td>
       <td>month_of_year</td>
-      <td>553.5</td>
+      <td>...</td>
       <td>50.0</td>
       <td>84</td>
       <td>approved</td>
-      <td>9373bc06-0df5-4a86-9590-dfadcdcb6efb</td>
+      <td>1d9e47f5-896e-444c-ad5a-3b5629772d29</td>
       <td>median</td>
       <td>00060</td>
       <td>ft^3/s</td>
       <td>218ab832dc5a4c4b9fb1d51efa232d15</td>
+      <td>00003</td>
+      <td>Mean</td>
     </tr>
   </tbody>
 </table>
-<p>756 rows × 19 columns</p>
+<p>756 rows × 21 columns</p>
 </div></div>
 </div>
 </section>
