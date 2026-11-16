@@ -58,10 +58,10 @@ that file, alongside the ADR it cites.
 
 These rules were previously asserted a second time in
 ``tests/architecture_test.py``, by hand-parsing the AST. That duplication is
-gone. The tests now cover only what the configured contracts cannot express —
+gone. The tests now cover only what the configured contracts cannot express:
 which symbols cross a seam, what a module's declared exports are, the AST shape
-of a facade, boundaries that have to be asserted positively rather than
-forbidden, and full-graph cycle detection. Import Linter's
+of a facade, boundaries that have to be asserted positively, and full-graph
+cycle detection. Import Linter's
 ``acyclic_siblings`` contract does not detect a cycle between a package facade
 and one of its descendants. A new rule that is purely about module-to-module
 direction belongs in ``.importlinter``.
@@ -70,10 +70,9 @@ Named contracts verify the current boundaries: the only OGC dependency of
 NGWMN and ``waterdata.cql`` is the facade, ``ogc.shaping`` does not depend on
 ``ogc.engine``, Water Use and the other non-OGC adapters cannot import the OGC
 subsystem at all. The fitness functions verify that the runtime graph is
-acyclic package-wide rather than only within ``ogc`` and ``transport``.
+acyclic package-wide.
 ``waterdata.utils`` not bulk re-exporting private OGC helpers stays there too,
-because that claim is about the module's
-``__all__``.
+because that claim is about the module's ``__all__``.
 
 The OGC consumer list is an allowlist, so a new service module fails the contract until
 someone places it deliberately. It should shrink as private seams move. Any

@@ -29,7 +29,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     """Parse an RDB text response into a ``pandas.DataFrame``.
 
     Every column whose name marks it as a code is read as ``str`` so its
-    leading zeros survive -- ``huc_cd`` ``02060005`` rather than ``2060005``.
+    leading zeros survive: ``huc_cd`` ``02060005`` would otherwise read as ``2060005``.
     See :func:`dataretrieval._csv.code_columns` for which names those are.
 
     Parameters
@@ -46,7 +46,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     -------
     pandas.DataFrame
         The parsed data. An RDB consisting only of comment lines returns an
-        empty DataFrame rather than raising.
+        empty DataFrame.
 
     Raises
     ------
@@ -70,7 +70,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
         len(lines),
     )
     if header_idx == len(lines):
-        # All lines are comments — a legitimate empty result.
+        # All lines are comments: a legitimate empty result.
         return pd.DataFrame()
 
     fields = [f.replace(",", "").strip() for f in lines[header_idx].split("\t")]
@@ -91,7 +91,7 @@ def extract_rdb_comment(text: str) -> list[str]:
 
     Each entry includes its leading ``#`` and any whitespace, matching what R's
     ``dataRetrieval`` returns from ``comment(df)``. The comment block holds provenance
-    metadata that is otherwise lost during parsing — data source, retrieval timestamp,
+    metadata that is otherwise lost during parsing: data source, retrieval timestamp,
     parameter codes, rating id and last-shifted timestamp for ratings, etc.
     """
     return [line for line in text.splitlines() if line.startswith("#")]

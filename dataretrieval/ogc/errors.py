@@ -28,9 +28,9 @@ def _error_body(resp: httpx.Response) -> str:
     str
         An error message string assembled per status code:
 
-        * **429** — predefined message describing the rate-limit and naming the
-        API-token option; the response body is not consulted.
-        * **every other status** — a supported JSON error body (the USGS
+        * **429**: predefined message describing the rate-limit and naming the
+          API-token option; the response body is not consulted.
+        * **every other status**: a supported JSON error body (the USGS
           ``code``/``description`` envelope or a gateway ``message``) when
           present; otherwise ``"<status>: <reason>. <snippet>"`` with the first
           200 characters of ``resp.text``; an empty body yields

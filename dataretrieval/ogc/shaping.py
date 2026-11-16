@@ -1,7 +1,7 @@
 """Response shaping: GeoJSON features to DataFrame, and result finalization.
 
 Turns paginated OGC feature responses into pandas/geopandas frames and applies
-the getters' result-shaping contract — snake_case column names, dtype coercion
+the getters' result-shaping contract: snake_case column names, dtype coercion
 per the API dialect, the wire ``id`` rename + column ordering, row sort,
 ``max_rows`` truncation, and wrapping as ``BaseMetadata``. These are output
 conventions, with their own reason to change independent of the request and
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 _CRS = "EPSG:4326"
 
 # Whether geopandas is present is a static, environment-level fact, so warn
-# once here at import time rather than per query/chunk.
+# once here, at import time.
 if not GEOPANDAS:
     logger.warning(
         "Geopandas not installed. Geometries will be flattened into pandas DataFrames."
@@ -134,14 +134,14 @@ def _get_resp_data(
         with a "features" key.
     geopd : bool
         Whether this request's result contract uses an active GeoDataFrame.
-        Selected once before pagination rather than inferred from page content.
+        Selected once before pagination.
     include_geometry : bool, optional
         Whether plain-DataFrame results retain raw coordinate lists. False for
         nonspatial collections and ``skip_geometry=True`` requests.
     body : dict, optional
         Pre-parsed JSON body for ``resp``. When provided, skips the
-        ``resp.json()`` call — useful when the caller has already
-        decoded the body for its own use (avoids a second parse pass).
+        ``resp.json()`` call, which avoids a second parse when the caller
+        has already decoded the body.
 
     Returns
     -------
@@ -167,9 +167,9 @@ def _get_resp_data(
     # ``numberReturned``: the main Water Data API reports ``numberReturned``,
     # but the NGWMN OGC API omits it, so relying on it would discard pages that
     # contain features. An absent/empty ``features`` is also the
-    # shape a schema change produces (a 200 with no features) — treat it as empty rather
-    # than raise a ``KeyError`` downstream, which ``_paginate`` would
-    # classify as a transient transport error. The request-level mode gives
+    # shape a schema change produces (a 200 with no features). Treat it as empty:
+    # ``_paginate`` would classify a downstream ``KeyError``
+    # as a transient transport error. The request-level mode gives
     # this page the same frame type as every non-empty page in the walk.
     features = body.get("features") or []
     if not features:
@@ -194,8 +194,7 @@ def _deal_with_empty(
 
     Page-level empty frames already have the request's frame type. The complete
     column list is available only from explicit ``properties`` or the
-    collection schema, so construct the fully shaped empty frame once here rather
-    than fetching schema during pagination.
+    collection schema, so construct the fully shaped empty frame once here.
     """
     if not return_list.empty:
         return return_list
@@ -279,7 +278,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     df : pd.DataFrame
         The input DataFrame.
     dialect : OgcDialect
-        Supplies ``time_cols`` / ``numerical_cols`` — which columns to
+        Supplies ``time_cols`` / ``numerical_cols``: which columns to
         coerce to datetime/numeric. The engine itself holds no API-specific column list.
 
     Returns
@@ -361,7 +360,7 @@ def _sort_rows(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
 
 
 # Matches a lowercase letter or digit immediately followed by an uppercase
-# letter — the camelCase/PascalCase word boundary where a ``_`` is inserted.
+# letter: the camelCase/PascalCase word boundary where a ``_`` is inserted.
 # A letter/digit boundary is intentionally not split (so ``navd88`` is unchanged).
 _CAMEL_BOUNDARY_RE = re.compile(r"([a-z0-9])([A-Z])")
 
@@ -413,8 +412,8 @@ def _finalize_ogc(
     :data:`~dataretrieval.ogc.chunking._Finalize`); ADR 0008 makes that hook
     part of the fan-out contract.
 
-    ``max_rows`` is applied here (after dedup/sort, on the *combined* frame)
-    rather than only per-chunk, so a chunked call's total is bounded
+    ``max_rows`` is applied here (after dedup/sort, on the *combined* frame),
+    so a chunked call's total is bounded
     to exactly ``max_rows`` and a resumed call applies the cap too. The
     per-page ``row_cap`` bound in the engine is only an early-stop download
     bound. ``base_url`` is required and captured with the finalizer so resumed

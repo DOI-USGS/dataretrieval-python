@@ -13,8 +13,8 @@ water use), ``nldi``, and ``streamstats``.
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
 
-Settings -- the Water Data API key, fan-out concurrency, retries, the progress
-line -- resolve through :mod:`dataretrieval.configuration`: a
+Settings (the Water Data API key, fan-out concurrency, retries, the progress
+line) resolve through :mod:`dataretrieval.configuration`: a
 ``with dataretrieval.configure(Configuration(...))`` block, then the
 ``API_USGS_*`` environment variables, then ``~/.dataretrieval/config.toml``.
 A setting for one service goes on that adapter's own configuration, such as
@@ -64,7 +64,7 @@ from dataretrieval.exceptions import (
 
 # Resumable fan-out interruption exceptions. They are defined in
 # ``dataretrieval.interruptions`` rather than ``dataretrieval.exceptions``
-# because they carry pandas/httpx state and a resumable ``FanOut`` handle,
+# because they hold pandas/httpx state and a resumable ``FanOut`` handle,
 # which would make the exceptions module depend on pandas and httpx.
 # They are not under ``ogc`` because Water Use raises them too. Re-exported here so
 # callers get a stable public path: ``from dataretrieval import ChunkInterrupted``.

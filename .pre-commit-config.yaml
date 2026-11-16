@@ -8,7 +8,7 @@ repos:
     hooks:
       # tests/data/ holds byte-exact API response captures (TSV/RDB with
       # significant trailing tabs, plus pinned JSON). Skip whitespace and
-      # EOL normalization there so we don't silently change fixture bytes.
+      # EOL normalization there so the hooks leave fixture bytes unchanged.
       - id: trailing-whitespace
         exclude: ^tests/data/
       - id: end-of-file-fixer
@@ -36,9 +36,9 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  # Type-check with mypy --strict (config lives in pyproject [tool.mypy]).
+  # Type-check with mypy --strict (config is in pyproject [tool.mypy]).
   # Pinned to the same major as CI's `mypy<2`. httpx/anyio are installed into
-  # the isolated hook env so their types resolve — without them mypy falls back
+  # the isolated hook env so their types resolve; without them mypy falls back
   # to `Any` and mis-reports (the runtime deps aren't in the hook's venv).
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.20.2
@@ -48,17 +48,17 @@ repos:
         additional_dependencies: [httpx, anyio]
 
   # Complexity ratchet. Thresholds are the tightest the package currently
-  # passes, so this holds the line rather than demanding a refactor: no block
+  # passes, so this fails only on regression: no block
   # above rank C (cyclomatic complexity 20), no module below B, average at A.
   # Tightening a letter is a deliberate commit, and the failure names the
-  # offending block, so the fix is local. Applied to the package only --
+  # offending block, so the fix is local. Applied to the package only:
   # tests legitimately contain long, branchy fixtures.
   - repo: https://github.com/rubik/xenon
     rev: v0.9.3
     hooks:
       - id: xenon
         # The package path is in args, not passed by pre-commit: --max-average
-        # and --max-modules are whole-package judgements, and computing them
+        # and --max-modules are whole-package judgments, and computing them
         # over only the changed files would let the average drift upward one
         # commit at a time. ``files`` decides whether to run, not what to scan.
         args:
@@ -74,11 +74,11 @@ repos:
 
   # Cognitive-complexity ratchet, the counterpart to xenon's cyclomatic one.
   # The two measure different things: xenon counts branches, complexipy counts
-  # how hard the control flow is to hold in your head, so nesting and early
+  # how hard the control flow is to follow, so nesting and early
   # exits weigh differently. The ceiling is ``max-complexity-allowed`` in
-  # ``[tool.complexipy]`` (pyproject.toml), which holds the line rather than
-  # demanding a refactor. Unlike xenon this one is per-function, so scanning
-  # only the changed files gives the same verdict CI gives for the whole package.
+  # ``[tool.complexipy]`` (pyproject.toml), so this fails only on regression.
+  # Unlike xenon this one is per-function, so scanning only the
+  # changed files gives the same verdict CI gives for the whole package.
   - repo: https://github.com/rohaquinlop/complexipy-pre-commit
     rev: v6.2.0
     hooks:
@@ -99,14 +99,14 @@ repos:
         entry: lint-imports
         language: python
         additional_dependencies: ["import-linter==2.13"]
-        # Reads the package tree from the repo root, not a file list; grimp
+        # Reads the package tree from the repo root; grimp
         # resolves ``dataretrieval`` relative to the working directory, so the
         # hook needs neither the package nor its runtime deps installed.
         pass_filenames: false
         files: ^(dataretrieval/.*\.py|\.importlinter)$
 
   # Strip cell outputs + execution_count from notebooks on commit so the
-  # diff is the source, not the rendered run. Demos still execute fine
+  # diff shows only the source. Demos still execute fine
   # locally; clean commits keep PRs reviewable and avoid quota/timestamp
   # churn on every re-run.
   - repo: https://github.com/kynan/nbstripout

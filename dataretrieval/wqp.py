@@ -734,8 +734,8 @@ def _check_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     refused. The predicate is the credentials leaf's, shared with Water Data's
     ``**queryables`` passthrough: ``api_key=`` is a plausible guess on any
     getter now that ``configure(Configuration(api_key=...))`` is the documented form,
-    and this is the adapter with the widest passthrough -- ten getters, whose
-    filter names the portal rather than this package defines. The returned
+    and this is the adapter with the widest passthrough: ten getters, whose
+    filter names the portal defines. The returned
     payload materializes non-string iterables as lists so one-shot iterators
     remain reusable by both request serialization and response metadata.
     """
@@ -815,8 +815,7 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     No fan-out settings: a WQP query is served by a single request, so a
     concurrency cap could only report a number nothing reads.
 
-    Declared here rather than in :mod:`dataretrieval.configuration`
-    (ADR 0011).
+    Declared here, in the module that reads it (ADR 0011).
 
     Parameters
     ----------
@@ -826,7 +825,7 @@ class WqpConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Root to send WQP requests to, instead of the portal's own. Both
+        Root to send WQP requests to. Both
         interfaces are built on it, so one value redirects the legacy ``/data/``
         and the WQX3 ``/wqx3/`` paths together. Code only: the file and
         the environment refuse it.

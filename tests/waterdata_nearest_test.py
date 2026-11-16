@@ -68,7 +68,7 @@ def test_builds_one_or_clause_per_target(patch_get_continuous):
     _, kwargs = patch_get_continuous.call_args
     filter_expr = kwargs["filter"]
     assert kwargs["filter_lang"] == "cql-text"
-    # Two windows — one top-level OR separator
+    # Two windows: one top-level OR separator
     assert filter_expr.count(") OR (") == 1
     # Each target produces >= and <= bounds
     assert filter_expr.count("time >= '") == 2
@@ -184,7 +184,7 @@ def test_multi_site_returns_row_per_target_per_site(patch_get_continuous):
 
 def test_empty_targets_raises(patch_get_continuous):
     """An empty ``targets`` is a call with no useful work to do and almost always a
-    caller bug — raise rather than issue a request that returns nothing."""
+    caller bug: raise rather than issue a request that returns nothing."""
     with pytest.raises(ValueError, match="targets"):
         get_nearest_continuous([], monitoring_location_id=_SITE)
     patch_get_continuous.assert_not_called()
@@ -344,7 +344,7 @@ def _call_with_window(window):
     ids=["none", "nat", "garbage", "negative-string", "negative-timedelta"],
 )
 def test_unusable_window_raises_before_query(patch_get_continuous, window, message):
-    """A missing window crashed while building the filter; a negative one
+    """A missing window raised while building the filter; a negative one
     inverted every bound and returned an empty frame as if no data existed."""
     with pytest.raises(ValueError, match=message):
         _call_with_window(window)
@@ -497,7 +497,7 @@ def test_accepts_single_timestamp_target(patch_get_continuous):
 
 
 def test_accepts_pandas_series_targets(patch_get_continuous):
-    """A ``pd.Series`` of timestamps preserves all elements (not just the first)."""
+    """A ``pd.Series`` of timestamps preserves all elements."""
     patch_get_continuous.return_value = (
         _fake_df(
             [
@@ -619,7 +619,7 @@ def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous
 
     Without the injection a list like ``['time', 'value']`` reached the
     service unchanged, the response came back with no
-    ``monitoring_location_id``, and every site but one was dropped without an error --
+    ``monitoring_location_id``, and every site but one was dropped without an error:
     an incomplete result the caller could not detect.
     """
     patch_get_continuous.return_value = (
@@ -647,7 +647,7 @@ def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous
     sent = patch_get_continuous.call_args.kwargs["properties"]
     assert "monitoring_location_id" in sent
     assert sent[:2] == ["time", "value"]
-    # One row per site, not one row for the pair.
+    # One row per site.
     assert len(result) == 2
 
 
@@ -704,9 +704,9 @@ def test_empty_response_does_not_require_matching_columns(patch_get_continuous):
 def test_no_observation_inside_the_window_returns_the_empty_shape(
     patch_get_continuous,
 ):
-    """A target with nothing near it is a valid result, not a failure --
-    but the frame must keep the result columns so a caller can concatenate it
-    with a populated one instead of special-casing empty frames."""
+    """A target with nothing near it is a valid result, but the frame must
+    keep the result columns so a caller can concatenate it with a populated
+    one."""
     patch_get_continuous.return_value = (
         pd.DataFrame(
             [
@@ -730,7 +730,7 @@ def test_no_observation_inside_the_window_returns_the_empty_shape(
 
 class TestNearestPartialResults:
     """When a fan-out is interrupted the caller still gets the chunks that
-    finished, shaped like a normal result -- otherwise recovering from an
+    finished, shaped like a normal result; otherwise recovering from an
     interruption means handling a second frame layout."""
 
     def test_a_partial_frame_with_no_completed_chunks_keeps_the_result_shape(self):

@@ -1,8 +1,8 @@
 """Tests for the NGWMN OGC getters (``dataretrieval.ngwmn``).
 
 These are mocked against minimal FeatureCollections shaped like the real NGWMN OGC API
-(``api.waterdata.usgs.gov/ngwmn/ogcapi``) -- two features per collection, with the real
-property names and value types. What is being tested is our own request building and
+(``api.waterdata.usgs.gov/ngwmn/ogcapi``), with two features per collection and the real
+property names and value types. The tests cover our own request building and
 result shaping, and a two-row fixture exercises that as well as a live query does,
 without depending on USGS uptime or on a particular well still having records.
 
@@ -46,8 +46,8 @@ def _schema_re(collection):
 def _feature(properties, *, id_, geometry=None):
     """One GeoJSON feature in NGWMN's shape.
 
-    NGWMN's observation collections omit the ``geometry`` key entirely rather
-    than sending ``null``, so it is left out unless a caller passes one.
+    NGWMN's observation collections omit the ``geometry`` key entirely, so it
+    is left out unless a caller passes one.
     """
     feature = {"type": "Feature", "properties": properties, "id": id_}
     if geometry is not None:
@@ -59,7 +59,7 @@ def _collection(features):
     """A FeatureCollection in NGWMN's shape.
 
     Deliberately omits ``numberReturned``/``numberMatched``, which NGWMN does
-    not send (the main Water Data API does) -- the pagination and shaping code
+    not send (the main Water Data API does). The pagination and shaping code
     depends on ``features`` for this reason, and a fixture that supplied
     the counts would stop covering that.
 
@@ -73,9 +73,9 @@ def _collection(features):
 
 # --- minimal fixtures, one per collection ---------------------------------------
 # Property names and value types are copied from real responses; only the number
-# of rows is reduced. Note the numeric-looking strings (``"4.37"``,
-# ``"0"``) -- NGWMN sends those as strings, and the dialect's
-# coercion is what turns them into numbers, so the fixtures keep them as strings.
+# of rows is reduced. NGWMN sends the numeric-looking strings (``"4.37"``,
+# ``"0"``) as strings, and the dialect's coercion turns them into numbers, so
+# the fixtures keep them as strings.
 
 _SITES = _collection(
     [
@@ -304,7 +304,7 @@ def test_get_sites_skip_geometry(httpx_mock):
 
     assert isinstance(df, DataFrame)
     assert "geometry" not in df.columns
-    # Sent as the OGC spelling ``skipGeometry``, not the Python arg name.
+    # Sent as the OGC spelling ``skipGeometry``.
     assert _queries(httpx_mock, "sites")[0]["skipGeometry"] == ["true"]
 
 
@@ -387,7 +387,7 @@ def test_get_providers_empty_stays_plain(httpx_mock):
 
 def test_get_providers_state_accepts_name_postal_or_fips(httpx_mock):
     """``get_providers`` normalizes any state encoding to the uppercase postal
-    code that the ``providers`` collection queries on -- the other half of the
+    code that the ``providers`` collection queries on, the other half of the
     asymmetry that ``_STATE_QUERYABLE`` hides."""
     _mock(httpx_mock, "providers", _PROVIDERS)
 
@@ -406,7 +406,7 @@ def test_get_providers_state_accepts_name_postal_or_fips(httpx_mock):
 
 def test_get_water_level(httpx_mock):
     """Water-level observations are keyed by ``sample_time`` (NGWMN's timestamp
-    column, not the Water Data ``time``) and scoped to the requested site."""
+    column; Water Data's is ``time``) and scoped to the requested site."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
 
     df, _ = ngwmn.get_water_level(monitoring_location_id=_SITE)
@@ -438,7 +438,7 @@ def test_get_water_level_coerces_dialect_columns(httpx_mock):
 
 def test_get_water_level_datetime_subsets(httpx_mock):
     """A bounded ``datetime`` is forwarded as an OGC interval, so the collection
-    returns a subset of the full record rather than us filtering client-side."""
+    returns a subset of the full record."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
     full, _ = ngwmn.get_water_level(monitoring_location_id=_SITE)
 
@@ -454,7 +454,7 @@ def test_get_water_level_datetime_subsets(httpx_mock):
 
     assert 0 < len(windowed) < len(full)
     qs = _queries(httpx_mock, "waterLevelObs")[0]
-    # A two-element range becomes one OGC interval, not two params.
+    # A two-element range becomes one OGC interval.
     assert qs["datetime"] == ["2022-01-01T00:00:00Z/2024-01-01T00:00:00Z"]
 
 
@@ -497,7 +497,7 @@ def test_get_well_construction(httpx_mock):
 def test_observation_collections_return_plain_dataframe(httpx_mock):
     """NGWMN's observation features have no ``geometry`` key at all (not even
     ``null``). The shaping layer has to special-case that, so assert the result
-    is a plain frame with no geometry column rather than a GeoDataFrame."""
+    is a plain frame with no geometry column."""
     _mock(httpx_mock, "waterLevelObs", _WATER_LEVELS)
 
     df, _ = ngwmn.get_water_level(monitoring_location_id=_SITE)
@@ -511,7 +511,7 @@ def test_observation_collections_return_plain_dataframe(httpx_mock):
 
 def test_multi_site_is_comma_joined_into_one_request(httpx_mock):
     """A multi-value ``monitoring_location_id`` that fits in the URL goes out as
-    a single comma-joined request, not one request per site.
+    a single comma-joined request.
 
     Fan-out is the fallback for when the joined URL would exceed
     ``chunking._OGC_URL_BYTE_LIMIT``; the splitting logic itself is covered in
@@ -562,7 +562,7 @@ def test_pagination_follows_next_link(httpx_mock):
 
 def test_empty_result_returns_typed_empty_frame(httpx_mock):
     """A 200 with no features yields an empty frame whose columns come from
-    the collection schema, not an exception and not a frame with no columns."""
+    the collection schema."""
     httpx_mock.add_response(
         method="GET",
         url=_schema_re("waterLevelObs"),
@@ -582,10 +582,9 @@ def test_a_configured_base_url_redirects_ngwmn_alone(httpx_mock):
     """Two adapters share this host, and a redirect must still name only one.
 
     NGWMN and Water Data are served from ``api.waterdata.usgs.gov``, so a URL does not
-    distinguish them -- which is why the settings table an OGC call reads is declared by
-    the adapter rather than derived from its base. Redirecting NGWMN therefore has to
-    leave Water Data where it was, and the Water Data mock here is never requested: the
-    assertion is on the whole request list.
+    distinguish them, which is why the adapter declares the settings table an OGC call
+    reads. Redirecting NGWMN therefore has to leave Water Data where it was, and the
+    Water Data mock here is never requested: the assertion is on the whole request list.
     """
     mirror = "https://mirror.example/ngwmn"
     httpx_mock.add_response(

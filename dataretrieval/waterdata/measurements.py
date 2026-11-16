@@ -1,4 +1,4 @@
-"""Getters for values measured in person rather than by a sensor.
+"""Getters for values measured in person.
 
 Field measurements, annual peaks, and channel geometry. These are collected
 during site visits, at low frequency and with delivery lag, which is why they
@@ -193,10 +193,10 @@ def get_field_measurements(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -205,8 +205,8 @@ def get_field_measurements(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     sublocation_identifier : string or iterable of strings, optional
@@ -330,7 +330,7 @@ def get_peaks(
         last-modified timestamp (useful for incremental ETL polling).
     water_year, year, month, day : int or list of ints, optional
         Calendar / water-year filters on the peak event. The water year ends
-        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).
+        September 30 (e.g. WY2024 = Oct 1, 2023 to Sep 30, 2024).
     peak_since : int or list of ints, optional
         Filter on the year since which the peak value has been the record (the API
         serves this field as an integer; many rows are ``null``).
@@ -357,9 +357,9 @@ def get_peaks(
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit. This is a
-        per-page size, not a cap on the total result: a query matching more
+        per-page size: a query matching more
         rows than ``limit`` still returns every matching row across
-        multiple pages. Use ``max_rows`` to cap the total instead.
+        multiple pages. Use ``max_rows`` to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -368,8 +368,8 @@ def get_peaks(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -581,10 +581,10 @@ def get_channel(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -593,8 +593,8 @@ def get_channel(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional

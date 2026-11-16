@@ -1,15 +1,15 @@
 """When data last arrived, shared by the loops that produce and consume it.
 
 A retrieval can be slow for two reasons: it is downloading a lot (progressing,
-however long it takes) or it is receiving nothing at all (and should be
-abandoned). Distinguishing them needs one fact -- when data last arrived -- that the
-page-walking loop records and the retry loop reads. Keeping it in this leaf lets
-both depend on it rather than on each other, and gives any future producer
-of liveness (a streaming body reader, a chunk-level fetch) a place to record it.
+however long it takes) or it is receiving nothing at all (and should be abandoned).
+Distinguishing them needs one fact, when data last arrived, that the page-walking
+loop records and the retry loop reads. Keeping it in this leaf means neither loop
+imports the other, and gives any future producer of liveness (a streaming body
+reader, a chunk-level fetch) a place to record it.
 
-The timestamp is held in a :class:`~contextvars.ContextVar` so concurrent retrievals --
-each chunk of a chunked call, each location of a Water Use fan-out --
-measure their own time without data instead of sharing one timestamp.
+The timestamp is held in a :class:`~contextvars.ContextVar` so concurrent retrievals
+(each chunk of a chunked call, each location of a Water Use fan-out) each measure
+their own time without data.
 """
 
 from __future__ import annotations
@@ -47,11 +47,11 @@ def credit_wait(seconds: float) -> None:
     time without data accumulated by earlier attempts and turn a bound on total
     time without data into a per-attempt latency bound.
 
-    The credit never moves the timestamp past the present. A wait longer than the whole
-    budget would otherwise set the timestamp in the *future*, making
-    :func:`elapsed_since_progress` negative -- and since nothing ever reduces
-    it, that one long queue wait would disable the bound for the rest of the
-    call, which is the case the budget exists to bound.
+    The credit never moves the timestamp past the present. A wait longer than the
+    whole budget would otherwise set the timestamp in the *future*, making
+    :func:`elapsed_since_progress` negative. Since nothing ever reduces it, that one
+    long queue wait would disable the bound for the rest of the call, which is the
+    case the budget exists to bound.
     """
     last = _last_progress.get()
     if last is not None:

@@ -1,9 +1,9 @@
-"""The settings the Water Data adapter reads -- its configuration profile.
+"""The settings the Water Data adapter reads: its configuration profile.
 
-A file of its own because :mod:`dataretrieval.waterdata` is a package rather than a
-single module; every other adapter declares its class in the module a caller imports.
-Either way the point is the same: a setting's definition is in the module that reads it,
-so adding one no longer edits a service-neutral file (ADR 0011).
+A file of its own because :mod:`dataretrieval.waterdata` is a package; every other
+adapter, a single module, declares its class in the module a caller imports.
+Either way, a setting's definition is in the module that reads it,
+so adding one does not edit a service-neutral file (ADR 0011).
 """
 
 from __future__ import annotations
@@ -44,8 +44,8 @@ class WaterdataConfiguration(
     stall_timeout : float, optional
         Seconds a call may go without receiving any data before retrying stops.
     base_url : str, optional
-        Root to send Water Data requests to, instead of the service's own. The package
-        appends its own paths, so one value redirects all four families together --
+        Root to send Water Data requests to. The package
+        appends its own paths, so one value redirects all four families together:
         ``/ogcapi/<api_version>``, ``/samples-data``, ``/statistics/v0`` and
         ``/stac/v0``. Code only: setting it in the configuration file or through an
         environment variable raises ``ConfigurationError``. The API key is scoped to
@@ -54,8 +54,8 @@ class WaterdataConfiguration(
         Version of the Water Data API to request, as the segment of its path:
         ``"v1"``, which this release is written against, or ``"v0"`` while the
         service keeps it online (until June 2027). It replaces that one segment,
-        so the Samples, Statistics and STAC families -- versioned separately, with
-        no v1 -- are unaffected. Set it here or in the ``[waterdata]`` table of
+        so the Samples, Statistics and STAC families (versioned separately, with
+        no v1) are unaffected. Set it here or in the ``[waterdata]`` table of
         the configuration file. Under another version, getters return that
         version's columns as the service sends them.
     concurrency : int or str, optional
@@ -66,9 +66,9 @@ class WaterdataConfiguration(
     """
 
     # The settings this service reads, named by the groups they come from:
-    # every adapter's retry settings, a redirectable base, a versioned API, and
-    # -- because Water Data queries divide along a URL byte budget and are
-    # executed concurrently -- both fan-out settings. Each group declares the
+    # every adapter's retry settings, a redirectable base, a versioned API, and,
+    # because Water Data queries divide along a URL byte budget and run
+    # concurrently, both fan-out settings. Each group declares the
     # setting itself once, in :mod:`dataretrieval.configuration`, which also
     # defines its grammar and its coercion.
     adapter: ClassVar[str] = "waterdata"

@@ -26,7 +26,7 @@ def _check_ogc_requests(
     """Retrieve one collection's queryables or response schema.
 
     ``base_url`` names the API to query; it defaults to the one in scope for the
-    current call rather than to any particular collection.
+    current call.
     """
     require_one_of(req_type, ("queryables", "schema"), name="req_type")
     url = f"{base_url}/collections/{endpoint}/{req_type}"
@@ -40,10 +40,10 @@ def queryables_frame(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Tabulate one collection's queryable properties.
 
-    Reading an OGC queryables document is protocol knowledge, not collection
-    knowledge, so it is defined here rather than in any one API's getters -- every
-    OGC adapter in the package can return the same table. ``base_url`` names
-    the API to query, defaulting to the one in scope for the current call.
+    Reading an OGC queryables document is protocol knowledge, so it is defined
+    here and every OGC adapter in the package can return the same table.
+    ``base_url`` names the API to query, defaulting to the one in scope for the
+    current call.
 
     Returns
     -------

@@ -4,7 +4,7 @@ Daily and continuous values, their most-recent counterparts, and the
 period-of-record statistics computed over them. What they share is shape: a
 monitoring location and a parameter, repeated over time.
 
-Metadata *about* these series -- what a location measures, over what period --
+Metadata *about* these series (what a location measures, over what period)
 is in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what
 exists before requesting the observations.
 """
@@ -170,10 +170,10 @@ def get_daily(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -182,8 +182,8 @@ def get_daily(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -232,7 +232,7 @@ def get_daily(
         ... )
 
         >>> # Pull only rows whose underlying record was refreshed in the
-        >>> # last 7 days — useful for incremental ETL polling
+        >>> # last 7 days, useful for incremental ETL polling
         >>> df, md = dataretrieval.waterdata.get_daily(
         ...     monitoring_location_id="USGS-02238500",
         ...     parameter_code="00060",
@@ -241,7 +241,7 @@ def get_daily(
 
         >>> # Chain queries: pull all stream monitoring locations in a
         >>> # state, then their daily discharge for the last week. The
-        >>> # location list can be hundreds of values long — the request
+        >>> # location list can be hundreds of values long; the request
         >>> # is split into several chunks so the URL stays under the
         >>> # server's byte limit. The combined output is the same as for
         >>> # a single request.
@@ -406,10 +406,10 @@ def get_continuous(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 10000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -418,8 +418,8 @@ def get_continuous(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -628,10 +628,10 @@ def get_latest_continuous(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -640,8 +640,8 @@ def get_latest_continuous(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -847,10 +847,10 @@ def get_latest_daily(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size,
-        not a cap on the total result: a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size:
+        a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total instead.
+        to cap the total.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -859,8 +859,8 @@ def get_latest_daily(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -899,7 +899,7 @@ def get_latest_daily(
         ...     last_modified="P7D",
         ... )
 
-        >>> # Multi-site, multi-parameter — discharge and water temperature
+        >>> # Multi-site, multi-parameter: discharge and water temperature
         >>> # at two sites in a single round-trip
         >>> df, md = dataretrieval.waterdata.get_latest_daily(
         ...     monitoring_location_id=["USGS-01491000", "USGS-01645000"],
@@ -962,8 +962,8 @@ def get_stats_por(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
-        field: it is sent as the API's ``state_code``, in its "US:XX" format.
+        ANSI/FIPS code ("55"). A dataretrieval argument:
+        it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).
@@ -1103,8 +1103,8 @@ def get_stats_date_range(
     state: string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         ("Wisconsin"), a two-letter postal code ("WI"), or a two-digit
-        ANSI/FIPS code ("55"). A dataretrieval argument rather than an API
-        field: it is sent as the API's ``state_code``, in its "US:XX" format.
+        ANSI/FIPS code ("55"). A dataretrieval argument:
+        it is sent as the API's ``state_code``, in its "US:XX" format.
     state_code: string, optional
         State query parameter. Takes the format "US:XX", where XX is
         the two-digit state code. API defaults to "US:42" (Pennsylvania).

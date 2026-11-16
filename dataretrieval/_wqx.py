@@ -1,10 +1,9 @@
 """WQX3 / legacy-WQP CSV column conventions.
 
 The Samples database and the Water Quality Portal both split an instant across
-three columns -- a date, a time, and a time-zone abbreviation -- and they spell
+three columns (a date, a time, and a time-zone abbreviation), and they spell
 the trio two different ways. Recognizing either spelling and combining it into one
-UTC column is service-specific knowledge, so it is in its own leaf rather
-than in :mod:`dataretrieval.utils` (ADR 0001).
+UTC column is service-specific knowledge, so it is in its own leaf (ADR 0001).
 
 Depends on pandas and the time-zone table only; nothing here issues a request.
 """
@@ -96,8 +95,8 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     Detects two naming patterns that appear in USGS Samples and Water Quality
     Portal CSV responses:
 
-    * **WQX3** — ``<prefix>Date``, ``<prefix>Time``, ``<prefix>TimeZone``
-    * **Legacy WQP** — ``<prefix>Date``, ``<prefix>Time/Time``,
+    * **WQX3**: ``<prefix>Date``, ``<prefix>Time``, ``<prefix>TimeZone``
+    * **Legacy WQP**: ``<prefix>Date``, ``<prefix>Time/Time``,
       ``<prefix>Time/TimeZoneCode``
 
     For every triplet present, a new ``<prefix>DateTime`` column is appended
@@ -107,8 +106,8 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     overwritten.
 
     Rows are sorted (and the index reset) by the canonical activity-start datetime when
-    present — ``Activity_StartDateTime`` (WQX3) or ``ActivityStartDateTime`` (legacy
-    WQP) — falling back to the first detected ``*Date`` column. Matches R
+    present (``Activity_StartDateTime`` for WQX3, ``ActivityStartDateTime`` for legacy
+    WQP), falling back to the first detected ``*Date`` column. Matches R
     ``dataRetrieval``'s end-of-pipeline sort in ``importWQP.R``.
 
     Parameters
@@ -126,7 +125,7 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     new_columns = _find_datetime_triplets(df)
 
     if new_columns:
-        # Concat in one shot — per-column assignment on a wide CSV-derived
+        # Concat once: per-column assignment on a wide CSV-derived
         # frame triggers pandas' fragmentation PerformanceWarning.
         df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
 

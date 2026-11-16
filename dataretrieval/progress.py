@@ -8,18 +8,18 @@ line on stderr, rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
-The active reporter is held in a :class:`~contextvars.ContextVar` rather than being
-threaded through every signature: progress is a cross-cutting concern that the
-chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
-page/row/rate-limit counts) both update without importing each other. Call
-:func:`progress_context` to activate one and :func:`current` to get it.
+The active reporter is held in a :class:`~contextvars.ContextVar`: progress is a
+cross-cutting concern that the chunk orchestrator (outer, chunk counts) and the
+page-walking loop (inner, page/row/rate-limit counts) both update without importing
+each other. Call :func:`progress_context` to activate one and :func:`current` to get
+it.
 
-This is a top-level leaf rather than part of :mod:`dataretrieval.transport`:
-transport modules report *into* it and the execution layer owns no rendering
-(ADR 0006), so every service adapter -- OGC or not -- uses the same reporter.
+This is a top-level leaf, outside :mod:`dataretrieval.transport`: transport modules
+report *into* it and the execution layer owns no rendering (ADR 0006), so every
+service adapter, OGC or not, uses the same reporter.
 
-By default the line is shown for interactive use — an interactive terminal or a
-Jupyter/IPython kernel, like ``tqdm`` — while redirected logs and CI get no line.
+By default the line is shown for interactive use (an interactive terminal or a
+Jupyter/IPython kernel, like ``tqdm``), while redirected logs and CI get no line.
 ``API_USGS_PROGRESS`` forces it on (``1``/``true``) or off (``0``/``false``).
 """
 
@@ -47,11 +47,11 @@ def _group_int(value: str) -> str:
     return f"{int(value):,}" if value.isascii() and value.isdigit() else value
 
 
-# The reporter active for the current query. A ContextVar (not a module global)
-# so the chunk orchestrator and the page loop resolve to the same reporter
-# within one query, and an unrelated query in another context cannot overwrite its
-# state. (It does not give concurrent queries sharing one stderr separate
-# lines — they would still interleave.)
+# The reporter active for the current query. A ContextVar so the chunk
+# orchestrator and the page loop resolve to the same reporter within one query,
+# and an unrelated query in another context cannot overwrite its state. (It does
+# not give concurrent queries sharing one stderr separate lines; they would
+# still interleave.)
 _active: Ambient[ProgressReporter | None] = Ambient("dataretrieval_progress", None)
 
 # Process-level latch so the "no API key" pointer is shown at most once.
@@ -62,10 +62,10 @@ def _in_jupyter_kernel() -> bool:
     """True when running inside a Jupyter/IPython *kernel* (notebook, lab, qtconsole).
 
     A kernel's ``stderr`` isn't a TTY, but it handles carriage-return rewrites in the
-    cell output area — the same mechanism ``tqdm`` uses — so the line is shown there.
-    The plain IPython terminal REPL is a ``TerminalInteractiveShell`` (already a TTY),
-    so only the ZMQ kernel needs this extra signal. Detected without importing IPython:
-    if it is not already imported, no IPython shell is running.
+    cell output area (the same mechanism ``tqdm`` uses), so the line is shown there. The
+    plain IPython terminal REPL is a ``TerminalInteractiveShell`` (already a TTY), so
+    only the ZMQ kernel needs this extra signal. Detected without importing IPython: if
+    it is not already imported, no IPython shell is running.
     """
     ipython = sys.modules.get("IPython")
     if ipython is None:
@@ -78,12 +78,12 @@ def _enabled_default(stream: TextIO) -> bool:
     """Whether to draw the line by default.
 
     ``API_USGS_PROGRESS`` takes precedence when set. Otherwise show it for
-    interactive use — a TTY or a Jupyter/IPython kernel — and draw nothing for
+    interactive use (a TTY or a Jupyter/IPython kernel) and draw nothing for
     redirected output, logs, and CI.
     """
     # config owns the grammar, so this is already a bool: the same value means
     # the same thing whether it came from a configure() block, the environment,
-    # or the file. Re-parsing here is what let those three differ.
+    # or the file. Re-parsing here would let those three differ.
     override = _configuration.progress()
     if override is not None:
         return override
@@ -128,7 +128,7 @@ class ProgressReporter:
         # retry; cleared by the next page/chunk so it is not left on the line.
         self.retry_note: str | None = None
         self._last_len = 0
-        # Whether anything was written to the stream — decides whether
+        # Whether anything was written to the stream; decides whether
         # close() needs a terminating newline. (``current_chunk`` doesn't
         # track that: ``start_chunk`` sets it even when it doesn't render.)
         self._rendered = False
@@ -165,7 +165,7 @@ class ProgressReporter:
         """
         # Keep sub-second waits explicit (avoid misleading ``0s``) while
         # rendering whole-second waits without an unnecessary ``.0``.
-        # ``float()`` to support Python 3.9-3.11: ``round(int, 1)`` returns an
+        # ``float()`` to support Python 3.9 to 3.11: ``round(int, 1)`` returns an
         # int and ``int.is_integer()`` (used below) only exists on 3.12+.
         wait_1dp = round(float(wait), 1)
         if wait_1dp < 1 or not wait_1dp.is_integer():
@@ -277,9 +277,9 @@ def progress_context(
     """Activate a :class:`ProgressReporter` for the duration of a query.
 
     ``service`` labels the line (e.g. ``"Retrieving: daily ..."``), and
-    ``target_url`` is the host the query is sent to -- it decides whether an
-    API-key pointer is shown when the line closes. If a reporter is
-    already active (a nested call), the existing one is yielded unchanged so the
+    ``target_url`` is the host the query is sent to; it decides whether an
+    API-key pointer is shown when the line closes. If a reporter is already
+    active (a nested call), the existing one is yielded unchanged so the
     outermost query owns the single line; only the outermost context closes it
     (and every argument of a nested call is ignored).
     """

@@ -42,14 +42,14 @@ pip install git+https://github.com/DOI-USGS/dataretrieval-python.git
 
 Access USGS water-monitoring data.
 
-**Important:** Users are strongly encouraged to obtain an API key for higher
-rate limits. [Register for an API key](https://api.waterdata.usgs.gov/signup/),
-then supply it in whichever of these ways suits you. They are listed from
+**Important:** Obtain an API key for higher rate limits.
+[Register for an API key](https://api.waterdata.usgs.gov/signup/), then supply
+it in one of these ways. They are listed from
 highest to lowest precedence, so an explicit block or deployment environment
 can override a file without editing it:
 
 ```python
-# 1. a configure() block - for one call, an interactive prompt, or when
+# 1. a configure() block: for one call, an interactive prompt, or when
 #    different threads/tasks need different credentials.
 from getpass import getpass
 
@@ -67,7 +67,7 @@ export API_USGS_PAT="your_api_key_here"
 ```
 
 ```toml
-# 3. ~/.dataretrieval/config.toml - keeps the key out of your shell
+# 3. ~/.dataretrieval/config.toml: keeps the key out of your shell
 #    environment, where every process you start inherits it.
 #    Restrict it afterwards:  chmod 600 ~/.dataretrieval/config.toml
 api_key = "your_api_key_here"
@@ -75,7 +75,7 @@ api_key = "your_api_key_here"
 
 `dataretrieval.show_configuration()` reports what is in effect and where each setting
 came from, without printing the key. Concurrency, retries, and the progress
-line are configured the same way, and can be narrowed to one service: a
+line are configured the same way, and can be narrowed to one adapter: a
 `configure()` block takes at most one configuration per adapter, each either
 built in code or loaded by name from a profile in the file.
 
@@ -151,20 +151,21 @@ print(f"Retrieved {len(df)} continuous gage height measurements")
 #### Speeding up large downloads with `parallel_chunks`
 
 By default the getters split a multi-value request only as far as the server's
-~8 KB URL limit forces — the fewest sub-requests. For a **large, paginated**
-pull, that default is needlessly conservative: every sub-request pages through
-its own results, so dividing the query into more, smaller sub-requests lets
-those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
-into that finer split, fanning it out into `n` sub-requests. The finer split
+~8 KB URL limit forces, which yields the fewest chunks (the requests a query
+is split into). For a **large, paginated** pull, that default is needlessly
+conservative: every chunk pages through
+its own results, so dividing the query into more, smaller chunks lets
+the getter fetch those pages **in parallel**. `parallel_chunks(n)` opts a single call
+into that finer split, fanning it out into `n` chunks. The finer split
 helps only when the result is large enough to span many pages *and* the query
 has a multi-value argument to divide, such as a list of monitoring locations. On
-a small query — or one with nothing to split — it only adds requests, so
-`parallel_chunks` is a deliberate, scoped `with` block, never the default.
+a small query, or one with nothing to split, it only adds requests, so
+`parallel_chunks` is a deliberate, scoped `with` block.
 
 ```python
 from dataretrieval import waterdata
 
-# All stream gages in Ohio, then 20 years of their daily discharge — large
+# All stream gages in Ohio, then 20 years of their daily discharge: large
 # enough to span many pages, so it benefits from a finer split.
 sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
@@ -176,13 +177,13 @@ with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
     )
 ```
 
-`n` is the number of sub-requests to fan the call out into, capped by how many
-values there are to split. Each sub-request costs a request against your hourly
+`n` is the number of chunks to fan the call out into, capped by how many
+values there are to split. Each chunk costs a request against your hourly
 [rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
 capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
 roughly `2` up to that value.
 
-Benchmark — a fixed 271-site subset of Ohio stream gages
+Benchmark: a fixed 271-site subset of Ohio stream gages
 (`get_daily`, `parameter_code="00060"`), with a small fixed page size
 (`limit=250`) so every run fetches roughly the same number of pages (isolating
 the effect of parallelism). Each `n` ran against its own cold 1-year time
@@ -194,18 +195,18 @@ window, so no run is served from the server's data-window cache:
 | `8`  | 8                | ~32   | 2.2 s / 1.9 s          | ~4.5×   |
 | `32` | 32               | 54    | 1.2 s                  | ~8×     |
 
-The gain comes from overlapping each sub-request's per-page latency and
+The gain comes from overlapping each chunk's per-page latency and
 server-side work. The exact multiplier therefore scales with how many pages the
 pull spans: a larger pull (more pages) has more parallelism to exploit. The
-extra sub-requests each cost quota, so reserve a large `n` for pulls you know
+extra chunks each cost quota, so reserve a large `n` for pulls you know
 are large.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
 for more information and examples on available services and input parameters.
 
-For verbose troubleshooting and support — including the request URL sent to the
-API — enable debug-level
+For verbose troubleshooting and support, including the request URL sent to the
+API, enable debug-level
 [logging](https://docs.python.org/3/howto/logging.html#logging-basic-tutorial):
 
 ```python
@@ -314,7 +315,7 @@ print(statewide.head())
 
 ## Available Data Services
 
-### Modern USGS Water Data APIs — `dataretrieval.waterdata`
+### Modern USGS Water Data APIs: `dataretrieval.waterdata`
 - `get_daily`: Daily statistical summaries (mean, min, max)
 - `get_continuous`: High-frequency continuous (instantaneous) values
 - `get_field_measurements`: Discrete measurements from field visits
@@ -327,27 +328,27 @@ print(statewide.head())
 - `get_samples`: Discrete USGS water-quality samples
 - `get_ratings`: Stage-discharge rating curves
 
-### National Ground-Water Monitoring Network (NGWMN) — `dataretrieval.ngwmn`
+### National Ground-Water Monitoring Network (NGWMN): `dataretrieval.ngwmn`
 - `get_sites`: Groundwater monitoring-location metadata across many agencies
 - `get_water_level`: Depth-to-water and water-level observations
 - `get_lithology`: Geologic-material logs by depth interval
 - `get_well_construction`: Casing, screen, and build-out records
 - `get_providers`: Contributing data-provider organizations
 
-### Water Quality Portal — `dataretrieval.wqp`
+### Water Quality Portal: `dataretrieval.wqp`
 - `get_results`: Water-quality analytical results from USGS, EPA, and other agencies
 - `what_sites`: Monitoring-location information
 - `what_organizations`: Data-provider information
 - `what_projects`: Sampling-project details
 
-### Network Linked Data Index (NLDI) — `dataretrieval.nldi`
+### Network Linked Data Index (NLDI): `dataretrieval.nldi`
 - `get_basin`: Watershed boundary for a point or feature
 - `get_flowlines`: Upstream/downstream flowline navigation
 - `get_features`: Find monitoring sites, dams, and other features along the network
 - `get_features_by_data_source`: Features from a specific data source
 
-### NWDC (National Water Availability Assessment Data Companion) — `dataretrieval.nwdc`
-- `get_wateruse`: Modeled water-use estimates — public-supply, irrigation, and thermoelectric withdrawals and consumptive use — on a national 12-digit hydrologic-unit (HUC12) grid, summarizable to counties, states, or coarser hydrologic units
+### NWDC (National Water Availability Assessment Data Companion): `dataretrieval.nwdc`
+- `get_wateruse`: Modeled water-use estimates (public-supply, irrigation, and thermoelectric withdrawals and consumptive use) on a national 12-digit hydrologic-unit (HUC12) grid, summarizable to counties, states, or coarser hydrologic units
 
 ## More Examples
 

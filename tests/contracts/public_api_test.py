@@ -1,10 +1,10 @@
 """Public import, export, and signature contracts for Water Data.
 
-These assert *properties* of the signatures rather than their rendered text. A
-character-exact ``str(inspect.signature(f))`` snapshot fails on every annotation
-reflow and on a new keyword-only parameter -- changes that break no caller. The
-properties below fail on the changes that do: a new required argument, and a
-new parameter that can be passed by position, which shifts a positional call.
+These assert *properties* of the signatures. A character-exact
+``str(inspect.signature(f))`` snapshot fails on every annotation reflow and on
+a new keyword-only parameter, changes that break no caller. The properties
+below fail on the changes that do: a new required argument, and a new parameter
+that can be passed by position, which shifts a positional call.
 """
 
 from __future__ import annotations
@@ -49,8 +49,8 @@ _EXPECTED_WATERDATA_ALL = [
 ]
 
 #: Arguments a caller must supply positionally or by keyword. Adding an entry
-#: here is a breaking change to every existing call; that is why
-#: this mapping is written out instead of derived.
+#: here is a breaking change to every existing call, which is why
+#: this mapping is written out.
 _REQUIRED_ARGUMENTS = {
     "get_channel": (),
     "get_codes": ("code_service",),
@@ -75,7 +75,7 @@ _REQUIRED_ARGUMENTS = {
 
 #: Defaults that are deliberately not ``None``. Every other optional parameter defaults
 #: to ``None``, which is how the request builder distinguishes an omitted argument from
-#: a caller-supplied value -- a non-``None`` default adds a filter to every query
+#: a caller-supplied value. A non-``None`` default adds a filter to every query
 #: without the caller seeing it.
 _INTENTIONAL_DEFAULTS = {
     "convert_type": True,

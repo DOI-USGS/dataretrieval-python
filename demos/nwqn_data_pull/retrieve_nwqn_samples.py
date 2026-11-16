@@ -12,7 +12,7 @@ from dataretrieval import nldi, waterdata, wqp
 
 DESTINATION_BUCKET = os.environ.get("DESTINATION_BUCKET")
 PROJECT = "National Water Quality Assessment Program (NAWQA)"
-# some sites are not found in NLDI, avoid them for now
+# NLDI does not find some sites; avoid them for now
 NOT_FOUND_SITES = [
     "15565447",  # "USGS-"
     "15292700",

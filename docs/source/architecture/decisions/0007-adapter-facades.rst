@@ -50,20 +50,21 @@ a public, documented import location pointing at a private module.
 
 **Typed getters are the surface; exactly one generic query path accompanies
 them.** ``cql`` is the only untyped member of the collection families, and
-deliberately so. The alternative in one direction -- a single generic query
-function replacing the typed getters -- gives up the parameter documentation
+deliberately so. The alternative in one direction (a single generic query
+function replacing the typed getters) gives up the parameter documentation
 and validation that are most of these getters' value. The alternative in the
-other -- a ``cql=`` passthrough on every family -- multiplies the generic path
+other (a ``cql=`` passthrough on every family) multiplies the generic path
 by the number of collections while making each family's surface partly untyped.
 One generic path, named as such, keeps both properties.
 
 **Identifier columns are parsed as text.** This one clause applies
-package-wide, legacy NWIS included: it is about what an adapter returns, not
-how it is organized. HUCs, parameter codes, FIPS codes, and monitoring-location
+package-wide, legacy NWIS included: it is about what an adapter returns, while
+the rest of this record is about how adapters are organized. HUCs, parameter
+codes, FIPS codes, and monitoring-location
 identifiers (``site_no`` in NWIS) have significant leading zeros, and a bare
 ``read_csv`` infers them as integers and
-drops those zeros -- ``"00060"`` becomes ``60``, so the value is wrong, with no indication,
-rather than missing. Every adapter reading a USGS tabular response names its
+drops those zeros: ``"00060"`` becomes ``60``, a wrong value with no
+indication. Every adapter reading a USGS tabular response names its
 identifier columns as ``str`` before parsing, which is why a two-pass header
 read is not a redundancy to be optimized away.
 
@@ -93,9 +94,10 @@ requires a logic-free facade, exact active-service exports, and separate OGC
 request construction and schema execution. ``.importlinter`` keeps the
 collection families independent of each other, restricts the facade-only
 consumers (NGWMN and ``waterdata.cql``) to the OGC facade, and prevents one
-adapter from importing another. The identifier-column rule is covered by
-``tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero`` and the equivalent
-leading-zero assertions in the WQP adapter tests.
+adapter from importing another.
+``tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero`` and the
+equivalent leading-zero assertions in the WQP adapter tests cover the
+identifier-column rule.
 
 Notes
 -----

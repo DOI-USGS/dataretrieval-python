@@ -3,7 +3,7 @@
 The other families expose a fixed argument per filter, which covers the common
 cases and keeps them discoverable. This is the generic path: an arbitrary CQL2
 filter against any collection, for a query the typed getters do not cover.
-Prefer a typed getter when one fits -- it validates more and names its filters.
+Prefer a typed getter when one fits: it validates more and names its filters.
 """
 
 from __future__ import annotations
@@ -56,14 +56,13 @@ def get_cql(
     features, shaped like the typed getters (``get_daily``, ``get_continuous``,
     …): the wire ``id`` renamed to the collection's id column, columns ordered and
     sorted, and dtypes coerced. Use it when you need a predicate the typed
-    getters can't express — a top-level ``or``, ``like`` with ``%`` wildcards,
+    getters can't express: a top-level ``or``, ``like`` with ``%`` wildcards,
     comparison operators, nested boolean trees, or a geometry predicate beyond a
-    bounding box; prefer a typed getter when one covers the query.
+    bounding box. Prefer a typed getter when one covers the query.
 
     The request is a single POST with the ``cql`` body sent verbatim, so there
     are no multi-value arguments to chunk: narrow a query whose URL or body
-    would exceed the server's size cap rather than relying on automatic
-    chunking.
+    would exceed the server's size cap.
 
     The CQL2 grammar is documented at
     https://api.waterdata.usgs.gov/docs/ogcapi/complex-queries/.
@@ -87,13 +86,13 @@ def get_cql(
         CQL filter as an additional spatial predicate.
     limit : int, optional
         The number of features returned in each page, clamped server-side to
-        50,000. This is a per-page size, not a cap on the total result: a
+        50,000. This is a per-page size: a
         filter matching more rows than ``limit`` still returns every matching
-        row across multiple pages, so a small ``limit`` makes *more* requests,
-        not fewer. Use ``max_rows`` to cap the total instead.
+        row across multiple pages, so a small ``limit`` makes *more* requests.
+        Use ``max_rows`` to cap the total.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early
-        instead of downloading the whole result. Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early.
+        Unlike ``limit`` (the
         per-page size), this bounds the total across every page. The default
         (None) follows pagination to completion.
     skip_geometry : bool, optional

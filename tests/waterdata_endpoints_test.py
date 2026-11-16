@@ -4,8 +4,8 @@
 paths. An old version keeps responding after USGS publishes a new one, so no
 other test fails when that happens. (Samples and NGWMN have no version segment.)
 
-Two conditions are checked, in separate tests for OGC and STAC and in one
-test for statistics:
+Separate tests for OGC and STAC, and one test for statistics, check two
+conditions:
 
 - **A new version is available**: the family's default is not the version the
   package requests.
@@ -13,10 +13,10 @@ test for statistics:
   data.
 
 The OGC and STAC roots publish a ``self`` link naming their default version,
-so the version is read from it. OGC cannot be probed, because it responds with
-200 and an empty body for any version segment (checked 2026-09-22). Statistics
-has no root document, so it is probed; a missing statistics version responds
-with 404.
+so the tests read the version from it. Probing OGC does not work, because it
+responds with 200 and an empty body for any version segment (checked
+2026-09-22). Statistics has no root document, so the test probes it; a missing
+statistics version responds with 404.
 """
 
 import re
@@ -95,7 +95,7 @@ def test_statistics_has_published_no_version_beyond_the_one_we_request():
 @pytest.mark.live
 @pytest.mark.parametrize("family", sorted(_FAMILIES))
 def test_the_version_this_package_requests_still_returns_data(family):
-    """Checked on content, not status: OGC responds with 200 and an empty body
+    """Checked on content: OGC responds with 200 and an empty body
     for a version that does not exist."""
     url = _FAMILIES[family]()
     response = httpx.get(f"{url}/collections", timeout=_TIMEOUT)
