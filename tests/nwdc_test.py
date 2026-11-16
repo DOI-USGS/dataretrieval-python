@@ -1,6 +1,6 @@
 """Offline tests for :mod:`dataretrieval.nwdc`.
 
-All HTTP is mocked with ``pytest-httpx``; no live calls (per AGENTS.md).
+All HTTP is mocked with the ``httpx_mock`` fixture; no live calls (per AGENTS.md).
 """
 
 import re

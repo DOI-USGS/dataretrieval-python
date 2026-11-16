@@ -92,9 +92,12 @@ can predict where a thing is defined.
 - The suite is offline by default: `addopts = "-m 'not live'"`. Tests marked
   `@pytest.mark.live` call real USGS services and run on a schedule
   (`.github/workflows/live-api.yml`); run them locally with `pytest tests/ -m live`.
-- HTTP is mocked with `pytest-httpx`'s `httpx_mock` fixture plus fixtures under
-  `tests/data/`; keep new API tests offline.
-- `tests/conftest.py` relaxes the fixture's strict-mode defaults and pins the
+- HTTP is mocked with the `httpx_mock` fixture plus fixtures under
+  `tests/data/`; keep new API tests offline. The fixture is defined in
+  `tests/conftest.py` as an in-house stand-in for `pytest-httpx`, which does not
+  support `httpx2` yet (Colin-b/pytest_httpx#239). It mirrors `pytest-httpx` run
+  with its strict-mode checks off.
+- `tests/conftest.py` also pins the
   fan-out env (`API_USGS_CONCURRENT=1`, `API_USGS_RETRIES=0`,
   `API_USGS_STALL_TIMEOUT=0`) plus a nonexistent `DATARETRIEVAL_CONFIG`, so tests
   are deterministic and never read a developer's real config. Concurrency and

@@ -80,7 +80,6 @@ test = [
   "pytest-cov[all]",
   "pytest-rerunfailures",
   "coverage",
-  "pytest-httpx",
   "dataretrieval[lint]",  # ruff, pinned once in the lint extra
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]

@@ -31,8 +31,8 @@ def _safe_elapsed(response: httpx2.Response) -> timedelta:
     the attribute hasn't been populated.
 
     httpx2 only writes ``.elapsed`` when a response is closed through
-    its normal transport path. ``MockTransport`` (used by
-    ``pytest-httpx2``) and hand-constructed ``httpx2.Response`` objects
+    its normal transport path. ``MockTransport`` (and the test suite's
+    ``httpx_mock`` fixture) and hand-constructed ``httpx2.Response`` objects
     leave the attribute unset, so accessing it raises ``RuntimeError``.
     Combining responses across chunks needs a defined duration, so we
     treat the missing attribute as zero elapsed.
