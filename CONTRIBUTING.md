@@ -81,7 +81,7 @@ Before you submit a pull request, check that it meets these guidelines:
    should be written to test the new functionality.
 2. If the pull request adds or modifies functionality, update the documentation
    or function docstrings that describe it.
-3. The pull request should work for Python 3.10 and later. Refer to the
+3. The pull request should work for Python 3.11 and later. Refer to the
    [Python package workflow](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/python-package.yml)
    for the versions and operating systems currently tested by CI.
 4. Build-related changes should preserve the installed-wheel smoke test; tests

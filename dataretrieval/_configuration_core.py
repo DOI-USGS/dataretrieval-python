@@ -227,7 +227,7 @@ _NO_FILE = _ParsedFile()
 
 #: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is
 #: typed as a ``WaterdataConfiguration`` rather than the base. ``typing.Self``
-#: would say this in one word and arrives in 3.11; the minimum is 3.10.
+#: would say this in one word and arrives in 3.11; the minimum is 3.11.
 _C = TypeVar("_C", bound="BaseConfiguration")
 
 
@@ -582,7 +582,7 @@ def _toml_parser() -> Any:
     """
     if sys.version_info >= (3, 11):
         import tomllib
-    else:  # pragma: no cover - exercised only on Python 3.10
+    else:  # pragma: no cover - exercised only on Python 3.11
         import tomli as tomllib
     return tomllib
 

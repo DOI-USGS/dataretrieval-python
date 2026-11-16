@@ -67,7 +67,7 @@ can predict where a thing is defined.
 ## Environment
 - `pip install .[test,nldi]` (CI uses pip, not uv, despite `uv.lock`).
   Docs: `pip install .[doc,nldi]`. Gates: `pip install -e .[metrics]`.
-- Python >= 3.10; the CI test matrix is 3.10, 3.13, 3.14.
+- Python >= 3.11; the CI test matrix is 3.11, 3.13, 3.14.
 
 ## Commands
 - Lint: `ruff check .` and `ruff format --check .`
