@@ -45,6 +45,7 @@ from dataretrieval.waterdata import (
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
+    parallel_chunks,
 )
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
@@ -1146,6 +1147,50 @@ def test_get_continuous(httpx_mock):
     assert "UTC" in df["time"].dtype.name
     # A code column stays the string the service sent.
     assert df["method_category"].tolist() == ["UNKWN", "UNKWN"]
+
+
+def test_get_continuous_splits_time_under_parallel_chunks(httpx_mock):
+    """Under ``parallel_chunks(n)`` one location's ``time`` interval is sent as
+    ``n`` consecutive intervals that share their boundary midnights, and a
+    feature returned by more than one chunk appears once in the result."""
+    _mock_items(httpx_mock, "continuous")
+
+    with parallel_chunks(3):
+        df, _ = get_continuous(
+            monitoring_location_id="USGS-06904500",
+            parameter_code="00065",
+            time="2025-01-01/2025-12-31",
+        )
+
+    assert [query["time"] for query in _sent(httpx_mock, "continuous")] == [
+        ["2025-01-01T00:00:00Z/2025-05-02T00:00:00Z"],
+        ["2025-05-02T00:00:00Z/2025-08-31T00:00:00Z"],
+        ["2025-08-31T00:00:00Z/2025-12-31T00:00:00Z"],
+    ]
+    # Every chunk got the same two-feature fixture.
+    assert len(df) == len(_fixture("continuous")["features"])
+
+
+@pytest.mark.parametrize(
+    ("getter", "collection", "time", "requests"),
+    [
+        (get_continuous, "continuous", "2023-01-01/2023-01-31", 1),  # under 60 days
+        (get_daily, "daily", "2023-01-01/2023-12-31", 1),  # under 20 years
+        (get_daily, "daily", "1985-01-01/2019-12-31", 3),  # three 10-year chunks
+        (get_field_measurements, "field-measurements", "1985-01-01/2019-12-31", 1),
+    ],
+)
+def test_parallel_chunks_divides_time_by_the_collections_shortest_chunk(
+    httpx_mock, getter, collection, time, requests
+):
+    """Continuous chunks are at least 30 days and daily chunks at least 10
+    years; other collections' intervals are not divided."""
+    _mock_items(httpx_mock, collection)
+
+    with parallel_chunks(12):
+        getter(monitoring_location_id="USGS-05427718", time=time)
+
+    assert len(_items_requests(httpx_mock, collection)) == requests
 
 
 def test_get_continuous_sends_method_category(httpx_mock):

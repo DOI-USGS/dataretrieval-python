@@ -259,7 +259,8 @@ may not reference adapters.
 
 **Dialect** — The per-API quirks the shared OGC code needs in order to
 serve two services from one code path: which collections must be POSTed as
-CQL2, which render dates date-only, which columns to coerce and sort by. An
+CQL2, which render dates date-only, which columns to coerce and sort by, and
+the shortest time chunk for each collection whose interval divides. An
 adapter supplies one and the shared code reads it, which is how protocol code
 stays free of service names.
 
