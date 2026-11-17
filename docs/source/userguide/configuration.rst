@@ -118,8 +118,9 @@ Settings
    * - ``parallel_chunks``
      - ``1``
      - *(none — see below)*
-     - Default fan-out for multi-value queries. ``1`` means split only as far
-       as the URL byte limit forces.
+     - Default fan-out for queries with a multi-value argument or a closed
+       time interval. ``1`` means split only as far as the URL byte limit
+       forces.
    * - ``stall_timeout``
      - ``60``
      - ``API_USGS_STALL_TIMEOUT``

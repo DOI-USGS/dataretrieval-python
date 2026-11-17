@@ -45,6 +45,7 @@ from dataretrieval.waterdata import (
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
+    parallel_chunks,
 )
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
@@ -1146,6 +1147,28 @@ def test_get_continuous(httpx_mock):
     assert "UTC" in df["time"].dtype.name
     # A code column stays the string the service sent.
     assert df["method_category"].tolist() == ["UNKWN", "UNKWN"]
+
+
+def test_get_continuous_splits_time_under_parallel_chunks(httpx_mock):
+    """Under ``parallel_chunks(n)`` one location's ``time`` interval is sent as
+    ``n`` consecutive intervals that share their boundary midnights, and a
+    feature returned by more than one chunk appears once in the result."""
+    _mock_items(httpx_mock, "continuous")
+
+    with parallel_chunks(3):
+        df, _ = get_continuous(
+            monitoring_location_id="USGS-06904500",
+            parameter_code="00065",
+            time="2025-01-01/2025-12-31",
+        )
+
+    assert [query["time"] for query in _sent(httpx_mock, "continuous")] == [
+        ["2025-01-01T00:00:00Z/2025-05-02T00:00:00Z"],
+        ["2025-05-02T00:00:00Z/2025-08-31T00:00:00Z"],
+        ["2025-08-31T00:00:00Z/2025-12-31T00:00:00Z"],
+    ]
+    # Every chunk got the same two-feature fixture.
+    assert len(df) == len(_fixture("continuous")["features"])
 
 
 def test_get_continuous_sends_method_category(httpx_mock):

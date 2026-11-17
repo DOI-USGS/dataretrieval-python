@@ -157,8 +157,9 @@ its own results, so dividing the query into more, smaller sub-requests lets
 those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
 into that finer split, fanning it out into `n` sub-requests. The finer split
 helps only when the result is large enough to span many pages *and* the query
-has a multi-value argument to divide, such as a list of monitoring locations. On
-a small query — or one with nothing to split — it only adds requests, so
+has something to divide: a multi-value argument, such as a list of monitoring
+locations, or a closed `time` interval, which is divided into runs of whole
+days. On a small query — or one with nothing to split — it only adds requests, so
 `parallel_chunks` is a deliberate, scoped `with` block, never the default.
 
 ```python
@@ -199,6 +200,24 @@ server-side work. The exact multiplier therefore scales with how many pages the
 pull spans: a larger pull (more pages) has more parallelism to exploit. The
 extra sub-requests each cost quota, so reserve a large `n` for pulls you know
 are large.
+
+One location's continuous record has no list to divide, but its `time` interval
+divides:
+
+```python
+with waterdata.parallel_chunks(12):  # about a month per sub-request
+    df, md = waterdata.get_continuous(
+        monitoring_location_id="USGS-01646500",
+        parameter_code="00060",
+        time="2023-01-01/2023-12-31",
+    )
+```
+
+For a year of 15-minute discharge (about 100,000 rows), on windows the service
+had not cached, this ran at 29,000 to 41,000 rows per second against 6,000 to
+7,800 without `parallel_chunks` (3 runs each). A list argument divides first;
+the interval then multiplies the sub-request count by the largest whole factor
+of `n` that is left.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
