@@ -28,7 +28,7 @@ class Test_Ambient:
 
 
 class Test_query:
-    """Tests of the query function (mocked — no live NWIS calls)."""
+    """Tests of the query function (mocked; no live NWIS calls)."""
 
     def test_url_too_long(self, httpx_mock):
         """A 413 / 414 from the service (an over-long query URL, Issue #64) is
@@ -103,7 +103,7 @@ class Test_error_taxonomy:
     Every module's request failure is catchable as ``DataRetrievalError``.
     A status error is an ``HTTPError`` with ``.status_code`` (the retryable
     429 / 5xx subset is ``TransientError``); a connection failure is a
-    ``NetworkError``. The sole base is ``DataRetrievalError`` -- no builtin
+    ``NetworkError``. The sole base is ``DataRetrievalError``, with no builtin
     (``ValueError`` / ``RuntimeError``) mixins.
     """
 
@@ -122,7 +122,7 @@ class Test_error_taxonomy:
         a generic ``HTTPError`` (with ``.status_code``) for a fatal 4xx, and
         the transient ``RateLimited`` / ``ServiceUnavailable`` for 429 / 5xx. The
         too-long-URL statuses (413 / 414) are covered separately because their
-        message is the actionable remediation, not the bare status number."""
+        message is the actionable remediation."""
         exc_cls = getattr(exceptions, exc_name)
         url = "https://example.invalid/x"
         httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=status)
@@ -136,7 +136,7 @@ class Test_error_taxonomy:
     def test_query_too_long_url_gives_actionable_message(self, httpx_mock, status):
         """A server 413 / 414 is raised as ``URLTooLong`` with the actionable
         "Modify your query" remediation (the same message as the client-side
-        over-long-URL path), not a bare ``HTTP 414`` status line."""
+        over-long-URL path)."""
         url = "https://example.invalid/x"
         httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=status)
         with pytest.raises(exceptions.URLTooLong, match="Modify your query") as excinfo:
@@ -145,9 +145,9 @@ class Test_error_taxonomy:
 
     def test_transport_error_wrapped_as_network_error(self, httpx_mock):
         """A connection-level failure (no HTTP response) is raised as the typed
-        ``NetworkError`` -- catchable via ``except DataRetrievalError`` like the
+        ``NetworkError``, catchable via ``except DataRetrievalError`` like the
         response-based errors, with the original ``httpx`` exception on
-        ``__cause__`` -- rather than leaking a raw ``httpx`` exception."""
+        ``__cause__``."""
         import httpx
 
         httpx_mock.add_exception(httpx.ConnectError("name resolution failed"))
@@ -198,9 +198,9 @@ class Test_error_taxonomy:
         assert dataretrieval.NoSitesError is exceptions.NoSitesError
 
     def test_typed_errors_survive_pickle_and_deepcopy(self):
-        """Typed errors round-trip through pickle/deepcopy -- they get pickled
-        back from multiprocessing / lithops workers, and their constructor fields
-        (status_code, retry_after, url) must be preserved."""
+        """Typed errors must round-trip through pickle/deepcopy, because they get
+        pickled back from multiprocessing / lithops workers, and their constructor
+        fields (status_code, retry_after, url) must be preserved."""
         import copy
         import pickle
 
@@ -254,8 +254,8 @@ class Test_error_taxonomy:
 
     def test_chunk_interruptions_exported_at_top_level(self):
         """The resumable chunk-interruption exceptions are reachable from the
-        top level (``from dataretrieval import ChunkInterrupted``) instead of
-        only the internal ``dataretrieval.interruptions`` leaf, and resolve to
+        top level (``from dataretrieval import ChunkInterrupted``) as well as
+        the internal ``dataretrieval.interruptions`` leaf, and resolve to
         the same classes."""
         import dataretrieval
         from dataretrieval import interruptions
@@ -438,7 +438,7 @@ class Test_attach_datetime_columns:
         ("zone", "utc"),
         [
             # Guam Standard Time, UTC+10, in both the USGS time-zone codes and
-            # the WQX TimeZone domain -- not Gulf Standard Time (UTC+4).
+            # the WQX TimeZone domain, not Gulf Standard Time (UTC+4).
             ("GST", "2024-06-01 00:00:00"),
             # Hawaii-Aleutian Daylight Time, UTC-9, from the USGS codes.
             ("HDT", "2024-06-01 19:00:00"),
@@ -653,14 +653,14 @@ class TestFormatDatetime:
 
         assert str(out["datetime"].dt.tz) == "UTC"
         # EST is -0500 and EDT -0400, so the same wall clock is a different
-        # instant in each row -- the reason the zone column cannot be ignored.
+        # instant in each row, which is why the zone column cannot be ignored.
         assert out["datetime"][0].hour == 15
         assert out["datetime"][1].hour == 14
 
     def test_warns_and_keeps_going_when_a_timestamp_will_not_parse(self):
         """An unparseable row becomes NaT rather than failing the whole frame,
         but dropping timestamps would return an incomplete frame with
-        nothing to mark the gap -- so it warns, and names the switch that
+        nothing to mark the gap, so it warns and names the switch that
         avoids the loss."""
         df = pd.DataFrame(
             {

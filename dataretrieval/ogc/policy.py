@@ -53,7 +53,7 @@ class OgcDialect:
         regardless of this set.
     time_cols : frozenset[str]
         Result columns to coerce to datetime when ``convert_type`` is set. Empty by
-        default, so the generic engine holds no API-specific column list; each API
+        default, so the generic engine has no API-specific column list; each API
         supplies its own.
     numerical_cols : frozenset[str]
         Result columns to coerce to numeric when ``convert_type`` is set.

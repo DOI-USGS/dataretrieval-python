@@ -221,7 +221,7 @@ def get_monitoring_locations(
     construction_date : string or iterable of strings, optional
         Date the well was completed. The service records it at day, month, or
         year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the
-        returned column holds these strings as sent.
+        returned column contains these strings as sent.
     aquifer_code : string or iterable of strings, optional
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
@@ -528,7 +528,7 @@ def get_time_series_metadata(
     begin : string or iterable of strings, optional
         The datetime of the earliest observation in the time series, in UTC
         with a time zone. Together with end, this field represents the period
-        of record of a time series. Note that some time series may have large
+        of record of a time series. Some time series may have large
         gaps in their collection record. You can query this field using
         date-times or intervals, adhering to RFC 3339, or using ISO 8601
         duration objects. Intervals may be bounded or half-bounded (double-dots
@@ -569,10 +569,10 @@ def get_time_series_metadata(
                 "PT36H" for the last 36 hours
 
     begin_utc : string or iterable of strings, optional
-        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` holds this
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` contains this
         value.
     end_utc : string or iterable of strings, optional
-        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` holds this
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` contains this
         value.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
@@ -977,10 +977,9 @@ def get_field_measurements_metadata(
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get field-measurement metadata: one row per (location, parameter) series.
 
-    Each row describes a single field-measurement series — what parameter is
+    Each row describes a single field-measurement series: what parameter is
     measured at the location, the period of record (``begin`` / ``end``), the
-    units, and so on — without returning the underlying observations
-    themselves. Use :func:`get_field_measurements` to fetch the values.
+    units, and so on. Use :func:`get_field_measurements` to fetch the values.
 
     This is the discrete-measurement analogue to
     :func:`get_time_series_metadata` (which describes daily and continuous

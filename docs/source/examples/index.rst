@@ -8,7 +8,7 @@ Introduction to the ``waterdata`` module of ``dataretrieval``
 -------------------------------------------------------------
 The ``waterdata`` module will replace the ``nwis`` module as the primary
 set of data download functions for USGS water data. This Jupyter notebook
-covers a basic introduction to module functions and usage.
+introduces the module's functions and their usage.
 
 .. toctree::
     :maxdepth: 1
@@ -19,7 +19,7 @@ USGS Water Data API vignettes
 -----------------------------
 These notebooks are Python ports of the new USGS Water Data API vignettes from
 the R `dataRetrieval`_ package. Each introduces a family of Water Data API
-functions and is executed against the live USGS Water Data API.
+functions and runs against the live USGS Water Data API.
 
 .. _dataRetrieval: https://doi-usgs.github.io/dataRetrieval/
 
@@ -73,8 +73,8 @@ project repository.
     USGS_NWIS_WaterUse_Examples
 
 
-Using ``dataretrieval`` to obtain nation trends in peak annual streamflow
--------------------------------------------------------------------------
+Using ``dataretrieval`` to obtain national trends in peak annual streamflow
+---------------------------------------------------------------------------
 
 .. toctree::
     :maxdepth: 2
@@ -87,8 +87,8 @@ Duplicating the R ``dataRetrieval`` vignettes functionality
 
 .. note::
 
-    Some of the larger (e.g., state-wide) examples have been commented out
-    in the interest of run-time for the notebook.
+    The notebook comments out some of the larger (e.g., state-wide) examples
+    to shorten its run time.
 
 .. toctree::
     :maxdepth: 2

@@ -1,6 +1,6 @@
 """Executable fitness functions that complement the dependency contracts.
 
-Plain dependency direction -- which modules may import which, and in which direction --
+Plain dependency direction (which modules may import which, and in which direction)
 is declared in ``.importlinter`` and checked by ``lint-imports`` in pre-commit and CI.
 Those rules used to be asserted here too, and are not any more: one rule enforced in two
 places is one rule that gets updated in one place.
@@ -8,9 +8,8 @@ places is one rule that gets updated in one place.
 What remains is everything a boundary checker cannot see, because an import
 graph does not record it:
 
-* which *symbols* cross a boundary, not just which modules (``ogc.engine``'s
-  compatibility surface, ``ogc.requests`` importing header policy but not the
-  executing calls);
+* which *symbols* cross a boundary (``ogc.engine``'s compatibility surface,
+  ``ogc.requests`` importing header policy but not the executing calls);
 * the declared public surface -- ``__all__`` presence, ownership, and the
   facade union;
 * the AST shape of a module, such as a facade proving it contains no logic, or
@@ -20,7 +19,7 @@ graph does not record it:
 * package-wide acyclicity, including package facades (ADR 0003).
 
 Adding a rule here that is purely about module-to-module direction is a
-regression -- put it in ``.importlinter`` instead.
+regression. Put it in ``.importlinter``.
 """
 
 from __future__ import annotations
@@ -147,8 +146,8 @@ def _literal_exports(path: Path) -> set[str]:
 def _imports_from(path: Path, module: str) -> set[str]:
     """Names *path* imports from *module*, wherever the import appears.
 
-    Walks the whole tree rather than only ``tree.body`` so a function-local
-    import is not missed by an import-surface rule.
+    Walks the whole tree so an import-surface rule does not miss a
+    function-local import.
     """
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return {
@@ -251,7 +250,7 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     )
 
 
-# --- Seams that are about symbols and call sites, not module direction ---
+# --- Seams that are about symbols and call sites ---
 
 
 def test_ngwmn_uses_ogc_facade() -> None:
@@ -331,11 +330,11 @@ def test_default_header_calls_are_target_scoped() -> None:
     )
 
 
-# --- Where code and constants are allowed to live ---
+# --- Where code and constants may be defined ---
 
 
 def test_transport_is_execution_policy_only() -> None:
-    """Transport owns HTTP execution, not presentation or result assembly.
+    """Transport contains only HTTP execution code.
 
     Terminal rendering (``progress``) and pandas result assembly (``combining``)
     are top-level leaves that transport reports *into* and returns *through*.
@@ -368,15 +367,15 @@ def test_credential_policy_has_one_definition() -> None:
 
     Attaching the key and stripping it back off have to agree about which host is
     authorized; they stop agreeing when a second copy of the host string is added.
-    ``transport.http`` re-exports the predicate, it does not restate it.
+    ``transport.http`` re-exports the predicate and does not restate it.
     """
     host = "api.waterdata.usgs.gov"
-    # Walked as AST string *values*, not as source text. A line-substring match
+    # Walked as AST string *values*. A line-substring match over source text
     # produces both false negatives and false positives: it missed the
     # ``"https://…"`` form three modules use to write the same host, and it
     # flagged docstring prose that only names the service. Docstrings are
-    # excluded here (they are documentation, not a second definition)
-    # while every other literal -- bare host or full base URL -- counts.
+    # excluded here (they are documentation, not a second definition) while every
+    # other literal, bare host or full base URL, counts.
     offenders: list[str] = []
     for path in sorted(PACKAGE_ROOT.rglob("*.py")):
         if path.name == "credentials.py":
@@ -420,8 +419,8 @@ def _waterdata_family_paths() -> tuple[str, ...]:
 # The collection-family modules the ``waterdata.api`` facade re-exports.
 _WATERDATA_FAMILIES = _waterdata_family_paths()
 
-#: The modules whose public surface must be declared, not inferred. This is a
-#: list of *files*, not of names: naming the expected exports too would restate
+#: The modules whose public surface must be declared. This is a list of
+#: *files*, not of names, because naming the expected exports too would restate
 #: every getter a third time and fail on renames, which break no boundary.
 _EXPLICIT_EXPORT_MODULES = (
     "ngwmn.py",
@@ -486,10 +485,9 @@ def test_each_family_getter_has_exactly_one_home() -> None:
 def test_api_facade_exports_exactly_the_family_union() -> None:
     """The facade re-exports every family getter and adds none of its own.
 
-    Derived from the families' own ``__all__`` rather than a frozen copy: a hardcoded
-    union is 19 more strings to edit per new getter, and it would still pass if a family
-    gained an export the facade forgot to re-export -- the one thing this test exists to
-    catch.
+    Derived from the families' own ``__all__``. A hardcoded union would be 19 more
+    strings to edit per new getter, and it would still pass if a family gained an export
+    the facade forgot to re-export, which this test checks for.
     """
     families = set().union(
         *(_literal_exports(PACKAGE_ROOT / f) for f in _WATERDATA_FAMILIES)
@@ -500,9 +498,9 @@ def test_api_facade_exports_exactly_the_family_union() -> None:
 def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
     """The facade re-exports; it does not run anything.
 
-    Statement *kinds* are checked, not just ``def``/``class``. Scanning for
+    The test checks statement *kinds*. Scanning for ``def``/``class``
     definitions alone let a module-level ``for`` loop exist here that rewrote
-    every re-exported getter's ``__module__`` -- code owned by the family
+    every re-exported getter's ``__module__``, code owned by the family
     modules, mutated from a file certified "logic-free". A docstring, imports,
     and plain assignments are the only statement kinds a facade may contain.
     """
@@ -525,7 +523,7 @@ def test_ogc_request_construction_does_not_execute_http() -> None:
 
     Two assertions, because the first alone was once true while the rule was
     broken: ``requests.py`` imported ``ogc.schema`` purely to forward a name,
-    and ``ogc.schema`` calls ``transport.http.get`` -- so constructing a request
+    and ``ogc.schema`` calls ``transport.http.get``, so constructing a request
     imported the executing path with this test still passing.
 
     The edge is named explicitly rather than checked over the transitive graph.
@@ -548,8 +546,8 @@ def test_ogc_request_construction_does_not_execute_http() -> None:
 def test_empty_result_shaping_consults_the_schema_endpoint() -> None:
     """``_deal_with_empty`` names columns from the collection schema.
 
-    That is a real network call on an empty result, so the dependency should be pinned
-    deliberately rather than leaving it to be removed as unused.
+    That is a real network call on an empty result, so the dependency is pinned here
+    to keep it from being removed as unused.
     """
     assert "dataretrieval.ogc.schema" in _runtime_imports(
         PACKAGE_ROOT / "ogc" / "shaping.py"
@@ -585,7 +583,7 @@ def test_ratings_drives_http_through_the_shared_executor() -> None:
     """Ratings must not issue one-off synchronous HTTP requests.
 
     Its STAC page walk and per-feature downloads previously ran hand-written sync loops
-    over ``transport.http.get`` -- no retry, no stall budget, no progress line, no
+    over ``transport.http.get``: no retry, no stall budget, no progress line, no
     resume, and N serial downloads. Both stages now run through ``paginate``/``FanOut``
     like every other multi-request path; assert the direct sync entry points cannot
     return without failing this test.
@@ -607,7 +605,7 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     class and ``isinstance`` against a ``runtime_checkable`` protocol would prove only
     that the methods exist. What matters and is not guaranteed by the type is
     repeatability: resume keys completed work by position, so a plan whose second pass
-    differed -- a generator mistaken for a collection, say -- would re-issue chunks that
+    differed (a generator mistaken for a collection, say) would re-issue chunks that
     no longer match the completed positions.
     """
     import httpx
@@ -635,12 +633,12 @@ def test_adr_references_resolve_to_a_record() -> None:
     """Every ``ADR NNNN`` citation names a record that exists, in every venue.
 
     ADR 0000 places cross-cutting rationale in the decision records and requires the
-    code to cite rather than restate. A renumbered or deleted record has to fail here
-    rather than leave a dangling pointer.
+    code to cite rather than restate. A renumbered or deleted record has to fail here,
+    or it leaves a dangling pointer.
 
-    Scoped to every venue ADR 0000 names, not just the package: the glossary,
-    the contributor guide, and the architecture docs cite records too, and a
-    pointer goes stale there too.
+    Scoped to every venue ADR 0000 names. The glossary, the contributor guide,
+    and the architecture docs cite records as the package does, and a pointer
+    goes stale there too.
     """
     repo_root = PACKAGE_ROOT.parent
     decisions = repo_root / "docs" / "source" / "architecture" / "decisions"

@@ -214,7 +214,7 @@ def test_both_retry_after_forms_are_honored_alike() -> None:
     parsed = exceptions.parse_retry_after(header)
     assert parsed is not None and 1750 < parsed <= 1800
     assert exceptions.parse_retry_after("1800") == 1800.0
-    # Either spelling, over the cap, stops the retry rather than being ignored.
+    # Either spelling, over the cap, stops the retry.
     policy = retry.RetryPolicy(max_retries=4)
     assert not policy.should_retry(attempt=1, retry_after=parsed)
     assert not policy.should_retry(attempt=1, retry_after=1800.0)
@@ -225,16 +225,16 @@ def test_elapsed_retry_after_still_backs_off() -> None:
     policy = retry.RetryPolicy(base_backoff=0.5, max_backoff=30.0)
 
     assert policy.backoff(attempt=1, retry_after=0.0) > 0.0
-    # The jitter is bounded by max_backoff, not this attempt's exponential ceiling:
-    # keying it to the ceiling made it zero whenever base_backoff was zero -- when a
-    # value of 0 would become a zero-delay re-send.
+    # The jitter is bounded by max_backoff. Keying it to this attempt's exponential
+    # ceiling made it zero whenever base_backoff was zero, when a value of 0 would
+    # become a zero-delay re-send.
     assert retry.RetryPolicy(base_backoff=0.0).backoff(attempt=1, retry_after=0.0) > 0.0
     # A server-named delay is applied, plus a small decorrelating offset so
-    # concurrent chunks given the same value do not all retry together --
+    # concurrent chunks given the same value do not all retry together,
     # and never enough to push the wait past the policy's own bounds.
     assert 5.0 < policy.backoff(attempt=1, retry_after=5.0) <= 6.0
-    # A value already at the cap is never extended past it -- the jitter would
-    # otherwise sleep longer than any bound the policy declares.
+    # A value already at the cap is never extended past it, because the jitter would
+    # otherwise make the wait longer than any bound the policy declares.
     at_cap = policy.backoff(attempt=8, retry_after=policy.retry_after_cap)
     assert at_cap == policy.retry_after_cap
 
@@ -243,8 +243,8 @@ def _dns_failure(errno: int) -> NetworkError:
     """A DNS failure shaped the way one reaches the retry loop.
 
     httpx and httpcore link their wrappers with ``__context__`` (implicit
-    chaining), not ``__cause__``, so a walker following only explicit causes
-    never reaches the ``gaierror``.
+    chaining), so a walker following only explicit causes never reaches the
+    ``gaierror``.
     """
     resolution_failed = socket.gaierror(errno, "name resolution failed")
     transport_failed = httpx.ConnectError("name resolution failed")
@@ -257,10 +257,9 @@ def _dns_failure(errno: int) -> NetworkError:
 def test_deterministic_failures_are_not_retried() -> None:
     """Only failures a later attempt could succeed on are re-sent.
 
-    The ``EAI_*`` values are platform-specific -- ``EAI_NONAME`` is 8 on
-    macOS and -2 on Linux -- so these must come from :mod:`socket` rather
-    than being written out, or the test only holds on the platform it was
-    written on.
+    The ``EAI_*`` values are platform-specific (``EAI_NONAME`` is 8 on
+    macOS and -2 on Linux), so these must come from :mod:`socket`, or the
+    test passes only on the platform it was written on.
     """
     assert retry._retryable(_dns_failure(socket.EAI_NONAME)) == (False, None)
     assert retry._retryable(httpx.UnsupportedProtocol("no scheme")) == (False, None)
@@ -280,13 +279,12 @@ def test_temporary_name_resolution_is_still_retried() -> None:
 
 
 def test_resolver_failure_found_past_an_unrelated_explicit_cause() -> None:
-    """Both chain links are walked, not just the first one present.
+    """The walk follows both chain links.
 
     ``raise X from Y`` inside an ``except`` block leaves an explicit
     ``__cause__`` *and* an unrelated ``__context__`` on the same frame. Following
     only the cause takes the explicit branch and never reaches the
-    ``gaierror``, so an unresolvable hostname spends the whole retry budget
-    instead of failing fast.
+    ``gaierror``, so an unresolvable hostname spends the whole retry budget.
     """
     failure = _dns_failure(socket.EAI_NONAME)
     failure.__cause__ = ValueError("an unrelated explicit cause")
@@ -313,7 +311,7 @@ def test_retryable_statuses_are_per_adapter() -> None:
     WQP responds to an over-large query with a 500 and StreamStats responds to
     out-of-network coordinates with one, so re-sending can never help there. The Water
     Data OGC API is a query interface where a 500 is a transient upstream failure, so
-    the chunker keeps retrying those — applying WQP's rationale to it would drop retries
+    the chunker keeps retrying those. Applying WQP's rationale to it would drop retries
     the chunked getters have always had.
     """
     rejected_query = ServiceUnavailable("bad query", status_code=500)
@@ -340,8 +338,8 @@ def test_stall_timeout_stops_a_silent_call(monkeypatch) -> None:
 
     Without this, a request that times out is retried until the attempts run
     out, turning one 60 s timeout into minutes of apparent hang. The first
-    retry is exempt (see below), so a call that receives nothing costs two
-    attempts, not five.
+    retry is exempt (see below), so a call that receives nothing stops after two
+    attempts.
     """
     attempts = 0
 
@@ -405,8 +403,8 @@ def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
 
     ``credit_wait`` moves the progress stamp forward; without a ceiling at
     "now", one long queue wait pushed it into the future, made
-    ``elapsed_since_progress`` negative, and -- since nothing ever reduces it
-    -- left that call exempt from the stall bound until it returned.
+    ``elapsed_since_progress`` negative, and, since nothing ever reduces it,
+    left that call exempt from the stall bound until it returned.
     """
     now = 0.0
     monkeypatch.setattr(liveness.time, "monotonic", lambda: now)
@@ -416,7 +414,7 @@ def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
     liveness.credit_wait(300.0)  # a task queued past the whole budget
     assert liveness.elapsed_since_progress() == 0.0, "clamped to now, not negative"
 
-    # The budget is spent again by real time without data, not permanently disabled.
+    # Real time without data counts against the budget again.
     now = 200.0
     assert not policy.allows_wait(5, 30.0, liveness.elapsed_since_progress())
 
@@ -505,7 +503,7 @@ def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
 
     The gated body is what the retry loop re-invokes, so stamping "now" on every
     slot acquisition would restart the budget each attempt and turn a bound on
-    *total* time without data into a per-attempt latency bound -- five slow
+    *total* time without data into a per-attempt latency bound. Five slow
     failures would each look brief while the call received nothing for their sum.
     """
 
@@ -539,9 +537,8 @@ def _wrapped_dns_failure(errno: int) -> NetworkError:
 
     Our own wrapper uses ``raise ... from``, so the outer error links to the
     httpx one explicitly; only the layers beneath it chain implicitly. The
-    chunker follows explicit links only, so this shape -- not
-    :func:`_dns_failure`'s -- is the one that decides whether an unresolvable
-    host is offered as resumable.
+    chunker follows explicit links only, so this shape determines whether an
+    unresolvable host is offered as resumable.
     """
     resolution_failed = socket.gaierror(errno, "name resolution failed")
     transport_failed = httpx.ConnectError("name resolution failed")
@@ -552,14 +549,14 @@ def _wrapped_dns_failure(errno: int) -> NetworkError:
 
 
 def test_deterministic_failures_are_not_offered_as_resumable() -> None:
-    """ "Retryable" and "resumable" are one judgement and must agree.
+    """ "Retryable" and "resumable" are one judgment and must agree.
 
     ``_retryable`` already does not re-send a hostname the resolver rejects
     outright. If the interruption classifier still mapped it to
     ``ServiceInterrupted``, the caller would be given a ``.call.resume()``
-    whose every attempt fails identically -- a resumable handle for something
-    that cannot be resumed, concealing the ``NetworkError`` that explains
-    the failure.
+    whose every attempt fails identically. That handle offers a resume for
+    something that cannot be resumed, and it conceals the ``NetworkError`` that
+    explains the failure.
     """
     from dataretrieval.interruptions import _classify_chunk_error
 
@@ -573,7 +570,7 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
 
     # The converse still holds: a failure a later attempt could succeed on stays
     # both retryable and resumable. A temporary resolver failure is the distinguishing
-    # case -- same exception type, same chain shape, opposite classification, decided
+    # case: same exception type, same chain shape, opposite classification, decided
     # only by the errno.
     temporary = _wrapped_dns_failure(socket.EAI_AGAIN)
     assert retry._retryable(temporary) == (True, None)
@@ -586,8 +583,8 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
     ``raise ... from`` accepts an exception already in the chain, so a retry
     loop that re-raises an earlier failure can close the cycle. Each of these
     walks reaches an answer by inspecting links, so an unguarded one would spin
-    forever inside a request path rather than raise the failure. This fails by
-    hanging, not by asserting -- pytest's timeout is what detects the failure.
+    forever inside a request path. This test fails by hanging, and pytest's
+    timeout detects the failure.
     """
     from dataretrieval.interruptions import (
         ServiceInterrupted,
@@ -613,7 +610,7 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
 
 def test_an_unusable_next_page_link_is_reported_not_swallowed():
     """A malformed ``next`` href ends the page walk, so it must raise rather
-    than truncate the result without an error -- a short frame with no error is
+    than truncate the result without an error, because a short frame with no error is
     indistinguishable from a complete one."""
     from dataretrieval.transport.links import resolve_next_url
 

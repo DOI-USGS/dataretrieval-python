@@ -99,7 +99,7 @@ def get_field_measurements(
         value of ReferencePrimary; measurements are Discharge or MeanGageHeight.
     time_of_day : string or iterable of strings, optional
         The time of day the field measurement was taken. If null, the time of day is
-        unknown. The time column holds only the date.
+        unknown. The time column contains only the date.
     year : integer or list of integers, optional
         The calendar year the field measurement was taken.
     properties : string or iterable of strings, optional
@@ -330,7 +330,7 @@ def get_peaks(
         last-modified timestamp (useful for incremental ETL polling).
     water_year, year, month, day : int or list of ints, optional
         Calendar / water-year filters on the peak event. The water year ends
-        September 30 (e.g. WY2024 = Oct 1, 2023 – Sep 30, 2024).
+        September 30 (e.g. WY2024 = Oct 1, 2023 to Sep 30, 2024).
     peak_since : int or list of ints, optional
         Filter on the year since which the peak value has been the record (the API
         serves this field as an integer; many rows are ``null``).

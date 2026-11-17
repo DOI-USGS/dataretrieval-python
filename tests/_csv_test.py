@@ -77,7 +77,7 @@ def test_read_code_csv_infers_counts():
 
 
 def test_code_columns_selects_by_name():
-    """The dtype map holds the code columns only, for a caller that parses itself."""
+    """The dtype map contains only the code columns, for a caller that parses itself."""
     names = ["huc_cd", "site_no", "resultCount", "USGSpcode"]
 
     assert code_columns(names) == {"huc_cd": str, "USGSpcode": str}

@@ -30,10 +30,10 @@ classifiers = [
 dependencies = [
     "httpx",
     "pandas>=2.0.0,<4.0.0",
-    # Directly imported by ``waterdata`` (``anyio.from_thread.start_blocking_portal``),
-    # so declared here rather than relied on transitively via httpx.
+    # ``waterdata`` imports it directly (``anyio.from_thread.start_blocking_portal``),
+    # so it is declared here even though httpx installs it transitively.
     "anyio>=4.0",
-    # ``dataretrieval.config`` reads a TOML config file. ``tomllib`` is stdlib
+    # ``dataretrieval.configuration`` reads a TOML config file. ``tomllib`` is stdlib
     # from 3.11, so this marker installs the backport only on 3.10 and drops
     # itself when ``requires-python`` moves to >=3.11.
     "tomli>=1.1.0; python_version < '3.11'",
@@ -51,8 +51,7 @@ max-complexity-allowed = 10
 failed = true
 
 [project.optional-dependencies]
-# Minimal set the CI ``type-check`` job installs — just mypy + the package,
-# not the whole test stack.
+# Minimal set the CI ``type-check`` job installs: mypy and the package.
 type-check = [
   "mypy",
 ]
@@ -68,7 +67,7 @@ metrics = [
   "complexipy==6.2.0",
   "import-linter==2.13",
 ]
-# Advisory weekly deep sweep -- see .github/workflows/code-health.yml. Pyscn has
+# Advisory weekly deep sweep; see .github/workflows/code-health.yml. Pyscn has
 # wheels only for macOS ARM64, Linux x86-64 and ARM64 (glibc 2.34 or later), and
 # Windows x86-64, with no sdist, so keep it separate from the extra used by
 # merge gates and contributors.
@@ -96,9 +95,9 @@ doc = [
   "folium>=0.12",
   # WaterData_demo.ipynb uses ``.set_crs().explore()`` on geometry-bearing
   # frames; without geopandas the call raises ``AttributeError`` on plain
-  # pandas DataFrames. ``mapclassify`` is required by ``geopandas.explore()``
-  # (alongside ``folium`` + ``matplotlib`` above). Mirrors the same lower
-  # bound as the [nldi] extra.
+  # pandas DataFrames. ``geopandas.explore()`` requires ``mapclassify``
+  # (alongside ``folium`` + ``matplotlib`` above). The lower bound matches
+  # the [nldi] extra.
   "geopandas>=0.10",
   "mapclassify",
 ]
@@ -131,17 +130,16 @@ select = [
     # dependency, and the project already says so twice: ``.importlinter`` sets
     # ``exclude_type_checking_imports = True`` ("Contracts describe what runs")
     # and ``tests/architecture_test.py`` skips ``TYPE_CHECKING`` blocks when it
-    # asserts the module seams. TC001 makes the code agree with the policy
-    # instead of leaving it to reviewer memory. TC002/TC003 (third-party and
-    # stdlib) are a separate import-cost concern with no policy behind them
-    # here, so they stay unselected.
+    # asserts the module seams. TC001 makes the code agree with the policy.
+    # TC002/TC003 (third-party and stdlib) are a separate import-cost concern
+    # with no policy behind them here, so they stay unselected.
     "TC001",
     "TC006", # quoted first argument to ``typing.cast``
     # Check broad exception handlers; retry policy distinguishes transient
     # from deterministic failures (ADR 0004). Progress display uses ``noqa``.
     "BLE001",
-    # Check unused function parameters. ARG002-004 cover methods rather than
-    # the function-based public interface; ARG005 also flags lambda parameters
+    # Check unused function parameters. ARG002-004 cover methods, and the
+    # public interface is function-based; ARG005 also flags lambda parameters
     # required by callers.
     "ARG001",
     # Text-mode ``open()`` without ``encoding=`` uses the process locale,
@@ -192,10 +190,10 @@ docstring-code-line-length = 72
 
 [tool.mypy]
 # The package is fully annotated and passes ``mypy --strict``. The one
-# remaining relaxation is ``ignore_missing_imports``: untyped third-party
-# libraries (pandas, geopandas) are treated as ``Any`` instead of
-# requiring stub packages. Dropping that — via pandas-stubs/types-requests and
-# per-module overrides — can follow.
+# remaining relaxation is ``ignore_missing_imports``: mypy treats untyped
+# third-party libraries (pandas, geopandas) as ``Any``, so they need no stub
+# packages. Dropping that (via pandas-stubs/types-requests and per-module
+# overrides) can follow.
 python_version = "3.10"  # the project's minimum supported version
 files = ["dataretrieval"]
 strict = true
@@ -205,8 +203,8 @@ ignore_missing_imports = true
 # The suite is offline by default. Every HTTP call is mocked (see
 # ``tests/conftest.py``), so a push neither depends on USGS uptime nor spends
 # someone's rate limit. The exception is the handful of tests marked ``live``,
-# which exist precisely to notice when an upstream API changes shape -- a thing
-# a mock can never tell us, because the mock is what would need updating.
+# which exist to notice when an upstream API changes shape. A mock cannot
+# detect that, because the mock is what would need updating.
 # Deselecting them here rather than in the CI command keeps a local
 # ``pytest tests/`` doing what CI does; run them with ``-m live``.
 addopts = "-m 'not live'"
@@ -228,8 +226,8 @@ show_missing = true
 skip_covered = true
 # 98.97% displays as "99%", which would pass a ``fail_under = 99`` on rounding.
 precision = 2
-# A ratchet: raise it as coverage rises. Lower it only when a genuinely
-# untestable path is added and excluding it would be dishonest.
+# A ratchet: raise it as coverage rises. Lower it only when a change adds an
+# untestable path and excluding it would be dishonest.
 fail_under = 98.9
 # Anchored to the statement, so a pattern cannot match its own words in a
 # comment or a string. Literal strings, because TOML rejects ``\s``.

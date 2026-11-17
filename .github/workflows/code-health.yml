@@ -2,9 +2,9 @@
 # maintainability trend.
 #
 # Advisory by design, and nothing here fails the build. These measures move over
-# months rather than commits, and they report findings a reviewer has to judge
-# rather than obey -- a metric can call good design a violation. The merge gates
-# live in python-package.yml. See CONTRIBUTING.md for how to read the output.
+# months, and they report findings a reviewer has to judge, because a metric
+# can flag good design as a violation. The merge gates are in python-package.yml. See
+# CONTRIBUTING.md for how to read the output.
 
 name: Code Health
 
@@ -12,7 +12,7 @@ on:
   schedule:
     # 08:00 UTC Mondays: a week's worth of merges, read before the week starts.
     - cron: "0 8 * * 1"
-  # On demand, for checking whether a refactor actually moved the numbers.
+  # On demand, for checking whether a refactor moved the numbers.
   workflow_dispatch:
 
 concurrency:
@@ -44,8 +44,8 @@ jobs:
 
       - name: Structural analysis (pyscn)
         # One run writes both the JSON report (the numbers) and the HTML report.
-        # Never fails the job -- a non-zero exit here means "findings", which
-        # are the point.
+        # Never fails the job, because a non-zero exit here means the analysis
+        # reported findings.
         continue-on-error: true
         run: |
           pyscn analyze --json --html --no-open dataretrieval 2>&1 | tee pyscn-summary.txt
@@ -57,8 +57,8 @@ jobs:
         # count does not show this: under a wrong root the package's own
         # imports count as external. So compare the root with the checkout and
         # the module count with the files on disk, and print each warning on
-        # its own. Missing report keys are named rather than raising, so a
-        # renamed key shows in the summary instead of dropping this line.
+        # its own. The check names missing report keys in a warning, so a
+        # renamed key shows in the summary.
         if: always()
         continue-on-error: true
         run: |
@@ -101,7 +101,7 @@ jobs:
           } > wily-summary.txt
 
       - name: Publish report
-        # ``always()`` so a partial report still lands rather than a bare red X.
+        # ``always()`` so a partial report is still published.
         if: always()
         run: |
           {

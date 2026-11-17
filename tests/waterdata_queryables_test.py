@@ -3,9 +3,9 @@ that flags upstream changes to the Water Data API's queryable sets.
 
 The live monitor (:func:`test_queryables_match_snapshot`) compares the queryables each
 collection publishes against a committed snapshot
-(``tests/data/waterdata_queryables.json``). When it fails, the upstream API has added /
-removed / renamed a queryable: regenerate the snapshot and enable any new queryables on
-the matching getter. Regenerate with::
+(``tests/data/waterdata_queryables.json``). When it fails, the upstream API has added,
+removed, or renamed a queryable: regenerate the snapshot and enable any new queryables
+on the matching getter. Regenerate with::
 
     python - <<'PY'
     import httpx, json
@@ -83,8 +83,8 @@ def test_get_queryables_parses_properties(httpx_mock):
 
 
 def test_get_queryables_unknown_collection_raises(httpx_mock):
-    """An HTTP error (e.g. a 404 for an unknown collection) is raised as the
-    typed ``DataRetrievalError``, not a bare DataFrame."""
+    """An HTTP error (e.g. a 404 for an unknown collection) raises the typed
+    ``DataRetrievalError``."""
     httpx_mock.add_response(
         method="GET",
         url=QUERYABLES_RE,
@@ -149,8 +149,8 @@ def test_passthrough_queryables_sent_as_filters(httpx_mock):
 
 
 def test_passthrough_list_queryable_is_a_cql2_predicate(httpx_mock):
-    """A list-valued passthrough queryable is normalized and sent in the CQL2
-    body like a named multi-value param."""
+    """The getter normalizes a list-valued passthrough queryable and sends it in
+    the CQL2 body, like a named multi-value param."""
     _mock_daily(httpx_mock)
 
     waterdata.get_daily(

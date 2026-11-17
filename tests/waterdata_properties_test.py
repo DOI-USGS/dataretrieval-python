@@ -21,8 +21,8 @@ from dataretrieval.waterdata import utils
 from dataretrieval.waterdata.endpoints import ogc_api_url
 from dataretrieval.waterdata.utils import _OUTPUT_ID_BY_COLLECTION
 
-#: Each OGC collection's getter. Written out rather than discovered, so a
-#: getter that is renamed or removed fails instead of being skipped.
+#: Each OGC collection's getter. Written out, so a getter that is renamed or
+#: removed fails; discovery would skip it.
 _GETTERS = {
     "channel-measurements": waterdata.get_channel,
     "combined-metadata": waterdata.get_combined_metadata,
@@ -48,13 +48,13 @@ _DOCUMENTED = (
     "time-series-metadata",
 )
 
-#: Parameters the engine reads itself rather than sending as a filter.
+#: Parameters the engine reads itself, so no filter is sent for them.
 _NOT_FORWARDED = {"max_rows"}
 
 #: Values a parameter must have to pass its own validation.
 _VALID = {"monitoring_location_id": "USGS-05427718", "state": "Wisconsin"}
 
-#: Parameters sent under the API's name rather than their own.
+#: Parameters whose API name differs from the parameter name.
 _SENT_AS = {"state": "state_name"}
 
 #: The label may be split across two lines. The list ends at the next unindented
@@ -94,8 +94,8 @@ def _schema_properties(collection: str) -> set[str]:
     ],
 )
 def test_every_named_parameter_reaches_the_engine(monkeypatch, getter, parameter):
-    """A named parameter that a getter accepts is passed on to the OGC engine,
-    rather than accepted and dropped, which would return unfiltered rows."""
+    """A getter passes each named parameter it accepts on to the OGC engine.
+    Dropping one would return unfiltered rows."""
     sent = {}
 
     def capture(args, *_, **__):
@@ -112,7 +112,7 @@ def test_every_named_parameter_reaches_the_engine(monkeypatch, getter, parameter
 @pytest.mark.parametrize("collection", sorted(_GETTERS))
 def test_every_schema_column_is_a_named_parameter(collection):
     """A column the collection publishes can be filtered by a named parameter of
-    its getter, not only through ``**queryables``."""
+    its getter."""
     getter = _GETTERS[collection]
     named = set(inspect.signature(getter).parameters) | {"geometry"}
     unnamed = _schema_properties(collection) - _ids(collection) - named

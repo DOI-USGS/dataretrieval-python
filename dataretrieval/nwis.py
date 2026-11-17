@@ -202,8 +202,8 @@ def format_response(
     else:
         keys = ["datetime"]
 
-    # Index our own frame, never the caller's. Popping the keys off a shallow
-    # copy leaves the other columns shared; ``set_index`` copies them when
+    # Index our own frame, leaving the caller's unchanged. Popping the keys off a
+    # shallow copy leaves the other columns shared; ``set_index`` copies them when
     # copy-on-write is off, and pandas 3.1 deprecates its ``inplace``.
     df = df.copy(deep=False)
     levels = [df.pop(key) for key in keys]
@@ -236,12 +236,12 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     empty peaks response takes :func:`format_response`'s empty-frame path
     instead of raising ``KeyError``.
 
-    NWIS zero-fills the unknown part of a historical peak's date --
+    NWIS zero-fills the unknown part of a historical peak's date:
     ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
     not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks
     rather than a date NWIS does not have. The peak is kept regardless, and
     ``peak_dt`` is left in the frame: the response has no ``water_yr``, so
-    it is the only column holding a censored peak's year.
+    it is the only column containing a censored peak's year.
 
     """
     if df.empty and "peak_dt" not in df.columns:
@@ -249,7 +249,7 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
         # still raise.
         return df
 
-    # Derive the column on our own frame, never the caller's.
+    # Derive the column on our own frame, leaving the caller's unchanged.
     df = df.copy(deep=False)
     df["datetime"] = pd.to_datetime(df["peak_dt"], errors="coerce")
     return df
@@ -331,9 +331,9 @@ def get_discharge_peaks(
 
     response = query_waterdata("peaks", format="rdb", ssl_check=ssl_check, **kwargs)
 
-    # Parse raw (read_rdb), not _read_rdb — the latter already runs
-    # format_response, and the explicit format_response(service="peaks") below
-    # does the peaks-specific formatting, so _read_rdb here was a redundant pass.
+    # Parse raw with read_rdb, not _read_rdb, because _read_rdb already runs
+    # format_response and the explicit format_response(service="peaks") below
+    # does the peaks-specific formatting.
     df = read_rdb(response.text, dtypes=_NWIS_RDB_DTYPES)
 
     return format_response(df, service="peaks", **kwargs), NWIS_Metadata(
@@ -543,7 +543,7 @@ def _get_json_values(
 
     The caller-facing ``sites`` / ``start`` / ``end`` arguments are aliases: an
     explicit waterservices keyword of the same meaning takes precedence over
-    them. Note that ``multi_index`` is passed through ``kwargs`` so that
+    them. ``multi_index`` is passed through ``kwargs`` so that
     :func:`format_response` sees it.
     """
     _check_sites_value_types(sites)
@@ -685,8 +685,8 @@ def get_info(
         types see https://help.waterdata.usgs.gov/site_tp_cd
         For example, siteType='ST' returns streams only.
     siteOutput: string ('basic' or 'expanded')
-        Indicates the richness of metadata you want for site attributes. Note
-        that for visually oriented formats like Google Map format, this
+        Indicates the richness of metadata you want for site attributes.
+        For visually oriented formats like Google Map format, this
         argument has no meaning. For performance reasons, siteOutput=expanded
         cannot be used if seriesCatalogOutput=true or with any values for
         outputDataTypeCd.
@@ -911,7 +911,7 @@ def what_sites(
 
 
 # Each ignored ``get_record`` parameter maps to its declared default and
-# replacement getter guidance, not restrictions on the replacement getter.
+# replacement getter guidance.
 _DEFUNCT_RECORD_OPTIONS: dict[str, tuple[object, str]] = {
     "wide_format": (True, "`waterdata.get_samples()`"),
     "datetime_index": (
@@ -1269,8 +1269,7 @@ class NWIS_Metadata(BaseMetadata):
 
     Notes
     -----
-    ``site_info`` is exposed as a property (documented below) rather than a
-    plain attribute.
+    ``site_info`` is a property (documented below).
 
     """
 

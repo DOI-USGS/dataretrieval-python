@@ -14,7 +14,7 @@ class Ambient(Generic[_T]):
     """A :class:`~contextvars.ContextVar` paired with a scoping contextmanager.
 
     Bundles the var and its set/reset-token handling into one object, so an ambient
-    value needs a single declaration instead of a ``var`` + setter-function pair.
+    value needs a single declaration.
     Read the current value with :meth:`get`; set it for a ``with`` block by
     calling the instance. The previous value is restored on exit::
 

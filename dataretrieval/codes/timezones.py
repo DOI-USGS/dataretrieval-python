@@ -11,12 +11,12 @@ usage:
   USGS records the Water Quality Portal passes through
   (``tests/data/usgs_timezones.xml``).
 
-Where the two lists disagree -- ``SST`` (American Samoa in WQX, Swedish Summer
+Where the two lists disagree, on ``SST`` (American Samoa in WQX, Swedish Summer
 Time in USGS) and ``BST`` (retired Bering Standard Time in WQX, British Summer
-Time in USGS) -- WQX wins: the Water Quality Portal returns ``SST`` for American
-Samoa, and USGS records write that zone as ``ZP-11``. Abbreviations in
-neither list keep their common meaning. ``tests/timezones_test.py`` checks the
-table against both lists.
+Time in USGS), WQX takes precedence, because the Water Quality Portal returns
+``SST`` for American Samoa and USGS records write that zone as ``ZP-11``.
+Abbreviations in neither list keep their common meaning.
+``tests/timezones_test.py`` checks the table against both lists.
 """
 
 tz_str = """-1200 Y IDLW

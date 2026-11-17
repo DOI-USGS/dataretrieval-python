@@ -7,28 +7,27 @@ Use query naming several locations, which the NWDC accepts only one at a time.
 
 This module is responsible only for distribution: concurrency bounded by a semaphore,
 per-attempt retry, deterministic failure precedence, sparse completion tracking, and
-resume. It names no protocol concept -- an adapter supplies a :class:`FanOutPlan`
+resume. It names no protocol concept. An adapter supplies a :class:`FanOutPlan`
 (whatever structure it divided into, if any) and an ``async def fetch(item) -> (df,
 response)``. Dividing a query is protocol-specific and is defined in OGC; distributing
 the pieces is protocol-neutral and is defined here. That split is ADR 0008.
 
 Concurrency: :meth:`FanOut._run` dispatches every pending chunk under one
 ``asyncio.gather`` sharing a single ``httpx.AsyncClient``. An
-``asyncio.Semaphore`` -- not the client's connection pool, which is only sized
-to match -- caps the chunks in flight at ``N`` (ADR 0008).
-The ``concurrency`` setting resolves ``N`` -- a ``configure()`` block, then
-``API_USGS_CONCURRENT``, then the config file, and per adapter as well as
-package-wide: an integer N > 1 allows N chunks in flight; ``1`` forces
-sequential dispatch; the literal ``unbounded`` removes the cap. ``N`` bounds only
-how many of a query's chunks are in flight at once
--- a client-side trade-off between open connections and fan-out latency. It does
-not affect the API rate limit: a fanned-out call issues the same number of
-chunks regardless of ``N``, so ``N`` changes their timing, not the total
-request volume. The USGS API rate-limits by volume over time (HTTP 429), not by
-simultaneity; set ``API_USGS_PAT`` to raise that quota. The default of 32 is a
-conservative cap that keeps connection use low. The fan-out runs in a
-short-lived worker thread (an ``anyio`` blocking portal), so it works whether or
-not the caller is already inside an event loop (Jupyter / IPython / async apps).
+``asyncio.Semaphore`` caps the chunks in flight at ``N``; the client's
+connection pool is only sized to match (ADR 0008). The ``concurrency`` setting
+resolves ``N`` (a ``configure()`` block, then ``API_USGS_CONCURRENT``, then the
+config file, and per adapter as well as package-wide): an integer N > 1 allows N
+chunks in flight; ``1`` forces sequential dispatch; the literal ``unbounded``
+removes the cap. ``N`` bounds only how many of a query's chunks are in flight at
+once, a client-side trade-off between open connections and fan-out latency. It
+does not affect the API rate limit: a fanned-out call issues the same number of
+chunks regardless of ``N``, so ``N`` changes their timing. The USGS API
+rate-limits by volume over time (HTTP 429); set ``API_USGS_PAT`` to raise that
+quota. The default of 32 is a conservative cap that keeps connection use low.
+The fan-out runs in a short-lived worker thread (an ``anyio`` blocking portal),
+so it works whether or not the caller is already inside an event loop (Jupyter /
+IPython / async apps).
 
 Retries: each chunk is retried on a transient failure (429, 5xx, connect/read timeout)
 with exponential backoff + full jitter, applying a server ``Retry-After`` when present.
@@ -38,7 +37,7 @@ raised as a resumable interruption.
 
 Interruption: any transient failure partway is raised as a
 :class:`~dataretrieval.interruptions.FanOutInterrupted` subclass with ``.call``, a
-:class:`FanOut` handle holding the already-completed chunk state. Call
+:class:`FanOut` handle that keeps the already-completed chunk state. Call
 ``.call.resume()`` once the underlying condition has ended; only the still-pending
 chunks are re-issued.
 """
@@ -71,7 +70,7 @@ from dataretrieval.transport.retry import _NO_RETRY, RetryPolicy
 from dataretrieval.transport.retry import retry_async as _retry
 
 #: One chunk's description, in the form the adapter's ``fetch`` accepts. The
-#: executor never inspects it — see :class:`FanOutPlan`.
+#: executor never inspects it (see :class:`FanOutPlan`).
 _Chunk = TypeVar("_Chunk")
 #: The same thing in :class:`FanOutPlan`, where it is only ever produced by the plan.
 #: Covariant so a ``list[httpx.Request]`` satisfies a plan of any supertype, the way
@@ -94,19 +93,19 @@ class FanOutPlan(Protocol[_ChunkCo]):
     """
     The contract a plan satisfies for a fan-out to execute it.
 
-    A **plan** is defined in ``CONTEXT.md``. This protocol is that enumeration and
-    nothing more: ``len`` must equal the number of items iteration yields, and iteration
-    must repeat the same items in the same order, since
+    A **plan** is defined in ``CONTEXT.md``. This protocol defines only that
+    enumeration. ``len`` must equal the number of items iteration yields, and
+    iteration must repeat the same items in the same order, since
     :meth:`FanOut.resume` keys completed work by position. The item type is
-    whatever an adapter's own ``fetch`` accepts -- this executor passes each
-    item through unchanged and never inspects it, so the OGC getters yield
-    kwargs dicts while Water Use yields ready :class:`httpx.Request` objects.
-    The query's ``canonical_url`` is not part of the plan; it is an argument to
+    whatever an adapter's own ``fetch`` accepts. This executor passes each item
+    through unchanged and never inspects it, so the OGC getters yield kwargs
+    dicts while Water Use yields ready :class:`httpx.Request` objects. The
+    query's ``canonical_url`` is not part of the plan; it is an argument to
     :class:`FanOut`.
 
     :class:`~dataretrieval.ogc.planning.ChunkPlan` is *a* plan, and so is a
-    plain ``list`` of requests. Standard protocols rather than custom
-    members: ADR 0008.
+    plain ``list`` of requests. The contract uses the standard ``len`` and
+    iteration protocols (ADR 0008).
     """
 
     def __len__(self) -> int: ...
@@ -120,10 +119,10 @@ class FanOutPlan(Protocol[_ChunkCo]):
 
 # The per-call ``httpx.AsyncClient``, set for the duration of
 # ``FanOut._run`` so paginated-loop helpers reuse the same connection pool
-# across every chunk. ``None`` outside a fan-out — paginated helpers then
-# open their own short-lived client. Deliberately a plain ContextVar-backed
-# ambient rather than a parameter: the fetch closure an adapter injects is often
-# several frames below the client's owner.
+# across every chunk. ``None`` outside a fan-out; paginated helpers then
+# open their own short-lived client. A plain ContextVar-backed ambient rather
+# than a parameter, because the fetch closure an adapter injects is often several
+# frames below the code that opens the client.
 _active_client: Ambient[httpx.AsyncClient | None] = Ambient("_fanout_client", None)
 
 
@@ -152,10 +151,10 @@ def active_client() -> httpx.AsyncClient | None:
 _Fetch = Callable[[_Chunk], Awaitable[tuple[pd.DataFrame, httpx.Response]]]
 
 # Caller-supplied transform applied to the combined result, so a resumed call
-# returns the same shape as an un-interrupted one rather than the executor's raw
-# ``(frame, httpx.Response)``. This keeps the executor generic: the OGC getters
-# inject their post-processing (type coercion, column arrangement,
-# ``BaseMetadata``) through ``_finalize_ogc``. The default is identity.
+# returns the same shape as an un-interrupted one. This keeps the executor
+# generic: the OGC getters inject their post-processing (type coercion, column
+# arrangement, ``BaseMetadata``) through ``_finalize_ogc``. The default is
+# identity.
 _Finalize = Callable[[pd.DataFrame, httpx.Response], tuple[pd.DataFrame, Any]]
 
 
@@ -170,10 +169,10 @@ class FanOut(Generic[_Chunk]):
     """
     Stateful handle for a fanned-out call.
 
-    Holds the in-flight state (per-chunk frames and responses)
-    and the async fetcher. A single :meth:`resume` entry point runs
-    the call from its current state to completion — used both for the
-    first invocation and for subsequent retries after a
+    Keeps the in-flight state (per-chunk frames and responses) and the
+    async fetcher. A single :meth:`resume` entry point runs the call
+    from its current state to completion, used both for the first
+    invocation and for subsequent retries after a
     :class:`~dataretrieval.interruptions.FanOutInterrupted`.
 
     :meth:`_run` gathers every pending chunk over one shared
@@ -219,7 +218,7 @@ class FanOut(Generic[_Chunk]):
     service : str or None, optional
         Display name of what is being retrieved (e.g. ``"daily"``,
         ``"nwdc"``), used to label the progress line :meth:`resume`
-        opens. ``None`` leaves the line unlabelled.
+        opens. ``None`` leaves the line unlabeled.
 
     Attributes
     ----------
@@ -230,11 +229,10 @@ class FanOut(Generic[_Chunk]):
     finalize : Callable
         Transform applied to the combined result (see :data:`_Finalize`) at the terminal
         :meth:`_run` return, so a completed call yields the caller's finished shape. The
-        ``partial_*`` accessors deliberately skip it and return the raw frame and
-        response.
+        ``partial_*`` accessors skip it and return the raw frame and response.
     partial_frame : pandas.DataFrame
-        Raw combined frame of completed chunks (live; recomputed per
-        access). Not finalized — call :meth:`resume` for the finished shape.
+        Raw combined frame of completed chunks (live; recomputed per access).
+        Not finalized; call :meth:`resume` for the finished shape.
     partial_response : httpx.Response or None
         Raw aggregate response (canonical URL restored), or ``None`` when
         nothing has completed yet (live; recomputed per access).
@@ -258,9 +256,9 @@ class FanOut(Generic[_Chunk]):
         self.retry_policy = retry_policy
         self.finalize = finalize
         self.canonical_url = canonical_url
-        # Label for the progress line :meth:`resume` opens. It is here, next
-        # to ``canonical_url``, because this class is what emits the progress
-        # events — see :meth:`resume`.
+        # Label for the progress line :meth:`resume` opens. It is here, next to
+        # ``canonical_url``, because this class emits the progress events (see
+        # :meth:`resume`).
         self.service = service
         # Which adapter's settings this run resolves, so a ``[ngwmn]`` table
         # or an ``NgwmnConfiguration`` applies only to NGWMN calls. Distinct from
@@ -269,35 +267,33 @@ class FanOut(Generic[_Chunk]):
         # package-wide. See ADR 0010.
         self.adapter = adapter
         # This service's preferred cap for when nothing is configured. Resolved at
-        # resume time, not here, so a setting made after this call was built still
-        # applies. Anything the chain resolves outranks it -- see
+        # resume time, so a setting made after this call was built still applies.
+        # Anything the chain resolves outranks it; see
         # :func:`dataretrieval.configuration.concurrency` for why a service preference
         # must not override an explicit setting.
         self.default_concurrent = default_concurrent
         # Extra ``httpx.AsyncClient`` options merged into the shared client this
         # run opens (``verify`` for the Water Use ``ssl_check`` flag, say). The
-        # executor owns client lifecycle, so an adapter with a per-call client
-        # requirement has to pass it in rather than open its own — opening its
-        # own would bypass the shared connection pool. Empty for OGC, which
-        # exposes no such flag.
+        # executor opens and closes the client, so an adapter with a per-call
+        # client requirement has to pass it in, because opening its own would
+        # bypass the shared connection pool. Empty for OGC, which exposes no such flag.
         self.client_options = client_options or {}
-        # No ambient state is snapshotted here: everything a chunk rebuild
-        # needs (base URL, dialect, row cap for the OGC getters) is closed
-        # over by the adapter's ``fetch``/plan, so a *later*
-        # ``exc.call.resume()`` — invoked after the originating call
-        # returned — rebuilds chunks against the values the call was
-        # created with without this executor holding adapter state.
-        # Completed (frame, response) pairs keyed by sub-args index; sparse
-        # (gathered chunks complete out of order — see class docstring).
+        # No ambient state is snapshotted here. Everything a chunk rebuild needs
+        # (base URL, dialect, row cap for the OGC getters) is closed over by the
+        # adapter's ``fetch``/plan, so a *later* ``exc.call.resume()``, invoked
+        # after the originating call returned, rebuilds chunks against the
+        # values the call was created with without this executor storing adapter
+        # state. Completed (frame, response) pairs keyed by sub-args index;
+        # sparse (gathered chunks complete out of order; see class docstring).
         # ``_run``'s ``track`` closure is the only writer, so ``dict`` insertion
         # order is completion order (relied on by :meth:`_combine_raw`).
         self._chunks: dict[int, tuple[pd.DataFrame, httpx.Response]] = {}
 
     def wrap_failure(self, exc: BaseException) -> FanOutInterrupted | None:
         """
-        Build the matching :class:`FanOutInterrupted` that holds this call when ``exc``
-        is a recognized transient transport failure; return ``None`` for unrecognized
-        failures so the caller can re-raise. Encapsulates the
+        Build the matching :class:`FanOutInterrupted`, with this call on ``.call``,
+        when ``exc`` is a recognized transient transport failure; return ``None`` for
+        unrecognized failures so the caller can re-raise. Encapsulates the
         classify-then-instantiate-with-call-state sequence so
         :class:`FanOut`'s private fields stay private.
 
@@ -309,8 +305,8 @@ class FanOut(Generic[_Chunk]):
         Returns
         -------
         FanOutInterrupted or None
-            The matching :class:`FanOutInterrupted` subclass holding this call for a
-            recognized transient failure; ``None`` otherwise.
+            The matching :class:`FanOutInterrupted` subclass, with this call on
+            ``.call``, for a recognized transient failure; ``None`` otherwise.
         """
         classification = _classify_chunk_error(exc)
         if classification is None:
@@ -344,7 +340,7 @@ class FanOut(Generic[_Chunk]):
         """Assemble the raw ``(frame, response)`` from completed chunks,
         before :attr:`finalize` runs.
 
-        Frames concatenate in sub-args *index* order (``sorted`` keys —
+        Frames concatenate in sub-args *index* order (``sorted`` keys:
         deterministic, independent of parallel completion order). The
         aggregated response takes its headers from the response with the
         lowest reported ``x-ratelimit-remaining`` value. If no response
@@ -374,15 +370,14 @@ class FanOut(Generic[_Chunk]):
         """
         Raw combined frame of chunks that have completed so far.
 
-        Live — recomputed on each access so it reflects current state
-        across resume attempts. Deliberately the *raw* combined frame
-        (``_combine_frames``), not the finalized result: this is a
-        side-effect-free snapshot for inspecting partial progress, with no
-        network I/O, so
-        reading it (or building a :class:`FanOutInterrupted` around it)
-        never triggers ``finalize`` work — which for OGC getters includes
-        a schema network fetch on an empty frame. Use ``call.resume()``
-        for the finalized result.
+        Live: recomputed on each access so it reflects current state across
+        resume attempts. It is the *raw* combined frame (``_combine_frames``),
+        not the finalized result, because it is a side-effect-free snapshot for
+        inspecting partial progress, with no network I/O. Reading it (or
+        building a :class:`FanOutInterrupted` around it) never triggers
+        ``finalize`` work, which for OGC getters includes a schema network
+        fetch on an empty frame. Use ``call.resume()`` for the finalized
+        result.
 
         Returns
         -------
@@ -398,9 +393,9 @@ class FanOut(Generic[_Chunk]):
         Raw aggregate response with the canonical URL restored to the
         user's full original query.
 
-        Live — recomputed on each access. Like :attr:`partial_frame`, this
-        is the *raw* aggregate (an :class:`httpx.Response`), not the
-        finalized result, so inspecting it is side-effect-free.
+        Live: recomputed on each access. Like :attr:`partial_frame`, this is
+        the *raw* aggregate (an :class:`httpx.Response`), not the finalized
+        result, so inspecting it is side-effect-free.
 
         Returns
         -------
@@ -415,9 +410,8 @@ class FanOut(Generic[_Chunk]):
         Yield ``(index, item)`` for chunks not yet completed.
 
         Iterates the plan in its deterministic order and skips any index
-        already in ``self._chunks``. :meth:`_run` uses this to run only
-        the chunks not yet completed, which is what makes resume
-        idempotent.
+        already in ``self._chunks``. :meth:`_run` uses this to run only the
+        chunks not yet completed, which makes resume idempotent.
         """
         for index, item in enumerate(self.plan):
             if index not in self._chunks:
@@ -434,11 +428,11 @@ class FanOut(Generic[_Chunk]):
         context, so the active progress reporter is still visible to
         the chunks.
 
-        This executor is what emits progress events, so it is also what owns
-        the reporter's lifetime: an adapter that runs a ``FanOut`` gets the
-        line without a separate
-        ``with progress_context(...)`` block. A reporter already active
-        (a nested getter, or a caller's own context) is reused unchanged.
+        This executor emits progress events, so it also opens and closes the
+        reporter. An adapter that runs a ``FanOut`` gets the line without a
+        separate ``with progress_context(...)`` block. A reporter already
+        active (a nested getter, or a caller's own context) is reused
+        unchanged.
 
         Idempotent: only chunks whose index isn't already in
         ``self._chunks`` are re-issued. Item order is the plan's own and
@@ -450,7 +444,7 @@ class FanOut(Generic[_Chunk]):
         df : pandas.DataFrame
             Combined data from every successful chunk.
         response
-            The finalized aggregate — a raw :class:`httpx.Response`
+            The finalized aggregate: a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
             or whatever :attr:`finalize` produces (e.g. ``BaseMetadata`` for
@@ -459,30 +453,29 @@ class FanOut(Generic[_Chunk]):
         Raises
         ------
         FanOutInterrupted
-            On a transient failure partway through — 429, 5xx, or a bare transport
-            error: :class:`~dataretrieval.interruptions.QuotaExhausted` for 429,
+            On a transient failure partway through (429, 5xx, or a bare transport
+            error): :class:`~dataretrieval.interruptions.QuotaExhausted` for 429,
             :class:`~dataretrieval.interruptions.ServiceInterrupted` for the rest. The
-            resumable handle is on ``exc.call`` — wait for the underlying condition to
+            resumable handle is on ``exc.call``; wait for the underlying condition to
             end and call ``exc.call.resume()`` again.
         """
-        # Open the line here, in the *calling* context, so an outer
-        # reporter (a nested getter, or the caller's own ``progress_context``)
-        # is the one found and reused; a run that finds none gets a new
-        # line, which is what makes a resume long after the interruption
-        # report progress. ``start_blocking_portal`` copies this
-        # calling context into its worker thread, so the active reporter
-        # is visible to the chunks. Chunk-rebuild state (base URL, dialect, row
-        # cap) is held in the adapter's ``fetch`` closure, not in ambient
-        # state, so no construction-time snapshot is needed for a resume
+        # Open the line here, in the *calling* context, so an outer reporter (a
+        # nested getter, or the caller's own ``progress_context``) is found and
+        # reused; a run that finds none gets a new line, which makes a resume
+        # long after the interruption report progress.
+        # ``start_blocking_portal`` copies this calling context into its worker
+        # thread, so the active reporter is visible to the chunks. Chunk-rebuild
+        # state (base URL, dialect, row cap) is stored in the adapter's ``fetch``
+        # closure, so no construction-time snapshot is needed for a resume
         # invoked after the originating call returned (see ``__init__``).
         with _progress.progress_context(
             service=self.service, target_url=self.canonical_url
         ):
-            # Resolve concurrency here, per run, rather than at construction.
-            # It is the one setting a caller changes *while* retrying --
-            # the documented recovery from QuotaExhausted is to wait and
-            # re-issue at lower concurrency -- so a ``configure()`` block entered
-            # between the interruption and the resume must take precedence.
+            # Resolve concurrency here, per run. It is the only setting a caller
+            # changes *while* retrying (the documented recovery from
+            # QuotaExhausted is to wait and re-issue at lower concurrency), so a
+            # ``configure()`` block entered between the interruption and the
+            # resume must take precedence.
             concurrency = _configuration.concurrency(
                 self.default_concurrent, adapter=self.adapter
             )
@@ -502,16 +495,16 @@ class FanOut(Generic[_Chunk]):
         Failure precedence, in order:
 
         1. Cancellation / interrupt signals (``CancelledError``,
-           ``KeyboardInterrupt``, ``SystemExit`` — non-``Exception``)
+           ``KeyboardInterrupt``, ``SystemExit``; all non-``Exception``)
            propagate unmodified; wrapping them as a transient would suppress
            the user's stop signal.
-        2. A non-transient failure (a programming error — one
+        2. A non-transient failure (a programming error, one
            ``wrap_failure`` does not recognize) is raised unwrapped, so it is not masked
            by a resumable handle for a transient sibling that completed later.
         3. Only when every failure is a recognized transient is the first raised as a
         resumable ``FanOutInterrupted``.
 
-        ``wrap_failure`` is called only for the one failure that is raised.
+        ``wrap_failure`` is called only for the failure that is raised.
         Calling it per failure would snapshot the combined frame N times (a
         full concat over every completed chunk) and discard all but one,
         which happens whenever a batch of chunks fails together.
@@ -555,14 +548,14 @@ class FanOut(Generic[_Chunk]):
 
         The gather dispatches every pending chunk at once, but an
         ``asyncio.Semaphore`` caps the number of concurrent fetches at
-        ``N = max_concurrent`` — ``None`` removes the cap, ``N=1`` runs them
+        ``N = max_concurrent``: ``None`` removes the cap, ``N=1`` runs them
         one at a time. The connection pool is sized to the same ``N``
         (``httpx.Limits(max_connections=N, max_keepalive_connections=N)``)
         so the in-flight fetches reuse keepalive connections.
 
-        The semaphore, not the pool, is the throttle (ADR 0008); holding
-        chunks at the semaphore keeps them out of the pool, so the pool
-        timeout expires only for a connection that is stuck.
+        The semaphore, not the pool, is the throttle (ADR 0008). Chunks that
+        wait at the semaphore stay out of the pool, so the pool timeout expires
+        only for a connection that is stuck.
 
         The shared client is set on :data:`_active_client` so
         the paginated-loop helpers reuse its connection pool.
@@ -578,7 +571,7 @@ class FanOut(Generic[_Chunk]):
         df : pandas.DataFrame
             Combined data from every chunk.
         response
-            The finalized aggregate — a raw :class:`httpx.Response`
+            The finalized aggregate: a raw :class:`httpx.Response`
             (canonical URL, headers from the response with the lowest reported
             remaining quota, and summed response elapsed durations) by default,
             or whatever :attr:`finalize` produces.
@@ -587,14 +580,14 @@ class FanOut(Generic[_Chunk]):
         ------
         FanOutInterrupted
             On a transient chunk failure. ``.call`` is ``self``,
-            holding the sparse completed chunks; ``.call.resume()``
+            with the sparse completed chunks; ``.call.resume()``
             re-issues the unfinished ones.
         """
-        # At httpx's default client limits (``max_connections=100``,
-        # keepalive 20), the pool would limit a wider cap, or would open and close
-        # connections repeatedly by keeping too few alive. ``unbounded``
-        # (``max_concurrent=None``) is a cap equal to the plan total — a
-        # semaphore that can never block — so the gated path is the only code path.
+        # At httpx's default client limits (``max_connections=100``, keepalive 20),
+        # the pool would limit a wider cap, or would open and close connections
+        # repeatedly by keeping too few alive. ``unbounded``
+        # (``max_concurrent=None``) is a cap equal to the plan total (a semaphore
+        # that can never block), so the gated path is the only code path.
         limits = httpx.Limits(
             max_connections=max_concurrent, max_keepalive_connections=max_concurrent
         )

@@ -134,13 +134,13 @@ def test_walk_pages_multiple_mocked():
     resp2.links = {}
     resp2.status_code = 200
 
-    # Mock client (Session)
+    # Mock client
     mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
     # First call to send() returns resp1, then call to request() in loop returns resp2
     mock_client.send.return_value = resp1
     mock_client.request.return_value = resp2
 
-    # Mock request (PreparedRequest)
+    # Mock request
     mock_req = mock.MagicMock(spec=httpx.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
@@ -181,7 +181,7 @@ def test_row_cap_truncates_and_stops_within_first_page():
 
     df, _ = _run_walk_pages(geopd=False, req=mock_req, client=mock_client, row_cap=2)
 
-    assert len(df) == 2  # truncated to the cap, not the page's 3 rows
+    assert len(df) == 2  # truncated to the cap (the page has 3 rows)
     assert not mock_client.request.called  # ``next`` link never followed
 
 
@@ -291,7 +291,7 @@ def test_walk_pages_raises_on_connection_error_mid_pagination():
 def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
     """Some ``httpx`` exceptions (e.g. ``TimeoutException("")``)
     stringify to ``""``. The wrapper must still produce an informative
-    message — fall back to the exception class name."""
+    message by falling back to the exception class name."""
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(httpx.TimeoutException(""))
 
@@ -303,7 +303,7 @@ def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
 
 
 def test_walk_pages_raises_on_5xx_mid_pagination():
-    """A 5xx mid-pagination must raise — partial data is no longer returned
+    """A 5xx mid-pagination must raise. Partial data is no longer returned
     because the API has no resume cursor, so truncating without an error would return
     an incomplete frame the caller cannot distinguish from a complete one."""
     page2_503 = mock.MagicMock()
@@ -366,10 +366,10 @@ def test_walk_pages_wraps_initial_page_parse_error():
 
 def test_get_resp_data_handles_missing_features_key():
     """Regression: a 200 with ``numberReturned > 0`` but no ``features`` key (a real
-    schema-drift shape) used to fail ``_get_resp_data`` with ``KeyError`` — wrapped
+    schema-drift shape) used to fail ``_get_resp_data`` with ``KeyError``, wrapped
     downstream by ``_paginate`` as a generic transport error. ``_handle_nesting``
     already handled this; ``_get_resp_data`` now does the same and returns an empty
-    frame instead."""
+    frame."""
     resp = mock.Mock()
     resp.json.return_value = {"numberReturned": 1, "links": []}
     df = _get_resp_data(resp, geopd=False)
@@ -380,8 +380,8 @@ def test_get_resp_data_handles_missing_features_key():
 def test_next_req_url_follows_link_without_number_returned():
     """The NGWMN OGC API omits ``numberReturned`` from its page envelope, so
     ``_next_req_url`` keys the ``next`` link off ``features`` (matching
-    ``_get_resp_data``) rather than that count -- otherwise a page that has
-    features but no count stops pagination after page 1 and truncates every
+    ``_get_resp_data``). Keyed on that count, a page that has
+    features but no count would stop pagination after page 1 and truncate every
     multi-page result without an error. A page that has features still follows
     its ``next`` link even when ``numberReturned`` is absent.
     """
@@ -406,12 +406,12 @@ def test_next_req_url_stops_when_no_features():
 
 
 def test_walk_pages_does_not_mutate_initial_response():
-    """The aggregated response returned from ``_walk_pages`` is built
-    via ``_merge_response``, which returns a new copy.
+    """``_merge_response`` builds the aggregated response ``_walk_pages``
+    returns as a new copy.
     Any caller that inspected ``initial_response.headers`` /
     ``.elapsed`` before pagination completed (a Session response hook,
     a logging middleware) must continue to see the original first-page
-    values — NOT the rewritten cumulative values."""
+    values, not the rewritten cumulative values."""
     page1 = mock.MagicMock()
     page1.status_code = 200
     page1.url = "https://example.com/page1"
@@ -480,8 +480,8 @@ def _run_get_data_with_failure(failure_resp_or_exc, monkeypatch):
     """Exercise get_data where the initial response succeeds and the
     paginated follow-up fails as given. Matches _walk_pages_with_failure.
     `monkeypatch` stubs ``_handle_nesting`` so the synthetic minimal
-    response body doesn't need to parse — these tests only assert on the
-    pagination loop's error surfacing."""
+    response body doesn't need to parse; these tests only assert on the
+    pagination loop's error reporting."""
     monkeypatch.setattr(
         _stats_module,
         "_handle_nesting",
@@ -505,14 +505,14 @@ def _run_get_data_with_failure(failure_resp_or_exc, monkeypatch):
 
 def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     """Wiring smoke: ``get_data`` and ``_walk_pages`` share the
-    same ``_paginate`` strategy helper, so error-routing behaviour is
+    same ``_paginate`` strategy helper, so error-routing behavior is
     exercised by the ``_walk_pages`` triplet above. This single
     ``get_data`` mid-pagination case proves the stats-specific
     follow-up callback is wired into ``_paginate``.
 
     Statistics runs that page walk as a one-item ``FanOut``, the same
     executor every other getter uses, so a transient mid-walk failure is
-    resumable here too rather than ending the call outright.
+    resumable here too.
     """
     with pytest.raises(ServiceInterrupted) as excinfo:
         _run_get_data_with_failure(
@@ -547,7 +547,7 @@ def test_get_data_warning_includes_next_token(caplog, monkeypatch):
         _run_get_data_with_failure(page2_503, monkeypatch)
 
     warnings_ = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
-    # The initial response from _stats_initial_ok carries next=tok2.
+    # The initial response from _stats_initial_ok has next=tok2.
     assert any("tok2" in m for m in warnings_), warnings_
 
 
@@ -641,15 +641,15 @@ def test_handle_nesting_returns_empty_on_empty_features():
 
 def test_handle_nesting_empty_preserves_geopd_type():
     """When geopandas is available, the empty-features short-circuit
-    must return a ``GeoDataFrame`` rather than a plain ``DataFrame``.
+    must return a ``GeoDataFrame``.
     Otherwise a subsequent ``pd.concat([empty, geo_page])`` downgrades
-    the final result to a plain ``DataFrame`` and strips geometry/CRS
-    — a regression for geopd-installed users on stats queries
+    the final result to a plain ``DataFrame`` and strips geometry/CRS,
+    a regression for geopd-installed users on stats queries
     that encountered an empty intermediate page."""
     # Monkeypatch a stub gpd so the test runs whether or not geopandas is
     # installed. The empty-page short-circuit delegates to the shared
     # ``shaping._empty_feature_frame``, which resolves ``gpd`` from the shaping
-    # namespace — so patch it there, not in the stats module.
+    # namespace, so patch it there.
     fake_gpd = mock.MagicMock()
 
     class _Sentinel:
@@ -724,7 +724,7 @@ def test_empty_result_matches_a_non_empty_geodataframe():
 def test_get_resp_data_empty_preserves_geopd_type():
     """Same as the stats-side preservation: ``_get_resp_data``'s
     ``numberReturned == 0`` short-circuit must return a
-    ``GeoDataFrame`` (not a plain ``DataFrame``) when geopd is True,
+    ``GeoDataFrame`` when geopd is True,
     so paginating across a sparse intermediate page doesn't downgrade
     the final concat result."""
     fake_gpd = mock.MagicMock()
@@ -736,8 +736,8 @@ def test_get_resp_data_empty_preserves_geopd_type():
 
     resp = mock.MagicMock()
     resp.json.return_value = {"numberReturned": 0, "features": [], "links": []}
-    # ``_get_resp_data`` resolves ``gpd`` from the shaping namespace -- patch
-    # it there, not in ``utils``.
+    # ``_get_resp_data`` resolves ``gpd`` from the shaping namespace; patch
+    # it there.
     with mock.patch.object(_shaping_module, "gpd", fake_gpd, create=True):
         result = _get_resp_data(resp, geopd=True)
     assert isinstance(result, _Sentinel)
@@ -767,8 +767,8 @@ def test_get_resp_data_keeps_one_geospatial_type_when_geometry_is_missing():
 def test_get_resp_data_attaches_wgs84_crs():
     """A geometry-bearing Water Data page should be returned with the CRS EPSG:4326 (the
     CRS the coordinates are published in), so callers can run ``to_crs`` / spatial joins
-    without first patching in a CRS by
-    hand. Regression for the ``.crs is None`` reported in issue #342."""
+    without first patching in a CRS by hand. Regression for the ``.crs is None``
+    reported in issue #342."""
     geopandas = pytest.importorskip("geopandas")
 
     resp = _resp_ok(
@@ -820,8 +820,7 @@ def test_handle_nesting_attaches_wgs84_crs():
 def test_handle_nesting_tolerates_missing_features_key():
     """A 200 response with a body that does not include ``features`` at
     all (rare but seen in error envelopes) must also short-circuit
-    rather than KeyError before the schema-aware extraction even
-    runs."""
+    before the schema-aware extraction runs."""
     df = _handle_nesting({}, geopd=False)
     assert df.empty
 
@@ -927,7 +926,7 @@ def test_type_cols_numeric_columns_are_always_float(values):
 
 
 def test_type_cols_missing_values_do_not_warn():
-    """Null and empty-string values are missing, not parse failures."""
+    """Null and empty-string values count as missing, so they do not warn."""
     df = pd.DataFrame(
         {
             "time": ["2024-01-01T00:00:00Z", None, ""],
@@ -948,8 +947,8 @@ def test_type_cols_missing_values_do_not_warn():
     ids=["numbers", "datetimes"],
 )
 def test_type_cols_counts_only_unparseable_values(col, raw, kind):
-    """The warning counts values the parser dropped, not values that were
-    already missing, so a parse failure cannot be mistaken for a gap (#428)."""
+    """The warning counts only values the parser dropped, so a parse failure
+    cannot be mistaken for a gap (#428)."""
     df = pd.DataFrame({col: raw})
     with pytest.warns(UserWarning, match=rf"^2 values in column '{col}'.*{kind}"):
         out = _type_cols(df, _TYPING_DIALECT)
@@ -1024,8 +1023,8 @@ def test_format_api_dates_passes_none_through():
 
 
 def test_format_api_dates_treats_an_all_blank_sequence_as_no_filter():
-    """``[None, None]`` is an interval with no endpoints, which is no filter at
-    all -- sending ``../..`` would be a query the service has to reject."""
+    """``[None, None]`` is an interval with no endpoints, which is no filter;
+    sending ``../..`` would be a query the service has to reject."""
     assert _format_api_dates([None, None]) is None
     assert _format_api_dates(["", ""]) is None
     assert _format_api_dates(["..", ".."]) is None
@@ -1157,7 +1156,7 @@ def test_format_api_dates_rejects_an_unreadable_interval_string(interval, messag
 )
 def test_format_api_dates_rejects_an_unreadable_bound(value):
     """An element that is not blank and matches no format used to return None,
-    which the callers send as no filter at all. The message names the caller's
+    which the callers send as no filter. The message names the caller's
     argument and the bad value, and shows the forms that are accepted."""
     with pytest.raises(ValueError) as excinfo:
         _format_api_dates(value, name="last_modified")
@@ -1170,7 +1169,7 @@ def test_format_api_dates_rejects_an_unreadable_bound(value):
 def test_format_api_dates_rejects_more_than_two_values():
     """A date filter is an instant, a duration, or a closed interval. Three
     values is a caller who meant something else, and the message says which
-    shapes exist rather than truncating without an error."""
+    shapes exist."""
     with pytest.raises(ValueError) as excinfo:
         _format_api_dates(["2024-01-01", "2024-06-01", "2024-12-31"], name="time")
     message = str(excinfo.value)
@@ -1180,7 +1179,8 @@ def test_format_api_dates_rejects_more_than_two_values():
 
 def test_the_duration_example_is_withheld_where_durations_are_rejected():
     """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
-    'P7D' on that path -- a caller following it would receive a second rejection."""
+    'P7D' on that path, because a caller following it would receive a second
+    rejection."""
     with pytest.raises(ValueError) as allowed:
         _format_api_dates(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
@@ -1195,7 +1195,7 @@ def test_the_duration_example_is_withheld_where_durations_are_rejected():
 
 def test_format_api_dates_names_the_callers_parameter():
     """The subject must be the argument the caller passed. It used to be
-    ``datetime_input`` -- a local of this private helper that no public getter
+    ``datetime_input``, a local of this private helper that no public getter
     accepts, so correcting the argument the message named sent an
     unrecognized parameter."""
     with pytest.raises(TypeError, match="^time must be a date, a string"):
@@ -1267,7 +1267,7 @@ def test_format_api_dates_accepts_date_and_datetime_objects(value, date, expecte
 
 @pytest.mark.parametrize("date", [True, False], ids=["date_only", "datetime"])
 def test_format_api_dates_reads_naive_objects_like_naive_strings(date):
-    """A naive ``datetime``/``Timestamp`` is local time, the same rule a naive
+    """A naive ``datetime``/``Timestamp`` is UTC, the same rule a naive
     string follows, so both spellings of one instant build the same filter in
     any time zone. A ``date`` is midnight of that day, like ``"2024-01-01"``."""
     as_string = _format_api_dates(["2024-01-01T10:00:00", None], date=date)
@@ -1306,7 +1306,7 @@ def _make_response(status, body, reason=None, content_type="text/html"):
 
 
 def test_error_body_handles_non_json_html_response():
-    """A non-JSON 502 HTML body must be summarized, not raise JSONDecodeError."""
+    """A non-JSON 502 HTML body must be summarized without raising JSONDecodeError."""
     html = (
         "<html>\r\n<head><title>502 Bad Gateway</title></head>"
         "<body><center><h1>502 Bad Gateway</h1></center><hr>"
@@ -1370,7 +1370,7 @@ def test_parse_retry_after_parses_delta_seconds():
 def test_parse_retry_after_clamps_negative_delta_to_zero():
     """A negative delta-seconds means retry immediately.
     Returning the negative value would let callers pass it to
-    ``time.sleep`` and get a ``ValueError`` — clamp at the source."""
+    ``time.sleep`` and get a ``ValueError``, so clamp at the source."""
     assert _parse_retry_after("-10") == 0.0
     assert _parse_retry_after("-0.5") == 0.0
 
@@ -1379,8 +1379,8 @@ def test_parse_retry_after_supports_http_date_and_rejects_garbage():
     """Both standard header forms are accepted; malformed values use backoff.
 
     A date is converted to seconds the same way as the delta-seconds form, however
-    far in the future it is: an over-long wait stops the retry and reaches the
-    caller on ``.retry_after`` rather than being discarded.
+    far in the future it is: an over-long wait stops the retry and is reported to
+    the caller on ``.retry_after`` rather than being discarded.
     """
     assert _parse_retry_after("not-a-date") is None
     assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") > 0
@@ -1388,8 +1388,7 @@ def test_parse_retry_after_supports_http_date_and_rejects_garbage():
 
 def test_raise_for_non_200_raises_service_unavailable_for_5xx():
     """5xx must be raised as the typed ``ServiceUnavailable`` so the chunker can
-    wrap it as a resumable ``ServiceInterrupted`` rather than treating it as a
-    fatal error."""
+    wrap it as a resumable ``ServiceInterrupted``."""
     resp = _make_response(503, "", reason="Service Unavailable")
     resp.headers["Retry-After"] = "120"
     with pytest.raises(ServiceUnavailable) as excinfo:
@@ -1409,10 +1408,10 @@ def test_raise_for_non_200_attaches_retry_after_to_rate_limited():
 
 
 def test_403_reports_the_services_own_reason():
-    """A 403 envelope must be shown to the user rather than fixed text.
+    """A 403 envelope must be shown to the user.
 
     The message was fixed text naming only "query exceeding server limits", and never
-    read the body -- so a revoked ``API_USGS_PAT``, the most common 403, was reported as
+    read the body, so a revoked ``API_USGS_PAT``, the most common 403, was reported as
     a query-size problem.
     """
     resp = _make_response(
@@ -1452,7 +1451,7 @@ def test_403_reports_the_services_own_reason():
     ),
 )
 def test_403_with_a_gateway_json_message_shows_the_message(body, expected):
-    """Gateway JSON errors are rendered deliberately, not as raw JSON."""
+    """A gateway JSON error is rendered as its message."""
     resp = _make_response(
         403,
         body,
@@ -1468,7 +1467,7 @@ def test_403_with_a_gateway_json_message_shows_the_message(body, expected):
 
 def test_403_with_a_non_json_body_shows_it_like_any_other_status():
     """A WAF 403 is plain text; discarding it was the bug this PR fixes, so
-    403 shares the snippet path rather than having its own."""
+    403 shares the snippet path."""
     resp = _make_response(403, "Access Denied: API key revoked", reason="Forbidden")
     with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
@@ -1486,7 +1485,8 @@ def test_403_without_an_envelope_names_the_credential_cause():
 
 def test_error_messages_name_the_url():
     """Without the URL a failed chunk in a fan-out cannot be traced back to
-    the request that produced it -- the message is all the interruption holds."""
+    the request that produced it, because the interruption records nothing but
+    the message."""
     request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v1/x")
     resp = httpx.Response(400, content=b"", request=request)
     with pytest.raises(HTTPError) as excinfo:
@@ -1503,7 +1503,7 @@ def test_error_message_survives_a_response_with_no_request():
 def test_raise_for_non_200_400_raises_http_error():
     """400 raises a fatal ``HTTPError`` (status_code=400) the chunker won't
     resume. It must NOT be a ``TransientError`` so the chunker's classifier
-    treats it as fatal rather than wrapping it as resumable."""
+    treats it as fatal."""
     resp = _make_response(
         400,
         '{"code": "BadRequest", "description": "missing parameter"}',
@@ -1522,7 +1522,7 @@ def test_next_req_url_rejects_cross_host():
     """``_next_req_url`` must refuse to follow a next-page link to a
     different host. The original request's headers (including any
     auth-like artifacts) were built for the original host; following
-    a server-supplied cross-host URL would leak them — and the URL
+    a server-supplied cross-host URL would leak them, and the URL
     itself could be sensitive."""
     resp = mock.MagicMock()
     resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
@@ -1538,7 +1538,7 @@ def test_next_req_url_rejects_cross_host():
 def test_next_req_url_strips_embedded_credentials():
     """A same-host next link with ``user:pass@`` must not be kept.
 
-    The cross-host guard passes here by construction -- the host matches -- so
+    The cross-host guard passes here by construction (the host matches), so
     nothing else would catch it. httpx derives ``Authorization: Basic`` from
     userinfo, so following the link verbatim would create a credential the caller
     never configured and send it alongside the real API key.
@@ -1565,8 +1565,8 @@ def test_next_req_url_strips_embedded_credentials():
 
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
-    so a 5xx is raised as the typed ``ServiceUnavailable`` — the same typed
-    contract as the main data path, not a raw ``httpx`` error."""
+    so a 5xx is raised as the typed ``ServiceUnavailable``, the same typed
+    contract as the main data path."""
     httpx_mock.add_response(
         method="GET",
         url=f"{OGC_API_URL}/collections/daily/schema",
@@ -1663,7 +1663,7 @@ def test_with_state_conflict_via_queryables_raises():
     """A native state param arriving through ``**queryables`` (i.e. not an
     explicit getter parameter, as with ``get_time_series_metadata``'s
     ``state_code``) is flattened before the mutual-exclusion check, so combining
-    it with ``state`` still raises rather than sending both filters."""
+    it with ``state`` still raises."""
     with pytest.raises(ValueError, match="cannot be combined"):
         _utils_module._with_state(
             {"state": "WI", "queryables": {"state_code": "55"}},
@@ -1710,10 +1710,10 @@ def test_get_ogc_data_wrapper_does_not_touch_state():
     "name", ["x_api_key", "x-api-key", "api_token", "access_token", "pat", "auth"]
 )
 def test_credential_shaped_queryables_are_rejected(name):
-    """The denylist matches spellings, not just a few exact names.
+    """The denylist matches credential-shaped spellings.
 
-    ``x_api_key`` is the likely one -- it matches the ``X-Api-Key`` header
-    the README documents -- and an exact-match list let it through into the
+    ``x_api_key`` is the likely one (it matches the ``X-Api-Key`` header
+    the README documents), and an exact-match list let it through into the
     query string.
     """
     with pytest.raises(TypeError, match="Credentials cannot be passed"):
@@ -1765,7 +1765,7 @@ class TestWireIdSwitch:
 def test_extract_features_returns_none_for_a_missing_body():
     """``None`` means "give the caller an empty frame". An empty features list
     is a real mid-pagination shape, and letting it through would fail the
-    downstream merge with a missing join key rather than returning nothing."""
+    downstream merge with a missing join key."""
     from dataretrieval.waterdata.stats import _extract_features
 
     assert _extract_features(None) is None
@@ -1776,7 +1776,7 @@ def test_extract_features_returns_none_for_a_missing_body():
 def test_next_req_url_parses_the_body_when_not_handed_one():
     """The page walk normally passes the already-parsed body to avoid a second
     parse; the no-body path is what a caller outside the walk gets, and it must
-    still find the link rather than returning None and truncating the walk."""
+    still find the link; returning None would truncate the walk."""
     from dataretrieval.ogc.engine import _next_req_url
 
     payload = {
@@ -1809,7 +1809,7 @@ def test_next_req_url_stops_on_a_page_with_no_features():
 
 class TestOgcJsonErrorDetail:
     """The service's own wording is used when it sends one; anything else
-    must fall back to the status-derived message rather than raising while
+    must fall back to the status-derived message without raising while
     building an error."""
 
     def test_a_non_json_body_yields_no_detail(self):

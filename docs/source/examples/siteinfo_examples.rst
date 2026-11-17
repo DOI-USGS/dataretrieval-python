@@ -5,7 +5,7 @@ Retrieving site information
 The ``waterdata`` module distinguishes a monitoring location's *descriptive*
 metadata from the *catalog* of data available at it.
 
-Use ``get_monitoring_locations`` for descriptive metadata — name, location,
+Use ``get_monitoring_locations`` for descriptive metadata: name, location,
 site type, drainage area, hydrologic unit, and so on.
 
 .. code:: python
@@ -24,8 +24,8 @@ site type, drainage area, hydrologic unit, and so on.
     drainage_area                                    73.6
     hydrologic_unit_code                     070900020504
 
-To discover *what data are available* at a location — the period-of-record
-catalog that the legacy ``seriesCatalogOutput`` switch used to provide — use
+To discover *what data are available* at a location (the period-of-record
+catalog that the legacy ``seriesCatalogOutput`` switch used to provide), use
 ``get_time_series_metadata``. Each row is one time series; the ``begin`` and
 ``end`` columns give its period of record.
 

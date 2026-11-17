@@ -421,8 +421,8 @@ def test_search_flowlines_without_navigation_mode_raises_value_error():
 def test_search_for_basin_names_the_missing_half(kwargs, problem):
     """An incomplete basin origin says which argument to add, and shows one.
 
-    Covers both ways the pair can be incomplete -- neither supplied, and one
-    of the two -- because a caller that has to guess which case applies cannot
+    Covers both ways the pair can be incomplete (neither supplied, and one
+    of the two) because a caller that has to guess which case applies cannot
     correct the call from the message alone.
     """
     with pytest.raises(ValueError) as excinfo:
@@ -492,15 +492,14 @@ def test_validate_data_source_rejects_malformed_catalog(httpx_mock, monkeypatch)
 
 def test_query_504_raises_service_unavailable(httpx_mock):
     """``utils.query`` classifies any 5xx (here 504 Gateway Timeout) as the
-    transient ``ServiceUnavailable`` -- the whole 5xx range, not an enumerated
-    subset of codes."""
+    transient ``ServiceUnavailable``."""
     from dataretrieval.exceptions import ServiceUnavailable
     from dataretrieval.utils import query
 
     url = "https://example.invalid/x"
     httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=504)
-    # Match on the status number — robust against the exact message, which the
-    # legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
+    # Match on the status number so the test does not depend on the exact message,
+    # which the legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
     with pytest.raises(ServiceUnavailable, match="504"):
         query(url, {"a": "1"})
 
@@ -510,7 +509,7 @@ def test_a_configured_base_url_redirects_every_nldi_request(httpx_mock):
 
     NLDI validates a feature source against a catalog it fetches itself, so a redirect
     that applied only to the getter's own URL would leave the library querying the real
-    service whether the mirror's sources exist -- and the mirror exists because the
+    service whether the mirror's sources exist, and the mirror exists because the
     caller cannot or should not contact the service. Both mocks are on the mirror, so a
     request to any other host fails this.
     """
@@ -599,7 +598,7 @@ def test_get_features_by_data_source_validates_the_source(httpx_mock):
 
 def test_a_200_with_a_non_json_body_becomes_an_empty_frame(httpx_mock):
     """NLDI returns 200 with an empty body for some queries, and that is not an
-    error condition -- a feature with nothing upstream is a valid result.
+    error condition, because a feature with nothing upstream is a valid result.
 
     This is the one place the package returns an empty frame rather than raising on a
     malformed response. Pinned because it is deliberate: the suppression reads as an
@@ -641,7 +640,7 @@ def test_get_flowlines_forwards_stop_comid(httpx_mock):
 
 def test_search_rejects_a_basin_lookup_by_comid():
     """A basin is looked up by feature, not by flowline; the message must
-    offer both remedies rather than only naming the conflict."""
+    offer both remedies."""
     with pytest.raises(ValueError) as excinfo:
         search(find="basin", comid=13294314)
     message = str(excinfo.value)

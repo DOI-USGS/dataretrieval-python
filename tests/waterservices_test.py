@@ -26,8 +26,8 @@ except ImportError:
 def test_query_waterdata_validation():
     """Rejections name the filters, corners, and services that would work.
 
-    Asserted on the remedy rather than the whole message: the caller is
-    typically a program, and what it needs from the failure is the set of
+    Asserted on the remedy because the caller is typically a program, and
+    what it needs from the failure is the set of
     values that would have been accepted.
     """
     with pytest.raises(ValueError) as value_error:
@@ -42,7 +42,7 @@ def test_query_waterdata_validation():
     message = str(value_error.value)
     assert "Invalid service: None" in message
     # 'ratings' was listed here but is not an NwisWeb program: the URL it
-    # built returned an HTML error page, not data.
+    # built returned an HTML error page.
     assert "'peaks'" in message
     assert "get_ratings" in message
 
@@ -202,7 +202,7 @@ def test_get_iv_site_value_types(httpx_mock, site_input_type_list):
 def test_get_info(httpx_mock):
     """
     Verify get_info builds the expected request URL and returns a DataFrame.
-    Note that only sites and format are passed as query params
+    Only sites and format are passed as query params
     """
     size = 24
     format = "rdb"
@@ -229,7 +229,7 @@ def test_get_info(httpx_mock):
 
 
 def test_get_info_preserves_leading_zero_codes(httpx_mock):
-    """Site codes keep their zeros: HUC 02060005, not 2060005.
+    """Site codes keep their zeros, as in HUC 02060005.
 
     ``site_no`` was hinted as a string from the start, but ``huc_cd`` was
     inferred as an int, so every site's hydrologic unit came back short a

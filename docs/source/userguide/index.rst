@@ -4,8 +4,8 @@
 User Guide
 ==========
 
-These topic guides provide additional information about various aspects of
-``dataretrieval``.
+These topic guides cover configuration, error handling, time conventions, and
+the data portals ``dataretrieval`` retrieves from.
 
 Contents
 --------

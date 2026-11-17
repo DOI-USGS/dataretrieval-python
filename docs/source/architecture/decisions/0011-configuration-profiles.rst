@@ -4,9 +4,9 @@ ADR 0011: Configuration profiles, scoped to one adapter
 Status
 ------
 
-Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings` --
-decision 5 (adapter schemas held centrally as ``TypedDict``) and decision 8
-(each adapter a named keyword on ``configure``) -- and three of
+Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings`,
+decision 5 (adapter schemas defined centrally as ``TypedDict``) and decision 8
+(each adapter a named keyword on ``configure``), and three of
 :doc:`0009-layered-configuration`: the global ``[profiles.<name>]`` table; the
 environment-above-file rule, inverted for a profile selected in code; and the
 refusal of a configuration object, which ADR 0010 had already narrowed to a
@@ -28,14 +28,14 @@ multi-service caller has:
   store both. The only named construct is ``[profiles.<name>]``, which switches
   *every* service at once.
 - **Composing them.** The two mechanisms do not compose:
-  ``[profiles.bulk.ngwmn]`` raises, so a profile cannot hold per-service
+  ``[profiles.bulk.ngwmn]`` raises, so a profile cannot contain per-service
   detail. That refusal was recorded in ADR 0010 on the grounds that layering
   them needed a fourth precedence rule nobody had asked for. Someone has now
   asked for it, and it is the primary use case.
 
 Two further problems ADR 0010 left open bear on the same decision. The
-adapter roster is listed in four places, only one of which is derived --
-adding an adapter needs coordinated edits, and forgetting one leaves a schema
+adapter roster is listed in four places, only one of which is derived.
+Adding an adapter needs coordinated edits, and forgetting one leaves a schema
 no call site can use, which happened to three adapters and shipped
 undetected until a fitness test was written. And a setting's definition is
 in ``config`` rather than in the module that reads it, so adding a Water Data
@@ -73,7 +73,7 @@ adapter, and nothing else::
         ...
 
 The adapter an instance targets is a property of its class, so the caller
-never restates it -- which is what removes the roster duplication. Naming two
+never restates it, which removes the roster duplication. Naming two
 configurations for one adapter raises: they would be the one pairing the
 precedence rules do not order.
 
@@ -84,10 +84,10 @@ way.
 
 **Schemas are defined in their adapter; names are defined centrally.**
 ``configuration`` is a standard-library-only leaf every adapter may import, so
-it cannot import adapters. It holds the tuple of adapter *names*, which is what
-parsing a file needs (whether ``[ngwmn]`` is a table or a typo). Each adapter package
-owns its subclass, which is what a setting's definition needs to be local to
-the service that reads it.
+it cannot import adapters. It defines the tuple of adapter *names*, which is
+what parsing a file needs (whether ``[ngwmn]`` is a table or a typo). Each
+adapter package owns its subclass, which is what a setting's definition needs to
+be local to the service that reads it.
 
 Registration at import alone would not suffice: ``dataretrieval`` imports six of
 seven adapters eagerly, but NLDI is deliberately on demand for the geopandas
@@ -118,8 +118,8 @@ original rule.
 
 **Validation is lazy.** A file's structure is checked when it is parsed; a
 table's keys are checked when that adapter first resolves a setting. This
-keeps the isolation rule ADR 0010 established -- a malformed ``[nldi]``
-table must not fail a Water Data call -- and it is what allows the schema to
+keeps the isolation rule ADR 0010 established (a malformed ``[nldi]``
+table must not fail a Water Data call), and it allows the schema to
 be defined in a module the parser cannot import.
 
 **Base URLs may be configured, from code only.** An adapter's configuration
@@ -182,7 +182,7 @@ Consequences
   most one configuration each, any of them from the file or from code.
 - **The roster stops being duplicated.** An adapter declares itself once. The
   failure mode where a schema exists that nothing passes becomes impossible by
-  construction rather than caught by a fitness test.
+  construction.
 - **A setting's definition moves next to the code that reads it.** Adding a
   Water Data setting no longer edits a service-neutral module.
 - **``configure(api_key=...)`` breaks.** The README, the configuration guide,
@@ -190,15 +190,16 @@ Consequences
   the same commit.
 - **``show_configuration()`` can only resolve the settings an adapter accepts
   once that adapter has been imported.** It names the adapters it could not
-  check rather than omitting them, which is the cost of lazy
+  check, which is the cost of lazy
   validation. The *profile list* is not import-limited: what a profile is
   called is a fact about the file, so every ``[<adapter>.<name>]`` table it
-  defines is listed, imported or not -- withholding one would make the
+  defines is listed, imported or not; withholding one would make the
   section's contents depend on which optional extras happened to be installed.
-- **Two names differ only by case** -- the ``configuration`` module and the
+- **Two names differ only by case**: the ``configuration`` module and the
   ``Configuration`` class. The module stays out of the package's public
-  exports, so ``from dataretrieval import configuration, Configuration`` cannot arise.
-- **Separate quota pools are still not modelled.** Three exist. Nothing in the
+  exports, so ``from dataretrieval import configuration, Configuration`` cannot
+  arise.
+- **Separate quota pools are still not modeled.** Three exist. Nothing in the
   library depends on them yet.
 - **``ssl_check`` is unaffected** and remains a per-call argument, for the
   reasons in ADR 0010.
@@ -235,12 +236,11 @@ Satisfied. In ``tests/configuration_test.py``:
   ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
   resolves, and no configuration exists that nothing reads. An adapter name
   not in the roster now raises out of ``_resolve`` rather than
-  falling through to the package-wide value, so the grep is a secondary check
-  rather than the only one.
+  falling through to the package-wide value, so the grep is a secondary check.
 
 ``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
-asserts the module imports no adapter -- ``dataretrieval.exceptions`` is its
-only first-party import -- and ``lint-imports`` keeps ``configuration`` below
+asserts the module imports no adapter (``dataretrieval.exceptions`` is its
+only first-party import), and ``lint-imports`` keeps ``configuration`` below
 ``credentials``.
 
 Notes
@@ -250,7 +250,7 @@ Notes
   ``api.water.usgs.gov``.
 - Open, not decided here: whether ``parallel_chunks`` is renamed. ``fan_out``
   was suggested and conflicts with the glossary, where fan-out is *executing*
-  chunks concurrently -- which ``concurrency`` already controls -- while
+  chunks concurrently (which ``concurrency`` already controls), while
   ``parallel_chunks`` instructs the planner to *divide* more finely. ADR 0009
   rejected ``parallelism`` and ``chunk_parallelism`` for the same conflation.
   ``chunk_count`` or ``target_chunks`` would not conflate the two.

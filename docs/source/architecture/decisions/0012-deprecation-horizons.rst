@@ -17,7 +17,7 @@ getter whose service no longer exists.
 Four mechanisms for telling the caller something is being removed were written
 independently, and only one included a date. A caller could not tell how long
 they had, a maintainer could not audit what was due, and the warning category
-was a per-author choice -- which matters, because downstream projects run their
+was a per-author choice, which matters because downstream projects run their
 suites under ``-W error::DeprecationWarning``.
 
 ADR 0005 sets a removal date for legacy NWIS, but it is scoped to that adapter.
@@ -32,13 +32,13 @@ recorded in ``REMOVALS``.
 
 A deprecation advisory names three things: what is being removed, what to use
 instead, and the date on or after which it may be removed. The mechanism
-accepts an advisory with no date -- it then states no date rather
-than implying a schedule it does not have. A deprecation of a public name is
-expected to include one, and an advisory naming a replacement the caller cannot
-yet use is not finished.
+accepts an advisory with no date; it then states no date rather than implying
+a schedule it does not have. A deprecation of a public name is expected to
+include one, and an advisory naming a replacement
+the caller cannot yet use is not finished.
 
-``REMOVALS`` is the single table of horizons. One table is auditable -- what is
-due can be listed, and a horizon can be extended in one place -- whereas four
+``REMOVALS`` is the single table of horizons. One table is auditable (what is
+due can be listed, and a horizon can be extended in one place), whereas four
 hand-written shims could only be found by grep. A renamed public argument keeps
 working under its old name through one shared decorator rather than a shim
 written for each getter.
@@ -61,9 +61,9 @@ Consequences
   pass unnoticed in a module nobody is reading.
 - Deprecating something costs more than adding a ``warnings.warn`` call: the
   replacement must exist and a date must be chosen. That is the intended cost.
-- The package accumulates long-lived compatibility shims. This is accepted --
-  it is the cost of the compatibility characteristic, and the table makes the
-  accumulation visible rather than hidden.
+- The package accumulates long-lived compatibility shims. This is accepted as
+  the cost of the compatibility characteristic, and the table makes the
+  accumulation visible.
 - Nothing is removed on the horizon alone. A removal still needs a release that
   states it.
 
@@ -74,8 +74,8 @@ Compliance
 names its replacement, and that the horizon it prints is the one in
 ``REMOVALS``. Per-surface tests assert the individual advisories, including that
 a renamed argument still works under its old name. The *warning category*
-assertions -- that ``DataCurrencyWarning`` is not a ``DeprecationWarning``
-subclass -- belong to :doc:`0004-error-retry-resume`.
+assertions (that ``DataCurrencyWarning`` is not a ``DeprecationWarning``
+subclass) belong to :doc:`0004-error-retry-resume`.
 
 Notes
 -----

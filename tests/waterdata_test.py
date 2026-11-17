@@ -55,7 +55,7 @@ from dataretrieval.waterdata.utils import (
 
 _OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v1"
 #: The version the deprecated time-series-metadata filters are served from.
-#: Spelled out rather than derived from ``_OGC_BASE``, so that it still names
+#: Spelled out independently of ``_OGC_BASE``, so that it still names
 #: v0 once the default changes.
 _V0_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
 _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
@@ -64,7 +64,7 @@ _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 #: Property names, nesting, and value types (including the numeric-looking
 #: strings the API sends) are verbatim; only the row count is reduced.
 #: Regenerate a collection by re-querying it with ``limit=2`` and replacing that
-#: key -- the getters' behavior depends on the shape, not the row count.
+#: key; the getters' behavior depends only on the shape.
 _OGC_FIXTURES = json.loads(
     (Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
 )
@@ -78,7 +78,7 @@ _SUBLOCATION_FIXTURES = json.loads(
 # The direct request-construction unit tests below bypass ``get_ogc_data``,
 # which is what normally binds the Water Data base URL and dialect (the OGC
 # package names no collection of its own). Bind them here the same way the
-# engine does — explicitly, via ``functools.partial`` — so the tests exercise
+# engine does (explicitly, via ``functools.partial``) so the tests exercise
 # the real Water Data behavior (monitoring-locations -> POST/CQL2; daily ->
 # date-only time args).
 _construct_api_requests = functools.partial(
@@ -125,7 +125,7 @@ def test_mock_get_samples(httpx_mock):
     assert md.header.get("mock_header") == "value"
     assert md.comment is None
     assert df["Activity_StartDateTime"].notna().any()
-    # Recorded response codes keep their zeros: pcode 00061, not 61.
+    # Recorded response codes keep their leading zeros: pcode 00061.
     assert "00061" in set(df["USGSpcode"])
     assert set(df["Location_HUCEightDigitCode"].dropna()) == {"07070005"}
     assert set(df["Location_HUCTwelveDigitCode"].dropna()) == {"070700050502"}
@@ -203,7 +203,7 @@ def test_get_samples_preserves_identifiers(httpx_mock):
     assert pd.isna(df["ResultMeasureValue"].iloc[0])
     assert df["ResultMeasureValue"].iloc[1] == 1.5
     assert df["resultCount"].tolist() == [0, 2]
-    # Despite its name this field is a count, not an identifier.
+    # Despite its name this field is a count.
     assert pd.api.types.is_numeric_dtype(df["AlternateLocation_IdentifierCount"])
     assert df["AlternateLocation_IdentifierCount"].tolist() == [0, 2]
     # The original triplet columns survive alongside the derived UTC column.
@@ -259,8 +259,8 @@ def test_get_samples_summary_rejects_list():
 
 def test_get_samples_raises_typed_error_on_429(httpx_mock):
     """Non-200 from the Samples endpoint now raises the module's typed error
-    (RateLimited on 429) — consistent with the OGC/stats path — instead of a
-    bare httpx.HTTPStatusError."""
+    (RateLimited on 429), consistent with the OGC/stats path. It used to raise
+    a bare httpx.HTTPStatusError."""
     from dataretrieval.exceptions import RateLimited
 
     httpx_mock.add_response(status_code=429, headers={"Retry-After": "30"})
@@ -346,8 +346,8 @@ def test_accept_legacy_kwargs_passthrough_no_warning(recwarn):
 def test_every_legacy_camelcase_samples_kwarg_is_backward_compatible():
     """Every deprecated camelCase ``get_samples`` parameter stays backward
     compatible: it is still accepted, is renamed to its snake_case replacement
-    with a ``DeprecationWarning``, and resolves to the exact same Samples-API
-    wire parameter it always did — so existing camelCase call sites keep
+    with a ``DeprecationWarning``, and resolves to the same Samples-API
+    wire parameter it always did, so existing camelCase call sites keep
     producing identical requests after the rename. Covers the whole mapping, so
     a future param renamed without a legacy alias fails here."""
     from dataretrieval.waterdata.api import (
@@ -380,8 +380,8 @@ def test_every_legacy_camelcase_samples_kwarg_is_backward_compatible():
 
 def test_legacy_camelcase_kwargs_return_identical_to_snake_case(httpx_mock):
     """End-to-end: a legacy camelCase ``get_samples`` call returns results
-    byte-identical to the equivalent snake_case call — same request URL and same
-    DataFrame — for every renamed parameter at once. The camelCase shim changes nothing
+    byte-identical to the equivalent snake_case call (same request URL and same
+    DataFrame) for every renamed parameter at once. The camelCase shim changes nothing
     for the caller but the parameter names."""
     import warnings
 
@@ -453,8 +453,8 @@ def test_construct_api_requests_multivalue_post():
 
 
 def test_construct_api_requests_omits_empty_list():
-    """An empty list value is omitted from the URL, not emitted as a filterless
-    ``&parameter_code=`` (which the server reads as 'match empty')."""
+    """An empty list value is omitted from the URL because the server reads a
+    filterless ``&parameter_code=`` as 'match empty'."""
     req = _construct_api_requests(
         "daily", monitoring_location_id="USGS-05427718", parameter_code=[]
     )
@@ -510,7 +510,7 @@ def test_construct_cql_request_post_verbatim_body():
     assert str(req.url).startswith(
         "https://api.waterdata.usgs.gov/ogcapi/v1/collections/daily/items"
     )
-    # The body is sent through unchanged, not re-serialized.
+    # The body is sent through unchanged.
     assert req.content.decode() == body
     url = str(req.url)
     assert "skipGeometry=true" in url
@@ -521,7 +521,7 @@ def test_construct_cql_request_post_verbatim_body():
 
 def test_construct_cql_request_skip_geometry_none_omits_param():
     """skip_geometry=None leaves skipGeometry unset (server default), so it never
-    appears in the URL — matching get_cql's default.
+    appears in the URL, matching get_cql's default.
     """
     req = _construct_cql_request("daily", "{}")
     assert "skipGeometry" not in str(req.url)
@@ -531,7 +531,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
     """``service=`` still resolves to ``collection`` for one deprecation window.
 
     ``service`` was the published spelling, and OGC API - Features calls the
-    value a collection -- it is the ``collectionId`` in ``/collections/{id}``.
+    value a collection (the ``collectionId`` in ``/collections/{id}``).
     The rename must not change behavior for callers using the old name.
     """
     with pytest.warns(DeprecationWarning, match="use 'collection'"):
@@ -545,7 +545,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
             get_cql(collection="not-a-collection", cql="a=1")
 
     # Passing both spellings is ambiguous and refused, which the hand-written shim this
-    # replaced did not do -- it dropped ``service`` without a warning.
+    # replaced did not do. That shim dropped ``service`` without a warning.
     with pytest.raises(TypeError, match="received both"):
         get_cql(service="daily", collection="daily", cql="a=1")
 
@@ -570,8 +570,8 @@ def test_waterdata_services_literal_matches_output_id_map():
 
 
 def test_construct_api_requests_single_value_stays_get():
-    """A length-1 list (or scalar) appears in the URL as a plain value, not a
-    comma-separated form, so existing single-site callers see no change."""
+    """A length-1 list (or scalar) appears in the URL as a plain value,
+    so existing single-site callers see no change."""
     req = _construct_api_requests(
         "daily",
         monitoring_location_id="USGS-05427718",
@@ -611,7 +611,7 @@ def test_construct_api_requests_rejects_a_folded_value_with_both_quotes():
 
 @pytest.mark.parametrize("blank", ["", "  "])
 def test_blank_filter_is_not_sent(httpx_mock, blank):
-    """The API answers ``filter=`` with HTTP 400, though it constrains nothing."""
+    """The API responds to ``filter=`` with HTTP 400, though it constrains nothing."""
     _mock_items(httpx_mock, "daily")
 
     get_daily(
@@ -642,7 +642,7 @@ def test_construct_api_requests_comma_joins_without_lists_as_cql2():
 
 def test_construct_api_requests_sends_a_cql2_json_filter_as_the_body():
     """A ``filter_lang="cql-json"`` filter is the POST body, ANDed with any
-    list predicates: both APIs answer one in the URL with HTTP 400."""
+    list predicates: both APIs respond to one in the URL with HTTP 400."""
     time_filter = {"op": ">=", "args": [{"property": "time"}, "2024-03-01"]}
     alone = _construct_api_requests(
         "daily",
@@ -703,12 +703,12 @@ def test_construct_api_requests_numeric_list_is_a_cql2_predicate():
 def test_get_args_materializes_numpy_and_series_numeric_params():
     """Regression: numeric (_NO_NORMALIZE_PARAMS) params given as a numpy array
     or pandas Series must be materialized to a list of native Python scalars so
-    they stay JSON-serializable in the CQL2 body — previously the
+    they stay JSON-serializable in the CQL2 body; previously the
     array/Series repr leaked into the query string."""
     for value in (np.array([2020, 2021]), pd.Series([2020, 2021])):
         args = _get_args({"water_year": value})
         assert args["water_year"] == [2020, 2021]
-        # native Python ints, not numpy scalars (JSON-serializable, no np reprs)
+        # native Python ints (JSON-serializable, no np reprs)
         assert [type(x) for x in args["water_year"]] == [int, int]
         req = _construct_api_requests("peaks", **args)
         assert _cql2_in(req) == {"water_year": [2020, 2021]}
@@ -733,7 +733,7 @@ def test_construct_api_requests_keeps_dotdot_for_an_open_start():
 def test_construct_api_requests_two_element_date_list_becomes_interval():
     """A two-element date list is interpreted as start/end of an OGC datetime
     interval (joined with '/'), NOT as two discrete dates. The OGC `datetime`
-    parameter does not support "these N specific dates" — that would require
+    parameter does not support "these N specific dates"; that would require
     a CQL filter. Verifying so this contract is pinned."""
     req = _construct_api_requests(
         "daily",
@@ -834,7 +834,7 @@ def _filters(request):
 
 # --- samples (CSV) -----------------------------------------------------------
 # The samples collection is CSV over a different host, so these use small CSV
-# bodies rather than the GeoJSON fixtures.
+# bodies.
 
 _SAMPLES_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/samples-data/")
 
@@ -963,7 +963,7 @@ def test_get_daily_keeps_a_dotdot_open_bound_in_time(httpx_mock):
 )
 def test_get_daily_rejects_an_unreadable_time_before_any_request(httpx_mock, time):
     """A bound that matches no date format used to drop the whole filter, so
-    the service received an empty ``time=`` and answered HTTP 400 without
+    the service received an empty ``time=`` and returned HTTP 400 without
     naming the argument. It now fails locally, naming ``time``."""
     with pytest.raises(ValueError, match=r"^time could not be read as a date"):
         get_daily(monitoring_location_id="USGS-05427718", time=time)
@@ -1062,9 +1062,8 @@ def test_get_daily_properties(httpx_mock):
     assert df.columns[-1] == "geometry"
     assert df.shape[1] == len(requested)
     # ``daily_id`` is this package's name for the wire ``id`` and ``geometry`` is
-    # governed by ``skipGeometry``, not by ``properties`` -- neither is a real
-    # queryable, so neither may be forwarded or the collection would reject the
-    # projection.
+    # governed by ``skipGeometry``. Neither is a real queryable, so neither may
+    # be forwarded or the collection would reject the projection.
     sent = _sent(httpx_mock, "daily")[0]["properties"][0].split(",")
     assert "daily_id" not in sent and "geometry" not in sent
     assert sent == ["monitoring_location_id", "parameter_code", "time", "value"]
@@ -1129,7 +1128,7 @@ def test_get_daily_empty_no_geometry(httpx_mock):
 
 
 def test_get_continuous(httpx_mock):
-    """Continuous observations are timestamped (not date-only), so ``time``
+    """Continuous observations are timestamped, so ``time``
     comes back as a UTC-aware datetime column."""
     _mock_items(httpx_mock, "continuous")
 
@@ -1198,7 +1197,7 @@ def test_get_latest_daily(httpx_mock):
 
 
 def test_get_latest_daily_properties_geometry(httpx_mock):
-    """Geometry is kept through an explicit ``properties`` list that omits it -- the
+    """Geometry is kept through an explicit ``properties`` list that omits it. The
     collection returns it regardless unless ``skip_geometry`` is set, so the
     projection must not drop it."""
     _mock_items(httpx_mock, "latest-daily")
@@ -1294,7 +1293,7 @@ def test_get_cql_compound_and_in(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
     req = httpx_mock.get_requests()[0]
     assert req.method == "POST"
-    # The CQL2 body is posted verbatim, not wrapped in an envelope.
+    # The CQL2 body is posted verbatim.
     assert json.loads(req.content) == cql
 
 
@@ -1336,7 +1335,7 @@ def test_get_cql_properties_id_translation(httpx_mock):
 
 def test_get_cql_like_wildcard(httpx_mock):
     """``get_cql`` passes through predicates the typed getters cannot express,
-    e.g. a LIKE with a ``%`` wildcard -- it must not be escaped or rewritten."""
+    e.g. a LIKE with a ``%`` wildcard, which must not be escaped or rewritten."""
     cql = {
         "op": "like",
         "args": [{"property": "hydrologic_unit_code"}, "020700100101%"],
@@ -1534,7 +1533,7 @@ def test_time_series_metadata_state_warning_points_to_the_same_argument(
     httpx_mock, spelled
 ):
     """get_combined_metadata accepts both spellings, so the remedy repeats the
-    one the caller passed rather than swapping it for the other."""
+    one the caller passed."""
     _mock_items(httpx_mock, "time-series-metadata", base=_V0_OGC_BASE)
 
     with pytest.warns(DeprecationWarning) as record:
@@ -1640,7 +1639,7 @@ def test_get_peaks_water_year_filter(httpx_mock):
     """``water_year`` is forwarded as a CQL2 ``in`` filter.
 
     The live version of this test asserted only that the returned rows fell
-    inside the requested years -- which an empty frame satisfies, so it could
+    inside the requested years, which an empty frame satisfies, so it could
     not fail. Asserting on the outgoing request is what pins the
     behavior.
     """
@@ -1684,11 +1683,11 @@ def test_get_reference_table(httpx_mock):
 
 
 def test_get_reference_table_rejects_unknown_collection_by_its_own_name(httpx_mock):
-    """The rejection names ``collection`` -- the parameter passed.
+    """The rejection names ``collection``, the parameter passed.
 
     Regression: this check was copied from ``get_codes``, message and local
     variable name included, so an unknown ``collection=`` was reported as an
-    invalid *code service* -- a parameter this function does not have.
+    invalid *code service*, a parameter this function does not have.
     """
     with pytest.raises(ValueError, match="Invalid collection: 'agency-codez'"):
         get_reference_table("agency-codez")
@@ -1738,13 +1737,13 @@ def test_get_reference_table_with_query(httpx_mock):
 
 
 def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
-    # ``max_rows`` is a client-side pagination cap, not an OGC query parameter — the
-    # server never sees it. So a getter must keep it out of the request ``args`` (which
-    # become query params) and instead forward it to ``get_ogc_data`` as the keyword
-    # that sets the cap. This pins that connection; the cap mechanism itself (stop
-    # following ``next`` once the cap is met, then truncate the combined frame to
-    # exactly N) is covered without a network round-trip by the ``_row_cap`` /
-    # ``_finalize_ogc`` tests in tests/waterdata_utils_test.py.
+    # ``max_rows`` is a client-side pagination cap and is never sent to the server,
+    # so a getter must keep it out of the request ``args`` (which become query params)
+    # and forward it to ``get_ogc_data`` as the keyword that sets the cap. This
+    # pins that connection; the cap mechanism itself (stop following ``next`` once
+    # the cap is met, then truncate the combined frame to exactly N) is covered
+    # without a network round-trip by the ``_row_cap`` / ``_finalize_ogc`` tests in
+    # tests/waterdata_utils_test.py.
     with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
         get_daily(
@@ -1761,7 +1760,7 @@ def test_get_cql_max_rows_is_excluded_from_request_and_forwarded():
     """``get_cql`` caps the total like every other Water Data getter.
 
     It was the only one without ``max_rows``, and its ``limit`` is the page
-    size -- so asking for a few rows through ``limit`` instead paged the whole
+    size, so asking for a few rows through ``limit`` paged the whole
     match a few rows at a time. A bounded probe written that way spent ~400
     requests of an hourly quota of 1000 before the service rejected it.
     """
@@ -1785,15 +1784,15 @@ def test_get_reference_table_wrong_name():
 @pytest.mark.parametrize("bad", [0, -1, 2.5, 10.0, True])
 def test_get_reference_table_rejects_bad_max_rows(bad):
     # max_rows must be a positive int; a non-positive value, a float
-    # (even integral like 10.0), or a bool must raise ValueError up front —
-    # not raise later inside pandas .head(). Raises before any HTTP request.
+    # (even integral like 10.0), or a bool must raise ValueError up front,
+    # before any HTTP request (pandas .head() would raise later).
     with pytest.raises(ValueError, match="positive integer"):
         get_reference_table("agency-codes", max_rows=bad)
 
 
 def test_get_reference_table_accepts_numpy_int_max_rows(httpx_mock):
     # numpy integers are valid caps: isinstance(np.int64, int) is False, so the
-    # validation must accept numbers.Integral (not just int) — otherwise a cap
+    # validation must accept numbers.Integral; otherwise a cap
     # derived from a numpy/pandas computation is wrongly rejected.
     _mock_items(httpx_mock, "agency-codes")
 
@@ -1830,7 +1829,7 @@ def test_get_stats_por(httpx_mock):
     assert "computation" in df.columns
     assert "percentile" in df.columns
     assert df["time_of_year"].isin(["01-01", "01"]).all()
-    # The nesting is flattened, not left as objects.
+    # The nesting is flattened.
     assert "data" not in df.columns and "values" not in df.columns
     # The single ``percentile`` entry expands into one row per percentile, so the
     # frame is longer than the nested value list: 4 scalar computations + 7
@@ -1866,11 +1865,11 @@ def test_get_stats_por_expanded_false(httpx_mock):
 
     assert "percentile" not in df.columns
     assert "percentiles" in df.columns
-    # ``expand_percentiles`` is a client-side shaping flag, not a query param.
+    # ``expand_percentiles`` is a client-side shaping flag; it is not sent.
     url = str(httpx_mock.get_requests()[0].url)
     assert "expand_percentiles" not in url
-    # The statistics API takes repeated params, not the comma-joined form the
-    # OGC collections use.
+    # The statistics API takes repeated params; the OGC collections use the
+    # comma-joined form.
     qs = parse_qs(urlsplit(url).query)
     assert qs["computation_type"] == ["minimum", "percentile"]
 
@@ -1897,7 +1896,7 @@ class TestCheckMonitoringLocationId:
     """Tests for the AGENCY-ID-specific layer over ``_normalize_str_iterable``.
 
     Generic type/iterable normalization is covered by
-    ``TestNormalizeStrIterable`` below; this suite holds only the format
+    ``TestNormalizeStrIterable`` below; this suite contains only the format
     check (``AGENCY-NUMBER`` shape) and the public-API integration smokes.
 
     Regression tests for GitHub issue #188.
@@ -1938,7 +1937,7 @@ class TestCheckMonitoringLocationId:
 
     def test_per_item_format_check_in_list(self):
         """The AGENCY-ID format check runs on EVERY element of an
-        iterable, not just the first. Regression guard against a
+        iterable. Regression guard against a
         future ``_check_monitoring_location_id`` loop that stops after one
         valid item or only checks the head."""
         with pytest.raises(ValueError, match="Invalid monitoring_location_id"):
@@ -1949,7 +1948,7 @@ class TestNormalizeStrIterable:
     """Tests for the generic _normalize_str_iterable helper.
 
     Matches TestCheckMonitoringLocationId for the type/iterable contract;
-    the AGENCY-ID format check is monitoring_location_id-specific and lives
+    the AGENCY-ID format check is monitoring_location_id-specific and is
     only in the _check_monitoring_location_id wrapper.
     """
 
@@ -1958,7 +1957,7 @@ class TestNormalizeStrIterable:
 
     def test_string_returned_unchanged(self):
         assert _normalize_str_iterable("00060", "parameter_code") == "00060"
-        # Note: no hyphen requirement here — that's monitoring_location_id-specific.
+        # No hyphen requirement here; that's monitoring_location_id-specific.
         assert _normalize_str_iterable("dog", "parameter_code") == "dog"
 
     @pytest.mark.parametrize(
@@ -2013,7 +2012,7 @@ class TestNormalizeStrIterable:
         assert isinstance(args_dict["parameter_code"], list)
 
     def test_list_of_ints_rejected_at_boundary(self):
-        """List-of-non-strings must be caught client-side, not sent unchecked.
+        """List-of-non-strings must be caught client-side.
 
         Regression: an earlier pass through ``_get_args`` had a ``list-of-non-str``
         fast-path that bypassed normalization, so ``parameter_code=[60, 65]`` would be
@@ -2038,7 +2037,7 @@ def test_get_reference_table_forwards_limit_as_a_query_arg():
 
 def test_get_reference_table_docstring_lists_every_collection():
     """The docstring enumerates the vocabulary by hand, so it drifts as soon as a
-    collection is added -- ``countries`` was served, accepted, and absent from the docs.
+    collection is added: ``countries`` was served, accepted, and absent from the docs.
     A reader who trusts the prose must not be told a real collection does not exist.
     """
     from typing import get_args
@@ -2055,7 +2054,7 @@ def test_get_reference_table_docstring_lists_every_collection():
     "filters",
     [
         {},
-        # The API ignores a POST body when the URL carries a text filter.
+        # The API ignores a POST body when the URL has a text filter.
         {"filter": "time >= '2024-01-03'"},
     ],
     ids=["no-filter", "text-filter"],

@@ -161,8 +161,8 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     queryables = local_vars.pop("queryables", {})
     # A credential-shaped name would be sent in the query string, which is the
     # one thing this passthrough must not forward. The predicate is defined in the
-    # credentials leaf rather than here: what motivates it -- ``api_key=`` being
-    # a plausible guess now that ``configure()`` takes it -- is package-wide,
+    # credentials leaf rather than here, because what motivates it (``api_key=``
+    # being a plausible guess now that ``configure()`` takes it) is package-wide
     # and WQP's ``**kwargs`` search filters read the same list.
     refuse_credential_keywords(queryables)
     local_vars.update(queryables)
@@ -228,7 +228,7 @@ def get_ogc_data(
     and supplies the Water Data extra-id columns and dialect, so the typed
     getters in ``api.py`` call this unchanged. (Sibling OGC APIs such as
     NGWMN call ``dataretrieval.ogc.get_ogc_data`` directly with their own
-    base URL and dialect rather than going through this Water Data wrapper.)
+    base URL and dialect.)
 
     Parameters
     ----------
@@ -245,8 +245,8 @@ def get_ogc_data(
         truncate the result to exactly ``max_rows``. ``None`` (default)
         fetches the full result.
     cql_body : str, optional
-        A verbatim CQL2 JSON body to POST instead of building the query from
-        ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
+        A verbatim CQL2 JSON body to POST (see the facade's ``cql_body``).
+        Used by :func:`get_cql`.
     spatial : bool, optional
         Whether the collection includes feature geometry. Water Data's typed
         feature collections do; reference tables pass ``False``.
@@ -271,8 +271,8 @@ def get_ogc_data(
         output_id,
         max_rows=max_rows,
         # The endpoint is resolved from the active ContextVar at request time;
-        # the documented ``OGC_API_URL`` constant remains the default-value
-        # compatibility path rather than a production request destination.
+        # the documented ``OGC_API_URL`` constant remains only as the
+        # default-value compatibility path.
         base_url=ogc_api_url(api_version=api_version),
         spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
@@ -314,9 +314,8 @@ def _accept_legacy_kwargs(
     ``removal`` is the published horizon (from
     :data:`~dataretrieval._deprecation.REMOVALS`); ``None`` is rendered as "a future
     release". ``detail`` appends a sentence to the warning. The default message says
-    only that the name changed; a rename with a reason to state -- a spec that names the
-    value differently, a removal date -- passes it here rather than writing a whole shim
-    to hold one sentence.
+    only that the name changed; a rename with a reason to state (a spec that names the
+    value differently, a removal date) passes it here.
 
     Raises
     ------
