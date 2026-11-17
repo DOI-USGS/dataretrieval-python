@@ -62,7 +62,7 @@ class WaterdataConfiguration(
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional
         Baseline fan-out for queries with a multi-value argument or a closed
-        ``time`` interval. Each sub-request spends
+        ``time`` interval of continuous or daily values. Each sub-request spends
         rate-limit quota, so raise it only for pulls you know are large.
     """
 
