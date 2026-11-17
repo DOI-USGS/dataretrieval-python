@@ -76,8 +76,8 @@ _LIST_SEP = ","
 _OR_SEP = " OR "
 
 
-# The time axis's chunks hold one ``start/end`` interval each, so this joiner never
-# joins two atoms; it differs from ``_LIST_SEP``, so ``render`` sends a string.
+# The time axis's chunks hold one ``start/end`` interval each, which ``render``
+# sends as a string, as it does a filter chunk.
 _INTERVAL_SEP = "/"
 
 
@@ -278,7 +278,7 @@ class _Axis:
 
 @dataclass(frozen=True)
 class _Interval:
-    """A closed observation-time interval that spans more than one UTC day.
+    """A closed observation-time interval longer than one day.
 
     Attributes
     ----------
@@ -300,9 +300,10 @@ class _Interval:
     days: int
 
     def runs(self, count: int) -> list[str]:
-        """Divide the interval into ``count`` runs of whole days, as ``start/end``.
+        """Divide the interval at UTC midnights into ``count`` runs, as ``start/end``.
 
-        Run lengths differ by at most one day. Each run ends at the midnight
+        Run lengths, counted in the UTC days each touches, differ by at most
+        one. Each run ends at the midnight
         the next one starts at, which covers the interval whichever ends a
         service includes (Water Data includes both, NGWMN only the end); a
         feature two runs return is dropped as a repeated ``id`` when the
@@ -340,8 +341,9 @@ def _time_interval(args: dict[str, Any]) -> _Interval | None:
     """Read the closed observation-time interval the time axis divides, if any.
 
     Returns ``None`` when no key in :data:`_TIME_AXIS_PARAMS` is set, or its
-    value is an instant, a duration, an open interval, or within one UTC day.
-    An unreadable value raises the ``ValueError`` the request builder would.
+    value is an instant, a duration, an open interval, or one day long or
+    shorter. An unreadable value raises the ``ValueError`` the request builder
+    would.
     """
     key = next((k for k in _TIME_AXIS_PARAMS if args.get(k) is not None), None)
     if key is None:
@@ -353,7 +355,8 @@ def _time_interval(args: dict[str, Any]) -> _Interval | None:
     low, high = _to_datetime(start, name=key), _to_datetime(end, name=key)
     midnight = low.replace(hour=0, minute=0, second=0, microsecond=0)
     days = (high - timedelta(microseconds=1) - midnight).days + 1
-    return _Interval(key, start, end, midnight, days) if days > 1 else None
+    long = high - low > timedelta(days=1)
+    return _Interval(key, start, end, midnight, days) if long else None
 
 
 def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
@@ -514,11 +517,12 @@ class ChunkPlan:
         if not fits:
             self._plan(build_request, url_limit)
         self._refine(max_chunks)
-        self._add_time_axis(interval, max_chunks)
 
         if self.canonical_url is None:
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
+        # After the fallback above, so a canonical URL keeps the caller's interval.
+        self._add_time_axis(interval, max_chunks)
 
     def _plan(
         self,

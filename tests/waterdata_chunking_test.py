@@ -2480,6 +2480,7 @@ def test_time_axis_needs_parallel_chunks():
         "2023-01-01",  # an instant
         "2023-01-01T01:00:00Z/2023-01-01T23:00:00Z",  # within one day
         "2023-01-01/2023-01-02",  # one day, ending at the next midnight
+        "2023-01-01T23:00:00Z/2023-01-02T01:00:00Z",  # two hours across midnight
     ],
 )
 def test_time_axis_leaves_an_interval_with_no_days_to_split(value):
@@ -2535,6 +2536,22 @@ def test_time_axis_divides_an_over_budget_cql_json_request():
     }
     plan = ChunkPlan(args, _fake_build, url_limit=300, max_chunks=4)
     assert len(_intervals(plan)) == 4
+
+
+def test_time_axis_leaves_the_canonical_fallback_the_callers_interval():
+    """When the whole request cannot be built, ``canonical_url`` falls back to
+    the largest chunk's URL; it keeps the caller's interval, not one run."""
+
+    def build(**kwargs):
+        if len(kwargs["sites"]) > 1:
+            raise httpx.InvalidURL("URL component too long")
+        params = {"time": kwargs["time"]}
+        return httpx.Request("GET", "https://example.test/items", params=params)
+
+    args = {"sites": ["A", "B"], "time": "2023-01-01/2023-12-31"}
+    plan = ChunkPlan(args, build, url_limit=8000, max_chunks=8)
+    assert plan.total == 8  # 2 sites x 4 runs
+    assert httpx.URL(plan.canonical_url).params["time"] == args["time"]
 
 
 def test_time_axis_reads_ngwmn_datetime():
