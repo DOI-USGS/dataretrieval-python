@@ -4,10 +4,9 @@ Column Types and Memory
 -----------------------
 
 The Water Data getters return measurement columns such as ``value`` as
-``float64`` and time columns as ``datetime64``. Text columns, such as
-``monitoring_location_id``, use the pandas default string type and take most
-of a result's memory. This page shows how pyarrow reduces that memory, and how
-to convert a result to Arrow dtypes, for example before writing it to Parquet.
+``float64``, and time columns as :ref:`timeconventions` describes. Text
+columns that have values, such as ``monitoring_location_id``, use the pandas
+default string type and take most of a result's memory.
 
 
 Installing pyarrow
@@ -37,15 +36,13 @@ column uses:
     'pyarrow'
 
 pandas 2 stores text as ``object`` whether or not pyarrow is installed. Python
-3.10 gets pandas 2, because pandas 3 requires Python 3.11 or later. To reduce
-memory with pandas 2, convert the result as the next section shows.
+3.10 gets pandas 2, because pandas 3 requires Python 3.11 or later.
 
 
 Converting to Arrow dtypes
 **************************
 
-To store every column in Arrow memory, convert the columns other than
-``geometry``:
+Convert the columns other than ``geometry``:
 
 .. code:: python
 
@@ -71,8 +68,7 @@ This works with pandas 2 and 3, and reduces the request above to 2.3 MiB.
 
 - ``convert_integer=False`` keeps ``value`` a floating-point column. Without
   it, ``convert_dtypes`` turns a float column whose values are all whole
-  numbers into an integer column, so the column's type would depend on the
-  data. Integer columns stay NumPy ``int64``.
+  numbers into an integer column. Integer columns stay NumPy ``int64``.
 - ``convert_dtypes`` raises ``TypeError`` on a geopandas ``geometry`` column,
   so the conversion leaves it out. The result stays a ``GeoDataFrame``, and
   ``df.to_parquet()`` writes GeoParquet.

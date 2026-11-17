@@ -134,9 +134,7 @@ jobs:
         python-version: ["3.10", "3.13", "3.14"]
         include:
           # pandas 3 stores text columns in Arrow memory when pyarrow is
-          # installed (docs/source/userguide/columntypes.rst), so one leg runs
-          # the suite with it. The 3.10 legs get pandas 2, which stores text
-          # as object either way.
+          # installed, so one pandas 3 leg runs the suite with it.
           - os: ubuntu-latest
             python-version: "3.13"
             extra-packages: pyarrow
