@@ -81,9 +81,10 @@ _OR_SEP = " OR "
 _INTERVAL_SEP = "/"
 
 
-# The observation-time arguments the time axis splits: ``time`` (Water Data) and
-# ``datetime`` (NGWMN). ``begin``, ``end`` and ``last_modified`` filter on other
-# properties and are never split.
+# The observation-time arguments the time axis reads: ``time`` (Water Data) and
+# ``datetime`` (NGWMN), split only in a collection its dialect's
+# ``time_chunk_days`` lists. ``begin``, ``end`` and ``last_modified`` filter on
+# other properties and are never split.
 _TIME_AXIS_PARAMS = ("time", "datetime")
 
 

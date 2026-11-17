@@ -1190,7 +1190,7 @@ def test_parallel_chunks_divides_time_by_the_collections_shortest_chunk(
     with parallel_chunks(12):
         getter(monitoring_location_id="USGS-05427718", time=time)
 
-    assert len(_sent(httpx_mock, collection)) == requests
+    assert len(_items_requests(httpx_mock, collection)) == requests
 
 
 def test_get_continuous_sends_method_category(httpx_mock):

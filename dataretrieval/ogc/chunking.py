@@ -90,9 +90,10 @@ def parallel_chunks(n: int) -> Iterator[None]:
 
     A chunk divides a multi-value argument, such as a list of monitoring locations,
     or the closed ``time`` interval of Water Data continuous or daily values,
-    which is divided at UTC midnights into chunks of at least 30 days
-    (continuous) or 10 years (daily), about 3,000 records of a time series
-    either way. The multi-value arguments split first, as far as ``n`` allows;
+    which is divided at UTC midnights into chunks no shorter than the
+    collection's shortest time chunk (``OgcDialect.time_chunk_days``): 30 days
+    for continuous values and 10 years for daily values. The multi-value
+    arguments split first, as far as ``n`` allows;
     the interval then multiplies their chunk count by the largest whole factor
     that stays within ``n``. The intervals of other collections and of NGWMN, a
     duration such as ``"P7D"``, an open interval, and an interval shorter than
