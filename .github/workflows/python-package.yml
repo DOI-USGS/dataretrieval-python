@@ -125,6 +125,8 @@ jobs:
         run: mypy
 
   test:
+    # Named explicitly so the leg that installs extra packages lists them.
+    name: "test (${{ matrix.os }}, ${{ matrix.python-version }}${{ matrix.extra-packages && format(', {0}', matrix.extra-packages) || '' }})"
     needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
