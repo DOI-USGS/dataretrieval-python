@@ -89,11 +89,14 @@ def parallel_chunks(n: int) -> Iterator[None]:
     unit of retry/resume.
 
     A chunk divides a multi-value argument, such as a list of monitoring locations,
-    or a closed ``time`` (Water Data) or ``datetime`` (NGWMN) interval, which is
-    divided into runs of whole UTC days. The multi-value arguments split first, as
-    far as ``n`` allows; the interval then multiplies their chunk count by the
-    largest whole factor that stays within ``n``. A duration such as ``"P7D"``, an
-    open interval, and an interval one day long or shorter are not divided.
+    or the closed ``time`` interval of Water Data continuous or daily values,
+    which is divided at UTC midnights into chunks of at least 30 days
+    (continuous) or 10 years (daily), about 3,000 records of a time series
+    either way. The multi-value arguments split first, as far as ``n`` allows;
+    the interval then multiplies their chunk count by the largest whole factor
+    that stays within ``n``. The intervals of other collections and of NGWMN, a
+    duration such as ``"P7D"``, an open interval, and an interval shorter than
+    two chunks are not divided.
 
     The time interval is divided whenever the effective ``parallel_chunks`` setting
     is above 1, so a baseline from ``configure()`` or a configuration file divides
@@ -114,9 +117,9 @@ def parallel_chunks(n: int) -> Iterator[None]:
         ceiling, never exceeded: the actual count is bounded below by what the ~8 KB
         URL limit already forces and above by ``n``. So an ``n`` larger than the input
         allows yields one chunk per value, or with a time interval one per value and
-        UTC day, and the total may be somewhat below ``n`` because splits are whole
-        (the plan can't always divide evenly onto ``n``). ``n=1`` requests no extra
-        fan-out.
+        shortest time chunk, and the total may be somewhat below ``n`` because
+        splits are whole (the plan can't always divide evenly onto ``n``). ``n=1``
+        requests no extra fan-out.
 
         Each chunk fetches at least one page, so it costs at least one
         request against your hourly rate limit — a larger ``n`` spends more
@@ -159,8 +162,8 @@ def parallel_chunks(n: int) -> Iterator[None]:
       with no ``id`` can't be deduped, so overlapping filter clauses split
       across chunks may yield duplicate rows. Time chunks overlap too: each
       ends at the midnight the next one starts at, so the result is complete
-      whether the service includes an interval's start (Water Data) or not
-      (NGWMN), and a feature at that instant is returned once.
+      whether or not the service includes an interval's start, and a feature
+      at that instant is returned once.
 
     Examples
     --------
@@ -200,6 +203,7 @@ def multi_value_chunked(
     build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
     adapter: str | None = None,
+    time_chunk_days: int | None = None,
 ) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
     """
     Decorate an async fetcher to chunk over-budget requests automatically.
@@ -224,6 +228,10 @@ def multi_value_chunked(
         (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is
         resolved at call time so test patches via
         ``monkeypatch.setattr`` take effect.
+    time_chunk_days : int, optional
+        The shortest time chunk, in days, of the collection the call queries.
+        ``None`` (default) leaves its time interval undivided. See
+        :class:`ChunkPlan`.
 
     Returns
     -------
@@ -268,6 +276,7 @@ def multi_value_chunked(
                 build_request,
                 limit,
                 max_chunks=_configuration.parallel_chunks(adapter=adapter),
+                time_chunk_days=time_chunk_days,
             )
             retry_policy = RetryPolicy.from_configuration(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the

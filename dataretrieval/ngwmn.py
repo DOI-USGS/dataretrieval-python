@@ -479,8 +479,7 @@ class NgwmnConfiguration(
     concurrency : int or str, optional
         Cap on simultaneous sub-requests, or ``"unbounded"``.
     parallel_chunks : int, optional
-        Baseline fan-out for queries with a multi-value argument or a closed
-        ``datetime`` interval. Each sub-request spends
+        Baseline fan-out for multi-value queries. Each sub-request spends
         rate-limit quota, so raise it only for pulls you know are large.
     """
 

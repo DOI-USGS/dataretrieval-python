@@ -119,8 +119,8 @@ Settings
      - ``1``
      - *(none — see below)*
      - Default fan-out for queries with a multi-value argument or a closed
-       time interval. ``1`` means split only as far as the URL byte limit
-       forces.
+       ``time`` interval of continuous or daily values. ``1`` means split
+       only as far as the URL byte limit forces.
    * - ``stall_timeout``
      - ``60``
      - ``API_USGS_STALL_TIMEOUT``

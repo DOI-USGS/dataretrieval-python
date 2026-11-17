@@ -1171,6 +1171,28 @@ def test_get_continuous_splits_time_under_parallel_chunks(httpx_mock):
     assert len(df) == len(_fixture("continuous")["features"])
 
 
+@pytest.mark.parametrize(
+    ("getter", "collection", "time", "requests"),
+    [
+        (get_continuous, "continuous", "2023-01-01/2023-01-31", 1),  # under 60 days
+        (get_daily, "daily", "2023-01-01/2023-12-31", 1),  # under 20 years
+        (get_daily, "daily", "1985-01-01/2019-12-31", 3),  # three 10-year chunks
+        (get_field_measurements, "field-measurements", "1985-01-01/2019-12-31", 1),
+    ],
+)
+def test_parallel_chunks_divides_time_by_the_collections_shortest_chunk(
+    httpx_mock, getter, collection, time, requests
+):
+    """Continuous chunks are at least 30 days and daily chunks at least 10
+    years; other collections' intervals are not divided."""
+    _mock_items(httpx_mock, collection)
+
+    with parallel_chunks(12):
+        getter(monitoring_location_id="USGS-05427718", time=time)
+
+    assert len(_sent(httpx_mock, collection)) == requests
+
+
 def test_get_continuous_sends_method_category(httpx_mock):
     """The named ``method_category`` parameter is sent in the request as a filter."""
     _mock_items(httpx_mock, "continuous")

@@ -386,9 +386,11 @@ def get_ogc_data(
         include_geometry=include_geometry,
         row_cap=max_rows,
     )
-    run = chunking.multi_value_chunked(build_request=build_request, adapter=adapter)(
-        fetch
-    )
+    run = chunking.multi_value_chunked(
+        build_request=build_request,
+        adapter=adapter,
+        time_chunk_days=dialect.time_chunk_days.get(collection),
+    )(fetch)
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
     return run(args, finalize=finalize)

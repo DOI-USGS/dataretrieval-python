@@ -15,6 +15,7 @@ It must not import engine, shaping, or any collection adapter.
 from __future__ import annotations
 
 import numbers
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 
@@ -67,10 +68,15 @@ class OgcDialect:
         OGC API Features allows both, but each service accepts only one: the
         Water Data API rejects an empty start with HTTP 400, and the NGWMN
         firewall rejects ``"../"`` with HTTP 403.
+    time_chunk_days : Mapping[str, int]
+        Collections whose closed time interval a ``parallel_chunks`` setting
+        above 1 divides, each mapped to its shortest time chunk in days. An
+        interval in a collection not listed is never divided. Empty by default.
     """
 
     lists_as_cql2: bool = False
     date_only_services: frozenset[str] = field(default_factory=frozenset)
+    time_chunk_days: Mapping[str, int] = field(default_factory=dict)
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)

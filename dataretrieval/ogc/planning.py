@@ -278,7 +278,7 @@ class _Axis:
 
 @dataclass(frozen=True)
 class _Interval:
-    """A closed observation-time interval longer than one day.
+    """A closed observation-time interval at least two time chunks long.
 
     Attributes
     ----------
@@ -291,6 +291,9 @@ class _Interval:
     days : int
         How many UTC days it touches. An end at midnight, the usual
         ``YYYY-MM-DD`` end, closes the day before.
+    most_runs : int
+        The most runs it divides into: how many of the collection's shortest
+        time chunks its duration holds.
     """
 
     key: str
@@ -298,6 +301,7 @@ class _Interval:
     end: str
     first_midnight: datetime
     days: int
+    most_runs: int
 
     def runs(self, count: int) -> list[str]:
         """Divide the interval at UTC midnights into ``count`` runs, as ``start/end``.
@@ -337,26 +341,29 @@ def _filter_axis(args: dict[str, Any]) -> _Axis | None:
     return _Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP)
 
 
-def _time_interval(args: dict[str, Any]) -> _Interval | None:
+def _time_interval(args: dict[str, Any], chunk_days: int | None) -> _Interval | None:
     """Read the closed observation-time interval the time axis divides, if any.
 
-    Returns ``None`` when no key in :data:`_TIME_AXIS_PARAMS` is set, or its
-    value is an instant, a duration, an open interval, or one day long or
-    shorter. An unreadable value raises the ``ValueError`` the request builder
-    would.
+    Returns ``None`` when ``chunk_days`` is ``None`` (the collection's interval
+    is never divided), when no key in :data:`_TIME_AXIS_PARAMS` is set, or when
+    its value is an instant, a duration, an open interval, or shorter than two
+    time chunks of ``chunk_days``. An unreadable value raises the
+    ``ValueError`` the request builder would.
     """
     key = next((k for k in _TIME_AXIS_PARAMS if args.get(k) is not None), None)
-    if key is None:
+    if key is None or chunk_days is None:
         return None
     interval = _format_api_dates(args[key], name=key) or ""
     start, sep, end = interval.partition(_INTERVAL_SEP)
     if not sep or _is_blank(start) or _is_blank(end):
         return None
     low, high = _to_datetime(start, name=key), _to_datetime(end, name=key)
+    most_runs = (high - low) // timedelta(days=chunk_days)
+    if most_runs < 2:
+        return None
     midnight = low.replace(hour=0, minute=0, second=0, microsecond=0)
     days = (high - timedelta(microseconds=1) - midnight).days + 1
-    long = high - low > timedelta(days=1)
-    return _Interval(key, start, end, midnight, days) if long else None
+    return _Interval(key, start, end, midnight, days, most_runs)
 
 
 def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
@@ -449,6 +456,11 @@ class ChunkPlan:
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
         :meth:`_refine`.
+    time_chunk_days : int, optional
+        The shortest time chunk, in days, of the collection ``args`` queries,
+        from its dialect's ``time_chunk_days``. The interval divides into at
+        most as many runs as its duration holds such chunks. ``None`` (default)
+        never divides it.
 
     Attributes
     ----------
@@ -484,6 +496,7 @@ class ChunkPlan:
         build_request: Callable[..., httpx.Request],
         url_limit: int,
         max_chunks: int = 1,
+        time_chunk_days: int | None = None,
     ) -> None:
         if max_chunks < 1:
             raise ValueError(
@@ -496,7 +509,7 @@ class ChunkPlan:
         self.canonical_url: str | None = None
 
         axes = _extract_axes(args)
-        interval = _time_interval(args) if max_chunks > 1 else None
+        interval = _time_interval(args, time_chunk_days) if max_chunks > 1 else None
         if not axes and interval is None:
             _check_unchunkable_request(args, build_request, url_limit)
             return
@@ -624,13 +637,14 @@ class ChunkPlan:
 
         Runs after :meth:`_refine`, so the multi-value axes keep the plan they
         had without it, and the interval multiplies their chunk count by the
-        largest whole factor within ``max_chunks``. The runs are equal rather
-        than halves, which is safe only here: the other axes halve so that a
-        split never breaks the byte budget, and an interval has none to keep.
+        largest whole factor within ``max_chunks``, up to how many shortest time
+        chunks it holds. The runs are equal rather than halves, which is safe
+        only here: the other axes halve so that a split never breaks the byte
+        budget, and an interval has none to keep.
         """
         if interval is None:
             return
-        count = min(interval.days, max_chunks // self.total)
+        count = min(interval.most_runs, max_chunks // self.total)
         if count < 2:
             return
         runs = interval.runs(count)

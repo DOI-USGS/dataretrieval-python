@@ -158,8 +158,9 @@ those pages be fetched **in parallel**. `parallel_chunks(n)` opts a single call
 into that finer split, fanning it out into `n` sub-requests. The finer split
 helps only when the result is large enough to span many pages *and* the query
 has something to divide: a multi-value argument, such as a list of monitoring
-locations, or a closed `time` interval, which is divided into runs of whole
-days. On a small query — or one with nothing to split — it only adds requests, so
+locations, or the closed `time` interval of continuous or daily values, which
+is divided into runs of whole days. On a small query — or one with nothing to
+split — it only adds requests, so
 `parallel_chunks` is a deliberate, scoped `with` block, never the default.
 
 ```python
@@ -178,7 +179,8 @@ with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
 ```
 
 `n` is the number of sub-requests to fan the call out into, capped by how many
-values, and UTC days of a `time` interval, there are to split. Each sub-request costs a request against your hourly
+values there are to split and by how many shortest chunks the `time` interval
+holds. Each sub-request costs a request against your hourly
 [rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
 capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
 roughly `2` up to that value.
@@ -218,6 +220,11 @@ had not cached, this ran at 29,000 to 41,000 rows per second against 6,000 to
 7,800 without `parallel_chunks` (3 runs each). A list argument divides first;
 the interval then multiplies the chunk count by the largest whole factor of `n`
 that is left.
+
+A continuous chunk is at least 30 days long and a daily chunk at least 10
+years, so each holds about 3,000 records of a time series. Shorter chunks sent
+more requests for little or no gain: 7-day continuous chunks ran slower than
+30-day ones. The `time` intervals of other collections are not divided.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)
