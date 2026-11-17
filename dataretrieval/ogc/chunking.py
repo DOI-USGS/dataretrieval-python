@@ -177,7 +177,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     See Also
     --------
     ChunkPlan._refine : the planning-side effect of ``n``.
-    ChunkPlan._split_time_axis : how ``n`` divides a time interval.
+    ChunkPlan._add_time_axis : how ``n`` divides a time interval.
     """
     # Validate at ``with`` entry, before any request, through the setting's
     # own parser -- one grammar, ADR 0009. The source label makes the message
