@@ -22,14 +22,19 @@ import math
 from collections.abc import Callable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import quote_plus
 
 import httpx
 
 from dataretrieval.exceptions import Unchunkable
-from dataretrieval.ogc.dates import _OPEN_BOUND, _format_api_dates
+from dataretrieval.ogc.dates import (
+    _format_api_dates,
+    _format_one,
+    _is_blank,
+    _to_datetime,
+)
 from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
     _is_chunkable,
@@ -40,7 +45,7 @@ from dataretrieval.ogc.filters import (
 # URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
 # maintaining a growing allowlist. Excluded because: ``properties`` defines the column
 # schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
-# enumerable sets (the observation time has its own axis, ``_time_axis``);
+# enumerable sets (the observation time has its own axis, ``_time_interval``);
 # ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
 # ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
 _NEVER_CHUNK = frozenset(
@@ -71,8 +76,8 @@ _LIST_SEP = ","
 _OR_SEP = " OR "
 
 
-# The time axis's atoms are consecutive ``start/end`` sub-intervals, and a chunk
-# of them is sent as the one interval from its first start to its last end.
+# The time axis's chunks hold one ``start/end`` interval each, so this joiner never
+# joins two atoms; it differs from ``_LIST_SEP``, so ``render`` sends a string.
 _INTERVAL_SEP = "/"
 
 
@@ -80,13 +85,6 @@ _INTERVAL_SEP = "/"
 # ``datetime`` (NGWMN). ``begin``, ``end`` and ``last_modified`` filter on other
 # properties and are never split.
 _TIME_AXIS_PARAMS = ("time", "datetime")
-
-
-# A UTC day's sub-interval runs from one midnight to the next, so consecutive
-# chunks share their boundary instant. That covers the interval whichever ends a
-# service includes (Water Data includes both, NGWMN only the end): a feature both
-# chunks match is dropped as a repeated id when the chunks are combined.
-_MIDNIGHT = "T00:00:00Z"
 
 
 def _request_bytes(req: httpx.Request) -> int:
@@ -214,9 +212,8 @@ class _Axis:
     and the cql-text ``filter`` (split on top-level ``OR``, joiner
     ``" OR "``) fit this shape, so a single greedy halving loop in
     ``ChunkPlan._plan`` handles both — no need for two separate
-    algorithms. The time axis (joiner ``"/"``) has consecutive UTC-day
-    sub-intervals as atoms; splitting it does not shorten a request, so only
-    :meth:`ChunkPlan._split_time_axis` splits it.
+    algorithms. The time axis is added after both passes, by
+    :meth:`ChunkPlan._add_time_axis`, with one ``start/end`` interval per chunk.
 
     Attributes
     ----------
@@ -230,25 +227,12 @@ class _Axis:
     joiner : str
         Separator placed between atoms when they are joined back into
         URL text — ``","`` for list axes, ``" OR "`` for the filter
-        axis, ``"/"`` for the time axis, whose chunk is one interval.
+        axis, ``"/"`` for the time axis.
     """
 
     arg_key: str
     atoms: tuple[str, ...]
     joiner: str
-
-    @property
-    def is_interval(self) -> bool:
-        """Whether this is the time axis."""
-        return self.joiner == _INTERVAL_SEP
-
-    def _text(self, chunk: list[str]) -> str:
-        """Return the URL text of ``chunk`` before encoding."""
-        if self.is_interval:
-            first_start = chunk[0].partition(_INTERVAL_SEP)[0]
-            last_end = chunk[-1].partition(_INTERVAL_SEP)[2]
-            return f"{first_start}{_INTERVAL_SEP}{last_end}"
-        return self.joiner.join(map(str, chunk))
 
     def chunk_bytes(self, chunk: list[str]) -> int:
         """
@@ -266,9 +250,9 @@ class _Axis:
         Returns
         -------
         int
-            Length of the URL-encoded chunk text.
+            Length of ``quote_plus(self.joiner.join(chunk))``.
         """
-        return len(quote_plus(self._text(chunk)))
+        return len(quote_plus(self.joiner.join(map(str, chunk))))
 
     def render(self, chunk: list[str]) -> Any:
         """
@@ -276,7 +260,7 @@ class _Axis:
 
         List axes yield a new list of atoms (``build_request`` will comma-join); the
         filter axis yields a pre-joined string (CQL does not accept a list), and
-        the time axis one ``start/end`` interval.
+        the time axis its one ``start/end`` interval.
 
         Parameters
         ----------
@@ -286,9 +270,54 @@ class _Axis:
         Returns
         -------
         list of str or str
-            ``list(chunk)`` for list axes, the chunk text otherwise.
+            ``list(chunk)`` for list axes, ``self.joiner.join(chunk)``
+            otherwise.
         """
-        return list(chunk) if self.joiner == _LIST_SEP else self._text(chunk)
+        return list(chunk) if self.joiner == _LIST_SEP else self.joiner.join(chunk)
+
+
+@dataclass(frozen=True)
+class _Interval:
+    """A closed observation-time interval that spans more than one UTC day.
+
+    Attributes
+    ----------
+    key : str
+        The args-dict key it came from, ``time`` or ``datetime``.
+    start, end : str
+        Its bounds as the request builder sends them.
+    first_midnight : datetime
+        The start of its first UTC day.
+    days : int
+        How many UTC days it touches. An end at midnight, the usual
+        ``YYYY-MM-DD`` end, closes the day before.
+    """
+
+    key: str
+    start: str
+    end: str
+    first_midnight: datetime
+    days: int
+
+    def runs(self, count: int) -> list[str]:
+        """Divide the interval into ``count`` runs of whole days, as ``start/end``.
+
+        Run lengths differ by at most one day. Each run ends at the midnight
+        the next one starts at, which covers the interval whichever ends a
+        service includes (Water Data includes both, NGWMN only the end); a
+        feature two runs return is dropped as a repeated ``id`` when the
+        chunks are combined.
+        """
+        cuts = (
+            self.first_midnight + timedelta(days=i * self.days // count)
+            for i in range(1, count)
+        )
+        bounds = [
+            self.start,
+            *(_format_one(cut, date=False, name=self.key) for cut in cuts),
+            self.end,
+        ]
+        return [f"{a}{_INTERVAL_SEP}{b}" for a, b in itertools.pairwise(bounds)]
 
 
 def _filter_axis(args: dict[str, Any]) -> _Axis | None:
@@ -307,27 +336,8 @@ def _filter_axis(args: dict[str, Any]) -> _Axis | None:
     return _Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP)
 
 
-def _day_intervals(start: str, end: str) -> tuple[str, ...]:
-    """Split the closed interval ``start/end`` at each UTC midnight inside it.
-
-    ``start`` and ``end`` are UTC datetimes as :func:`_format_api_dates` writes
-    them, ``YYYY-MM-DDTHH:MM:SS[.ffffff]Z``. Each sub-interval ends at the
-    midnight the next one starts at. An ``end`` at midnight (the usual
-    ``YYYY-MM-DD`` end) closes the last day rather than starting a day of its
-    own. Returns ``()`` for an interval within one day.
-    """
-    first, last = date.fromisoformat(start[:10]), date.fromisoformat(end[:10])
-    if end.endswith(_MIDNIGHT):
-        last -= timedelta(days=1)
-    days = (first + timedelta(days=i) for i in range(1, (last - first).days + 1))
-    bounds = [start, *(f"{day}{_MIDNIGHT}" for day in days), end]
-    if len(bounds) < 3:
-        return ()
-    return tuple(f"{a}{_INTERVAL_SEP}{b}" for a, b in itertools.pairwise(bounds))
-
-
-def _time_axis(args: dict[str, Any]) -> _Axis | None:
-    """Build the time axis from a closed observation-time interval, if any.
+def _time_interval(args: dict[str, Any]) -> _Interval | None:
+    """Read the closed observation-time interval the time axis divides, if any.
 
     Returns ``None`` when no key in :data:`_TIME_AXIS_PARAMS` is set, or its
     value is an instant, a duration, an open interval, or within one UTC day.
@@ -338,13 +348,15 @@ def _time_axis(args: dict[str, Any]) -> _Axis | None:
         return None
     interval = _format_api_dates(args[key], name=key) or ""
     start, sep, end = interval.partition(_INTERVAL_SEP)
-    if not sep or _OPEN_BOUND in (start, end):
+    if not sep or _is_blank(start) or _is_blank(end):
         return None
-    days = _day_intervals(start, end)
-    return _Axis(arg_key=key, atoms=days, joiner=_INTERVAL_SEP) if days else None
+    low, high = _to_datetime(start, name=key), _to_datetime(end, name=key)
+    midnight = low.replace(hour=0, minute=0, second=0, microsecond=0)
+    days = (high - timedelta(microseconds=1) - midnight).days + 1
+    return _Interval(key, start, end, midnight, days) if days > 1 else None
 
 
-def _extract_axes(args: dict[str, Any], *, split_time: bool = False) -> list[_Axis]:
+def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     """
     Build the chunkable-axis set from a request's args.
 
@@ -359,16 +371,13 @@ def _extract_axes(args: dict[str, Any], *, split_time: bool = False) -> list[_Ax
     args : dict[str, Any]
         The user-level request kwargs (the same dict that would be
         passed to ``build_request``).
-    split_time : bool, optional
-        Add the time axis (:func:`_time_axis`). Set when ``parallel_chunks``
-        asks for more than one chunk, the only time the plan splits it.
 
     Returns
     -------
     list[_Axis]
         Zero or more axes in insertion order: list axes first (one
         per eligible kwarg, in ``args`` order), then the filter axis
-        if present, then the time axis if requested and present.
+        if present.
     """
     axes: list[_Axis] = [
         _Axis(arg_key=key, atoms=tuple(value), joiner=_LIST_SEP)
@@ -377,8 +386,9 @@ def _extract_axes(args: dict[str, Any], *, split_time: bool = False) -> list[_Ax
         and isinstance(value, (list, tuple))
         and len(value) > 1
     ]
-    extra = (_filter_axis(args), _time_axis(args) if split_time else None)
-    axes.extend(axis for axis in extra if axis is not None)
+    fax = _filter_axis(args)
+    if fax is not None:
+        axes.append(fax)
     return axes
 
 
@@ -395,12 +405,6 @@ def _split_at(chunks: list[list[str]], idx: int) -> None:
     chunk = chunks[idx]
     mid = len(chunk) // 2
     chunks[idx : idx + 1] = [chunk[:mid], chunk[mid:]]
-
-
-def _even_split(atoms: tuple[str, ...], count: int) -> list[list[str]]:
-    """Split ``atoms`` into ``count`` contiguous runs at most 1 atom apart in length."""
-    bounds = [i * len(atoms) // count for i in range(count + 1)]
-    return [list(atoms[a:b]) for a, b in itertools.pairwise(bounds)]
 
 
 class ChunkPlan:
@@ -437,7 +441,7 @@ class ChunkPlan:
         not per axis, so several multi-value axes can't multiply past it. The plan never
         exceeds the cap and may fall below it when no whole split reaches it exactly.
         A closed ``time`` or ``datetime`` interval is split too, by whatever factor
-        of the cap the multi-value axes leave (:meth:`_split_time_axis`).
+        of the cap the multi-value axes leave (:meth:`_add_time_axis`).
         ``max_chunks`` is a chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
@@ -451,7 +455,7 @@ class ChunkPlan:
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
-        OR, plus the time axis when ``max_chunks`` is above 1. Empty in the
+        OR, plus the time axis when the interval is divided. Empty in the
         passthrough case.
     chunks : dict[str, list[list[str]]]
         Per-axis partition: ``chunks[axis.arg_key]`` is the list of
@@ -488,8 +492,9 @@ class ChunkPlan:
         self.chunks: dict[str, list[list[str]]] = {}
         self.canonical_url: str | None = None
 
-        axes = _extract_axes(args, split_time=max_chunks > 1)
-        if not axes:
+        axes = _extract_axes(args)
+        interval = _time_interval(args) if max_chunks > 1 else None
+        if not axes and interval is None:
             _check_unchunkable_request(args, build_request, url_limit)
             return
 
@@ -509,7 +514,7 @@ class ChunkPlan:
         if not fits:
             self._plan(build_request, url_limit)
         self._refine(max_chunks)
-        self._split_time_axis(max_chunks)
+        self._add_time_axis(interval, max_chunks)
 
         if self.canonical_url is None:
             with suppress(httpx.InvalidURL):
@@ -534,10 +539,9 @@ class ChunkPlan:
             If even the singleton plan (every axis at one atom per
             chunk) still exceeds ``url_limit``.
         """
-        if all(axis.is_interval for axis in self.axes):
-            # Dividing an interval does not shorten a request, so this is the
-            # check a plan with no axes gets: the server judges it (cql-json),
-            # or it raises Unchunkable.
+        if not self.axes:
+            # Only a time interval, and dividing it does not shorten a request:
+            # the server judges it (cql-json), or this raises Unchunkable.
             _check_unchunkable_request(self.args, build_request, url_limit)
             return
         while True:
@@ -565,8 +569,6 @@ class ChunkPlan:
         biggest_idx = -1
         biggest_size = -1
         for axis in self.axes:
-            if axis.is_interval:
-                continue  # a shorter interval is not a shorter request
             idx, size = self._largest_chunk_in(
                 self.chunks[axis.arg_key], key=axis.chunk_bytes
             )
@@ -613,19 +615,23 @@ class ChunkPlan:
             axis, idx = candidate
             _split_at(self.chunks[axis.arg_key], idx)
 
-    def _split_time_axis(self, max_chunks: int) -> None:
-        """Split the time axis into the most equal runs of days the cap allows.
+    def _add_time_axis(self, interval: _Interval | None, max_chunks: int) -> None:
+        """Divide ``interval`` into the most runs of whole days the cap allows.
 
         Runs after :meth:`_refine`, so the multi-value axes keep the plan they
-        had before the time axis existed, and the time axis multiplies their
-        chunk count by the largest whole factor within ``max_chunks``. Equal runs
-        rather than halves, since each day of a series costs about the same to
-        fetch: halving 60 days into 3 chunks gives 15, 15 and 30.
+        had without it, and the interval multiplies their chunk count by the
+        largest whole factor within ``max_chunks``. The runs are equal rather
+        than halves, which is safe only here: the other axes halve so that a
+        split never breaks the byte budget, and an interval has none to keep.
         """
-        for axis in self.axes:
-            if axis.is_interval:
-                count = min(len(axis.atoms), max(1, max_chunks // self.total))
-                self.chunks[axis.arg_key] = _even_split(axis.atoms, count)
+        if interval is None:
+            return
+        count = min(interval.days, max_chunks // self.total)
+        if count < 2:
+            return
+        runs = interval.runs(count)
+        self.axes.append(_Axis(interval.key, tuple(runs), _INTERVAL_SEP))
+        self.chunks[interval.key] = [[run] for run in runs]
 
     @staticmethod
     def _largest_chunk_in(
@@ -661,13 +667,10 @@ class ChunkPlan:
         is atom count (not URL bytes like ``_plan``) because this pass
         balances work across chunks rather than fitting a byte budget.
         Stable input order breaks ties by axis order, then lowest index.
-        The time axis is left to :meth:`_split_time_axis`.
         """
         candidate: tuple[_Axis, int] | None = None
         candidate_size = -1
         for axis in self.axes:
-            if axis.is_interval:
-                continue
             axis_chunks = self.chunks[axis.arg_key]
             if total + total // len(axis_chunks) > max_chunks:
                 continue  # any split of this axis would exceed the cap
