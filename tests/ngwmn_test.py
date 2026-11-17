@@ -46,8 +46,8 @@ def _schema_re(collection):
 def _feature(properties, *, id_, geometry=None):
     """One GeoJSON feature in NGWMN's shape.
 
-    NGWMN's observation collections omit the ``geometry`` key entirely, so it
-    is left out unless a caller passes one.
+    NGWMN's observation collections omit the ``geometry`` key, so it is left
+    out unless a caller passes one.
     """
     feature = {"type": "Feature", "properties": properties, "id": id_}
     if geometry is not None:
@@ -562,7 +562,7 @@ def test_pagination_follows_next_link(httpx_mock):
 
 def test_empty_result_returns_typed_empty_frame(httpx_mock):
     """A 200 with no features yields an empty frame whose columns come from
-    the collection schema."""
+    the collection schema, not an exception and not a frame with no columns."""
     httpx_mock.add_response(
         method="GET",
         url=_schema_re("waterLevelObs"),

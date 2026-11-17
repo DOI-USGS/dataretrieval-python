@@ -492,14 +492,14 @@ def test_validate_data_source_rejects_malformed_catalog(httpx_mock, monkeypatch)
 
 def test_query_504_raises_service_unavailable(httpx_mock):
     """``utils.query`` classifies any 5xx (here 504 Gateway Timeout) as the
-    transient ``ServiceUnavailable``: the whole 5xx range."""
+    transient ``ServiceUnavailable``."""
     from dataretrieval.exceptions import ServiceUnavailable
     from dataretrieval.utils import query
 
     url = "https://example.invalid/x"
     httpx_mock.add_response(method="GET", url=f"{url}?a=1", status_code=504)
-    # Match on the status number: robust against the exact message, which the
-    # legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
+    # Match on the status number so the test does not depend on the exact message,
+    # which the legacy query path renders verbatim as "HTTP 504 <reason> (URL: ...)".
     with pytest.raises(ServiceUnavailable, match="504"):
         query(url, {"a": "1"})
 
@@ -598,7 +598,7 @@ def test_get_features_by_data_source_validates_the_source(httpx_mock):
 
 def test_a_200_with_a_non_json_body_becomes_an_empty_frame(httpx_mock):
     """NLDI returns 200 with an empty body for some queries, and that is not an
-    error condition: a feature with nothing upstream is a valid result.
+    error condition, because a feature with nothing upstream is a valid result.
 
     This is the one place the package returns an empty frame rather than raising on a
     malformed response. Pinned because it is deliberate: the suppression reads as an

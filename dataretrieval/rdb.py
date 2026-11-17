@@ -4,7 +4,7 @@ RDB (Relational DataBase) is the text format used by NWIS web services
 and by the Water Data STAC catalog's rating-curve assets. Every RDB
 file has the same shape:
 
-- One or more ``#``-prefixed comment lines holding provenance metadata
+- One or more ``#``-prefixed comment lines containing provenance metadata
   (data source, retrieval timestamp, station name, parameter codes, etc.).
 - A tab-separated header row naming each column.
 - A second tab-separated row giving column format specs (e.g. ``5s 15s``);
@@ -47,7 +47,8 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     -------
     pandas.DataFrame
         The parsed data. An RDB consisting only of comment lines (e.g. a
-        "no sites found" response) returns an empty DataFrame.
+        "no sites found" response) returns an empty DataFrame rather than
+        raising.
 
     Raises
     ------
@@ -92,8 +93,8 @@ def extract_rdb_comment(text: str) -> list[str]:
     """Return the RDB ``#``-prefixed comment block, raw and in original order.
 
     Each entry includes its leading ``#`` and any whitespace, matching what R's
-    ``dataRetrieval`` returns from ``comment(df)``. The comment block holds provenance
-    metadata that is otherwise lost during parsing: data source, retrieval timestamp,
-    parameter codes, rating id and last-shifted timestamp for ratings, etc.
+    ``dataRetrieval`` returns from ``comment(df)``. The comment block contains
+    provenance metadata that is otherwise lost during parsing: data source, retrieval
+    timestamp, parameter codes, rating id and last-shifted timestamp for ratings, etc.
     """
     return [line for line in text.splitlines() if line.startswith("#")]

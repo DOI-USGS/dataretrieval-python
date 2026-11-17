@@ -3,7 +3,7 @@
 dataretrieval.configuration
 ---------------------------
 
-Layered configuration: a ``dataretrieval.configure(...)`` block holding one
+Layered configuration: a ``dataretrieval.configure(...)`` block with one
 configuration per adapter, then the ``API_USGS_*`` environment variables, then
 the adapter's table and the package-wide keys in
 ``~/.dataretrieval/config.toml``, then built-in defaults. A

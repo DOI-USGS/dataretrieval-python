@@ -1,9 +1,8 @@
 # Context
 
-The shared vocabulary for `dataretrieval`. This is a glossary: it fixes what
-words mean so that code, docstrings, ADRs, and conversation use them the same
-way. Architectural decisions are recorded in
-`docs/source/architecture/decisions/`.
+The shared vocabulary for `dataretrieval`. This glossary defines what words
+mean so that code, docstrings, ADRs, and conversation use them the same way.
+Architectural decisions are recorded in `docs/source/architecture/decisions/`.
 
 Two kinds of term are defined here, and they impose different obligations
 (ADR 0013).
@@ -70,7 +69,7 @@ answers follow from one judgment about what a failure means, and must be
 consistent.
 
 **Stall timeout**: How long a call may receive nothing at all before retrying
-stops, measured from when data last arrived.
+stops, measured from when data last arrived rather than from the call's start.
 ADR 0006 sets the policy and calls it the *no-progress budget*.
 
 **Interruption**: A transient failure that stopped a fan-out partway, raised
@@ -149,8 +148,8 @@ elapsed time, and the response headers. Describes the *retrieval*, not the data.
 ## Configuration
 
 **Configuration profile**: A named set of settings for one adapter, stored in
-the configuration file or built in code. A profile is an *input* to resolution.
-In prose, **configuration** shortens this; in code,
+the configuration file or built in code. A profile is an *input* to resolution,
+never its result. In prose, **configuration** shortens this; in code,
 `Configuration` is the package-wide settings class, and an adapter's profile is
 its own `*Configuration` subclass. The two differ only by case, so prefer the
 full term wherever a reader could take it either way.
@@ -199,8 +198,9 @@ Credentials are host-scoped; tunables are adapter-scoped.
 
 **Source**: Where a setting's value came from, as one of the ordered
 categories: a `configure()` block, the environment, the file, the built-in
-default. The order is resolved per setting: a value supplied for one setting
-does not displace another setting's value from a lower source.
+default. The order is resolved per setting rather than per source, so a value
+supplied for one setting does not displace another setting's value from a lower
+source.
 
 *Core term.* The accepted records already use it: ADR 0009 resolves settings
 by source, and ADR 0010 keeps precedence *source-major*. ADR 0010's *tier* is a
@@ -222,7 +222,7 @@ its identifiers as well as its prose. The code uses both names: `_resolve`
 returns `(raw, label, source)`, and the parsers take the `label` as the subject
 of any error message they raise.
 
-**Precedence ladder**: The one linear order resolution follows, highest
+**Precedence ladder**: The single linear order resolution follows, highest
 first: sources in their order and, within each source, scopes. Each position
 is a **rung**; ADR 0011 states the ladder in seven. A rung is finer than a
 source (one source can span several rungs), so prose that means a whole
@@ -252,9 +252,9 @@ say which one is meant.
 
 ## Boundaries
 
-**Adapter**: A module owning one service's conventions: its URLs, parameters,
-error shapes, and response quirks. Adapters may use shared code; shared code
-may not reference adapters.
+**Adapter**: A module that defines one service's conventions: its URLs,
+parameters, error shapes, and response quirks. Adapters may use shared code;
+shared code may not reference adapters.
 
 **Dialect**: The per-API quirks the shared OGC code needs to
 serve two services from one code path: which collections must be POSTed as
@@ -274,12 +274,13 @@ between these and `.importlinter`.
 
 **Facade**: A module that re-exports a subsystem's public surface and contains
 no logic of its own, so callers depend on a stable name and the internal
-layout is free to change. The name is the structural design pattern's.
+layout is free to change. The name is the structural design pattern's, not a
+coinage.
 
 **Leaf**: A module with no dependencies inside the package beyond other leaves,
-holding one general mechanism so that anything may use it without acquiring the
-rest of the package. Before writing a small helper, check whether a leaf already
-generalizes it.
+containing one general mechanism so that anything may use it without acquiring
+the rest of the package. Before writing a small helper, check whether a leaf
+already generalizes it.
 
 **Transport**: The service-neutral code for issuing requests: timeouts,
 retry, pagination, fan-out, aggregation. It names no service and no protocol,
@@ -319,9 +320,9 @@ entry (ADR 0013).
 - `waterdata.get_samples(service=)` names a *resource*, not a service. The
   Samples OpenAPI document declares `results`, `locations`, `activities`,
   `projects` and `organizations` as tags and titles itself the "Resource
-  Center"; it never calls them services. They are also not collections:
-  they share 22 of 23 query parameters, so they are five projections of one
-  query, and the OGC definition of *collection*
+  Center"; it never calls them services. They are also not collections.
+  They share 22 of 23 query parameters, so they are five projections of one
+  query rather than five sets of data, and the OGC definition of *collection*
   is scoped to "access mechanisms defined by OGC API standard(s)", which
   Samples does not implement. Kept as-is by decision: renaming a public
   keyword costs a deprecation cycle, and no better-evidenced replacement is

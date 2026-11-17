@@ -233,8 +233,8 @@ def test_elapsed_retry_after_still_backs_off() -> None:
     # concurrent chunks given the same value do not all retry together,
     # and never enough to push the wait past the policy's own bounds.
     assert 5.0 < policy.backoff(attempt=1, retry_after=5.0) <= 6.0
-    # A value already at the cap is never extended past it: the jitter would
-    # otherwise sleep longer than any bound the policy declares.
+    # A value already at the cap is never extended past it, because the jitter would
+    # otherwise make the wait longer than any bound the policy declares.
     at_cap = policy.backoff(attempt=8, retry_after=policy.retry_after_cap)
     assert at_cap == policy.retry_after_cap
 
@@ -259,7 +259,7 @@ def test_deterministic_failures_are_not_retried() -> None:
 
     The ``EAI_*`` values are platform-specific (``EAI_NONAME`` is 8 on
     macOS and -2 on Linux), so these must come from :mod:`socket`, or the
-    test only holds on the platform it was written on.
+    test passes only on the platform it was written on.
     """
     assert retry._retryable(_dns_failure(socket.EAI_NONAME)) == (False, None)
     assert retry._retryable(httpx.UnsupportedProtocol("no scheme")) == (False, None)
@@ -338,7 +338,7 @@ def test_stall_timeout_stops_a_silent_call(monkeypatch) -> None:
 
     Without this, a request that times out is retried until the attempts run
     out, turning one 60 s timeout into minutes of apparent hang. The first
-    retry is exempt (see below), so a call that receives nothing costs two
+    retry is exempt (see below), so a call that receives nothing stops after two
     attempts.
     """
     attempts = 0
@@ -414,7 +414,7 @@ def test_credited_wait_never_credits_past_the_present(monkeypatch) -> None:
     liveness.credit_wait(300.0)  # a task queued past the whole budget
     assert liveness.elapsed_since_progress() == 0.0, "clamped to now, not negative"
 
-    # Real time without data spends the budget again.
+    # Real time without data counts against the budget again.
     now = 200.0
     assert not policy.allows_wait(5, 30.0, liveness.elapsed_since_progress())
 
@@ -503,7 +503,7 @@ def test_gate_does_not_reset_silence_from_earlier_attempts() -> None:
 
     The gated body is what the retry loop re-invokes, so stamping "now" on every
     slot acquisition would restart the budget each attempt and turn a bound on
-    *total* time without data into a per-attempt latency bound: five slow
+    *total* time without data into a per-attempt latency bound. Five slow
     failures would each look brief while the call received nothing for their sum.
     """
 
@@ -537,8 +537,8 @@ def _wrapped_dns_failure(errno: int) -> NetworkError:
 
     Our own wrapper uses ``raise ... from``, so the outer error links to the
     httpx one explicitly; only the layers beneath it chain implicitly. The
-    chunker follows explicit links only, so this shape is the one that decides
-    whether an unresolvable host is offered as resumable.
+    chunker follows explicit links only, so this shape determines whether an
+    unresolvable host is offered as resumable.
     """
     resolution_failed = socket.gaierror(errno, "name resolution failed")
     transport_failed = httpx.ConnectError("name resolution failed")
@@ -554,9 +554,9 @@ def test_deterministic_failures_are_not_offered_as_resumable() -> None:
     ``_retryable`` already does not re-send a hostname the resolver rejects
     outright. If the interruption classifier still mapped it to
     ``ServiceInterrupted``, the caller would be given a ``.call.resume()``
-    whose every attempt fails identically: a resumable handle for something
-    that cannot be resumed, concealing the ``NetworkError`` that explains
-    the failure.
+    whose every attempt fails identically. That handle offers a resume for
+    something that cannot be resumed, and it conceals the ``NetworkError`` that
+    explains the failure.
     """
     from dataretrieval.interruptions import _classify_chunk_error
 
@@ -583,8 +583,8 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
     ``raise ... from`` accepts an exception already in the chain, so a retry
     loop that re-raises an earlier failure can close the cycle. Each of these
     walks reaches an answer by inspecting links, so an unguarded one would spin
-    forever inside a request path. This fails by hanging: pytest's timeout is
-    what detects the failure.
+    forever inside a request path. This test fails by hanging, and pytest's
+    timeout detects the failure.
     """
     from dataretrieval.interruptions import (
         ServiceInterrupted,
@@ -610,7 +610,7 @@ def test_exception_chain_walk_terminates_on_a_self_referencing_chain() -> None:
 
 def test_an_unusable_next_page_link_is_reported_not_swallowed():
     """A malformed ``next`` href ends the page walk, so it must raise rather
-    than truncate the result without an error: a short frame with no error is
+    than truncate the result without an error, because a short frame with no error is
     indistinguishable from a complete one."""
     from dataretrieval.transport.links import resolve_next_url
 

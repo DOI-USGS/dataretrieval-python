@@ -8,13 +8,13 @@ remain inside this taxonomy; no ``httpx`` exception reaches the caller. A
 deterministic failure is :class:`NetworkError`; a recoverable failure that
 exhausts retries during fan-out is a resumable ``ServiceInterrupted``.
 
-Most failures are an :class:`HTTPError` holding the response ``.status_code``,
+Most failures are an :class:`HTTPError` with the response's ``.status_code``,
 of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest
 aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /
 :class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),
 :class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.
 :func:`error_for_status` maps a status to its type. ``ConfigurationError`` is
-the one member that is not a request failure at all: it reports an unusable
+the only member that is not a request failure. It reports an unusable
 setting or config file, raised from wherever a setting is first resolved, which,
 because resolution is lazy, is inside whichever getter runs first. The
 *warning* side of the taxonomy is defined here too: :class:`SkippedItemWarning`
@@ -22,8 +22,8 @@ because resolution is lazy, is inside whichever getter runs first. The
 batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset
 that has stopped being updated.
 
-This module has no third-party runtime dependencies: ``httpx`` is imported only for type
-checking. Any module can therefore import it without importing pandas or httpx, and
+This module has no third-party runtime dependencies. It imports ``httpx`` only for
+type checking, so any module can import it without importing pandas or httpx, and
 without risking an import cycle.
 """
 
@@ -132,10 +132,10 @@ class HTTPError(DataRetrievalError):
 
     The numeric status is on :attr:`status_code`; branch on it, e.g.
     ``except HTTPError as e: ... if e.status_code == 404``. :class:`TransientError`
-    (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The one
+    (429 / 5xx) is the retryable subset, and is itself an ``HTTPError``. The only
     exception to "a status is an ``HTTPError``" is a request the service rejects as
-    too long: it is raised as :class:`URLTooLong` (a :class:`RequestTooLarge`),
-    which is not an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain
+    too long, which is raised as :class:`URLTooLong` (a :class:`RequestTooLarge`),
+    *not* an ``HTTPError``. Catch :class:`DataRetrievalError` to be certain
     of spanning every failure. See :func:`error_for_status` for the full mapping.
 
     Parameters
@@ -211,7 +211,7 @@ class ServiceUnavailable(TransientError):
 
     Raised by both the legacy ``query`` path and the Water Data path, so a 5xx
     is raised as one type whichever subsystem issued the request. ``.status_code``
-    holds the actual 5xx; it falls back to 503 only on a bare hand-construction.
+    is the actual 5xx; it falls back to 503 only on a bare hand-construction.
     """
 
     _DEFAULT_STATUS = 503
@@ -272,7 +272,7 @@ class NetworkError(DataRetrievalError):
 
 
 class ConfigurationError(DataRetrievalError, ValueError):
-    """A ``dataretrieval`` setting holds a value that can't be used, so no
+    """A ``dataretrieval`` setting has a value that can't be used, so no
     request was issued: an environment variable, a policy field, a malformed
     ``config.toml``, or a profile the file does not define.
 
@@ -331,14 +331,13 @@ class SkippedItemWarning(UserWarning):
     that fails *deterministically* (so retrying would reproduce the failure) is
     dropped from the result under a warning naming it, because aborting would
     discard every other item's data over one failing entry. Transient failures
-    (429 / 5xx / timeouts / connection drops) are never skipped: they are
+    (429 / 5xx / timeouts / connection drops) are never skipped. They are
     retried and, if retries run out, raised as a resumable interruption. Rate
     limiting in particular is systematic, so skipping there would drop most of a
-    batch undetected; that undetected loss is what this policy exists to
-    prevent.
+    batch undetected, which this policy prevents.
 
-    A warning, so it is visible by default. To make any skip fatal (strict
-    all-or-nothing behavior)::
+    A warning rather than a log line, so it is visible by default. To make any
+    skip fatal (strict all-or-nothing behavior)::
 
         warnings.filterwarnings("error", category=SkippedItemWarning)
 
@@ -364,11 +363,11 @@ def error_for_status(
 ) -> DataRetrievalError:
     """Return the typed :class:`DataRetrievalError` for an HTTP error *status*.
 
-    The one status-to-type mapping every request path shares (the legacy
+    The only status-to-type mapping, shared by every request path (the legacy
     ``query`` path, ``waterdata``, ``streamstats``), so a given status
     becomes the same type everywhere:
 
-    * **413, 414** -> :class:`URLTooLong` (a :class:`RequestTooLarge`): the
+    * **413, 414** -> :class:`URLTooLong` (a :class:`RequestTooLarge`) -- the
       "too long" semantic is more actionable than a bare status, and it matches
       the client-side over-long-URL case
     * **429** -> :class:`RateLimited`
@@ -408,14 +407,14 @@ def parse_retry_after(value: str | None) -> float | None:
     value, but accepting one leads to a recoverable escalation while ignoring it
     leads to re-sending to a service that has already named a delay.
 
-    A date that has *already* passed yields no value. Read literally it says
-    "retry now", but the likelier reading is that the client clock is ahead of
-    the server's, and acting on it would re-send almost immediately against a
-    service that just named a delay. Falling back to the client's own bounded
-    backoff is right under either reading. (Delta-seconds is clock-independent,
-    so a literal ``Retry-After: 0`` is still applied as the instruction it is,
-    floored by :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s
-    jitter.)
+    A date that has *already* passed yields no value rather than ``0.0``. Read
+    literally it says "retry now", but the likelier reading is that the client
+    clock is ahead of the server's, and acting on it would re-send almost
+    immediately against a service that just named a delay. Falling back to the
+    client's own bounded backoff is right under either reading. (Delta-seconds is
+    clock-independent, so a literal ``Retry-After: 0`` is still applied as the
+    instruction it is, floored by
+    :meth:`~dataretrieval.transport.retry.RetryPolicy.backoff`'s jitter.)
     """
     if not value:
         return None
@@ -427,7 +426,7 @@ def parse_retry_after(value: str | None) -> float | None:
     else:
         # ``inf``/``nan`` parse without error but make every later comparison
         # meaningless: an infinite value would prevent retry forever and reach the
-        # caller on ``.retry_after``. Treat them as no value at all.
+        # caller on ``.retry_after``. Treat them as no value.
         return max(0.0, seconds) if math.isfinite(seconds) else None
     try:
         retry_at = parsedate_to_datetime(raw)

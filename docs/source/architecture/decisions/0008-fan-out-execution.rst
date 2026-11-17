@@ -61,11 +61,11 @@ whether it was interrupted. Anything that must be true of the returned frame
 belongs in ``finalize``.
 
 **The concurrency bound is an ``asyncio.Semaphore``, not the connection pool.**
-The pool is sized to match the semaphore: a
+The pool is sized to match the semaphore, because a
 pool smaller than the fan-out would queue chunks inside ``httpx`` and appear as
 ``PoolTimeout``, which the taxonomy classifies as a transient failure and
-reports as a resumable interruption. That interruption would be spurious,
-caused entirely by the package's own settings.
+reports as a resumable interruption. Such an interruption would be spurious,
+since the package's own settings would cause it.
 
 **A CQL2-JSON filter is passed through, never divided.** The planner does not
 chunk a ``cql-json`` filter and does not size-check its body; an over-budget
@@ -75,10 +75,10 @@ equals the whole, which is a different undertaking from splitting a list of
 identifiers along a comma.
 
 ``FanOutPlan`` is a ``Protocol`` of ``__len__`` and ``__iter__``, generic in the
-item type: a sized, iterable collection of chunk descriptions.
-The executor passes each item to the adapter's own ``fetch``
-without inspecting it, so the item type is the adapter's concern: the OGC
-getters yield kwargs dicts, Water Use yields ready ``httpx.Request`` objects.
+item type: a sized, iterable collection of chunk descriptions. The executor
+passes each item to the adapter's own ``fetch`` without inspecting it, so the
+item type is the adapter's concern: the OGC getters yield kwargs dicts, Water
+Use yields ready ``httpx.Request`` objects.
 
 The standard protocols, rather than custom members, are a deliberate choice.
 A plan declaring ``total`` and ``iter_chunk_args()`` would be stating ``len``
@@ -95,11 +95,12 @@ disagree.
 The protocol is structural rather than nominal (satisfied by having the
 members) for the original reason: ``ChunkPlan`` derives
 chunks from a byte budget over multi-value axes, a list of requests derives
-nothing, and so there is no shared implementation an abstract base could hold.
+nothing, and so there is no shared implementation an abstract base could
+provide.
 
 The identity of the query as a whole is *not* part of the plan. ``canonical_url``
-is a value set on the combined response, so it is an argument to
-``FanOut``. ``ChunkPlan`` computes one while
+is a value set on the combined response, not a property of how the work
+divides, so it is an argument to ``FanOut``. ``ChunkPlan`` computes one while
 planning and the OGC call site passes it through; Water Use passes its first
 location's URL, since the service has no request expressing "all of these".
 
@@ -112,7 +113,7 @@ leaf, for the reason ADR 0006 gives for ``combining``, ``progress``, and
 ``credentials``: adapters need it whether or not they went through transport,
 and an exception taxonomy is not HTTP execution policy. Its base class is
 renamed ``FanOutInterrupted`` because the failure interrupts a query's
-*execution* rather than its division: both Water Data and Water Use chunk,
+*execution* rather than its division. Both Water Data and Water Use chunk,
 for different reasons, but what fails is the fan-out. ``ChunkInterrupted`` is
 retained as a permanent alias of the same class object because it is the name
 published in the user guide and caught in user code. The subclasses
@@ -122,9 +123,9 @@ unchanged.
 Concurrency is one general setting with per-adapter defaults.
 ``API_USGS_CONCURRENT`` applies to every fanned-out call; an adapter may declare
 a different default for when it is unset. The precedence is deliberate: an
-explicitly set environment variable outranks an adapter default.
-An adapter that could override the general setting would make
-``API_USGS_CONCURRENT=1`` untrue.
+explicitly set environment variable outranks an adapter default. An adapter
+that could override the general setting would make ``API_USGS_CONCURRENT=1``
+untrue.
 
 Consequences
 ------------
@@ -161,9 +162,9 @@ Compliance
 (named ``wateruse`` when this decision was taken) contains no
 ``asyncio.gather``, ``Semaphore``, or ``TaskGroup``, so the
 duplication cannot return. That both plan types are sized and *repeatably*
-iterable: resume keys completed work by position, so a generator mistaken for
-a collection would re-issue the wrong chunks. And that an interruption
-taxonomy does not reappear inside ``transport``.
+iterable, because resume keys completed work by position, so a generator
+mistaken for a collection would re-issue the wrong chunks. And that an
+interruption taxonomy does not reappear inside ``transport``.
 
 Adapter tests cover Water Use resume re-issuing only unfinished locations,
 progress ticks, and the concurrency precedence rule.
@@ -179,8 +180,8 @@ Notes
 -----
 
 The ``finalize``, semaphore, and CQL2-JSON clauses were added after the original
-decision, consolidating under ADR 0000 rules the code was stating in prose:
-the semaphore rule was stated four times in ``transport/fanout.py`` alone, and
+decision, consolidating under ADR 0000 rules the code was stating in prose.
+The semaphore rule was stated four times in ``transport/fanout.py`` alone, and
 that file now states it once and cites this record.
 
 The sentence naming the executor contract was extended in place to include

@@ -138,8 +138,8 @@ def get_ratings(
         (404 on its data asset), a feature with no data asset, or a malformed RDB file.
         That feature is skipped and its id is absent from the returned dict; the rest of
         the batch is unaffected. A monitoring location with no published rating never
-        produces a warning: it matches no feature in the search, so there is nothing
-        to skip. See
+        produces a warning, because it matches no feature in the search and there is
+        nothing to skip. See
         :class:`~dataretrieval.exceptions.SkippedItemWarning` for the policy
         (transients never skip) and the ``filterwarnings`` call that makes a skip fatal.
 
@@ -284,7 +284,7 @@ def _search(
     one page is not truncated.
 
     The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`
-    with STAC strategies. Pages hold features, so each page
+    with STAC strategies. Pages contain features rather than rows, so each page
     frame wraps the raw feature dicts in a single ``feature`` column.
     """
     query_params: dict[str, Any] = {"limit": min(limit, 10000)}
@@ -303,8 +303,8 @@ def _search(
         page = pd.DataFrame({"feature": body.get("features", [])})
         # The STAC ``next`` link is a complete GET href that includes the
         # limit/filter/bbox and a continuation token, so it becomes the
-        # cursor verbatim, after the shared safety policy: the href is
-        # response data, so it is checked before it becomes a request. A link
+        # cursor verbatim. The href is response data, so the shared safety
+        # policy checks it before it becomes a request. A link
         # to another host would send this request's API key to a host
         # other than the authorized one, and one with ``user:pass@`` would
         # produce an ``Authorization: Basic`` header the caller never configured.
@@ -347,7 +347,7 @@ def _inert_response(
 
     The executor keeps every completed item's response until the run ends,
     but its aggregation reads only status, headers, and URL.
-    Passing it a stand-in keeps a large batch from holding every
+    Passing it a stand-in keeps a large batch from retaining every
     downloaded file in memory for the whole run. ``elapsed`` is left
     unset; the aggregate's ``_safe_elapsed`` treats that as zero.
     """
@@ -365,9 +365,9 @@ async def _fetch_rating(
 ) -> tuple[pd.DataFrame, httpx.Response]:
     """Fetch one feature's data asset, parse RDB, optionally persist to disk.
 
-    Headers are evaluated against each asset href: assets can be on a different host
-    than the catalog, and must not receive its credentials. Runs inside a fan-out run:
-    the executor sets the shared client before any fetch starts.
+    Headers are evaluated against each asset href, because assets can be on a
+    different host than the catalog and must not receive its credentials. Runs inside
+    a fan-out run: the executor sets the shared client before any fetch starts.
     """
     fid = feature["id"]
     href = _asset_href(feature)
@@ -412,7 +412,7 @@ def _download_all(
     failure (429 / 5xx / timeout / connection drop) re-raises so the executor
     retries and then raises resumable; a *deterministic* per-feature failure
     warns with :class:`~dataretrieval.exceptions.SkippedRatingWarning` and
-    skips the feature. ``OSError`` writing ``file_path`` propagates: a
+    skips the feature. ``OSError`` writing ``file_path`` propagates, because a
     local disk problem is not a per-feature condition. Raw ``httpx`` errors
     pass through unchanged so the executor can classify and retry them.
 
@@ -421,7 +421,7 @@ def _download_all(
     is discarded. Both outcomes return to the executor a body-less
     :func:`_inert_response`: a skip so the item counts as complete (a later
     ``resume()`` continues past it), a success so
-    the run does not hold every downloaded file in memory while keeping the
+    the run does not retain every downloaded file in memory while keeping the
     response's status and quota headers for aggregation.
     """
     out: dict[str, pd.DataFrame] = {}

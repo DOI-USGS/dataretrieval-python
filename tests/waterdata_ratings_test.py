@@ -115,7 +115,7 @@ def test_get_ratings_mocked_search_and_download(httpx_mock, tmp_path):
 
 
 def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
-    """Each parsed frame should hold its RDB header and source URL in df.attrs."""
+    """Each parsed frame should store its RDB header and source URL in df.attrs."""
     httpx_mock.add_response(
         method="GET",
         url=STAC_SEARCH_RE,
@@ -322,7 +322,7 @@ def _two_feature_search_response():
 
 
 def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
-    """A stale catalog entry (404 on its asset) drops only that feature: a
+    """A stale catalog entry (404 on its asset) drops only that feature. A
     ``SkippedRatingWarning`` names the skipped feature, and the getter still
     returns every other rating in the batch."""
     httpx_mock.add_response(
@@ -339,8 +339,8 @@ def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
 
 
 def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
-    """A catalog feature with no data asset is a per-feature data problem:
-    skipped with a warning, and the rest of the batch is returned."""
+    """A catalog feature with no data asset is a per-feature data problem, so
+    the getter skips it with a warning and returns the rest of the batch."""
     body = _two_feature_search_response()
     body["features"][0]["assets"] = {}
 
@@ -354,8 +354,8 @@ def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
 
 
 def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
-    """``filterwarnings("error", ...)`` restores strict all-or-nothing: the
-    escalated skip raises an exception."""
+    """``filterwarnings("error", ...)`` restores strict all-or-nothing behavior,
+    so the escalated skip raises an exception."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
     )
@@ -371,7 +371,7 @@ def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
 
 
 def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
-    """A rate-limited download must never be skipped: it raises a
+    """A rate-limited download must never be skipped. It raises a
     resumable interruption, and resuming completes the batch. The escalation
     filter proves no ``SkippedRatingWarning`` is emitted."""
     httpx_mock.add_response(

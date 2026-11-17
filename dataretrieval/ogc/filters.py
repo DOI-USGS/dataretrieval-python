@@ -13,7 +13,7 @@ builds a ``prop IN (...)`` clause, for any getter that *builds* a CQL filter
 (the list fold in ``ogc.requests``, ``waterdata.ratings``).
 
 Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal
-predicates, function calls) are forwarded verbatim: only top-level
+predicates, function calls) are forwarded verbatim, because only top-level
 ``OR`` chunks losslessly into independent sub-queries whose result sets
 can be union'd.
 """
@@ -55,7 +55,7 @@ _QUOTED_STR_RE = re.compile(r"'[^']*'")
 
 def _cql_text_literal(value: str, *, remedy: str) -> str:
     """``value`` as a CQL-text string literal; ``remedy`` ends the error for a
-    value no literal can hold.
+    value no literal can represent.
 
     The Water Data parser rejects the ``''`` escape with HTTP 400, so a value
     containing ``'`` is double-quoted instead. A double-quoted token that names
@@ -214,7 +214,7 @@ def _check_numeric_filter_pitfall(filter_expr: str) -> None:
     Zero-padded codes are the worst case (``parameter_code = '60'`` matches
     nothing because the real codes are of the form ``'00060'``).
 
-    Quoted literals (``value >= '1000'``) are not flagged: the caller has
+    Quoted literals (``value >= '1000'``) are not flagged, because the caller has
     indicated that the column is textual.
     """
     # Mask quoted strings so ``name = 'value > 5'`` is not flagged.

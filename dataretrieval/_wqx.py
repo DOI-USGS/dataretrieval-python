@@ -100,7 +100,7 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
       ``<prefix>Time/TimeZoneCode``
 
     For every triplet present, a new ``<prefix>DateTime`` column is appended
-    holding a UTC ``Timestamp`` (offsets resolved via
+    containing a UTC ``Timestamp`` (offsets resolved via
     :data:`dataretrieval.codes.tz`). The original Date/Time/TimeZone columns
     are left intact, and an existing ``<prefix>DateTime`` column is never
     overwritten.
@@ -125,7 +125,7 @@ def _attach_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
     new_columns = _find_datetime_triplets(df)
 
     if new_columns:
-        # Concat once: per-column assignment on a wide CSV-derived
+        # Concat once, because per-column assignment on a wide CSV-derived
         # frame triggers pandas' fragmentation PerformanceWarning.
         df = pd.concat([df, pd.DataFrame(new_columns, index=df.index)], axis=1)
 

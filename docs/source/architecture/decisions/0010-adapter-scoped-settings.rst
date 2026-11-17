@@ -10,7 +10,7 @@ names" and "Per-service overrides are deferred" clauses of
 subject to what ADR 0011 supersedes there.
 
 :doc:`0011-configuration-profiles` supersedes decisions 5 and 8 below:
-adapter schemas held centrally as ``TypedDict``, and each adapter a named
+adapter schemas defined centrally as ``TypedDict``, and each adapter a named
 keyword on ``configure()``. Each adapter now declares a ``BaseConfiguration``
 subclass in the module that *reads* those settings, and ``configure()`` takes
 instances of them positionally, which is what removes the adapter roster from
@@ -72,12 +72,12 @@ from shows the premise is false. The settings themselves differ:
      - yes
 
 ``concurrency`` and ``parallel_chunks`` are meaningless for the four
-single-shot adapters: there is nothing to fan out. ``ssl_check`` applies to
-four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is currently a
-per-call keyword outside the chain entirely; it is passed to ``httpx``'s
-``verify``, verified by spying on the client. A flat namespace accepts
-``configure(streamstats={"parallel_chunks": 8})`` without error, which is
-the typo class ADR 0009 exists to catch.
+single-shot adapters, because there is nothing to fan out. ``ssl_check``
+applies to four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is
+currently a per-call keyword outside the chain entirely; it is passed to
+``httpx``'s ``verify``, verified by spying on the client. A flat namespace
+accepts ``configure(streamstats={"parallel_chunks": 8})`` without error, which
+is the typo class ADR 0009 exists to catch.
 
 The credential is a separate axis, and measurement shows this. Probing the live
 APIs with and without a key:
@@ -146,14 +146,14 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    namespace nobody could remember.
 
 5. **Each adapter's schema is a** ``TypedDict``. Its ``__annotations__`` *are*
-   the schema: there is no second table to maintain, ``mypy --strict`` checks
+   the schema, so there is no second table to maintain, ``mypy --strict`` checks
    literal dicts at call sites, and the file path validates against the same
    annotations. A key an adapter does not accept raises ``ConfigurationError``
    at block entry, the way an unknown profile already does.
 
    *Superseded by* :doc:`0011-configuration-profiles`. The schema is now a
    frozen dataclass owned by the adapter, for the same "the annotations are the
-   schema" reason; what changed is where it is defined. A ``TypedDict`` had
+   schema" reason; only its location changed. A ``TypedDict`` had
    to be declared centrally to annotate a central keyword, which put a Water
    Data setting's definition in a module unrelated to Water Data.
 
@@ -165,7 +165,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    ``waterdata``, ``ngwmn``, ``nwdc``, ``wqp``, ``nldi``, ``streamstats``.
    The deprecated ``nwis`` is deliberately absent: its calls pin
    ``max_retries=0``, so a ``[nwis]`` table could only be reported as in effect
-   and then ignored, the failure this decision exists to prevent.
+   and then ignored, the failure this decision prevents.
 
 8. **Each adapter is a named, typed parameter on** ``configure()``, annotated
    with its own ``TypedDict``, so a type checker rejects a setting the adapter
@@ -200,7 +200,7 @@ Consequences
 
 - **A configuration object is still refused, but on narrower grounds than ADR
   0009 stated.** That ADR rejected an object because it had no way to be passed to
-  the call. A per-adapter payload type does not have that problem: the
+  the call. A per-adapter payload type does not have that problem, because the
   ``ContextVar`` remains the delivery mechanism and the type is only the
   payload's shape. ``TypedDict`` is chosen over a dataclass for the reason
   above, not because an object could not be delivered.
@@ -235,7 +235,7 @@ Consequences
   ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1). It is
   passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the
   only modules; the OGC getters were added later and never adopted it, so its
-  distribution records the package's history.
+  distribution records the package's history rather than a boundary.
 
   Three reasons not to promote it. It disables certificate verification, so as
   a per-call keyword it is a visible, scoped decision, while a config-file key
@@ -250,8 +250,8 @@ Consequences
   ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients,
   so that mechanism already covers *every* getter, including the OGC ones that
   have no ``ssl_check``, and it trusts the corporate CA while keeping
-  verification on. The ``bool`` type cannot hold a CA bundle path, which is the
-  value a caller needs.
+  verification on. The ``bool`` type cannot represent a CA bundle path, which
+  is the value a caller needs.
 
   The configuration guide documents ``SSL_CERT_FILE`` for that case. Whether
   ``ssl_check`` should be deprecated outright is a public-API question left to

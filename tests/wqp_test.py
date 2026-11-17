@@ -262,8 +262,8 @@ def test_a_configured_base_url_moves_both_interfaces():
     assert legacy == f"{mirror}/data/Result/Search?"
     assert wqx3 == f"{mirror}/wqx3/Result/search?"
 
-    # Outside the block, the portal's own root again: the redirect is scoped
-    # to the ``with`` statement.
+    # Outside the block the URL is the portal's own root again, so the redirect
+    # applies only inside the ``with`` statement.
     with pytest.warns(DataCurrencyWarning):
         assert wqp.wqp_url("Result").startswith("https://www.waterqualitydata.us/")
 

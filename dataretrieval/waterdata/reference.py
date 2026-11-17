@@ -2,7 +2,7 @@
 
 Reference tables and per-collection queryables: the parameter codes, statistic
 codes, and filterable properties the other getters accept. These describe the
-service, so they are the one family whose results are
+service rather than the measurements, so they are the only family whose results are
 mostly stable between calls.
 """
 
@@ -53,8 +53,8 @@ def get_reference_table(
         A dictionary of extra query parameters to pass to the collection API
         call.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early.
-        Useful for previewing
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole table. Useful for previewing
         large tables in a few requests (e.g. ``hydrologic-unit-codes`` has
         ~125k rows). Unlike ``limit`` (the per-page size), this bounds the total
         result. The default (None) downloads every page.

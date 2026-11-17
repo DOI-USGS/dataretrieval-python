@@ -72,7 +72,8 @@ Public service adapters
     ``metadata``, ``measurements``, ``reference``, ``samples``, and ``cql``.
     Separate modules own ratings, nearest-value selection, statistics execution,
     shared service policy, and type vocabularies. Internal modules import
-    protocol helpers from their canonical OGC modules.
+    protocol helpers from their canonical OGC modules; Water Data utilities do
+    not re-export them.
 
 ``dataretrieval.ngwmn``
     NGWMN adapter. Its only OGC dependency is the public OGC facade, which it
@@ -171,7 +172,7 @@ Shared components
     The one-shot HTTP query path the single-request adapters (``nwis``,
     ``wqp``, ``nldi``, ``streamstats``, ``nwdc``) use: compose the URL, send
     it, map the status, retry a transient. It moved out of ``utils`` because
-    the two halves shared only a file: this one depends on
+    the two halves shared only a file. This one depends on
     ``exceptions`` and ``transport``, the shaping half on ``codes`` and
     pandas, and no caller used both. The implementation module is private; the
     established public function paths remain ``dataretrieval.utils.query`` and
@@ -209,7 +210,7 @@ Failed requests derive from ``dataretrieval.DataRetrievalError``. Callers can
 inspect ``status_code``, ``retry_after``, and ``retryable`` without knowing the
 concrete subtype. A fanned-out call (an over-large OGC request, or a Water Use
 query naming several locations) may raise ``FanOutInterrupted`` subclasses
-(formerly, and still aliased as, ``ChunkInterrupted``) that hold a resumable
+(formerly, and still aliased as, ``ChunkInterrupted``) that have a resumable
 call handle and completed partial state.
 
 Package/module exports and documentation define the public surface.
@@ -226,7 +227,7 @@ shape:
 - Water Data, NGWMN, and Water Use tabular getters return ``(DataFrame,
   BaseMetadata)``. Water Data and NGWMN results that include geometry may use a
   ``GeoDataFrame`` in the first position when geopandas is installed.
-  ``BaseMetadata`` holds request URL, elapsed query time, response headers,
+  ``BaseMetadata`` includes request URL, elapsed query time, response headers,
   and comments where the upstream format provides them.
 - WQP getters return ``(DataFrame, WQP_Metadata)``; the service-specific
   metadata extends ``BaseMetadata`` with WQP query parameters and site lookup.
@@ -280,9 +281,9 @@ environment variable when one exists, the adapter's own table and the top-level
 values in ``~/.dataretrieval/config.toml``, then its built-in default.
 ``configure()`` takes configuration objects (a package-wide ``Configuration``
 and at most one per adapter), and each adapter's class is defined in the module
-that reads those settings, so ``configuration`` stays a leaf holding only the
-adapter roster. ``show_configuration()`` reports the effective source while
-redacting credentials.
+that reads those settings, so ``configuration`` stays a leaf that contains
+only the adapter roster. ``show_configuration()`` reports the effective source
+while redacting credentials.
 
 The :doc:`configuration guide </userguide/configuration>` catalogs the
 settings themselves (names, defaults, environment variables, and the
@@ -301,16 +302,16 @@ them:
 ``API_USGS_STALL_TIMEOUT``
     Seconds a call may go without receiving any data before retrying stops and
     the call raises the failure; defaults to 60, and ``0`` disables the bound.
-    It complements ``API_USGS_RETRIES``, which caps attempts: without this
-    bound, four retries of a request that times out after a
-    minute add up to four minutes without data. Progress restarts the budget:
+    It complements ``API_USGS_RETRIES``, which caps attempts and not elapsed
+    time. Without this bound, four retries of a request that times out after
+    a minute add up to four minutes without data. Progress restarts the budget:
     a page received, or a queued chunk acquiring its concurrency slot. Neither a
     slow but productive download nor the last chunks of a large fan-out are
     stopped early, and an attempt already in flight is never interrupted. This bound
     never blocks the first retry, so one slow attempt cannot disable retry by
     itself; after that, the budget determines whether retrying continues. A dead
-    connection therefore costs about two read timeouts; without the bound it
-    costs five full attempts.
+    connection therefore takes about two read timeouts to fail; without the
+    bound it takes five full attempts.
 
 ``API_USGS_PROGRESS``
     Controls best-effort progress display. Reporting failures must never change
@@ -347,7 +348,8 @@ This view records categories and representative locations of debt.
   and the OGC engine wrappers.
 
 These are documented so the checks distinguish accepted current dependencies
-from new violations. Remove them through small, test-protected changes.
+from new violations. Remove them through small, test-protected changes, not a
+rewrite.
 
 Change process
 --------------

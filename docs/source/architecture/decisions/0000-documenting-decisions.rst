@@ -21,7 +21,7 @@ The problem is in the internal modules behind them. Rationale (the argument
 for why a rule holds) accumulated in module and function docstrings alongside
 the ADRs that already owned it, because a paragraph can be written where the
 reader already is, while a citation requires them to open a record.
-Those modules hold 82% of the package's comment lines, and an audit of that
+Those modules contain 82% of the package's comment lines, and an audit of that
 prose found roughly 500 lines restating decisions already recorded in ADRs 0003
 through 0011: ``configuration.py`` re-derives the layered-resolution design in
 65 docstring lines while citing ADRs 0009, 0010, and 0011 in the course of it,
@@ -91,9 +91,9 @@ Consequences
 - A rule has one current statement, so updating it cannot leave stale copies
   behind in modules nobody thought to grep.
 - Reading a module gets slower in one respect: some rationale now requires
-  opening an ADR. That cost is accepted: the reader who needs the argument is
-  rarer than the reader who needs the contract, and the ADR is the version that
-  is maintained.
+  opening an ADR. That cost is accepted because the reader who needs the
+  argument is rarer than the reader who needs the contract, and the ADR is the
+  version that is maintained.
 - Rationale is not deleted when it moves. Prose removed from a docstring is moved
   to an ADR clause or to the commit message that removes it. The commit message
   is where a reviewer looks for what a documentation change discarded.

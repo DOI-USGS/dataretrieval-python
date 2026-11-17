@@ -172,8 +172,8 @@ def get_nearest_continuous(
     **kwargs
         Additional keyword arguments forwarded to ``get_continuous`` (e.g.
         ``statistic_id``, ``approval_status``, ``properties``). Passing ``time``,
-        ``filter``, or ``filter_lang`` raises ``TypeError``: this function builds those
-        itself. A caller-provided ``properties`` list has ``time`` and
+        ``filter``, or ``filter_lang`` raises ``TypeError``, because this function
+        builds those itself. A caller-provided ``properties`` list has ``time`` and
         ``monitoring_location_id`` added when either is omitted: the match is computed
         against the first and grouped by the second, so the returned frame includes both
         columns even when they were not requested.
@@ -215,7 +215,7 @@ def get_nearest_continuous(
 
     *Why windowed CQL rather than sort+limit.* The API's documented ``sortby`` parameter
     would make this a trivial query per target (``filter`` by ``time <= t`` and ``limit
-    1``), but it is per-query: you would need one HTTP round-trip per target. The CQL
+    1``), but it is per-query, so you would need one HTTP round-trip per target. The CQL
     ``OR``-chain approach combines all N targets into one request (auto-chunked when the
     URL is long).
 

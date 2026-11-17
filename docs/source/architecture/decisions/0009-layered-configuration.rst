@@ -44,7 +44,7 @@ variables (``API_USGS_PAT``, ``API_USGS_CONCURRENT``, ``API_USGS_RETRIES``,
 could report the effective configuration, and what those parsers accepted was
 free to drift apart.
 
-That mechanism cannot express a per-call credential. An application holding
+That mechanism cannot express a per-call credential. An application that keeps
 keys in a secret store, a notebook retrieving data for two accounts, or a
 server handling concurrent users must assign to ``os.environ``, which is
 process-global, so it races across threads and tasks (issue #352).
@@ -89,13 +89,13 @@ Supporting decisions:
 - **Omitted and explicitly cleared values differ.** An omitted
   ``configure()`` argument inherits from lower sources. Explicit ``None`` is a
   scoped reset to built-in behavior, so a server can guarantee an anonymous
-  call.
+  call even when the process has a credential.
 - **No public getter gains a credential parameter.** ``configure`` is the only
   programmatic path, and a fitness function asserts no getter accepts
   ``api_key`` / ``session`` / ``token``. The generic ``**queryables`` path also
   refuses credential-shaped names before request construction so they cannot
-  appear in a URL. That refusal covers names that hold a secret; ``session`` is
-  deliberately not among them (see Notes).
+  appear in a URL. That refusal covers names whose value is a secret;
+  ``session`` is deliberately not among them (see Notes).
 - **The module owns each setting's parser.** ``unbounded``, bounds, and
   rejection messages are defined in one place. ``tomllib`` returns typed
   scalars, so the file and Python API validate source-level types before
@@ -178,8 +178,8 @@ Supporting decisions:
   of 32, and the single-shot adapters pass ``_GATEWAY_STATUSES`` to
   ``RetryPolicy.from_configuration()`` because WQP and StreamStats report a
   rejected query as a 500. A value resolved from the chain always outranks a
-  caller default: a service able to override an explicit setting would make
-  ``concurrency=1`` untrue.
+  caller default, because a service able to override an explicit setting
+  would make ``concurrency=1`` untrue.
 
 - **Per-service overrides are deferred, not refused.** One ``configure()``
   block cannot currently set one value for Water Use and another for Water Data.
@@ -197,7 +197,7 @@ Supporting decisions:
   getter, which is the per-call passing the ``ContextVar`` exists to remove and
   which the ``**queryables`` catch-all makes unsafe, or through a module-level
   global, which restores the cross-thread and cross-task leakage this ADR
-  exists to end. A library used through a constructed client can hold
+  exists to end. A library used through a constructed client can store
   settings on that client; one used through free functions cannot, and the
   scoped block follows from that.
 
@@ -242,9 +242,9 @@ argument is now in the bullet itself, because the docstring it pointed at was
 the prose being consolidated.
 
 The ``**queryables`` clause above originally named ``session`` among the
-rejected names. It was corrected after the fact: ``session`` holds no
+rejected names. It was corrected after the fact: a ``session`` value is not a
 secret, so refusing it with a credentials message told callers the wrong thing,
-and as a substring it reserved part of a namespace the *server* defines: any
+and as a substring it reserved part of a namespace the *server* defines, so any
 future query parameter containing it would have been blocked by that message.
 ``dataretrieval/credentials.py`` records the exclusion at the
 predicate. The decision the clause makes (credential-shaped names never reach

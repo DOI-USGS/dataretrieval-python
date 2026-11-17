@@ -10,10 +10,10 @@ dataretrieval.exceptions
 Resumable fan-out interruptions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A fanned-out request raises these when a transient failure interrupts it
+A fanned-out call raises these when a transient failure interrupts it
 partway; the exception preserves the completed work and
 ``exc.call.resume()`` continues it. ``dataretrieval.interruptions`` defines
-them (they hold pandas/httpx state), and the top level exports them, e.g.
+them (they have pandas/httpx state), and the top level exports them, e.g.
 ``from dataretrieval import FanOutInterrupted``.
 
 ``ChunkInterrupted`` is a permanent alias of ``FanOutInterrupted`` (the same

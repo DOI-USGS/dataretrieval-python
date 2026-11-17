@@ -233,18 +233,20 @@ def preformat_peaks_response(df: pd.DataFrame) -> pd.DataFrame:
     Notes
     -----
     An empty frame with no ``peak_dt`` column is returned unchanged, so an
-    empty peaks response takes :func:`format_response`'s empty-frame path.
+    empty peaks response takes :func:`format_response`'s empty-frame path
+    instead of raising ``KeyError``.
 
     NWIS zero-fills the unknown part of a historical peak's date:
     ``YYYY-MM-00`` when the day is not known, ``YYYY-00-00`` when the month is
-    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks.
-    The peak is kept regardless, and
+    not either. Neither parses, so ``datetime`` is ``NaT`` for those peaks
+    rather than a date NWIS does not have. The peak is kept regardless, and
     ``peak_dt`` is left in the frame: the response has no ``water_yr``, so
-    it is the only column holding a censored peak's year.
+    it is the only column containing a censored peak's year.
 
     """
     if df.empty and "peak_dt" not in df.columns:
-        # A non-empty frame missing peak_dt is malformed and must still raise.
+        # A non-empty frame missing peak_dt is malformed, not empty, and must
+        # still raise.
         return df
 
     # Derive the column on our own frame, leaving the caller's unchanged.
@@ -329,9 +331,9 @@ def get_discharge_peaks(
 
     response = query_waterdata("peaks", format="rdb", ssl_check=ssl_check, **kwargs)
 
-    # Parse raw with read_rdb: _read_rdb also runs format_response, and the
-    # explicit format_response(service="peaks") below does the peaks-specific
-    # formatting.
+    # Parse raw with read_rdb, not _read_rdb, because _read_rdb already runs
+    # format_response and the explicit format_response(service="peaks") below
+    # does the peaks-specific formatting.
     df = read_rdb(response.text, dtypes=_NWIS_RDB_DTYPES)
 
     return format_response(df, service="peaks", **kwargs), NWIS_Metadata(

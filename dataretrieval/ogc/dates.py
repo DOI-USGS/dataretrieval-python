@@ -35,8 +35,8 @@ _DURATION_RE = re.compile(r"^[Pp]T?\d")
 
 
 # OGC API parameters that take a date/datetime value (single string,
-# two-element range, or interval/duration string).
-# Used by ``_construct_api_requests`` to keep them out of the
+# two-element range, or interval/duration string) rather than a multi-value
+# string list. Used by ``_construct_api_requests`` to keep them out of the
 # POST/CQL2 multi-value path and to route them through ``_format_api_dates``,
 # and by the default ``_get_args`` no-normalize set to bypass string-iterable
 # normalization.
@@ -56,8 +56,8 @@ def _parse_datetime(value: str) -> datetime | None:
     candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
     for fmt in _DATETIME_FORMATS:
         try:
-            # DTZ007: naive is the documented outcome for a naive input:
-            # ``_DATETIME_FORMATS`` holds both the ``%z`` and the bare forms.
+            # DTZ007: naive is the documented outcome for a naive input, because
+            # ``_DATETIME_FORMATS`` includes both the ``%z`` and the bare forms.
             return datetime.strptime(candidate, fmt)  # noqa: DTZ007
         except ValueError:
             continue
@@ -211,7 +211,7 @@ def _format_api_dates(
         correcting the error edits an argument their getter accepts.
     single_value_hint : str, optional
         How the "too many values" message describes an acceptable single
-        value. Wording only: a getter that rejects some of the default's
+        value. It changes only the wording. A getter that rejects some of the default's
         forms (``get_ratings`` rejects durations) enforces that itself and
         passes a hint naming only what it accepts, so the remedy does not
         direct a caller to a value that is rejected.

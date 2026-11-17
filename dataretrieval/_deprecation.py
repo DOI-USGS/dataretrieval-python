@@ -12,14 +12,14 @@ from __future__ import annotations
 import warnings
 
 #: Published removal horizons, by the surface each covers. A date here is a
-#: commitment already made in a released warning message; read it
-#: at the call site, so extending one is a single edit.
+#: commitment already made in a released warning message; read it rather than
+#: spelling a date at the call site, so extending one is a single edit.
 REMOVALS: dict[str, str] = {
     "nwis": "2027-05-06",
     "waterdata.get_cql(service=)": "2027-08-09",
     "wateruse": "2027-08-11",
     "ogc.interruptions": "2027-08-25",
-    # Set by the service: v0 of the collection serves these
+    # The service sets this date. v0 of the collection serves these
     # filters until June 2027, and the shim stops working when that endpoint is
     # retired (https://waterdata.usgs.gov/blog/api-v1-release/).
     "waterdata.get_time_series_metadata(v0 filters)": "2027-06-01",

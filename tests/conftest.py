@@ -43,9 +43,9 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     Production defaults ``API_USGS_CONCURRENT`` to 32,
     ``API_USGS_RETRIES`` to 4, and ``API_USGS_STALL_TIMEOUT`` to 60 s.
     Pinning ``API_USGS_CONCURRENT=1`` keeps chunk dispatch
-    deterministic for the mocked suite, and ``API_USGS_RETRIES=0``
-    raises a single transient immediately. Concurrency and retry tests
-    opt in by overriding the env inside their body.
+    deterministic for the mocked suite, and ``API_USGS_RETRIES=0`` makes
+    a single transient raise immediately, with no retry. Concurrency and
+    retry tests opt in by overriding the env inside their body.
 
     The fixture also pins ``API_USGS_STALL_TIMEOUT=0``, so an opting-in retry test
     measures attempt counts. Left at the production 60 s, the real time the mocked
@@ -57,7 +57,7 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     monkeypatch.setenv("API_USGS_RETRIES", "0")
     monkeypatch.setenv("API_USGS_STALL_TIMEOUT", "0")
     # Point DATARETRIEVAL_CONFIG at a path that does not exist, so a developer's
-    # real ~/.dataretrieval/config.toml (which may hold an API key or a raised
+    # real ~/.dataretrieval/config.toml (which may contain an API key or a raised
     # concurrency) can never influence a test run. Config tests opt in by
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))

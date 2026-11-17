@@ -139,7 +139,7 @@ def test_preformat_peaks_response_preserves_peak_dt():
     """``peak_dt`` must be kept through the reformat.
 
     The peaks response has no ``water_yr``, so ``peak_dt`` is the only
-    column holding the year of a censored peak, and the only way a caller can
+    column that contains the year of a censored peak, and the only way a caller can
     tell an unknown day from a known one, since ``peak_cd`` does not always
     include the qualifier.
     """
@@ -316,7 +316,7 @@ class TestDefunctRecordOptions:
         ):
             assert sum(subject in m for m in messages) == 1
         # Pins the advisories' hand-counted ``stacklevel``: every one must
-        # blame the caller's own line.
+        # attribute the warning to the caller's own line.
         assert {Path(w.filename).name for w in deprecations} == {Path(__file__).name}
 
 
@@ -438,10 +438,10 @@ class TestReadRdb:
     )
 
     def test_no_sites_flows_through_format_response(self):
-        """A "No sites found" response is a legitimate empty result, so
-        callers can check ``df.empty``. Regression for issue #171 (previously
-        raised IndexError), which now also covers the empty-frame path through
-        ``format_response``.
+        """A "No sites found" response is a legitimate empty result and raises
+        no error, so callers can check ``df.empty``. Regression for issue #171
+        (previously raised IndexError), which now also covers the empty-frame
+        path through ``format_response``.
         """
         df = _read_rdb(self.NO_RESULTS_RDB)
         assert isinstance(df, pd.DataFrame)
@@ -480,8 +480,8 @@ class TestReadRdb:
 class TestFormatResponseArgument:
     """``format_response`` indexes a copy, so its argument survives the call.
 
-    The function is public, and both internal callers still hold the frame
-    they passed while it runs. Indexing that frame in place moved their
+    The function is public, and both internal callers keep a reference to the
+    frame they passed while it runs. Indexing that frame in place moved their
     columns into an index they never asked for.
     """
 
@@ -609,8 +609,8 @@ def test_a_non_html_parse_failure_is_re_raised_unchanged():
 
 def test_deprecating_a_getter_with_no_named_replacement_is_refused():
     """``@_deprecated`` guarantees the caller a replacement, so applying it to a
-    function with no recorded replacement raises: a deprecation warning naming nothing
-    leaves the caller with nothing to migrate to."""
+    function with no recorded replacement raises, because a deprecation warning
+    naming nothing leaves the caller with nothing to migrate to."""
     with pytest.raises(RuntimeError, match="_REPLACEMENTS missing entry"):
 
         @nwis._deprecated
@@ -637,8 +637,8 @@ def test_metadata_site_info_is_none_when_no_site_filter_was_used():
 
 def test_utc_localization_of_a_multi_index_datetime_level():
     """``multi_index=True`` puts the timestamp on level 1 under the site id. The naive
-    level must still be localized, or a multi-site frame holds two different time-zone
-    conventions in one column."""
+    level must still be localized, or a multi-site frame contains two different
+    time-zone conventions in one column."""
     idx = pd.MultiIndex.from_arrays(
         [
             ["01491000", "01491000"],

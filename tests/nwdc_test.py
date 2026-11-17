@@ -79,8 +79,8 @@ def test_huc12_id_kept_as_string_with_leading_zero(httpx_mock):
 
     df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
 
-    # String-typed (object or the pandas StringDtype, depending on version):
-    # the leading zero must be kept.
+    # String-typed (object or the pandas StringDtype, depending on version), so
+    # the leading zero is kept.
     assert pd.api.types.is_string_dtype(df["huc12_id"])
     assert df["huc12_id"].iloc[0] == "010900020502"
 
@@ -161,7 +161,7 @@ def test_pagination_follows_link_header_and_concatenates(httpx_mock):
     ]
     assert list(df.index) == [0, 1, 2]
     assert len(httpx_mock.get_requests()) == 2
-    # The second request includes the Link's ``skip`` offset.
+    # The second request includes the Link's ``skip`` offset, not the originals.
     second_qs = parse_qs(urlsplit(str(httpx_mock.get_requests()[1].url)).query)
     assert second_qs["skip"] == ["2"]
 
@@ -201,7 +201,7 @@ def test_http_error_raises_typed_exception_with_detail(httpx_mock):
 
 
 def test_empty_response_body_raises_typed_error(httpx_mock):
-    """An empty 200 body becomes a typed error."""
+    """An empty 200 body becomes a typed error, not a bare pandas EmptyDataError."""
     httpx_mock.add_response(method="GET", url=WU_RE, text="")
 
     with pytest.raises(dataretrieval.DataRetrievalError, match="empty response"):
@@ -224,8 +224,8 @@ def test_cyclic_next_link_terminates(httpx_mock):
 
     df, _ = get_wateruse(model="wu-public-supply-wd", state="RI")
 
-    # Fetches page 1 + the cyclic page once, then breaks on the repeat: it must
-    # return with the two pages collected.
+    # Fetches page 1 + the cyclic page once, then stops at the repeat and
+    # returns the two pages collected.
     assert len(df) == 3
     assert len(httpx_mock.get_requests()) == 2
 
@@ -324,10 +324,10 @@ def test_fan_out_surfaces_final_rate_limit_header(httpx_mock):
 def test_fan_out_failure_never_returns_partial_data(httpx_mock):
     """A failed location aborts the call even when another location succeeded.
 
-    The raised interruption holds the completed sibling for ``resume()``.
-    Water Use reports ``ServiceInterrupted``; before sharing the fan-out
-    executor it raised the bare ``ServiceUnavailable``: the same upstream 503,
-    now resumable.
+    The raised interruption keeps the completed sibling for ``resume()``.
+    Water Use reports the upstream 503 as the resumable ``ServiceInterrupted``;
+    before it shared the fan-out executor, it raised the bare
+    ``ServiceUnavailable``.
     """
     httpx_mock.add_response(
         method="GET",
@@ -508,8 +508,8 @@ def test_next_page_url_strips_credentials_from_the_cursor():
 
     httpx derives ``Authorization: Basic ...`` from a URL's userinfo, so a cursor
     spelled ``http://user:pass@water.usgs.gov/...`` would send a credential the caller
-    never configured to the rewritten host: what the host check exists to prevent,
-    reached through the host check's own normalization. The port is dropped for the same
+    never configured to the rewritten host. The host check prevents that leak, and here
+    the check's own normalization would cause it. The port is dropped for the same
     reason.
     """
     response = httpx.Response(
@@ -548,7 +548,8 @@ def test_a_configured_base_url_redirects_the_request(httpx_mock):
 
     The page-two mock is served from the mirror and its cursor names the mirror: if
     either the request or the ``rel="next"`` walk had stayed on the NWDC's host, one of
-    them would go unmocked and this would fail.
+    them would go unmocked and this would fail rather than send requests, undetected, to
+    the service the block redirected away from.
     """
     mirror = re.compile(r"^https://mirror\.example/data")
     httpx_mock.add_response(
@@ -572,7 +573,7 @@ def test_a_configured_base_url_redirects_the_request(httpx_mock):
 
 
 def test_next_page_url_drops_the_service_rewrite_when_redirected():
-    """The alias list and the rewrite are facts about the NWDC.
+    """The alias list and the rewrite apply only to the NWDC's host.
 
     Nothing but the NWDC is served at ``water.usgs.gov``, so a call an
     ``NwdcConfiguration(base_url=...)`` pointed elsewhere gets the general rule

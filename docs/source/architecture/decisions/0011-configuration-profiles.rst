@@ -5,7 +5,7 @@ Status
 ------
 
 Accepted. Supersedes two clauses of :doc:`0010-adapter-scoped-settings`,
-decision 5 (adapter schemas held centrally as ``TypedDict``) and decision 8
+decision 5 (adapter schemas defined centrally as ``TypedDict``) and decision 8
 (each adapter a named keyword on ``configure``), and three of
 :doc:`0009-layered-configuration`: the global ``[profiles.<name>]`` table; the
 environment-above-file rule, inverted for a profile selected in code; and the
@@ -28,14 +28,14 @@ multi-service caller has:
   store both. The only named construct is ``[profiles.<name>]``, which switches
   *every* service at once.
 - **Composing them.** The two mechanisms do not compose:
-  ``[profiles.bulk.ngwmn]`` raises, so a profile cannot hold per-service
+  ``[profiles.bulk.ngwmn]`` raises, so a profile cannot contain per-service
   detail. That refusal was recorded in ADR 0010 on the grounds that layering
   them needed a fourth precedence rule nobody had asked for. Someone has now
   asked for it, and it is the primary use case.
 
 Two further problems ADR 0010 left open bear on the same decision. The
-adapter roster is listed in four places, only one of which is derived:
-adding an adapter needs coordinated edits, and forgetting one leaves a schema
+adapter roster is listed in four places, only one of which is derived.
+Adding an adapter needs coordinated edits, and forgetting one leaves a schema
 no call site can use, which happened to three adapters and shipped
 undetected until a fitness test was written. And a setting's definition is
 in ``config`` rather than in the module that reads it, so adding a Water Data
@@ -84,10 +84,10 @@ way.
 
 **Schemas are defined in their adapter; names are defined centrally.**
 ``configuration`` is a standard-library-only leaf every adapter may import, so
-it cannot import adapters. It holds the tuple of adapter *names*, which is what
-parsing a file needs (whether ``[ngwmn]`` is a table or a typo). Each adapter package
-owns its subclass, which is what a setting's definition needs to be local to
-the service that reads it.
+it cannot import adapters. It defines the tuple of adapter *names*, which is
+what parsing a file needs (whether ``[ngwmn]`` is a table or a typo). Each
+adapter package owns its subclass, which is what a setting's definition needs to
+be local to the service that reads it.
 
 Registration at import alone would not suffice: ``dataretrieval`` imports six of
 seven adapters eagerly, but NLDI is deliberately on demand for the geopandas
@@ -172,7 +172,8 @@ names the groups it composes and adds only what is its own. Declaring
 ``retries: int | None = _UNSET`` directly in an adapter module satisfies this
 record literally while losing what it protects: the annotation would enforce
 nothing, could drift from the shared parser, and ``mypy --strict`` would not
-detect it, because it checks only the annotation.
+detect it, because it checks the annotation, not whether the field still matches
+the shared group.
 
 Consequences
 ------------
@@ -208,31 +209,31 @@ Compliance
 
 Satisfied. In ``tests/configuration_test.py``:
 
-- ``test_several_named_profiles_are_selected_independently``: one block,
+- ``test_several_named_profiles_are_selected_independently`` -- one block,
   a different profile per adapter.
 - ``test_a_named_profile_layers_per_key_over_the_rungs_below`` (named
-  ``..._the_tiers_below`` when this decision was taken): a profile
+  ``..._the_tiers_below`` when this decision was taken) -- a profile
   inherits its adapter's default profile and the package-wide keys per key.
-- ``test_adding_a_named_profile_changes_nothing_until_it_is_selected``: a
+- ``test_adding_a_named_profile_changes_nothing_until_it_is_selected`` -- a
   named profile is inert until something selects it.
 - ``test_two_configurations_for_one_adapter_raise``.
 - ``test_a_code_selected_profile_outranks_the_environment``, plus a case per
   rung of the seven-rung ladder above, each written against one file that
   populates every rung with a distinct value.
-- ``test_inner_block_can_lower_a_setting_an_outer_block_scoped``: the
+- ``test_inner_block_can_lower_a_setting_an_outer_block_scoped`` -- the
   innermost block takes precedence, including over an adapter-scoped outer one.
 - ``test_a_table_for_an_unimported_adapter_stays_valid`` and
-  ``test_a_malformed_table_does_not_fail_another_adapters_call``: the
+  ``test_a_malformed_table_does_not_fail_another_adapters_call`` -- the
   isolation rule under lazy validation.
 - ``test_base_url_applies_from_code_and_is_refused_from_the_file``, with
   ``test_base_url_is_refused_from_the_environment`` for the other source, and
-  ``test_base_url_changes_every_endpoint_family_and_api_version_only_ogc``: one
+  ``test_base_url_changes_every_endpoint_family_and_api_version_only_ogc`` -- one
   public-getter contract covering OGC, Samples, Statistics, and Ratings. The
   endpoint module exposes functions that build each URL at request time rather
   than ready-made endpoint constants, so a family module gets the root in effect
   for the call without wrapping every use site.
 - ``test_adapter_roster_names_real_modules_that_register_themselves`` and
-  ``test_every_adapter_is_actually_wired_to_a_read_site``: the roster
+  ``test_every_adapter_is_actually_wired_to_a_read_site`` -- the roster
   resolves, and no configuration exists that nothing reads. An adapter name
   not in the roster now raises out of ``_resolve`` rather than
   falling through to the package-wide value, so the grep is a secondary check.

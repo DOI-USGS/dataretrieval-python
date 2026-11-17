@@ -8,15 +8,15 @@ line on stderr, rewritten in place as data arrives::
 
     Retrieving: daily · 6 pages · 2,881 rows · 995/1,000 requests remaining
 
-The active reporter is held in a :class:`~contextvars.ContextVar`: progress is a
-cross-cutting concern that the chunk orchestrator (outer, chunk counts) and the
-page-walking loop (inner, page/row/rate-limit counts) both update without importing
-each other. Call :func:`progress_context` to activate one and :func:`current` to get
-it.
+The active reporter is stored in a :class:`~contextvars.ContextVar` rather than
+passed through every signature, because progress is a cross-cutting concern that the
+chunk orchestrator (outer, chunk counts) and the page-walking loop (inner,
+page/row/rate-limit counts) both update without importing each other. Call
+:func:`progress_context` to activate one and :func:`current` to get it.
 
-This is a top-level leaf, outside :mod:`dataretrieval.transport`: transport modules
-report *into* it and the execution layer owns no rendering (ADR 0006), so every
-service adapter, OGC or not, uses the same reporter.
+This is a top-level leaf, outside :mod:`dataretrieval.transport`, because transport
+modules report *into* it and the execution layer contains no rendering code
+(ADR 0006), so every service adapter, OGC or not, uses the same reporter.
 
 By default the line is shown for interactive use (an interactive terminal or a
 Jupyter/IPython kernel, like ``tqdm``), while redirected logs and CI get no line.
@@ -64,8 +64,8 @@ def _in_jupyter_kernel() -> bool:
     A kernel's ``stderr`` isn't a TTY, but it handles carriage-return rewrites in the
     cell output area (the same mechanism ``tqdm`` uses), so the line is shown there. The
     plain IPython terminal REPL is a ``TerminalInteractiveShell`` (already a TTY), so
-    only the ZMQ kernel needs this extra signal. Detected without importing IPython: if
-    it is not already imported, no IPython shell is running.
+    only the ZMQ kernel needs this extra signal. Detected without importing IPython,
+    because if it is not already imported, no IPython shell is running.
     """
     ipython = sys.modules.get("IPython")
     if ipython is None:
@@ -277,10 +277,10 @@ def progress_context(
     """Activate a :class:`ProgressReporter` for the duration of a query.
 
     ``service`` labels the line (e.g. ``"Retrieving: daily ..."``), and
-    ``target_url`` is the host the query is sent to; it decides whether an
+    ``target_url`` is the host the query is sent to; it determines whether an
     API-key pointer is shown when the line closes. If a reporter is already
     active (a nested call), the existing one is yielded unchanged so the
-    outermost query owns the single line; only the outermost context closes it
+    outermost query writes the single line; only the outermost context closes it
     (and every argument of a nested call is ignored).
     """
     existing = _active.get()

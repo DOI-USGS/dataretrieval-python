@@ -18,15 +18,15 @@ import httpx
 
 from dataretrieval import configuration as _configuration
 
-#: Environment variable holding the USGS Water Data personal access token. Taken
-#: from the chain that reads it, the same rule
-#: ``test_credential_policy_has_one_definition`` enforces for the authorized host,
-#: and for the same reason: two copies stop agreeing without any error.
+#: Environment variable that supplies the USGS Water Data personal access token.
+#: Taken from the chain that reads it, so the name is defined once;
+#: ``test_credential_policy_has_one_definition`` enforces the same rule for the
+#: authorized host, because two copies can stop agreeing without any error.
 API_KEY_ENV = _configuration.ENV_VARS["api_key"]
 
 #: Where to register for a key. Printed once, by the progress reporter, when a query
-#: against the authorized host runs without one: unauthenticated callers are subject to
-#: much lower rate limits (see the ``API_USGS_PAT`` note in the README).
+#: against the authorized host runs without one, because unauthenticated callers are
+#: subject to much lower rate limits (see the ``API_USGS_PAT`` note in the README).
 SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
 
 #: The only host that accepts the key. Every other service this package calls
@@ -34,9 +34,9 @@ SIGNUP_URL = "https://api.waterdata.usgs.gov/signup/"
 _AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
 
 #: Origin of the Water Data API, built from the authorized host. The host that
-#: serves these endpoints and the host that accepts the key are the same fact,
-#: and keeping two copies fails without an error: the endpoint moves, the
-#: predicate is not updated, and either the key stops attaching or it is sent
+#: serves these endpoints and the host that accepts the key are the same host,
+#: and two copies of it can diverge without an error. If the endpoint moves and
+#: the predicate is not updated, either the key stops attaching or it is sent
 #: somewhere nobody authorized. The adapters import this (enforced by
 #: ``test_credential_policy_has_one_definition``).
 WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
@@ -45,13 +45,13 @@ WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
 def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
     """Whether ``target_url`` names the host that accepts :data:`API_KEY_ENV`.
 
-    The one predicate for whether a destination gets the key, used when
+    The only predicate for whether a destination gets the key, used when
     attaching the credential, when stripping it back off at redirect time, and
     when deciding whether "get an API key" is advice this caller can act on, so
     the three can't drift apart.
 
-    The scheme has to be ``https`` and the host has to match (ADR 0009): a
-    redirect or a server-supplied next-page link can name ``http://`` on the
+    The scheme has to be ``https`` and the host has to match (ADR 0009), because
+    a redirect or a server-supplied next-page link can name ``http://`` on the
     host that is otherwise authorized.
     """
     if target_url is None:
@@ -66,9 +66,10 @@ def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
 def without_embedded_credentials(url: httpx.URL) -> httpx.URL:
     """Drop any ``user:pass@`` from a URL received from the server.
 
-    A next-page link is data, and ``httpx`` derives an ``Authorization: Basic``
-    header from userinfo in a URL (ADR 0009). No USGS service authenticates that
-    way, so stripping it removes nothing a caller needs.
+    A next-page link is server-supplied data, and ``httpx`` derives an
+    ``Authorization: Basic`` header from userinfo in a URL (ADR 0009). No USGS
+    service authenticates that way, so stripping it removes nothing a caller
+    needs.
     """
     return url.copy_with(userinfo=b"") if url.userinfo else url
 
@@ -78,8 +79,8 @@ def without_embedded_credentials(url: httpx.URL) -> httpx.URL:
 # metadata. The predicate is defined in this leaf so that ten getters cannot
 # drift into ten spellings of it (ADR 0006).
 #
-# Matched as *substrings* of the separator-stripped name: an exact-match list
-# misses the spelling the library's own docs make most likely, ``x_api_key``,
+# Matched as *substrings* of the separator-stripped name, because an exact-match
+# list misses the spelling the library's own docs make most likely, ``x_api_key``,
 # after the ``X-Api-Key`` header.
 _CREDENTIAL_MARKERS = (
     "apikey",
@@ -92,12 +93,12 @@ _CREDENTIAL_MARKERS = (
 )
 
 # Whole names that are credentials on their own but too short to match as
-# substrings without catching legitimate query parameters.
+# substrings without catching valid query parameters.
 #
-# ``session`` is deliberately absent from both lists: it holds no secret, so
+# ``session`` is absent from both lists. It names no secret, so
 # rejecting it with a credentials message reports an incorrect reason, and as a
-# substring it claims part of a namespace the *server* owns: any future query
-# parameter containing it would be unreachable behind that message.
+# substring it claims part of a namespace the *server* defines, so any future
+# query parameter containing it would be unreachable behind that message.
 _CREDENTIAL_NAMES = frozenset({"auth", "key", "pat", "pw"})
 
 

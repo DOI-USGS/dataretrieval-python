@@ -198,9 +198,9 @@ class Test_error_taxonomy:
         assert dataretrieval.NoSitesError is exceptions.NoSitesError
 
     def test_typed_errors_survive_pickle_and_deepcopy(self):
-        """Typed errors round-trip through pickle/deepcopy: they get pickled
-        back from multiprocessing / lithops workers, and their constructor fields
-        (status_code, retry_after, url) must be preserved."""
+        """Typed errors must round-trip through pickle/deepcopy, because they get
+        pickled back from multiprocessing / lithops workers, and their constructor
+        fields (status_code, retry_after, url) must be preserved."""
         import copy
         import pickle
 

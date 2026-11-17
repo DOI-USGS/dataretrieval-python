@@ -1,7 +1,7 @@
 """OGC argument normalization and HTTP request construction.
 
 The API to target and its quirks are explicit parameters (``base_url``,
-``dialect``): construction takes everything it needs as parameters.
+``dialect``), so construction takes everything it needs as parameters.
 Queryables and schema execution are in :mod:`dataretrieval.ogc.schema` and are
 not re-exported here,
 so this module does not depend on the part of OGC that executes HTTP (ADR 0007).
@@ -26,9 +26,9 @@ from dataretrieval.transport.http import default_headers as _default_headers
 # ---------------------------------------------------------------------------
 
 # ``AGENCY-ID``: a hyphen-separated agency prefix and local id. The local id
-# may itself contain hyphens (``\S+`` after the first separator): NGWMN
-# aggregates many non-USGS agencies whose local ids are not only digits, so
-# only the agency prefix is constrained to be hyphen/space-free.
+# may itself contain hyphens (``\S+`` after the first separator), because NGWMN
+# aggregates many non-USGS agencies whose local ids are not only digits. Only the
+# agency prefix is constrained to be hyphen/space-free.
 _MONITORING_LOCATION_ID_RE = re.compile(r"[^-\s]+-\S+")
 
 
@@ -80,7 +80,7 @@ def _cql2_param(args: dict[str, Any], json_filter: dict[str, Any] | None = None)
 
 def _pop_json_filter(params: dict[str, Any]) -> dict[str, Any] | None:
     """Remove a ``filter_lang="cql-json"`` filter from ``params`` and return it
-    parsed, for the POST body: the APIs return HTTP 400 for one in the URL."""
+    parsed, for the POST body, because the APIs return HTTP 400 for one in the URL."""
     if params.get("filter_lang") != "cql-json" or "filter" not in params:
         return None
     del params["filter_lang"]

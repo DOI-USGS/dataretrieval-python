@@ -453,7 +453,7 @@ def test_construct_api_requests_multivalue_post():
 
 
 def test_construct_api_requests_omits_empty_list():
-    """An empty list value is omitted from the URL: the server reads a
+    """An empty list value is omitted from the URL because the server reads a
     filterless ``&parameter_code=`` as 'match empty'."""
     req = _construct_api_requests(
         "daily", monitoring_location_id="USGS-05427718", parameter_code=[]
@@ -531,7 +531,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
     """``service=`` still resolves to ``collection`` for one deprecation window.
 
     ``service`` was the published spelling, and OGC API - Features calls the
-    value a collection: it is the ``collectionId`` in ``/collections/{id}``.
+    value a collection (the ``collectionId`` in ``/collections/{id}``).
     The rename must not change behavior for callers using the old name.
     """
     with pytest.warns(DeprecationWarning, match="use 'collection'"):
@@ -545,7 +545,7 @@ def test_get_cql_service_keyword_is_deprecated_but_works():
             get_cql(collection="not-a-collection", cql="a=1")
 
     # Passing both spellings is ambiguous and refused, which the hand-written shim this
-    # replaced did not do: it dropped ``service`` without a warning.
+    # replaced did not do. That shim dropped ``service`` without a warning.
     with pytest.raises(TypeError, match="received both"):
         get_cql(service="daily", collection="daily", cql="a=1")
 
@@ -1197,7 +1197,7 @@ def test_get_latest_daily(httpx_mock):
 
 
 def test_get_latest_daily_properties_geometry(httpx_mock):
-    """Geometry is kept through an explicit ``properties`` list that omits it: the
+    """Geometry is kept through an explicit ``properties`` list that omits it. The
     collection returns it regardless unless ``skip_geometry`` is set, so the
     projection must not drop it."""
     _mock_items(httpx_mock, "latest-daily")
@@ -1251,7 +1251,8 @@ def test_construction_date_keeps_every_precision(httpx_mock, recwarn):
 
 def test_get_monitoring_locations_hucs_uses_post_cql(httpx_mock):
     """``monitoring-locations`` is a POST/CQL2 collection in the Water Data
-    dialect, so a multi-value filter goes out as a CQL2 body."""
+    dialect, so a multi-value filter goes out as a CQL2 body rather than a
+    comma-joined query param."""
     _mock_items(httpx_mock, "monitoring-locations")
 
     get_monitoring_locations(hydrologic_unit_code=["010802050102", "010802050103"])
@@ -1350,7 +1351,8 @@ def test_get_cql_resume_returns_finalized_shape(httpx_mock):
     """A resumed ``get_cql`` returns the same finished ``(df, BaseMetadata)``
     shape as an uninterrupted call. The verbatim-CQL path runs through the shared
     executor with the same finalizer as the typed getters, so
-    ``exc.call.resume()`` yields the shaped result."""
+    ``exc.call.resume()`` yields the shaped result, not a raw
+    ``(frame, response)`` pair."""
     from dataretrieval.interruptions import QuotaExhausted
     from dataretrieval.utils import BaseMetadata
 
@@ -1542,7 +1544,7 @@ def test_time_series_metadata_state_warning_points_to_the_same_argument(
 
 
 def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
-    """The getter sets v0 on the request alone, so the
+    """The getter sets v0 on the request, not in the configuration, so the
     version the caller set still applies to every other call (ADR 0011)."""
     _mock_items(httpx_mock, "time-series-metadata", base=_V0_OGC_BASE)
     _mock_items(httpx_mock, "daily")
@@ -1735,8 +1737,8 @@ def test_get_reference_table_with_query(httpx_mock):
 
 
 def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
-    # ``max_rows`` is a client-side pagination cap: the server never sees it. So a
-    # getter must keep it out of the request ``args`` (which become query params)
+    # ``max_rows`` is a client-side pagination cap and is never sent to the server,
+    # so a getter must keep it out of the request ``args`` (which become query params)
     # and forward it to ``get_ogc_data`` as the keyword that sets the cap. This
     # pins that connection; the cap mechanism itself (stop following ``next`` once
     # the cap is met, then truncate the combined frame to exactly N) is covered
@@ -1848,7 +1850,8 @@ def test_get_stats_por(httpx_mock):
 
 
 def test_get_stats_por_expanded_false(httpx_mock):
-    """``expand_percentiles=False`` keeps the raw ``percentiles`` list column."""
+    """``expand_percentiles=False`` keeps the raw ``percentiles`` list column
+    instead of expanding it into one row per percentile."""
     _mock_stats(httpx_mock, "observationNormals")
 
     df, _ = get_stats_por(
@@ -1893,7 +1896,7 @@ class TestCheckMonitoringLocationId:
     """Tests for the AGENCY-ID-specific layer over ``_normalize_str_iterable``.
 
     Generic type/iterable normalization is covered by
-    ``TestNormalizeStrIterable`` below; this suite holds only the format
+    ``TestNormalizeStrIterable`` below; this suite contains only the format
     check (``AGENCY-NUMBER`` shape) and the public-API integration smokes.
 
     Regression tests for GitHub issue #188.

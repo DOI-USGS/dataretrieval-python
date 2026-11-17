@@ -64,7 +64,7 @@ from the API it wraps.
 Decision
 --------
 
-The glossary holds two kinds of term, and they impose different obligations.
+The glossary contains two kinds of term, and they impose different obligations.
 
 **Core terms are ours.** The package invented them and no service defines
 them: everything under *Retrieval*, *Failure and resumption*, *Configuration*
@@ -128,7 +128,7 @@ allowed to vary can see it without asking.
 The mechanical part is that the glossary must define what it uses:
 ``tests/architecture_test.py`` asserts every ``ADR NNNN`` citation resolves, and
 the same file is where a check that ``CONTEXT.md`` defines its own vocabulary
-would go. None is proposed yet: a word-list check over prose has a poor
+would go. None is proposed yet, because a word-list check over prose has a poor
 precision record in this repository, and the failure it would catch is one a
 reader notices immediately.
 

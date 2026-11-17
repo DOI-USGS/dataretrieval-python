@@ -26,8 +26,9 @@ from dataretrieval.interruptions import (
     ServiceInterrupted,
 )
 
-#: When the alias may be deleted. Read from the shared horizon table,
-#: so it is reviewed and extended with every other published removal.
+#: When the alias may be deleted. Read from the shared horizon table rather
+#: than spelled here, so it is reviewed and extended with every other published
+#: removal.
 OGC_INTERRUPTIONS_REMOVAL_DATE = REMOVALS["ogc.interruptions"]
 
 __all__ = [
@@ -45,7 +46,7 @@ warn_deprecated(
     detail="The exception classes are unchanged and are the same objects; "
     "only this import path is being removed. Removal is planned for a future "
     "major release.",
-    # 1 attributes the warning to the line that imported this module: an import
-    # has no deeper user frame to attribute it to.
+    # 1 attributes the warning to the line that imported this module, because an
+    # import has no deeper user frame to attribute it to.
     stacklevel=1,
 )

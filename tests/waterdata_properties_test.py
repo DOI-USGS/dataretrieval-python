@@ -54,7 +54,7 @@ _NOT_FORWARDED = {"max_rows"}
 #: Values a parameter must have to pass its own validation.
 _VALID = {"monitoring_location_id": "USGS-05427718", "state": "Wisconsin"}
 
-#: Parameters sent under the API's name.
+#: Parameters whose API name differs from the parameter name.
 _SENT_AS = {"state": "state_name"}
 
 #: The label may be split across two lines. The list ends at the next unindented

@@ -214,7 +214,7 @@ markers = [
 
 [tool.coverage.run]
 source = ["dataretrieval"]
-# Most of what this package gets wrong is a branch.
+# Most of what this package gets wrong is a branch rather than a line.
 branch = true
 omit = [
   # Written by setuptools_scm at build time; absent from a source checkout.

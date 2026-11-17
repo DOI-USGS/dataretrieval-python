@@ -26,8 +26,8 @@ except ImportError:
 def test_query_waterdata_validation():
     """Rejections name the filters, corners, and services that would work.
 
-    Asserted on the remedy: the caller is
-    typically a program, and what it needs from the failure is the set of
+    Asserted on the remedy because the caller is typically a program, and
+    what it needs from the failure is the set of
     values that would have been accepted.
     """
     with pytest.raises(ValueError) as value_error:

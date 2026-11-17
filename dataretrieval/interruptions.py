@@ -11,21 +11,22 @@ The executor that raises and resumes them is
 Terms, as ``CONTEXT.md`` defines them: a **chunk** is one of the requests a
 query was split into, whatever the reason for the split; **chunking** is how a
 query is split; and a **fan-out** is the concurrent execution of a query's
-chunks. Water Use chunks one request per location, Water Data chunks to fit a
-URL byte budget: different reasons, the same word. The base class is named
-:class:`FanOutInterrupted` because the failure interrupts the *execution*.
+chunks. Water Use chunks one request per location and Water Data chunks to fit
+a URL byte budget; the reasons differ, and both are chunking. The base class is
+named :class:`FanOutInterrupted` because the failure interrupts the *execution*,
+not the split.
 
-``ChunkInterrupted`` is retained as a permanent alias of that same class: it is
-the name published in the user guide and caught in user code, and the alias has
-no maintenance cost. ``except ChunkInterrupted`` and
+``ChunkInterrupted`` is retained as a permanent alias of that same class, because
+it is the name published in the user guide and caught in user code, and the
+alias needs no maintenance. ``except ChunkInterrupted`` and
 ``except FanOutInterrupted`` are the same handler.
 
 This is a top-level leaf, outside ``ogc`` and ``transport``, for the reason ADR
 0006 gives for ``combining``, ``progress``, and ``credentials``: adapters need
 it whether or not they go through transport, and an exception taxonomy is not
 HTTP execution policy. It stays out of :mod:`dataretrieval.exceptions` because
-it holds pandas/httpx state, which would make that leaf depend on pandas and
-httpx.
+its classes store pandas and httpx objects, which would make that leaf depend on
+pandas and httpx.
 """
 
 from __future__ import annotations
@@ -48,15 +49,16 @@ class FanOutInterrupted(DataRetrievalError):
     Base class for partway chunk failures whose completed work
     is preserved and resumable.
 
-    A ``FanOutInterrupted`` subclass means: a chunk failed, but ``FanOut`` still holds
-    whatever completed successfully before the failure. Call ``self.call.resume()`` to
-    continue from where the failure stopped; only still-pending chunks are re-issued.
+    A ``FanOutInterrupted`` subclass is raised when a chunk fails. ``FanOut`` keeps
+    the results of every chunk that completed before the failure. Call
+    ``self.call.resume()`` to continue from where the failure stopped; only
+    still-pending chunks are re-issued.
 
     Subclasses describe *why* ``FanOut`` stopped so callers can choose a retry policy:
     :class:`QuotaExhausted` for 429 (wait for the rate-limit window),
     :class:`ServiceInterrupted` for 5xx (wait for the upstream to recover). The
     ``.call`` handle is the same object across every interruption of a single fanned-out
-    call: frames accumulate across retries.
+    call, so frames accumulate across retries.
 
     Attributes
     ----------
@@ -73,14 +75,13 @@ class FanOutInterrupted(DataRetrievalError):
         Total chunks in the plan.
     partial_frame : pandas.DataFrame
         Combined frame of work completed by the moment this exception was
-        raised. Snapshot at raise time: it does not advance on a later
-        ``call.resume()`` (use ``exc.call.partial_frame`` for the live
-        view).
+        raised. A snapshot taken at raise time, which does not change on a later
+        ``call.resume()`` (use ``exc.call.partial_frame`` for the live view).
     partial_response : httpx.Response or None
         Raw aggregate response covering the completed chunks at raise time;
         ``None`` if nothing had completed yet. Same snapshot semantics as
-        ``partial_frame``. (Raw; use ``exc.call.resume()`` for the finalized
-        ``(df, metadata)`` result.)
+        ``partial_frame``. (Raw, not finalized. Use ``exc.call.resume()`` for
+        the finalized ``(df, metadata)`` result.)
 
     Examples
     --------
@@ -135,9 +136,10 @@ class FanOutInterrupted(DataRetrievalError):
         # the failure moment: ``exc.partial_frame`` / ``.partial_response`` do not
         # advance on a later ``call.resume()`` (that live view is on
         # ``call.partial_frame`` / ``.partial_response``). This keeps each interruption
-        # in a resume loop an accurate record of the state when it was raised.
-        # ``.copy()`` protects the single-chunk fast path, where the combined frame may
-        # be returned verbatim.
+        # in a resume loop an accurate record of the state when it was raised, rather
+        # than every exception aliasing the shared call's advancing state. ``.copy()``
+        # protects the single-chunk fast path, where the combined frame may be returned
+        # verbatim.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
             self.partial_response: httpx.Response | None = None
@@ -166,7 +168,7 @@ class FanOutInterrupted(DataRetrievalError):
         if status is not None or cause is None:
             return status
         # The status is usually further down the chain: a typed error raised
-        # ``from`` the httpx failure that held it.
+        # ``from`` the httpx failure that has the status.
         for current in _walk_causes(cause):
             found: int | None = getattr(current, "status_code", None)
             if found is not None:
@@ -186,12 +188,12 @@ class FanOutInterrupted(DataRetrievalError):
 
 class QuotaExhausted(FanOutInterrupted):
     """
-    A chunk returned HTTP 429: the per-key rate-limit window is
-    exhausted. Subclass of :class:`FanOutInterrupted`.
+    A chunk returned HTTP 429, which means the per-key rate-limit window
+    is exhausted. Subclass of :class:`FanOutInterrupted`.
 
     The completed chunks are preserved on ``.call``; once the
     rate-limit window resets, ``.call.resume()`` re-issues only the
-    still-pending work. ``partial_frame`` holds what completed
+    still-pending work. ``partial_frame`` contains what completed
     before the 429.
     """
 
@@ -206,7 +208,7 @@ class QuotaExhausted(FanOutInterrupted):
 
 class ServiceInterrupted(FanOutInterrupted):
     """
-    A chunk returned HTTP 5xx: the upstream service failed
+    A chunk returned HTTP 5xx, which means the upstream service failed
     transiently. Subclass of :class:`FanOutInterrupted`.
 
     The completed chunks are preserved on ``.call``; once the
@@ -223,10 +225,10 @@ class ServiceInterrupted(FanOutInterrupted):
 
 # Resolver failures that will not resolve differently on a later attempt. The temporary
 # ones (notably EAI_AGAIN, "try again", raised while a resolver is still starting, on
-# VPN reconnect, or after a laptop resumes from sleep) are deliberately absent: those
+# VPN reconnect, or after a laptop resumes from sleep) are absent, because those
 # are retried. Looked up with ``getattr`` defaults because the EAI_* constants are
-# platform-dependent; an unrecognized code stays retryable, since a few seconds on a
-# retry cost less than a dropped recoverable call.
+# platform-dependent; an unrecognized code stays retryable, since losing a few seconds
+# to a retry is better than dropping a recoverable call.
 _PERMANENT_DNS_ERRORS = frozenset(
     code
     for code in (
@@ -243,7 +245,7 @@ def _walk_causes(
 
     Every question this module asks about a failure (is it transient, is it
     deterministic, what status did it have) is "find the first exception in this
-    chain that satisfies P". One traversal answers all of them, so the cycle
+    chain that satisfies P". One traversal handles all of them, so the cycle
     guard and the choice of links cannot drift between callers.
 
     ``__cause__`` (explicit ``raise ... from``) is always followed.
@@ -281,14 +283,15 @@ def _deterministic_failure(exc: BaseException) -> bool:
     ``raise ... from``: a DNS failure arrives as ``NetworkError`` ->
     ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
     linked by implicit chaining. Following only the cause would follow the
-    explicit branch and miss a ``gaierror`` on the implicit one, spending the
-    whole retry budget on a hostname that will never resolve.
+    explicit branch and miss a ``gaierror`` on the implicit one, using every
+    retry on a hostname that will never resolve.
     """
     for current in _walk_causes(exc, follow_context=True):
         if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
-            # Return: the first resolver code found decides.
+            # Return, not continue: the first resolver code found determines the
+            # result.
             return current.errno in _PERMANENT_DNS_ERRORS
     return False
 

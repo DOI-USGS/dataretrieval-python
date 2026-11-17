@@ -1,8 +1,8 @@
 """One policy for the server-supplied next-page links every page walk follows.
 
-A ``next`` href is response *data*: it arrives in the response from the service
-(or from whatever responded in its place) and then becomes the URL of the next
-request, with that request's headers and API key. Three page walks (the OGC
+A ``next`` href is response *data*, not configuration. It arrives in the response
+from the service (or from whatever responded in its place) and then becomes the URL
+of the next request, with that request's headers and API key. Three page walks (the OGC
 engine's ``links`` array, the ratings STAC walk, and Water Use's ``Link:``
 header) each need the same things of it before it is used: parse it, resolve a
 relative reference against the page it came from, reject a host the caller did
@@ -31,7 +31,7 @@ def _page_url(response: httpx.Response) -> httpx.URL:
     """The URL *response* came from, as an ``httpx.URL``.
 
     Read lazily by :func:`resolve_next_url` (see that function). The coercion is for
-    callers holding a response-shaped stand-in whose ``url`` is a plain string.
+    callers that pass a response-shaped stand-in whose ``url`` is a plain string.
     """
     url = response.url
     return url if isinstance(url, httpx.URL) else httpx.URL(str(url))

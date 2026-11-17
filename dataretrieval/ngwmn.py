@@ -49,7 +49,7 @@ __all__ = [
 ]
 
 
-# The Water Data API base URL, from the credentials leaf, the one place the
+# The Water Data API base URL, from the credentials leaf, the only place the
 # API-key host is named (ADR 0006).
 BASE_URL = WATERDATA_BASE_URL
 
@@ -416,7 +416,7 @@ def get_providers(
         postal code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``).
         The 50 states, DC, and the five US territories. Sent as the API's
         ``state`` field, as a postal code. Only one
-        state at a time: a multi-value state filter
+        state at a time. A multi-value state filter
         returns no records for this collection.
     agency_code : str or iterable of str, optional
         Provider agency code.

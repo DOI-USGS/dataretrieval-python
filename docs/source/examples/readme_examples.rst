@@ -19,7 +19,7 @@ Retrieving USGS water data with the ``waterdata`` module
     >>> # number with a hyphen
     >>> site = "USGS-05427718"
 
-    >>> # get continuous (instantaneous) streamflow (parameter code 00060)
+    >>> # get continuous (instantaneous) streamflow — parameter code 00060 —
     >>> # over a one-day window
     >>> df, md = waterdata.get_continuous(
     ...     monitoring_location_id=site,

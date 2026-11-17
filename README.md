@@ -49,7 +49,7 @@ highest to lowest precedence, so an explicit block or deployment environment
 can override a file without editing it:
 
 ```python
-# 1. a configure() block: for one call, an interactive prompt, or when
+# 1. a configure() block - for one call, an interactive prompt, or when
 #    different threads/tasks need different credentials.
 from getpass import getpass
 
@@ -67,7 +67,7 @@ export API_USGS_PAT="your_api_key_here"
 ```
 
 ```toml
-# 3. ~/.dataretrieval/config.toml: keeps the key out of your shell
+# 3. ~/.dataretrieval/config.toml - keeps the key out of your shell
 #    environment, where every process you start inherits it.
 #    Restrict it afterwards:  chmod 600 ~/.dataretrieval/config.toml
 api_key = "your_api_key_here"
@@ -150,22 +150,21 @@ print(f"Retrieved {len(df)} continuous gage height measurements")
 
 #### Speeding up large downloads with `parallel_chunks`
 
-By default the getters split a multi-value request only as far as the server's
-~8 KB URL limit forces, which yields the fewest chunks (the requests a query
-is split into). For a **large, paginated** pull, that default is needlessly
-conservative: every chunk pages through
-its own results, so dividing the query into more, smaller chunks lets
-the getter fetch those pages **in parallel**. `parallel_chunks(n)` opts a single call
-into that finer split, fanning it out into `n` chunks. The finer split
-helps only when the result is large enough to span many pages *and* the query
-has a multi-value argument to divide, such as a list of monitoring locations. On
-a small query, or one with nothing to split, it only adds requests, so
-`parallel_chunks` is a deliberate, scoped `with` block.
+By default the getters split a multi-value request into as few chunks (the
+requests a query is split into) as the server's ~8 KB URL limit allows. Each
+chunk pages through its own results in sequence, so for a **large, paginated**
+pull, dividing the query into more, smaller chunks lets the getter fetch those
+pages **in parallel**. `parallel_chunks(n)` opts a single call into that finer
+split, fanning it out into `n` chunks. The finer split helps only when the
+result is large enough to span many pages *and* the query has a multi-value
+argument to divide, such as a list of monitoring locations. On a small query, or
+one with nothing to split, it only adds requests, so `parallel_chunks` applies
+only to the calls inside its `with` block.
 
 ```python
 from dataretrieval import waterdata
 
-# All stream gages in Ohio, then 20 years of their daily discharge: large
+# All stream gages in Ohio, then 20 years of their daily discharge — large
 # enough to span many pages, so it benefits from a finer split.
 sites, _ = waterdata.get_monitoring_locations(state="Ohio", site_type_code="ST")
 
@@ -178,7 +177,7 @@ with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
 ```
 
 `n` is the number of chunks to fan the call out into, capped by how many
-values there are to split. Each chunk costs a request against your hourly
+values there are to split. Each chunk counts as one request against your hourly
 [rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
 capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
 roughly `2` up to that value.
@@ -197,8 +196,8 @@ window, so no run is served from the server's data-window cache:
 
 The gain comes from overlapping each chunk's per-page latency and
 server-side work. The exact multiplier therefore scales with how many pages the
-pull spans: a larger pull (more pages) has more parallelism to exploit. The
-extra chunks each cost quota, so reserve a large `n` for pulls you know
+pull spans: a larger pull (more pages) has more parallelism to exploit. Each
+extra chunk counts against the quota, so reserve a large `n` for pulls you know
 are large.
 
 Visit the

@@ -61,8 +61,8 @@ removed.
 
 **A ``Retry-After`` value is kept as information even when it is not
 actionable.** A value too long to wait for, or expressed as a date, is parsed
-and set on the failure, so a caller can see what the
-service requested; the retry policy separately does not wait beyond its cap.
+and set on the failure, so a caller can see what the service requested; the
+retry policy separately does not wait beyond its cap.
 A date already in the past yields no value at all rather than a zero-second
 one, which would mean "retry immediately", the opposite of what the header
 specified.

@@ -174,7 +174,8 @@ def get_watershed(
         return r
 
     if format == "shape":
-        # Returning a shapefile/Fiona object isn't implemented; raise.
+        # Returning a shapefile/Fiona object isn't implemented; raise
+        # instead of falling through to a Watershed.
         raise NotImplementedError(
             "format='shape' is not implemented. Use format='geojson' "
             "(default) for the raw response, or format='object' for a "
@@ -189,7 +190,7 @@ def get_watershed(
 class Watershed:
     """Parsed StreamStats watershed result.
 
-    Holds the delineated watershed features, the computed basin
+    Stores the delineated watershed features, the computed basin
     parameters, and the service ``workspaceID`` extracted from a
     StreamStats watershed response. Build one from an already-fetched
     payload with :meth:`from_streamstats_json`, or construct directly

@@ -22,10 +22,9 @@ authenticates to a gateway that two adapters share, so it stays package-wide.
 One block, several services
 ---------------------------
 
-This is the case the mechanism exists for. Suppose the file holds what you would
-write once and keep (the key, a retry budget, and Water Data's usual
-concurrency) plus two named profiles for the settings you only sometimes
-want:
+This is the case the mechanism exists for. Suppose the file contains what you
+would write once and keep (the key, a retry budget, and Water Data's usual
+concurrency) plus two named profiles for the settings you only sometimes want:
 
 .. code-block:: toml
 
@@ -71,16 +70,15 @@ inherits the rest. Only WQP named ``retries``, so only WQP differs from the
 file's six.
 
 Outside the block nothing has changed, and putting those two profiles in the
-file changed nothing on its own: a named profile is inert until a caller
-selects it, which makes one safe to add to a file other people's jobs
-also read.
+file changed nothing on its own. A named profile is inert until a caller
+selects it, so one is safe to add to a file that other people's jobs also read.
 
 Two rules keep a block like that unambiguous. A configuration records which
 adapter it targets (a property of its class), so you never restate it,
 and ``Configuration`` targets none of them, which makes it
 package-wide. And there is at most one configuration per adapter: naming two
-raises, because there would be no defined order between
-them. Combine them into one.
+raises, because there would be no defined order between them. Combine them
+into one.
 
 
 Settings
@@ -102,7 +100,7 @@ Settings
    * - ``concurrency``
      - ``32``
      - ``API_USGS_CONCURRENT``
-     - Cap on sub-requests in flight at once for a chunked query. A positive
+     - Cap on chunks in flight at once for a chunked query. A positive
        integer, ``1`` to run them one at a time, or ``"unbounded"`` to remove
        the cap. Limits how many requests run simultaneously and leaves the
        number of requests unchanged.
@@ -157,7 +155,8 @@ Highest precedence first:
    (``~/.dataretrieval/config.toml``, or the path in ``DATARETRIEVAL_CONFIG``).
 6. The adapter's own built-in preference, where it has one. NWDC defaults to
    a ``concurrency`` of 4, because that is as far as the service is
-   stress-tested. It is a default: anything you set above outranks it.
+   stress-tested. It is a default, not a cap, and anything you set above
+   outranks it.
 7. The package built-in default, which for ``concurrency`` is 32.
 
 The top two rungs both name a single adapter, and naming two configurations
@@ -165,8 +164,8 @@ for one adapter raises, so they cannot disagree inside one block. Between
 nested blocks the innermost decides, as it does for everything else.
 
 Precedence applies **per setting**. An environment that sets only
-``API_USGS_PAT`` leaves a file-provided ``concurrency`` in effect:
-the sources merge.
+``API_USGS_PAT`` leaves a file-provided ``concurrency`` in effect. Sources are
+merged, not replaced.
 
 A variable that is *set but empty* (``export API_USGS_PAT=``, or a CI secret
 that resolves to nothing) does not count as configured, so an empty variable
@@ -181,9 +180,10 @@ file. The one exception is ``API_USGS_PROGRESS``, where blank has always meant
    overrides. The reasoning is in :doc:`ADR 0009
    </architecture/decisions/0009-layered-configuration>`.
 
-   The one exception is rung 2 above rung 3: a profile you name in code. That
-   is a more deliberate act than a variable inherited from whatever started
-   your process, and having that variable override it would look like a bug.
+   The only exception puts rung 2, a profile you name in code, above rung 3.
+   Naming one is a more deliberate act than a variable inherited from whatever
+   started your process, and having that variable override it would look like
+   a bug.
    The inversion covers what the profile names and nothing else: every setting
    you did *not* name still follows the environment-above-file rule, in the
    same block. See :doc:`ADR 0011
@@ -277,7 +277,8 @@ enclosing block had scoped to one adapter, and the innermost block decides.
 Each adapter accepts only the settings it reads, and they are the fields of its
 configuration class. ``concurrency`` and ``parallel_chunks`` are meaningless to
 an adapter that issues a single request, so ``StreamstatsConfiguration`` has no
-such field and ``[streamstats] parallel_chunks = 8`` is an error:
+such field and ``[streamstats] parallel_chunks = 8`` is an error rather than a
+line that does nothing:
 
 ====================================  ======================================  ========================================
 Adapter                               Configuration                           Accepts
@@ -295,7 +296,7 @@ Adapter                               Configuration                           Ac
 Each class is defined in the module whose code reads those settings, so a
 setting's definition is next to its use.
 
-``api_key`` is deliberately package-wide. It authenticates to the *gateway*
+``api_key`` is package-wide. It authenticates to the *gateway*
 in front of a host, and the same host serves Water Data and NGWMN
 (one key, one hourly quota shared between them), so a per-adapter key would
 describe a distinction the service does not have. ``progress`` is likewise
@@ -318,7 +319,7 @@ is that adapter's **default profile**, always in effect as above, while a
    concurrency = "unbounded" # only when selected
    parallel_chunks = 8
 
-So one file can hold an overnight bulk profile beside a low-rate daytime one,
+So one file can contain an overnight bulk profile beside a low-rate daytime one,
 and name as many of each as an adapter has uses for.
 
 A named profile states only what differs: everything it does not name still
@@ -332,11 +333,10 @@ to settings you did not ask for. What comes back is inert until you pass it to
 ``configure``; that is what puts a selected profile above the environment,
 since selecting one is something your code did.
 
-A profile holds settings only: ``[waterdata.bulk-pull.ngwmn]`` is
-not a Water Data profile containing NGWMN detail, and selecting it raises.
-Two adapters means two profiles,
-selected in the same block, as in :ref:`the example above
-<configuration-one-block>`.
+A profile contains only settings, so ``[waterdata.bulk-pull.ngwmn]`` is not a
+Water Data profile containing NGWMN detail, and selecting it raises. Two
+adapters means two profiles, selected in the same block, as in
+:ref:`the example above <configuration-one-block>`.
 
 
 A ``configure`` block
@@ -372,10 +372,10 @@ makes it package-wide.
    the replacement, so an old script fails with a message that states what
    to write.
 
-Because a :class:`~contextvars.ContextVar` backs it, the value applies
-to the current thread and to asyncio tasks started inside the block, and
-cannot leak into another thread or task. That makes it usable from a
-web service or a notebook working with more than one account:
+Because ``configure`` stores the value in a :class:`~contextvars.ContextVar`,
+the value applies to the current thread and to asyncio tasks started inside
+the block, and cannot leak into another thread or task. That makes it usable
+from a web service or a notebook working with more than one account:
 
 .. code-block:: python
 
@@ -406,7 +406,7 @@ anonymous call even if ``API_USGS_PAT`` is set.
 .. tip::
 
    Prefer reading the key from a secret store, environment, or config file
-   over writing a literal into a script: a literal is what ends up committed
+   over writing a literal into a script, where it is likely to be committed
    or pasted into a shared notebook.
 
 
@@ -414,8 +414,8 @@ Checking what is in effect
 --------------------------
 
 ``show_configuration()`` reports each setting's effective value and where it came
-from. It never prints the key itself. The report below is what a file holding a
-key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
+from. It never prints the key itself. The report below is what a file
+containing a key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
 ``[waterdata.bulk]`` profile produces, with ``API_USGS_RETRIES`` exported and
 the ``bulk`` profile selected for the block:
 
@@ -474,10 +474,10 @@ Why ``parallel_chunks`` has no environment variable
 Every other setting can be set from the environment. ``parallel_chunks``
 cannot, on purpose.
 
-Raising it splits a query into more sub-requests, and *each sub-request spends
-rate-limit quota*. Whether that is worthwhile depends on the size of the
+Raising it splits a query into more chunks, and *each chunk uses rate-limit
+quota*. Whether that is worthwhile depends on the size of the
 query, which the library cannot know in advance. The setting therefore has no
-process-global environment variable, which one export would pass to every
+environment variable, because an exported variable would apply to every
 subprocess.
 
 Set it per call, which is almost always what you want:
@@ -487,15 +487,15 @@ Set it per call, which is almost always what you want:
    with waterdata.parallel_chunks(8):
        df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
-or as a baseline in the config file, deliberately written and visible in
-``show_configuration()``. Put it in a ``[<adapter>.<name>]`` table rather than
+or as a baseline in the config file, where ``show_configuration()`` reports
+it. Put it in a ``[<adapter>.<name>]`` table rather than
 at the top level: a named profile applies only to runs that select it, while a
 top-level value applies to every query in every process that reads the file,
 which is how a setting added for one bulk pull exhausts an hourly quota
 months later. ``dataretrieval`` warns if it finds one at the top level.
 
 The value limits optional refinement only. URL-byte safety can require more
-sub-requests than the configured value, and an input with nothing to split
+chunks than the configured value, and an input with nothing to split
 stays a single request.
 
 ``parallel_chunks(n)`` is shorthand for
@@ -540,14 +540,14 @@ A file or a shell export that redirected a data-retrieval library to
 another host would be a supply-chain hazard: nothing at the call site would
 show it, and a script that reads correctly would be sending requests to
 someone else's service. A ``with`` block keeps the redirect where a reader of
-the script sees it. The refusal raises an error for the same reason: an
-ignored variable would leave you believing you had redirected something.
+the script sees it. The refusal is an error because an ignored variable would
+leave you believing you had redirected something.
 
-**The package does not send the API key to the new host.** It is scoped to the
-one host that accepts it (:ref:`below <configuration-secret-store>`), so a
-redirected call goes out without it. That is deliberate: the host you
-redirected to is not the host you gave a credential to. If the mirror needs
-its own credential, it needs its own mechanism.
+**The package does not send the API key to the new host.** The key is scoped to
+the only host that accepts it (:ref:`below <configuration-secret-store>`), so a
+redirected call goes out without it. The host you redirected to is not the host
+you gave a credential to. If the mirror needs its own credential, it needs its
+own mechanism.
 
 
 .. _configuration-api-version:
@@ -643,5 +643,5 @@ bundle keeps verification on and works with every getter.
 
 .. note::
 
-   OpenSSL reads ``SSL_CERT_FILE``, so it does
-   not appear in :func:`~dataretrieval.show_configuration`.
+   ``dataretrieval`` does not read ``SSL_CERT_FILE`` (OpenSSL does), so it
+   does not appear in :func:`~dataretrieval.show_configuration`.

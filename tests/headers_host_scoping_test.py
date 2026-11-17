@@ -90,7 +90,7 @@ class TestDefaultHeadersHostScoping:
         assert "X-Api-Key" not in headers
 
     def test_sync_transport_withholds_key_on_downgrade_to_cleartext(self):
-        """The guard also runs at send time, after the headers are built."""
+        """The guard runs both where headers are built and at send time."""
         seen: list[httpx.Request] = []
 
         def handler(request: httpx.Request) -> httpx.Response:
