@@ -76,7 +76,8 @@ class OgcDialect:
 
     lists_as_cql2: bool = False
     date_only_services: frozenset[str] = field(default_factory=frozenset)
-    time_chunk_days: Mapping[str, int] = field(default_factory=dict)
+    # Out of the hash so the frozen dialect stays hashable.
+    time_chunk_days: Mapping[str, int] = field(default_factory=dict, hash=False)
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
