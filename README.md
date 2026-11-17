@@ -178,7 +178,7 @@ with waterdata.parallel_chunks(32):  # request up to 32 optional chunks
 ```
 
 `n` is the number of sub-requests to fan the call out into, capped by how many
-values there are to split. Each sub-request costs a request against your hourly
+values, and UTC days of a `time` interval, there are to split. Each sub-request costs a request against your hourly
 [rate limit](https://api.waterdata.usgs.gov/signup/). How many run *at once* is
 capped separately by `API_USGS_CONCURRENT` (default 32), so the useful range is
 roughly `2` up to that value.
@@ -205,7 +205,7 @@ One location's continuous record has no list to divide, but its `time` interval
 divides:
 
 ```python
-with waterdata.parallel_chunks(12):  # about a month per sub-request
+with waterdata.parallel_chunks(12):  # about a month per chunk
     df, md = waterdata.get_continuous(
         monitoring_location_id="USGS-01646500",
         parameter_code="00060",
@@ -216,8 +216,8 @@ with waterdata.parallel_chunks(12):  # about a month per sub-request
 For a year of 15-minute discharge (about 100,000 rows), on windows the service
 had not cached, this ran at 29,000 to 41,000 rows per second against 6,000 to
 7,800 without `parallel_chunks` (3 runs each). A list argument divides first;
-the interval then multiplies the sub-request count by the largest whole factor
-of `n` that is left.
+the interval then multiplies the chunk count by the largest whole factor of `n`
+that is left.
 
 Visit the
 [API Reference](https://doi-usgs.github.io/dataretrieval-python/reference/waterdata.html)

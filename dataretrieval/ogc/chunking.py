@@ -93,7 +93,11 @@ def parallel_chunks(n: int) -> Iterator[None]:
     divided into runs of whole UTC days. The multi-value arguments split first, as
     far as ``n`` allows; the interval then multiplies their chunk count by the
     largest whole factor that stays within ``n``. A duration such as ``"P7D"``, an
-    open interval, and an interval within one UTC day are not divided.
+    open interval, and an interval one day long or shorter are not divided.
+
+    The time interval is divided whenever the effective ``parallel_chunks`` setting
+    is above 1, so a baseline from ``configure()`` or a configuration file divides
+    it too.
 
     A per-call setting rather than an environment variable, and scoped to a
     ``with`` block: ADR 0009. Outside any block the getters use the
@@ -109,9 +113,10 @@ def parallel_chunks(n: int) -> Iterator[None]:
         per argument), so several arguments cannot multiply past it. The cap is a
         ceiling, never exceeded: the actual count is bounded below by what the ~8 KB
         URL limit already forces and above by ``n``. So an ``n`` larger than the input
-        allows yields one chunk per value, and with several multi-value arguments the
-        total may be somewhat below ``n`` because splits are whole (the plan can't
-        always divide evenly onto ``n``). ``n=1`` requests no extra fan-out.
+        allows yields one chunk per value, or with a time interval one per value and
+        UTC day, and the total may be somewhat below ``n`` because splits are whole
+        (the plan can't always divide evenly onto ``n``). ``n=1`` requests no extra
+        fan-out.
 
         Each chunk fetches at least one page, so it costs at least one
         request against your hourly rate limit — a larger ``n`` spends more
