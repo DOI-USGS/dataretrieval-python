@@ -3,8 +3,8 @@
 Wraps ``https://api.waterdata.usgs.gov/statistics/v0``, the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
 separate, non-OGC API with no chunkable multi-value axes, so it runs as a
-one-item :class:`~dataretrieval.transport.fanout.FanOut` (ADR 0008).
-The typed getters
+one-item :class:`~dataretrieval.transport.fanout.FanOut` rather than going
+through ``multi_value_chunked`` (ADR 0008). The typed getters
 ``get_stats_por`` and
 ``get_stats_date_range`` in :mod:`dataretrieval.waterdata.api` call
 :func:`get_data` here.
@@ -45,7 +45,7 @@ def _handle_nesting(
     body : Dict[str, Any]
         The JSON response body from the statistics service containing nested data.
     geopd : bool, optional
-        Whether ``geopandas`` is available: when ``True`` the returned
+        Whether ``geopandas`` is available. When ``True`` the returned
         frame is a ``GeoDataFrame``; when ``False`` (default) a plain
         ``pd.DataFrame`` is returned with geometry flattened.
 
@@ -62,7 +62,7 @@ def _handle_nesting(
     ``data`` field, which is unrolled separately below via the
     ``record_path`` json_normalize), then adds ``geometry`` only when
     present. Unlike :func:`engine._get_resp_data`, no top-level ``id``
-    column is added: stats features do not have one, so this matches the
+    column is added. Stats features do not have one, so this matches the
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
@@ -133,7 +133,7 @@ def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFr
 def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
     """Explode percentile value and threshold lists into one row per element.
 
-    The "values" and "percentiles" columns hold lists; each element becomes its
+    The "values" and "percentiles" columns contain lists; each element becomes its
     own row in the original dataframe, and exploded ``'nan'`` values are
     dropped. If no percentile data exist, a percentile column is added and
     populated with the percentile assigned to min, max, and median.

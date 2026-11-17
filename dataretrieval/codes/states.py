@@ -230,8 +230,8 @@ def apply_state(
     those. They are the endpoint's own state parameters as the public getter spells
     them: the mutual-exclusion check below shows the getter accepts them as keyword
     arguments. ``into`` is deliberately not offered, because an API query parameter need
-    not exist on the getter's signature: NGWMN's ``get_sites`` filters on
-    ``state_name`` but accepts only ``state``, so naming ``into`` there produced a
+    not exist on the getter's signature. NGWMN's ``get_sites``, for example, filters
+    on ``state_name`` but accepts only ``state``, so naming ``into`` there produced a
     remedy that raises ``TypeError`` when followed. An endpoint with an empty ``reject``
     has no alternative spelling to offer, so it appends nothing.
     """

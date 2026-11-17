@@ -96,8 +96,8 @@ Before you submit a pull request, check that it meets these guidelines:
 test run neither depends on USGS uptime nor spends anyone's rate limit.
 
 The exception is a small set of tests marked `live`, which query the real
-services to notice when an upstream API changes, which a mock cannot detect
-because the mock is what would need updating. They are deselected by
+services to detect an upstream API change. A mock cannot detect one, because
+the mock is what would need updating. They are deselected by
 default and run on a nightly schedule
 ([live-api.yml](https://github.com/DOI-USGS/dataretrieval-python/blob/main/.github/workflows/live-api.yml)).
 Run them locally with:
@@ -147,11 +147,11 @@ so it fails only on regression. Raise it when coverage rises; lower it only
 deliberately, and say why in the commit.
 
 Coverage is measured with branches on, because most of what this package gets
-wrong is a branch: a dispatch arm routing to the wrong getter, an error path
-that never executes, a fallback that becomes the norm unnoticed. Cover the
-*uncovered branch*, not the percentage: a test written only to mark a line as
-covered adds maintenance and catches nothing. If a path cannot be reached
-without restructuring the code, exclude it in
+wrong is a branch rather than a line: a dispatch arm routing to the wrong
+getter, an error path that never executes, a fallback that becomes the norm
+unnoticed. Cover the *uncovered branch*, not the percentage. A test written only
+to mark a line as covered adds maintenance and catches nothing. If a path cannot
+be reached without restructuring the code, exclude it in
 `[tool.coverage.report] exclude_also` with a reason, or leave the ratchet where
 it is.
 
@@ -181,8 +181,8 @@ collection-family independence.
 **That file is the only place dependency direction is enforced.** These rules
 were once asserted a second time in `tests/architecture_test.py` by hand-parsing
 the AST; that duplication is gone, and re-adding it would mean one rule in two
-places that drift apart. What the tests still own is everything an import graph
-cannot see: which *symbols* cross a seam, declared `__all__` surfaces, the AST
+places that drift apart. The tests still check everything an import graph cannot
+express: which *symbols* cross a seam, declared `__all__` surfaces, the AST
 shape of a facade, boundaries that must be asserted positively (`lint-imports`
 can forbid an edge, never require one), and package-wide cycle detection (see
 ADR 0003). If you are adding a rule and it is purely "module A must not import
@@ -200,8 +200,8 @@ wily diff dataretrieval --revision main       # what your branch changed
 wily rank dataretrieval maintainability.mi    # worst-maintained files today
 ```
 
-`wily` is advisory and is never a merge gate: rising complexity in a file that
-gained a complex feature is information for a reviewer.
+`wily` is advisory and is not a merge gate, because a file that gains a
+complex feature is expected to gain complexity.
 
 #### The periodic whole-package analysis
 

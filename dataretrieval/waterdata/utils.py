@@ -161,8 +161,8 @@ def _flatten_queryables(local_vars: dict[str, Any]) -> dict[str, Any]:
     queryables = local_vars.pop("queryables", {})
     # A credential-shaped name would be sent in the query string, which is the
     # one thing this passthrough must not forward. The predicate is defined in the
-    # credentials leaf: what motivates it (``api_key=`` being
-    # a plausible guess now that ``configure()`` takes it) is package-wide,
+    # credentials leaf rather than here, because what motivates it (``api_key=``
+    # being a plausible guess now that ``configure()`` takes it) is package-wide
     # and WQP's ``**kwargs`` search filters read the same list.
     refuse_credential_keywords(queryables)
     local_vars.update(queryables)
@@ -197,7 +197,7 @@ def _with_state(local_vars: dict[str, Any], *, to: str, into: str) -> dict[str, 
     format-flexible parameter (full name / postal / FIPS); it is normalized via
     :func:`~dataretrieval.codes.states.to_state` to the ``to`` representation
     and stored under ``into`` (the API parameter this endpoint filters on).
-    It adds to the native ``state_code`` /
+    It adds to, rather than replaces, the native ``state_code`` /
     ``state_name`` parameters, which still accept the API's raw values (e.g.
     non-US FIPS); passing ``state`` together with either raises ``ValueError``.
     """

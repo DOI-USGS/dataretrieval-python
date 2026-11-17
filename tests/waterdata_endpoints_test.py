@@ -95,7 +95,7 @@ def test_statistics_has_published_no_version_beyond_the_one_we_request():
 @pytest.mark.live
 @pytest.mark.parametrize("family", sorted(_FAMILIES))
 def test_the_version_this_package_requests_still_returns_data(family):
-    """Checked on content: OGC responds with 200 and an empty body
+    """Checked on content, because OGC responds with 200 and an empty body
     for a version that does not exist."""
     url = _FAMILIES[family]()
     response = httpx.get(f"{url}/collections", timeout=_TIMEOUT)

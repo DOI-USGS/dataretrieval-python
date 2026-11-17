@@ -36,12 +36,12 @@ Consequences
 
 - Users install and version one coherent package.
 - Cross-service API compatibility can be tested in one pipeline.
-- Component boundaries are source-level and therefore require import checks
-  and review discipline.
+- Component boundaries are source-level rather than deployment boundaries and
+  therefore require import checks and review discipline.
 - Shared infrastructure must remain small enough that it does not become a god
   module.
 - A new service should begin as its own adapter and acquire shared abstractions
-  only after duplication has been demonstrated.
+  only after duplication has been demonstrated, not by up-front generalization.
 
 Compliance
 ----------

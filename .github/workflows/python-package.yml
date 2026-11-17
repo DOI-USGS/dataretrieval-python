@@ -54,8 +54,8 @@ jobs:
         run: lint-imports
       - name: Complexity trend vs base
         # Advisory: reports which files moved and by how much, so a reviewer
-        # can see direction. Never fails the build; the gate above is what
-        # blocks.
+        # can see direction. Never fails the build; the gate above blocks
+        # the merge.
         if: github.event_name == 'pull_request'
         continue-on-error: true
         run: |
@@ -162,7 +162,8 @@ jobs:
         run: coverage run -m pytest tests/
       - name: Coverage ratchet
         # Windows skips POSIX-only tests, so its number measures a smaller
-        # suite. Negative condition: a matrix edit cannot unenforce it unnoticed.
+        # suite. The condition names the excluded OS, so a new matrix entry is
+        # gated.
         if: runner.os != 'Windows'
         shell: bash
         run: coverage report

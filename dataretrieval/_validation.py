@@ -33,9 +33,9 @@ def render_options(options: Collection[object]) -> str:
 def _render_names(names: Collection[str], *, conjunction: str = "and") -> str:
     """Format parameter *names* for a message: ``a``, ``a and b``, ``a, b and c``.
 
-    Bare: these are the caller's own parameter names, so they read as
-    identifiers to paste back into the call. :func:`render_options` quotes data
-    values.
+    Bare, not quoted, because these are the caller's own parameter names, which
+    read as identifiers to paste back into the call. :func:`render_options`
+    quotes data values.
     """
     listed = list(names)
     if len(listed) <= 1:
@@ -57,7 +57,7 @@ def _supplied(values: Mapping[str, object]) -> tuple[list[str], list[str]]:
     """Split *values* into the names that were supplied and those that were not.
 
     ``None`` is the package's "not supplied" marker throughout the public
-    signatures, so it is the one this module tests for. A caller whose sentinel
+    signatures, so this module tests for it. A caller whose sentinel
     differs (an empty string that should count as missing) normalizes to
     ``None`` before calling; this module does not decide which falsy values were
     meant.
@@ -98,8 +98,8 @@ def require_one_of(
         service.
     remedy
         A further step, for a vocabulary narrower than the service's: how to
-        obtain what this function does not accept. Appended to the message:
-        unlike the checks below, there is no derived remedy here to override,
+        obtain what this function does not accept. Appended to the message.
+        Unlike the checks below, this one has no derived remedy to replace,
         since naming the options *is* the message.
 
     Raises
@@ -130,7 +130,7 @@ def require_argument(
 ) -> _T:
     """Return *value*, or raise ``ValueError`` if it was not supplied.
 
-    Returns the value so the check also narrows the type: a caller that must
+    Returns the value so the check also narrows the type. A caller that must
     pass an optional argument to something requiring a concrete one writes
     ``x = require_argument("x", x)``. The alternative (validating here and
     re-testing for ``None`` to satisfy the type checker) puts a second,
@@ -271,7 +271,7 @@ def reject_together(
     """Raise ``ValueError`` if more than one of *values* was supplied.
 
     The permissive counterpart of :func:`require_exactly_one`: it rejects the
-    combination without requiring that anything be supplied at all, for
+    combination without requiring that anything be supplied, for
     arguments that conflict but are jointly optional.
 
     Parameters

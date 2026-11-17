@@ -10,7 +10,7 @@ graph does not record it:
 
 * which *symbols* cross a boundary (``ogc.engine``'s compatibility surface,
   ``ogc.requests`` importing header policy but not the executing calls);
-* the declared public surface: ``__all__`` presence, ownership, and the
+* the declared public surface -- ``__all__`` presence, ownership, and the
   facade union;
 * the AST shape of a module, such as a facade proving it contains no logic, or
   a call proving it passes a destination URL;
@@ -19,7 +19,7 @@ graph does not record it:
 * package-wide acyclicity, including package facades (ADR 0003).
 
 Adding a rule here that is purely about module-to-module direction is a
-regression: put it in ``.importlinter``.
+regression. Put it in ``.importlinter``.
 """
 
 from __future__ import annotations
@@ -334,7 +334,7 @@ def test_default_header_calls_are_target_scoped() -> None:
 
 
 def test_transport_is_execution_policy_only() -> None:
-    """Transport owns only HTTP execution.
+    """Transport contains only HTTP execution code.
 
     Terminal rendering (``progress``) and pandas result assembly (``combining``)
     are top-level leaves that transport reports *into* and returns *through*.
@@ -367,15 +367,15 @@ def test_credential_policy_has_one_definition() -> None:
 
     Attaching the key and stripping it back off have to agree about which host is
     authorized; they stop agreeing when a second copy of the host string is added.
-    ``transport.http`` re-exports the predicate.
+    ``transport.http`` re-exports the predicate and does not restate it.
     """
     host = "api.waterdata.usgs.gov"
     # Walked as AST string *values*. A line-substring match over source text
     # produces both false negatives and false positives: it missed the
     # ``"https://…"`` form three modules use to write the same host, and it
     # flagged docstring prose that only names the service. Docstrings are
-    # excluded here (they are documentation) while every other literal, bare
-    # host or full base URL, counts.
+    # excluded here (they are documentation, not a second definition) while every
+    # other literal, bare host or full base URL, counts.
     offenders: list[str] = []
     for path in sorted(PACKAGE_ROOT.rglob("*.py")):
         if path.name == "credentials.py":
@@ -420,8 +420,8 @@ def _waterdata_family_paths() -> tuple[str, ...]:
 _WATERDATA_FAMILIES = _waterdata_family_paths()
 
 #: The modules whose public surface must be declared. This is a list of
-#: *files*: naming the expected exports too would restate every getter a third
-#: time and fail on renames, which break no boundary.
+#: *files*, not of names, because naming the expected exports too would restate
+#: every getter a third time and fail on renames, which break no boundary.
 _EXPLICIT_EXPORT_MODULES = (
     "ngwmn.py",
     "nldi.py",
@@ -485,9 +485,9 @@ def test_each_family_getter_has_exactly_one_home() -> None:
 def test_api_facade_exports_exactly_the_family_union() -> None:
     """The facade re-exports every family getter and adds none of its own.
 
-    Derived from the families' own ``__all__``: a hardcoded union is 19 more strings to
-    edit per new getter, and it would still pass if a family gained an export the facade
-    forgot to re-export, the one thing this test exists to catch.
+    Derived from the families' own ``__all__``. A hardcoded union would be 19 more
+    strings to edit per new getter, and it would still pass if a family gained an export
+    the facade forgot to re-export, which this test checks for.
     """
     families = set().union(
         *(_literal_exports(PACKAGE_ROOT / f) for f in _WATERDATA_FAMILIES)
@@ -500,7 +500,7 @@ def test_waterdata_api_is_a_logic_free_compatibility_facade() -> None:
 
     The test checks statement *kinds*. Scanning for ``def``/``class``
     definitions alone let a module-level ``for`` loop exist here that rewrote
-    every re-exported getter's ``__module__``: code owned by the family
+    every re-exported getter's ``__module__``, code owned by the family
     modules, mutated from a file certified "logic-free". A docstring, imports,
     and plain assignments are the only statement kinds a facade may contain.
     """
@@ -526,11 +526,11 @@ def test_ogc_request_construction_does_not_execute_http() -> None:
     and ``ogc.schema`` calls ``transport.http.get``, so constructing a request
     imported the executing path with this test still passing.
 
-    The edge is named explicitly. A transitive closure from ``ogc.requests``
-    covers the whole package, because ``transport.retry`` imports
-    ``dataretrieval`` for the progress reporter and the package ``__init__``
-    imports every service; a rule stated that way would be either vacuous or a
-    list of exceptions.
+    The edge is named explicitly rather than checked over the transitive graph.
+    A transitive closure from ``ogc.requests`` covers the whole package, because
+    ``transport.retry`` imports ``dataretrieval`` for the progress reporter and
+    the package ``__init__`` imports every service; a rule stated that way would
+    be either vacuous or a list of exceptions.
     """
     path = PACKAGE_ROOT / "ogc" / "requests.py"
     transport_names = _imports_from(path, "dataretrieval.transport.http")
@@ -636,9 +636,9 @@ def test_adr_references_resolve_to_a_record() -> None:
     code to cite rather than restate. A renumbered or deleted record has to fail here,
     or it leaves a dangling pointer.
 
-    Scoped to every venue ADR 0000 names: the glossary, the contributor guide,
-    and the architecture docs cite records too, and a pointer goes stale there
-    too.
+    Scoped to every venue ADR 0000 names. The glossary, the contributor guide,
+    and the architecture docs cite records as the package does, and a pointer
+    goes stale there too.
     """
     repo_root = PACKAGE_ROOT.parent
     decisions = repo_root / "docs" / "source" / "architecture" / "decisions"

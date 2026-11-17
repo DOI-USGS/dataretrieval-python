@@ -184,7 +184,8 @@ def test_multi_site_returns_row_per_target_per_site(patch_get_continuous):
 
 def test_empty_targets_raises(patch_get_continuous):
     """An empty ``targets`` is a call with no useful work to do and almost always a
-    caller bug: raise rather than issue a request that returns nothing."""
+    caller bug, so the getter raises rather than issuing a request that returns
+    nothing."""
     with pytest.raises(ValueError, match="targets"):
         get_nearest_continuous([], monitoring_location_id=_SITE)
     patch_get_continuous.assert_not_called()
@@ -619,7 +620,7 @@ def test_caller_properties_keep_the_columns_the_match_needs(patch_get_continuous
 
     Without the injection a list like ``['time', 'value']`` reached the
     service unchanged, the response came back with no
-    ``monitoring_location_id``, and every site but one was dropped without an error:
+    ``monitoring_location_id``, and every site but one was dropped without an error,
     an incomplete result the caller could not detect.
     """
     patch_get_continuous.return_value = (

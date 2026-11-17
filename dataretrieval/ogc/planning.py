@@ -1,6 +1,6 @@
 """Pure URL-byte chunk planning (no I/O).
 
-This module holds the side-effect-free planning half of the chunker:
+This module contains the side-effect-free planning half of the chunker:
 deciding how to split one over-budget OGC request into URL-fitting
 chunks (:class:`ChunkPlan` and the axis/byte-accounting helpers).
 It has no event loop, retry policy, or network state; those are in
@@ -35,11 +35,11 @@ from dataretrieval.ogc.filters import (
 )
 
 # Any list-shaped kwarg with >1 element is chunked (comma-joined per sub-list in the
-# URL); ~90 OGC params qualify, so the few exceptions are denylisted. Excluded
-# because: ``properties`` defines the column schema; ``bbox`` is a fixed coord tuple;
-# date/time params are intervals; ``filter`` is handled as its own OR-axis in
-# ``_extract_axes``; and ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by
-# contract.
+# URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
+# maintaining a growing allowlist. Excluded because: ``properties`` defines the column
+# schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
+# enumerable sets; ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
+# ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
 _NEVER_CHUNK = frozenset(
     {
         "properties",
@@ -73,7 +73,7 @@ def _request_bytes(req: httpx.Request) -> int:
     Return the total bytes of an httpx request: URL + body.
 
     GET routes have empty ``.content`` and reduce to URL length. POST
-    routes (CQL2 JSON body) need body bytes: the URL stays short
+    routes (CQL2 JSON body) need body bytes. The URL stays short
     regardless of payload, so URL-only sizing would underestimate the
     request and skip chunking when it's needed.
 
@@ -163,8 +163,8 @@ def _check_unchunkable_request(
     """Enforce the byte budget on a request with no chunkable axis.
 
     Passthrough when the single request fits or when the filter is in a
-    language the chunker doesn't manage (cql-json); the server accepts or
-    rejects that request. Raises
+    language the chunker doesn't manage (cql-json); the server, not the
+    chunker, accepts or rejects that request. Raises
     :class:`~dataretrieval.exceptions.Unchunkable` when the request is
     over budget and has nothing to split.
     """
@@ -278,7 +278,7 @@ def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
     axis. The cql-text filter (when chunkable and split into more than
     one top-level OR-clause) becomes one too. Anything in
     ``_NEVER_CHUNK`` is excluded except ``filter`` itself, which is
-    handled separately so its atoms are clauses.
+    handled separately so its atoms are clauses, not characters.
 
     Parameters
     ----------
@@ -439,7 +439,7 @@ class ChunkPlan:
 
         Halving continues until the worst-case chunk URL fits
         ``url_limit``, mutating ``self.chunks`` in place. List axes and the
-        filter axis are treated uniformly: each is a list of atoms
+        filter axis are treated uniformly, each as a list of atoms
         joined by its axis's separator.
 
         Raises
@@ -491,7 +491,7 @@ class ChunkPlan:
         may stop below).
 
         Implementation. Each split multiplies the plan by ``(k+1)/k`` for the chosen
-        axis (adding ``total // k`` chunks), so a split is taken only when it
+        axis (adding ``total // k`` chunks, not one), so a split is taken only when it
         keeps :attr:`total` within the cap. When no in-budget split remains, the plan
         stops below the cap (two even axes can reach 4 but not
         5, so a cap of 5 yields 4). Each split picks the single largest splittable chunk

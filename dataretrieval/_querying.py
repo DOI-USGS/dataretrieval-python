@@ -127,8 +127,8 @@ def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
     transient upstream failure that a later attempt may not see.
 
     ``adapter`` names which settings table supplies ``retries`` and
-    ``stall_timeout``: these three services share a retry *shape*, and each
-    has its own settings scope.
+    ``stall_timeout``, because these three services share a retry *shape* and
+    each has its own settings scope.
     """
     return RetryPolicy.from_configuration(
         retryable_statuses=_GATEWAY_STATUSES, adapter=adapter

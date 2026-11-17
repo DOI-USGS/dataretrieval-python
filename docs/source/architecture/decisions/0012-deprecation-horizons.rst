@@ -32,8 +32,9 @@ recorded in ``REMOVALS``.
 
 A deprecation advisory names three things: what is being removed, what to use
 instead, and the date on or after which it may be removed. The mechanism
-accepts an advisory with no date; it then states no date. A deprecation of a
-public name is expected to include one, and an advisory naming a replacement
+accepts an advisory with no date; it then states no date rather than implying
+a schedule it does not have. A deprecation of a public name is expected to
+include one, and an advisory naming a replacement
 the caller cannot yet use is not finished.
 
 ``REMOVALS`` is the single table of horizons. One table is auditable (what is
@@ -60,8 +61,8 @@ Consequences
   pass unnoticed in a module nobody is reading.
 - Deprecating something costs more than adding a ``warnings.warn`` call: the
   replacement must exist and a date must be chosen. That is the intended cost.
-- The package accumulates long-lived compatibility shims. This is accepted:
-  it is the cost of the compatibility characteristic, and the table makes the
+- The package accumulates long-lived compatibility shims. This is accepted as
+  the cost of the compatibility characteristic, and the table makes the
   accumulation visible.
 - Nothing is removed on the horizon alone. A removal still needs a release that
   states it.

@@ -18,7 +18,7 @@ Several service adapters need the same low-level capabilities: guarded HTTP
 clients, cursor pagination, bounded retry, response aggregation, progress, and a
 sync-over-async bridge. Locating those capabilities inside a protocol package
 would make unrelated services depend on protocol-specific implementation
-details: Water Use previously imported its page walker and sync bridge from
+details. Water Use previously imported its page walker and sync bridge from
 ``ogc.engine``. Duplicating them would allow authentication, timeout, retry,
 and failure behavior to drift.
 
@@ -46,11 +46,11 @@ Three concerns are deliberately *outside* it, as top-level leaves, because they
 are not HTTP execution policy and every adapter needs them whether or not it goes
 through transport:
 
-- ``dataretrieval.credentials``: which host accepts the key, whether a
+- ``dataretrieval.credentials`` -- which host accepts the key, whether a
   destination qualifies, and how the key is withheld. One definition, so the code
   that attaches a credential and the code that removes it cannot disagree.
-- ``dataretrieval.progress``: terminal rendering. Transport reports *into* it.
-- ``dataretrieval.combining``: pandas frame and response assembly. Transport
+- ``dataretrieval.progress`` -- terminal rendering. Transport reports *into* it.
+- ``dataretrieval.combining`` -- pandas frame and response assembly. Transport
   returns results *through* it.
 
 Transport depends only on stable package leaves and third-party infrastructure.
@@ -121,14 +121,16 @@ Consequences
 - Water Use has no dependency on OGC implementation modules.
 - OGC and non-OGC adapters share authentication, timeout, retry, pagination,
   aggregation, progress, and sync-dispatch policy where their semantics match.
-- Service-specific request and result contracts remain explicit.
+- Service-specific request and result contracts remain explicit instead of
+  being forced into a universal adapter abstraction.
 - Retry can increase latency and quota consumption, so attempt counts, waits,
   and total no-progress time remain bounded, and cancellation signals are never
   wrapped.
 - Guidance the progress reporter prints depends on the host it applies to, so
   the reporter does not print the advice to obtain an API key for a service
   that cannot use one.
-- The transport package is internal infrastructure.
+- The transport package is internal infrastructure, not a new public API
+  contract.
 - Keeping presentation and frame assembly out means transport is roughly 570
   lines across five modules, each recognizably HTTP execution policy. Retry is
   the one complex module, because two independent bounds are what make retry
@@ -154,11 +156,11 @@ Notes
 
 The waiting-time, next-page-link, and credentials-leaf clauses were added
 after the original decision, consolidating under ADR 0000 the rules the code
-was stating in prose: the budget exemptions were argued in five places
+was stating in prose. The budget exemptions were argued in five places
 across ``transport/retry.py``, ``transport/liveness.py``, and
 ``transport/fanout.py``.
 
-One sentence of the original Decision was also corrected:
+One sentence of the original Decision was also corrected rather than added to:
 it scoped automatic retry to "gateway 5xx", which was never true of a fanned-out
 call. Those re-send any 5xx, and only the single-shot adapters are limited to
 the gateway statuses. The decision is unchanged; the sentence now describes it.

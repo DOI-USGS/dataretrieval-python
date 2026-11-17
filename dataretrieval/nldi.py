@@ -255,8 +255,8 @@ def get_features(
 ) -> gpd.GeoDataFrame | dict[str, Any]:
     """Get all features along a navigation, either by comid or by feature source.
 
-    Features are returned as points in WGS84 lat/long coordinates as a
-    GeoDataFrame containing a point geometry.
+    Features are returned as a GeoDataFrame of point geometries in WGS84
+    lat/long coordinates.
 
     Parameters
     ----------
@@ -335,7 +335,7 @@ def _navigation_request(
 ) -> tuple[str, dict[str, str]]:
     """URL and query params for an NLDI navigation from a validated origin.
 
-    The one definition of the navigation path grammar (``{origin}/navigation/
+    The only definition of the navigation path grammar (``{origin}/navigation/
     {mode}/{tail}``) and its ``distance`` parameter. Callers add the
     parameters specific to their endpoint (``trimStart``, ``stopComid``)
     afterwards, so the query string keeps its documented parameter order.
@@ -433,8 +433,8 @@ def _get_features_request(
 def get_features_by_data_source(data_source: str) -> gpd.GeoDataFrame:
     """Get all features for the specified data source.
 
-    Features are returned as points in WGS84 lat/long coordinates as a
-    GeoDataFrame containing a point geometry.
+    Features are returned as a GeoDataFrame of point geometries in WGS84
+    lat/long coordinates.
 
     Parameters
     ----------
@@ -680,8 +680,9 @@ def _validate_feature_source_comid(
     feature_source: str | None, feature_id: str | None, comid: int | None
 ) -> None:
     if comid is not None:
-        # Half a feature pair with a comid is a conflict: advising the caller
-        # to complete the pair would only raise the conflict next.
+        # Half a feature pair with a comid is a conflict, not a missing argument,
+        # because advising the caller to complete the pair would only raise the
+        # conflict next.
         reject_together(
             {
                 "comid": comid,

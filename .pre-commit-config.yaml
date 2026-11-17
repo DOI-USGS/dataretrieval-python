@@ -6,7 +6,7 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      # tests/data/ holds byte-exact API response captures (TSV/RDB with
+      # tests/data/ contains byte-exact API response captures (TSV/RDB with
       # significant trailing tabs, plus pinned JSON). Skip whitespace and
       # EOL normalization there so the hooks leave fixture bytes unchanged.
       - id: trailing-whitespace
@@ -51,8 +51,8 @@ repos:
   # passes, so this fails only on regression: no block
   # above rank C (cyclomatic complexity 20), no module below B, average at A.
   # Tightening a letter is a deliberate commit, and the failure names the
-  # offending block, so the fix is local. Applied to the package only:
-  # tests legitimately contain long, branchy fixtures.
+  # offending block, so the fix is local. Applied to the package only,
+  # because tests contain long, branchy fixtures.
   - repo: https://github.com/rubik/xenon
     rev: v0.9.3
     hooks:

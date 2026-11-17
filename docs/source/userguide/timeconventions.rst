@@ -4,7 +4,7 @@ Datetime Information
 --------------------
 
 ``dataretrieval`` normalizes time data to UTC when converting Water Data API
-responses into data frames. The ``time`` column holds the timestamps; the
+responses into data frames. The ``time`` column contains the timestamps; the
 dataframe itself uses a default integer index. For sub-daily data, such as
 continuous (instantaneous) values, ``time`` is a timezone-aware
 ``datetime64[us, UTC]`` column. Daily values represent a whole calendar day,
@@ -20,7 +20,8 @@ For a local time, include the offset: ``"2024-03-01T00:00:00-06:00"``.
 Inspecting Timestamps
 *********************
 
-For continuous data, the ``time`` column holds UTC-localized pandas timestamps.
+For continuous data, the ``time`` column contains UTC-localized pandas
+timestamps.
 
 .. code:: python
 

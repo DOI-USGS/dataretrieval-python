@@ -40,7 +40,7 @@ jobs:
           pip install .[test,nldi]
       - name: Run live API tests
         # ``-m live`` overrides the ``-m 'not live'`` in pyproject's addopts, so
-        # this runs the complement of the push suite. ``--reruns`` here rather
-        # than on the marker: a transient 5xx should cost a retry, and this is
-        # the only job where that trade-off applies.
+        # this runs the complement of the push suite. ``--reruns`` is set here
+        # rather than on the marker because a transient 5xx should trigger a
+        # retry, and this is the only job where that trade-off applies.
         run: pytest tests/ -m live -v --reruns 2 --reruns-delay 5

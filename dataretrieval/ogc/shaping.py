@@ -134,7 +134,7 @@ def _get_resp_data(
         with a "features" key.
     geopd : bool
         Whether this request's result contract uses an active GeoDataFrame.
-        Selected once before pagination.
+        Selected once before pagination rather than inferred from page content.
     include_geometry : bool, optional
         Whether plain-DataFrame results retain raw coordinate lists. False for
         nonspatial collections and ``skip_geometry=True`` requests.
@@ -147,9 +147,10 @@ def _get_resp_data(
     -------
     gpd.GeoDataFrame or pd.DataFrame
         A ``GeoDataFrame`` when ``geopd`` is True; otherwise a plain ``DataFrame``
-        holding the feature properties plus an ``id`` column (always present, possibly
-        all-None) and a ``geometry`` column (coordinates list) when at least one feature
-        includes geometry. Returns an empty ``DataFrame`` when no features are returned.
+        containing the feature properties plus an ``id`` column (always present,
+        possibly all-None) and a ``geometry`` column (coordinates list) when at least
+        one feature includes geometry. Returns an empty ``DataFrame`` when no features
+        are returned.
 
     Notes
     -----
@@ -167,9 +168,9 @@ def _get_resp_data(
     # ``numberReturned``: the main Water Data API reports ``numberReturned``,
     # but the NGWMN OGC API omits it, so relying on it would discard pages that
     # contain features. An absent/empty ``features`` is also the
-    # shape a schema change produces (a 200 with no features). Treat it as empty:
-    # ``_paginate`` would classify a downstream ``KeyError``
-    # as a transient transport error. The request-level mode gives
+    # shape a schema change produces (a 200 with no features). Treat it as empty,
+    # because ``_paginate`` would classify a downstream ``KeyError`` as a
+    # transient transport error. The request-level mode gives
     # this page the same frame type as every non-empty page in the walk.
     features = body.get("features") or []
     if not features:
@@ -279,7 +280,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
         The input DataFrame.
     dialect : OgcDialect
         Supplies ``time_cols`` / ``numerical_cols``: which columns to
-        coerce to datetime/numeric. The engine itself holds no API-specific column list.
+        coerce to datetime/numeric. The engine itself has no API-specific column list.
 
     Returns
     -------
@@ -291,7 +292,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     Numeric columns are always ``float64``. ``pd.to_numeric`` alone infers
     ``int64`` when every value happens to be whole, so the same column would
     change dtype between calls (issue #428). The columns are measurements, and
-    ``float64`` also holds the ``NaN`` that marks a missing value.
+    ``float64`` can also represent the ``NaN`` that marks a missing value.
 
     A value that cannot be parsed is still set to ``NaN``/``NaT``, so one bad
     value does not fail a whole download, but a warning names the column and

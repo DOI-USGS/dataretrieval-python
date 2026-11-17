@@ -2,8 +2,8 @@
 # maintainability trend.
 #
 # Advisory by design, and nothing here fails the build. These measures move over
-# months, and they report findings a reviewer has to judge: a metric can call
-# good design a violation. The merge gates are in python-package.yml. See
+# months, and they report findings a reviewer has to judge, because a metric
+# can flag good design as a violation. The merge gates are in python-package.yml. See
 # CONTRIBUTING.md for how to read the output.
 
 name: Code Health
@@ -44,8 +44,8 @@ jobs:
 
       - name: Structural analysis (pyscn)
         # One run writes both the JSON report (the numbers) and the HTML report.
-        # Never fails the job: a non-zero exit here means "findings", which
-        # are the point.
+        # Never fails the job, because a non-zero exit here means the analysis
+        # reported findings.
         continue-on-error: true
         run: |
           pyscn analyze --json --html --no-open dataretrieval 2>&1 | tee pyscn-summary.txt

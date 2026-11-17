@@ -234,8 +234,8 @@ def test_hints_api_key_when_no_key_configured(monkeypatch):
 
 
 def test_hint_fires_even_when_rate_limit_was_seen(monkeypatch):
-    # Anonymous responses still include a rate-limit header, so the absence of a
-    # key is what decides the pointer.
+    # Anonymous responses still include a rate-limit header, so the pointer is
+    # shown whenever no key is configured.
     monkeypatch.delenv("API_USGS_PAT", raising=False)
     stream = io.StringIO()
     reporter = ProgressReporter(stream=stream, enabled=True, target_url=_KEYED_URL)

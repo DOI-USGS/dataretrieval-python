@@ -1,8 +1,8 @@
 """Tests for the shared argument checks.
 
 Each check has two assertions: it lets a valid call through, and its rejection
-names the change that would fix the call. The second half is the point of the
-module: a caller that is a program can only correct itself from a message that
+names the change that would fix the call. The second assertion matters more,
+because a caller that is a program can only correct itself from a message that
 says what to send instead.
 """
 

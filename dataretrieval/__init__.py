@@ -64,7 +64,7 @@ from dataretrieval.exceptions import (
 
 # Resumable fan-out interruption exceptions. They are defined in
 # ``dataretrieval.interruptions`` rather than ``dataretrieval.exceptions``
-# because they hold pandas/httpx state and a resumable ``FanOut`` handle,
+# because they have pandas/httpx state and a resumable ``FanOut`` handle,
 # which would make the exceptions module depend on pandas and httpx.
 # They are not under ``ogc`` because Water Use raises them too. Re-exported here so
 # callers get a stable public path: ``from dataretrieval import ChunkInterrupted``.

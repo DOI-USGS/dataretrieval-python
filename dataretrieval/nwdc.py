@@ -393,7 +393,8 @@ def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
         return read_code_csv(response.text)
     except pd.errors.EmptyDataError as exc:
         # NWDC normally signals "no data" with a 400 (handled above) or rows of
-        # zeros. If it ever returns an empty body, keep the typed-error contract.
+        # zeros. An empty body still raises ``DataRetrievalError``, so the caller
+        # does not receive a bare pandas exception.
         raise DataRetrievalError(
             f"NWDC returned an empty response body (URL: {response.url}). "
             "The service signals 'no data' with a 400 or with zero-valued "
@@ -413,7 +414,7 @@ def _next_page_url(
     from, and the bare ``water.usgs.gov`` host is rewritten to the public
     ``api.water.usgs.gov`` gateway (over https, whatever scheme the link used) so the
     follow-up request is sent to the API. Only a cursor that still names another host
-    after that is refused: following it would send Water Use requests, and any
+    after that is refused, because following it would send Water Use requests, and any
     credentials on them, to a host the caller never asked for.
 
     ``host`` is the host this call sends requests to, which is not the

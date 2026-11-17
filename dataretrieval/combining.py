@@ -64,7 +64,7 @@ def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
         old = response.request
     except RuntimeError:
         # No request bound (some hand-built httpx.Response fixtures);
-        # synthesize a minimal one to hold the URL.
+        # synthesize a minimal one with the URL.
         response.request = httpx.Request("GET", target)
         return
     response.request = httpx.Request(method=old.method, url=target, headers=old.headers)
@@ -175,8 +175,8 @@ def _combine_chunk_responses(
         One response per completed chunk, in caller-provided order.
     canonical_url : str or None
         URL of the unchunked original request. ``None`` skips the URL
-        override: used by the passthrough path (the fetcher's
-        response already has the original-query URL) and by the
+        override. The passthrough path passes ``None`` (the fetcher's
+        response already has the original-query URL), and so does the
         worst-case overflow path (no buildable canonical URL exists).
 
     Returns

@@ -1,4 +1,4 @@
-"""Getters that describe what data exists.
+"""Getters that describe what data exists rather than returning it.
 
 The monitoring-location catalog, the time-series inventory, and the joins over
 them. These are the discovery step: narrow down which locations and parameters
@@ -124,8 +124,8 @@ def get_monitoring_locations(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full name
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit
-        ANSI/FIPS code (``"55"``). A dataretrieval argument:
-        it is sent as the API's ``state_name``.
+        ANSI/FIPS code (``"55"``). A dataretrieval argument rather than an API
+        field: it is sent as the API's ``state_name``.
     state_code : string or iterable of strings, optional
         State code. A two-digit ANSI code (formerly FIPS code) as defined by
         the American National Standards Institute, to define States and
@@ -221,7 +221,7 @@ def get_monitoring_locations(
     construction_date : string or iterable of strings, optional
         Date the well was completed. The service records it at day, month, or
         year precision (``"19950812"``, ``"199508"``, ``"2005"``), so the
-        returned column holds these strings as sent.
+        returned column contains these strings as sent.
     aquifer_code : string or iterable of strings, optional
         Local aquifers in the USGS water resources data base are identified by a
         geohydrologic unit code (a three-digit number related to the age of the
@@ -293,10 +293,10 @@ def get_monitoring_locations(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size:
-        a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total.
+        to cap the total instead.
     skip_geometry : boolean, optional
         If True, the response omits the geometry of each feature and the
         returned object is a data frame with no spatial information. The USGS
@@ -309,8 +309,8 @@ def get_monitoring_locations(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early.
-        Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -498,8 +498,8 @@ def get_time_series_metadata(
     state : string or iterable of strings, optional
         Deprecated, as ``hydrologic_unit_code`` is: v1 does not filter this
         collection by state. Use :func:`get_combined_metadata` with ``state``
-        instead. ``state`` is a dataretrieval argument:
-        it accepts a full name (``"Wisconsin"``), a two-letter postal
+        instead. ``state`` is a dataretrieval argument rather than an API
+        field: it accepts a full name (``"Wisconsin"``), a two-letter postal
         code (``"WI"``), or a two-digit ANSI/FIPS code (``"55"``) and is sent
         as ``state_name``.
     state_name : string or iterable of strings, optional
@@ -569,10 +569,10 @@ def get_time_series_metadata(
                 "PT36H" for the last 36 hours
 
     begin_utc : string or iterable of strings, optional
-        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` holds this
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``begin`` contains this
         value.
     end_utc : string or iterable of strings, optional
-        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` holds this
+        Deprecated, as ``hydrologic_unit_code`` is: in v1, ``end`` contains this
         value.
     unit_of_measure : string or iterable of strings, optional
         A human-readable description of the units of measurement associated
@@ -621,10 +621,10 @@ def get_time_series_metadata(
     limit : int, optional
         The number of features returned in each page. The maximum allowable
         limit is 50000; the default (None) requests that maximum. Set a lower
-        number if your internet connection is unreliable. This is a per-page size:
-        a query matching more rows than ``limit``
+        number if your internet connection is unreliable. This is a per-page size,
+        not a cap on the total result: a query matching more rows than ``limit``
         still returns every matching row across multiple pages. Use ``max_rows``
-        to cap the total.
+        to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -633,8 +633,8 @@ def get_time_series_metadata(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early.
-        Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -827,8 +827,8 @@ def get_combined_metadata(
     state : string or iterable of strings, optional
         State/territory filter (the recommended parameter). Accepts a full
         name (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a
-        two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument:
-        it is sent as the API's ``state_name``.
+        two-digit ANSI/FIPS code (``"55"``). A dataretrieval argument rather
+        than an API field: it is sent as the API's ``state_name``.
     state_name, county_name, hydrologic_unit_code, site_type, \
 site_type_code : string or iterable of strings, optional
         Common location-catalog filters shared with the
@@ -857,9 +857,9 @@ site_type_code : string or iterable of strings, optional
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit. This is a
-        per-page size: a query matching more
+        per-page size, not a cap on the total result: a query matching more
         rows than ``limit`` still returns every matching row across
-        multiple pages. Use ``max_rows`` to cap the total.
+        multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -868,8 +868,8 @@ site_type_code : string or iterable of strings, optional
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early.
-        Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     **queryables : string or iterable of strings, optional
@@ -900,7 +900,7 @@ site_type_code : string or iterable of strings, optional
         ...     monitoring_location_id="USGS-05407000"
         ... )
 
-        >>> # Same, for a groundwater well: water-level and aquifer columns
+        >>> # Same, for a groundwater well — water-level and aquifer columns
         >>> # are populated where the surface-water example has nulls
         >>> df, md = dataretrieval.waterdata.get_combined_metadata(
         ...     monitoring_location_id="USGS-375907091432201"
@@ -1022,9 +1022,9 @@ def get_field_measurements_metadata(
     limit : int, optional
         Page size; the maximum allowable value is 50000. Default
         (``None``) requests the maximum allowable limit. This is a
-        per-page size: a query matching more
+        per-page size, not a cap on the total result: a query matching more
         rows than ``limit`` still returns every matching row across
-        multiple pages. Use ``max_rows`` to cap the total.
+        multiple pages. Use ``max_rows`` to cap the total instead.
     filter, filter_lang : optional
         Server-side CQL filter passed through as the OGC ``filter`` /
         ``filter-lang`` query parameters. See
@@ -1033,8 +1033,8 @@ def get_field_measurements_metadata(
     convert_type : boolean, optional
         If True, converts columns to appropriate types.
     max_rows : int, optional
-        Cap the total number of rows returned, stopping pagination early.
-        Unlike ``limit`` (the
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
         per-page size), this bounds the total result across every page.
         The default (None) follows pagination to completion.
     sublocation_identifier : string or iterable of strings, optional
@@ -1083,7 +1083,7 @@ def get_field_measurements_metadata(
         ...     parameter_code=["62611", "72019"],
         ... )
 
-        >>> # Series modified in the last year, useful for incremental ETL
+        >>> # Series modified in the last year — useful for incremental ETL
         >>> df, md = dataretrieval.waterdata.get_field_measurements_metadata(
         ...     monitoring_location_id="USGS-375907091432201",
         ...     parameter_code="72019",

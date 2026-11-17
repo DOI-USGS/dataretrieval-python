@@ -1,6 +1,6 @@
 """Generic OGC API engine shared by the Water Data and NGWMN getters.
 
-This module holds OGC API Features orchestration: OGC cursor/response
+This module contains OGC API Features orchestration: OGC cursor/response
 strategies and the chunked fetch entry point :func:`get_ogc_data`. Generic
 pagination and sync dispatch are in :mod:`dataretrieval.transport`; request
 construction is in :mod:`~dataretrieval.ogc.requests`. The surrounding
@@ -8,7 +8,7 @@ concerns are in sibling modules this one composes, each with its own reason
 to change: :mod:`~dataretrieval.ogc.dates` (time-parameter marshalling),
 :mod:`~dataretrieval.ogc.errors` (HTTP error mapping), and
 :mod:`~dataretrieval.ogc.shaping` (GeoJSON features to DataFrame and result
-finalization). It holds no Water-Data-specific constants,
+finalization). It contains no Water-Data-specific constants,
 so a sibling package (e.g. NGWMN) can use it without importing
 ``dataretrieval.waterdata``.
 
@@ -111,7 +111,7 @@ def _next_req_url(
         # the other two. ``RuntimeError`` rather than the taxonomy's
         # ``DataRetrievalError`` because that is what this walk has always
         # raised; retyping it is a released behavior change to make
-        # deliberately.
+        # deliberately, not a side effect of sharing the check.
         return resolve_next_url(href, resp, service="OGC", error=RuntimeError)
     return None
 
@@ -127,8 +127,8 @@ def _ogc_parse_response(
     The parse strategy :func:`_walk_pages` passes to
     :func:`~dataretrieval.transport.pagination.paginate`. Coerces falsy
     cursors (empty href, etc.) to ``None`` so the paginate loop's
-    ``while cursor is not None`` terminates: an empty href ``is not None``
-    and would never end the walk.
+    ``while cursor is not None`` terminates, because an empty href
+    ``is not None`` and would never end the walk.
     """
     body = resp.json()
     return (
@@ -242,8 +242,8 @@ def get_ogc_data(
         The OGC API collection name (e.g., ``"daily"``,
         ``"monitoring-locations"``, ``"continuous"``).
     output_id : str
-        The user-facing id column the wire ``id`` is renamed to. Required:
-        the caller owns the per-API collection-to-id map.
+        The user-facing id column the wire ``id`` is renamed to. Required.
+        The caller supplies the per-API collection-to-id map.
     max_rows : int, optional
         Stop paginating once this many rows have been collected and
         truncate the result to exactly ``max_rows``. ``None`` (default)
@@ -314,7 +314,7 @@ def get_ogc_data(
     include_geometry = spatial and not bool(args.get("skip_geometry", False))
     geopd = GEOPANDAS and include_geometry
 
-    # Inject post-processing into the chunker
+    # Post-processing is injected into the chunker rather than applied here,
     # so it runs on every exit: the normal return and a later
     # ``exc.call.resume()`` after a ChunkInterrupted (which never re-enters
     # this function). ``_finalize_ogc`` is the one place result shape is applied;
@@ -337,8 +337,8 @@ def get_ogc_data(
     )
 
     if cql_body is not None:
-        # ``args["properties"]`` holds the wire property list after the
-        # id-switch above; ``finalize`` holds the pre-switch, user-facing
+        # ``args["properties"]`` is the wire property list after the
+        # id-switch above; ``finalize`` has the pre-switch, user-facing
         # list, as on the chunked path.
         req = _construct_cql_request(
             collection,

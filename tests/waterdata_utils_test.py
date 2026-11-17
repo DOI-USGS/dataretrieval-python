@@ -291,7 +291,7 @@ def test_walk_pages_raises_on_connection_error_mid_pagination():
 def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
     """Some ``httpx`` exceptions (e.g. ``TimeoutException("")``)
     stringify to ``""``. The wrapper must still produce an informative
-    message: fall back to the exception class name."""
+    message by falling back to the exception class name."""
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
         _walk_pages_with_failure(httpx.TimeoutException(""))
 
@@ -411,7 +411,7 @@ def test_walk_pages_does_not_mutate_initial_response():
     Any caller that inspected ``initial_response.headers`` /
     ``.elapsed`` before pagination completed (a Session response hook,
     a logging middleware) must continue to see the original first-page
-    values."""
+    values, not the rewritten cumulative values."""
     page1 = mock.MagicMock()
     page1.status_code = 200
     page1.url = "https://example.com/page1"
@@ -554,7 +554,7 @@ def test_get_data_warning_includes_next_token(caplog, monkeypatch):
 def test_handle_nesting_tolerates_missing_drop_columns():
     """If the upstream stats response shape ever changes such that the nested
     ``data`` column ``_handle_nesting`` drops is absent, the function should
-    still return a DataFrame (the drop uses
+    still return a DataFrame instead of raising KeyError (the drop uses
     ``errors="ignore"``).
     """
     body = {
@@ -662,7 +662,7 @@ def test_handle_nesting_empty_preserves_geopd_type():
 
 
 def test_empty_result_uses_request_geometry_contract():
-    """All-empty shaping follows the request mode."""
+    """All-empty shaping follows the request mode, not the template class."""
     with_geometry = _deal_with_empty(
         pd.DataFrame(),
         ["a", "b"],
@@ -1018,7 +1018,7 @@ def test_format_api_dates(value, date, expected):
 
 
 def test_format_api_dates_passes_none_through():
-    """``None`` means "no date filter"."""
+    """``None`` means "no date filter", not an empty one."""
     assert _format_api_dates(None) is None
 
 
@@ -1179,7 +1179,8 @@ def test_format_api_dates_rejects_more_than_two_values():
 
 def test_the_duration_example_is_withheld_where_durations_are_rejected():
     """``get_ratings`` refuses ISO 8601 durations, so the shared message must not offer
-    'P7D' on that path: a caller following it would receive a second rejection."""
+    'P7D' on that path, because a caller following it would receive a second
+    rejection."""
     with pytest.raises(ValueError) as allowed:
         _format_api_dates(["a", "b", "c"], name="time")
     with pytest.raises(ValueError) as refused:
@@ -1378,8 +1379,8 @@ def test_parse_retry_after_supports_http_date_and_rejects_garbage():
     """Both standard header forms are accepted; malformed values use backoff.
 
     A date is converted to seconds the same way as the delta-seconds form, however
-    far in the future it is: an over-long wait stops the retry and reaches the
-    caller on ``.retry_after``.
+    far in the future it is: an over-long wait stops the retry and is reported to
+    the caller on ``.retry_after`` rather than being discarded.
     """
     assert _parse_retry_after("not-a-date") is None
     assert _parse_retry_after("Wed, 21 Oct 2099 07:28:00 GMT") > 0
@@ -1484,7 +1485,8 @@ def test_403_without_an_envelope_names_the_credential_cause():
 
 def test_error_messages_name_the_url():
     """Without the URL a failed chunk in a fan-out cannot be traced back to
-    the request that produced it: the message is all the interruption holds."""
+    the request that produced it, because the interruption records nothing but
+    the message."""
     request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v1/x")
     resp = httpx.Response(400, content=b"", request=request)
     with pytest.raises(HTTPError) as excinfo:
@@ -1511,7 +1513,7 @@ def test_raise_for_non_200_400_raises_http_error():
     with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
     assert excinfo.value.status_code == 400
-    # Fatal: the chunker uses ``isinstance(_, TransientError)``
+    # Fatal, not transient: the chunker uses ``isinstance(_, TransientError)``
     # to decide whether to wrap a failure as a resumable ChunkInterrupted.
     assert not isinstance(excinfo.value, TransientError)
 

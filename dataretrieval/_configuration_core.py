@@ -26,9 +26,9 @@ from typing import Any, ClassVar, TypeVar
 from dataretrieval._ambient import Ambient
 from dataretrieval.exceptions import ConfigurationError
 
-#: Settings only an adapter can hold, because they name one service. No
-#: package-wide value could mean anything for them: there is no one base URL,
-#: and a version is a segment of one service's paths.
+#: Settings only an adapter's configuration can include, because they name one
+#: service. No package-wide value could mean anything for them: there is no one
+#: base URL, and a version is a segment of one service's paths.
 #:
 #: The package-wide roster is :data:`SETTINGS`, declared below the class it is
 #: derived from.
@@ -40,13 +40,14 @@ BLOCK_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
 
 #: Environment variable backing a setting (precedence step 2).
 #:
-#: Not every setting has one. ``parallel_chunks`` is deliberately absent: it splits a
-#: query into more sub-requests, each of which spends rate-limit quota, and
-#: ``dataretrieval.parallel_chunks`` documents why that must stay a deliberate choice.
-#: An environment variable is process-wide and implicit: exported once in a shell
-#: profile, inherited by every subprocess, invisible at the call site. A config-file
-#: entry is written deliberately and appears in :func:`show_configuration`, so the file
-#: and :func:`configure` block are the only sources for it.
+#: Not every setting has one. ``parallel_chunks`` has none, because it splits a
+#: query into more chunks, each of which uses rate-limit quota, and
+#: ``dataretrieval.parallel_chunks`` documents why that must stay a deliberate choice
+#: rather than a process-wide default. An environment variable is process-wide and
+#: implicit: exported once in a shell profile, inherited by every subprocess,
+#: invisible at the call site. A config-file entry is written deliberately and appears
+#: in :func:`show_configuration`, so the file and :func:`configure` block are the only
+#: sources for it.
 ENV_VARS: dict[str, str] = {
     "api_key": "API_USGS_PAT",
     "concurrency": "API_USGS_CONCURRENT",
@@ -64,7 +65,7 @@ _REFUSED_ENV_VARS: dict[str, str] = {
     name: f"API_USGS_{name.upper()}" for name in ADAPTER_ONLY_SETTINGS
 }
 
-#: Environment variable holding an explicit path to the configuration file.
+#: Environment variable that supplies an explicit path to the configuration file.
 CONFIG_PATH_ENV = "DATARETRIEVAL_CONFIG"
 
 #: Origin label for a setting no source supplied.
@@ -82,10 +83,10 @@ _TOP_LEVEL = "top level"
 #: say. Declared as data, beside the other per-setting policies (``ENV_VARS``,
 #: ``_REFUSED_ENV_VARS``, ``_BLANK_MEANS_SET``, ``_VALIDATORS``, ``_DISPLAYS``),
 #: so what is special about ``parallel_chunks`` can be read from this block and
-#: a second quota-spending setting is a row here.
+#: a second setting that uses quota is a row here.
 #:
 #: Top level only: a value in a ``[<adapter>.<name>]`` table is opt-in per run,
-#: which is the scope a setting that spends quota should have.
+#: which is the scope a setting that uses quota should have.
 _WARN_AT_TOP_LEVEL: dict[str, str] = {
     "parallel_chunks": (
         f"'parallel_chunks' at {_TOP_LEVEL} applies to every query in every "
@@ -110,17 +111,17 @@ CONCURRENCY_UNBOUNDED = "unbounded"
 # default.
 _PROGRESS_FALSEY = frozenset({"", "0", "false", "no", "off"})
 
-# Settings for which a *blank* environment variable is a value.
-# ``API_USGS_PROGRESS=`` has always meant "off". For every other setting a blank
-# variable is what container and CI tooling produces when it has nothing to pass
-# (``docker run -e API_USGS_PAT``, a workflow secret that is absent on a fork),
+# Settings for which a *blank* environment variable is a value rather than an
+# absence. ``API_USGS_PROGRESS=`` has always meant "off". For every other setting
+# a blank variable is what container and CI tooling produces when it has nothing to
+# pass (``docker run -e API_USGS_PAT``, a workflow secret that is absent on a fork),
 # so treating it as configured would let it shadow the config file and drop the
 # user's API key without an error. Keeping this a property of the setting
 # (rather than a second, lower-precedence read of the environment) keeps the
 # chain in the shape the docstring and ADR 0009 describe.
 _BLANK_MEANS_SET = frozenset({"progress"})
 
-# Warnings about the config file report the file: settings are resolved lazily from
+# Warnings about the config file name the file. Settings are resolved lazily from
 # wherever a getter first needs one, so the user frame is a different depth every time
 # and no fixed ``stacklevel`` can name a call site. Attributing them to this module
 # consistently at least makes the warnings filterable by module, and every message names
@@ -158,8 +159,8 @@ _ScopeKey = str | tuple[str, str]
 # Each entry pairs the raw value with the label naming where it came from, the
 # same shape the file source returns (:func:`_adapter_file_settings`). The
 # label is built while the configuration object is still available, the only
-# point where the *profile* is known: by the time a value reaches the frame,
-# one from ``WaterdataConfiguration.load("bulk")`` and one from
+# point where the *profile* is known. Once a value is in the frame, one from
+# ``WaterdataConfiguration.load("bulk")`` and one from
 # ``WaterdataConfiguration(...)`` are indistinguishable.
 _Frame = Mapping[_ScopeKey, tuple[_SettingValue, str]]
 _scope: Ambient[tuple[_Frame, ...]] = Ambient("dataretrieval_configuration", ())
@@ -196,7 +197,7 @@ class _ParsedFile:
 
     base: dict[str, str] = field(default_factory=dict)
     #: Raw, *unvalidated* ``[<adapter>]`` tables, keyed by adapter name. Each
-    #: holds that adapter's default-profile keys and, as sub-tables, its named
+    #: contains that adapter's default-profile keys and, as sub-tables, its named
     #: profiles. Left unvalidated because an invalid value in ``[nldi]`` must
     #: not fail a Water Data call that never reads it.
     adapters: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -218,13 +219,13 @@ _NO_FILE = _ParsedFile()
 # adapter; the setting itself is drawn from the shared groups below, so
 # ``retries`` is declared once.
 #
-# Two settings are deliberately absent from every adapter (ADR 0010):
+# Two settings are absent from every adapter (ADR 0010):
 # ``api_key`` belongs to the gateway fronting a host and stays solely owned by
 # ``credentials``; ``progress`` describes the caller's terminal.
 
 #: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is
 #: typed as a ``WaterdataConfiguration``. ``typing.Self`` would say this in one
-#: word and arrives in 3.11; the minimum is 3.10.
+#: word but is new in 3.11; the minimum is 3.10.
 _C = TypeVar("_C", bound="BaseConfiguration")
 
 
@@ -238,9 +239,9 @@ _settings_cache: dict[type[BaseConfiguration], frozenset[str]] = {}
 def _settings_of(cls: type[BaseConfiguration]) -> frozenset[str]:
     """The setting names a configuration class accepts, computed once.
 
-    In effect a class constant: the fields cannot change after the class is
-    created, and every adapter-scoped read requests it through :func:`_accepts`,
-    before the scope stack is checked and before the file.
+    In effect a class constant, because the fields cannot change after the class
+    is created. Every adapter-scoped read calls it through :func:`_accepts`,
+    before the scope stack is checked and before the file is read.
 
     Keyed on the *class* because tests replace a registry entry to stand in for
     an unimported adapter; a name-keyed memo would return the schema of the
@@ -270,20 +271,20 @@ class BaseConfiguration:
 
     #: The adapter this configuration targets, by the name of the module a
     #: caller imports. ``None`` on the package-wide :class:`Configuration`,
-    #: which every adapter reads. A ``ClassVar``: the adapter is a property of
-    #: the class, so the caller does not restate it at every call site and the
-    #: roster is listed once.
+    #: which every adapter reads. A ``ClassVar``, not a field. The adapter is a
+    #: property of the class, so the caller does not restate it at every call
+    #: site and the roster is listed once.
     adapter: ClassVar[str | None] = None
 
     #: The named profile these settings were read from, or ``None`` for a
-    #: configuration written in code. Provenance: it records *where the values
+    #: configuration written in code. It records provenance, *where the values
     #: came from*, which lets :func:`show_configuration` name the profile that
     #: supplied each value.
     #:
     #: A ``ClassVar`` shadowed per instance by :meth:`load`, so it is neither a
-    #: field nor part of equality: two configurations with the same settings
-    #: stay interchangeable however each was written, which is what "a
-    #: configuration is a value" means.
+    #: field nor part of equality. Two configurations with the same settings
+    #: therefore compare equal however each was written (a configuration is a
+    #: value).
     profile: ClassVar[str | None] = None
 
     def __post_init__(self) -> None:
@@ -312,8 +313,8 @@ class BaseConfiguration:
         """The settings supplied, omitting those left unset.
 
         An omitted setting inherits from an outer block or a lower source; an
-        explicit ``None`` suppresses them. The ``_UNSET`` default exists to
-        distinguish the two, so this method does it for every reader.
+        explicit ``None`` suppresses them. The ``_UNSET`` default distinguishes
+        the two; this method applies it once, for every reader.
         """
         return {
             f.name: getattr(self, f.name)
@@ -329,8 +330,9 @@ class BaseConfiguration:
         so the profile still inherits the adapter's default profile and the
         package-wide keys per setting from the rungs below.
 
-        Selecting a profile the file does not define raises: a name a caller
-        just typed is a typo to report.
+        Selecting a profile the file does not define raises, because a name a
+        caller just typed is a typo to report, not a fall-through to settings
+        they did not ask for.
 
         Parameters
         ----------
@@ -352,8 +354,8 @@ class BaseConfiguration:
             )
         loaded = cls(**_named_profile(adapter, profile, cls.settings()))
         # The class is frozen, so the provenance goes on the same way the
-        # dataclass sets its own fields. It is deliberately not a field: the
-        # profile name is where these values came from, and :meth:`settings` is
+        # dataclass sets its own fields. It is not a field, because the profile
+        # name records where these values came from and :meth:`settings` is
         # built from the fields.
         object.__setattr__(loaded, "profile", profile)
         return loaded
@@ -386,7 +388,7 @@ class BaseConfiguration:
 # ``Parameters`` section, because that is the signature a caller writes and
 # ``base_url`` means something different for every service.
 #
-# Plain mixins: a group has no adapter and cannot be passed to
+# The groups are plain mixins. A group has no adapter and cannot be passed to
 # :func:`configure`, so keeping it off the ``BaseConfiguration`` branch leaves
 # one linear base for the behavior. Frozen because a dataclass may not mix
 # frozen and non-frozen bases. Fields collect in reverse MRO order.
@@ -457,13 +459,13 @@ class Configuration(BaseConfiguration):
         Default optional fan-out for multi-value queries. It limits extra
         refinement, but URL-byte safety may already require more sub-requests.
         Sets the baseline that :func:`dataretrieval.parallel_chunks` overrides
-        per call. Each sub-request spends rate-limit quota, so raise it only
+        per call. Each chunk uses rate-limit quota, so raise it only
         for pulls you know are large.
     stall_timeout : float, optional
         Seconds a call may go without receiving *any* data before retrying stops
-        and the failure is raised. Bounds the wall-clock cost of a dead
-        connection, which ``retries`` does not: it counts attempts. Progress
-        resets the timer; ``0`` disables the bound.
+        and the failure is raised. Bounds the wall-clock time lost to a dead
+        connection, which ``retries`` does not bound because it counts attempts.
+        Progress resets the timer; ``0`` disables the bound.
 
     Examples
     --------
@@ -473,11 +475,12 @@ class Configuration(BaseConfiguration):
             df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
     """
 
-    # Listed here, because this order is also the order :func:`show_configuration`
-    # reports the settings in (:data:`SETTINGS` is derived from it just below), and
-    # composing from the groups above would leave that reader-facing sequence to MRO
-    # linearization. The two adapter-only fields the groups declare are absent by
-    # construction here: there is no package-wide base URL.
+    # The fields are listed in full because this order is also the order
+    # :func:`show_configuration` reports the settings in (:data:`SETTINGS` is derived
+    # from it just below), and composing from the groups above would leave that
+    # reader-facing sequence to MRO linearization. The two adapter-only fields the
+    # groups declare are absent by construction here, because there is no
+    # package-wide base URL.
     api_key: str | None = _UNSET
     concurrency: int | str | None = _UNSET
     retries: int | None = _UNSET
@@ -490,7 +493,7 @@ class Configuration(BaseConfiguration):
 #: derived from the fields of :class:`Configuration`. An adapter may accept a subset of
 #: them plus :data:`ADAPTER_ONLY_SETTINGS`.
 #:
-#: Derived because nothing would check that a second copy agreed: a field added to the
+#: Derived because nothing would check that a second copy agreed. A field added to the
 #: class and forgotten here would work from :func:`configure` and be dropped from the
 #: file without an error (:func:`_accepted_keys` would call it an unknown setting) and
 #: never appear in the report. That is the failure ADR 0011 makes impossible: a schema
@@ -510,7 +513,7 @@ _ALL_SETTINGS: tuple[str, ...] = SETTINGS + ADAPTER_ONLY_SETTINGS
 #: imports. Names only, because this module is a standard-library-only leaf
 #: every adapter may import and so cannot import them back.
 #:
-#: Holding the names here lets a ``[nldi]`` table stay valid in a file: NLDI is imported
+#: Listing the names here lets a ``[nldi]`` table stay valid in a file: NLDI is imported
 #: on demand for the geopandas extra, so a roster derived from the registry below would
 #: reject a valid table until something imported that module, and the result would vary
 #: by what a caller had imported.
@@ -534,7 +537,7 @@ def _register(cls: type[BaseConfiguration]) -> None:
     """Record an adapter's configuration class. Called at adapter import.
 
     The roster in :data:`ADAPTERS` and the class are the two halves of one
-    declaration, and this function checks that they agree: a class naming an
+    declaration, and this function checks that they agree. A class naming an
     adapter the roster does not list would be a configuration no file table and
     no report could ever refer to.
     """
@@ -629,13 +632,13 @@ def config_path() -> Path:
 def _default_home_path() -> Path:
     """The default ``~/.dataretrieval/config.toml``, or an unusable path.
 
-    ``Path.home()`` raises ``RuntimeError`` where no home can be resolved at
-    all: a rootless container running as an arbitrary UID with no passwd entry
-    and no ``HOME``. That is not a misconfiguration to report: such a deployment
-    has no config file, and before settings were layered it worked on the
-    environment alone. So this returns the unexpanded ``~/...`` form: it does
-    not exist, which keeps the whole file layer inert so that no request fails
-    inside the header builder, and it still reads correctly in
+    ``Path.home()`` raises ``RuntimeError`` where no home can be resolved, for
+    example in a rootless container running as an arbitrary UID with no passwd
+    entry and no ``HOME``. That is not a misconfiguration to report. Such a
+    deployment has no config file, and before settings were layered it worked on
+    the environment alone. So this returns the unexpanded ``~/...`` form. That
+    path does not exist, which keeps the whole file layer inert so that no
+    request fails inside the header builder, and it still reads correctly in
     :func:`show_configuration` output.
     """
     try:
@@ -649,7 +652,7 @@ def _resolve_against_cwd(relative: Path) -> Path:
     """Resolve a relative override, or report a working directory that is gone.
 
     A scratch-dir job that removes its own cwd cannot resolve a relative
-    ``DATARETRIEVAL_CONFIG`` at all. This wraps the ``OSError`` in a
+    ``DATARETRIEVAL_CONFIG``. This wraps the ``OSError`` in a
     :class:`ConfigurationError`, the taxonomy contract the rest of this module
     keeps.
     """
@@ -688,9 +691,9 @@ def _cwd_id() -> tuple[int, int]:
 def _home_id() -> str:
     """The home directory as the environment reports it.
 
-    A plain environment read: this is on the per-request path and only needs to
-    detect a *change* (a test or notebook that reassigns the home variable after
-    the first resolution).
+    A plain environment read, not ``Path.home()``, because this is on the
+    per-request path and only needs to detect a *change* (a test or notebook that
+    reassigns the home variable after the first resolution).
 
     Which variable that is differs by platform, and the memo has to agree with
     the resolver or it checks a different variable. ``posixpath.expanduser``
@@ -758,14 +761,14 @@ def _coerce_count(value: object, label: str, optional: str) -> str:
     return str(value)
 
 
-#: Each setting's source-level type policy: one row per setting, as :data:`_VALIDATORS`
-#: holds its grammar. A roster with the completeness guard below, so a new setting must
-#: declare its type here or fail at import. An if/elif chain with an implicit integer
-#: fallback would parse it as an integer without any error from the typed surfaces while
-#: the untyped environment accepts it. (Integers are matched as
-#: :class:`numbers.Integral`: a numpy or pandas integer is a legitimate count from
-#: Python, and ``tomllib`` only ever yields ``int``, so the wider check cannot change a
-#: TOML outcome.)
+#: Each setting's source-level type policy, one row per setting; :data:`_VALIDATORS`
+#: stores each setting's grammar the same way. A roster with the completeness guard
+#: below, so a new setting must declare its type here or fail at import. An if/elif
+#: chain with an implicit integer fallback would parse it as an integer without any
+#: error from the typed surfaces while the untyped environment accepts it. (Integers are
+#: matched as :class:`numbers.Integral` because a numpy or pandas integer is a valid
+#: count from Python, and ``tomllib`` only ever yields ``int``, so the wider check
+#: cannot change a TOML outcome.)
 _TYPES: dict[str, Callable[[object, str, str], str]] = {
     "api_key": _coerce_string,
     "api_version": _coerce_string,
@@ -778,8 +781,8 @@ _TYPES: dict[str, Callable[[object, str, str], str]] = {
 }
 
 if set(_TYPES) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding error
-    # ``python -O`` strips an ``assert``, and an unlisted setting would change
-    # meaning by omission.
+    # An ``assert`` would be stripped by ``python -O``, and then an unlisted
+    # setting would change meaning by omission.
     raise RuntimeError(
         "every setting needs a type policy in _TYPES; "
         f"missing={sorted(set(_ALL_SETTINGS) - set(_TYPES))} "
@@ -792,8 +795,8 @@ def _coerce_typed(name: str, value: object, label: str, *, optional: str = "") -
 
     Shared by the two *typed* surfaces (a configuration's fields and TOML scalars)
     so a value accepted from one is accepted from the other and a tightened rule
-    cannot apply to only half of them. (The environment is not typed: it supplies
-    strings, which are passed directly to :func:`_validate_raw`.)
+    cannot apply to only half of them. (The environment supplies untyped strings,
+    which are passed directly to :func:`_validate_raw`.)
 
     ``optional`` is the only thing that differs between them: the Python
     surface accepts ``None`` and says so in its messages.
@@ -883,10 +886,10 @@ def _parse_concurrency(raw: str, label: str) -> int | None:
 def _parse_base_url(raw: str, label: str) -> str:
     """Parse a service base URL: an absolute ``http``/``https`` origin.
 
-    Only the scheme is checked, deliberately. This module cannot know what a
-    given service's paths look like, but it can refuse the shapes that are never
-    a base URL and would fail later, in the request: a bare hostname that
-    ``httpx`` would reject, or a ``file://``, which is not a service.
+    Only the scheme is checked. This module cannot know what a given service's
+    paths look like, but it can reject the shapes that are never a base URL and
+    would fail later, in the request: a bare hostname that ``httpx`` would
+    reject, or a ``file://``, which is not a service.
     """
     value = raw.strip()
     if not value.startswith(("http://", "https://")):
@@ -903,8 +906,8 @@ _API_VERSION_RE = re.compile(r"^v\d+$")
 def _parse_api_version(raw: str, label: str) -> str:
     """Parse an API version: the segment the service publishes it under, ``v1``.
 
-    Checked as a shape: a list here would refuse a version the service already
-    serves until a release of this package added it.
+    Checked as a shape, because a list of versions would reject a version the
+    service already serves until a release of this package added it.
     """
     value = raw.strip()
     if not _API_VERSION_RE.match(value):
@@ -1011,9 +1014,9 @@ def _named_profile(
     # one is a shape the grammar does not define, most likely a file migrated
     # from the retired ``[profiles.bulk.ngwmn]``, where a profile did contain
     # per-service detail. Dropping it without an error would leave the author
-    # believing they had tuned something. Checked here for the same reason keys
-    # are: a malformed profile for one adapter must not fail another adapter's
-    # call.
+    # believing they had tuned something. Checked here, not when the file is
+    # parsed, so that a malformed profile for one adapter cannot fail another
+    # adapter's call (the same rule as for keys).
     nested = sorted(key for key, value in table.items() if isinstance(value, dict))
     if nested:
         raise ConfigurationError(
@@ -1046,7 +1049,7 @@ def _adapter_file_settings(
 ) -> Mapping[str, tuple[str, str]]:
     """The ``[<adapter>]`` table's own keys: its default profile.
 
-    Layers *above* the file's top-level keys: within the file source an
+    Layers *above* the file's top-level keys, so within the file source an
     adapter's own value outranks the package-wide one. The table's sub-tables
     are its named profiles, which are inert until a caller selects one, so they
     are skipped here (see :func:`_accepted_keys`).
@@ -1275,7 +1278,7 @@ def _reject_known_setting(
 ) -> None:
     """Raise if *key* is a setting this release defines but that table cannot use.
 
-    Returns for an unknown name, which the caller warns about: an unknown name
+    Returns for an unknown name, which the caller warns about. An unknown name
     may belong to a newer release, but a known setting in the wrong table will
     never take effect, and ignoring it would leave the caller believing it had
     (ADR 0010).
@@ -1307,7 +1310,7 @@ def _checked_table(
     profile, and a named profile. They differ only in what they do with the result (the
     chain takes raw strings, a profile being loaded takes the TOML scalars to pass to a
     configuration's own typed fields), so this returns both and each reader takes its
-    half. Written once because the checks are the part that must not diverge: a
+    half. Written once because the checks are the part that must not diverge. A
     per-table policy added for one kind of table would otherwise skip the other.
 
     ``tomllib`` returns typed scalars (``concurrency = 32`` is an ``int``,
@@ -1350,8 +1353,9 @@ def _scalars(
 def _holds_api_key(parsed: _ParsedFile) -> bool:
     """Whether the file names an API key anywhere, including inert tables.
 
-    Inert tables count because the question is what the *file* contains: a key
-    in a profile nobody selected is as readable to another user on the machine.
+    Inert tables count because the check is on what the *file* contains, not
+    what this run resolves. A key in a profile nobody selected is as readable to
+    another user on the machine.
     """
     if "api_key" in parsed.base:
         return True
@@ -1365,11 +1369,12 @@ def _holds_api_key(parsed: _ParsedFile) -> bool:
 def _warn_on_loose_permissions(
     path: Path, st: os.stat_result, parsed: _ParsedFile
 ) -> None:
-    """Warn once if a file holding an API key is readable by other users.
+    """Warn once if a file that contains an API key is readable by other users.
 
     Follows the ``~/.ssh`` and ``.netrc`` convention, but warns rather than
-    refusing: shared filesystems on HPC clusters have their own conventions, and
-    refusing to read would leave those users unable to use the file.
+    refusing, because shared filesystems on HPC clusters have their own
+    conventions and refusing to read would leave those users unable to use the
+    file.
     """
     if os.name != "posix" or path in _permission_warned:
         return

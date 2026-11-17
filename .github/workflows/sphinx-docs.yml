@@ -46,8 +46,8 @@ jobs:
           # install alongside it (latexmk, texlive-*, dvipng; ~266 MB) is not
           # reachable from an HTML build: no math extension is configured and
           # nothing renders math to images, so it was downloaded and never run.
-          # It was also the whole tail risk: 127 packages off one apt mirror,
-          # which on a bad day delivered 314 MB at 37 KB/s and turned a 6 min
+          # It was also the whole tail risk. Its 127 packages came off one apt
+          # mirror, which on a bad day delivered 314 MB at 37 KB/s and turned a 6 min
           # build into 150 min. Restore it only alongside a builder that needs
           # it (``latexpdf``).
           sudo apt update -y && sudo apt install -y pandoc

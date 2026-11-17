@@ -70,7 +70,7 @@ Named contracts verify the current boundaries: the only OGC dependency of
 NGWMN and ``waterdata.cql`` is the facade, ``ogc.shaping`` does not depend on
 ``ogc.engine``, Water Use and the other non-OGC adapters cannot import the OGC
 subsystem at all. The fitness functions verify that the runtime graph is
-acyclic package-wide.
+acyclic package-wide rather than only within ``ogc`` and ``transport``.
 ``waterdata.utils`` not bulk re-exporting private OGC helpers stays there too,
 because that claim is about the module's ``__all__``.
 

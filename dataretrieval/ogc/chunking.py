@@ -57,8 +57,8 @@ from dataretrieval.transport.retry import RetryPolicy
 from .planning import ChunkPlan
 
 # Compatibility aliases for the chunking/progress test modules. The client names bind
-# the same objects transport sets: a test reading a copy here would never see the
-# running client.
+# the same objects transport sets, not copies, because a test reading a copy
+# here would never see the running client.
 ChunkedCall = FanOut
 get_active_client = active_client
 _chunked_client = _active_client
@@ -77,19 +77,19 @@ def parallel_chunks(n: int) -> Iterator[None]:
     Fan the OGC getters' multi-value requests out into ``n`` parallel chunks.
 
     By default the Water Data / NGWMN getters chunk a request only as much as the
-    server's ~8 KB URL-byte limit forces: the fewest chunks that fit. That default can
-    split less than a large pull benefits from. Because every chunk paginates, splitting
-    a large result further costs little or no extra quota *as long as each chunk still
-    spans many pages*, with rows-per-chunk far exceeding the page size (ten states
-    pulled as one request page nearly as many times as ten per-state requests would).
-    When a split leaves each chunk only a page or two, its partial final page is extra,
-    so finer chunks do add some requests. This context manager lets a caller who knows
-    their pull is large request that finer split. The result is roughly the same pages
-    in more, smaller chunks, which gives smoother progress, more even concurrency, and a
-    smaller unit of retry/resume.
+    server's ~8 KB URL-byte limit forces, so the plan has the fewest chunks that fit.
+    That default can split less than a large pull benefits from. Because every chunk
+    paginates, splitting a large result further costs little or no extra quota *as long
+    as each chunk still spans many pages*, with rows-per-chunk far exceeding the page
+    size (ten states pulled as one request page nearly as many times as ten per-state
+    requests would). When a split leaves each chunk only a page or two, its partial
+    final page is extra, so finer chunks do add some requests. This context manager lets
+    a caller who knows their pull is large request that finer split. The result is
+    roughly the same pages in more, smaller chunks, which gives smoother progress, more
+    even concurrency, and a smaller unit of retry/resume.
 
     A per-call setting scoped to a ``with`` block, with no environment
-    variable: ADR 0009. Outside any block the getters use the
+    variable (ADR 0009). Outside any block the getters use the
     conservative default. Only the OGC getters (Water Data, NGWMN) read this;
     wrapping a call to any other adapter in the block is a no-op.
 
@@ -106,8 +106,8 @@ def parallel_chunks(n: int) -> Iterator[None]:
         be somewhat below ``n`` because splits are whole (the plan can't always divide
         evenly onto ``n``). ``n=1`` requests no extra fan-out.
 
-        Each chunk fetches at least one page, so it costs at least one
-        request against your hourly rate limit, so a larger ``n`` spends more
+        Each chunk fetches at least one page, so each counts as at least one
+        request against your hourly rate limit, and a larger ``n`` uses more
         quota. How many chunks run *at once* is capped separately by
         the ``concurrency`` setting (default 32), so an ``n`` beyond that
         adds quota without adding parallelism; the useful range is roughly
@@ -140,7 +140,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     - Resumability: a single request either fully succeeds or fully fails,
       but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
       raise a resumable :class:`~dataretrieval.interruptions.ChunkInterrupted`
-      (or ``QuotaExhausted``) holding the completed chunks. Finish the
+      (or ``QuotaExhausted``) with the completed chunks. Finish the
       call with ``exc.call.resume()``.
     - Cross-chunk de-duplication keys on the feature ``id``; features
       with no ``id`` can't be deduped, so overlapping filter clauses split
@@ -160,9 +160,11 @@ def parallel_chunks(n: int) -> Iterator[None]:
     """
     # Validate at ``with`` entry, before any request, through the setting's
     # own parser (one grammar, ADR 0009). The source label makes the message
-    # name ``parallel_chunks(n)``.
+    # name ``parallel_chunks(n)`` rather than the ``Configuration`` built
+    # below.
     _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
-    # Reuses the one package-wide ``Configuration`` ContextVar (ADR 0009).
+    # Reuses the package-wide ``Configuration`` ContextVar and opens no scope
+    # of its own (ADR 0009).
     with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
         yield
 

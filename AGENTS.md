@@ -10,7 +10,7 @@
   code that conflicts with it is a defect. A **domain** term (*monitoring
   location*, *collection*) is fixed for prose only: each adapter keeps its
   own service's spelling in its parameters, so WQP's `siteid` and `Station`
-  are that service's vocabulary and are correct. Each
+  are that service's vocabulary rather than drift. Each
   entry states which kind it is.
 - Architectural decisions and their rationale: `docs/source/architecture/decisions/`
   (ADRs, referenced by number throughout the code and by `.importlinter`).
@@ -24,7 +24,7 @@ can predict where a thing is defined.
   named for the service (`nldi`, `nwdc`, `ngwmn`, `streamstats`, and `wqp`);
   each owns that service's URLs, parameters, and response
   quirks. `waterdata/` is the one adapter large enough to be a package, split by
-  collection family; its `api.py` is a compatibility facade holding no logic.
+  collection family; its `api.py` is a compatibility facade containing no logic.
   Everything else in the package is shared code the adapters depend on:
   configuration, credentials, progress, exceptions, code tables, response
   formats. Shared code below the adapter layer must not reference any
@@ -45,8 +45,8 @@ can predict where a thing is defined.
 - `tests/`: flat, one `*_test.py` per module or concern, organized into four
   dependency-oriented layers (public contract, adapter contract, component,
   cross-component) that `tests/contracts/README.md` defines and assigns files to.
-  `architecture_test.py` holds the fitness functions a boundary checker cannot
-  express (symbols, `__all__`, AST shape, cycles); pure module-to-module
+  `architecture_test.py` contains the fitness functions a boundary checker
+  cannot express (symbols, `__all__`, AST shape, cycles); pure module-to-module
   direction belongs in `.importlinter` instead.
 - `docs/source/`: `reference/` (one page per public module), `userguide/`
   (prose topics), `architecture/` (overview + ADRs), `meta/` (project docs),
@@ -59,7 +59,7 @@ can predict where a thing is defined.
 
 ## Not part of the repo
 - `R/`, `experiments/`, `build/`, `dist/`, `.kiro/`, and any `Untitled*.ipynb` or
-  `*_test.ipynb` at the top level are untracked local scratch: don't edit,
+  `*_test.ipynb` at the top level are untracked local scratch. Don't edit,
   commit, or cite them.
 - Exclude `.claude/worktrees/` from searches and edits; stale worktrees there
   add spurious results.
@@ -76,7 +76,7 @@ can predict where a thing is defined.
 - Tests: `coverage run -m pytest tests/ && coverage report`, or focused like
   `pytest tests/waterdata_test.py::test_mock_get_samples`. `coverage report` is
   a merge gate: branch coverage with a `fail_under` ratchet in
-  `[tool.coverage.report]`. Cover the uncovered *branch*, not the number: a
+  `[tool.coverage.report]`. Cover the uncovered *branch*, not the number. A
   test written only to mark a line as covered catches nothing and adds
   maintenance. If a path is unreachable, add it to `exclude_also`
   with a reason, or leave the ratchet unchanged.
@@ -110,17 +110,17 @@ raise states the problem and then the action that fixes it, in that order.
   failure the remedy is whether to retry, and `transport.pagination.
   paginated_failure_message()` is the model: cause, then `To recover: …`.
 - Don't invent a phrasing for a check that recurs. `dataretrieval/_validation.py`
-  owns the wording for the shared cases: bad value in a closed vocabulary
+  defines the wording for the shared cases: bad value in a closed vocabulary
   (`require_one_of`), missing argument (`require_argument`), incomplete group
   (`require_together`), and conflicting arguments
   (`require_exactly_one`, `reject_together`). Use one before
   hand-writing a message. A service-specific pointer is not a reason to
   hand-write: every check takes a `remedy=` for the action it cannot derive.
   Every check raises `ValueError`, one class for a bad argument value, so a
-  caller catches by error class.
+  caller catches by error class rather than by which module rejected it.
 - `require_argument` returns the narrowed value and `require_exactly_one` the
   selected `(name, value)` pair, so use their results rather than re-testing for
-  `None` to satisfy mypy: a second, unreachable message beside the first is
+  `None` to satisfy mypy. A second, unreachable message beside the first is
   how the two drift apart.
 - **Paste the remedy back before trusting it.** Whatever a message names must be
   a real parameter of the function the *caller* called (not a private helper's
@@ -137,8 +137,8 @@ raise states the problem and then the action that fixes it, in that order.
   one noun reports the wrong parameter the moment a second call site reuses it.
 - Prefer raising over returning something empty when the library cannot distinguish
   an empty result from a service failure: a caller that gets an empty frame has
-  no signal to act on. `nldi._query_nldi` is the deliberate exception: a 200
-  with a non-JSON body becomes an empty GeoDataFrame by design.
+  no signal to act on. The only exception, by design, is `nldi._query_nldi`,
+  which returns an empty GeoDataFrame for a 200 with a non-JSON body.
 
 ## Implementation notes
 - HTTP client is `httpx` (migrated from `requests` in #289); new code uses
@@ -147,7 +147,7 @@ raise states the problem and then the action that fixes it, in that order.
 - `dataretrieval/__init__.py` imports the service modules by name and lists them
   in `__all__`; it does not star-import them, so a getter is accessed through its
   module (`dataretrieval.wqp.get_results`), never from the top level. `nldi` is
-  deliberately absent: it needs `geopandas` at import time, so it is imported on
+  absent because it needs `geopandas` at import time, so it is imported on
   demand. `dataretrieval/waterdata/__init__.py` controls Water Data exports via
   `__all__`.
 - The `API_USGS_PAT` credential is owned by the `credentials` leaf and applied as

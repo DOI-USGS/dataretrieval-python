@@ -37,7 +37,7 @@ _RETRY_BASE_BACKOFF = 0.5
 _RETRY_MAX_BACKOFF = 30.0
 _RETRY_AFTER_CAP = 60.0
 # Most a server-named delay is extended by, to keep chunks given the same
-# value from retrying together. Small deliberately: the server specified the wait, so
+# value from retrying together. Small because the server specified the wait, so
 # jitter here only decorrelates the retries.
 _RETRY_AFTER_JITTER = 1.0
 # Attempts the no-progress budget never blocks; see RetryPolicy.allows_wait.
@@ -56,8 +56,9 @@ class RetryPolicy:
     """
 
     #: Attempts after the first. ``0`` disables retry. The default is read from
-    #: ``configuration``: a directly-constructed policy and one built by
-    #: :meth:`from_configuration` must use the same retry budget.
+    #: ``configuration``, not copied, because a directly-constructed policy and
+    #: one built by :meth:`from_configuration` must allow the same number of
+    #: retries.
     max_retries: int = _configuration.DEFAULT_RETRIES
     #: First backoff ceiling; doubles per attempt up to :attr:`max_backoff`.
     base_backoff: float = _RETRY_BASE_BACKOFF
@@ -75,11 +76,11 @@ class RetryPolicy:
     #: the failure is raised: the total of every attempt that received nothing and
     #: every uncredited wait since the last page arrived (a server-named
     #: ``Retry-After`` and time queued behind the concurrency gate are credited
-    #: back; see :meth:`allows_wait`). Bounds the wall-clock cost of a dead
+    #: back; see :meth:`allows_wait`). Bounds the wall-clock time lost to a dead
     #: connection or a service that keeps returning errors, which
-    #: :attr:`max_retries` alone does not: it counts attempts, so four retries of a
-    #: request that times out after a minute is four minutes without data. Progress
-    #: restarts the budget (see
+    #: :attr:`max_retries` alone does not bound because it counts attempts. Four
+    #: retries of a request that times out after a minute are four minutes without
+    #: data. Progress restarts the budget (see
     #: :func:`~dataretrieval.transport.liveness.note_progress`), so a slow but
     #: productive download is never stopped early, and an attempt already in flight
     #: is never interrupted. ``0`` disables the bound. See :meth:`allows_wait` for
@@ -147,22 +148,22 @@ class RetryPolicy:
         :func:`~dataretrieval.transport.liveness.elapsed_since_progress`), passed in
         so the policy stays a pure value object.
 
-        The first retry is always allowed. One slow attempt can spend the whole
+        The first retry is always allowed. One slow attempt can use the whole
         budget on its own (a large page from a busy service, or any attempt that
-        runs to the read timeout), and letting that suppress retry entirely would
+        runs to the read timeout), and letting that prevent any retry would
         turn a recoverable transient into an immediate failure for the large queries
         where retrying matters most. So the budget bounds *repeated* time without
-        data: with the defaults a dead connection costs about two read timeouts;
-        without the budget it would cost five.
+        data. With the defaults, a dead connection fails after about two read
+        timeouts; without the budget it would take five.
 
         A delay the *server* specified (``retry_after`` is not ``None``, the same
         value :meth:`should_retry` and :meth:`backoff` take) is not charged against
         the budget. Charging for it would mean a service that responds 429 with
         ``Retry-After: 30`` gets fewer retries than one that sends no
-        ``Retry-After``: with the shipped defaults (a 60 s budget, a 60 s
-        :attr:`retry_after_cap`) any accepted value of half the budget or more would
+        ``Retry-After``. With the shipped defaults (a 60 s budget, a 60 s
+        :attr:`retry_after_cap`), any accepted value of half the budget or more would
         allow one retry regardless of :attr:`max_retries`. A wait the server
-        specified is not time without a response; the service has specified when to
+        specified is not time without a response, because the service stated when to
         retry. The driver credits the same wait back afterwards (see
         :func:`~dataretrieval.transport.liveness.credit_wait`) so it doesn't
         accumulate into the *next* attempt's time without data either.
@@ -179,19 +180,19 @@ class RetryPolicy:
         """Seconds to wait before a 1-based retry attempt.
 
         A jittered component is always included, even when the server specified
-        a delay: a value of ``0``, or a ``Retry-After`` date that has already
-        passed, would otherwise become a zero-delay re-send against a service
-        that just sent a ``Retry-After``, and chunks given the same value would
-        all retry at the same instant.
+        a delay, because a value of ``0``, or a ``Retry-After`` date that has
+        already passed, would otherwise become a zero-delay re-send against a
+        service that just sent a ``Retry-After``, and chunks given the same value
+        would all retry at the same instant.
 
-        On a server value that jitter is a small decorrelating offset, and the
-        total is held to :attr:`retry_after_cap`: full jitter on top of a value
-        already at the cap would wait up to 1.5 times the longest bound this
-        policy declares. It is bounded by :attr:`max_backoff`, so it still
-        applies when :attr:`base_backoff` is zero, the case where this attempt's
-        exponential ceiling is zero and a value of ``0`` would otherwise become
-        the zero-delay re-send this prevents. A policy with no backoff
-        configured still applies none.
+        On a server value that jitter is a small decorrelating offset rather than
+        a second backoff, and the total is capped at :attr:`retry_after_cap`,
+        because full jitter on top of a value already at the cap would wait up to
+        1.5 times the longest bound this policy declares. It is bounded by
+        :attr:`max_backoff`, so it still applies when :attr:`base_backoff` is
+        zero, the case where this attempt's exponential ceiling is zero and a
+        value of ``0`` would otherwise become the zero-delay re-send this
+        prevents. A policy with no backoff configured still applies none.
         """
         ceiling = min(self.max_backoff, self.base_backoff * 2 ** (attempt - 1))
         if retry_after is None:
@@ -231,8 +232,8 @@ class _Wait(NamedTuple):
     def settle(self) -> None:
         """Credit an elapsed server-specified wait back to the no-progress budget.
 
-        Paired with the sleep: a wait that :meth:`RetryPolicy.allows_wait` did
-        not charge must also be credited back afterwards, or it accumulates into
+        Paired with the sleep because a wait that :meth:`RetryPolicy.allows_wait`
+        did not charge must also be credited back afterwards, or it accumulates into
         the *next* attempt's time without data and caps the retries anyway. Both
         drivers call this after their own sleep.
         """
@@ -262,8 +263,8 @@ async def retry_async(
 ) -> _T:
     """Call an awaitable with bounded retry on typed transient failures.
 
-    ``gate`` bounds how many attempts run concurrently. Owning it here keeps two
-    rules in one place: the slot is acquired per *attempt*, so a call waiting
+    ``gate`` bounds how many attempts run concurrently. Applying it here keeps
+    two rules in one place: the slot is acquired per *attempt*, so a call waiting
     out a backoff does not hold one while it is not making a request, and the
     time spent waiting for it is credited back to the no-progress budget. A
     caller that gated its own body would have to re-implement both, and nothing

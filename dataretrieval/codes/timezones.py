@@ -2,7 +2,8 @@
 
 Maps the time-zone abbreviations that services put beside a local date and
 time to UTC offsets. Several abbreviations name more than one zone worldwide,
-so the table follows the code lists the services draw from:
+so the table follows the code lists the services draw from rather than common
+usage:
 
 * the WQX TimeZone domain, used by the Water Quality Portal
   (``tests/data/wqx_timezones.csv``), and
@@ -12,10 +13,10 @@ so the table follows the code lists the services draw from:
 
 Where the two lists disagree, on ``SST`` (American Samoa in WQX, Swedish Summer
 Time in USGS) and ``BST`` (retired Bering Standard Time in WQX, British Summer
-Time in USGS), WQX takes precedence: the Water Quality Portal returns ``SST``
-for American Samoa, and USGS records write that zone as ``ZP-11``. Abbreviations in
-neither list keep their common meaning. ``tests/timezones_test.py`` checks the
-table against both lists.
+Time in USGS), WQX takes precedence, because the Water Quality Portal returns
+``SST`` for American Samoa and USGS records write that zone as ``ZP-11``.
+Abbreviations in neither list keep their common meaning.
+``tests/timezones_test.py`` checks the table against both lists.
 """
 
 tz_str = """-1200 Y IDLW

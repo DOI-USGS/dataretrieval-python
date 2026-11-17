@@ -193,13 +193,13 @@ def get_samples(
         One of the available profiles associated with a service. Options for
         each service are:
 
-            * results: "fullphyschem", "basicphyschem", "fullbio", "basicbio",
+            * results - "fullphyschem", "basicphyschem", "fullbio", "basicbio",
               "narrow", "resultdetectionquantitationlimit", "labsampleprep",
               "count"
-            * locations: "site", "count"
-            * activities: "sampact", "actmetric", "actgroup", "count"
-            * projects: "project", "projectmonitoringlocationweight"
-            * organizations: "organization", "count"
+            * locations - "site", "count"
+            * activities - "sampact", "actmetric", "actgroup", "count"
+            * projects - "project", "projectmonitoringlocationweight"
+            * organizations - "organization", "count"
 
     activity_media_name : string or iterable of strings, optional
         Name or code indicating environmental medium in which sample was taken.
@@ -312,7 +312,7 @@ def get_samples(
         ``<prefix>Date`` / ``<prefix>Time`` / ``<prefix>TimeZone`` triplet in
         the response (e.g. ``Activity_StartDate``, ``Activity_StartTime``,
         ``Activity_StartTimeZone``), an additional ``<prefix>DateTime`` column
-        is appended holding a UTC ``Timestamp`` derived from the three. The
+        is appended containing a UTC ``Timestamp`` derived from the three. The
         original Date/Time/TimeZone columns are left intact; rows whose
         timezone abbreviation is not recognized resolve to ``NaT``. Rows are
         sorted by ``Activity_StartDateTime`` when present (the API's default

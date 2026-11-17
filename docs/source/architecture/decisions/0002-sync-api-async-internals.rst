@@ -39,7 +39,7 @@ Consequences
 - Each top-level async-backed call incurs worker-thread and portal startup cost.
 - Cancellation, context propagation, and client ownership need explicit tests.
 - A future public async API, if justified, should be additive and share the same
-  lower-level contracts.
+  lower-level contracts rather than duplicate behavior.
 
 Compliance
 ----------

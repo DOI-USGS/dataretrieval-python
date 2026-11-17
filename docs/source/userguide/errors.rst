@@ -20,7 +20,7 @@ clause handles any failure regardless of which service you called:
         ...  # any request failure: error status, connection loss, too-large, ...
 
 Connection-level failures (timeouts, DNS, refused connections) remain inside
-the package taxonomy, so the clause above covers them: you never have to catch
+the package taxonomy, so the clause above covers them. You never have to catch
 an ``httpx`` exception. A deterministic connection failure is a
 :class:`~dataretrieval.exceptions.NetworkError`; a recoverable one that exhausts
 inline retries during fan-out is a resumable ``ServiceInterrupted``. A *no-data*
@@ -33,11 +33,11 @@ Branch without knowing the concrete type
 Every :class:`~dataretrieval.exceptions.DataRetrievalError` exposes three
 read-anywhere fields, so you rarely need to import the specific subclasses:
 
-* ``.status_code``: the HTTP status, or ``None`` when the failure included no
+* ``.status_code`` -- the HTTP status, or ``None`` when the failure included no
   response (a connection error, an over-long URL, ...).
-* ``.retry_after``: seconds the server specified to wait (its ``Retry-After``
+* ``.retry_after`` -- seconds the server specified to wait (its ``Retry-After``
   header), or ``None``.
-* ``.retryable``: ``True`` when re-issuing the same request might succeed (a
+* ``.retryable`` -- ``True`` when re-issuing the same request might succeed (a
   429 / 5xx, or a connection failure); ``False`` otherwise.
 
 .. code-block:: python
@@ -46,7 +46,7 @@ read-anywhere fields, so you rarely need to import the specific subclasses:
         if e.status_code == 404:
             ...            # not found
         elif e.retryable:
-            ...            # transient: see the retry example below
+            ...            # transient -- see the retry example below
         else:
             raise
 
@@ -79,9 +79,9 @@ Resume an interrupted request
 Some requests become several: the Water Data and NGWMN getters split an
 over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
-partway, the package preserves the completed work: catch
-``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears,
-and it re-issues only the unfinished chunks.
+partway, the package preserves the completed work. Catch
+``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears;
+``resume()`` re-issues only the unfinished chunks.
 
 (``ChunkInterrupted`` is the same class under its original name; either works.)
 
@@ -108,8 +108,8 @@ counties, or HUCs.
 Chunk a large request more finely
 =================================
 
-By default the getters split an over-large request only as much as the
-server's ~8 KB URL limit forces, which gives the fewest chunks. Because each
+By default the getters split an over-large request into the fewest chunks the
+server's ~8 KB URL limit allows. Because each
 chunk paginates, splitting a large result further costs little or no
 extra quota *as long as each chunk still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
@@ -136,13 +136,13 @@ raises ``ValueError`` at the ``with``. ``n`` caps the *total* chunk count
 across every multi-value argument combined, bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can't multiply past it, and
-``n=1`` requests no extra fan-out. Each chunk costs a request against your
-hourly rate limit. ``API_USGS_CONCURRENT`` (default 32) separately caps how
-many run *at once*, so an ``n`` beyond that adds quota without
-adding parallelism. The useful range is roughly ``2`` up to
-``API_USGS_CONCURRENT``. There is no "off" level: don't enter the block
-unless you already expect a large, multi-page result. On a query that would
-have fit in a single page, extra chunks only spend quota.
+``n=1`` requests no extra fan-out. Each chunk counts as one request against
+your hourly rate limit. ``API_USGS_CONCURRENT`` (default 32) separately caps
+how many run *at once*, so an ``n`` beyond that uses more quota without adding
+parallelism. The useful range is roughly ``2`` up to ``API_USGS_CONCURRENT``.
+There is no "off" level: don't enter the block unless you already expect a
+large, multi-page result. On a query that would have fit in a single page,
+extra chunks only use quota.
 
 The full taxonomy
 =================

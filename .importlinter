@@ -3,8 +3,8 @@
 ; This file owns dependency-direction rules. ``tests/architecture_test.py``
 ; owns symbol-level claims, ``__all__`` surfaces, AST shape, positive imports,
 ; and package-wide cycle detection (see ADR 0003). The split is deliberate and
-; the two do not overlap: a rule enforced twice is a rule that gets updated
-; once.
+; the two do not overlap, because a rule enforced twice is a rule that gets
+; updated once.
 ;
 ; Run with ``lint-imports`` (installed by the ``[metrics]`` extra).
 
@@ -68,11 +68,11 @@ type = protected
 ; submodule. It is an allowlist, so a new service module is refused by default
 ; until someone adds it.
 ;
-; The root ``dataretrieval`` package is deliberately not an allowed importer.
+; The root ``dataretrieval`` package is not an allowed importer.
 ; ``allowed_importers`` is matched with ``as_packages``, so naming the root here
 ; would make every module in the distribution an allowed importer and the
 ; contract could never fail. Its two real imports are listed as explicit
-; exceptions below: narrow, visible, and they fail if they go stale.
+; exceptions below. Each names one import and fails if it goes stale.
 protected_modules =
     dataretrieval.ogc
 allowed_importers =
@@ -86,10 +86,9 @@ ignore_imports =
 [importlinter:contract:ogc-facade]
 name = Facade-only OGC consumers, never its internals (ADR 0007)
 type = forbidden
-; Listed per module: most of ``waterdata`` (``ratings``, ``reference``,
-; ``samples``, ``stats``, the package ``__init__``) legitimately imports ``ogc``
-; internals today, so only the modules that already keep to the facade-only
-; seam belong here.
+; Listed per module because most of ``waterdata`` (``ratings``, ``reference``,
+; ``samples``, ``stats``, the package ``__init__``) imports ``ogc`` internals
+; today. Only the modules that already keep to the facade-only seam belong here.
 source_modules =
     dataretrieval.ngwmn
     dataretrieval.waterdata.cql
@@ -97,9 +96,9 @@ source_modules =
 ; the day it is added, without editing this contract.
 forbidden_modules =
     dataretrieval.ogc.**
-; Direct imports only. Reaching an internal *through* the facade is the design:
-; ``ngwmn -> ogc -> ogc.engine`` is how the seam is supposed to work, and the
-; default (indirect included) forbids that.
+; Direct imports only. Reaching an internal *through* the facade is the design,
+; not a violation. ``ngwmn -> ogc -> ogc.engine`` is how the seam is supposed to
+; work, and the default (indirect included) forbids that.
 allow_indirect_imports = True
 
 [importlinter:contract:ogc-internal-seams]

@@ -2,7 +2,7 @@
 
 The credentials leaf defines the host (the host that serves these
 endpoints is the host that accepts the API key), and the paths below are
-defined here. This module imports only
+defined here rather than imported from OGC policy internals. This module imports only
 leaves: the credentials host and the configuration chain (ADR 0003).
 """
 
