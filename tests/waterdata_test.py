@@ -1725,6 +1725,95 @@ def test_get_reference_table_serves_countries(httpx_mock):
     assert "country" in df.columns
 
 
+# Each method/citation collection, the ID column it must carry (the name of the
+# column that refers to it elsewhere, so the tables join), and the properties the
+# live service lists for it (verified against /queryables, 2026-11-18).
+_METHOD_TABLES = {
+    "methods": (
+        "method_id",
+        ["method_type", "method_category", "method_name", "method_description"],
+    ),
+    "method-categories": (
+        "method_category",
+        ["method_category_name", "method_category_description"],
+    ),
+    "method-citations": (
+        "citation_method_id",
+        ["method_id", "citation_name", "citation_method_number", "method_source"],
+    ),
+    "citations": ("citation_name", ["citation_description"]),
+    "combined-method-citations": (
+        "combined_method_citation_id",
+        ["method_id", "method_name", "citation_method_id", "citation_name"],
+    ),
+}
+
+
+@pytest.mark.parametrize("collection", list(_METHOD_TABLES))
+def test_get_reference_table_serves_method_tables(httpx_mock, collection):
+    """The method and citation tables are accepted and name their ID column after
+    the foreign key that refers to it, so they join on it.
+
+    The ``-s`` rule would have called these ``method``, ``method_categorie``,
+    ``method_citation``, ``citation`` and ``combined_method_citation``.
+    """
+    output_id, properties = _METHOD_TABLES[collection]
+    _mock_items(
+        httpx_mock,
+        collection,
+        body={
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "id": "k1",
+                    "type": "Feature",
+                    "geometry": None,
+                    "properties": {"id": "k1", **dict.fromkeys(properties, "v")},
+                }
+            ],
+        },
+    )
+
+    df, _ = get_reference_table(collection)
+
+    assert df.columns[0] == output_id
+    assert "id" not in df.columns
+    assert set(properties) <= set(df.columns)
+
+
+def test_get_reference_table_method_tables_join_on_foreign_keys():
+    """A foreign key in the method tables is named like the ID it refers to."""
+    from dataretrieval.waterdata.reference import _output_id
+
+    ids = {c: _output_id(c) for c in _METHOD_TABLES}
+    props = {c: set(p) for c, (_, p) in _METHOD_TABLES.items()}
+    assert ids["methods"] in props["method-citations"]
+    assert ids["methods"] in props["combined-method-citations"]
+    assert ids["method-categories"] in props["methods"]
+    assert ids["citations"] in props["method-citations"]
+    assert ids["method-citations"] in props["combined-method-citations"]
+    # No ID column may collide with a property of its own table.
+    assert all(ids[c] not in props[c] for c in ids)
+
+
+@pytest.mark.parametrize(
+    ("collection", "expected"),
+    [
+        ("agency-codes", "agency_code"),
+        ("counties", "county"),
+        ("countries", "country"),
+        ("hydrologic-unit-codes", "hydrologic_unit_code"),
+        ("site-types", "site_type"),
+        ("states", "state"),
+    ],
+)
+def test_get_reference_table_keeps_existing_id_column_names(collection, expected):
+    """Existing collections keep their ID column; renaming one breaks callers."""
+    from dataretrieval.waterdata.reference import _output_id
+
+    assert _output_id(collection) == expected
+
+
 def test_get_reference_table_with_query(httpx_mock):
     """A ``query`` dict is merged into the request's query params."""
     _mock_items(httpx_mock, "agency-codes")
