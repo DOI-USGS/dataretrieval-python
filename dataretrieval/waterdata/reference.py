@@ -51,9 +51,9 @@ def _output_id(collection: str) -> str:
     Irregular collections are listed in ``_OUTPUT_ID_BY_REFERENCE_COLLECTION``;
     every other one takes its name singularized and underscored.
     """
-    if collection in _OUTPUT_ID_BY_REFERENCE_COLLECTION:
-        return _OUTPUT_ID_BY_REFERENCE_COLLECTION[collection]
-    return collection.removesuffix("s").replace("-", "_")
+    return _OUTPUT_ID_BY_REFERENCE_COLLECTION.get(
+        collection, collection.removesuffix("s").replace("-", "_")
+    )
 
 
 def get_reference_table(
@@ -134,14 +134,12 @@ def get_reference_table(
     """
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
-    output_id = _output_id(collection)
-
     query_args = dict(query) if query else {}
     if limit is not None:
         query_args["limit"] = limit
     return get_ogc_data(
         args=query_args,
-        output_id=output_id,
+        output_id=_output_id(collection),
         collection=collection,
         max_rows=max_rows,
         spatial=False,
