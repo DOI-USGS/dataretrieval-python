@@ -22,7 +22,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Hydrology",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -76,6 +75,7 @@ test = [
   "pytest-cov[all]",
   "pytest-rerunfailures",
   "coverage",
+  "pytest-httpx",
   "dataretrieval[lint]",  # ruff, pinned once in the lint extra
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
@@ -199,7 +199,8 @@ ignore_missing_imports = true
 # a mock can never tell us, because the mock is what would need updating.
 # Deselecting them here rather than in the CI command keeps a local
 # ``pytest tests/`` doing what CI does; run them with ``-m live``.
-addopts = "-m 'not live'"
+# ``-p no:pytest_httpx``: tests/conftest.py loads the plugin itself (see there).
+addopts = "-m 'not live' -p no:pytest_httpx"
 markers = [
   "live: hits real USGS services; deselected by default, run on a schedule",
 ]
@@ -231,7 +232,4 @@ exclude_also = [
   # is unreachable here by construction.
   '^\s*except ImportError',
   '^\s*except PackageNotFoundError',
-  # One arm is dead on every interpreter, which would otherwise make the total
-  # depend on which version measured it.
-  '^\s*if sys\.version_info',
 ]

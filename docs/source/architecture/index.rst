@@ -93,8 +93,9 @@ Shared components
 ^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.configuration``
-    Configuration leaf: standard library only. It resolves scoped overrides, environment variables, a TOML
-    file with optional profiles, and built-in defaults in that order. Service
+    Configuration leaf: standard library only. It resolves scoped overrides,
+    environment variables, a TOML file with optional profiles, and built-in
+    defaults in that order. Service
     and protocol modules may depend on it; it must not depend back on them.
     Scoped overrides use ``ContextVar`` so concurrent threads and asyncio
     tasks can use distinct credentials.

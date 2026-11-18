@@ -284,7 +284,7 @@ def _deterministic_failure(exc: BaseException) -> bool:
     Walks ``__context__`` as well as ``__cause__``, because the original
     failure is several links down the chain and not always an explicit ``raise ...
     from``: a DNS failure arrives as ``NetworkError`` ->
-    ``httpx2.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
+    ``httpx2.ConnectError`` -> ``httpcore2.ConnectError`` -> ``socket.gaierror``,
     linked by implicit chaining. Following only the cause would follow
     the explicit branch and miss a ``gaierror`` on the implicit one --
     spending the whole retry budget on a hostname that will never resolve.

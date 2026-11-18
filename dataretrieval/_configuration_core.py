@@ -20,7 +20,7 @@ from functools import partial
 from numbers import Integral
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, Self
 
 from dataretrieval._ambient import Ambient
 from dataretrieval.exceptions import ConfigurationError
@@ -224,12 +224,6 @@ _NO_FILE = _ParsedFile()
 # ``credentials``; ``progress`` describes the caller's terminal rather than a
 # service.
 
-#: Bound to the concrete subclass so ``WaterdataConfiguration.load(...)`` is
-#: typed as a ``WaterdataConfiguration`` rather than the base. ``typing.Self``
-#: (available since the 3.11 minimum) could replace this TypeVar.
-_C = TypeVar("_C", bound="BaseConfiguration")
-
-
 #: Memoized :meth:`BaseConfiguration.settings` results, keyed on the class.
 #: A hand-rolled dict rather than ``functools.cache`` only because typeshed's
 #: wrapper takes ``Hashable`` and mypy does not accept a class for that
@@ -327,7 +321,7 @@ class BaseConfiguration:
         }
 
     @classmethod
-    def load(cls: type[_C], profile: str) -> _C:
+    def load(cls, profile: str) -> Self:
         """Read a named profile for this adapter from the configuration file.
 
         ``[<adapter>.<profile>]``. Only the keys that table names are included,
@@ -571,17 +565,6 @@ def settings_for(adapter: str) -> frozenset[str] | None:
 def _env_label(env_var: str) -> str:
     """How a value read from ``env_var`` is reported as an origin label."""
     return f"${env_var}"
-
-
-def _toml_parser() -> Any:
-    """The TOML parser, imported on first use.
-
-    ``import dataretrieval`` imports this module, but the parser is needed only once a
-    configuration file exists -- the minority case.
-    """
-    import tomllib
-
-    return tomllib
 
 
 def config_path() -> Path:
@@ -1168,7 +1151,10 @@ def _parse_or_reuse_cache(path: Path, content: bytes) -> _ParsedFile:
     cached = _file_cache
     if cached is not None and cached[0] is path and cached[2] == content:
         return cached[3]
-    tomllib = _toml_parser()
+    # Imported here: ``import dataretrieval`` imports this module, but the parser
+    # is needed only once a configuration file exists -- the minority case.
+    import tomllib
+
     try:
         data = tomllib.loads(content.decode("utf-8"))
     except UnicodeDecodeError as exc:

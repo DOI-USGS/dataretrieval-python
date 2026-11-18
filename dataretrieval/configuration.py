@@ -50,10 +50,9 @@ Each adapter declares the settings it accepts on its own
 a host, not to an adapter (ADR 0010).
 
 This module is a leaf: it imports only the standard library (ADR 0009). That is
-also why it holds the adapter *names* but
-never imports an adapter -- see :data:`ADAPTERS`. It centralizes each setting's
-parser while retaining legacy environment behavior and stricter validation for
-the new Python/TOML surfaces.
+also why it holds the adapter *names* but never imports an adapter -- see
+:data:`ADAPTERS`. It centralizes each setting's parser while retaining legacy
+environment behavior and stricter validation for the new Python/TOML surfaces.
 """
 
 from __future__ import annotations
