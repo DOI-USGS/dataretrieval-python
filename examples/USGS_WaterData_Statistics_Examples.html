@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>USGS dataretrieval Python Package Statistics Examples &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -71,7 +71,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NLDI_Examples.html">USGS dataretrieval Python Package NLDI Data Access Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWDC_WaterUse_Examples.html">USGS dataretrieval Python Package Water-Use Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
@@ -111,7 +112,7 @@
              
   <section id="USGS-dataretrieval-Python-Package-Statistics-Examples">
 <h1>USGS dataretrieval Python Package Statistics Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-Statistics-Examples" title="Link to this heading"></a></h1>
-<p>This notebook provides examples of using the Python dataretrieval package to retrieve summary statistics for observed variables at a United States Geological Survey (USGS) monitoring location using the <strong>USGS Water Data API</strong> via the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module. The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module is the recommended way to access USGS water data and replaces the deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module.</p>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve summary statistics for observed variables at a United States Geological Survey (USGS) monitoring location using the <strong>USGS Water Data API</strong> via the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module.</p>
 <p>Two statistics functions are demonstrated:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">get_stats_date_range()</span></code> — monthly, calendar-year, and water-year summaries (the “observationIntervals” service).</p></li>
@@ -133,7 +134,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (0.1.dev1+g2c7311c93)
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (0.1.dev1+g8c4f5b537)
 Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
 Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.1)
 Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (4.16.0)
@@ -283,7 +284,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>30</td>
       <td>approved</td>
-      <td>30eb30d0-c252-4601-a702-1e053e387200</td>
+      <td>64d51d1b-9d02-41e2-84c2-1a45ce4fc341</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -307,7 +308,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>0bfbd34c-53ed-429b-bea1-facc88c3c639</td>
+      <td>cea9cb69-4153-4c4c-9ba0-23b23fc14519</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -331,7 +332,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>533f6064-f298-4eb1-b74f-da0c09d8c525</td>
+      <td>6c2a6470-9ae3-4c9c-a6b3-aadafd342483</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -355,7 +356,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>28</td>
       <td>approved</td>
-      <td>67ee8c57-e9d0-42a9-826f-a86dbac7a377</td>
+      <td>61b5f8b7-95ad-49e1-9a4a-a4221c98dea4</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -379,7 +380,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>7d13bc10-dacc-48c5-bf41-63c13569f47c</td>
+      <td>e2bfe030-8e66-40e5-810a-8200df7a0fa8</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -427,7 +428,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
-      <td>a579a7a4-b5bc-45ce-a754-9d784d05dffe</td>
+      <td>a143f449-c691-49b1-8cff-46dacc393472</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -451,7 +452,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
-      <td>ef755db3-4cb0-44ec-9192-1a2f85708608</td>
+      <td>7498963b-61c8-464d-8e98-1e0493ea7eef</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -475,7 +476,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
-      <td>f73ed1da-35e0-4167-9387-cab6aad5961c</td>
+      <td>3dc450d1-0b54-4038-8612-8f824c436cac</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -499,7 +500,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>365</td>
       <td>approved</td>
-      <td>5004f92c-d1f8-4c1c-9a41-ce1e73d15888</td>
+      <td>616a324b-f504-4974-b877-8f0a6e0b5d34</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -523,7 +524,7 @@ Retrieved 344 statistic values.
       <td>NaN</td>
       <td>131</td>
       <td>approved</td>
-      <td>3f636529-a609-4e82-86b0-6c0e03c0072d</td>
+      <td>5040325f-16e0-4192-9d04-8ef9bd41de72</td>
       <td>arithmetic_mean</td>
       <td>00060</td>
       <td>ft^3/s</td>
@@ -719,7 +720,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>30</td>
       <td>approved</td>
-      <td>280c7946-57f1-4263-8193-69d654e9eecc</td>
+      <td>a84ab6cc-f5a7-4af9-9062-85d2212765ab</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -743,7 +744,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>07af980d-acea-4156-b26c-44b50cd4808f</td>
+      <td>dcb2a2c3-d977-4371-9af0-22d4c5581454</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -767,7 +768,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>28</td>
       <td>approved</td>
-      <td>06eb6941-b505-4b7e-851d-0139b4651d0a</td>
+      <td>c267d4e9-e0bf-4bf8-a88a-b35c4c0cd327</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -791,7 +792,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>9ef5344a-88ac-4536-8d64-471d46e99ee0</td>
+      <td>a7852b69-6305-4075-bea0-57c2ac49454d</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -815,7 +816,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>31</td>
       <td>approved</td>
-      <td>bf60f1d5-17a3-4e99-8708-c347c2271f55</td>
+      <td>6a6fd51f-e54e-479f-b3b6-d6b9d493100c</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -863,7 +864,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>351</td>
       <td>approved</td>
-      <td>6bdfe85c-4494-4143-84ce-e30849f1e68b</td>
+      <td>aebad1cc-577b-4119-8a24-60515777a812</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -887,7 +888,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>361</td>
       <td>approved</td>
-      <td>c4ec6635-83cf-4d54-9fd8-caed23b96a98</td>
+      <td>1927f2f0-c058-4ec7-b2f2-95d320ac637e</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -911,7 +912,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>342</td>
       <td>approved</td>
-      <td>e533a96f-655a-4753-b960-0560b0be2d97</td>
+      <td>b43c2c58-8f3e-4a3c-82a5-187f117440db</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -935,7 +936,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>348</td>
       <td>approved</td>
-      <td>197d9815-4ecd-4b89-a01e-50e128e4dbd6</td>
+      <td>02a8f83a-a63d-4565-9936-b8a09b2d14d6</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>
@@ -959,7 +960,7 @@ Retrieving: observationIntervals · 1 page · 2,132 rows
       <td>NaN</td>
       <td>216</td>
       <td>approved</td>
-      <td>15823025-6316-43cc-a0d8-aef8f85ca0fb</td>
+      <td>3a8b8d1c-df67-4e3e-abe6-658db82c4253</td>
       <td>arithmetic_mean</td>
       <td>00010</td>
       <td>degC</td>

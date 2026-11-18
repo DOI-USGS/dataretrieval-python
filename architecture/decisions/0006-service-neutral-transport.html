@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>ADR 0006: Use a service-neutral transport layer &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -181,8 +181,7 @@ gateway statuses, because its service responds to a <em>rejected query</em> with
 500, and re-sending that would spend a caller’s quota on a request that
 cannot succeed. Both sets are narrower than <code class="docutils literal notranslate"><span class="pre">DataRetrievalError.retryable</span></code>,
 deliberately: that field indicates re-issuing might work, where spending
-someone’s quota unasked needs a stricter criterion. Deprecated NWIS calls
-retain their compatibility behavior. A failed pagination or fan-out operation
+someone’s quota unasked needs a stricter criterion. A failed pagination or fan-out operation
 raises rather than returning successful siblings as an apparently complete
 result – with one narrow exception for a fan-out over independent items,
 recorded in <a class="reference internal" href="0004-error-retry-resume.html"><span class="doc">ADR 0004: Use typed failures and bounded recovery</span></a>.</p>
@@ -264,6 +263,8 @@ across <code class="docutils literal notranslate"><span class="pre">transport/re
 it scoped automatic retry to “gateway 5xx”, which was never true of a fanned-out
 call – those re-send any 5xx, and only the single-shot adapters are limited to
 the gateway statuses. The decision is unchanged; the sentence now describes it.</p>
+<p>The sentence saying deprecated NWIS calls retain their compatibility behavior
+was removed with <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> (<a class="reference internal" href="0005-legacy-nwis.html"><span class="doc">ADR 0005: Quarantine and retire legacy NWIS</span></a>).</p>
 </section>
 </section>
 

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -66,7 +66,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.exceptions.NetworkError.retryable"><code class="docutils literal notranslate"><span class="pre">NetworkError.retryable</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.NoSitesError"><code class="docutils literal notranslate"><span class="pre">NoSitesError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.exceptions.RateLimited"><code class="docutils literal notranslate"><span class="pre">RateLimited</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#dataretrieval.exceptions.RateLimited._DEFAULT_STATUS"><code class="docutils literal notranslate"><span class="pre">RateLimited._DEFAULT_STATUS</span></code></a></li>
 </ul>
@@ -97,7 +96,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
@@ -135,8 +133,7 @@
   <section id="module-dataretrieval.exceptions">
 <span id="dataretrieval-exceptions"></span><span id="exceptions"></span><h1>dataretrieval.exceptions<a class="headerlink" href="#module-dataretrieval.exceptions" title="Link to this heading"></a></h1>
 <p>Exception taxonomy for <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code>.</p>
-<p>Every service module (<code class="docutils literal notranslate"><span class="pre">nwis</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">waterdata</span></code>,
-<code class="docutils literal notranslate"><span class="pre">streamstats</span></code>) raises a subclass of <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> when a request
+<p>Every service module raises a subclass of <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> when a request
 fails, so one <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">dataretrieval.DataRetrievalError</span></code> catches them all. That
 includes connection-level failures (timeouts, DNS, refused connections), which
 remain inside this taxonomy rather than leaking <code class="docutils literal notranslate"><span class="pre">httpx</span></code> exceptions. A
@@ -146,7 +143,7 @@ exhausts retries during fan-out is a resumable <code class="docutils literal not
 of which <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a> (429 / 5xx) is the retryable subset. The rest
 aren’t a plain status: <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a> (with <a class="reference internal" href="#dataretrieval.exceptions.URLTooLong" title="dataretrieval.exceptions.URLTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">URLTooLong</span></code></a> /
 <a class="reference internal" href="#dataretrieval.exceptions.Unchunkable" title="dataretrieval.exceptions.Unchunkable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unchunkable</span></code></a>), <a class="reference internal" href="#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a> (a failed connection, per above),
-<a class="reference internal" href="#dataretrieval.exceptions.NoSitesError" title="dataretrieval.exceptions.NoSitesError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoSitesError</span></code></a>, and <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a> for an unusable setting.
+and <a class="reference internal" href="#dataretrieval.exceptions.ConfigurationError" title="dataretrieval.exceptions.ConfigurationError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurationError</span></code></a> for an unusable setting.
 <a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a> maps a status to its type. <code class="docutils literal notranslate"><span class="pre">ConfigurationError</span></code> is
 the one member that is not a request failure at all: it reports an unusable
 setting or config file, raised from wherever a setting is first resolved –
@@ -155,9 +152,8 @@ which, because resolution is lazy, is inside whichever getter runs first. The
 (specialized by <a class="reference internal" href="#dataretrieval.exceptions.SkippedRatingWarning" title="dataretrieval.exceptions.SkippedRatingWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">SkippedRatingWarning</span></code></a>) for a per-item skip inside a
 batched retrieval, and <a class="reference internal" href="#dataretrieval.exceptions.DataCurrencyWarning" title="dataretrieval.exceptions.DataCurrencyWarning"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataCurrencyWarning</span></code></a> for an upstream dataset
 that has stopped being updated.</p>
-<p>This module has no third-party runtime dependencies – <code class="docutils literal notranslate"><span class="pre">httpx</span></code> is imported only for
-type checking. Any module can therefore import it without importing pandas or httpx, and
-without risking an import cycle.</p>
+<p>This module has no third-party dependencies, so any module can import it without
+importing pandas or httpx, and without risking an import cycle.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.ConfigurationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">ConfigurationError</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#ConfigurationError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.ConfigurationError" title="Link to this definition"></a></dt>
@@ -232,7 +228,7 @@ connection failures (<a class="reference internal" href="#dataretrieval.exceptio
 <dt class="sig sig-object py" id="dataretrieval.exceptions.DataRetrievalError.status_code">
 <span class="sig-name descname"><span class="pre">status_code</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#dataretrieval.exceptions.DataRetrievalError.status_code" title="Link to this definition"></a></dt>
 <dd><p>HTTP status that triggered the error, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for errors without one
-(connection failure, too-long URL, no data). Set by <a class="reference internal" href="#dataretrieval.exceptions.HTTPError" title="dataretrieval.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a>.</p>
+(connection failure, too-long URL). Set by <a class="reference internal" href="#dataretrieval.exceptions.HTTPError" title="dataretrieval.exceptions.HTTPError"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPError</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -280,16 +276,6 @@ connection failures (<a class="reference internal" href="#dataretrieval.exceptio
 </dd></dl>
 
 <dl class="py exception">
-<dt class="sig sig-object py" id="dataretrieval.exceptions.NoSitesError">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">NoSitesError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">httpx.URL</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#NoSitesError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.NoSitesError" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a></p>
-<p>A request succeeded (HTTP 200) but matched no sites/data.</p>
-<p>A no-data result is normally <strong>not</strong> an error: the modern getters
-(<code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>) return an empty <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>. Only the
-deprecated <code class="docutils literal notranslate"><span class="pre">nwis</span></code> (waterservices) path still raises this.</p>
-</dd></dl>
-
-<dl class="py exception">
 <dt class="sig sig-object py" id="dataretrieval.exceptions.RateLimited">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">RateLimited</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#RateLimited"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.RateLimited" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a></p>
@@ -321,7 +307,7 @@ enough to fit).</p>
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">ServiceUnavailable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#ServiceUnavailable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.ServiceUnavailable" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.TransientError" title="dataretrieval.exceptions.TransientError"><code class="xref py py-class docutils literal notranslate"><span class="pre">TransientError</span></code></a></p>
 <p>A request was rejected with a server error (HTTP 5xx).</p>
-<p>Raised by both the legacy <code class="docutils literal notranslate"><span class="pre">query</span></code> path and the Water Data path, so a 5xx
+<p>Raised by both the single-shot <code class="docutils literal notranslate"><span class="pre">query</span></code> path and the Water Data path, so a 5xx
 is raised as one type whichever subsystem issued the request. <code class="docutils literal notranslate"><span class="pre">.status_code</span></code>
 holds the actual 5xx; it falls back to 503 only on a bare hand-construction.</p>
 <dl class="py attribute">
@@ -417,7 +403,7 @@ connection failures (<a class="reference internal" href="#dataretrieval.exceptio
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">URLTooLong</span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#URLTooLong"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.URLTooLong" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dataretrieval.exceptions.RequestTooLarge" title="dataretrieval.exceptions.RequestTooLarge"><code class="xref py py-class docutils literal notranslate"><span class="pre">RequestTooLarge</span></code></a></p>
 <p>A single request URL was too long for the service.</p>
-<p>Raised on the legacy <code class="docutils literal notranslate"><span class="pre">query</span></code> path (which sends one un-chunked request),
+<p>Raised on the single-shot <code class="docutils literal notranslate"><span class="pre">query</span></code> path (which sends one un-chunked request),
 whether the URL is rejected client-side before sending or by the server
 (see <a class="reference internal" href="#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">error_for_status()</span></code></a>). Remediation: query fewer sites, or split the
 call manually.</p>
@@ -439,7 +425,7 @@ input lists, simplify the filter, or split the call manually.</p>
 <dt class="sig sig-object py" id="dataretrieval.exceptions.error_for_status">
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.exceptions.</span></span><span class="sig-name descname"><span class="pre">error_for_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry_after</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><span class="pre">DataRetrievalError</span></a></span></span><a class="reference internal" href="../_modules/dataretrieval/exceptions.html#error_for_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dataretrieval.exceptions.error_for_status" title="Link to this definition"></a></dt>
 <dd><p>Return the typed <a class="reference internal" href="#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataRetrievalError</span></code></a> for an HTTP error <em>status</em>.</p>
-<p>The one status-to-type mapping every request path shares (the legacy
+<p>The one status-to-type mapping every request path shares (the single-shot
 <code class="docutils literal notranslate"><span class="pre">query</span></code> path, <code class="docutils literal notranslate"><span class="pre">waterdata</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>), so a given status
 becomes the same type everywhere:</p>
 <ul class="simple">

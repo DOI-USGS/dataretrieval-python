@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>ADR 0007: Organize service adapters behind stable facades &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -197,7 +197,7 @@ collection families independent of each other, restricts the facade-only
 consumers (NGWMN and <code class="docutils literal notranslate"><span class="pre">waterdata.cql</span></code>) to the OGC facade, and prevents one
 adapter from importing another. The identifier-column rule is covered by
 <code class="docutils literal notranslate"><span class="pre">tests/nwdc_test.py::test_huc12_id_kept_as_string_with_leading_zero</span></code> and the equivalent
-leading-zero assertions in the WQP and NWIS adapter tests.</p>
+leading-zero assertions in the WQP adapter tests.</p>
 </section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
@@ -206,6 +206,9 @@ clauses were added after the original decision; the rest of the record is
 unchanged. They consolidate under ADR 0000 the rules the code was stating in
 prose. The scoping note in particular records why <code class="docutils literal notranslate"><span class="pre">_querying.py</span></code> reassigning
 <code class="docutils literal notranslate"><span class="pre">__module__</span></code> is not a violation of this record, a question an audit raised.</p>
+<p>The identifier-column Compliance sentence was corrected when
+<code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> was removed (<a class="reference internal" href="0005-legacy-nwis.html"><span class="doc">ADR 0005: Quarantine and retire legacy NWIS</span></a>): it also cited the
+NWIS adapter tests, which were removed with the module.</p>
 </section>
 </section>
 

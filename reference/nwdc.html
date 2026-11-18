@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>dataretrieval.nwdc &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,7 +55,6 @@
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">dataretrieval.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="waterdata.html">dataretrieval.waterdata</a></li>
@@ -111,8 +110,7 @@ provide national-scale, USGS-modeled water-use data that underlie the <a class="
 National Water Availability Assessment</a>.
 Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
 be queried for any county, state, or hydrologic unit. This is the modern
-replacement for the defunct legacy NWIS water-use service
-(<code class="docutils literal notranslate"><span class="pre">nwis.get_water_use</span></code>).</p>
+replacement for the defunct legacy NWIS water-use service.</p>
 <p>Unlike the main Water Data getters (<a class="reference internal" href="waterdata.html#module-dataretrieval.waterdata" title="dataretrieval.waterdata"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code></a>) and NGWMN
 (<a class="reference internal" href="ngwmn.html#module-dataretrieval.ngwmn" title="dataretrieval.ngwmn"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataretrieval.ngwmn</span></code></a>), the NWDC is a plain CSV REST service rather than
 an OGC API Features collection. This module supplies the NWDC-specific parts –

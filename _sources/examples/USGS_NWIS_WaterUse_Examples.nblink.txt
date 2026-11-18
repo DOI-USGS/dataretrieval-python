@@ -1,3 +1,0 @@
-{
-    "path": "../../../demos/hydroshare/USGS_NWIS_WaterUse_Examples.ipynb"
-}

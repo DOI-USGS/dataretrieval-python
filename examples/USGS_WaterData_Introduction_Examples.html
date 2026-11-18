@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>Introduction to the USGS Water Data APIs &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterUse_Examples.html">USGS Water-Use Data (NWDC)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_NGWMN_Examples.html">National Ground-Water Monitoring Network (NGWMN)</a></li>
 </ul>
 </li>
@@ -106,8 +107,8 @@
              
   <section id="Introduction-to-the-USGS-Water-Data-APIs">
 <h1>Introduction to the USGS Water Data APIs<a class="headerlink" href="#Introduction-to-the-USGS-Water-Data-APIs" title="Link to this heading"></a></h1>
-<p>The <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/">USGS Water Data APIs</a> are the modern, OGC-based replacement for the legacy NWIS web services. In Python they are exposed through the <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> module, which will gradually replace the older <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> functions.</p>
-<p>This notebook tours each new function. The NWIS shut-down timeline is still uncertain, so we recommend migrating to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> functions sooner rather than later.</p>
+<p>The <a class="reference external" href="https://api.waterdata.usgs.gov/ogcapi/v1/">USGS Water Data APIs</a> are the modern, OGC-based replacement for the legacy NWIS web services. In Python they are exposed through the <code class="docutils literal notranslate"><span class="pre">dataretrieval.waterdata</span></code> module.</p>
+<p>This notebook tours each function.</p>
 <p>If you are coming from the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> package, the functions map across as follows:</p>
 <table class="docutils align-default">
 <thead>
@@ -698,48 +699,48 @@ No API key detected — register for higher rate limits at https://api.waterdata
       <td>Temperature, water</td>
       <td>00011</td>
       <td>2023-04-20 18:30:00+00:00</td>
-      <td>2026-11-16 08:30:00+00:00</td>
-      <td>2026-11-16 08:36:49.148521+00:00</td>
+      <td>2026-11-18 09:30:00+00:00</td>
+      <td>2026-11-18 09:36:56.215727+00:00</td>
     </tr>
     <tr>
       <th>3</th>
       <td>Temperature, water</td>
       <td>00002</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-11-14 05:00:00+00:00</td>
-      <td>2026-11-16 05:38:25.489869+00:00</td>
+      <td>2026-11-16 05:00:00+00:00</td>
+      <td>2026-11-18 05:37:14.012633+00:00</td>
     </tr>
     <tr>
       <th>4</th>
       <td>Discharge</td>
       <td>00003</td>
       <td>1948-01-01 05:00:00+00:00</td>
-      <td>2026-11-14 05:00:00+00:00</td>
-      <td>2026-11-16 05:31:11.612167+00:00</td>
+      <td>2026-11-17 05:00:00+00:00</td>
+      <td>2026-11-18 05:29:59.813644+00:00</td>
     </tr>
     <tr>
       <th>5</th>
       <td>Temperature, water</td>
       <td>00001</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-11-14 05:00:00+00:00</td>
-      <td>2026-11-16 05:38:25.928716+00:00</td>
+      <td>2026-11-16 05:00:00+00:00</td>
+      <td>2026-11-18 05:37:13.794315+00:00</td>
     </tr>
     <tr>
       <th>6</th>
       <td>Temperature, water</td>
       <td>00003</td>
       <td>2023-04-21 04:00:00+00:00</td>
-      <td>2026-11-14 05:00:00+00:00</td>
-      <td>2026-11-16 05:38:22.921899+00:00</td>
+      <td>2026-11-17 05:00:00+00:00</td>
+      <td>2026-11-18 05:37:13.455534+00:00</td>
     </tr>
     <tr>
       <th>7</th>
       <td>Discharge</td>
       <td>00011</td>
       <td>1990-10-01 05:08:09+00:00</td>
-      <td>2026-11-16 08:15:00+00:00</td>
-      <td>2026-11-16 08:29:28.641940+00:00</td>
+      <td>2026-11-18 09:15:00+00:00</td>
+      <td>2026-11-18 09:29:41.774501+00:00</td>
     </tr>
     <tr>
       <th>8</th>
@@ -1353,11 +1354,11 @@ Retrieving: latest-continuous · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-11-16 15:15:00+00:00</td>
+      <td>2026-11-18 13:15:00+00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>16.7</td>
+      <td>18.0</td>
     </tr>
     <tr>
       <th>approval_status</th>
@@ -1424,11 +1425,11 @@ Retrieving: latest-daily · 1 page · 1 rows
   <tbody>
     <tr>
       <th>time</th>
-      <td>2026-11-15 00:00:00</td>
+      <td>2026-11-17 00:00:00</td>
     </tr>
     <tr>
       <th>value</th>
-      <td>17.2</td>
+      <td>17.8</td>
     </tr>
     <tr>
       <th>approval_status</th>

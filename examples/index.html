@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>Examples &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -57,6 +57,7 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterUse_Examples.html">USGS Water-Use Data (NWDC)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_NGWMN_Examples.html">National Ground-Water Monitoring Network (NGWMN)</a></li>
 </ul>
 </li>
@@ -77,7 +78,8 @@
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NLDI_Examples.html">USGS dataretrieval Python Package NLDI Data Access Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NWDC_WaterUse_Examples.html">USGS dataretrieval Python Package Water-Use Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a><ul>
@@ -125,9 +127,9 @@
 <h1>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h1>
 <section id="introduction-to-the-waterdata-module-of-dataretrieval">
 <h2>Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code><a class="headerlink" href="#introduction-to-the-waterdata-module-of-dataretrieval" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module will replace the <code class="docutils literal notranslate"><span class="pre">nwis</span></code> module as the primary
-set of data download functions for USGS water data. This Jupyter notebook
-covers a basic introduction to module functions and usage.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module contains the set of data download functions for
+USGS water data. This Jupyter notebook covers a basic introduction to module
+functions and usage.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="WaterData_demo.html">Using the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module to pull data from the USGS Water Data APIs</a></li>
@@ -146,6 +148,7 @@ functions and is executed against the live USGS Water Data API.</p>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_DailyStatistics_Examples.html">Daily statistics: <code class="docutils literal notranslate"><span class="pre">get_stats_por</span></code> and <code class="docutils literal notranslate"><span class="pre">get_stats_date_range</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_ContinuousData_Examples.html">Continuous Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_ReferenceLists_Examples.html">USGS Reference Lists</a></li>
+<li class="toctree-l1"><a class="reference internal" href="USGS_WaterUse_Examples.html">USGS Water-Use Data (NWDC)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="USGS_NGWMN_Examples.html">National Ground-Water Monitoring Network (NGWMN)</a></li>
 </ul>
 </div>
@@ -180,7 +183,8 @@ project repository.</p>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="USGS_NWIS_WaterUse_Examples.html">USGS dataretrieval Python Package Water Use Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="USGS_NLDI_Examples.html">USGS dataretrieval Python Package NLDI Data Access Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="USGS_NWDC_WaterUse_Examples.html">USGS dataretrieval Python Package Water-Use Examples</a></li>
 </ul>
 </div>
 </section>

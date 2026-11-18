@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>dataretrieval.exceptions &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -77,8 +77,7 @@
   <h1>Source code for dataretrieval.exceptions</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Exception taxonomy for ``dataretrieval``.</span>
 
-<span class="sd">Every service module (``nwis``, ``wqp``, ``nldi``, ``waterdata``,</span>
-<span class="sd">``streamstats``) raises a subclass of :class:`DataRetrievalError` when a request</span>
+<span class="sd">Every service module raises a subclass of :class:`DataRetrievalError` when a request</span>
 <span class="sd">fails, so one ``except dataretrieval.DataRetrievalError`` catches them all. That</span>
 <span class="sd">includes connection-level failures (timeouts, DNS, refused connections), which</span>
 <span class="sd">remain inside this taxonomy rather than leaking ``httpx`` exceptions. A</span>
@@ -89,7 +88,7 @@
 <span class="sd">of which :class:`TransientError` (429 / 5xx) is the retryable subset. The rest</span>
 <span class="sd">aren't a plain status: :class:`RequestTooLarge` (with :class:`URLTooLong` /</span>
 <span class="sd">:class:`Unchunkable`), :class:`NetworkError` (a failed connection, per above),</span>
-<span class="sd">:class:`NoSitesError`, and :class:`ConfigurationError` for an unusable setting.</span>
+<span class="sd">and :class:`ConfigurationError` for an unusable setting.</span>
 <span class="sd">:func:`error_for_status` maps a status to its type. ``ConfigurationError`` is</span>
 <span class="sd">the one member that is not a request failure at all: it reports an unusable</span>
 <span class="sd">setting or config file, raised from wherever a setting is first resolved --</span>
@@ -99,9 +98,8 @@
 <span class="sd">batched retrieval, and :class:`DataCurrencyWarning` for an upstream dataset</span>
 <span class="sd">that has stopped being updated.</span>
 
-<span class="sd">This module has no third-party runtime dependencies -- ``httpx`` is imported only for</span>
-<span class="sd">type checking. Any module can therefore import it without importing pandas or httpx, and</span>
-<span class="sd">without risking an import cycle.</span>
+<span class="sd">This module has no third-party dependencies, so any module can import it without</span>
+<span class="sd">importing pandas or httpx, and without risking an import cycle.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -109,10 +107,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">email.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">parsedate_to_datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
-
-<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"DataRetrievalError"</span><span class="p">,</span>
@@ -124,7 +119,6 @@
     <span class="s2">"URLTooLong"</span><span class="p">,</span>
     <span class="s2">"Unchunkable"</span><span class="p">,</span>
     <span class="s2">"NetworkError"</span><span class="p">,</span>
-    <span class="s2">"NoSitesError"</span><span class="p">,</span>
     <span class="s2">"ConfigurationError"</span><span class="p">,</span>
     <span class="s2">"DataCurrencyWarning"</span><span class="p">,</span>
     <span class="s2">"SkippedItemWarning"</span><span class="p">,</span>
@@ -166,7 +160,7 @@
 <span class="sd">    """</span>
 
     <span class="c1">#: HTTP status that triggered the error, or ``None`` for errors without one</span>
-    <span class="c1">#: (connection failure, too-long URL, no data). Set by :class:`HTTPError`.</span>
+    <span class="c1">#: (connection failure, too-long URL). Set by :class:`HTTPError`.</span>
     <span class="n">status_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1">#: Seconds the server specified to wait before retrying (its ``Retry-After``</span>
     <span class="c1">#: header), or ``None`` when it sent none. Set by :class:`TransientError`.</span>
@@ -300,7 +294,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">ServiceUnavailable</span><span class="p">(</span><span class="n">TransientError</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A request was rejected with a server error (HTTP 5xx).</span>
 
-<span class="sd">    Raised by both the legacy ``query`` path and the Water Data path, so a 5xx</span>
+<span class="sd">    Raised by both the single-shot ``query`` path and the Water Data path, so a 5xx</span>
 <span class="sd">    is raised as one type whichever subsystem issued the request. ``.status_code``</span>
 <span class="sd">    holds the actual 5xx; it falls back to 503 only on a bare hand-construction.</span>
 <span class="sd">    """</span>
@@ -330,7 +324,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">URLTooLong</span><span class="p">(</span><span class="n">RequestTooLarge</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A single request URL was too long for the service.</span>
 
-<span class="sd">    Raised on the legacy ``query`` path (which sends one un-chunked request),</span>
+<span class="sd">    Raised on the single-shot ``query`` path (which sends one un-chunked request),</span>
 <span class="sd">    whether the URL is rejected client-side before sending or by the server</span>
 <span class="sd">    (see :func:`error_for_status`). Remediation: query fewer sites, or split the</span>
 <span class="sd">    call manually.</span>
@@ -386,30 +380,6 @@
 <span class="sd">    catches it, and code that already treats an invalid setting as a</span>
 <span class="sd">    :class:`ValueError` keeps working. The dual base is ADR 0009.</span>
 <span class="sd">    """</span></div>
-
-
-
-<span class="c1"># --- Empty result --------------------------------------------------------</span>
-
-
-<div class="viewcode-block" id="NoSitesError">
-<a class="viewcode-back" href="../../reference/exceptions.html#dataretrieval.exceptions.NoSitesError">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">NoSitesError</span><span class="p">(</span><span class="n">DataRetrievalError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""A request succeeded (HTTP 200) but matched no sites/data.</span>
-
-<span class="sd">    A no-data result is normally **not** an error: the modern getters</span>
-<span class="sd">    (``waterdata``, ``wqp``, ``nldi``) return an empty ``DataFrame``. Only the</span>
-<span class="sd">    deprecated ``nwis`` (waterservices) path still raises this.</span>
-<span class="sd">    """</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="n">httpx</span><span class="o">.</span><span class="n">URL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="s2">"No sites/data found using the selection criteria specified in "</span>
-            <span class="sa">f</span><span class="s2">"url: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span></div>
 
 
 
@@ -485,7 +455,7 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataRetrievalError</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Return the typed :class:`DataRetrievalError` for an HTTP error *status*.</span>
 
-<span class="sd">    The one status-to-type mapping every request path shares (the legacy</span>
+<span class="sd">    The one status-to-type mapping every request path shares (the single-shot</span>
 <span class="sd">    ``query`` path, ``waterdata``, ``streamstats``), so a given status</span>
 <span class="sd">    becomes the same type everywhere:</span>
 

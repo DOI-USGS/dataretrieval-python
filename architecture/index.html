@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Architecture &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>Architecture &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -147,7 +147,7 @@ optional geospatial dependencies must remain isolated.</p></li>
                 <span class="o">|</span>
                 <span class="n">v</span>
 <span class="n">USGS</span> <span class="n">Water</span> <span class="n">Data</span> <span class="n">APIs</span><span class="p">,</span> <span class="n">NGWMN</span><span class="p">,</span> <span class="n">NWDC</span> <span class="n">Water</span> <span class="n">Use</span><span class="p">,</span>
-<span class="n">Water</span> <span class="n">Quality</span> <span class="n">Portal</span><span class="p">,</span> <span class="n">NLDI</span><span class="p">,</span> <span class="n">StreamStats</span><span class="p">,</span> <span class="n">legacy</span> <span class="n">NWIS</span>
+<span class="n">Water</span> <span class="n">Quality</span> <span class="n">Portal</span><span class="p">,</span> <span class="n">NLDI</span><span class="p">,</span> <span class="n">StreamStats</span>
 </pre></div>
 </div>
 <p>The remote services own their schemas, paging mechanisms, rate limits, and
@@ -177,9 +177,6 @@ aggregation, and synchronous dispatch. It does not depend on OGC modules.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">dataretrieval.nldi</span></code>, and <code class="docutils literal notranslate"><span class="pre">dataretrieval.streamstats</span></code></dt><dd><p>Service-specific adapters over shared synchronous HTTP and bounded retry
 policy. Their return types intentionally reflect their upstream data models.</p>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code></dt><dd><p>Deprecated legacy NWIS adapter, scheduled for removal on or after
-2027-05-06. Modern code must not depend on it.</p>
 </dd>
 </dl>
 </section>
@@ -250,12 +247,13 @@ and <code class="docutils literal notranslate"><span class="pre">to_str</span></
 depend on this legacy module; by default, do not add new service-specific
 behavior there.</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code></dt><dd><p>The one-shot HTTP query path the single-request adapters (<code class="docutils literal notranslate"><span class="pre">nwis</span></code>,
-<code class="docutils literal notranslate"><span class="pre">wqp</span></code>, <code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>, <code class="docutils literal notranslate"><span class="pre">nwdc</span></code>) use: compose the URL, send
-it, map the status, retry a transient. It was moved out of <code class="docutils literal notranslate"><span class="pre">utils</span></code> because the two
-halves were in one file for no other reason – this one depends on
-<code class="docutils literal notranslate"><span class="pre">exceptions</span></code> and <code class="docutils literal notranslate"><span class="pre">transport</span></code>, the shaping half on <code class="docutils literal notranslate"><span class="pre">codes</span></code> and
-pandas, and no caller used both. The implementation module is private; the established public
+<dt><code class="docutils literal notranslate"><span class="pre">dataretrieval._querying</span></code></dt><dd><p>The one-shot HTTP query path the single-shot adapters (<code class="docutils literal notranslate"><span class="pre">wqp</span></code>,
+<code class="docutils literal notranslate"><span class="pre">nldi</span></code>, <code class="docutils literal notranslate"><span class="pre">streamstats</span></code>) use, and whose status mapping <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> borrows:
+compose the URL, send it, map the status, retry a transient. It was moved
+out of <code class="docutils literal notranslate"><span class="pre">utils</span></code> because the two halves were in one file for no other
+reason – this one depends on <code class="docutils literal notranslate"><span class="pre">exceptions</span></code> and <code class="docutils literal notranslate"><span class="pre">transport</span></code>, the shaping
+half on <code class="docutils literal notranslate"><span class="pre">codes</span></code> and pandas, and no caller used both. The implementation
+module is private; the established public
 function paths remain <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.query</span></code> and
 <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.to_str</span></code>.</p>
 </dd>
@@ -317,8 +315,6 @@ tuple.</p></li>
 <li><p>StreamStats functions return raw <code class="docutils literal notranslate"><span class="pre">httpx.Response</span></code> objects or the
 service-specific <code class="docutils literal notranslate"><span class="pre">Watershed</span></code> domain object, depending on the requested
 format.</p></li>
-<li><p>Deprecated NWIS functions retain their established DataFrame and legacy
-metadata contracts through the published deprecation window.</p></li>
 </ul>
 <p>Changing one of these shapes is a public compatibility change and requires the
 project’s deprecation process; consistency alone is not sufficient reason.</p>
@@ -363,13 +359,13 @@ config-file format – are catalogued once in the
 <a class="reference internal" href="../userguide/configuration.html"><span class="doc">configuration guide</span></a>. What matters
 architecturally is the behavior around them:</p>
 <dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of retries after the first attempt on supported active request paths;
-defaults to four. Backoff is exponential with full jitter and waits for
-bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values. Only failures that may not recur on a later
-attempt are re-sent: 429 and gateway 5xx, not a 500 rejecting the query
-itself, and not a transport failure that is determined before the request
-is sent (unresolvable host, unsupported scheme). Deprecated NWIS
-compatibility paths do not opt in.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code></dt><dd><p>Number of retries after the first attempt; defaults to four. Backoff is
+exponential with full jitter and waits for bounded <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> values.
+Only failures that may not recur on a later attempt are re-sent: 429 and
+gateway 5xx, not a 500 rejecting the query itself, and not a transport
+failure that is determined before the request is sent (unresolvable host,
+unsupported scheme). The public <code class="docutils literal notranslate"><span class="pre">dataretrieval.utils.query</span></code> does not opt
+in.</p>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">API_USGS_STALL_TIMEOUT</span></code></dt><dd><p>Seconds a call may go without receiving any data before retrying stops and
 the failure is raised; defaults to 60, and <code class="docutils literal notranslate"><span class="pre">0</span></code> disables the bound. It

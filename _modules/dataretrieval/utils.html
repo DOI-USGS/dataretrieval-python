@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -138,7 +138,6 @@
 <span class="sd">        The data frame with a formatted 'datetime' column.</span>
 
 <span class="sd">    """</span>
-    <span class="c1"># create a datetime index from the columns in qwdata response</span>
     <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">tz_field</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">tz</span><span class="p">)</span>
 
     <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span>
@@ -151,8 +150,8 @@
     <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
         <span class="n">count</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"datetime"</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Warning: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> incomplete dates found, "</span>
-            <span class="o">+</span> <span class="s2">"consider setting datetime_index to False."</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> incomplete dates found; those rows are NaT in 'datetime'. "</span>
+            <span class="sa">f</span><span class="s2">"Check their </span><span class="si">{</span><span class="n">date_field</span><span class="si">!r}</span><span class="s2">, </span><span class="si">{</span><span class="n">time_field</span><span class="si">!r}</span><span class="s2">, and </span><span class="si">{</span><span class="n">tz_field</span><span class="si">!r}</span><span class="s2"> values."</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0005: Quarantine and retire legacy NWIS &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>ADR 0005: Quarantine and retire legacy NWIS &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -115,7 +115,9 @@
 <h1>ADR 0005: Quarantine and retire legacy NWIS<a class="headerlink" href="#adr-0005-quarantine-and-retire-legacy-nwis" title="Link to this heading"></a></h1>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h2>
-<p>Accepted</p>
+<p>Accepted. Carried out: <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> has been removed.</p>
+<p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
@@ -150,10 +152,23 @@ compatibility boundary.</p></li>
 </section>
 <section id="compliance">
 <h2>Compliance<a class="headerlink" href="#compliance" title="Link to this heading"></a></h2>
-<p>Deprecation tests verify one warning per public call and validate named Water
-Data replacements. The <code class="docutils literal notranslate"><span class="pre">nwis-quarantine</span></code> contract in <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code>
-prevents modern package modules from importing <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code>, directly
-or through an intermediary.</p>
+<p><code class="docutils literal notranslate"><span class="pre">dataretrieval/nwis.py</span></code> is a stub: importing it raises <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> naming
+the Water Data replacements and the last release that includes the module
+(1.4.0). Attribute access after <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">dataretrieval</span></code>, which never loads the
+stub, raises <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code> with the same message from the package
+<code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>. <code class="docutils literal notranslate"><span class="pre">tests/contracts/removed_modules_test.py</span></code> covers both.</p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>The module was removed before the 2027-05-06 horizon, because USGS is
+decommissioning the waterservices endpoints it called. The Compliance section
+was rewritten at removal: it described the deprecation tests that verified one
+warning per public call and named Water Data replacements, and the
+<code class="docutils literal notranslate"><span class="pre">nwis-quarantine</span></code> contract in <code class="docutils literal notranslate"><span class="pre">.importlinter</span></code>. Both were removed with the
+module.</p>
+<p>The Compliance sentence on attribute access was added after removal:
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">dataretrieval</span></code> followed by <code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> raised a bare
+<code class="docutils literal notranslate"><span class="pre">AttributeError</span></code> that named no replacement.</p>
 </section>
 </section>
 

@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>ADR 0010: Adapter-scoped settings &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -128,6 +128,8 @@ the call site. The <code class="docutils literal notranslate"><span class="pre">
 decision 8. Decisions 2, 3, 4, 6 and 7 remain in effect: the tiers,
 source-major precedence, package-wide environment variables, the host-scoped
 key, and the adapter names.</p>
+<p>Amended after acceptance under <a class="reference internal" href="0000-documenting-decisions.html"><span class="doc">ADR 0000: Record each explanation once, in the place that owns it</span></a>; the
+<code class="docutils literal notranslate"><span class="pre">Notes</span></code> section records every clause added or corrected.</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading"></a></h2>
@@ -390,6 +392,10 @@ against <code class="docutils literal notranslate"><span class="pre">api.waterda
 <li><p>The <code class="docutils literal notranslate"><span class="pre">wateruse</span></code> module is renamed <code class="docutils literal notranslate"><span class="pre">nwdc</span></code> in a separate change; the service
 names itself “National Water Availability Assessment Data Companion” and
 serves ten models, only five of which are water use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dataretrieval.nwis</span></code> has since been removed (<a class="reference internal" href="0005-legacy-nwis.html"><span class="doc">ADR 0005: Quarantine and retire legacy NWIS</span></a>). The
+survey table, decision 7, and the <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> counts describe the package
+when this record was accepted; <code class="docutils literal notranslate"><span class="pre">ssl_check</span></code> is now a keyword on 13 getters
+across three adapters.</p></li>
 </ul>
 </section>
 </section>

@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USGS dataretrieval Python Package Water-Use Examples &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="National trends in peak annual streamflow" href="peak_streamflow_trends.html" />
+    <link rel="prev" title="USGS dataretrieval Python Package NLDI Data Access Examples" href="USGS_NLDI_Examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            dataretrieval
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../meta/installing.html">Installation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../userguide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#introduction-to-the-waterdata-module-of-dataretrieval">Introduction to the <code class="docutils literal notranslate"><span class="pre">waterdata</span></code> module of <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#usgs-water-data-api-vignettes">USGS Water Data API vignettes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#simple-uses-of-the-dataretrieval-package">Simple uses of the <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#example-notebooks-from-hydroshare">Example Notebooks from Hydroshare</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_DailyValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_daily()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_GroundwaterLevels_Examples.html">USGS dataretrieval Python Package Groundwater-Level <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Measurements_Examples.html">USGS dataretrieval Python Package Surface-Water <code class="docutils literal notranslate"><span class="pre">get_field_measurements()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_ParameterCodes_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_reference_table()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Peaks_Examples.html">USGS dataretrieval Python Package Peak Streamflow Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Ratings_Examples.html">USGS dataretrieval Python Package Rating Curve Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInfo_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_SiteInventory_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_monitoring_locations()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Statistics_Examples.html">USGS dataretrieval Python Package Statistics Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_UnitValues_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_continuous()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_WaterData_Samples_Examples.html">USGS dataretrieval Python Package <code class="docutils literal notranslate"><span class="pre">get_samples()</span></code> Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="USGS_NLDI_Examples.html">USGS dataretrieval Python Package NLDI Data Access Examples</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">USGS dataretrieval Python Package Water-Use Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Install-the-Package">Install the Package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Basic-Usage">Basic Usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Interpreting-the-Result">Interpreting the Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Additional-Examples">Additional Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#using-dataretrieval-to-obtain-nation-trends-in-peak-annual-streamflow">Using <code class="docutils literal notranslate"><span class="pre">dataretrieval</span></code> to obtain nation trends in peak annual streamflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#duplicating-the-r-dataretrieval-vignettes-functionality">Duplicating the R <code class="docutils literal notranslate"><span class="pre">dataRetrieval</span></code> vignettes functionality</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../architecture/index.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta/license.html">License and Disclaimer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">dataretrieval</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">USGS dataretrieval Python Package Water-Use Examples</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/USGS_NWDC_WaterUse_Examples.nblink.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="USGS-dataretrieval-Python-Package-Water-Use-Examples">
+<h1>USGS dataretrieval Python Package Water-Use Examples<a class="headerlink" href="#USGS-dataretrieval-Python-Package-Water-Use-Examples" title="Link to this heading"></a></h1>
+<p>This notebook provides examples of using the Python dataretrieval package to retrieve water-use data from the USGS <a class="reference external" href="https://water.usgs.gov/nwaa-data/">National Water Availability Assessment Data Companion (NWDC)</a>. The NWDC serves national-scale, <em>modeled</em> water-use estimates on a HUC12 (12-digit hydrologic unit) grid, queryable for any county, state, or hydrologic unit. It is the modern replacement for the retired legacy water-use service.</p>
+<p>The dataretrieval package exposes the service through a single function, <code class="docutils literal notranslate"><span class="pre">nwdc.get_wateruse</span></code>, which returns a tuple of a pandas data frame and an associated metadata object.</p>
+<section id="Install-the-Package">
+<h2>Install the Package<a class="headerlink" href="#Install-the-Package" title="Link to this heading"></a></h2>
+<p>Use the following code to install the package if it doesn’t exist already within your Jupyter Python environment.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>dataretrieval
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Requirement already satisfied: dataretrieval in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (0.1.dev1+g8c4f5b537)
+Requirement already satisfied: httpx in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (0.28.1)
+Requirement already satisfied: pandas&lt;4.0.0,&gt;=2.0.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (3.1.1)
+Requirement already satisfied: anyio&gt;=4.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from dataretrieval) (4.16.0)
+Requirement already satisfied: numpy&gt;=2.0.2 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2.5.5)
+Requirement already satisfied: python-dateutil&gt;=2.9.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (4.0.0)
+Requirement already satisfied: idna&gt;=2.8 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (3.20)
+Requirement already satisfied: typing_extensions&gt;=4.16.0 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from anyio&gt;=4.0-&gt;dataretrieval) (4.16.0)
+Requirement already satisfied: tzdata in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from python-dateutil&gt;=2.9.0-&gt;pandas&lt;4.0.0,&gt;=2.0.0-&gt;dataretrieval) (2026.6)
+Requirement already satisfied: certifi in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (2026.10.23)
+Requirement already satisfied: httpcore==1.* in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpx-&gt;dataretrieval) (1.0.9)
+Requirement already satisfied: h11&gt;=0.16 in /opt/hostedtoolcache/Python/3.13.18/x64/lib/python3.13/site-packages (from httpcore==1.*-&gt;httpx-&gt;dataretrieval) (0.16.0)
+</pre></div></div>
+</div>
+<p>Load the package so you can use it along with other packages used in this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataretrieval</span><span class="w"> </span><span class="kn">import</span> <span class="n">nwdc</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Basic-Usage">
+<h2>Basic Usage<a class="headerlink" href="#Basic-Usage" title="Link to this heading"></a></h2>
+<p>This example uses the <code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code> function to retrieve modeled water-use estimates. The following arguments are commonly used:</p>
+<ul>
+<li><p><strong>model</strong> (string): The water-use category to query, for example <code class="docutils literal notranslate"><span class="pre">wu-public-supply-wd</span></code> (public-supply withdrawals) or <code class="docutils literal notranslate"><span class="pre">wu-irrigation-wd</span></code> (irrigation withdrawals). Available models include:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>model</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wu-public-supply-wd</span></code></p></td>
+<td><p>public-supply withdrawals</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wu-public-supply-cu</span></code></p></td>
+<td><p>public-supply consumptive use</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wu-irrigation-wd</span></code></p></td>
+<td><p>irrigation withdrawals</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wu-irrigation-cu</span></code></p></td>
+<td><p>irrigation consumptive use</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wu-thermoelectric</span></code></p></td>
+<td><p>thermoelectric-power water use</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p><strong>variable</strong> (string or list of strings): One or more variable IDs within the chosen model, for example <code class="docutils literal notranslate"><span class="pre">pswdtot</span></code> (total public-supply withdrawals) or <code class="docutils literal notranslate"><span class="pre">[&quot;pswdgw&quot;,</span> <span class="pre">&quot;pswdsw&quot;]</span></code> for the groundwater and surface-water components. The service requires at least one variable.</p></li>
+<li><p><strong>state</strong>, <strong>county</strong>, or <strong>huc</strong> (string, int, or list): Exactly one of these selects the area. <code class="docutils literal notranslate"><span class="pre">state</span></code> accepts a full name (<code class="docutils literal notranslate"><span class="pre">&quot;Kansas&quot;</span></code>), a two-letter postal code (<code class="docutils literal notranslate"><span class="pre">&quot;KS&quot;</span></code>), or a two-digit FIPS code (<code class="docutils literal notranslate"><span class="pre">&quot;20&quot;</span></code>); <code class="docutils literal notranslate"><span class="pre">county</span></code> takes a five-digit FIPS code; and a <code class="docutils literal notranslate"><span class="pre">huc</span></code> code’s length sets its hydrologic-unit level.</p></li>
+<li><p><strong>time_resolution</strong> (string): <code class="docutils literal notranslate"><span class="pre">&quot;monthly&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;annualcy&quot;</span></code> (annual, calendar year), or <code class="docutils literal notranslate"><span class="pre">&quot;annualwy&quot;</span></code> (annual, water year).</p></li>
+<li><p><strong>start_date</strong>, <strong>end_date</strong> (string): The query window, formatted <code class="docutils literal notranslate"><span class="pre">&quot;YYYY&quot;</span></code> for annual data or <code class="docutils literal notranslate"><span class="pre">&quot;YYYY-MM&quot;</span></code> for monthly data.</p></li>
+</ul>
+<p>See the <a class="reference external" href="https://water.usgs.gov/nwaa-data/">NWDC data catalog</a> for the full list of models and their variables.</p>
+<section id="Example-1:-Retrieve-public-supply-withdrawals-for-a-state">
+<h3>Example 1: Retrieve public-supply withdrawals for a state<a class="headerlink" href="#Example-1:-Retrieve-public-supply-withdrawals-for-a-state" title="Link to this heading"></a></h3>
+<p>Request total public-supply withdrawals for every HUC12 in Kansas, as annual calendar-year values. Because a state spans many HUC12s, the service returns the result across several pages; <code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code> follows the pagination links and stitches the pages into one frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">kansas</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwdc</span><span class="o">.</span><span class="n">get_wateruse</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"wu-public-supply-wd"</span><span class="p">,</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s2">"pswdtot"</span><span class="p">,</span>
+    <span class="n">state</span><span class="o">=</span><span class="s2">"KS"</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">"2015"</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">"2020"</span><span class="p">,</span>
+    <span class="n">time_resolution</span><span class="o">=</span><span class="s2">"annualcy"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">"Retrieved "</span>
+    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kansas</span><span class="p">))</span>
+    <span class="o">+</span> <span class="s2">" records across "</span>
+    <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">kansas</span><span class="p">[</span><span class="s2">"huc12_id"</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">())</span>
+    <span class="o">+</span> <span class="s2">" HUC12 watersheds."</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: nwdc · 4 pages · 12,342 rows · 99/100 requests remaining
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Retrieved 12342 records across 2057 HUC12 watersheds.
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Interpreting-the-Result">
+<h2>Interpreting the Result<a class="headerlink" href="#Interpreting-the-Result" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code> function returns a tuple containing a pandas data frame and an associated metadata object. The data frame is in long (tidy) form: one row per HUC12 and time step. The <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code> column is kept as a string so leading zeros are preserved, and each value column carries its unit — here <code class="docutils literal notranslate"><span class="pre">_mgd</span></code>, million gallons per day.</p>
+<p>Once you’ve got the data frame, there are several useful things you can do to explore the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display the data frame as a table</span>
+<span class="n">display</span><span class="p">(</span><span class="n">kansas</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>huc12_id</th>
+      <th>year</th>
+      <th>pswdtot_mgd</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>102400050904</td>
+      <td>2015</td>
+      <td>0.073444</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>102400050904</td>
+      <td>2016</td>
+      <td>0.078557</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>102400050904</td>
+      <td>2017</td>
+      <td>0.080606</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>102400050904</td>
+      <td>2018</td>
+      <td>0.082575</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>102400050904</td>
+      <td>2019</td>
+      <td>0.079965</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>12337</th>
+      <td>111001020405</td>
+      <td>2016</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>12338</th>
+      <td>111001020405</td>
+      <td>2017</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>12339</th>
+      <td>111001020405</td>
+      <td>2018</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>12340</th>
+      <td>111001020405</td>
+      <td>2019</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>12341</th>
+      <td>111001020405</td>
+      <td>2020</td>
+      <td>0.000000</td>
+    </tr>
+  </tbody>
+</table>
+<p>12342 rows × 3 columns</p>
+</div></div>
+</div>
+<p>Show the data types of the columns in the resulting data frame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">kansas</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+huc12_id           str
+year             int64
+pswdtot_mgd    float64
+dtype: object
+</pre></div></div>
+</div>
+<p>Aggregate the HUC12 grid to a statewide total for each year.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">statewide</span> <span class="o">=</span> <span class="n">kansas</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"year"</span><span class="p">)[</span><span class="s2">"pswdtot_mgd"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">statewide</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+year
+2015    439.200621
+2016    430.236690
+2017    438.934380
+2018    446.582559
+2019    435.360573
+2020    422.042980
+Name: pswdtot_mgd, dtype: float64
+</pre></div></div>
+</div>
+<p>The other part of the result returned from the <code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code> function is a metadata object that contains information about the query that was executed to return the data. For example, you can access the URL that was assembled to retrieve the requested data from the NWDC.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"The query URL used to retrieve the data from the NWDC was: "</span> <span class="o">+</span> <span class="n">md</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The query URL used to retrieve the data from the NWDC was: https://api.water.usgs.gov/nwaa-data/data?format=csv&amp;model=wu-public-supply-wd&amp;variable=pswdtot&amp;timeres=annualcy&amp;startdate=2015&amp;enddate=2020&amp;intersection=overlap&amp;limit=600&amp;location=stateCd%3AKS
+</pre></div></div>
+</div>
+</section>
+<section id="Additional-Examples">
+<h2>Additional Examples<a class="headerlink" href="#Additional-Examples" title="Link to this heading"></a></h2>
+<section id="Example-2:-Split-public-supply-withdrawals-by-source">
+<h3>Example 2: Split public-supply withdrawals by source<a class="headerlink" href="#Example-2:-Split-public-supply-withdrawals-by-source" title="Link to this heading"></a></h3>
+<p>Request the total, groundwater, and surface-water components of public-supply withdrawals for Rhode Island as monthly values for 2020. Passing a list of variables returns one value column per variable.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rhode_island</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwdc</span><span class="o">.</span><span class="n">get_wateruse</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"wu-public-supply-wd"</span><span class="p">,</span>
+    <span class="n">variable</span><span class="o">=</span><span class="p">[</span><span class="s2">"pswdtot"</span><span class="p">,</span> <span class="s2">"pswdgw"</span><span class="p">,</span> <span class="s2">"pswdsw"</span><span class="p">],</span>
+    <span class="n">state</span><span class="o">=</span><span class="s2">"RI"</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">"2020-01"</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">"2020-12"</span><span class="p">,</span>
+    <span class="n">time_resolution</span><span class="o">=</span><span class="s2">"monthly"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">rhode_island</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: nwdc · 1 page · 744 rows · 97/100 requests remaining
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>huc12_id</th>
+      <th>year_month</th>
+      <th>pswdtot_mgd</th>
+      <th>pswdgw_mgd</th>
+      <th>pswdsw_mgd</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>010900020502</td>
+      <td>2020-01</td>
+      <td>0.831363</td>
+      <td>0.000000</td>
+      <td>0.831363</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>010900020502</td>
+      <td>2020-02</td>
+      <td>0.897799</td>
+      <td>0.000000</td>
+      <td>0.897799</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>010900020502</td>
+      <td>2020-03</td>
+      <td>0.832903</td>
+      <td>0.000000</td>
+      <td>0.832903</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>010900020502</td>
+      <td>2020-04</td>
+      <td>0.855845</td>
+      <td>0.000000</td>
+      <td>0.855845</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>010900020502</td>
+      <td>2020-05</td>
+      <td>0.983631</td>
+      <td>0.000000</td>
+      <td>0.983631</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>739</th>
+      <td>020302030000</td>
+      <td>2020-08</td>
+      <td>0.111719</td>
+      <td>0.016508</td>
+      <td>0.095210</td>
+    </tr>
+    <tr>
+      <th>740</th>
+      <td>020302030000</td>
+      <td>2020-09</td>
+      <td>0.100406</td>
+      <td>0.014826</td>
+      <td>0.085580</td>
+    </tr>
+    <tr>
+      <th>741</th>
+      <td>020302030000</td>
+      <td>2020-10</td>
+      <td>0.088145</td>
+      <td>0.012869</td>
+      <td>0.075276</td>
+    </tr>
+    <tr>
+      <th>742</th>
+      <td>020302030000</td>
+      <td>2020-11</td>
+      <td>0.083046</td>
+      <td>0.011761</td>
+      <td>0.071285</td>
+    </tr>
+    <tr>
+      <th>743</th>
+      <td>020302030000</td>
+      <td>2020-12</td>
+      <td>0.078484</td>
+      <td>0.011041</td>
+      <td>0.067443</td>
+    </tr>
+  </tbody>
+</table>
+<p>744 rows × 5 columns</p>
+</div></div>
+</div>
+</section>
+<section id="Example-3:-Retrieve-a-different-water-use-category">
+<h3>Example 3: Retrieve a different water-use category<a class="headerlink" href="#Example-3:-Retrieve-a-different-water-use-category" title="Link to this heading"></a></h3>
+<p>Swap the <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">variable</span></code> to retrieve irrigation withdrawals instead of public supply. Here we request total irrigation withdrawals (<code class="docutils literal notranslate"><span class="pre">irrwdtot</span></code>) for Nebraska as annual calendar-year values.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nebraska</span><span class="p">,</span> <span class="n">md</span> <span class="o">=</span> <span class="n">nwdc</span><span class="o">.</span><span class="n">get_wateruse</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">"wu-irrigation-wd"</span><span class="p">,</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s2">"irrwdtot"</span><span class="p">,</span>
+    <span class="n">state</span><span class="o">=</span><span class="s2">"NE"</span><span class="p">,</span>
+    <span class="n">start_date</span><span class="o">=</span><span class="s2">"2015"</span><span class="p">,</span>
+    <span class="n">end_date</span><span class="o">=</span><span class="s2">"2020"</span><span class="p">,</span>
+    <span class="n">time_resolution</span><span class="o">=</span><span class="s2">"annualcy"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">nebraska</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Retrieving: nwdc · 4 pages · 12,630 rows · 95/100 requests remaining
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>huc12_id</th>
+      <th>year</th>
+      <th>irrwdtot_mgd</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>101201060401</td>
+      <td>2015</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>101201060401</td>
+      <td>2016</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>101201060401</td>
+      <td>2017</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>101201060401</td>
+      <td>2018</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>101201060401</td>
+      <td>2019</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>12625</th>
+      <td>102702070502</td>
+      <td>2016</td>
+      <td>0.258933</td>
+    </tr>
+    <tr>
+      <th>12626</th>
+      <td>102702070502</td>
+      <td>2017</td>
+      <td>1.470690</td>
+    </tr>
+    <tr>
+      <th>12627</th>
+      <td>102702070502</td>
+      <td>2018</td>
+      <td>0.712772</td>
+    </tr>
+    <tr>
+      <th>12628</th>
+      <td>102702070502</td>
+      <td>2019</td>
+      <td>0.248589</td>
+    </tr>
+    <tr>
+      <th>12629</th>
+      <td>102702070502</td>
+      <td>2020</td>
+      <td>0.388215</td>
+    </tr>
+  </tbody>
+</table>
+<p>12630 rows × 3 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+<section id="Notes">
+<h2>Notes<a class="headerlink" href="#Notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Spatial resolution.</strong> Estimates are always returned on the HUC12 grid, regardless of the area you query. Joining <code class="docutils literal notranslate"><span class="pre">huc12_id</span></code> to a HUC12 boundary layer (for example with <code class="docutils literal notranslate"><span class="pre">geopandas</span></code>) lets you map the results.</p></li>
+<li><p><strong>Pick one selector.</strong> Use exactly one of <code class="docutils literal notranslate"><span class="pre">state</span></code>, <code class="docutils literal notranslate"><span class="pre">county</span></code> (five-digit FIPS), or <code class="docutils literal notranslate"><span class="pre">huc</span></code>. Each selector also accepts a list (e.g. <code class="docutils literal notranslate"><span class="pre">state=[&quot;NE&quot;,</span> <span class="pre">&quot;KS&quot;]</span></code>), fanned out into one request per area and concatenated.</p></li>
+<li><p><strong>Large areas paginate.</strong> A query spanning more than <code class="docutils literal notranslate"><span class="pre">limit</span></code> HUC12s (600 by default) is split across pages; <code class="docutils literal notranslate"><span class="pre">get_wateruse()</span></code> follows the links and returns a single concatenated frame.</p></li>
+<li><p><strong>Time columns.</strong> Monthly data come back with a <code class="docutils literal notranslate"><span class="pre">year_month</span></code> column; annual data (<code class="docutils literal notranslate"><span class="pre">annualcy</span></code> or <code class="docutils literal notranslate"><span class="pre">annualwy</span></code>) come back with a <code class="docutils literal notranslate"><span class="pre">year</span></code> column.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="USGS_NLDI_Examples.html" class="btn btn-neutral float-left" title="USGS dataretrieval Python Package NLDI Data Access Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="peak_streamflow_trends.html" class="btn btn-neutral float-right" title="National trends in peak annual streamflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

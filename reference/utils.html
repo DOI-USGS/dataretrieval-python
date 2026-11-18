@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g2c7311c93 documentation</title>
+  <title>dataretrieval.utils &mdash; dataretrieval 0.1.dev1+g8c4f5b537 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=0ddb6373"></script>
+      <script src="../_static/documentation_options.js?v=5f0c96ed"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -55,7 +55,6 @@
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html">dataretrieval.exceptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ngwmn.html">dataretrieval.ngwmn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="nldi.html">dataretrieval.nldi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="nwis.html">dataretrieval.nwis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="streamstats.html">dataretrieval.streamstats</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">dataretrieval.utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dataretrieval.utils.Ambient"><code class="docutils literal notranslate"><span class="pre">Ambient</span></code></a><ul>
@@ -249,7 +248,8 @@ calling the instance. The previous value is restored on exit:</p>
 <span class="sig-prename descclassname"><span class="pre">dataretrieval.utils.</span></span><span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssl_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Response</span></span></span><a class="headerlink" href="#dataretrieval.utils.query" title="Link to this definition"></a></dt>
 <dd><p>Send a query.</p>
 <p>Wrapper for <code class="docutils literal notranslate"><span class="pre">httpx.get</span></code> that handles errors, converts listed query
-parameters to comma-separated strings, and returns the response.</p>
+parameters to comma-separated strings, and returns the response. It sends
+one attempt and does not retry, regardless of <code class="docutils literal notranslate"><span class="pre">API_USGS_RETRIES</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -268,8 +268,7 @@ parameters to comma-separated strings, and returns the response.</p>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="exceptions.html#dataretrieval.exceptions.DataRetrievalError" title="dataretrieval.exceptions.DataRetrievalError"><strong>DataRetrievalError</strong></a> – On an HTTP error response, the typed subclass for the status (see
     <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.error_for_status" title="dataretrieval.exceptions.error_for_status"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataretrieval.exceptions.error_for_status()</span></code></a> for the mapping); or
-    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NoSitesError" title="dataretrieval.exceptions.NoSitesError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoSitesError</span></code></a> when a 200 response
-    reports no data matched; or <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a>
+    <a class="reference internal" href="exceptions.html#dataretrieval.exceptions.NetworkError" title="dataretrieval.exceptions.NetworkError"><code class="xref py py-class docutils literal notranslate"><span class="pre">NetworkError</span></code></a>
     on a connection-level failure (timeout, DNS), with the underlying
     <code class="docutils literal notranslate"><span class="pre">httpx</span></code> exception on <code class="docutils literal notranslate"><span class="pre">__cause__</span></code>.</p>
 </dd>
