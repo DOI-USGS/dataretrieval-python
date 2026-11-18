@@ -21,7 +21,7 @@ Decision
 --------
 
 Keep public service getters synchronous. Async-capable implementations may run
-inside a short-lived anyio blocking portal and use ``httpx.AsyncClient`` for
+inside a short-lived anyio blocking portal and use ``httpx2.AsyncClient`` for
 pagination and bounded fan-out. Internal async functions are implementation
 details, not a second public API contract.
 

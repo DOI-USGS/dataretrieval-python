@@ -7,7 +7,7 @@ import time
 import warnings
 from unittest import mock
 
-import httpx
+import httpx2
 import pandas as pd
 import pytest
 
@@ -70,7 +70,7 @@ def _run_walk_pages(*, geopd, req, client, row_cap=None):
     """Run the async ``_walk_pages`` to completion synchronously.
 
     The chunker core is async-only now, so these tests build an
-    ``AsyncMock(spec=httpx.AsyncClient)`` whose ``.send``/``.request`` are
+    ``AsyncMock(spec=httpx2.AsyncClient)`` whose ``.send``/``.request`` are
     awaitable and run the coroutine via ``asyncio.run``. This thin shim
     keeps the older synchronous call sites short while exercising the
     real async pagination loop.
@@ -111,9 +111,9 @@ def test_get_args_empty():
 def test_walk_pages_multiple_mocked():
     # Setup mock responses
     resp1 = mock.MagicMock()
-    # A real response always has an ``httpx.URL``; the next-page check
+    # A real response always has an ``httpx2.URL``; the next-page check
     # resolves and host-checks the ``next`` link against it.
-    resp1.url = httpx.URL("https://example.com/page1")
+    resp1.url = httpx2.URL("https://example.com/page1")
     resp1.json.return_value = {
         "numberReturned": 1,
         "features": [{"id": "1", "properties": {"val": "a"}}],
@@ -135,13 +135,13 @@ def test_walk_pages_multiple_mocked():
     resp2.status_code = 200
 
     # Mock client (Session)
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     # First call to send() returns resp1, then call to request() in loop returns resp2
     mock_client.send.return_value = resp1
     mock_client.request.return_value = resp2
 
     # Mock request (PreparedRequest)
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -171,10 +171,10 @@ def test_row_cap_truncates_and_stops_within_first_page():
     resp1.status_code = 200
     resp1.url = "https://example.com/page1"
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = resp1
 
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -201,12 +201,12 @@ def test_row_cap_stops_across_pages():
         resp.url = f"https://example.com/page{idx}"
         return resp
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = _page(1, has_next=True)
     # page 2 still includes a ``next`` (page 3) that must never be fetched.
     mock_client.request.return_value = _page(2, has_next=True)
 
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -259,14 +259,14 @@ def _walk_pages_with_failure(failure_resp_or_exc):
     """Run _walk_pages where page 1 succeeds and page 2 fails as given."""
     resp1 = _resp_ok([{"id": "1", "properties": {"val": "a"}}])
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = resp1
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
     else:
         mock_client.request.return_value = failure_resp_or_exc
 
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -279,21 +279,21 @@ def test_walk_pages_raises_on_connection_error_mid_pagination():
     chained, and the wrapper message must include recovery guidance that
     is NOT rate-limit-specific (no quota window involved)."""
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
-        _walk_pages_with_failure(httpx.ConnectError("boom"))
+        _walk_pages_with_failure(httpx2.ConnectError("boom"))
 
     msg = str(excinfo.value)
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+    assert isinstance(excinfo.value.__cause__, httpx2.ConnectError)
     assert "boom" in msg
     assert "retry the request" in msg
     assert "rate-limit window" not in msg
 
 
 def test_walk_pages_raises_with_class_name_when_cause_stringifies_empty():
-    """Some ``httpx`` exceptions (e.g. ``TimeoutException("")``)
+    """Some ``httpx2`` exceptions (e.g. ``TimeoutException("")``)
     stringify to ``""``. The wrapper must still produce an informative
     message — fall back to the exception class name."""
     with pytest.raises(DataRetrievalError, match="Paginated request failed") as excinfo:
-        _walk_pages_with_failure(httpx.TimeoutException(""))
+        _walk_pages_with_failure(httpx2.TimeoutException(""))
 
     msg = str(excinfo.value)
     assert "Timeout" in msg, msg
@@ -349,10 +349,10 @@ def test_walk_pages_wraps_initial_page_parse_error():
     # Body is unparseable JSON (gateway HTML page, truncated stream).
     resp.json.side_effect = json.JSONDecodeError("Expecting value", "<html>...", 0)
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = resp
 
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -386,7 +386,7 @@ def test_next_req_url_follows_link_without_number_returned():
     its ``next`` link even when ``numberReturned`` is absent.
     """
     resp = mock.MagicMock()
-    resp.url = httpx.URL("https://example.com/page1")
+    resp.url = httpx2.URL("https://example.com/page1")
     body = {
         # NGWMN shape: features present, NO numberReturned key.
         "features": [{"id": "1"}],
@@ -400,7 +400,7 @@ def test_next_req_url_stops_when_no_features():
     (and regardless of ``numberReturned``).
     """
     resp = mock.MagicMock()
-    resp.url = httpx.URL("https://example.com/page1")
+    resp.url = httpx2.URL("https://example.com/page1")
     body = {"features": [], "links": [{"rel": "next", "href": "https://x/2"}]}
     assert _next_req_url(resp, body=body) is None
 
@@ -436,11 +436,11 @@ def test_walk_pages_does_not_mutate_initial_response():
         "links": [],
     }
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = page1
     mock_client.request.return_value = page2
 
-    mock_req = mock.MagicMock(spec=httpx.Request)
+    mock_req = mock.MagicMock(spec=httpx2.Request)
     mock_req.method = "GET"
     mock_req.headers = {}
     mock_req.url = "https://example.com/page1"
@@ -488,7 +488,7 @@ def _run_get_data_with_failure(failure_resp_or_exc, monkeypatch):
         mock.MagicMock(return_value=pd.DataFrame()),
     )
 
-    mock_client = mock.AsyncMock(spec=httpx.AsyncClient)
+    mock_client = mock.AsyncMock(spec=httpx2.AsyncClient)
     mock_client.send.return_value = _stats_initial_ok()
     if isinstance(failure_resp_or_exc, BaseException):
         mock_client.request.side_effect = failure_resp_or_exc
@@ -516,7 +516,7 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     """
     with pytest.raises(ServiceInterrupted) as excinfo:
         _run_get_data_with_failure(
-            httpx.ConnectError("stats-boom"),
+            httpx2.ConnectError("stats-boom"),
             monkeypatch,
         )
 
@@ -524,7 +524,7 @@ def test_get_data_raises_on_mid_pagination_failure(monkeypatch):
     paginated = excinfo.value.__cause__
     assert isinstance(paginated, DataRetrievalError)
     assert "Paginated request failed" in str(paginated)
-    assert isinstance(paginated.__cause__, httpx.ConnectError)
+    assert isinstance(paginated.__cause__, httpx2.ConnectError)
     assert "stats-boom" in str(paginated)
     # Nothing completed, so nothing is returned but the handle.
     assert excinfo.value.call.completed_chunks == 0
@@ -1297,7 +1297,7 @@ def _make_response(status, body, reason=None, content_type="text/html"):
     extensions = {}
     if reason is not None:
         extensions["reason_phrase"] = reason.encode("utf-8")
-    return httpx.Response(
+    return httpx2.Response(
         status_code=status,
         content=body.encode("utf-8"),
         headers=headers,
@@ -1487,8 +1487,8 @@ def test_403_without_an_envelope_names_the_credential_cause():
 def test_error_messages_name_the_url():
     """Without the URL a failed chunk in a fan-out cannot be traced back to
     the request that produced it -- the message is all the interruption holds."""
-    request = httpx.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v1/x")
-    resp = httpx.Response(400, content=b"", request=request)
+    request = httpx2.Request("GET", "https://api.waterdata.usgs.gov/ogcapi/v1/x")
+    resp = httpx2.Response(400, content=b"", request=request)
     with pytest.raises(HTTPError) as excinfo:
         _raise_for_non_200(resp)
     assert "https://api.waterdata.usgs.gov/ogcapi/v1/x" in str(excinfo.value)
@@ -1525,7 +1525,7 @@ def test_next_req_url_rejects_cross_host():
     a server-supplied cross-host URL would leak them — and the URL
     itself could be sensitive."""
     resp = mock.MagicMock()
-    resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
+    resp.url = httpx2.URL("https://api.waterdata.usgs.gov/page1")
     body = {
         "numberReturned": 1,
         "features": [{"id": "1"}],
@@ -1539,12 +1539,12 @@ def test_next_req_url_strips_embedded_credentials():
     """A same-host next link with ``user:pass@`` must not be kept.
 
     The cross-host guard passes here by construction -- the host matches -- so
-    nothing else would catch it. httpx derives ``Authorization: Basic`` from
+    nothing else would catch it. httpx2 derives ``Authorization: Basic`` from
     userinfo, so following the link verbatim would create a credential the caller
     never configured and send it alongside the real API key.
     """
     resp = mock.MagicMock()
-    resp.url = httpx.URL("https://api.waterdata.usgs.gov/page1")
+    resp.url = httpx2.URL("https://api.waterdata.usgs.gov/page1")
     body = {
         "numberReturned": 1,
         "features": [{"id": "1"}],
@@ -1554,10 +1554,10 @@ def test_next_req_url_strips_embedded_credentials():
     }
     following = _next_req_url(resp, body=body)
     assert following == "https://api.waterdata.usgs.gov/page2"
-    # Asserted through a real client: ``httpx.Request`` alone never derives the
+    # Asserted through a real client: ``httpx2.Request`` alone never derives the
     # header from userinfo, so checking it there would pass for any URL.
-    with httpx.Client(
-        transport=httpx.MockTransport(lambda request: httpx.Response(200))
+    with httpx2.Client(
+        transport=httpx2.MockTransport(lambda request: httpx2.Response(200))
     ) as client:
         sent = client.build_request("GET", following)
     assert sent.headers.get("Authorization") is None
@@ -1566,7 +1566,7 @@ def test_next_req_url_strips_embedded_credentials():
 def test_check_ogc_requests_raises_typed_on_5xx(httpx_mock):
     """``_check_ogc_requests`` routes a non-200 through ``_raise_for_non_200``,
     so a 5xx is raised as the typed ``ServiceUnavailable`` — the same typed
-    contract as the main data path, not a raw ``httpx`` error."""
+    contract as the main data path, not a raw ``httpx2`` error."""
     httpx_mock.add_response(
         method="GET",
         url=f"{OGC_API_URL}/collections/daily/schema",
@@ -1783,8 +1783,8 @@ def test_next_req_url_parses_the_body_when_not_handed_one():
         "features": [{"id": 1}],
         "links": [{"rel": "next", "href": "https://example.test/page2"}],
     }
-    response = httpx.Response(
-        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    response = httpx2.Response(
+        200, json=payload, request=httpx2.Request("GET", "https://example.test/page1")
     )
 
     assert _next_req_url(response) == "https://example.test/page2"
@@ -1800,8 +1800,8 @@ def test_next_req_url_stops_on_a_page_with_no_features():
         "features": [],
         "links": [{"rel": "next", "href": "https://example.test/page2"}],
     }
-    response = httpx.Response(
-        200, json=payload, request=httpx.Request("GET", "https://example.test/page1")
+    response = httpx2.Response(
+        200, json=payload, request=httpx2.Request("GET", "https://example.test/page1")
     )
 
     assert _next_req_url(response) is None
@@ -1815,15 +1815,15 @@ class TestOgcJsonErrorDetail:
     def test_a_non_json_body_yields_no_detail(self):
         from dataretrieval.ogc.errors import _json_error_detail
 
-        resp = httpx.Response(400, text="<html>gateway</html>")
+        resp = httpx2.Response(400, text="<html>gateway</html>")
         assert _json_error_detail(resp) is None
 
     def test_a_json_scalar_body_yields_no_detail(self):
         """A bare string or list is valid JSON but has no error envelope."""
         from dataretrieval.ogc.errors import _json_error_detail
 
-        assert _json_error_detail(httpx.Response(400, json="just a string")) is None
-        assert _json_error_detail(httpx.Response(400, json=[1, 2, 3])) is None
+        assert _json_error_detail(httpx2.Response(400, json="just a string")) is None
+        assert _json_error_detail(httpx2.Response(400, json=[1, 2, 3])) is None
 
 
 @pytest.mark.parametrize(

@@ -27,7 +27,7 @@ import warnings
 from unittest import mock
 from urllib.parse import quote_plus
 
-import httpx
+import httpx2
 import numpy as np
 import pandas as pd
 import pytest
@@ -115,7 +115,7 @@ def _recording_sleep(slept):
 
 
 class _FakeReq:
-    """Stand-in for ``httpx.Request`` whose ``_request_bytes`` shape
+    """Stand-in for ``httpx2.Request`` whose ``_request_bytes`` shape
     is ``len(str(url)) + len(content)``."""
 
     __slots__ = ("url", "content")
@@ -396,7 +396,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
 
 
 def test_chunked_session_shared_across_chunks():
-    """Every chunk of one chunked call uses the same ``httpx.AsyncClient`` on the
+    """Every chunk of one chunked call uses the same ``httpx2.AsyncClient`` on the
     ``_chunked_client`` ContextVar, so downstream paginated helpers (``_walk_pages``)
     can reuse the
     connection pool instead of opening a new connection on each chunk."""
@@ -471,7 +471,7 @@ def test_chunked_session_isolated_per_resume():
 
 
 def _quota_response(remaining: int | str | None) -> mock.Mock:
-    """A mock httpx.Response-like object whose ``x-ratelimit-remaining``
+    """A mock httpx2.Response-like object whose ``x-ratelimit-remaining``
     header reflects the given value (None → header absent)."""
     resp = mock.Mock(elapsed=datetime.timedelta(seconds=0.1))
     resp.headers = {} if remaining is None else {_QUOTA_HEADER: str(remaining)}
@@ -875,7 +875,7 @@ def test_chunk_interrupted_with_partial_data_pickles_intact():
     """The degrade drops only the live ``.call``; the captured *partial work*
     must still cross the boundary so a worker can report what it completed.
     Exercises the path the no-completed-chunks case above doesn't: a real
-    ``partial_frame`` (rows) and ``partial_response`` (a live ``httpx.Response``,
+    ``partial_frame`` (rows) and ``partial_response`` (a live ``httpx2.Response``,
     which must itself remain picklable)."""
     import pickle
 
@@ -886,9 +886,9 @@ def test_chunk_interrupted_with_partial_data_pickles_intact():
     # One chunk completed before the failure: a real frame + response.
     call._chunks[0] = (
         pd.DataFrame({"id": ["A"]}),
-        httpx.Response(
+        httpx2.Response(
             200,
-            request=httpx.Request("GET", "https://example.invalid/a"),
+            request=httpx2.Request("GET", "https://example.invalid/a"),
             json={"features": []},
         ),
     )
@@ -899,13 +899,13 @@ def test_chunk_interrupted_with_partial_data_pickles_intact():
     revived = pickle.loads(pickle.dumps(exc))
     assert revived.call is None
     assert revived.partial_frame["id"].tolist() == ["A"]
-    assert isinstance(revived.partial_response, httpx.Response)
+    assert isinstance(revived.partial_response, httpx2.Response)
     assert revived.partial_response.status_code == 200
 
 
 def test_connection_error_wrapped_as_service_interrupted():
-    """A bare ``httpx.ConnectError`` (or any other transport-level
-    ``httpx.HTTPError``) doesn't inherit from ``RuntimeError``;
+    """A bare ``httpx2.ConnectError`` (or any other transport-level
+    ``httpx2.HTTPError``) doesn't inherit from ``RuntimeError``;
     without the widened catch in ``_issue`` it would propagate uncaught
     and the user would lose the resumable handle to ``.call.resume()``.
     Verify ``ChunkedCall`` wraps it as ``ServiceInterrupted`` so
@@ -916,7 +916,7 @@ def test_connection_error_wrapped_as_service_interrupted():
         i = state["i"]
         state["i"] += 1
         if i == 2 and state["blow_up"]:
-            raise httpx.ConnectError("connection reset")
+            raise httpx2.ConnectError("connection reset")
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -931,7 +931,7 @@ def test_connection_error_wrapped_as_service_interrupted():
     assert err.completed_chunks == 4
     assert err.call is not None
     # The transport exception is on __cause__ so callers can inspect it if needed.
-    assert isinstance(err.__cause__, httpx.ConnectError)
+    assert isinstance(err.__cause__, httpx2.ConnectError)
     # Resume after the upstream recovers.
     state["blow_up"] = False
     df, _ = err.call.resume()
@@ -939,8 +939,8 @@ def test_connection_error_wrapped_as_service_interrupted():
 
 
 def test_invalid_url_wrapped_as_service_interrupted():
-    """``httpx.InvalidURL`` inherits from ``Exception``, NOT from
-    ``httpx.HTTPError``. Without the widened catch in ``_issue`` /
+    """``httpx2.InvalidURL`` inherits from ``Exception``, NOT from
+    ``httpx2.HTTPError``. Without the widened catch in ``_issue`` /
     ``_classify_chunk_error`` an oversize follow-up URL propagates as
     raw ``InvalidURL`` and the user loses ``.call.resume()`` access
     to the partial state. Match the ConnectError test."""
@@ -950,7 +950,7 @@ def test_invalid_url_wrapped_as_service_interrupted():
         i = state["i"]
         state["i"] += 1
         if i == 2 and state["blow_up"]:
-            raise httpx.InvalidURL("URL is too long: 65536 bytes > 65000")
+            raise httpx2.InvalidURL("URL is too long: 65536 bytes > 65000")
         return (
             pd.DataFrame({"sites": list(args["sites"])}),
             _quota_response(500),
@@ -964,7 +964,7 @@ def test_invalid_url_wrapped_as_service_interrupted():
     # Async fan-out: only the i==2 chunk fails; the other four complete.
     assert err.completed_chunks == 4
     assert err.call is not None
-    assert isinstance(err.__cause__, httpx.InvalidURL)
+    assert isinstance(err.__cause__, httpx2.InvalidURL)
     # The top-level message must include the underlying cause text so
     # the user doesn't have to traverse ``__cause__`` to know what
     # failed (previously the message was generic "Service
@@ -1080,7 +1080,7 @@ def test_partial_frame_snapshot_is_a_copy_when_single_chunk():
 
 
 def test_combine_chunk_responses_returns_independent_headers():
-    """The aggregated response's ``.headers`` must be a new ``httpx.Headers`` —
+    """The aggregated response's ``.headers`` must be a new ``httpx2.Headers`` —
     mutations by downstream callers (logging hooks, metadata extensions) must not
     back-propagate into the underlying chunk response's headers, which still live on
     ``ChunkedCall._chunks``."""
@@ -1133,17 +1133,17 @@ def test_paginate_terminates_on_empty_string_cursor():
         "features": [{"id": "1", "properties": {"val": "a"}}],
         "links": [{"rel": "next", "href": ""}],
     }
-    resp = mock.MagicMock(spec=httpx.Response)
+    resp = mock.MagicMock(spec=httpx2.Response)
     resp.status_code = 200
     resp.url = "https://example.com/items?limit=1"
     resp.elapsed = datetime.timedelta(seconds=0.1)
     resp.headers = {}
     resp.json.return_value = body_with_empty_next
 
-    client = mock.AsyncMock(spec=httpx.AsyncClient)
+    client = mock.AsyncMock(spec=httpx2.AsyncClient)
     client.send.return_value = resp
 
-    req = mock.MagicMock(spec=httpx.Request)
+    req = mock.MagicMock(spec=httpx2.Request)
     req.method = "GET"
     req.headers = {}
     req.content = b""
@@ -1238,23 +1238,23 @@ def test_quota_exhausted_message_points_at_resume():
 def test_request_bytes_sums_url_and_content():
     """``_request_bytes`` returns ``len(str(url)) + len(content)``.
 
-    ``httpx.Request`` always has ``.content`` as ``bytes`` (the
+    ``httpx2.Request`` always has ``.content`` as ``bytes`` (the
     constructor normalises ``data``/``json``/``content`` inputs), so
     the chunker needs only to size that single attribute alongside
     the URL.
     """
     # GET request with no body
-    req = httpx.Request("GET", "https://x.example/ab")
+    req = httpx2.Request("GET", "https://x.example/ab")
     assert _request_bytes(req) == len("https://x.example/ab")
 
     # POST request with content
-    req = httpx.Request("POST", "https://x.example/ab", content=b"cd")
+    req = httpx2.Request("POST", "https://x.example/ab", content=b"cd")
     assert _request_bytes(req) == len("https://x.example/ab") + 2
 
 
 def test_safe_request_bytes_treats_invalid_url_as_overflow():
-    """``httpx.URL`` enforces a 64 KB cap per URL component and raises
-    ``httpx.InvalidURL`` for anything bigger — e.g. comma-joining all
+    """``httpx2.URL`` enforces a 64 KB cap per URL component and raises
+    ``httpx2.InvalidURL`` for anything bigger — e.g. comma-joining all
     California stream sites in one query. The planner's halving loop
     must keep shrinking past that cap rather than raising; the
     contract is that ``_safe_request_bytes`` returns ``url_limit + 1``
@@ -1262,7 +1262,7 @@ def test_safe_request_bytes_treats_invalid_url_as_overflow():
     raises ``InvalidURL``."""
 
     def build_request(**kwargs):
-        raise httpx.InvalidURL("URL too long")
+        raise httpx2.InvalidURL("URL too long")
 
     url_limit = 8000
     assert _safe_request_bytes(build_request, {}, url_limit) == url_limit + 1
@@ -1270,18 +1270,18 @@ def test_safe_request_bytes_treats_invalid_url_as_overflow():
 
 def test_chunk_plan_handles_initial_url_overflow():
     """A user query whose unchunked URL exceeds the 64 KB
-    ``httpx.URL`` cap (e.g. 5000+ site IDs comma-joined) must not
+    ``httpx2.URL`` cap (e.g. 5000+ site IDs comma-joined) must not
     make ``ChunkPlan.__init__`` raise; the planner falls back to a
     worst-case chunk URL for ``canonical_url`` and proceeds to
     halve the over-limit axes normally."""
     real_build = _fake_build
 
     def overflowing_build(**kwargs):
-        # Mimic httpx: any single sub-arg whose ``sites`` list has
+        # Mimic httpx2: any single sub-arg whose ``sites`` list has
         # more than 2 entries fails URL construction (proxy for a
         # 64 KB overflow at the worst case).
         if len(kwargs.get("sites", [])) > 2:
-            raise httpx.InvalidURL("URL > 64 KB")
+            raise httpx2.InvalidURL("URL > 64 KB")
         return real_build(**kwargs)
 
     sites = ["S" * 10 + str(i) for i in range(8)]
@@ -1456,7 +1456,7 @@ def test_iter_chunk_args_passthrough_yields_a_copy():
 
 # --- async fan-out path ----------------------------------------------------
 #
-# Every chunk is gathered over one ``httpx.AsyncClient`` and
+# Every chunk is gathered over one ``httpx2.AsyncClient`` and
 # concurrency is bounded by an ``asyncio.Semaphore`` sized from the effective
 # configuration (the client's connection pool is sized to
 # match, but the semaphore is the throttle — see ``ChunkedCall._run``).
@@ -1464,7 +1464,7 @@ def test_iter_chunk_args_passthrough_yields_a_copy():
 # ``API_USGS_CONCURRENT=1`` (sequential dispatch) for the whole suite;
 # each test below raises it so the gather can dispatch chunks
 # under a wider cap. The decorated async fetcher is the SAME one used on
-# both first-run and resume. No real ``httpx.AsyncClient`` round-trip
+# both first-run and resume. No real ``httpx2.AsyncClient`` round-trip
 # occurs (the fakes return mock data), even though
 # :meth:`ChunkedCall._run` opens one for pool management.
 
@@ -1710,7 +1710,7 @@ def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
     client — fakes can't catch this, since ``MockTransport`` bypasses the connection
     pool. With the pool as the only throttle, 2 connections busy for 0.35 s each and the
     0.2 s pool timeout pinned below, the 2 queued chunks waited the full timeout with no
-    completion to reset their timers → ``httpx.PoolTimeout`` → (retries exhausted,
+    completion to reset their timers → ``httpx2.PoolTimeout`` → (retries exhausted,
     ``API_USGS_RETRIES=0``) a spurious resumable ``ServiceInterrupted``. Gated by the
     semaphore, queued chunks never reach the pool and the call completes.
     """
@@ -1740,7 +1740,7 @@ def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
         # Scale the production pool timeout (see ``HTTPX_DEFAULTS``) down to
         # 0.2 s so the pre-semaphore failure mode reproduces in test time.
         monkeypatch.setitem(
-            HTTPX_DEFAULTS, "timeout", httpx.Timeout(5.0, connect=1.0, pool=0.2)
+            HTTPX_DEFAULTS, "timeout", httpx2.Timeout(5.0, connect=1.0, pool=0.2)
         )
 
         async def fetch_async(args):
@@ -1832,12 +1832,12 @@ def test_combine_chunk_responses_does_not_mutate_input_urls():
     override is applied by mutating the bound ``request.url``, the shallow alias
     back-propagates the URL change into the underlying chunk-0 response — breaking the
     documented 'input responses are not mutated' invariant. The fix is to swap in a new
-    ``httpx.Request`` rather than mutate the existing one.
+    ``httpx2.Request`` rather than mutate the existing one.
     """
-    req1 = httpx.Request("GET", "https://example.com/chunk0")
-    req2 = httpx.Request("GET", "https://example.com/chunk1")
-    r1 = httpx.Response(200, request=req1)
-    r2 = httpx.Response(200, request=req2)
+    req1 = httpx2.Request("GET", "https://example.com/chunk0")
+    req2 = httpx2.Request("GET", "https://example.com/chunk1")
+    r1 = httpx2.Response(200, request=req1)
+    r2 = httpx2.Response(200, request=req2)
 
     out = _combine_chunk_responses(
         [r1, r2], canonical_url="https://canonical.example/full"
@@ -1935,10 +1935,10 @@ def test_retryable_taxonomy():
 
     assert _retryable(RateLimited("429", retry_after=5.0)) == (True, 5.0)
     assert _retryable(ServiceUnavailable("503")) == (True, None)
-    assert _retryable(httpx.ReadTimeout("slow")) == (True, None)
-    assert _retryable(httpx.ConnectError("down")) == (True, None)
+    assert _retryable(httpx2.ReadTimeout("slow")) == (True, None)
+    assert _retryable(httpx2.ConnectError("down")) == (True, None)
     # InvalidURL is resumable but NOT retryable (a too-long cursor won't fix).
-    assert _retryable(httpx.InvalidURL("too long")) == (False, None)
+    assert _retryable(httpx2.InvalidURL("too long")) == (False, None)
     # A fatal HTTP error (a plain HTTPError, not a TransientError) is never
     # retried; nor is a bare RuntimeError.
     assert _retryable(HTTPError("400", status_code=400)) == (False, None)
@@ -2032,7 +2032,7 @@ def test_retry_transient_then_success(monkeypatch):
     async def afn():
         calls["n"] += 1
         if calls["n"] == 1:
-            raise httpx.ReadTimeout("slow")
+            raise httpx2.ReadTimeout("slow")
         return "ok"
 
     out = asyncio.run(_retry(afn, RetryPolicy(max_retries=3, base_backoff=0.0)))
@@ -2140,19 +2140,19 @@ def test_async_fan_out_surfaces_fatal_over_transient(monkeypatch):
 
 
 def test_deterministic_transport_failure_is_normalized():
-    """A permanent resolver failure must not leak a raw httpx exception."""
+    """A permanent resolver failure must not leak a raw httpx2 exception."""
 
     @multi_value_chunked(build_request=_fake_build, url_limit=8000)
     async def fetch(_args):
         resolution = socket.gaierror(socket.EAI_NONAME, "name not known")
-        failure = httpx.ConnectError("name not known")
+        failure = httpx2.ConnectError("name not known")
         failure.__context__ = resolution
         raise failure
 
     with pytest.raises(NetworkError) as excinfo:
         fetch({"sites": ["S1"]})
 
-    assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+    assert isinstance(excinfo.value.__cause__, httpx2.ConnectError)
 
 
 def test_transport_context_does_not_mask_fatal_error():
@@ -2161,8 +2161,8 @@ def test_transport_context_does_not_mask_fatal_error():
     @multi_value_chunked(build_request=_fake_build, url_limit=8000)
     async def fetch(_args):
         try:
-            raise httpx.ConnectError("name not known")
-        except httpx.ConnectError:
+            raise httpx2.ConnectError("name not known")
+        except httpx2.ConnectError:
             raise ValueError("deterministic bug")  # noqa: B904 # regression shape
 
     with pytest.raises(ValueError, match="deterministic bug"):
@@ -2172,7 +2172,7 @@ def test_transport_context_does_not_mask_fatal_error():
 # --- finalize hook (resume finalizes; partials stay raw) -------------------
 #
 # Regression for the bug where ``exc.call.resume()`` returned the chunker's
-# raw ``(frame, httpx.Response)`` instead of the post-processed shape a normal
+# raw ``(frame, httpx2.Response)`` instead of the post-processed shape a normal
 # getter call yields. The fix injects a ``finalize`` transform applied at the
 # terminal resume()/resume_async() returns. The partial_* accessors stay RAW
 # so building/inspecting a ChunkInterrupted never triggers finalize's side
@@ -2533,15 +2533,15 @@ def test_parallel_chunks_supports_arbitrary_n(n):
 
 class TestSetResponseUrl:
     """The combined response reports the canonical URL, not the last
-    chunk's. ``httpx.Response`` resolves ``.url`` through its bound request,
+    chunk's. ``httpx2.Response`` resolves ``.url`` through its bound request,
     so the rebind has to go through the request rather than the attribute."""
 
     def test_a_response_with_no_bound_request_gets_one_synthesized(self):
-        """``httpx.Response(200)`` built by hand has no request, and reading
+        """``httpx2.Response(200)`` built by hand has no request, and reading
         ``.request`` raises rather than returning None."""
         from dataretrieval.combining import _set_response_url
 
-        response = httpx.Response(200)
+        response = httpx2.Response(200)
         _set_response_url(response, "https://example.test/combined")
 
         assert str(response.url) == "https://example.test/combined"
@@ -2552,10 +2552,10 @@ class TestSetResponseUrl:
         """
         from dataretrieval.combining import _set_response_url
 
-        original = httpx.Request(
+        original = httpx2.Request(
             "POST", "https://example.test/chunk1", headers={"X-Api-Key": "k"}
         )
-        response = httpx.Response(200, request=original)
+        response = httpx2.Response(200, request=original)
 
         _set_response_url(response, "https://example.test/combined")
 

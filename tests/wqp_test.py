@@ -178,7 +178,7 @@ def test_wqx3_get_results_repeats_list_query_parameters(httpx_mock):
     ],
 )
 def test_wqx3_get_results_repeats_iterable_query_parameters(httpx_mock, values_factory):
-    """WQX3 materializes non-list iterables before httpx serialization."""
+    """WQX3 materializes non-list iterables before httpx2 serialization."""
     with open("tests/data/wqp3_results.txt", encoding="utf-8") as text:
         httpx_mock.add_response(method="GET", text=text.read())
 

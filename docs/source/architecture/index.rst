@@ -93,9 +93,9 @@ Shared components
 ^^^^^^^^^^^^^^^^^
 
 ``dataretrieval.configuration``
-    Configuration leaf: standard library plus the ``tomli`` backport on
-    Python 3.10. It resolves scoped overrides, environment variables, a TOML
-    file with optional profiles, and built-in defaults in that order. Service
+    Configuration leaf: standard library only. It resolves scoped overrides,
+    environment variables, a TOML file with optional profiles, and built-in
+    defaults in that order. Service
     and protocol modules may depend on it; it must not depend back on them.
     Scoped overrides use ``ContextVar`` so concurrent threads and asyncio
     tasks can use distinct credentials.
@@ -234,7 +234,7 @@ service into one return shape:
 - NLDI navigation functions return ``GeoDataFrame`` objects directly, or raw
   GeoJSON-like dictionaries when ``as_json=True``; they do not add a metadata
   tuple.
-- StreamStats functions return raw ``httpx.Response`` objects or the
+- StreamStats functions return raw ``httpx2.Response`` objects or the
   service-specific ``Watershed`` domain object, depending on the requested
   format.
 
@@ -250,7 +250,7 @@ A typical OGC-backed call follows this sequence::
         -> normalize and validate arguments
         -> select OGC dialect and build a chunk plan
         -> enter a short-lived anyio blocking portal
-        -> execute chunks through a shared httpx.AsyncClient
+        -> execute chunks through a shared httpx2.AsyncClient
         -> paginate each chunk
         -> retry bounded transient failures
         -> combine and deduplicate pages/chunks

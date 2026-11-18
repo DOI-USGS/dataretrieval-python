@@ -25,8 +25,8 @@ This is a top-level leaf rather than a member of ``ogc`` or ``transport``,
 for the reason ADR 0006 gives for ``combining``, ``progress``, and
 ``credentials``: adapters need it whether or not they go through transport, and
 an exception taxonomy is not HTTP execution policy. It stays out of
-:mod:`dataretrieval.exceptions` because it holds pandas/httpx state, which
-would make that leaf depend on pandas and httpx.
+:mod:`dataretrieval.exceptions` because it holds pandas/httpx2 state, which
+would make that leaf depend on pandas and httpx2.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ import socket
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval.exceptions import DataRetrievalError, RateLimited, TransientError
@@ -79,7 +79,7 @@ class FanOutInterrupted(DataRetrievalError):
         was raised. Snapshot at raise time — does not advance on a
         later ``call.resume()`` (use ``exc.call.partial_frame`` for
         the live view).
-    partial_response : httpx.Response or None
+    partial_response : httpx2.Response or None
         Raw aggregate response covering the completed chunks at
         raise time; ``None`` if nothing had completed yet. Same snapshot
         semantics as ``partial_frame``. (Raw, not finalized — use
@@ -144,7 +144,7 @@ class FanOutInterrupted(DataRetrievalError):
         # verbatim.
         if call is None:
             self.partial_frame: pd.DataFrame = pd.DataFrame()
-            self.partial_response: httpx.Response | None = None
+            self.partial_response: httpx2.Response | None = None
         else:
             self.partial_frame = call.partial_frame.copy()
             self.partial_response = call.partial_response
@@ -170,7 +170,7 @@ class FanOutInterrupted(DataRetrievalError):
         if status is not None or cause is None:
             return status
         # The status is usually further down the chain: a typed error raised
-        # ``from`` the httpx failure that held it.
+        # ``from`` the httpx2 failure that held it.
         for current in _walk_causes(cause):
             found: int | None = getattr(current, "status_code", None)
             if found is not None:
@@ -284,13 +284,13 @@ def _deterministic_failure(exc: BaseException) -> bool:
     Walks ``__context__`` as well as ``__cause__``, because the original
     failure is several links down the chain and not always an explicit ``raise ...
     from``: a DNS failure arrives as ``NetworkError`` ->
-    ``httpx.ConnectError`` -> ``httpcore.ConnectError`` -> ``socket.gaierror``,
+    ``httpx2.ConnectError`` -> ``httpcore2.ConnectError`` -> ``socket.gaierror``,
     linked by implicit chaining. Following only the cause would follow
     the explicit branch and miss a ``gaierror`` on the implicit one --
     spending the whole retry budget on a hostname that will never resolve.
     """
     for current in _walk_causes(exc, follow_context=True):
-        if isinstance(current, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)):
+        if isinstance(current, (httpx2.UnsupportedProtocol, httpx2.LocalProtocolError)):
             return True
         if isinstance(current, socket.gaierror):
             # Return, not continue: the first resolver code found decides.
@@ -306,7 +306,7 @@ def _classify_transient(
         return QuotaExhausted, exc.retry_after
     if isinstance(exc, TransientError):
         return ServiceInterrupted, exc.retry_after
-    if isinstance(exc, (httpx.HTTPError, httpx.InvalidURL)):
+    if isinstance(exc, (httpx2.HTTPError, httpx2.InvalidURL)):
         # Some failures will fail the same way every time -- an unsupported
         # scheme, a hostname that doesn't resolve. Offering to resume one
         # would replace the underlying error with a retry that can never succeed.

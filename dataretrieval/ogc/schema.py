@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
@@ -22,7 +22,7 @@ from dataretrieval.transport.http import get as _get
 
 def _check_ogc_requests(
     endpoint: str, req_type: str = "queryables", *, base_url: str
-) -> tuple[dict[str, Any], httpx.Response]:
+) -> tuple[dict[str, Any], httpx2.Response]:
     """Retrieve one collection's queryables or response schema.
 
     ``base_url`` names the API to query; it defaults to the one in scope for the

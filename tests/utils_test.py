@@ -118,16 +118,16 @@ class Test_error_taxonomy:
     def test_transport_error_wrapped_as_network_error(self, httpx_mock):
         """A connection-level failure (no HTTP response) is raised as the typed
         ``NetworkError`` -- catchable via ``except DataRetrievalError`` like the
-        response-based errors, with the original ``httpx`` exception on
-        ``__cause__`` -- rather than leaking a raw ``httpx`` exception."""
-        import httpx
+        response-based errors, with the original ``httpx2`` exception on
+        ``__cause__`` -- rather than leaking a raw ``httpx2`` exception."""
+        import httpx2
 
-        httpx_mock.add_exception(httpx.ConnectError("name resolution failed"))
+        httpx_mock.add_exception(httpx2.ConnectError("name resolution failed"))
         with pytest.raises(exceptions.NetworkError) as excinfo:
             utils.query("https://example.invalid/x", {"a": "1"})
         assert isinstance(excinfo.value, exceptions.DataRetrievalError)
         assert not isinstance(excinfo.value, exceptions.HTTPError)  # no status
-        assert isinstance(excinfo.value.__cause__, httpx.ConnectError)
+        assert isinstance(excinfo.value.__cause__, httpx2.ConnectError)
 
     def test_query_failure_catchable_as_base(self, httpx_mock):
         """A bare ``except DataRetrievalError`` catches a legacy query failure."""
@@ -576,13 +576,13 @@ class TestApplyStateUnrecognized:
 
 
 def test_retrying_get_maps_invalid_url(monkeypatch):
-    """Direct active-service GETs do not leak raw httpx InvalidURL errors."""
-    import httpx
+    """Direct active-service GETs do not leak raw httpx2 InvalidURL errors."""
+    import httpx2
 
     monkeypatch.setattr(
         _querying,
         "_get",
-        mock.Mock(side_effect=httpx.InvalidURL("invalid URL")),
+        mock.Mock(side_effect=httpx2.InvalidURL("invalid URL")),
     )
 
     with pytest.raises(exceptions.URLTooLong):

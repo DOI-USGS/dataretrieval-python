@@ -21,7 +21,7 @@ clause handles any failure regardless of which service you called:
 
 Connection-level failures (timeouts, DNS, refused connections) remain inside
 the package taxonomy, so the clause above covers them -- you never have to catch
-an ``httpx`` exception. A deterministic connection failure is a
+an ``httpx2`` exception. A deterministic connection failure is a
 :class:`~dataretrieval.exceptions.NetworkError`; a recoverable one that exhausts
 inline retries during fan-out is a resumable ``ServiceInterrupted``. A *no-data*
 result is **not** an error: the modern getters return an empty ``DataFrame`` when

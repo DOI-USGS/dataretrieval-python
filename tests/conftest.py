@@ -1,6 +1,12 @@
 """
 Test scaffolding for the dataretrieval test suite.
 
+* Loads ``pytest-httpx`` against ``httpx2``. The plugin imports ``httpx``,
+  so ``httpx2.alias_httpx()`` runs first and that import resolves to
+  ``httpx2``. Autoloading the plugin is disabled in ``pyproject.toml``
+  (``-p no:pytest_httpx``) because it would import ``httpx`` before this file
+  runs, so its fixture and hook are imported here instead. Drop both once
+  pytest-httpx supports httpx2 (Colin-b/pytest_httpx#239).
 * Relaxes ``pytest-httpx``'s strict-mode flags so unconsumed mocks and
   unmatched requests don't fail the suite (keeps mocked-URL setup terse).
 * Pins the chunker env for every test (see ``_pin_chunker_env``), so
@@ -11,9 +17,15 @@ Test scaffolding for the dataretrieval test suite.
 
 from __future__ import annotations
 
+import httpx2
 import pytest
 
 from dataretrieval import configuration
+
+httpx2.alias_httpx()
+
+# Re-exported so pytest finds the fixture and the marker registration here.
+from pytest_httpx import httpx_mock, pytest_configure  # noqa: E402, F401
 
 
 def pytest_collection_modifyitems(config, items):
@@ -26,14 +38,6 @@ def pytest_collection_modifyitems(config, items):
     )
     for item in items:
         item.add_marker(marker)
-
-
-@pytest.fixture
-def non_mocked_hosts() -> list[str]:
-    """No hosts are exempted from mocking; every HTTP call must match a mock registered
-    through the ``httpx_mock`` fixture.
-    """
-    return []
 
 
 @pytest.fixture(autouse=True)

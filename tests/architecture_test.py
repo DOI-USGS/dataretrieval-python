@@ -186,8 +186,7 @@ def test_config_is_a_standard_library_only_leaf() -> None:
     on its private foundation, ``dataretrieval._configuration_core``. The core may
     depend only on the package's dependency-free leaves, ``dataretrieval._ambient`` and
     ``dataretrieval.exceptions``. Neither module may import adapters or runtime
-    third-party packages. ``tomli`` remains the one third-party exception: it is the
-    ``tomllib`` backport used on Python 3.10.
+    third-party packages; they read TOML with the standard library's ``tomllib``.
     """
     subsystem = {
         PACKAGE_ROOT / "configuration.py": {
@@ -209,10 +208,7 @@ def test_config_is_a_standard_library_only_leaf() -> None:
         )
 
         roots = {module.partition(".")[0] for module in imports}
-        # Static analysis sees both sides of the version guard. Python 3.10's
-        # stdlib inventory does not yet include the unreachable ``tomllib`` branch.
-        allowed_roots = {"dataretrieval", "tomli", "tomllib"}
-        third_party = roots - sys.stdlib_module_names - allowed_roots
+        third_party = roots - sys.stdlib_module_names - {"dataretrieval"}
         assert not third_party, (
             f"{_module_name(path)} gained third-party dependencies: "
             f"{sorted(third_party)}"
@@ -610,17 +606,17 @@ def test_fan_out_plans_are_sized_and_repeatably_iterable() -> None:
     differed -- a generator mistaken for a collection, say -- would re-issue chunks that
     no longer match the completed positions.
     """
-    import httpx
+    import httpx2
 
     from dataretrieval.ogc.planning import ChunkPlan
 
-    def _build(**args: object) -> httpx.Request:
-        return httpx.Request("GET", "https://example.invalid/items", params=args)
+    def _build(**args: object) -> httpx2.Request:
+        return httpx2.Request("GET", "https://example.invalid/items", params=args)
 
     plans = [
         ChunkPlan({"sites": ["a", "b"]}, _build, url_limit=8000),
         # Water Use passes its request list directly to ``FanOut``.
-        [httpx.Request("GET", "https://example.invalid/data")],
+        [httpx2.Request("GET", "https://example.invalid/data")],
     ]
     for plan in plans:
         name = type(plan).__name__
