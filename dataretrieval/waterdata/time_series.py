@@ -496,6 +496,8 @@ def get_latest_continuous(
     filter_lang: FILTER_LANG | None = None,
     convert_type: bool = True,
     max_rows: int | None = None,
+    *,
+    method_category: str | Iterable[str] | None = None,
     **queryables: Any,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Get only the most recent observation of each continuous time series.
@@ -533,7 +535,7 @@ def get_latest_continuous(
         The columns to return from the query. Available
         options are: geometry, id, time_series_id, monitoring_location_id,
         parameter_code, statistic_id, time, value, unit_of_measure,
-        approval_status, qualifier, last_modified
+        approval_status, qualifier, method_category, last_modified
     time_series_id : string or iterable of strings, optional
         A unique identifier representing a single time series, corresponding to
         the id field in the time-series-metadata endpoint.
@@ -564,6 +566,12 @@ def get_latest_continuous(
         sensor may have been impacted by ice or whether values were estimated.
         Matches observations whose qualifiers are exactly these, in this order:
         ``"ICE"`` matches ``["ICE"]`` but not ``["ESTIMATED", "ICE"]``.
+    method_category : string or iterable of strings, optional
+        The RLMS method category code for the method in effect over the
+        observation's interval: "STNRD" (standardized, with known uncertainty
+        and full QA/QC), "LMTUS" (limited use: a modified or externally
+        sourced method), "EXPER" (experimental), or "UNKWN" (unknown).
+        Null for time series that have not been categorized.
     value : string or iterable of strings, optional
         The value of the observation. Values are transmitted as strings in
         the JSON response format to preserve precision.

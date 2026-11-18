@@ -306,6 +306,7 @@
     "hydrologic_unit_code",
     "id",
     "last_modified",
+    "method_category",
     "minor_civil_division_code",
     "monitoring_location_id",
     "monitoring_location_name",
