@@ -15,7 +15,6 @@ import warnings
 #: commitment already made in a released warning message; read it rather than
 #: spelling a date at the call site, so extending one is a single edit.
 REMOVALS: dict[str, str] = {
-    "nwis": "2027-05-06",
     "waterdata.get_cql(service=)": "2027-08-09",
     "wateruse": "2027-08-11",
     "ogc.interruptions": "2027-08-25",
@@ -39,8 +38,8 @@ def warn_deprecated(
     Parameters
     ----------
     subject
-        What is being removed, as the caller spells it (``"nwis.get_dv"``, the
-        keyword ``"stateFips"``).
+        What is being removed, as the caller spells it
+        (``"waterdata.get_cql(service=)"``, the keyword ``"stateFips"``).
     replacement
         What to use instead. Named in every message because a deprecation without a
         replacement gives the caller nothing to do.

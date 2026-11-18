@@ -32,8 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Water Data OGC coordinates are published in WGS84, so attach that CRS where the
 # GeoDataFrame is built (otherwise the result is CRS-naive and ``to_crs`` /
-# spatial joins fail). Matches the constants in ``nldi`` (EPSG:4326) and ``nwis``
-# (EPSG:4269).
+# spatial joins fail). Matches the constant in ``nldi`` (EPSG:4326).
 _CRS = "EPSG:4326"
 
 # Whether geopandas is present is a static, environment-level fact, so warn

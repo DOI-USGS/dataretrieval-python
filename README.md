@@ -334,13 +334,6 @@ print(statewide.head())
 - `get_well_construction`: Casing, screen, and build-out records
 - `get_providers`: Contributing data-provider organizations
 
-### Legacy NWIS Services (Deprecated) — `dataretrieval.nwis`
-- `get_dv`: Legacy daily statistical data
-- `get_iv`: Legacy continuous (instantaneous) data
-- `get_info`: Basic site information
-- `get_stats`: Statistical summaries
-- `get_discharge_peaks`: Annual peak discharge events
-
 ### Water Quality Portal — `dataretrieval.wqp`
 - `get_results`: Water-quality analytical results from USGS, EPA, and other agencies
 - `what_sites`: Monitoring-location information

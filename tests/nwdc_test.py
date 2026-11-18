@@ -950,7 +950,7 @@ def test_wateruse_alias_warns_and_names_the_replacement():
     message = str(deprecations[0].message)
     assert "`dataretrieval.wateruse` is deprecated" in message
     assert "`dataretrieval.nwdc`" in message
-    # Dated removal, per the convention nwis follows.
+    # Dated removal, per the shared REMOVALS horizon convention.
     from dataretrieval.wateruse import NWDC_RENAME_REMOVAL_DATE
 
     assert NWDC_RENAME_REMOVAL_DATE in message

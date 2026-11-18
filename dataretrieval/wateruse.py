@@ -5,7 +5,7 @@ Water Availability Assessment Data Companion serves ten modeled datasets, of
 which the water-use models are five; the rest are hydrologic,
 atmospheric-forcing, and assessment outputs. Every other adapter in this
 package is named for its service -- ``ngwmn``, ``nldi``, ``wqp``,
-``streamstats``, ``nwis`` -- so this one is now ``nwdc``.
+``streamstats`` -- so this one is now ``nwdc``.
 
 Importing this module emits a :class:`DeprecationWarning` and re-exports
 :mod:`dataretrieval.nwdc`'s public surface. The re-exported objects are the
@@ -34,8 +34,7 @@ from dataretrieval._deprecation import REMOVALS, warn_deprecated
 from dataretrieval.nwdc import *  # noqa: F403 # re-export the public surface
 
 #: When the alias may be deleted. Read from the shared horizon table rather than spelled
-#: here, so it is reviewed and extended with every other published removal; matches the
-#: dated-removal convention :mod:`dataretrieval.nwis` uses.
+#: here, so it is reviewed and extended with every other published removal.
 NWDC_RENAME_REMOVAL_DATE = REMOVALS["wateruse"]
 
 __all__ = list(_nwdc.__all__)

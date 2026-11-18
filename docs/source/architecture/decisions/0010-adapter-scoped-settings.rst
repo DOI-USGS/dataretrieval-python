@@ -19,6 +19,9 @@ decision 8. Decisions 2, 3, 4, 6 and 7 remain in effect: the tiers,
 source-major precedence, package-wide environment variables, the host-scoped
 key, and the adapter names.
 
+Amended after acceptance under :doc:`0000-documenting-decisions`; the
+``Notes`` section records every clause added or corrected.
+
 Context
 -------
 
@@ -286,3 +289,7 @@ Notes
 - The ``wateruse`` module is renamed ``nwdc`` in a separate change; the service
   names itself "National Water Availability Assessment Data Companion" and
   serves ten models, only five of which are water use.
+- ``dataretrieval.nwis`` has since been removed (:doc:`0005-legacy-nwis`). The
+  survey table, decision 7, and the ``ssl_check`` counts describe the package
+  when this record was accepted; ``ssl_check`` is now a keyword on 13 getters
+  across three adapters.
