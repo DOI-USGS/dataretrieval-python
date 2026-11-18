@@ -300,10 +300,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     """
     cols = set(df.columns)
     for col in sorted(cols.intersection(dialect.time_cols)):
-        # ``ISO8601`` rather than an inferred format: pandas infers one format
-        # from the first value, so in a column that mixes whole and fractional
-        # seconds every value of the other precision became ``NaT``.
-        parsed = pd.to_datetime(df[col], errors="coerce", format="ISO8601")
+        parsed = _parse_datetimes(df[col])
         _warn_unparsed(df[col], parsed, col, "datetimes")
         df[col] = parsed
 
@@ -313,6 +310,22 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
         df[col] = parsed
 
     return df
+
+
+def _parse_datetimes(raw: pd.Series) -> pd.Series:
+    """Parse *raw* as ISO 8601, coercing unparseable values to ``NaT``.
+
+    ``ISO8601`` rather than an inferred format: pandas infers one format from
+    the first value, so in a column that mixes whole and fractional seconds
+    every value of the other precision became ``NaT``. ``ISO8601`` raises
+    instead of coercing when a column mixes UTC offsets, or offset and naive
+    values; the inferred parse is kept for that case, so such a column still
+    returns, with the odd values as ``NaT`` and a warning, as it did before.
+    """
+    try:
+        return pd.to_datetime(raw, errors="coerce", format="ISO8601")
+    except ValueError:
+        return pd.to_datetime(raw, errors="coerce")
 
 
 def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> None:

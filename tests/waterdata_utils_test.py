@@ -982,6 +982,18 @@ def test_type_cols_parses_mixed_second_precision(raw):
     assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
 
 
+def test_type_cols_mixed_naive_and_aware_still_returns():
+    """A column mixing naive and offset values makes the ISO 8601 parse raise
+    rather than coerce. The inferred parse it falls back to keeps the call
+    returning, with the odd value ``NaT`` and a warning, as before the ISO 8601
+    parse was introduced."""
+    df = pd.DataFrame({"time": ["2024-01-01T10:00:00", "2024-01-01T10:00:00+00:00"]})
+    with pytest.warns(UserWarning, match=r"^1 value in column 'time'"):
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].tolist()[0] == pd.Timestamp("2024-01-01T10:00:00")
+    assert out["time"].isna().tolist() == [False, True]
+
+
 # --- _format_api_dates -------------------------------------------------------
 
 
