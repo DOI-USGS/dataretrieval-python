@@ -222,8 +222,7 @@ Compliance
 
 ``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
 asserts the module imports nothing from ``dataretrieval`` other than the
-``exceptions`` taxonomy leaf, and no third-party package other than the
-``tomli`` backport.
+``exceptions`` taxonomy leaf, and no third-party package at all.
 ``tests/configuration_test.py`` covers the precedence chain, per-setting merging,
 thread and asyncio isolation, host scoping for file-sourced keys, redaction in
 ``show_configuration``, and rejection of credential parameters on public getters.

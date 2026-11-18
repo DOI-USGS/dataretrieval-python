@@ -10,11 +10,10 @@ from dataretrieval.interruptions import QuotaExhausted
 from dataretrieval.waterdata import get_ratings
 from dataretrieval.waterdata.ratings import _build_filter
 
-# The ``httpx_mock`` fixture matches URL strings exactly (including query). For the
-# ratings tests the fixture matches the endpoint and ignores the params, so the
-# assertions can inspect the captured params afterwards without coupling the
-# registration to the implementation's parameter order. ``url=STAC_SEARCH_RE``
-# does that.
+# pytest-httpx matches URL strings exactly (including query). For the ratings tests the
+# fixture matches the endpoint and ignores the params, so the assertions can inspect the
+# captured params afterwards without coupling the registration to the implementation's
+# parameter order. ``url=STAC_SEARCH_RE`` does that.
 STAC_SEARCH_RE = re.compile(
     r"^https://api\.waterdata\.usgs\.gov/stac/v0/search(\?.*)?$"
 )

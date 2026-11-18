@@ -8,13 +8,13 @@ removed / renamed a queryable: regenerate the snapshot and enable any new querya
 the matching getter. Regenerate with::
 
     python - <<'PY'
-    import httpx, json
+    import httpx2, json
     from typing import get_args
     from dataretrieval.waterdata.types import WATERDATA_SERVICES
     base = "https://api.waterdata.usgs.gov/ogcapi/v1"
     snap = {}
     for c in get_args(WATERDATA_SERVICES):
-        r = httpx.get(f"{base}/collections/{c}/queryables", timeout=30)
+        r = httpx2.get(f"{base}/collections/{c}/queryables", timeout=30)
         r.raise_for_status()
         snap[c] = sorted(r.json().get("properties", {}))
     json.dump(snap, open("tests/data/waterdata_queryables.json", "w"),
