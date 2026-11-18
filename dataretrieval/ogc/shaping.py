@@ -302,8 +302,7 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
     for col in sorted(cols.intersection(dialect.time_cols)):
         # ``ISO8601`` rather than an inferred format: pandas infers one format
         # from the first value, so in a column that mixes whole and fractional
-        # seconds (``time-series-methods`` ``end``) every value of the other
-        # precision became ``NaT``.
+        # seconds every value of the other precision became ``NaT``.
         parsed = pd.to_datetime(df[col], errors="coerce", format="ISO8601")
         _warn_unparsed(df[col], parsed, col, "datetimes")
         df[col] = parsed

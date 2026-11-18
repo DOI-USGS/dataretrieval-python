@@ -1627,18 +1627,29 @@ def test_get_time_series_methods_sends_a_list_of_series_as_cql2(httpx_mock):
     assert filters["time_series_id"] == series
 
 
-@pytest.mark.parametrize("getter", [get_time_series_revisions, get_time_series_methods])
-def test_nonspatial_getters_return_an_empty_plain_frame(httpx_mock, getter):
+@pytest.mark.parametrize(
+    ("getter", "collection"),
+    [
+        (get_time_series_revisions, "time-series-revisions"),
+        (get_time_series_methods, "time-series-methods"),
+    ],
+)
+def test_nonspatial_getters_return_an_empty_plain_frame(httpx_mock, getter, collection):
+    """An empty result has the same plain shape as a non-empty one: the schema's
+    ``geometry`` is dropped even though ``skip_geometry`` was not passed."""
     httpx_mock.add_response(
-        method=None,
-        url=re.compile(rf"^{re.escape(_OGC_BASE)}/collections/time-series-"),
-        json={"type": "FeatureCollection", "features": [], "numberReturned": 0},
+        method="GET",
+        url=_schema_url(collection),
+        json={"properties": {"geometry": {}, "id": {}, "time_series_id": {}}},
     )
+    _mock_items(httpx_mock, collection, body={"features": [], "links": []})
 
     df, _ = getter(time_series_id="none")
 
     assert type(df) is pd.DataFrame
     assert df.empty
+    assert "geometry" not in df.columns
+    assert "time_series_id" in df.columns
 
 
 def test_get_combined_metadata(httpx_mock):
