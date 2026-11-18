@@ -61,6 +61,8 @@ _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "monitoring-locations": "monitoring_location_id",
     "peaks": "peak_id",
     "time-series-metadata": "time_series_id",
+    "time-series-methods": "time_series_method_id",
+    "time-series-revisions": "time_series_revision_id",
 }
 
 # Every collection's output id except the two that are user-facing

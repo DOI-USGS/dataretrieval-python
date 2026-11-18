@@ -1008,5 +1008,69 @@
   ],
   "numberReturned": 2,
   "type": "FeatureCollection"
+ },
+ "time-series-methods": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "0003587a6a544f6aa37fe13dc2050985-THM01-202001031145000600",
+    "properties": {
+     "begin": "2020-01-03T11:45:00+00:00",
+     "end": "2020-01-09T11:25:00+00:00",
+     "id": "0003587a6a544f6aa37fe13dc2050985-THM01-202001031145000600",
+     "method_category": "STNRD",
+     "method_id": "THM01",
+     "time_series_id": "0003587a6a544f6aa37fe13dc2050985"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "0003587a6a544f6aa37fe13dc2050985-THM01-202112021015000600",
+    "properties": {
+     "begin": "2021-12-02T10:15:00+00:00",
+     "end": "9999-12-31T23:59:59.999999+00:00",
+     "id": "0003587a6a544f6aa37fe13dc2050985-THM01-202112021015000600",
+     "method_category": "STNRD",
+     "method_id": "THM01",
+     "time_series_id": "0003587a6a544f6aa37fe13dc2050985"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "time-series-revisions": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "018f9976-a604-4d44-a505-bc66238c9c68",
+    "properties": {
+     "begin": "2018-12-27T05:00:00+00:00",
+     "end": "2019-03-13T16:53:00+00:00",
+     "id": "018f9976-a604-4d44-a505-bc66238c9c68",
+     "monitoring_location_id": "USGS-01646500",
+     "revision_note": "Revisions: Specific conductance for the period of Dec. 27, 2018 through Mar. 13, 2019 was revised on Sep. 10, 2019. An error was discovered in the timestamps of the recorded values. Telemetered data was replaced with data logged internally within the water quality instrumentation.  Note that the recording interval and timestamps on the internally logged data vary from the telemetered data collection interval. They do represent the correct time that the internal data was recorded.",
+     "time_series_id": "4f3ef7be7d3b45af8d21358ce9a1488c"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "02bac5c4-cdf6-49f4-bfa2-496db49ad310",
+    "properties": {
+     "begin": "2018-12-27T05:00:00+00:00",
+     "end": "2019-03-13T16:53:00+00:00",
+     "id": "02bac5c4-cdf6-49f4-bfa2-496db49ad310",
+     "monitoring_location_id": "USGS-01646500",
+     "revision_note": "Revisions:  pH for the period of Dec. 27, 2018 through Mar. 13, 2019 was revised on Sep. 10, 2019. An error was discovered in the timestamps of the recorded values. Telemetered data was replaced with data logged internally within the water quality instrumentation.  Note that the recording interval and timestamps on the internally logged data vary from the telemetered data collection interval. They do represent the correct time that the internal data was recorded.",
+     "time_series_id": "cb83dd0b32d44109b755c00fb8525f24"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
  }
 }

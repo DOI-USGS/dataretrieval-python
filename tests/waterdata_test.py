@@ -45,6 +45,8 @@ from dataretrieval.waterdata import (
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
+    get_time_series_methods,
+    get_time_series_revisions,
 )
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
@@ -1562,6 +1564,81 @@ def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
     legacy, other = (str(r.url) for r in httpx_mock.get_requests())
     assert legacy.startswith(f"{_V0_OGC_BASE}/collections/time-series-metadata")
     assert other.startswith(f"{_OGC_BASE}/collections/daily")
+
+
+def test_get_time_series_revisions(httpx_mock):
+    """The collection is non-spatial: the frame is a plain DataFrame with no
+    geometry column even with geopandas installed, and the record ``id`` is
+    returned as ``time_series_revision_id``."""
+    _mock_items(httpx_mock, "time-series-revisions")
+
+    df, md = get_time_series_revisions(
+        monitoring_location_id="USGS-01646500", begin="2018-01-01/2019-12-31"
+    )
+
+    (sent,) = _sent(httpx_mock, "time-series-revisions")
+    assert sent == {
+        "monitoring_location_id": ["USGS-01646500"],
+        "begin": ["2018-01-01T00:00:00Z/2019-12-31T00:00:00Z"],
+        "limit": ["50000"],
+    }
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
+    assert "id" not in df.columns
+    assert df["time_series_revision_id"].notna().all()
+    assert df["revision_note"].str.startswith("Revisions").all()
+    assert str(df["begin"].dtype) == "datetime64[us, UTC]"
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_time_series_methods(httpx_mock):
+    """An open-ended method interval ends at 9999-12-31, which is kept as a
+    timestamp rather than coerced to ``NaT``."""
+    _mock_items(httpx_mock, "time-series-methods")
+
+    df, _ = get_time_series_methods(
+        time_series_id="0003587a6a544f6aa37fe13dc2050985",
+        method_category="STNRD",
+    )
+
+    (sent,) = _sent(httpx_mock, "time-series-methods")
+    assert sent == {
+        "time_series_id": ["0003587a6a544f6aa37fe13dc2050985"],
+        "method_category": ["STNRD"],
+        "limit": ["50000"],
+    }
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
+    assert df["time_series_method_id"].notna().all()
+    assert df["end"].notna().all()
+    assert df["end"].max().year == 9999
+
+
+def test_get_time_series_methods_sends_a_list_of_series_as_cql2(httpx_mock):
+    """The intended use is the ``time_series_id`` values of one location, looked
+    up with ``get_time_series_metadata``, so a list must filter rather than be
+    read as one comma-joined id."""
+    _mock_items(httpx_mock, "time-series-methods")
+    series = ["0003587a6a544f6aa37fe13dc2050985", "002e8c3bde4a4176a2711f8f98a99d90"]
+
+    get_time_series_methods(time_series_id=series)
+
+    filters = _filters(_items_requests(httpx_mock, "time-series-methods")[0])
+    assert filters["time_series_id"] == series
+
+
+@pytest.mark.parametrize("getter", [get_time_series_revisions, get_time_series_methods])
+def test_nonspatial_getters_return_an_empty_plain_frame(httpx_mock, getter):
+    httpx_mock.add_response(
+        method=None,
+        url=re.compile(rf"^{re.escape(_OGC_BASE)}/collections/time-series-"),
+        json={"type": "FeatureCollection", "features": [], "numberReturned": 0},
+    )
+
+    df, _ = getter(time_series_id="none")
+
+    assert type(df) is pd.DataFrame
+    assert df.empty
 
 
 def test_get_combined_metadata(httpx_mock):

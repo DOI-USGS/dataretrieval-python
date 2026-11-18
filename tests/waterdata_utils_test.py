@@ -962,6 +962,26 @@ def test_type_cols_warning_is_singular_for_one_value():
         _type_cols(df, _TYPING_DIALECT)
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        ["2019-12-19T22:00:00.000001+00:00", "2020-01-09T11:25:00+00:00"],
+        ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
+    ],
+    ids=["fractional-first", "whole-first"],
+)
+def test_type_cols_parses_mixed_second_precision(raw):
+    """A column mixing whole and fractional seconds, as ``time-series-methods``
+    ``end`` does, parses every value. Inferring one format from the first value
+    turned every value of the other precision into ``NaT``."""
+    df = pd.DataFrame({"time": raw})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].notna().all()
+    assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
+
+
 # --- _format_api_dates -------------------------------------------------------
 
 
