@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from retrieve_nwqn_samples import BAD_NLDI_SITES, find_neighboring_sites
 
-from dataretrieval import nwis
+from dataretrieval import waterdata
 
 DESTINATION_BUCKET = os.environ.get("DESTINATION_BUCKET")
 START_DATE = "1991-01-01"
@@ -17,65 +17,58 @@ END_DATE = "2023-12-31"
 
 
 def map_retrieval(site):
-    """Map function to pull data from NWIS and WQP"""
+    """Map function to pull daily streamflow from the USGS Water Data API"""
     print(f"Retrieving daily streamflow from site {site}")
+    site_id = f"USGS-{site}"
 
     if site in BAD_NLDI_SITES:
-        site_list = [site]
+        site_info, _ = waterdata.get_monitoring_locations(
+            monitoring_location_id=site_id, skip_geometry=True
+        )
     # else query slowly
     else:
         sleep(randint(0, 5))
-        site_list = find_neighboring_sites(site)
+        site_info = find_neighboring_sites(site)
+    location_ids = site_info["monitoring_location_id"].to_list()
 
-    df, _ = nwis.get_dv(
-        sites=site_list,
-        start=START_DATE,
-        end=END_DATE,
-        parameterCd="00060",
+    # Daily mean discharge, approved values only (filtered by the service).
+    df, _ = waterdata.get_daily(
+        monitoring_location_id=location_ids,
+        parameter_code="00060",
+        statistic_id="00003",
+        approval_status="Approved",
+        time=f"{START_DATE}/{END_DATE}",
+        properties=["monitoring_location_id", "time", "value"],
+        skip_geometry=True,
     )
-
-    # by default, site_no is not in the index if a single site is queried
-    if "site_no" in df.columns:
-        index_name = df.index.names[0]
-        df.set_index(["site_no", df.index], inplace=True)
-        df.index.names = ["site_no", index_name]
 
     print(len(df), "records retrieved")
     # process the results
     if not df.empty:
-        # drop rows with missing values; ignore other 00060_* columns
-        df = df.dropna(subset=["00060_Mean"])
-        # fill missing codes to enable string operations
-        df["00060_Mean_cd"] = df["00060_Mean_cd"].fillna("M")
-        df = df[df["00060_Mean_cd"].str.contains("A")]
-        df["00060_Mean"] = df["00060_Mean"].replace(-999999, np.nan)
+        # index by monitoring location and day, keeping only the discharge value
+        df = df.set_index(["monitoring_location_id", "time"])[["value"]].dropna()
 
-        site_info, _ = nwis.get_info(sites=site_list)
-        # USACE sites may have same site_no, which creates index conflicts later
-        site_info = site_info[site_info["agency_cd"] == "USGS"]  # keep only USGS sites
-        site_info = site_info.set_index("site_no")
+        site_info = site_info.set_index("monitoring_location_id")
 
-        main_site = site_info.loc[site]
-        main_site_drainage_area = main_site["drain_area_va"]
+        main_site = site_info.loc[site_id]
+        main_site_drainage_area = main_site["drainage_area"]
 
         # compute fraction of drainage area
-        site_info = site_info[["drain_area_va"]].copy()
+        site_info = site_info[["drainage_area"]].copy()
         site_info["drain_fraction"] = (
-            site_info["drain_area_va"] / main_site_drainage_area
+            site_info["drainage_area"] / main_site_drainage_area
         )
         site_info["fraction_diff"] = np.abs(1 - site_info["drain_fraction"])
 
         # apply drainage area fraction
         df = pd.merge(df, site_info, left_index=True, right_index=True)
-        df["00060_Mean"] *= site_info.loc[
-            df.index.get_level_values("site_no"), "drain_fraction"
-        ].values
+        df["value"] *= df["drain_fraction"]
 
         # order sites by the difference in drainage area fraction
         fill_order = site_info.sort_values("fraction_diff", ascending=True)
         fill_order = fill_order.index.values
 
-        flow_sites = df.index.get_level_values("site_no").values
+        flow_sites = df.index.get_level_values("monitoring_location_id").values
         fill_order = set(fill_order).intersection(flow_sites)
 
         output = pd.DataFrame()
@@ -87,7 +80,7 @@ def map_retrieval(site):
             output = update_dataframe(output, fill_data)
 
         output = output.drop(
-            columns=["drain_area_va", "drain_fraction", "fraction_diff"]
+            columns=["drainage_area", "drain_fraction", "fraction_diff"]
         )
         output["site_no"] = site
 
@@ -112,7 +105,6 @@ def map_retrieval(site):
 def update_dataframe(
     original_df: pd.DataFrame,
     new_df: pd.DataFrame,
-    overwrite: bool = False,
 ) -> pd.DataFrame:
     """Update a DataFrame with values from another DataFrame.
 
@@ -128,8 +120,6 @@ def update_dataframe(
 
 
 if __name__ == "__main__":
-    project = "National Water Quality Assessment Program (NAWQA)"
-
     site_df = pd.read_csv(
         "NWQN_sites.csv",
         comment="#",

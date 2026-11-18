@@ -6,14 +6,9 @@ Access each service through its submodule::
 
     df, meta = waterdata.get_daily(monitoring_location_id="USGS-05427718")
 
-    from dataretrieval import nwis  # legacy NWIS services
-
-    df, meta = nwis.get_dv(sites="05427718")
-
 Available service modules: ``waterdata``, ``wqp`` (Water Quality Portal),
 ``nwdc`` (National Water Availability Assessment Data Companion, incl.
-water use), ``nldi``, ``streamstats``, and the
-deprecated ``nwis``.
+water use), ``nldi``, and ``streamstats``.
 
 ``nldi`` requires geopandas (``pip install dataretrieval[nldi]``) and is
 imported on demand: ``from dataretrieval import nldi``.
@@ -35,6 +30,7 @@ request interrupted partway raises :class:`dataretrieval.FanOutInterrupted`
 """
 
 from importlib.metadata import PackageNotFoundError, version
+from typing import TYPE_CHECKING
 
 try:
     __version__ = version("dataretrieval")
@@ -56,7 +52,6 @@ from dataretrieval.exceptions import (
     DataRetrievalError,
     HTTPError,
     NetworkError,
-    NoSitesError,
     RateLimited,
     RequestTooLarge,
     ServiceUnavailable,
@@ -89,12 +84,38 @@ from . import (
     exceptions,
     ngwmn,
     nwdc,
-    nwis,
     streamstats,
     utils,
     waterdata,
     wqp,
 )
+
+# Shared by the ``nwis`` stub and ``__getattr__`` below (ADR 0005). It lives
+# here because the stub raises on import, so its text cannot be imported from it.
+_NWIS_REMOVED_MESSAGE = (
+    "The dataretrieval.nwis module has been removed because USGS is retiring the "
+    "legacy waterservices endpoints. Use dataretrieval.waterdata instead, or "
+    "dataretrieval.nwdc for water use. To keep using nwis while the endpoints "
+    "remain online, pin the last release that includes it: "
+    'pip install "dataretrieval<=1.4.0"'
+)
+
+# Hidden from mypy: a module-level ``__getattr__`` would make mypy accept any
+# misspelled ``dataretrieval.<name>`` as valid.
+if not TYPE_CHECKING:
+
+    def __getattr__(name):
+        """Raise ``AttributeError`` for a name the package does not define.
+
+        Called only when normal attribute lookup fails (PEP 562). For
+        ``nwis`` the error carries the removal message, so
+        ``dataretrieval.nwis`` after ``import dataretrieval`` names the
+        replacement; ``hasattr(dataretrieval, "nwis")`` still returns ``False``.
+        """
+        if name == "nwis":
+            raise AttributeError(_NWIS_REMOVED_MESSAGE)
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # layered configuration (defined in ``dataretrieval.configuration``)
@@ -105,7 +126,6 @@ __all__ = [
     # service modules
     "ngwmn",
     "nwdc",
-    "nwis",
     "streamstats",
     "utils",
     "waterdata",
@@ -117,7 +137,6 @@ __all__ = [
     "DataRetrievalError",
     "HTTPError",
     "NetworkError",
-    "NoSitesError",
     "RateLimited",
     "RequestTooLarge",
     "ServiceUnavailable",

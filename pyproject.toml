@@ -170,11 +170,6 @@ ignore = [
     "SIM117", # Use a single `with` statement with multiple contexts
 ]
 
-[tool.ruff.lint.flake8-unused-arguments]
-# Retired ``nwis`` functions accept unused ``**kwargs`` to report replacements.
-# Exempt variadic parameters while checking named parameters with ARG001.
-ignore-variadic-names = true
-
 [tool.ruff.lint.mccabe]
 max-complexity = 20
 

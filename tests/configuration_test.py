@@ -1003,7 +1003,7 @@ def test_non_regular_config_path_is_empty_configuration(monkeypatch):
 
 
 def test_broken_config_does_not_break_unrelated_services(config_file):
-    """A Water Data config problem must not fail a legacy NWIS/WQP call.
+    """A Water Data config problem must not fail an unrelated-host call.
 
     Config resolution can raise, and ``_default_headers`` runs for every
     service. Resolving the key only after the host check keeps the failure
@@ -1011,8 +1011,7 @@ def test_broken_config_does_not_break_unrelated_services(config_file):
     """
     config_file("this is not = valid toml [[[\n")
 
-    # Legacy hosts never get the key, so they never read the configuration.
-    assert "X-Api-Key" not in _default_headers("https://waterservices.usgs.gov/nwis/dv")
+    # Other hosts never get the key, so they never read the configuration.
     assert "X-Api-Key" not in _default_headers("https://www.waterqualitydata.us/data")
 
     # The authorized host still raises rather than sending the request
@@ -1284,11 +1283,11 @@ def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
 def test_every_adapter_is_actually_wired_to_a_read_site():
     """A schema nothing passes gives the caller a report that may be wrong.
 
-    ``show_configuration()`` would report a ``[nwis]`` override as live while every call
-    ignored it -- the report that exists to say what a call will use being wrong.
-    Importability is the weaker half of the invariant: it passed while
-    ``waterdata.get_cql``, eight of nine WQP getters, and all of ``nwis`` resolved
-    package-wide without an error.
+    ``show_configuration()`` would report a ``[streamstats]`` override as live while
+    every call ignored it -- the report that exists to say what a call will use being
+    wrong. Importability is the weaker half of the invariant: it passed while
+    ``waterdata.get_cql``, eight of nine WQP getters, and all of ``streamstats``
+    resolved package-wide without an error.
     """
     import pathlib
 
@@ -1320,7 +1319,7 @@ def test_a_misspelled_adapter_at_a_read_site_raises():
     # Every read site goes through one resolver, so the check covers them all --
     # including the accessors that would otherwise return a default.
     with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
-        configuration.base_url(adapter="nwis", default="https://example.invalid")
+        configuration.base_url(adapter="ngwmns", default="https://example.invalid")
 
 
 def test_a_non_finite_stall_timeout_is_refused():

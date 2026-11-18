@@ -24,8 +24,9 @@ layers =
 ; The deprecated ``wateruse`` alias re-exports ``nwdc``, so it sits above the
 ; adapters rather than beside them. A compatibility facade may depend on the
 ; adapter it forwards to; nothing may depend on the facade.
-    wateruse
-    ngwmn | nldi | nwdc | nwis | streamstats | waterdata | wqp
+; The removed ``nwis`` stub only raises ``ImportError``, so nothing may import it.
+    nwis | wateruse
+    ngwmn | nldi | nwdc | streamstats | waterdata | wqp
     ogc
     utils
     _querying
@@ -121,31 +122,6 @@ source_modules =
 forbidden_modules =
     dataretrieval._querying
     dataretrieval.utils
-
-[importlinter:contract:nwis-quarantine]
-name = Deprecated NWIS has no dependents (ADR 0005)
-type = forbidden
-source_modules =
-    dataretrieval._querying
-    dataretrieval.codes
-    dataretrieval.combining
-    dataretrieval.credentials
-    dataretrieval.exceptions
-    dataretrieval.interruptions
-    dataretrieval.ngwmn
-    dataretrieval.nldi
-    dataretrieval.ogc
-    dataretrieval.progress
-    dataretrieval.rdb
-    dataretrieval.streamstats
-    dataretrieval.transport
-    dataretrieval.utils
-    dataretrieval.nwdc
-    dataretrieval.waterdata
-    dataretrieval.wateruse
-    dataretrieval.wqp
-forbidden_modules =
-    dataretrieval.nwis
 
 [importlinter:contract:waterdata-families]
 name = Water Data collection families do not reach through each other (ADR 0007)

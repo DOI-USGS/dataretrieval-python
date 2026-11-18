@@ -55,8 +55,8 @@ def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]
     resolution reads the config file and can raise
     :class:`~dataretrieval.exceptions.ConfigurationError` for a malformed file or
     a profile it no longer defines. Resolving first would let a Water Data
-    configuration problem fail a legacy NWIS, WQP, or NGWMN call that would
-    never have received the key.
+    configuration problem fail a call to a host that would never have received
+    the key.
     """
     headers = {
         "Accept-Encoding": "compress, gzip",
