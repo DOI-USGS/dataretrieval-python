@@ -4,17 +4,19 @@ Column Types and Memory
 -----------------------
 
 The Water Data getters return measurement columns such as ``value`` as
-``float64``, and time columns as :ref:`timeconventions` describes. With
+``float64``, and time columns as detailed in :ref:`timeconventions`. With
 pandas 3, text columns that have values, such as ``monitoring_location_id``,
 use the pandas default string type. Text columns take most of a result's
-memory.
+memory. The examples below show how the pyarrow package reduces the memory a
+pandas DataFrame uses.
 
 
 Installing pyarrow
 ******************
 
 With pandas 3, pandas stores text columns in Arrow memory whenever pyarrow is
-installed. No ``dataretrieval`` call changes.
+installed. Installing pyarrow alone can save considerable memory, and no
+``dataretrieval`` call changes.
 
 .. code:: bash
 
@@ -43,15 +45,22 @@ pandas 2 stores text as ``object`` whether or not pyarrow is installed. Python
 Converting to Arrow dtypes
 **************************
 
-Convert the columns other than ``geometry``:
+With pandas 3, installing pyarrow changes only the storage of text columns.
+They keep the pandas default string type, and the other columns keep their
+NumPy types. To reduce memory further, convert the columns other than
+``geometry`` to Arrow dtypes:
 
 .. code:: python
 
-    >>> cols = df.columns.drop("geometry", errors="ignore")
-    >>> df[cols] = df[cols].convert_dtypes(
-    ...     dtype_backend="pyarrow", convert_integer=False
-    ... )
-    >>> df[cols].dtypes
+    >>> def to_arrow(frame):
+    ...     cols = frame.columns.drop("geometry", errors="ignore")
+    ...     floats = frame.select_dtypes("float").columns
+    ...     frame[cols] = frame[cols].convert_dtypes(dtype_backend="pyarrow")
+    ...     frame[floats] = frame[floats].astype("double[pyarrow]")
+    ...     return frame
+    ...
+    >>> df = to_arrow(df)
+    >>> df.dtypes.drop("geometry")
     time_series_id                           string[pyarrow]
     monitoring_location_id                   string[pyarrow]
     parameter_code                           string[pyarrow]
@@ -65,14 +74,17 @@ Convert the columns other than ``geometry``:
     daily_id                                 string[pyarrow]
     dtype: object
 
-The conversion reduces the result above to 2.3 MiB. pandas 2 gives the same
-types, except ``[ns]`` timestamps in place of ``[us]``.
+The conversion reduces the result above to 2.3 MiB. The listing is from
+pandas 3. With pandas 2, the time columns are ``timestamp[ns][pyarrow]`` and
+``timestamp[ns, tz=UTC][pyarrow]``, and the other types are the same.
 
-- ``convert_integer=False`` keeps ``value`` a floating-point column. Without
-  it, ``convert_dtypes`` turns a float column whose values are all whole
-  numbers into an integer column. Integer columns stay NumPy ``int64``.
+- ``convert_dtypes`` turns a float column whose values are all whole numbers
+  into an integer column. ``to_arrow`` then casts the float columns to
+  ``double[pyarrow]``, so ``value`` stays floating point. pandas 3.1
+  deprecated ``convert_integer``, the keyword that disabled the integer
+  conversion.
 - ``convert_dtypes`` raises ``TypeError`` on a geopandas ``geometry`` column,
-  so the conversion leaves it out. The result stays a ``GeoDataFrame``, and
+  so ``to_arrow`` leaves it out. The result stays a ``GeoDataFrame``, and
   ``df.to_parquet(path)`` writes GeoParquet.
 - Columns of lists, such as ``qualifier``, stay ``object``.
 - A column with no values in a result becomes ``null[pyarrow]``. For
@@ -88,10 +100,7 @@ types, except ``[ns]`` timestamps in place of ``[us]``.
       >>> sites, md = waterdata.get_monitoring_locations(
       ...     monitoring_location_id=["USGS-05427718", "USGS-01646500"]
       ... )
-      >>> cols = sites.columns.drop("geometry", errors="ignore")
-      >>> sites[cols] = sites[cols].convert_dtypes(
-      ...     dtype_backend="pyarrow", convert_integer=False
-      ... )
+      >>> sites = to_arrow(sites)
       >>> sites["aquifer_code"].dtype
       null[pyarrow]
       >>> sites = sites.astype({"aquifer_code": pd.ArrowDtype(pa.string())})
