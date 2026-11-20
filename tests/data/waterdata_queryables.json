@@ -510,5 +510,23 @@
     "thresholds",
     "unit_of_measure",
     "web_description"
+  ],
+  "time-series-methods": [
+    "begin",
+    "end",
+    "geometry",
+    "id",
+    "method_category",
+    "method_id",
+    "time_series_id"
+  ],
+  "time-series-revisions": [
+    "begin",
+    "end",
+    "geometry",
+    "id",
+    "monitoring_location_id",
+    "revision_note",
+    "time_series_id"
   ]
 }

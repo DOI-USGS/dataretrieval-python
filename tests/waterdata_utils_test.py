@@ -962,6 +962,45 @@ def test_type_cols_warning_is_singular_for_one_value():
         _type_cols(df, _TYPING_DIALECT)
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        ["2019-12-19T22:00:00.000001+00:00", "2020-01-09T11:25:00+00:00"],
+        pytest.param(
+            ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
+            # pandas 2 parses to nanoseconds, which end in 2262.
+            marks=pytest.mark.skipif(
+                int(pd.__version__.split(".")[0]) < 3,
+                reason="pandas 2 datetimes end in 2262",
+            ),
+        ),
+    ],
+    ids=["fractional-first", "whole-first"],
+)
+def test_type_cols_parses_mixed_second_precision(raw):
+    """A column mixing whole and fractional seconds, as ``time-series-methods``
+    ``end`` does, parses every value. Inferring one format from the first value
+    turned every value of the other precision into ``NaT``."""
+    df = pd.DataFrame({"time": raw})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].notna().all()
+    assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
+
+
+def test_type_cols_mixed_naive_and_aware_still_returns():
+    """A column mixing naive and offset values makes the ISO 8601 parse raise
+    rather than coerce. The inferred parse it falls back to keeps the call
+    returning, with the odd value ``NaT`` and a warning, as before the ISO 8601
+    parse was introduced."""
+    df = pd.DataFrame({"time": ["2024-01-01T10:00:00", "2024-01-01T10:00:00+00:00"]})
+    with pytest.warns(UserWarning, match=r"^1 value in column 'time'"):
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].tolist()[0] == pd.Timestamp("2024-01-01T10:00:00")
+    assert out["time"].isna().tolist() == [False, True]
+
+
 # --- _format_api_dates -------------------------------------------------------
 
 

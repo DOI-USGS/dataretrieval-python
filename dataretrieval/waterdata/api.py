@@ -21,6 +21,8 @@ from dataretrieval.waterdata.metadata import (
     get_field_measurements_metadata,
     get_monitoring_locations,
     get_time_series_metadata,
+    get_time_series_methods,
+    get_time_series_revisions,
 )
 from dataretrieval.waterdata.reference import get_queryables, get_reference_table
 from dataretrieval.waterdata.samples import (
@@ -57,6 +59,8 @@ __all__ = [
     "get_stats_date_range",
     "get_stats_por",
     "get_time_series_metadata",
+    "get_time_series_methods",
+    "get_time_series_revisions",
 ]
 
 # Private compatibility names used by existing callers and patch targets.

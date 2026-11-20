@@ -46,6 +46,8 @@ _EXPECTED_WATERDATA_ALL = [
     "get_stats_date_range",
     "get_stats_por",
     "get_time_series_metadata",
+    "get_time_series_methods",
+    "get_time_series_revisions",
 ]
 
 #: Arguments a caller must supply positionally or by keyword. Adding an entry
@@ -71,6 +73,8 @@ _REQUIRED_ARGUMENTS = {
     "get_stats_date_range": (),
     "get_stats_por": (),
     "get_time_series_metadata": (),
+    "get_time_series_methods": (),
+    "get_time_series_revisions": (),
 }
 
 #: Defaults that are deliberately not ``None``. Every other optional parameter defaults
@@ -99,9 +103,16 @@ _CROSS_CUTTING_PARAMETERS = (
     "skip_geometry",
 )
 
-#: The continuous endpoint returns no geometries, so it exposes neither the
-#: spatial filter nor the switch for dropping a geometry it never sends.
-_NO_GEOMETRY_PARAMETERS = {"get_continuous": {"bbox", "skip_geometry"}}
+#: These collections return no geometries, so their getters expose neither the
+#: spatial filter nor the switch for dropping a geometry they never send.
+_NO_GEOMETRY_PARAMETERS = {
+    name: {"bbox", "skip_geometry"}
+    for name in (
+        "get_continuous",
+        "get_time_series_methods",
+        "get_time_series_revisions",
+    )
+}
 
 
 def _collection_getters() -> list[str]:
@@ -183,6 +194,8 @@ _POSITIONAL_COUNT = {
     "get_stats_date_range": 16,
     "get_stats_por": 16,
     "get_time_series_metadata": 29,
+    "get_time_series_methods": 12,
+    "get_time_series_revisions": 12,
 }
 
 

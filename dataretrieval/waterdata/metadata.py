@@ -1099,9 +1099,254 @@ def get_field_measurements_metadata(
     return get_ogc_data(args, collection, max_rows=max_rows)
 
 
+def get_time_series_revisions(
+    monitoring_location_id: str | Iterable[str] | None = None,
+    time_series_id: str | Iterable[str] | None = None,
+    time_series_revision_id: str | Iterable[str] | None = None,
+    revision_note: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
+    convert_type: bool = True,
+    max_rows: int | None = None,
+    **queryables: Any,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get text explanations of revisions made to approved time-series data.
+
+    Approved water data are considered published record, but on occasion
+    changes or deletions (revisions) must be made to data after they are
+    approved. Each record explains one revision to one time series over the
+    interval from ``begin`` to ``end``. Changes to data are also indicated by
+    revision qualifier codes alongside the data. Explanations before 2017 are
+    not necessarily available online. Reference docs:
+    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/time-series-revisions
+
+    The collection is non-spatial: records carry no geometry, so this getter
+    has no ``bbox`` or ``skip_geometry`` argument and returns a plain
+    ``pandas.DataFrame``.
+
+    Parameters
+    ----------
+    monitoring_location_id : string or iterable of strings, optional
+        A unique identifier representing a single monitoring location, in
+        ``AGENCY-ID`` form (e.g. ``"USGS-01646500"``).
+    time_series_id : string or iterable of strings, optional
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
+    time_series_revision_id : string or iterable of strings, optional
+        A unique identifier for a single revision record (the collection's
+        ``id``).
+    revision_note : string or iterable of strings, optional
+        The text explanation of the revision.
+    begin : string or iterable of strings, optional
+        The start of the revised interval, in UTC.
+        You can query this field using date-times or intervals, adhering to
+        RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded
+        or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+                for an open end: ["2018-02-12", None]
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
+
+    end : string or iterable of strings, optional
+        The end of the revised interval, in UTC. Same grammar as ``begin``.
+    properties : string or iterable of strings, optional
+        The columns to return from the query. Available options are:
+        geometry, time_series_revision_id, monitoring_location_id,
+        time_series_id, revision_note, begin, end. The default (None) returns
+        all columns.
+    limit : int, optional
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. This is a
+        per-page size, not a cap on the total result. Use ``max_rows`` to cap
+        the total instead.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.BaseMetadata`
+        A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
+    Examples
+    --------
+    .. code::
+
+        >>> # Every revision explanation for one monitoring location
+        >>> df, md = dataretrieval.waterdata.get_time_series_revisions(
+        ...     monitoring_location_id="USGS-01646500"
+        ... )
+
+        >>> # Revisions to intervals that began in 2018 or 2019
+        >>> df, md = dataretrieval.waterdata.get_time_series_revisions(
+        ...     monitoring_location_id="USGS-01646500",
+        ...     begin="2018-01-01/2019-12-31",
+        ... )
+    """
+    args = _get_args(locals(), exclude={"max_rows"})
+
+    return get_ogc_data(args, "time-series-revisions", max_rows=max_rows, spatial=False)
+
+
+def get_time_series_methods(
+    time_series_id: str | Iterable[str] | None = None,
+    time_series_method_id: str | Iterable[str] | None = None,
+    method_id: str | Iterable[str] | None = None,
+    method_category: str | Iterable[str] | None = None,
+    begin: str | Iterable[str] | None = None,
+    end: str | Iterable[str] | None = None,
+    properties: str | Iterable[str] | None = None,
+    limit: int | None = None,
+    filter: str | None = None,
+    filter_lang: FILTER_LANG | None = None,
+    convert_type: bool = True,
+    max_rows: int | None = None,
+    **queryables: Any,
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Get the measurement or computation method in effect for a time series.
+
+    A time series can have many methods over its history. Each record is one
+    contiguous interval, from ``begin`` to ``end``, during which a single method
+    was used. An interval that is still open ends at ``9999-12-31``. Reference
+    docs:
+    https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/time-series-methods
+
+    The collection is non-spatial: records carry no geometry, so this getter
+    has no ``bbox`` or ``skip_geometry`` argument and returns a plain
+    ``pandas.DataFrame``. It also cannot be filtered by monitoring location;
+    look up the location's ``time_series_id`` values with
+    :func:`get_time_series_metadata` first.
+
+    Parameters
+    ----------
+    time_series_id : string or iterable of strings, optional
+        A unique identifier representing a single time series, corresponding to
+        the id field in the time-series-metadata endpoint.
+    time_series_method_id : string or iterable of strings, optional
+        A unique identifier for a single method-interval record (the
+        collection's ``id``).
+    method_id : string or iterable of strings, optional
+        The RLMS method code identifying the measurement or computation method
+        in effect for the interval (e.g. ``"THM01"``).
+    method_category : string or iterable of strings, optional
+        The RLMS method category code classifying the method identified by
+        ``method_id``: ``STNRD``, ``LMTUS``, ``EXPER`` or ``UNKWN``.
+    begin : string or iterable of strings, optional
+        The start of the interval during which the method was in effect, in UTC.
+        You can query this field using date-times or intervals, adhering to
+        RFC 3339, or using ISO 8601 duration objects. Intervals may be bounded
+        or half-bounded (double-dots at start or end).
+        Examples:
+
+            * A date-time: "2018-02-12T23:20:50Z"
+            * A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+            * Half-bounded intervals: "2018-02-12T00:00:00Z/.." or
+                "../2018-03-18T12:31:12Z"
+            * A list of two values: ["2018-02-12", "2018-03-18"], with None
+                for an open end: ["2018-02-12", None]
+            * Duration objects: "P1M" for data from the past month or
+                "PT36H" for the last 36 hours
+
+    end : string or iterable of strings, optional
+        The end of the interval during which the method was in effect, in UTC.
+        Same grammar as ``begin``.
+    properties : string or iterable of strings, optional
+        The columns to return from the query. Available options are:
+        geometry, time_series_method_id, time_series_id, begin, end,
+        method_id, method_category. The default (None) returns all columns.
+    limit : int, optional
+        The number of features returned in each page. The maximum allowable
+        limit is 50000; the default (None) requests that maximum. This is a
+        per-page size, not a cap on the total result. Use ``max_rows`` to cap
+        the total instead.
+    filter, filter_lang : optional
+        Server-side CQL filter passed through as the OGC ``filter`` /
+        ``filter-lang`` query parameters. See
+        :mod:`dataretrieval.ogc.filters` for syntax, auto-chunking,
+        and the lexicographic-comparison pitfall.
+    convert_type : boolean, optional
+        If True, converts columns to appropriate types.
+    max_rows : int, optional
+        Cap the total number of rows returned, stopping pagination early
+        instead of downloading the whole result. Unlike ``limit`` (the
+        per-page size), this bounds the total result across every page.
+        The default (None) follows pagination to completion.
+    **queryables : string or iterable of strings, optional
+        Any other queryable property of this collection, passed through as a
+        server-side filter. Call :func:`get_queryables` to see the queryables a
+        collection supports.
+
+    Returns
+    -------
+    df : ``pandas.DataFrame``
+        Formatted data returned from the API query.
+    md : :obj:`dataretrieval.utils.BaseMetadata`
+        A custom metadata object pertaining to the query.
+
+    Raises
+    ------
+    ChunkInterrupted
+        A transient failure (429 / 5xx / timeout) interrupted the request
+        after the built-in retries. Completed work is preserved; resume
+        with ``exc.call.resume()`` (see :doc:`/userguide/errors`).
+
+    Examples
+    --------
+    .. code::
+
+        >>> # The method history of one time series
+        >>> df, md = dataretrieval.waterdata.get_time_series_methods(
+        ...     time_series_id="0003587a6a544f6aa37fe13dc2050985"
+        ... )
+
+        >>> # Method intervals of that series that began in 2021
+        >>> df, md = dataretrieval.waterdata.get_time_series_methods(
+        ...     time_series_id="0003587a6a544f6aa37fe13dc2050985",
+        ...     begin="2021-01-01/2021-12-31",
+        ... )
+    """
+    args = _get_args(locals(), exclude={"max_rows"})
+
+    return get_ogc_data(args, "time-series-methods", max_rows=max_rows, spatial=False)
+
+
 __all__ = [
     "get_monitoring_locations",
     "get_time_series_metadata",
     "get_combined_metadata",
     "get_field_measurements_metadata",
+    "get_time_series_revisions",
+    "get_time_series_methods",
 ]
