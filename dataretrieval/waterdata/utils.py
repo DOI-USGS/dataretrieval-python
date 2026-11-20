@@ -65,6 +65,9 @@ _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "time-series-revisions": "time_series_revision_id",
 }
 
+# The collections of ``_OUTPUT_ID_BY_COLLECTION`` whose records carry no geometry.
+_NONSPATIAL_COLLECTIONS = frozenset({"time-series-methods", "time-series-revisions"})
+
 # Every collection's output id except the two that are user-facing
 # (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
 # per-record ids that ``_arrange_cols`` moves to the end of a result frame.
@@ -250,8 +253,9 @@ def get_ogc_data(
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
     spatial : bool, optional
-        Whether the collection includes feature geometry. Water Data's typed
-        feature collections do; reference tables pass ``False``.
+        Whether the collection includes feature geometry. Reference tables
+        pass ``False``; a collection in ``_NONSPATIAL_COLLECTIONS`` is
+        non-spatial whatever is passed.
     api_version : str, optional
         API version for this one request. ``None`` (the default) resolves it
         through the configuration chain. See
@@ -276,7 +280,7 @@ def get_ogc_data(
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
         base_url=ogc_api_url(api_version=api_version),
-        spatial=spatial,
+        spatial=spatial and collection not in _NONSPATIAL_COLLECTIONS,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
         cql_body=cql_body,

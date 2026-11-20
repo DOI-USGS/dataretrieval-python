@@ -1217,7 +1217,7 @@ def get_time_series_revisions(
     """
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, "time-series-revisions", max_rows=max_rows, spatial=False)
+    return get_ogc_data(args, "time-series-revisions", max_rows=max_rows)
 
 
 def get_time_series_methods(
@@ -1239,8 +1239,8 @@ def get_time_series_methods(
 
     A time series can have many methods over its history. Each record is one
     contiguous interval, from ``begin`` to ``end``, during which a single method
-    was used. An interval that is still open ends at ``9999-12-31``. Reference
-    docs:
+    was used. An interval that is still open ends at ``9999-12-31``, and one
+    with no recorded start begins at ``0001-01-01``. Reference docs:
     https://api.waterdata.usgs.gov/ogcapi/v1/openapi?f=html#/time-series-methods
 
     The collection is non-spatial: records carry no geometry, so this getter
@@ -1339,7 +1339,7 @@ def get_time_series_methods(
     """
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, "time-series-methods", max_rows=max_rows, spatial=False)
+    return get_ogc_data(args, "time-series-methods", max_rows=max_rows)
 
 
 __all__ = [

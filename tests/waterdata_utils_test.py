@@ -966,14 +966,7 @@ def test_type_cols_warning_is_singular_for_one_value():
     "raw",
     [
         ["2019-12-19T22:00:00.000001+00:00", "2020-01-09T11:25:00+00:00"],
-        pytest.param(
-            ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
-            # pandas 2 parses to nanoseconds, which end in 2262.
-            marks=pytest.mark.skipif(
-                int(pd.__version__.split(".")[0]) < 3,
-                reason="pandas 2 datetimes end in 2262",
-            ),
-        ),
+        ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
     ],
     ids=["fractional-first", "whole-first"],
 )
@@ -987,6 +980,20 @@ def test_type_cols_parses_mixed_second_precision(raw):
         out = _type_cols(df, _TYPING_DIALECT)
     assert out["time"].notna().all()
     assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
+
+
+def test_type_cols_keeps_values_outside_the_nanosecond_range():
+    """``time-series-methods`` begins an interval with no known start at
+    0001-01-01 and ends an open one at 9999-12-31. pandas 2 parses to
+    nanoseconds, which span 1677 to 2262, and every value in a column can be
+    one of these, so the column keeps them and its UTC time zone."""
+    df = pd.DataFrame({"time": ["0001-01-01T00:00:00+00:00", None]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert str(out["time"].dtype.tz) == "UTC"
+    assert out["time"][0].year == 1
+    assert out["time"].isna().tolist() == [False, True]
 
 
 def test_type_cols_mixed_naive_and_aware_still_returns():

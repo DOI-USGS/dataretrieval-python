@@ -332,20 +332,45 @@ def _parse_datetimes(raw: pd.Series) -> pd.Series:
             parsed = pd.to_datetime(raw, errors="coerce", format="ISO8601")
     except ValueError:
         parsed = None
-    if parsed is not None and pd.api.types.is_datetime64_any_dtype(parsed):
+    if parsed is None or not pd.api.types.is_datetime64_any_dtype(parsed):
+        return pd.to_datetime(raw, errors="coerce")
+    return _reparse_lost(raw, parsed)
+
+
+def _reparse_lost(raw: pd.Series, parsed: pd.Series) -> pd.Series:
+    """Parse *raw* again at microsecond resolution if *parsed* lost a value.
+
+    pandas 2 parses to nanoseconds, which span 1677 to 2262, so it coerces the
+    ``0001-01-01`` start and ``9999-12-31`` end of an open interval to ``NaT``.
+    ``astype`` raises on a value it cannot parse, so a column that holds one
+    keeps *parsed*.
+    """
+    lost = raw[_lost(raw, parsed)]
+    if lost.empty:
         return parsed
-    return pd.to_datetime(raw, errors="coerce")
+    try:
+        tz = pd.Timestamp(lost.iloc[0]).tz
+        return raw.astype(pd.DatetimeTZDtype("us", tz) if tz else "datetime64[us]")
+    except (ValueError, TypeError):
+        return parsed
+
+
+def _lost(raw: pd.Series, parsed: pd.Series) -> pd.Series:
+    """Mark the values present in *raw* that are missing from *parsed*.
+
+    A value counts as present when it is neither null nor an empty string.
+    """
+    return parsed.isna() & raw.notna() & (raw != "")
 
 
 def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> None:
     """Warn when coercion turned values that were present into ``NaN``/``NaT``.
 
-    A value counts as present when it is neither null nor an empty string, so
-    missing values reported either way do not trigger the warning.
+    Missing values, null or an empty string, do not trigger the warning.
     """
     if not parsed.isna().any():
         return
-    lost = int((parsed.isna() & raw.notna() & (raw != "")).sum())
+    lost = int(_lost(raw, parsed).sum())
     if lost:
         values = "1 value" if lost == 1 else f"{lost} values"
         warnings.warn(

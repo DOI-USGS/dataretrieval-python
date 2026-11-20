@@ -62,14 +62,6 @@ _OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v1"
 _V0_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
 _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 
-#: pandas 2 parses datetimes to nanoseconds, which end in 2262, so a
-#: 9999-12-31 open interval end is ``NaT`` there. pandas 3 parses to
-#: microseconds and keeps it.
-_needs_pandas_3_datetimes = pytest.mark.skipif(
-    int(pd.__version__.split(".")[0]) < 3,
-    reason="pandas 2 datetimes end in 2262",
-)
-
 #: Two real features per collection, captured from the live collection and trimmed.
 #: Property names, nesting, and value types (including the numeric-looking
 #: strings the API sends) are verbatim; only the row count is reduced.
@@ -1622,11 +1614,12 @@ def test_get_time_series_methods(httpx_mock):
     assert df["time_series_method_id"].notna().all()
 
 
-@_needs_pandas_3_datetimes
 def test_get_time_series_methods_keeps_open_interval_end(httpx_mock):
     """An open-ended method interval ends at 9999-12-31, which is kept as a
-    timestamp rather than coerced to ``NaT``."""
-    df, _ = _get_methods_fixture(httpx_mock)
+    timestamp rather than coerced to ``NaT``, on pandas 2 as well."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        df, _ = _get_methods_fixture(httpx_mock)
 
     assert df["end"].notna().all()
     assert df["end"].max().year == 9999
@@ -1668,6 +1661,20 @@ def test_nonspatial_getters_return_an_empty_plain_frame(httpx_mock, getter, coll
     assert df.empty
     assert "geometry" not in df.columns
     assert "time_series_id" in df.columns
+
+
+@pytest.mark.parametrize("collection", ["time-series-revisions", "time-series-methods"])
+def test_get_cql_returns_a_plain_frame_for_a_nonspatial_collection(
+    httpx_mock, collection
+):
+    """``get_cql`` shapes a non-spatial collection as its typed getter does:
+    a plain DataFrame, with no column of null geometries."""
+    _mock_items(httpx_mock, collection)
+
+    df, _ = get_cql(collection, {"op": "isNull", "args": [{"property": "end"}]})
+
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
 
 
 def test_get_combined_metadata(httpx_mock):
