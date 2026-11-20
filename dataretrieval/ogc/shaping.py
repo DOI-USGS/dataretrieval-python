@@ -317,15 +317,24 @@ def _parse_datetimes(raw: pd.Series) -> pd.Series:
 
     ``ISO8601`` rather than an inferred format: pandas infers one format from
     the first value, so in a column that mixes whole and fractional seconds
-    every value of the other precision became ``NaT``. ``ISO8601`` raises
-    instead of coercing when a column mixes UTC offsets, or offset and naive
-    values; the inferred parse is kept for that case, so such a column still
-    returns, with the odd values as ``NaT`` and a warning, as it did before.
+    every value of the other precision became ``NaT``. When a column mixes UTC
+    offsets, or offset and naive values, pandas 3 raises instead of coercing,
+    and pandas 2 warns and returns ``object`` values. The inferred parse is kept
+    for that case, so such a column returns as it did before.
     """
     try:
-        return pd.to_datetime(raw, errors="coerce", format="ISO8601")
+        with warnings.catch_warnings():
+            # pandas 2 only: the mixed-time-zone warning. The inferred parse
+            # below repeats it where it applies.
+            warnings.filterwarnings(
+                "ignore", "In a future version of pandas", FutureWarning
+            )
+            parsed = pd.to_datetime(raw, errors="coerce", format="ISO8601")
     except ValueError:
-        return pd.to_datetime(raw, errors="coerce")
+        parsed = None
+    if parsed is not None and pd.api.types.is_datetime64_any_dtype(parsed):
+        return parsed
+    return pd.to_datetime(raw, errors="coerce")
 
 
 def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> None:

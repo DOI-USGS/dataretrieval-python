@@ -966,7 +966,14 @@ def test_type_cols_warning_is_singular_for_one_value():
     "raw",
     [
         ["2019-12-19T22:00:00.000001+00:00", "2020-01-09T11:25:00+00:00"],
-        ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
+        pytest.param(
+            ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
+            # pandas 2 parses to nanoseconds, which end in 2262.
+            marks=pytest.mark.skipif(
+                int(pd.__version__.split(".")[0]) < 3,
+                reason="pandas 2 datetimes end in 2262",
+            ),
+        ),
     ],
     ids=["fractional-first", "whole-first"],
 )

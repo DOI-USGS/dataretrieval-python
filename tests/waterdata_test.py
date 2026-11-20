@@ -62,6 +62,14 @@ _OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v1"
 _V0_OGC_BASE = "https://api.waterdata.usgs.gov/ogcapi/v0"
 _STATS_BASE = "https://api.waterdata.usgs.gov/statistics/v0"
 
+#: pandas 2 parses datetimes to nanoseconds, which end in 2262, so a
+#: 9999-12-31 open interval end is ``NaT`` there. pandas 3 parses to
+#: microseconds and keeps it.
+_needs_pandas_3_datetimes = pytest.mark.skipif(
+    int(pd.__version__.split(".")[0]) < 3,
+    reason="pandas 2 datetimes end in 2262",
+)
+
 #: Two real features per collection, captured from the live collection and trimmed.
 #: Property names, nesting, and value types (including the numeric-looking
 #: strings the API sends) are verbatim; only the row count is reduced.
@@ -1587,19 +1595,21 @@ def test_get_time_series_revisions(httpx_mock):
     assert "id" not in df.columns
     assert df["time_series_revision_id"].notna().all()
     assert df["revision_note"].str.startswith("Revisions").all()
-    assert str(df["begin"].dtype) == "datetime64[us, UTC]"
+    assert isinstance(df["begin"].dtype, pd.DatetimeTZDtype)
+    assert str(df["begin"].dtype.tz) == "UTC"
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
-def test_get_time_series_methods(httpx_mock):
-    """An open-ended method interval ends at 9999-12-31, which is kept as a
-    timestamp rather than coerced to ``NaT``."""
+def _get_methods_fixture(httpx_mock):
     _mock_items(httpx_mock, "time-series-methods")
-
-    df, _ = get_time_series_methods(
+    return get_time_series_methods(
         time_series_id="0003587a6a544f6aa37fe13dc2050985",
         method_category="STNRD",
     )
+
+
+def test_get_time_series_methods(httpx_mock):
+    df, _ = _get_methods_fixture(httpx_mock)
 
     (sent,) = _sent(httpx_mock, "time-series-methods")
     assert sent == {
@@ -1610,6 +1620,14 @@ def test_get_time_series_methods(httpx_mock):
     assert type(df) is pd.DataFrame
     assert "geometry" not in df.columns
     assert df["time_series_method_id"].notna().all()
+
+
+@_needs_pandas_3_datetimes
+def test_get_time_series_methods_keeps_open_interval_end(httpx_mock):
+    """An open-ended method interval ends at 9999-12-31, which is kept as a
+    timestamp rather than coerced to ``NaT``."""
+    df, _ = _get_methods_fixture(httpx_mock)
+
     assert df["end"].notna().all()
     assert df["end"].max().year == 9999
 
