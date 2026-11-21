@@ -35,6 +35,9 @@ logger = logging.getLogger(__name__)
 # spatial joins fail). Matches the constant in ``nldi`` (EPSG:4326).
 _CRS = "EPSG:4326"
 
+# pandas 2 parses datetimes to nanoseconds; pandas 3 parses them to microseconds.
+_PARSES_TO_NS = int(pd.__version__.split(".")[0]) < 3
+
 # Whether geopandas is present is a static, environment-level fact, so warn
 # once here at import time rather than per query/chunk.
 if not GEOPANDAS:
@@ -315,12 +318,9 @@ def _type_cols(df: pd.DataFrame, dialect: OgcDialect) -> pd.DataFrame:
 def _parse_datetimes(raw: pd.Series) -> pd.Series:
     """Parse *raw* as ISO 8601, coercing unparseable values to ``NaT``.
 
-    ``ISO8601`` rather than an inferred format: pandas infers one format from
-    the first value, so in a column that mixes whole and fractional seconds
-    every value of the other precision became ``NaT``. When a column mixes UTC
-    offsets, or offset and naive values, pandas 3 raises instead of coercing,
-    and pandas 2 warns and returns ``object`` values. The inferred parse is kept
-    for that case, so such a column returns as it did before.
+    ISO 8601 parses a column that mixes whole and fractional seconds, which an
+    inferred format does not. A column that mixes UTC offsets, or offset and
+    naive values, takes the inferred parse.
     """
     try:
         with warnings.catch_warnings():
@@ -331,13 +331,16 @@ def _parse_datetimes(raw: pd.Series) -> pd.Series:
             )
             parsed = pd.to_datetime(raw, errors="coerce", format="ISO8601")
     except ValueError:
-        parsed = None
-    if parsed is None or not pd.api.types.is_datetime64_any_dtype(parsed):
-        return pd.to_datetime(raw, errors="coerce")
-    return _reparse_lost(raw, parsed)
+        pass
+    else:
+        if pd.api.types.is_datetime64_any_dtype(parsed):
+            if _PARSES_TO_NS and parsed.hasnans:  # pragma: no cover - pandas 2
+                return _reparse_at_microseconds(raw, parsed)
+            return parsed
+    return pd.to_datetime(raw, errors="coerce")
 
 
-def _reparse_lost(raw: pd.Series, parsed: pd.Series) -> pd.Series:
+def _reparse_at_microseconds(raw: pd.Series, parsed: pd.Series) -> pd.Series:
     """Parse *raw* again at microsecond resolution if *parsed* lost a value.
 
     pandas 2 parses to nanoseconds, which span 1677 to 2262, so it coerces the
@@ -364,10 +367,7 @@ def _lost(raw: pd.Series, parsed: pd.Series) -> pd.Series:
 
 
 def _warn_unparsed(raw: pd.Series, parsed: pd.Series, col: str, kind: str) -> None:
-    """Warn when coercion turned values that were present into ``NaN``/``NaT``.
-
-    Missing values, null or an empty string, do not trigger the warning.
-    """
+    """Warn when coercion turned values that were present into ``NaN``/``NaT``."""
     if not parsed.isna().any():
         return
     lost = int(_lost(raw, parsed).sum())

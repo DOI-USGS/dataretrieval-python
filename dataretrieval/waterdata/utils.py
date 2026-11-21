@@ -224,7 +224,7 @@ def get_ogc_data(
     max_rows: int | None = None,
     cql_body: str | None = None,
     *,
-    spatial: bool = True,
+    spatial: bool | None = None,
     api_version: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
@@ -253,9 +253,9 @@ def get_ogc_data(
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
     spatial : bool, optional
-        Whether the collection includes feature geometry. Reference tables
-        pass ``False``; a collection in ``_NONSPATIAL_COLLECTIONS`` is
-        non-spatial whatever is passed.
+        Whether the collection includes feature geometry. ``None`` (the
+        default) reads it from ``_NONSPATIAL_COLLECTIONS``; pass it only for
+        collections outside the map, such as reference tables.
     api_version : str, optional
         API version for this one request. ``None`` (the default) resolves it
         through the configuration chain. See
@@ -271,6 +271,8 @@ def get_ogc_data(
     """
     if output_id is None:
         output_id = _OUTPUT_ID_BY_COLLECTION[collection]
+    if spatial is None:
+        spatial = collection not in _NONSPATIAL_COLLECTIONS
     return _facade_get_ogc_data(
         args,
         collection,
@@ -280,7 +282,7 @@ def get_ogc_data(
         # the documented ``OGC_API_URL`` constant remains the default-value
         # compatibility path rather than a production request destination.
         base_url=ogc_api_url(api_version=api_version),
-        spatial=spatial and collection not in _NONSPATIAL_COLLECTIONS,
+        spatial=spatial,
         extra_id_cols=_EXTRA_ID_COLS,
         dialect=WATERDATA_DIALECT,
         cql_body=cql_body,

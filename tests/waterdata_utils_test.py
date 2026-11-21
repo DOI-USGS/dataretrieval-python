@@ -38,6 +38,7 @@ from dataretrieval.ogc.shaping import (
     _arrange_cols,
     _deal_with_empty,
     _get_resp_data,
+    _reparse_at_microseconds,
     _to_snake_case,
     _type_cols,
 )
@@ -978,7 +979,6 @@ def test_type_cols_parses_mixed_second_precision(raw):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         out = _type_cols(df, _TYPING_DIALECT)
-    assert out["time"].notna().all()
     assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
 
 
@@ -994,6 +994,24 @@ def test_type_cols_keeps_values_outside_the_nanosecond_range():
     assert str(out["time"].dtype.tz) == "UTC"
     assert out["time"][0].year == 1
     assert out["time"].isna().tolist() == [False, True]
+
+
+@pytest.mark.parametrize(
+    ("raw", "kept"),
+    [
+        (["9999-12-31T23:59:59.999999+00:00", None], [True, False]),
+        (["9999-12-31T23:59:59.999999+00:00", "not a date"], [False, False]),
+        ([None, ""], [False, False]),
+    ],
+    ids=["out-of-range", "unparseable", "only-missing"],
+)
+def test_reparse_at_microseconds(raw, kept):
+    """Given the all-``NaT`` nanosecond parse pandas 2 makes of these values, the
+    column is parsed again at microseconds, unless a value cannot be parsed at
+    all or none was lost."""
+    raw = pd.Series(raw, dtype=object)
+    parsed = pd.Series(pd.NaT, index=raw.index, dtype="datetime64[ns, UTC]")
+    assert _reparse_at_microseconds(raw, parsed).notna().tolist() == kept
 
 
 def test_type_cols_mixed_naive_and_aware_still_returns():

@@ -1592,16 +1592,17 @@ def test_get_time_series_revisions(httpx_mock):
     assert hasattr(md, "url") and hasattr(md, "query_time")
 
 
-def _get_methods_fixture(httpx_mock):
-    _mock_items(httpx_mock, "time-series-methods")
-    return get_time_series_methods(
-        time_series_id="0003587a6a544f6aa37fe13dc2050985",
-        method_category="STNRD",
-    )
-
-
 def test_get_time_series_methods(httpx_mock):
-    df, _ = _get_methods_fixture(httpx_mock)
+    """An open-ended interval ends at 9999-12-31, which is kept as a timestamp
+    rather than coerced to ``NaT``."""
+    _mock_items(httpx_mock, "time-series-methods")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        df, _ = get_time_series_methods(
+            time_series_id="0003587a6a544f6aa37fe13dc2050985",
+            method_category="STNRD",
+        )
 
     (sent,) = _sent(httpx_mock, "time-series-methods")
     assert sent == {
@@ -1612,15 +1613,6 @@ def test_get_time_series_methods(httpx_mock):
     assert type(df) is pd.DataFrame
     assert "geometry" not in df.columns
     assert df["time_series_method_id"].notna().all()
-
-
-def test_get_time_series_methods_keeps_open_interval_end(httpx_mock):
-    """An open-ended method interval ends at 9999-12-31, which is kept as a
-    timestamp rather than coerced to ``NaT``, on pandas 2 as well."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        df, _ = _get_methods_fixture(httpx_mock)
-
     assert df["end"].notna().all()
     assert df["end"].max().year == 9999
 
