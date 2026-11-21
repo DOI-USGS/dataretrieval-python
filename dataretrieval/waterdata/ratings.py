@@ -287,7 +287,12 @@ def _search(
     with STAC strategies. Pages hold features rather than rows, so each page
     frame wraps the raw feature dicts in a single ``feature`` column.
     """
-    query_params: dict[str, Any] = {"limit": min(limit, 10000)}
+    # ``/search`` spans every catalog collection. Unscoped, a search for one
+    # monitoring location also returns its ``daily`` and ``continuous`` items.
+    query_params: dict[str, Any] = {
+        "collections": "ratings",
+        "limit": min(limit, 10000),
+    }
     if filter_str is not None:
         query_params["filter"] = filter_str
     if time_str is not None:
