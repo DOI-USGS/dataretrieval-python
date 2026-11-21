@@ -24,6 +24,37 @@ if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
 
 
+# The ID column of each reference table. Most are the collection name singularized;
+# the method and citation tables name it after the column that refers to it, so
+# they join on it.
+_OUTPUT_ID_BY_REFERENCE_COLLECTION: dict[str, str] = {
+    "agency-codes": "agency_code",
+    "altitude-datums": "altitude_datum",
+    "aquifer-codes": "aquifer_code",
+    "aquifer-types": "aquifer_type",
+    "citations": "citation_name",
+    "combined-method-citations": "combined_method_citation_id",
+    "coordinate-accuracy-codes": "coordinate_accuracy_code",
+    "coordinate-datum-codes": "coordinate_datum_code",
+    "coordinate-method-codes": "coordinate_method_code",
+    "counties": "county",
+    "countries": "country",
+    "hydrologic-unit-codes": "hydrologic_unit_code",
+    "medium-codes": "medium_code",
+    "method-categories": "method_category",
+    "method-citations": "citation_method_id",
+    "methods": "method_id",
+    "national-aquifer-codes": "national_aquifer_code",
+    "parameter-codes": "parameter_code",
+    "reliability-codes": "reliability_code",
+    "site-types": "site_type",
+    "states": "state",
+    "statistic-codes": "statistic_code",
+    "topographic-codes": "topographic_code",
+    "time-zone-codes": "time_zone_code",
+}
+
+
 def get_reference_table(
     collection: str,
     limit: int | None = None,
@@ -39,9 +70,11 @@ def get_reference_table(
     ----------
     collection : string
         One of the following options: "agency-codes", "altitude-datums",
-        "aquifer-codes", "aquifer-types", "coordinate-accuracy-codes",
+        "aquifer-codes", "aquifer-types", "citations",
+        "combined-method-citations", "coordinate-accuracy-codes",
         "coordinate-datum-codes", "coordinate-method-codes", "counties",
         "countries", "hydrologic-unit-codes", "medium-codes",
+        "method-categories", "method-citations", "methods",
         "national-aquifer-codes", "parameter-codes", "reliability-codes",
         "site-types", "states", "statistic-codes", "topographic-codes",
         "time-zone-codes".
@@ -63,11 +96,16 @@ def get_reference_table(
     -------
     df : ``pandas.DataFrame`` or ``geopandas.GeoDataFrame``
         Formatted data returned from the API query. The primary metadata
-        of each reference table appears in the first column, where
-        the name of the column is the singular form of the collection name,
-        separated by underscores (e.g. the "medium-codes" reference table
-        has a column called "medium_code", which contains all possible
-        medium code values).
+        of each reference table appears in the first column. Its name is
+        the singular form of the collection name, separated by underscores
+        (e.g. the "medium-codes" reference table has a column called
+        "medium_code", which contains all possible medium code values).
+        The method and citation tables name it after the column that
+        refers to it elsewhere, so they join on it: "methods" has
+        ``method_id``, "method-categories" has ``method_category``,
+        "method-citations" has ``citation_method_id``, "citations" has
+        ``citation_name``, and "combined-method-citations" has
+        ``combined_method_citation_id`` (``<method_id>.<citation_method_id>``).
     md: :obj:`dataretrieval.utils.BaseMetadata`
         A custom metadata object including the URL request and query time.
 
@@ -95,21 +133,12 @@ def get_reference_table(
     """
     require_one_of(collection, get_args(METADATA_COLLECTIONS), name="collection")
 
-    # Give the ID column the collection name, singularized and underscored.
-    # ``removesuffix`` rather than an ``endswith`` branch, whose non-plural arm
-    # was unreachable; ``removesuffix`` returns a singular collection name
-    # unchanged if one appears.
-    if collection in ("counties", "countries"):
-        output_id = collection.removesuffix("ies") + "y"
-    else:
-        output_id = collection.removesuffix("s").replace("-", "_")
-
     query_args = dict(query) if query else {}
     if limit is not None:
         query_args["limit"] = limit
     return get_ogc_data(
         args=query_args,
-        output_id=output_id,
+        output_id=_OUTPUT_ID_BY_REFERENCE_COLLECTION[collection],
         collection=collection,
         max_rows=max_rows,
         spatial=False,

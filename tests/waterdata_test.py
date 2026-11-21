@@ -1725,6 +1725,65 @@ def test_get_reference_table_serves_countries(httpx_mock):
     assert "country" in df.columns
 
 
+# Each method and citation table and its ID column, named after the column that
+# refers to it elsewhere. The fixtures are live records that refer to each other.
+_METHOD_TABLES = {
+    "methods": "method_id",
+    "method-categories": "method_category",
+    "method-citations": "citation_method_id",
+    "citations": "citation_name",
+    "combined-method-citations": "combined_method_citation_id",
+}
+
+
+@pytest.mark.parametrize(("collection", "output_id"), _METHOD_TABLES.items())
+def test_get_reference_table_serves_method_tables(httpx_mock, collection, output_id):
+    """The ID column does not collide with a property, as
+    ``combined-method-citations`` would if it took ``method_id``."""
+    _mock_items(httpx_mock, collection)
+
+    df, _ = get_reference_table(collection)
+
+    assert df.columns.is_unique
+    assert "id" not in df.columns
+    assert df[output_id].notna().all()
+
+
+@pytest.mark.parametrize(
+    ("table", "refers_to", "on"),
+    [
+        ("method-citations", "methods", "method_id"),
+        ("combined-method-citations", "methods", "method_id"),
+        ("methods", "method-categories", "method_category"),
+        ("method-citations", "citations", "citation_name"),
+        ("combined-method-citations", "method-citations", "citation_method_id"),
+    ],
+)
+def test_get_reference_table_method_tables_join(httpx_mock, table, refers_to, on):
+    """A table joins the one it refers to on a column of the same name."""
+    _mock_items(httpx_mock, table)
+    _mock_items(httpx_mock, refers_to)
+
+    left, _ = get_reference_table(table)
+    right, _ = get_reference_table(refers_to)
+
+    assert not left.merge(right[[on]], on=on).empty
+
+
+def test_metadata_collections_literal_matches_reference_id_map():
+    """``METADATA_COLLECTIONS`` validates the ``collection`` argument and
+    ``_OUTPUT_ID_BY_REFERENCE_COLLECTION`` names its ID column, so a table in
+    only one of them is either rejected or fails with a ``KeyError``."""
+    from typing import get_args
+
+    from dataretrieval.waterdata.reference import _OUTPUT_ID_BY_REFERENCE_COLLECTION
+    from dataretrieval.waterdata.types import METADATA_COLLECTIONS
+
+    assert set(get_args(METADATA_COLLECTIONS)) == set(
+        _OUTPUT_ID_BY_REFERENCE_COLLECTION
+    )
+
+
 def test_get_reference_table_with_query(httpx_mock):
     """A ``query`` dict is merged into the request's query params."""
     _mock_items(httpx_mock, "agency-codes")
