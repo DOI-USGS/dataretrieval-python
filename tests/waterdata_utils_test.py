@@ -38,6 +38,7 @@ from dataretrieval.ogc.shaping import (
     _arrange_cols,
     _deal_with_empty,
     _get_resp_data,
+    _reparse_at_microseconds,
     _to_snake_case,
     _type_cols,
 )
@@ -960,6 +961,69 @@ def test_type_cols_warning_is_singular_for_one_value():
     df = pd.DataFrame({"value": ["1.5", "abc"]})
     with pytest.warns(UserWarning, match=r"^1 value in column 'value'"):
         _type_cols(df, _TYPING_DIALECT)
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        ["2019-12-19T22:00:00.000001+00:00", "2020-01-09T11:25:00+00:00"],
+        ["2020-01-09T11:25:00+00:00", "9999-12-31T23:59:59.999999+00:00"],
+    ],
+    ids=["fractional-first", "whole-first"],
+)
+def test_type_cols_parses_mixed_second_precision(raw):
+    """A column mixing whole and fractional seconds, as ``time-series-methods``
+    ``end`` does, parses every value. Inferring one format from the first value
+    turned every value of the other precision into ``NaT``."""
+    df = pd.DataFrame({"time": raw})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].tolist() == [pd.Timestamp(v) for v in raw]
+
+
+def test_type_cols_keeps_values_outside_the_nanosecond_range():
+    """``time-series-methods`` begins an interval with no known start at
+    0001-01-01 and ends an open one at 9999-12-31. pandas 2 parses to
+    nanoseconds, which span 1677 to 2262, and every value in a column can be
+    one of these, so the column keeps them and its UTC time zone."""
+    df = pd.DataFrame({"time": ["0001-01-01T00:00:00+00:00", None]})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert str(out["time"].dtype.tz) == "UTC"
+    assert out["time"][0].year == 1
+    assert out["time"].isna().tolist() == [False, True]
+
+
+@pytest.mark.parametrize(
+    ("raw", "kept"),
+    [
+        (["9999-12-31T23:59:59.999999+00:00", None], [True, False]),
+        (["9999-12-31T23:59:59.999999+00:00", "not a date"], [False, False]),
+        ([None, ""], [False, False]),
+    ],
+    ids=["out-of-range", "unparseable", "only-missing"],
+)
+def test_reparse_at_microseconds(raw, kept):
+    """Given the all-``NaT`` nanosecond parse pandas 2 makes of these values, the
+    column is parsed again at microseconds, unless a value cannot be parsed at
+    all or none was lost."""
+    raw = pd.Series(raw, dtype=object)
+    parsed = pd.Series(pd.NaT, index=raw.index, dtype="datetime64[ns, UTC]")
+    assert _reparse_at_microseconds(raw, parsed).notna().tolist() == kept
+
+
+def test_type_cols_mixed_naive_and_aware_still_returns():
+    """A column mixing naive and offset values makes the ISO 8601 parse raise
+    rather than coerce. The inferred parse it falls back to keeps the call
+    returning, with the odd value ``NaT`` and a warning, as before the ISO 8601
+    parse was introduced."""
+    df = pd.DataFrame({"time": ["2024-01-01T10:00:00", "2024-01-01T10:00:00+00:00"]})
+    with pytest.warns(UserWarning, match=r"^1 value in column 'time'"):
+        out = _type_cols(df, _TYPING_DIALECT)
+    assert out["time"].tolist()[0] == pd.Timestamp("2024-01-01T10:00:00")
+    assert out["time"].isna().tolist() == [False, True]
 
 
 # --- _format_api_dates -------------------------------------------------------

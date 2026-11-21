@@ -87,6 +87,8 @@ WATERDATA_COLLECTIONS = Literal[
     "monitoring-locations",
     "peaks",
     "time-series-metadata",
+    "time-series-methods",
+    "time-series-revisions",
 ]
 
 #: Previous name for ``WATERDATA_COLLECTIONS``, retained for compatibility.

@@ -35,6 +35,8 @@ _GETTERS = {
     "monitoring-locations": waterdata.get_monitoring_locations,
     "peaks": waterdata.get_peaks,
     "time-series-metadata": waterdata.get_time_series_metadata,
+    "time-series-methods": waterdata.get_time_series_methods,
+    "time-series-revisions": waterdata.get_time_series_revisions,
 }
 
 #: The collections whose getter lists its columns in the docstring.
@@ -46,6 +48,8 @@ _DOCUMENTED = (
     "latest-daily",
     "monitoring-locations",
     "time-series-metadata",
+    "time-series-methods",
+    "time-series-revisions",
 )
 
 #: Parameters the engine reads itself rather than sending as a filter.

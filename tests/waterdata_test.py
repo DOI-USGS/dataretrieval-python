@@ -45,6 +45,8 @@ from dataretrieval.waterdata import (
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
+    get_time_series_methods,
+    get_time_series_revisions,
 )
 from dataretrieval.waterdata.types import _check_profiles
 from dataretrieval.waterdata.utils import (
@@ -1562,6 +1564,109 @@ def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
     legacy, other = (str(r.url) for r in httpx_mock.get_requests())
     assert legacy.startswith(f"{_V0_OGC_BASE}/collections/time-series-metadata")
     assert other.startswith(f"{_OGC_BASE}/collections/daily")
+
+
+def test_get_time_series_revisions(httpx_mock):
+    """The collection is non-spatial: the frame is a plain DataFrame with no
+    geometry column even with geopandas installed, and the record ``id`` is
+    returned as ``time_series_revision_id``."""
+    _mock_items(httpx_mock, "time-series-revisions")
+
+    df, md = get_time_series_revisions(
+        monitoring_location_id="USGS-01646500", begin="2018-01-01/2019-12-31"
+    )
+
+    (sent,) = _sent(httpx_mock, "time-series-revisions")
+    assert sent == {
+        "monitoring_location_id": ["USGS-01646500"],
+        "begin": ["2018-01-01T00:00:00Z/2019-12-31T00:00:00Z"],
+        "limit": ["50000"],
+    }
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
+    assert "id" not in df.columns
+    assert df["time_series_revision_id"].notna().all()
+    assert df["revision_note"].str.startswith("Revisions").all()
+    assert isinstance(df["begin"].dtype, pd.DatetimeTZDtype)
+    assert str(df["begin"].dtype.tz) == "UTC"
+    assert hasattr(md, "url") and hasattr(md, "query_time")
+
+
+def test_get_time_series_methods(httpx_mock):
+    """An open-ended interval ends at 9999-12-31, which is kept as a timestamp
+    rather than coerced to ``NaT``."""
+    _mock_items(httpx_mock, "time-series-methods")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        df, _ = get_time_series_methods(
+            time_series_id="0003587a6a544f6aa37fe13dc2050985",
+            method_category="STNRD",
+        )
+
+    (sent,) = _sent(httpx_mock, "time-series-methods")
+    assert sent == {
+        "time_series_id": ["0003587a6a544f6aa37fe13dc2050985"],
+        "method_category": ["STNRD"],
+        "limit": ["50000"],
+    }
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
+    assert df["time_series_method_id"].notna().all()
+    assert df["end"].notna().all()
+    assert df["end"].max().year == 9999
+
+
+def test_get_time_series_methods_sends_a_list_of_series_as_cql2(httpx_mock):
+    """The intended use is the ``time_series_id`` values of one location, looked
+    up with ``get_time_series_metadata``, so a list must filter rather than be
+    read as one comma-joined id."""
+    _mock_items(httpx_mock, "time-series-methods")
+    series = ["0003587a6a544f6aa37fe13dc2050985", "002e8c3bde4a4176a2711f8f98a99d90"]
+
+    get_time_series_methods(time_series_id=series)
+
+    filters = _filters(_items_requests(httpx_mock, "time-series-methods")[0])
+    assert filters["time_series_id"] == series
+
+
+@pytest.mark.parametrize(
+    ("getter", "collection"),
+    [
+        (get_time_series_revisions, "time-series-revisions"),
+        (get_time_series_methods, "time-series-methods"),
+    ],
+)
+def test_nonspatial_getters_return_an_empty_plain_frame(httpx_mock, getter, collection):
+    """An empty result has the same plain shape as a non-empty one: the schema's
+    ``geometry`` is dropped even though ``skip_geometry`` was not passed."""
+    httpx_mock.add_response(
+        method="GET",
+        url=_schema_url(collection),
+        json={"properties": {"geometry": {}, "id": {}, "time_series_id": {}}},
+    )
+    _mock_items(httpx_mock, collection, body={"features": [], "links": []})
+
+    df, _ = getter(time_series_id="none")
+
+    assert type(df) is pd.DataFrame
+    assert df.empty
+    assert "geometry" not in df.columns
+    assert "time_series_id" in df.columns
+
+
+@pytest.mark.parametrize("collection", ["time-series-revisions", "time-series-methods"])
+def test_get_cql_returns_a_plain_frame_for_a_nonspatial_collection(
+    httpx_mock, collection
+):
+    """``get_cql`` shapes a non-spatial collection as its typed getter does:
+    a plain DataFrame, with no column of null geometries."""
+    _mock_items(httpx_mock, collection)
+
+    df, _ = get_cql(collection, {"op": "isNull", "args": [{"property": "end"}]})
+
+    assert type(df) is pd.DataFrame
+    assert "geometry" not in df.columns
 
 
 def test_get_combined_metadata(httpx_mock):

@@ -61,7 +61,12 @@ _OUTPUT_ID_BY_COLLECTION: dict[str, str] = {
     "monitoring-locations": "monitoring_location_id",
     "peaks": "peak_id",
     "time-series-metadata": "time_series_id",
+    "time-series-methods": "time_series_method_id",
+    "time-series-revisions": "time_series_revision_id",
 }
+
+# The collections of ``_OUTPUT_ID_BY_COLLECTION`` whose records carry no geometry.
+_NONSPATIAL_COLLECTIONS = frozenset({"time-series-methods", "time-series-revisions"})
 
 # Every collection's output id except the two that are user-facing
 # (``monitoring_location_id`` and ``time_series_id``). The rest are synthetic
@@ -219,7 +224,7 @@ def get_ogc_data(
     max_rows: int | None = None,
     cql_body: str | None = None,
     *,
-    spatial: bool = True,
+    spatial: bool | None = None,
     api_version: str | None = None,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
@@ -248,8 +253,9 @@ def get_ogc_data(
         A verbatim CQL2 JSON body to POST instead of building the query from
         ``args`` (see the facade's ``cql_body``). Used by :func:`get_cql`.
     spatial : bool, optional
-        Whether the collection includes feature geometry. Water Data's typed
-        feature collections do; reference tables pass ``False``.
+        Whether the collection includes feature geometry. ``None`` (the
+        default) reads it from ``_NONSPATIAL_COLLECTIONS``; pass it only for
+        collections outside the map, such as reference tables.
     api_version : str, optional
         API version for this one request. ``None`` (the default) resolves it
         through the configuration chain. See
@@ -265,6 +271,8 @@ def get_ogc_data(
     """
     if output_id is None:
         output_id = _OUTPUT_ID_BY_COLLECTION[collection]
+    if spatial is None:
+        spatial = collection not in _NONSPATIAL_COLLECTIONS
     return _facade_get_ogc_data(
         args,
         collection,

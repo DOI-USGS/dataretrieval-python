@@ -32,6 +32,8 @@ from .api import (
     get_stats_date_range,
     get_stats_por,
     get_time_series_metadata,
+    get_time_series_methods,
+    get_time_series_revisions,
 )
 from .configuration import WaterdataConfiguration
 from .nearest import get_nearest_continuous
@@ -74,4 +76,6 @@ __all__ = [
     "get_stats_date_range",
     "get_stats_por",
     "get_time_series_metadata",
+    "get_time_series_methods",
+    "get_time_series_revisions",
 ]
