@@ -22,19 +22,12 @@ import math
 from collections.abc import Callable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Protocol
 from urllib.parse import quote_plus
 
 import httpx
 
 from dataretrieval.exceptions import Unchunkable
-from dataretrieval.ogc.dates import (
-    _format_api_dates,
-    _format_one,
-    _is_blank,
-    _to_datetime,
-)
 from dataretrieval.ogc.filters import (
     _check_numeric_filter_pitfall,
     _is_chunkable,
@@ -45,7 +38,7 @@ from dataretrieval.ogc.filters import (
 # URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
 # maintaining a growing allowlist. Excluded because: ``properties`` defines the column
 # schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
-# enumerable sets (the observation time has its own axis, ``_time_interval``);
+# enumerable sets (an adapter may divide one as a :class:`RangeAxis`);
 # ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
 # ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
 _NEVER_CHUNK = frozenset(
@@ -76,16 +69,9 @@ _LIST_SEP = ","
 _OR_SEP = " OR "
 
 
-# The time axis's chunks hold one ``start/end`` interval each, which ``render``
-# sends as a string, as it does a filter chunk.
-_INTERVAL_SEP = "/"
-
-
-# The observation-time arguments the time axis reads: ``time`` (Water Data) and
-# ``datetime`` (NGWMN), split only in a collection its dialect's
-# ``time_chunk_days`` lists. ``begin``, ``end`` and ``last_modified`` filter on
-# other properties and are never split.
-_TIME_AXIS_PARAMS = ("time", "datetime")
+# A divided range axis puts one piece in each chunk, so its pieces are never
+# joined; ``render`` sends the piece as it is.
+_NO_JOINER = ""
 
 
 def _request_bytes(req: httpx.Request) -> int:
@@ -213,8 +199,8 @@ class _Axis:
     and the cql-text ``filter`` (split on top-level ``OR``, joiner
     ``" OR "``) fit this shape, so a single greedy halving loop in
     ``ChunkPlan._plan`` handles both — no need for two separate
-    algorithms. The time axis is added after both passes, by
-    :meth:`ChunkPlan._add_time_axis`, with one ``start/end`` interval per chunk.
+    algorithms. A divided :class:`RangeAxis` is stored as one too, after both
+    passes, by :meth:`ChunkPlan._divide_range`, with one piece per chunk.
 
     Attributes
     ----------
@@ -228,7 +214,7 @@ class _Axis:
     joiner : str
         Separator placed between atoms when they are joined back into
         URL text — ``","`` for list axes, ``" OR "`` for the filter
-        axis, ``"/"`` for the time axis.
+        axis, and none for a divided range axis.
     """
 
     arg_key: str
@@ -261,7 +247,7 @@ class _Axis:
 
         List axes yield a new list of atoms (``build_request`` will comma-join); the
         filter axis yields a pre-joined string (CQL does not accept a list), and
-        the time axis its one ``start/end`` interval.
+        a divided range axis its one piece.
 
         Parameters
         ----------
@@ -277,53 +263,33 @@ class _Axis:
         return list(chunk) if self.joiner == _LIST_SEP else self.joiner.join(chunk)
 
 
-@dataclass(frozen=True)
-class _Interval:
-    """A closed observation-time interval at least two time chunks long.
+class RangeAxis(Protocol):
+    """One closed range in a request's args, which a plan may divide into pieces.
 
-    Attributes
-    ----------
-    key : str
-        The args-dict key it came from, ``time`` or ``datetime``.
-    start, end : str
-        Its bounds as the request builder sends them.
-    first_midnight : datetime
-        The start of its first UTC day.
-    days : int
-        How many UTC days it touches. An end at midnight, the usual
-        ``YYYY-MM-DD`` end, closes the day before.
-    most_runs : int
-        The most runs it divides into: how many of the collection's shortest
-        time chunks its duration holds.
+    A plan divides a range only to fan out. Each piece is sent no longer than
+    the whole range, so dividing it neither helps nor breaks the byte budget,
+    and the plan divides it last, by the factor of its chunk cap that the list
+    and filter axes leave (:meth:`ChunkPlan._divide_range`). The implementation
+    owns what the range measures and where it may be cut; the plan reads only
+    the pieces.
     """
 
-    key: str
-    start: str
-    end: str
-    first_midnight: datetime
-    days: int
-    most_runs: int
+    @property
+    def arg_key(self) -> str:
+        """The args key each piece is sent under."""
+        ...
 
-    def runs(self, count: int) -> list[str]:
-        """Divide the interval at UTC midnights into ``count`` runs, as ``start/end``.
+    def divide(self, most: int) -> list[str]:
+        """Divide the range into at most ``most`` contiguous pieces, in order.
 
-        Run lengths, counted in the UTC days each touches, differ by at most
-        one. Each run ends at the midnight
-        the next one starts at, which covers the interval whichever ends a
-        service includes (Water Data includes both, NGWMN only the end); a
-        feature two runs return is dropped as a repeated ``id`` when the
-        chunks are combined.
+        Fewer than two pieces leaves the range whole.
         """
-        cuts = (
-            self.first_midnight + timedelta(days=i * self.days // count)
-            for i in range(1, count)
-        )
-        bounds = [
-            self.start,
-            *(_format_one(cut, date=False, name=self.key) for cut in cuts),
-            self.end,
-        ]
-        return [f"{a}{_INTERVAL_SEP}{b}" for a, b in itertools.pairwise(bounds)]
+        ...
+
+
+def _no_range(_args: dict[str, Any]) -> None:
+    """Read no range: the default for a plan that divides none."""
+    return None
 
 
 def _filter_axis(args: dict[str, Any]) -> _Axis | None:
@@ -340,31 +306,6 @@ def _filter_axis(args: dict[str, Any]) -> _Axis | None:
     if len(clauses) < 2:
         return None
     return _Axis(arg_key="filter", atoms=tuple(clauses), joiner=_OR_SEP)
-
-
-def _time_interval(args: dict[str, Any], chunk_days: int | None) -> _Interval | None:
-    """Read the closed observation-time interval the time axis divides, if any.
-
-    Returns ``None`` when ``chunk_days`` is ``None`` (the collection's interval
-    is never divided), when no key in :data:`_TIME_AXIS_PARAMS` is set, or when
-    its value is an instant, a duration, an open interval, or shorter than two
-    time chunks of ``chunk_days``. An unreadable value raises the
-    ``ValueError`` the request builder would.
-    """
-    key = next((k for k in _TIME_AXIS_PARAMS if args.get(k) is not None), None)
-    if key is None or chunk_days is None:
-        return None
-    interval = _format_api_dates(args[key], name=key) or ""
-    start, sep, end = interval.partition(_INTERVAL_SEP)
-    if not sep or _is_blank(start) or _is_blank(end):
-        return None
-    low, high = _to_datetime(start, name=key), _to_datetime(end, name=key)
-    most_runs = (high - low) // timedelta(days=chunk_days)
-    if most_runs < 2:
-        return None
-    midnight = low.replace(hour=0, minute=0, second=0, microsecond=0)
-    days = (high - timedelta(microseconds=1) - midnight).days + 1
-    return _Interval(key, start, end, midnight, days, most_runs)
 
 
 def _extract_axes(args: dict[str, Any]) -> list[_Axis]:
@@ -451,17 +392,16 @@ class ChunkPlan:
         than the byte budget already forces). The cap applies to the plan as a whole,
         not per axis, so several multi-value axes can't multiply past it. The plan never
         exceeds the cap and may fall below it when no whole split reaches it exactly.
-        A closed ``time`` or ``datetime`` interval is split too, by whatever factor
-        of the cap the multi-value axes leave (:meth:`_add_time_axis`).
+        A range axis is divided too, by whatever factor of the cap the
+        multi-value axes leave (:meth:`_divide_range`).
         ``max_chunks`` is a chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
         :meth:`_refine`.
-    time_chunk_days : int, optional
-        The shortest time chunk, in days, of the collection ``args`` queries,
-        from its dialect's ``time_chunk_days``. The interval divides into at
-        most as many runs as its duration holds such chunks. ``None`` (default)
-        never divides it.
+    read_range : callable, optional
+        Reads the request's range axis: ``read_range(args)`` returns a
+        :class:`RangeAxis`, or ``None`` when ``args`` holds no range to divide.
+        Called only when ``max_chunks`` is above 1. The default reads none.
 
     Attributes
     ----------
@@ -471,7 +411,7 @@ class ChunkPlan:
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
-        OR, plus the time axis when the interval is divided. Empty in the
+        OR, plus the range axis when it is divided. Empty in the
         passthrough case.
     chunks : dict[str, list[list[str]]]
         Per-axis partition: ``chunks[axis.arg_key]`` is the list of
@@ -497,7 +437,7 @@ class ChunkPlan:
         build_request: Callable[..., httpx.Request],
         url_limit: int,
         max_chunks: int = 1,
-        time_chunk_days: int | None = None,
+        read_range: Callable[[dict[str, Any]], RangeAxis | None] = _no_range,
     ) -> None:
         if max_chunks < 1:
             raise ValueError(
@@ -510,8 +450,8 @@ class ChunkPlan:
         self.canonical_url: str | None = None
 
         axes = _extract_axes(args)
-        interval = _time_interval(args, time_chunk_days) if max_chunks > 1 else None
-        if not axes and interval is None:
+        range_axis = read_range(args) if max_chunks > 1 else None
+        if not axes and range_axis is None:
             _check_unchunkable_request(args, build_request, url_limit)
             return
 
@@ -535,8 +475,8 @@ class ChunkPlan:
         if self.canonical_url is None:
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
-        # After the fallback above, so a canonical URL keeps the caller's interval.
-        self._add_time_axis(interval, max_chunks)
+        # After the fallback above, so a canonical URL keeps the caller's range.
+        self._divide_range(range_axis, max_chunks)
 
     def _plan(
         self,
@@ -558,7 +498,7 @@ class ChunkPlan:
             chunk) still exceeds ``url_limit``.
         """
         if not self.axes:
-            # Only a time interval, and dividing it does not shorten a request:
+            # Only a range axis, and dividing it does not shorten a request:
             # the server judges it (cql-json), or this raises Unchunkable.
             _check_unchunkable_request(self.args, build_request, url_limit)
             return
@@ -633,24 +573,23 @@ class ChunkPlan:
             axis, idx = candidate
             _split_at(self.chunks[axis.arg_key], idx)
 
-    def _add_time_axis(self, interval: _Interval | None, max_chunks: int) -> None:
-        """Divide ``interval`` into the most runs of whole days the cap allows.
+    def _divide_range(self, range_axis: RangeAxis | None, max_chunks: int) -> None:
+        """Divide ``range_axis`` by the largest factor of ``max_chunks`` left.
 
         Runs after :meth:`_refine`, so the multi-value axes keep the plan they
-        had without it, and the interval multiplies their chunk count by the
-        largest whole factor within ``max_chunks``, up to how many shortest time
-        chunks it holds. The runs are equal rather than halves, which is safe
-        only here: the other axes halve so that a split never breaks the byte
-        budget, and an interval has none to keep.
+        had without it, and the range multiplies their chunk count by the
+        largest whole factor within ``max_chunks`` that the range allows. Its
+        pieces need not be halves, which is safe only here: the other axes
+        halve so that a split never breaks the byte budget, and a range has
+        none to keep.
         """
-        if interval is None:
+        if range_axis is None:
             return
-        count = min(interval.most_runs, max_chunks // self.total)
-        if count < 2:
+        pieces = range_axis.divide(max_chunks // self.total)
+        if len(pieces) < 2:
             return
-        runs = interval.runs(count)
-        self.axes.append(_Axis(interval.key, tuple(runs), _INTERVAL_SEP))
-        self.chunks[interval.key] = [[run] for run in runs]
+        self.axes.append(_Axis(range_axis.arg_key, tuple(pieces), _NO_JOINER))
+        self.chunks[range_axis.arg_key] = [[piece] for piece in pieces]
 
     @staticmethod
     def _largest_chunk_in(

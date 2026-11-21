@@ -63,7 +63,11 @@ from dataretrieval.ogc.chunking import (
     multi_value_chunked,
     parallel_chunks,
 )
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS, _format_api_dates
+from dataretrieval.ogc.dates import (
+    _DATE_RANGE_PARAMS,
+    _format_api_dates,
+    _interval_axis,
+)
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
@@ -2433,15 +2437,20 @@ def test_cap_does_not_mask_unchunkable():
 
 
 # ---------------------------------------------------------------------------
-# Time axis: under ``parallel_chunks(n)`` a closed ``time`` or ``datetime``
-# interval is divided into runs of whole UTC days, no shorter than the
+# Time axis: under ``parallel_chunks(n)`` a closed interval in the dialect's
+# ``time_param`` is divided into runs of whole UTC days, no shorter than the
 # collection's shortest time chunk, after the multi-value axes have taken their
-# splits (``ChunkPlan._add_time_axis``).
+# splits (``ChunkPlan._divide_range`` over ``ogc.dates._interval_axis``).
 # ---------------------------------------------------------------------------
 
 
+def _read_interval(chunk_days, param="time"):
+    """The range reader the engine binds from a collection's dialect."""
+    return functools.partial(_interval_axis, param=param, chunk_days=chunk_days)
+
+
 # A plan whose shortest time chunk is one day, to test how runs are placed.
-_day_plan = functools.partial(ChunkPlan, time_chunk_days=1)
+_day_plan = functools.partial(ChunkPlan, read_range=_read_interval(1))
 
 
 def _intervals(plan, key="time"):
@@ -2499,7 +2508,11 @@ def test_time_axis_needs_parallel_chunks():
 def test_time_axis_leaves_an_interval_shorter_than_two_chunks(value, chunk_days):
     args = {"time": value}
     plan = ChunkPlan(
-        args, _fake_build, url_limit=8000, max_chunks=12, time_chunk_days=chunk_days
+        args,
+        _fake_build,
+        url_limit=8000,
+        max_chunks=12,
+        read_range=_read_interval(chunk_days),
     )
     assert list(plan) == [args]
     assert plan.canonical_url is None  # a passthrough, as without the time axis
@@ -2521,7 +2534,7 @@ def test_time_axis_chunks_are_no_shorter_than_the_shortest_time_chunk(
         _fake_build,
         url_limit=8000,
         max_chunks=max_chunks,
-        time_chunk_days=chunk_days,
+        read_range=_read_interval(chunk_days),
     )
     days = _run_days(plan)
     assert len(days) == runs
@@ -2592,9 +2605,16 @@ def test_time_axis_leaves_the_canonical_fallback_the_callers_interval():
     assert httpx.URL(plan.canonical_url).params["time"] == args["time"]
 
 
-def test_time_axis_reads_a_datetime_argument():
-    args = {"datetime": "2020-01-01/2023-12-31"}
-    plan = _day_plan(args, _fake_build, url_limit=8000, max_chunks=4)
+def test_time_axis_reads_the_dialects_time_param():
+    """The axis divides only the argument the dialect names."""
+    args = {"datetime": "2020-01-01/2023-12-31", "time": "2020-01-01/2023-12-31"}
+    plan = ChunkPlan(
+        args,
+        _fake_build,
+        url_limit=8000,
+        max_chunks=4,
+        read_range=_read_interval(1, param="datetime"),
+    )
     assert [axis.arg_key for axis in plan.axes] == ["datetime"]
     assert len(_intervals(plan, key="datetime")) == 4
 

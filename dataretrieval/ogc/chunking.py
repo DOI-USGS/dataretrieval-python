@@ -54,7 +54,7 @@ from dataretrieval.transport.fanout import (
 )
 from dataretrieval.transport.retry import RetryPolicy
 
-from .planning import ChunkPlan
+from .planning import ChunkPlan, RangeAxis, _no_range
 
 # Compatibility aliases for the chunking/progress test modules. The client names bind
 # the same objects transport sets, not copies -- a test reading a copy here would never
@@ -186,7 +186,7 @@ def parallel_chunks(n: int) -> Iterator[None]:
     See Also
     --------
     ChunkPlan._refine : the planning-side effect of ``n``.
-    ChunkPlan._add_time_axis : how ``n`` divides a time interval.
+    ChunkPlan._divide_range : how ``n`` divides a range, such as a time interval.
     """
     # Validate at ``with`` entry, before any request, through the setting's
     # own parser -- one grammar, ADR 0009. The source label makes the message
@@ -204,7 +204,7 @@ def multi_value_chunked(
     build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
     adapter: str | None = None,
-    time_chunk_days: int | None = None,
+    read_range: Callable[[dict[str, Any]], RangeAxis | None] = _no_range,
 ) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
     """
     Decorate an async fetcher to chunk over-budget requests automatically.
@@ -229,9 +229,9 @@ def multi_value_chunked(
         (default), the module-level ``_OGC_URL_BYTE_LIMIT`` is
         resolved at call time so test patches via
         ``monkeypatch.setattr`` take effect.
-    time_chunk_days : int, optional
-        The shortest time chunk, in days, of the collection the call queries.
-        ``None`` (default) leaves its time interval undivided. See
+    read_range : callable, optional
+        Reads the request's range axis from ``args``, such as the time interval
+        of a collection whose dialect divides one. The default reads none. See
         :class:`ChunkPlan`.
 
     Returns
@@ -277,7 +277,7 @@ def multi_value_chunked(
                 build_request,
                 limit,
                 max_chunks=_configuration.parallel_chunks(adapter=adapter),
-                time_chunk_days=time_chunk_days,
+                read_range=read_range,
             )
             retry_policy = RetryPolicy.from_configuration(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the

@@ -88,6 +88,7 @@ WATERDATA_DIALECT = OgcDialect(
     # About 3,000 records of a time series per chunk: 30 days of 15-minute values,
     # 10 years of daily values. Shorter chunks cost requests for little or no gain.
     time_chunk_days={"continuous": 30, "daily": 3650},
+    time_param="time",
     time_cols=frozenset(
         {
             "begin",

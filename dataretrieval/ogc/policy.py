@@ -69,15 +69,21 @@ class OgcDialect:
         Water Data API rejects an empty start with HTTP 400, and the NGWMN
         firewall rejects ``"../"`` with HTTP 403.
     time_chunk_days : Mapping[str, int]
-        Collections whose closed time interval a ``parallel_chunks`` setting
-        above 1 divides, each mapped to its shortest time chunk in days. An
-        interval in a collection not listed is never divided. Empty by default.
+        Collections whose closed ``time_param`` interval a ``parallel_chunks``
+        setting above 1 divides, each mapped to its shortest time chunk in
+        days. An interval in a collection not listed is never divided. Empty by
+        default.
+    time_param : str
+        The argument holding the time interval ``time_chunk_days`` divides:
+        ``datetime`` (the default, the OGC API Features name) or the API's own
+        name for it.
     """
 
     lists_as_cql2: bool = False
     date_only_services: frozenset[str] = field(default_factory=frozenset)
     # Out of the hash so the frozen dialect stays hashable.
     time_chunk_days: Mapping[str, int] = field(default_factory=dict, hash=False)
+    time_param: str = "datetime"
     time_cols: frozenset[str] = field(default_factory=frozenset)
     numerical_cols: frozenset[str] = field(default_factory=frozenset)
     sort_cols: tuple[str, ...] = field(default_factory=tuple)
