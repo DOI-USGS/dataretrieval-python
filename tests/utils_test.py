@@ -37,6 +37,20 @@ class Test_query:
         assert response.status_code == 200  # GET was successful
         assert "user-agent" in response.request.headers
 
+    def test_numeric_and_boolean_values_are_sent(self, httpx_mock):
+        """A numeric or boolean value is sent, not silently dropped."""
+        httpx_mock.add_response(method="GET")
+        utils.query(
+            "https://example.invalid/x",
+            {"lat": 44.2, "within": 5, "flag": True, "ids": [1, 2], "n": None},
+        )
+        params = httpx_mock.get_requests()[0].url.params
+        assert params["lat"] == "44.2"
+        assert params["within"] == "5"
+        assert params["flag"] == "true"
+        assert params["ids"] == "1,2"
+        assert "n" not in params
+
     def test_query_does_not_opt_into_retry(self, httpx_mock, monkeypatch):
         """The public ``utils.query`` still raises the first transient failure."""
         url = "https://example.invalid/x"

@@ -187,7 +187,10 @@ def _query_with_retry(
     if delimiter is None:
         payload = _materialize_query_iterables(payload)
     else:
-        payload = {key: to_str(value, delimiter) for key, value in payload.items()}
+        payload = {
+            key: to_str(value, delimiter) if isinstance(value, Iterable) else value
+            for key, value in payload.items()
+        }
     # httpx serializes None params as ``foo=``; USGS rejects with 400. Drop them.
     payload = {key: value for key, value in payload.items() if value is not None}
 

@@ -125,6 +125,8 @@ jobs:
         run: mypy
 
   test:
+    # Named explicitly so the leg that installs extra packages lists them.
+    name: "test (${{ matrix.os }}, ${{ matrix.python-version }}${{ matrix.extra-packages && format(', {0}', matrix.extra-packages) || '' }})"
     needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
@@ -132,6 +134,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.10", "3.13", "3.14"]
+        include:
+          # pandas 3 stores text columns in Arrow memory when pyarrow is
+          # installed, so one pandas 3 leg runs the suite with it.
+          - os: ubuntu-latest
+            python-version: "3.13"
+            extra-packages: pyarrow
 
     steps:
       - uses: actions/checkout@v6
@@ -143,7 +151,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[test,nldi]
+          pip install .[test,nldi] ${{ matrix.extra-packages }}
       - name: Test with pytest
         # Pinned to bash on every OS. The default Windows shell is PowerShell,
         # which does not stop on a failing native command and takes the step's
