@@ -388,10 +388,13 @@ def get_ogc_data(
         include_geometry=include_geometry,
         row_cap=max_rows,
     )
-    read_range = functools.partial(
-        _interval_axis,
-        param=dialect.time_param,
-        chunk_days=dialect.time_chunk_days.get(collection),
+    chunk_days = dialect.time_chunk_days.get(collection)
+    read_range = (
+        None
+        if chunk_days is None
+        else functools.partial(
+            _interval_axis, param=dialect.time_param, chunk_days=chunk_days
+        )
     )
     run = chunking.multi_value_chunked(
         build_request=build_request,

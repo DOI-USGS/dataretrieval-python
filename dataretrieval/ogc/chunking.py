@@ -54,7 +54,7 @@ from dataretrieval.transport.fanout import (
 )
 from dataretrieval.transport.retry import RetryPolicy
 
-from .planning import ChunkPlan, RangeAxis, _no_range
+from .planning import ChunkPlan, RangeAxis
 
 # Compatibility aliases for the chunking/progress test modules. The client names bind
 # the same objects transport sets, not copies -- a test reading a copy here would never
@@ -204,7 +204,7 @@ def multi_value_chunked(
     build_request: Callable[..., httpx.Request],
     url_limit: int | None = None,
     adapter: str | None = None,
-    read_range: Callable[[dict[str, Any]], RangeAxis | None] = _no_range,
+    read_range: Callable[[dict[str, Any]], RangeAxis | None] | None = None,
 ) -> Callable[[_Fetch[dict[str, Any]]], Callable[..., tuple[pd.DataFrame, Any]]]:
     """
     Decorate an async fetcher to chunk over-budget requests automatically.
@@ -231,8 +231,8 @@ def multi_value_chunked(
         ``monkeypatch.setattr`` take effect.
     read_range : callable, optional
         Reads the request's range axis from ``args``, such as the time interval
-        of a collection whose dialect divides one. The default reads none. See
-        :class:`ChunkPlan`.
+        of a collection whose dialect divides one. ``None`` (default) divides
+        no range. See :class:`ChunkPlan`.
 
     Returns
     -------

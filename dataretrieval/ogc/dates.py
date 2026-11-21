@@ -297,64 +297,53 @@ class _IntervalAxis:
     ----------
     arg_key : str
         The argument it came from, the dialect's ``time_param``.
-    start, end : str
-        Its bounds as the request builder sends them.
-    first_midnight : datetime
-        The start of its first UTC day.
-    days : int
-        How many UTC days it touches. An end at midnight, the usual
-        ``YYYY-MM-DD`` end, closes the day before.
+    low, high : datetime
+        Its bounds, in UTC.
     most_runs : int
         The most runs it divides into: how many of the collection's shortest
         time chunks its duration holds.
     """
 
     arg_key: str
-    start: str
-    end: str
-    first_midnight: datetime
-    days: int
+    low: datetime
+    high: datetime
     most_runs: int
 
     def divide(self, most: int) -> list[str]:
         """Divide the interval at UTC midnights into runs, as ``start/end``.
 
-        Returns ``min(most, most_runs)`` runs, or none when that is below two.
-        Run lengths, counted in the UTC days each touches, differ by at most
-        one. Each run ends at the midnight the next one starts at, which covers
-        the interval whether a service includes the start, the end, or both; a
-        feature two runs return is dropped as a repeated ``id`` when the chunks
-        are combined. A midnight is the shortest datetime the request builder
-        writes, so no run is sent longer than the interval.
+        Returns ``min(most, most_runs)`` runs. Run lengths, counted in the UTC
+        days each touches, differ by at most one. Each run ends at the midnight
+        the next one starts at, which covers the interval whether a service
+        includes the start, the end, or both; a feature two runs return is
+        dropped as a repeated ``id`` when the chunks are combined. A midnight is
+        the shortest datetime the request builder writes, so no run is sent
+        longer than the interval.
         """
         count = min(self.most_runs, most)
-        if count < 2:
-            return []
-        cuts = (
-            self.first_midnight + timedelta(days=i * self.days // count)
-            for i in range(1, count)
-        )
+        midnight = self.low.replace(hour=0, minute=0, second=0, microsecond=0)
+        # An end at midnight, the usual ``YYYY-MM-DD`` end, closes the day before.
+        days = (self.high - timedelta(microseconds=1) - midnight).days + 1
+        cuts = (midnight + timedelta(days=i * days // count) for i in range(1, count))
         bounds = [
-            self.start,
-            *(_format_one(cut, date=False, name=self.arg_key) for cut in cuts),
-            self.end,
+            _format_one(bound, date=False, name=self.arg_key)
+            for bound in (self.low, *cuts, self.high)
         ]
         return [f"{a}/{b}" for a, b in itertools.pairwise(bounds)]
 
 
 def _interval_axis(
-    args: dict[str, Any], *, param: str, chunk_days: int | None
+    args: dict[str, Any], *, param: str, chunk_days: int
 ) -> _IntervalAxis | None:
     """Read the closed interval in ``args[param]`` as a range a plan can divide.
 
-    Returns ``None`` when ``chunk_days`` is ``None`` (the collection's interval
-    is never divided), when ``param`` is not set, or when its value is an
+    Returns ``None`` when ``param`` is not set, or when its value is an
     instant, a duration, an open interval, or shorter than two time chunks of
     ``chunk_days``. An unreadable value raises the ``ValueError`` the request
     builder would.
     """
     value = args.get(param)
-    if value is None or chunk_days is None:
+    if value is None:
         return None
     interval = _format_api_dates(value, name=param) or ""
     start, sep, end = interval.partition("/")
@@ -364,6 +353,4 @@ def _interval_axis(
     most_runs = (high - low) // timedelta(days=chunk_days)
     if most_runs < 2:
         return None
-    midnight = low.replace(hour=0, minute=0, second=0, microsecond=0)
-    days = (high - timedelta(microseconds=1) - midnight).days + 1
-    return _IntervalAxis(param, start, end, midnight, days, most_runs)
+    return _IntervalAxis(param, low, high, most_runs)

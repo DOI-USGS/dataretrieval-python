@@ -266,12 +266,10 @@ class _Axis:
 class RangeAxis(Protocol):
     """One closed range in a request's args, which a plan may divide into pieces.
 
-    A plan divides a range only to fan out. Each piece is sent no longer than
-    the whole range, so dividing it neither helps nor breaks the byte budget,
-    and the plan divides it last, by the factor of its chunk cap that the list
-    and filter axes leave (:meth:`ChunkPlan._divide_range`). The implementation
-    owns what the range measures and where it may be cut; the plan reads only
-    the pieces.
+    The implementation owns what the range measures and where it may be cut;
+    the plan reads only the pieces. Each piece must be sent no longer than the
+    whole range, so dividing it never breaks the byte budget
+    (:meth:`ChunkPlan._divide_range`).
     """
 
     @property
@@ -280,16 +278,12 @@ class RangeAxis(Protocol):
         ...
 
     def divide(self, most: int) -> list[str]:
-        """Divide the range into at most ``most`` contiguous pieces, in order.
+        """Divide the range into contiguous pieces, in order: two to ``most``.
 
-        Fewer than two pieces leaves the range whole.
+        The plan calls it only with ``most`` of two or more, and only on a
+        range its reader found divisible in two.
         """
         ...
-
-
-def _no_range(_args: dict[str, Any]) -> None:
-    """Read no range: the default for a plan that divides none."""
-    return None
 
 
 def _filter_axis(args: dict[str, Any]) -> _Axis | None:
@@ -400,8 +394,10 @@ class ChunkPlan:
         :meth:`_refine`.
     read_range : callable, optional
         Reads the request's range axis: ``read_range(args)`` returns a
-        :class:`RangeAxis`, or ``None`` when ``args`` holds no range to divide.
-        Called only when ``max_chunks`` is above 1. The default reads none.
+        :class:`RangeAxis`, or ``None`` when ``args`` holds no range that
+        divides in two.
+        Called only when the multi-value axes leave room within ``max_chunks``
+        for two pieces. ``None`` (default) divides no range.
 
     Attributes
     ----------
@@ -437,7 +433,7 @@ class ChunkPlan:
         build_request: Callable[..., httpx.Request],
         url_limit: int,
         max_chunks: int = 1,
-        read_range: Callable[[dict[str, Any]], RangeAxis | None] = _no_range,
+        read_range: Callable[[dict[str, Any]], RangeAxis | None] | None = None,
     ) -> None:
         if max_chunks < 1:
             raise ValueError(
@@ -449,9 +445,20 @@ class ChunkPlan:
         self.chunks: dict[str, list[list[str]]] = {}
         self.canonical_url: str | None = None
 
+        self._plan_axes(args, build_request, url_limit, max_chunks)
+        if read_range is not None:
+            self._divide_range(read_range, build_request, max_chunks)
+
+    def _plan_axes(
+        self,
+        args: dict[str, Any],
+        build_request: Callable[..., httpx.Request],
+        url_limit: int,
+        max_chunks: int,
+    ) -> None:
+        """Split the multi-value axes for ``url_limit``, then up to ``max_chunks``."""
         axes = _extract_axes(args)
-        range_axis = read_range(args) if max_chunks > 1 else None
-        if not axes and range_axis is None:
+        if not axes:
             _check_unchunkable_request(args, build_request, url_limit)
             return
 
@@ -475,8 +482,6 @@ class ChunkPlan:
         if self.canonical_url is None:
             with suppress(httpx.InvalidURL):
                 self.canonical_url = str(build_request(**self._worst_case_args()).url)
-        # After the fallback above, so a canonical URL keeps the caller's range.
-        self._divide_range(range_axis, max_chunks)
 
     def _plan(
         self,
@@ -497,11 +502,6 @@ class ChunkPlan:
             If even the singleton plan (every axis at one atom per
             chunk) still exceeds ``url_limit``.
         """
-        if not self.axes:
-            # Only a range axis, and dividing it does not shorten a request:
-            # the server judges it (cql-json), or this raises Unchunkable.
-            _check_unchunkable_request(self.args, build_request, url_limit)
-            return
         while True:
             worst = self._worst_case_args()
             if _safe_request_bytes(build_request, worst, url_limit) <= url_limit:
@@ -573,21 +573,30 @@ class ChunkPlan:
             axis, idx = candidate
             _split_at(self.chunks[axis.arg_key], idx)
 
-    def _divide_range(self, range_axis: RangeAxis | None, max_chunks: int) -> None:
-        """Divide ``range_axis`` by the largest factor of ``max_chunks`` left.
+    def _divide_range(
+        self,
+        read_range: Callable[[dict[str, Any]], RangeAxis | None],
+        build_request: Callable[..., httpx.Request],
+        max_chunks: int,
+    ) -> None:
+        """Divide the request's range by the largest factor of ``max_chunks`` left.
 
-        Runs after :meth:`_refine`, so the multi-value axes keep the plan they
-        had without it, and the range multiplies their chunk count by the
+        Runs after :meth:`_plan_axes`, so the multi-value axes keep the plan
+        they had without it, and the range multiplies their chunk count by the
         largest whole factor within ``max_chunks`` that the range allows. Its
         pieces need not be halves, which is safe only here: the other axes
         halve so that a split never breaks the byte budget, and a range has
         none to keep.
         """
+        most = max_chunks // self.total
+        range_axis = read_range(self.args) if most > 1 else None
         if range_axis is None:
             return
-        pieces = range_axis.divide(max_chunks // self.total)
-        if len(pieces) < 2:
-            return
+        pieces = range_axis.divide(most)
+        if self.canonical_url is None:
+            # The caller's whole range, as an undivided plan reports it.
+            request = _try_build(build_request, self.args)
+            self.canonical_url = None if request is None else str(request.url)
         self.axes.append(_Axis(range_axis.arg_key, tuple(pieces), _NO_JOINER))
         self.chunks[range_axis.arg_key] = [[piece] for piece in pieces]
 

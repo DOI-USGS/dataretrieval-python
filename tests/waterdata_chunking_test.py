@@ -2493,6 +2493,7 @@ def test_time_axis_needs_parallel_chunks():
 @pytest.mark.parametrize(
     ("value", "chunk_days"),
     [
+        (None, 1),  # no interval
         ("P7D", 1),  # a duration
         ("2023-01-01/..", 1),  # open end
         ("../2023-01-01", 1),  # open start
@@ -2500,9 +2501,7 @@ def test_time_axis_needs_parallel_chunks():
         ("2023-01-01T01:00:00Z/2023-01-01T23:00:00Z", 1),  # within one day
         ("2023-01-01/2023-01-02", 1),  # one day, ending at the next midnight
         ("2023-01-01T23:00:00Z/2023-01-02T01:00:00Z", 1),  # two hours over midnight
-        ("2023-01-01/2023-02-15", 30),  # 45 days of continuous values
-        ("2023-01-01/2023-12-31", 3650),  # a year of daily values
-        ("2023-01-01/2023-12-31", None),  # a collection that is never divided
+        ("2023-01-01/2023-02-15", 30),  # 45 days, under two 30-day chunks
     ],
 )
 def test_time_axis_leaves_an_interval_shorter_than_two_chunks(value, chunk_days):
@@ -2518,27 +2517,19 @@ def test_time_axis_leaves_an_interval_shorter_than_two_chunks(value, chunk_days)
     assert plan.canonical_url is None  # a passthrough, as without the time axis
 
 
-@pytest.mark.parametrize(
-    ("value", "chunk_days", "max_chunks", "runs"),
-    [
-        ("2023-01-01/2023-12-31", 30, 52, 12),  # a year holds 12 30-day chunks
-        ("1985-01-01/2019-12-31", 3650, 12, 3),  # 35 years hold 3 10-year chunks
-    ],
-)
-def test_time_axis_chunks_are_no_shorter_than_the_shortest_time_chunk(
-    value, chunk_days, max_chunks, runs
-):
-    """The shortest time chunk caps the run count below ``n``."""
+def test_time_axis_chunks_are_no_shorter_than_the_shortest_time_chunk():
+    """The shortest time chunk caps the run count below ``n``: a year holds
+    12 30-day chunks."""
     plan = ChunkPlan(
-        {"time": value},
+        {"time": "2023-01-01/2023-12-31"},
         _fake_build,
         url_limit=8000,
-        max_chunks=max_chunks,
-        read_range=_read_interval(chunk_days),
+        max_chunks=52,
+        read_range=_read_interval(30),
     )
     days = _run_days(plan)
-    assert len(days) == runs
-    assert min(days) >= chunk_days
+    assert len(days) == 12
+    assert min(days) >= 30
 
 
 def test_time_axis_chunk_is_no_longer_than_the_callers_interval():

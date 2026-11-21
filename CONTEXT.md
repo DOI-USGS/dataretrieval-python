@@ -58,9 +58,9 @@ time interval, divided into pieces; dividing it does not shorten a request, so
 the plan divides it only to fan out.
 
 *Core term.* The planner divides axes without knowing what they measure. What a
-range measures and where it may be cut belong to the range axis the dialect
-selects, so the planner names no dimension, and a fitness function checks that
-it imports no date handling.
+range measures and where it may be cut belong to the range axis the engine
+builds from the dialect, so the planner names no dimension; `.importlinter` and
+a fitness function check that it imports no date handling.
 
 **Fan-out** — Executing a query's chunks concurrently. Chunking is how the work
 divides; fan-out is how it is distributed. The two are independent, and only

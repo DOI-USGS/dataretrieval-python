@@ -114,6 +114,18 @@ source_modules =
 forbidden_modules =
     dataretrieval.ogc.engine
 
+[importlinter:contract:ogc-planner-dimension-neutral]
+name = The chunk planner divides axes without knowing what they measure
+type = forbidden
+; A range axis owns what its range measures and where it may be cut: a time
+; interval's is ``ogc.dates._interval_axis``, which the engine binds from the
+; dialect. ``tests/architecture_test.py`` checks the standard-library and pandas
+; date imports, which this file cannot see.
+source_modules =
+    dataretrieval.ogc.planning
+forbidden_modules =
+    dataretrieval.ogc.dates
+
 [importlinter:contract:ogc-utils]
 name = OGC core does not depend on legacy utilities (ADR 0003)
 type = forbidden
