@@ -24,36 +24,35 @@ if TYPE_CHECKING:
     from dataretrieval._response_metadata import BaseMetadata
 
 
-# ID column of the collections whose name is not the singular of the collection.
-# The method and citation tables name the id after the foreign key that refers to
-# it, so a table joins to the one that references it on a same-named column:
-# ``methods.method_id`` <- ``method-citations.method_id`` and
-# ``time-series-methods.method_id``; ``method-categories.method_category`` <-
-# ``methods.method_category``; ``citations.citation_name`` <-
-# ``method-citations.citation_name``; ``method-citations.citation_method_id`` <-
-# ``combined-method-citations.citation_method_id``. The combined table's own id is
-# the synthetic ``<method_id>.<citation_method_id>``, and both of those names are
-# columns there, so it takes a distinct name.
-_OUTPUT_ID_BY_REFERENCE_COLLECTION = {
-    "counties": "county",
-    "countries": "country",
-    "methods": "method_id",
-    "method-categories": "method_category",
-    "method-citations": "citation_method_id",
+# The ID column of each reference table. Most are the collection name singularized;
+# the method and citation tables name it after the column that refers to it, so
+# they join on it.
+_OUTPUT_ID_BY_REFERENCE_COLLECTION: dict[str, str] = {
+    "agency-codes": "agency_code",
+    "altitude-datums": "altitude_datum",
+    "aquifer-codes": "aquifer_code",
+    "aquifer-types": "aquifer_type",
     "citations": "citation_name",
     "combined-method-citations": "combined_method_citation_id",
+    "coordinate-accuracy-codes": "coordinate_accuracy_code",
+    "coordinate-datum-codes": "coordinate_datum_code",
+    "coordinate-method-codes": "coordinate_method_code",
+    "counties": "county",
+    "countries": "country",
+    "hydrologic-unit-codes": "hydrologic_unit_code",
+    "medium-codes": "medium_code",
+    "method-categories": "method_category",
+    "method-citations": "citation_method_id",
+    "methods": "method_id",
+    "national-aquifer-codes": "national_aquifer_code",
+    "parameter-codes": "parameter_code",
+    "reliability-codes": "reliability_code",
+    "site-types": "site_type",
+    "states": "state",
+    "statistic-codes": "statistic_code",
+    "topographic-codes": "topographic_code",
+    "time-zone-codes": "time_zone_code",
 }
-
-
-def _output_id(collection: str) -> str:
-    """Name the ID column of a reference table.
-
-    Irregular collections are listed in ``_OUTPUT_ID_BY_REFERENCE_COLLECTION``;
-    every other one takes its name singularized and underscored.
-    """
-    return _OUTPUT_ID_BY_REFERENCE_COLLECTION.get(
-        collection, collection.removesuffix("s").replace("-", "_")
-    )
 
 
 def get_reference_table(
@@ -139,7 +138,7 @@ def get_reference_table(
         query_args["limit"] = limit
     return get_ogc_data(
         args=query_args,
-        output_id=_output_id(collection),
+        output_id=_OUTPUT_ID_BY_REFERENCE_COLLECTION[collection],
         collection=collection,
         max_rows=max_rows,
         spatial=False,

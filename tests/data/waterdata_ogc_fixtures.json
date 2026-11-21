@@ -107,6 +107,30 @@
   "numberReturned": 2,
   "type": "FeatureCollection"
  },
+ "citations": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "USGS TMR 5-B5",
+    "properties": {
+     "citation_description": "Furlong, E.T., Werner, S.L., Anderson, B.D., and Cahill, J.D., 2008, Determination of human-health pharmaceuticals in filtered water by chemically modified styrene-divinylbenzene resin-based solid-phase extraction and high-performance liquid chromatography/mass spectrometry: U.S. Geological Survey Techniques and Methods Report, book 5, chap. B5, 56 p.",
+     "id": "USGS TMR 5-B5"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "ALSC SOPs, 2015",
+    "properties": {
+     "citation_description": "Adirondack Lakes Survey Corporation, 2015, Standard operating procedures, laboratory, as of December 1, 2015: Ray Brook, New York, Adirondack Lakes Survey Corporation, 72 p.",
+     "id": "ALSC SOPs, 2015"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
  "combined-metadata": {
   "features": [
    {
@@ -248,6 +272,52 @@
      "vertical_datum_name": "North American Vertical Datum of 1988",
      "web_description": null,
      "well_constructed_depth": null
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "combined-method-citations": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "00021.1",
+    "properties": {
+     "citation_description": "Furlong, E.T., Werner, S.L., Anderson, B.D., and Cahill, J.D., 2008, Determination of human-health pharmaceuticals in filtered water by chemically modified styrene-divinylbenzene resin-based solid-phase extraction and high-performance liquid chromatography/mass spectrometry: U.S. Geological Survey Techniques and Methods Report, book 5, chap. B5, 56 p.",
+     "citation_method_id": 1,
+     "citation_method_number": "O-2080-08",
+     "citation_name": "USGS TMR 5-B5",
+     "id": "00021.1",
+     "method_category": "STNRD",
+     "method_category_description": "Data obtained by Standardized methods follow approved standard field methods or validated laboratory analytical methods, have known uncertainty or defined bias and variability, and follow rigorous quality assurance and quality control (QA/QC) workflows. Method category of Standardized should not be confused with approved USEPA 'Standard Methods' for water and wastewater analysis.",
+     "method_category_name": "Standardized",
+     "method_description": "Human-Health Pharmaceuticals in Filtered Water by Chemically Modified Styrene-Divinylbenzene Resin-Based Solid-Phase Extraction and High-Performance Liquid Chromatography/Mass Spectrometry",
+     "method_id": "00021",
+     "method_name": "Pharmaceuticals, wf, Sch 2080",
+     "method_source": "USGS",
+     "method_type": "QW"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "00023.2",
+    "properties": {
+     "citation_description": null,
+     "citation_method_id": 2,
+     "citation_method_number": "O-2439-13",
+     "citation_name": null,
+     "id": "00023.2",
+     "method_category": "STNRD",
+     "method_category_description": "Data obtained by Standardized methods follow approved standard field methods or validated laboratory analytical methods, have known uncertainty or defined bias and variability, and follow rigorous quality assurance and quality control (QA/QC) workflows. Method category of Standardized should not be confused with approved USEPA 'Standard Methods' for water and wastewater analysis.",
+     "method_category_name": "Standardized",
+     "method_description": "Custom add-on to schedule 1433 - NY",
+     "method_id": "00023",
+     "method_name": "Custom add-on to Sch 1433, NY",
+     "method_source": "USGS",
+     "method_type": "QW"
     },
     "type": "Feature"
    }
@@ -588,6 +658,92 @@
      "time_series_id": "0aa968f7d6494e2eb214d1829754532d",
      "unit_of_measure": "lbs/day",
      "value": "5.41"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "method-categories": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "STNRD",
+    "properties": {
+     "id": "STNRD",
+     "method_category_description": "Data obtained by Standardized methods follow approved standard field methods or validated laboratory analytical methods, have known uncertainty or defined bias and variability, and follow rigorous quality assurance and quality control (QA/QC) workflows. Method category of Standardized should not be confused with approved USEPA 'Standard Methods' for water and wastewater analysis.",
+     "method_category_name": "Standardized"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "UNKWN",
+    "properties": {
+     "id": "UNKWN",
+     "method_category_description": "Data obtained by a method with an unknown categorical standard because of an unknown level of data quality, certainty or lack of documentation. Unknown category is not available for new methods.",
+     "method_category_name": "Unknown"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "method-citations": {
+  "features": [
+   {
+    "geometry": null,
+    "id": 1,
+    "properties": {
+     "citation_method_number": "O-2080-08",
+     "citation_name": "USGS TMR 5-B5",
+     "id": 1,
+     "method_id": "00021",
+     "method_source": "USGS"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": 2,
+    "properties": {
+     "citation_method_number": "O-2439-13",
+     "citation_name": null,
+     "id": 2,
+     "method_id": "00023",
+     "method_source": "USGS"
+    },
+    "type": "Feature"
+   }
+  ],
+  "numberReturned": 2,
+  "type": "FeatureCollection"
+ },
+ "methods": {
+  "features": [
+   {
+    "geometry": null,
+    "id": "00021",
+    "properties": {
+     "id": "00021",
+     "method_category": "STNRD",
+     "method_description": "Human-Health Pharmaceuticals in Filtered Water by Chemically Modified Styrene-Divinylbenzene Resin-Based Solid-Phase Extraction and High-Performance Liquid Chromatography/Mass Spectrometry",
+     "method_name": "Pharmaceuticals, wf, Sch 2080",
+     "method_type": "QW"
+    },
+    "type": "Feature"
+   },
+   {
+    "geometry": null,
+    "id": "00023",
+    "properties": {
+     "id": "00023",
+     "method_category": "STNRD",
+     "method_description": "Custom add-on to schedule 1433 - NY",
+     "method_name": "Custom add-on to Sch 1433, NY",
+     "method_type": "QW"
     },
     "type": "Feature"
    }
