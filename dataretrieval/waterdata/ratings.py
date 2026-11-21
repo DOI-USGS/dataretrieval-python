@@ -20,7 +20,6 @@ import pandas as pd
 
 from dataretrieval._validation import render_options
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
-from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.requests import _check_monitoring_location_id
@@ -29,9 +28,8 @@ from dataretrieval.transport.fanout import FanOut, active_client
 from dataretrieval.transport.http import (
     default_headers as _default_headers,
 )
-from dataretrieval.transport.links import resolve_next_url
-from dataretrieval.transport.pagination import run_paginated
 from dataretrieval.transport.retry import RetryPolicy
+from dataretrieval.waterdata.catalog import format_time, search_items
 from dataretrieval.waterdata.endpoints import ratings_catalog_url
 
 __all__ = ["get_ratings"]
@@ -177,25 +175,21 @@ def get_ratings(
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     file_types = _as_list(file_type)
     _validate_file_types(file_types)
-    _validate_time_no_duration(time)
-    time_str = (
-        _format_api_dates(
-            time,
-            name="time",
-            single_value_hint="an instant ('2020-01-01')",
-            # The STAC firewall rejects ``datetime=../2026-01-01`` with HTTP
-            # 403; STAC treats an empty start (``/2026-01-01``) as open.
-            open_start="",
-        )
-        if time is not None
-        else None
-    )
+    time_str = format_time(time, service="rating-curve")
 
     # Match R: set file_type server-side only when one type is requested.
     server_file_type = file_types[0] if len(file_types) == 1 else None
     filter_str = _build_filter(monitoring_location_id, server_file_type)
 
-    features = _search(filter_str, time_str, bbox, limit, ssl_check)
+    features, _ = search_items(
+        "ratings",
+        filter_str=filter_str,
+        time_str=time_str,
+        bbox=bbox,
+        limit=limit,
+        ssl_check=ssl_check,
+        service="ratings",
+    )
 
     if not download_and_parse:
         return features
@@ -220,20 +214,6 @@ def _validate_file_types(file_types: list[str]) -> None:
         raise ValueError(
             f"Invalid file_type: {render_options(invalid)}. "
             f"Valid options are: {render_options(_VALID_FILE_TYPES)}."
-        )
-
-
-def _validate_time_no_duration(time: str | list[str] | None) -> None:
-    """Raise ValueError if ``time`` contains an ISO 8601 duration."""
-    if time is None:
-        return
-    # ``_coerce_to_list`` keeps a lone ``date``/``Timestamp`` whole, where
-    # ``_as_list`` would try to iterate it.
-    values = _coerce_to_list(time, "time")
-    if any(isinstance(v, str) and _DURATION_RE.match(v) for v in values):
-        raise ValueError(
-            "ISO 8601 durations (e.g. 'P7D') are not supported in `time` "
-            "for the rating-curve service. Provide a date or interval instead."
         )
 
 
@@ -268,70 +248,6 @@ def _build_filter(
         # Already checked against _VALID_FILE_TYPES, none of which has a quote.
         parts.append(f"file_type = '{file_type}'")
     return " AND ".join(parts) if parts else None
-
-
-def _search(
-    filter_str: str | None,
-    time_str: str | None,
-    bbox: list[float] | None,
-    limit: int,
-    ssl_check: bool,
-) -> list[dict[str, Any]]:
-    """Run STAC ``/search`` and return all matching features.
-
-    ``limit`` is the page size (clamped to the service maximum of 10,000); the
-    STAC ``next`` link is followed until exhausted so a result set larger than
-    one page is not truncated.
-
-    The page walk is :func:`~dataretrieval.transport.pagination.run_paginated`
-    with STAC strategies. Pages hold features rather than rows, so each page
-    frame wraps the raw feature dicts in a single ``feature`` column.
-    """
-    query_params: dict[str, Any] = {"limit": min(limit, 10000)}
-    if filter_str is not None:
-        query_params["filter"] = filter_str
-    if time_str is not None:
-        query_params["datetime"] = time_str
-    if bbox is not None:
-        query_params["bbox"] = ",".join(map(str, bbox))
-
-    url = f"{ratings_catalog_url()}/search"
-    req = httpx.Request("GET", url, params=query_params, headers=_default_headers(url))
-
-    def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
-        body = resp.json()
-        page = pd.DataFrame({"feature": body.get("features", [])})
-        # The STAC ``next`` link is a complete GET href that includes the
-        # limit/filter/bbox and a continuation token, so it becomes the
-        # cursor verbatim -- except for the shared safety policy: the href is
-        # response data, so it is checked before it becomes a request. A link
-        # to another host would send this request's API key to a host
-        # other than the authorized one, and one with ``user:pass@`` would
-        # produce an ``Authorization: Basic`` header the caller never configured.
-        href = next(
-            (lnk["href"] for lnk in body.get("links", []) if lnk.get("rel") == "next"),
-            None,
-        )
-        cursor = (
-            None if href is None else resolve_next_url(href, resp, service="ratings")
-        )
-        return page, cursor
-
-    async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
-        return await sess.get(cursor, headers=_default_headers(cursor))
-
-    df, _ = run_paginated(
-        [req],
-        parse_response=parse_response,
-        follow_up=follow_up,
-        raise_for_status=_raise_for_non_200,
-        client_options={"verify": ssl_check},
-        service="ratings",
-        adapter="waterdata",
-    )
-    # Every page frame is built with a ``feature`` column, and the combine
-    # helpers preserve it, so the empty case needs no special branch.
-    return list(df["feature"])
 
 
 def _asset_href(feature: dict[str, Any]) -> str | None:
