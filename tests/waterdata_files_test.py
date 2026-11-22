@@ -277,3 +277,25 @@ def test_ratings_without_ids_makes_one_search_and_checks_the_url_length(httpx_mo
     with pytest.raises(ValueError, match="2,094-character"):
         get_ratings(bbox=[0.123456789] * 4 * 60, download_and_parse=False)
     assert len(httpx_mock.get_requests()) == 1
+
+
+def test_item_times_with_and_without_fractional_seconds_both_parse(httpx_mock):
+    """STAC writes ``2018-12-04T22:26:36.420930Z`` for some continuous items
+    and ``2005-10-01T04:00:00Z`` for others. Inferred from the first value,
+    one format failed on the other."""
+    httpx_mock.add_response(
+        url=SEARCH_RE,
+        json={
+            "features": [
+                _daily_item("USGS-01", start="2005-10-01T04:00:00Z"),
+                _daily_item("USGS-02", start="2018-12-04T22:26:36.420930Z"),
+            ]
+        },
+    )
+
+    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-01", "USGS-02"])
+
+    assert df["start_datetime"].tolist() == [
+        pd.Timestamp("2005-10-01T04:00:00Z"),
+        pd.Timestamp("2018-12-04T22:26:36.420930Z"),
+    ]

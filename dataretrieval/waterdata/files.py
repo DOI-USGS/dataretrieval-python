@@ -297,5 +297,5 @@ def _files_frame(items: list[dict[str, Any]]) -> pd.DataFrame:
     ]
     df = pd.DataFrame(rows, columns=_COLUMNS)
     for column in ("start_datetime", "end_datetime"):
-        df[column] = pd.to_datetime(df[column], utc=True)
+        df[column] = pd.to_datetime(df[column], utc=True, format="ISO8601")
     return df.sort_values(["monitoring_location_id", "asset"], ignore_index=True)
