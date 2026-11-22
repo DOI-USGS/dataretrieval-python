@@ -18,13 +18,21 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any, Literal, get_args
 
+import httpx
 import pandas as pd
 
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
 from dataretrieval.ogc.filters import _cql_in_clause
 from dataretrieval.ogc.requests import _check_monitoring_location_id
-from dataretrieval.waterdata.catalog import MAX_PAGE_SIZE, format_time, search_items
+from dataretrieval.waterdata.catalog import (
+    MAX_PAGE_SIZE,
+    chunk_in_filters,
+    format_time,
+    require_url_fits,
+    search_items,
+    search_items_chunked,
+)
 
 __all__ = ["get_parquet_files"]
 
@@ -170,16 +178,81 @@ def get_parquet_files(
     require_one_of(collection, _PARQUET_COLLECTIONS, name="collection")
     monitoring_location_id = _check_monitoring_location_id(monitoring_location_id)
     time_str = format_time(time, service=f"{collection} Parquet file")
-    items, response = search_items(
+    items, response = _search(
         collection,
-        filter_str=_build_filter(monitoring_location_id, filter),
+        monitoring_location_id,
+        filter,
         time_str=time_str,
         bbox=bbox,
         limit=limit,
         ssl_check=ssl_check,
-        service=collection,
     )
     return _files_frame(items), BaseMetadata(response)
+
+
+def _search(
+    collection: str,
+    monitoring_location_id: str | list[str] | None,
+    filter: str | None,
+    *,
+    time_str: str | None,
+    bbox: list[float] | None,
+    limit: int,
+    ssl_check: bool,
+) -> tuple[list[dict[str, Any]], httpx.Response]:
+    """Search the catalog, one chunk per run of ids that fits in a URL.
+
+    The catalog's edge refuses a URL over ``EDGE_URL_LIMIT`` characters, so a
+    long ``monitoring_location_id`` list is split across concurrent searches.
+    """
+    remedy = (
+        "Shorten `filter`, `time` or `bbox`, or split the call into several "
+        "calls, each with a shorter `filter` or fewer `monitoring_location_id` "
+        "values."
+    )
+    lead = f"({filter}) AND " if filter is not None and filter.strip() else ""
+    if monitoring_location_id is None:
+        filter_str = _build_filter(None, filter)
+        require_url_fits(
+            filter_str,
+            collection,
+            limit,
+            time_str=time_str,
+            bbox=bbox,
+            remedy=remedy,
+        )
+        return search_items(
+            collection,
+            filter_str=filter_str,
+            time_str=time_str,
+            bbox=bbox,
+            limit=limit,
+            ssl_check=ssl_check,
+            service=collection,
+        )
+    ids = (
+        [monitoring_location_id]
+        if isinstance(monitoring_location_id, str)
+        else monitoring_location_id
+    )
+    filters = chunk_in_filters(
+        ids,
+        collection,
+        limit,
+        lead=lead,
+        time_str=time_str,
+        bbox=bbox,
+        remedy=remedy,
+    )
+    return search_items_chunked(
+        collection,
+        filters,
+        limit=limit,
+        ssl_check=ssl_check,
+        service=collection,
+        time_str=time_str,
+        bbox=bbox,
+    )
 
 
 def _build_filter(

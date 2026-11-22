@@ -153,3 +153,127 @@ def test_ratings_search_is_scoped_to_the_ratings_collection(httpx_mock):
     )
 
     assert _sent_query(httpx_mock)["collections"] == ["ratings"]
+
+
+# --- URL-length chunking -------------------------------------------------
+# The catalog edge answers HTTP 403 to a search URL over 2,094 characters.
+
+EDGE_LIMIT = 2094
+
+
+def _long_ids(n):
+    return [f"OH015-{383638000000 + i:015d}" for i in range(n)]
+
+
+def _ids_in(request):
+    filter_str = parse_qs(urlsplit(str(request.url)).query)["filter"][0]
+    in_clause = filter_str.split("monitoring_location_id IN (")[1].split(")")[0]
+    return re.findall(r"'([^']+)'", in_clause)
+
+
+def _echo_ids(request):
+    import httpx
+
+    features = [_daily_item(i) for i in _ids_in(request)]
+    return httpx.Response(200, json={"features": features})
+
+
+def test_many_long_ids_are_split_across_searches_that_fit_the_edge(httpx_mock):
+    ids = _long_ids(200)
+    assert len(ids[0]) == 21
+    httpx_mock.add_callback(_echo_ids, url=SEARCH_RE, is_reusable=True)
+
+    df, _ = get_parquet_files("daily", monitoring_location_id=ids[::-1])
+
+    requests = httpx_mock.get_requests()
+    assert len(requests) > 1
+    assert all(len(str(r.url)) <= EDGE_LIMIT for r in requests)
+    sent = [i for r in requests for i in _ids_in(r)]
+    assert sorted(sent) == ids
+    assert df["monitoring_location_id"].tolist() == ids
+
+
+def test_a_short_id_list_makes_one_search(httpx_mock):
+    httpx_mock.add_callback(_echo_ids, url=SEARCH_RE)
+
+    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-02", "USGS-01"])
+
+    assert len(httpx_mock.get_requests()) == 1
+    assert df["monitoring_location_id"].tolist() == ["USGS-01", "USGS-02"]
+
+
+def test_the_user_filter_and_dates_are_kept_in_every_chunk(httpx_mock):
+    httpx_mock.add_callback(_echo_ids, url=SEARCH_RE, is_reusable=True)
+
+    get_parquet_files(
+        "daily",
+        monitoring_location_id=_long_ids(120),
+        filter="state_code = '39'",
+        time=["2004-01-01", None],
+        bbox=[-85.0, 38.0, -80.0, 42.0],
+    )
+
+    requests = httpx_mock.get_requests()
+    assert len(requests) > 1
+    for i in range(len(requests)):
+        query = _sent_query(httpx_mock, i)
+        assert query["filter"][0].startswith("(state_code = '39') AND ")
+        assert query["datetime"] == ["2004-01-01T00:00:00Z/.."]
+        assert query["bbox"] == ["-85.0,38.0,-80.0,42.0"]
+        assert len(str(requests[i].url)) <= EDGE_LIMIT
+
+
+def test_a_repeated_id_is_sent_once(httpx_mock):
+    httpx_mock.add_callback(_echo_ids, url=SEARCH_RE)
+
+    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-01"] * 3)
+
+    assert _ids_in(httpx_mock.get_requests()[0]) == ["USGS-01"]
+    assert len(df) == 1
+
+
+def test_a_user_filter_over_the_url_limit_raises_before_any_request(httpx_mock):
+    too_long = " OR ".join(f"state_code = '{i:02d}'" for i in range(200))
+
+    with pytest.raises(ValueError, match="2,094-character") as exc:
+        get_parquet_files("daily", filter=too_long)
+    with pytest.raises(ValueError, match="2,094-character"):
+        get_parquet_files("daily", filter=too_long, monitoring_location_id=["USGS-01"])
+
+    assert "split the call" in str(exc.value)
+    assert httpx_mock.get_requests() == []
+
+
+def test_ratings_with_many_ids_are_chunked(httpx_mock):
+    ids = [f"USGS-{1000000 + i:08d}" for i in range(300)]
+    httpx_mock.add_callback(_echo_ids, url=SEARCH_RE, is_reusable=True)
+
+    features = get_ratings(
+        monitoring_location_id=ids, file_type="exsa", download_and_parse=False
+    )
+
+    requests = httpx_mock.get_requests()
+    assert len(requests) > 1
+    assert all(len(str(r.url)) <= EDGE_LIMIT for r in requests)
+    assert all(
+        parse_qs(urlsplit(str(r.url)).query)["collections"] == ["ratings"]
+        for r in requests
+    )
+    assert all(
+        parse_qs(urlsplit(str(r.url)).query)["filter"][0].endswith(
+            " AND file_type = 'exsa'"
+        )
+        for r in requests
+    )
+    assert sorted(i for r in requests for i in _ids_in(r)) == ids
+    assert len(features) == len(ids)
+
+
+def test_ratings_without_ids_makes_one_search_and_checks_the_url_length(httpx_mock):
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
+    get_ratings(bbox=[-95.0, 40.0, -92.0, 42.0], download_and_parse=False)
+    assert len(httpx_mock.get_requests()) == 1
+
+    with pytest.raises(ValueError, match="2,094-character"):
+        get_ratings(bbox=[0.123456789] * 4 * 60, download_and_parse=False)
+    assert len(httpx_mock.get_requests()) == 1

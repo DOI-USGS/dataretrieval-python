@@ -29,7 +29,13 @@ from dataretrieval.transport.http import (
     default_headers as _default_headers,
 )
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.catalog import format_time, search_items
+from dataretrieval.waterdata.catalog import (
+    chunk_in_filters,
+    format_time,
+    require_url_fits,
+    search_items,
+    search_items_chunked,
+)
 from dataretrieval.waterdata.endpoints import ratings_catalog_url
 
 __all__ = ["get_ratings"]
@@ -37,6 +43,9 @@ __all__ = ["get_ratings"]
 
 RATING_FILE_TYPE = Literal["exsa", "base", "corr"]
 _VALID_FILE_TYPES = get_args(RATING_FILE_TYPE)
+
+
+_REMEDY = "Shorten `time` or `bbox`, or split the call into several calls."
 
 
 def get_ratings(
@@ -179,16 +188,13 @@ def get_ratings(
 
     # Match R: set file_type server-side only when one type is requested.
     server_file_type = file_types[0] if len(file_types) == 1 else None
-    filter_str = _build_filter(monitoring_location_id, server_file_type)
-
-    features, _ = search_items(
-        "ratings",
-        filter_str=filter_str,
+    features, _ = _search(
+        monitoring_location_id,
+        server_file_type,
         time_str=time_str,
         bbox=bbox,
         limit=limit,
         ssl_check=ssl_check,
-        service="ratings",
     )
 
     if not download_and_parse:
@@ -225,6 +231,60 @@ def _filter_features_by_type(
     return [
         f for f in features if f.get("properties", {}).get("file_type") in requested
     ]
+
+
+def _search(
+    monitoring_location_id: str | list[str] | None,
+    file_type: str | None,
+    *,
+    time_str: str | None,
+    bbox: list[float] | None,
+    limit: int,
+    ssl_check: bool,
+) -> tuple[list[dict[str, Any]], httpx.Response]:
+    """Search the ``ratings`` collection, chunked so each URL fits the edge.
+
+    The catalog's edge refuses a URL over ``EDGE_URL_LIMIT`` characters, so a
+    long ``monitoring_location_id`` list is split across concurrent searches.
+    """
+    if monitoring_location_id is None:
+        filter_str = _build_filter(None, file_type)
+        require_url_fits(
+            filter_str,
+            "ratings",
+            limit,
+            time_str=time_str,
+            bbox=bbox,
+            remedy=_REMEDY,
+        )
+        return search_items(
+            "ratings",
+            filter_str=filter_str,
+            time_str=time_str,
+            bbox=bbox,
+            limit=limit,
+            ssl_check=ssl_check,
+            service="ratings",
+        )
+    filters = chunk_in_filters(
+        _as_list(monitoring_location_id),
+        "ratings",
+        limit,
+        # Already checked against _VALID_FILE_TYPES, none of which has a quote.
+        tail="" if file_type is None else f" AND file_type = '{file_type}'",
+        time_str=time_str,
+        bbox=bbox,
+        remedy=_REMEDY,
+    )
+    return search_items_chunked(
+        "ratings",
+        filters,
+        limit=limit,
+        ssl_check=ssl_check,
+        service="ratings",
+        time_str=time_str,
+        bbox=bbox,
+    )
 
 
 def _build_filter(
