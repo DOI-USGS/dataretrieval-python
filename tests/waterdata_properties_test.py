@@ -94,6 +94,7 @@ def _schema_properties(collection: str) -> set[str]:
         if name not in _NOT_FORWARDED and param.kind is not param.VAR_KEYWORD
     ],
 )
+@pytest.mark.usefixtures("bulk_off")
 def test_every_named_parameter_reaches_the_engine(monkeypatch, getter, parameter):
     """A named parameter that a getter accepts is passed on to the OGC engine,
     rather than accepted and dropped, which would return unfiltered rows."""

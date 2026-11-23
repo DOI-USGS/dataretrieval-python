@@ -141,7 +141,7 @@ Settings
        path (``"v1"``). Per adapter; Water Data reads it for its OGC
        collections. See :ref:`configuration-api-version`.
    * - ``bulk``
-     - ``"off"``
+     - ``"auto"``
      - *(none — code or file)*
      - Whether Water Data's ``get_daily`` and ``get_continuous`` read history
        from the nightly Parquet files: ``"off"``, ``"auto"``, or
@@ -611,14 +611,20 @@ Reading Water Data history from the nightly files
 -------------------------------------------------
 
 USGS also publishes the ``daily`` and ``continuous`` collections as Parquet
-files, one set per monitoring location, rewritten every night. With the
-``bulk`` setting, ``get_daily`` and ``get_continuous`` read a location's
-history from those files and only the records changed since from the API,
-then return one frame with the same columns and types, less the record id:
+files, one set per monitoring location, written by a nightly job. Under the
+``bulk`` setting's default, ``"auto"``, ``get_daily`` and ``get_continuous``
+read a large query's history from those files and only the records changed
+since from the API, then return one frame with the same columns and types,
+less the record id. A smaller query, and any query the files cannot answer,
+pages the API. The choice is made per query, without a request.
+
+``"always"`` reads the files for every query and raises ``ValueError`` for
+one they cannot answer, which is useful for comparing the two paths.
+``"off"`` always pages the API and returns the record id:
 
 .. code-block:: python
 
-   with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+   with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
        df, md = waterdata.get_daily(
            monitoring_location_id=sites, parameter_code="00060"
        )
@@ -626,13 +632,7 @@ then return one frame with the same columns and types, less the record id:
 .. code-block:: toml
 
    [waterdata]
-   bulk = "auto"
-
-``"auto"`` reads the files for a query large enough to finish sooner that
-way, and pages the API for the rest, including any query the files cannot
-answer. ``"always"`` reads the files for every query and raises
-``ValueError`` for one they cannot answer, which is useful for comparing the
-two paths. ``"off"``, the default, always pages the API.
+   bulk = "off"
 
 The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` or
 ``"always"`` a query the files can answer returns no such column, whether the

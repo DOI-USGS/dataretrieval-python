@@ -107,6 +107,9 @@ doc = [
   # bound as the [nldi] extra.
   "geopandas>=0.10",
   "mapclassify",
+  # Under the default bulk="auto", a large get_daily or get_continuous call in
+  # a demo reads the files; without pyarrow the page shows the fallback warning.
+  "dataretrieval[bulk]",
 ]
 nldi = [
   'geopandas>=0.10'

@@ -444,10 +444,8 @@ def _fetcher(
         del response  # only ``inert`` is kept; the body goes with ``content``
         rows, cutoff = await anyio.to_thread.run_sync(_read_file, content, filters)
         if cutoff is not None:
-            # ``current`` and ``historical`` are written in one nightly run,
-            # and ``historical`` holds only old records, so its newest
-            # ``last_modified`` is months old: the later of the two bounds
-            # the snapshot more tightly.
+            # ``historical`` is rewritten the night after one of its records
+            # changes, so the later of the two files' cutoffs applies to both.
             snapshot.cutoff[site] = max(snapshot.cutoff.get(site, cutoff), cutoff)
         return rows, inert
 

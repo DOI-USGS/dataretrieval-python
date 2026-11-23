@@ -920,6 +920,7 @@ def test_samples_service_profile_routes_to_its_endpoint(
 # --- daily / continuous ------------------------------------------------------
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_daily(httpx_mock):
     """A daily query returns rows with the collection id renamed to
     ``daily_id`` and moved last, dates as ``date`` objects, values numeric."""
@@ -970,6 +971,7 @@ def test_get_daily_rejects_an_unreadable_time_before_any_request(httpx_mock, tim
     assert httpx_mock.get_requests() == []
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_daily_value_is_float_when_every_value_is_whole(httpx_mock):
     """Issue #428: whole-number values used to infer ``int64``, so ``value``
     changed dtype between calls. It is ``float64`` regardless of the data."""
@@ -1090,6 +1092,7 @@ def test_get_daily_properties_id(httpx_mock):
     assert df.columns[1] == "daily_id"
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_daily_no_geometry(httpx_mock):
     """``skip_geometry=True`` is forwarded and drops the geometry column,
     yielding a plain DataFrame."""
@@ -1105,6 +1108,7 @@ def test_get_daily_no_geometry(httpx_mock):
     assert _sent(httpx_mock, "daily")[0]["skipGeometry"] == ["true"]
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_daily_empty_no_geometry(httpx_mock):
     """An empty skip-geometry request has the same plain shape as a non-empty result."""
     httpx_mock.add_response(
@@ -1128,6 +1132,7 @@ def test_get_daily_empty_no_geometry(httpx_mock):
     assert {"monitoring_location_id", "value"}.issubset(df.columns)
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_continuous(httpx_mock):
     """Continuous observations are timestamped (not date-only), so ``time``
     comes back as a UTC-aware datetime column."""
@@ -1148,6 +1153,7 @@ def test_get_continuous(httpx_mock):
     assert df["method_category"].tolist() == ["UNKWN", "UNKWN"]
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_get_continuous_sends_method_category(httpx_mock):
     """The named ``method_category`` parameter is sent in the request as a filter."""
     _mock_items(httpx_mock, "continuous")
@@ -1544,6 +1550,7 @@ def test_time_series_metadata_state_warning_points_to_the_same_argument(
     assert f"get_combined_metadata({spelled}=...)" in message
 
 
+@pytest.mark.usefixtures("bulk_off")
 def test_v0_routing_does_not_write_on_the_callers_configuration(httpx_mock):
     """The getter sets v0 on the request, not in the configuration, so the
     version the caller set still applies to every other call (ADR 0011)."""

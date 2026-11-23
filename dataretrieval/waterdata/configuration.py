@@ -74,13 +74,13 @@ class WaterdataConfiguration(
         Whether :func:`~dataretrieval.waterdata.get_daily` and
         :func:`~dataretrieval.waterdata.get_continuous` read a query's history
         from the nightly Parquet files USGS publishes, and from the API only
-        the records changed since. ``"off"`` (the default) always pages the
-        API. ``"auto"`` reads the files for a query large enough to finish
-        sooner that way, and pages the API for the rest, including any query
-        the files cannot answer. ``"always"`` reads the files for every query,
-        and raises ``ValueError`` for one they cannot answer. With ``"auto"``
-        or ``"always"``, a query the files can answer returns no ``daily_id``
-        / ``continuous_id`` column. Needs
+        the records changed since. ``"auto"`` (the default) reads the files
+        for a query large enough to finish sooner that way, and pages the API
+        for the rest, including any query the files cannot answer.
+        ``"always"`` reads the files for every query, and raises
+        ``ValueError`` for one they cannot answer. ``"off"`` always pages the
+        API. With ``"auto"`` or ``"always"``, a query the files can answer
+        returns no ``daily_id`` / ``continuous_id`` column. Needs
         ``pyarrow`` (``pip install "dataretrieval[bulk]"``); without it, the
         getters page the API and warn. Set it in code or in the
         ``[waterdata]`` table of the configuration file.

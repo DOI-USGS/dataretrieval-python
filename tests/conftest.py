@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import pytest
 
+import dataretrieval
 from dataretrieval import configuration
 
 
@@ -64,3 +65,17 @@ def _pin_chunker_env(monkeypatch, tmp_path):
     # pointing the variable at a file they wrote.
     monkeypatch.setenv("DATARETRIEVAL_CONFIG", str(tmp_path / "no-such-config.toml"))
     configuration._reset_file_cache()
+
+
+@pytest.fixture
+def bulk_off():
+    """Run the test with the Water Data ``bulk`` setting ``"off"``.
+
+    For a test of the API path of ``get_daily`` or ``get_continuous``. Under the
+    default, ``"auto"``, a large query reads the files instead, and a query the
+    files can answer returns no record id (ADR 0014).
+    """
+    from dataretrieval.waterdata import WaterdataConfiguration
+
+    with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
+        yield

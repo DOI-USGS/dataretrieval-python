@@ -1419,6 +1419,7 @@ def test_base_url_is_refused_from_the_environment(monkeypatch):
     ],
     ids=["base_url", "api_version"],
 )
+@pytest.mark.usefixtures("bulk_off")
 def test_base_url_changes_every_endpoint_family_and_api_version_only_ogc(
     httpx_mock, setting, root, ogc_version
 ):
@@ -1502,13 +1503,13 @@ def test_api_version_is_refused_from_the_environment(monkeypatch):
         configuration.api_version(adapter="waterdata")
 
 
-def test_bulk_is_off_unless_code_or_the_waterdata_table_sets_it(config_file):
-    assert configuration.bulk(adapter="waterdata") == "off"
-    config_file('[waterdata]\nbulk = "auto"\n')
+def test_bulk_is_auto_unless_code_or_the_waterdata_table_sets_it(config_file):
     assert configuration.bulk(adapter="waterdata") == "auto"
+    config_file('[waterdata]\nbulk = "off"\n')
+    assert configuration.bulk(adapter="waterdata") == "off"
     with dataretrieval.configure(WaterdataConfiguration(bulk="always")):
         assert configuration.bulk(adapter="waterdata") == "always"
-    assert configuration.bulk(adapter="waterdata") == "auto"
+    assert configuration.bulk(adapter="waterdata") == "off"
 
 
 def test_bulk_must_be_a_known_mode():

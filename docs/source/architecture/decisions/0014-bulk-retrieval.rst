@@ -11,10 +11,13 @@ Context
 
 Since October 2026, USGS publishes the ``daily`` and ``continuous`` OGC
 collections a second way: as Parquet files, one set per monitoring location,
-rewritten every night and indexed by the Water Data STAC catalog
+written by a nightly job and indexed by the Water Data STAC catalog
 (https://waterdata.usgs.gov/blog/api-faster-access/). ``continuous`` has two
-files per location, ``current`` (about the last 150 days) and ``historical``
-(everything older).
+files per location, ``historical`` and ``current``. ``historical`` ends 150
+days before the night it was last written, and ``current`` starts at the
+next value, so ``current`` holds 150 days or more. On 2026-11-23, every
+``current`` file sampled had been written that night, and ``historical``
+files had been written on dates from 2026-10-26 to that night.
 
 The two sources trade speed for freshness. Paging the OGC API for the full
 daily discharge record of 40 Ohio gages took 39.8 s; downloading their files
@@ -43,14 +46,15 @@ adapter gains a ``bulk`` setting (ADR 0011), ``"off"``, ``"auto"``, or
 ``"always"``, set with ``WaterdataConfiguration(bulk=...)`` or in the
 ``[waterdata]`` table of the configuration file. Under ``"always"`` the
 getters return the same columns and types from a different retrieval path,
-less the record id (below). The default, ``"off"``, keeps the API path, so every existing call is
-unchanged. Making ``"auto"`` the default is a behavior change for a future
-major release, decided then; it changes no signature.
+less the record id (below). The default is ``"auto"``, which lands in a
+major release because it removes the record id from most ``get_daily`` and
+``get_continuous`` results. It changes no signature. ``"off"`` keeps the
+API path and the record id.
 
 The choice is a setting because it changes how a query runs, not what it
 asks for, like ``parallel_chunks`` and ``api_version``. A keyword would add
-a parameter to two signatures that most callers should never set: once
-``"auto"`` is the default, the router decides. Forcing a path remains
+a parameter to two signatures that most callers should never set: with
+``"auto"`` as the default, the router decides. Forcing a path remains
 possible for benchmarks, tests, and bug reports, with a ``configure`` block.
 Like ``api_version``, it has no environment variable (ADR 0011 refuses one
 for adapter-only settings).
@@ -82,9 +86,12 @@ accepts is returned as the API gives it, and ``"off"`` changes nothing.
    when ``time`` starts within the last 120 days.
 3. Take each location's snapshot time ``T`` as the largest ``last_modified``
    in its files. Read it from the row-group statistics, and floor it to the
-   day as a margin. For ``continuous``, take the later of the two files:
+   day as a margin. For ``continuous``, take the later of the two files.
    ``historical`` holds only old records, so its newest change can be months
-   older than the night both files were written.
+   older than the night it was written. This rule depends on ``historical``
+   being rewritten the night after one of its records changes: on
+   2026-11-23, no record in the range of five older ``historical`` files had
+   changed in the API since the file was written.
 4. Send **one** OGC query whose CQL-text filter has a top-level ``OR`` clause
    per cutoff day, ``monitoring_location_id IN (...) AND last_modified >= T``,
    plus one clause asking for the whole query for any location without a
@@ -149,8 +156,7 @@ Query                                          API       Files
 1 location, 7 days continuous                  1.0 s     2.1 s
 =============================================  ========  =======
 
-``"off"`` stays the default. ``"auto"`` is the candidate for the
-default in the next major release.
+``"auto"`` is the default.
 
 **pyarrow is an optional extra,** ``dataretrieval[bulk]``, imported only on
 the bulk path. Without it, a query the setting sends to the files pages the
@@ -167,7 +173,10 @@ Consequences
   for one location gains nothing, which is why ``"auto"`` routes it to the
   API.
 - With ``"auto"`` or ``"always"``, a result has no ``daily_id`` /
-  ``continuous_id`` column. A caller that needs the id keeps ``"off"``.
+  ``continuous_id`` column. Under the default, that is every
+  ``get_daily`` and ``get_continuous`` call the files can answer, including
+  the small ones the router sends to the API. A caller that needs the id
+  sets ``"off"``.
 - A record removed from the API since the files were written is still
   returned, until the next night's files. Every case seen so far is the
   trailing edge of a rolling window: Provisional daily values drop out after
@@ -175,10 +184,14 @@ Consequences
   window moved still hold the day or two that dropped off. Against freshly
   written files, the results were identical.
 - The path depends on behavior USGS has not documented as a contract: the
-  file URL layout, the ``current`` / ``historical`` split and its roughly
-  150-day window, ``last_modified`` in the files matching the API, and every
-  file of a location being written in one run.
-- Each file counts against the hourly rate limit, as one request.
+  file URL layout, the ``current`` / ``historical`` split and its 150-day
+  boundary, ``last_modified`` in the files matching the API, and
+  ``historical`` being rewritten the night after one of its records changes.
+- Each file and each catalog page counts as one request against the API
+  key's hourly count. The OGC API, the catalog, and the files share one
+  count, with different ceilings: 1,000, 4,000, and 10,000 requests an hour
+  on 2026-11-23. The change query runs after every download, so a pull of
+  about 1,000 files leaves it no OGC requests for the rest of the hour.
 - ``get_ratings``, ``get_parquet_files``, and this path share one catalog
   search, ``waterdata.catalog.search``, which alone knows the edge's URL
   limit.
@@ -237,7 +250,7 @@ Compliance
   three files with range requests and checks the layout a range-request
   reader would rely on: rows sorted by ``time`` in row groups of 50,000, and
   UTC ``last_modified``. Nothing in the current read path depends on it.
-- ``tests/configuration_test.py`` pins the setting: ``"off"`` by default,
+- ``tests/configuration_test.py`` pins the setting: ``"auto"`` by default,
   read from code and the ``[waterdata]`` table, validated, and refused from
   the environment. ``tests/waterdata_bulk_test.py`` pins the pyarrow
   fallback and its warning.

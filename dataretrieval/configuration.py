@@ -76,6 +76,7 @@ from dataretrieval._configuration_core import (
     BULK_MODES as BULK_MODES,
     CONFIG_PATH_ENV as CONFIG_PATH_ENV,
     CONCURRENCY_UNBOUNDED as CONCURRENCY_UNBOUNDED,
+    DEFAULT_BULK as DEFAULT_BULK,
     DEFAULT_CONCURRENCY as DEFAULT_CONCURRENCY,
     DEFAULT_PARALLEL_CHUNKS as DEFAULT_PARALLEL_CHUNKS,
     DEFAULT_RETRIES as DEFAULT_RETRIES,
@@ -699,15 +700,15 @@ def api_version(
 def bulk(*, adapter: str | None = None) -> str:
     """When an adapter reads a query's history from published files.
 
-    One of :data:`BULK_MODES`; ``"off"`` when nothing configured it. Settable
-    from code or from the adapter's table in the file; like
-    :func:`api_version`, it has no environment variable. The default is
-    declared here, so :func:`show_configuration` and the adapter that reads
-    the setting cannot disagree about it.
+    One of :data:`BULK_MODES`; :data:`DEFAULT_BULK` (``"auto"``) when nothing
+    configured it. Settable from code or from the adapter's table in the file;
+    like :func:`api_version`, it has no environment variable. Both
+    :func:`show_configuration` and the adapter that reads the setting call
+    this function, so they cannot disagree about the default.
     """
     raw, label, _source = _resolve("bulk", adapter)
     if raw is None:
-        return BULK_MODES[0]
+        return DEFAULT_BULK
     return _parse_bulk(raw, label)
 
 
