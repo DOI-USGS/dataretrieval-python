@@ -15,7 +15,7 @@ from collections.abc import Iterable
 from typing import Any, Literal, get_args
 
 import anyio
-import httpx
+import httpx2
 import pandas as pd
 
 from dataretrieval._validation import render_options
@@ -296,9 +296,9 @@ def _search(
         query_params["bbox"] = ",".join(map(str, bbox))
 
     url = f"{ratings_catalog_url()}/search"
-    req = httpx.Request("GET", url, params=query_params, headers=_default_headers(url))
+    req = httpx2.Request("GET", url, params=query_params, headers=_default_headers(url))
 
-    def parse_response(resp: httpx.Response) -> tuple[pd.DataFrame, str | None]:
+    def parse_response(resp: httpx2.Response) -> tuple[pd.DataFrame, str | None]:
         body = resp.json()
         page = pd.DataFrame({"feature": body.get("features", [])})
         # The STAC ``next`` link is a complete GET href that includes the
@@ -317,7 +317,7 @@ def _search(
         )
         return page, cursor
 
-    async def follow_up(cursor: str, sess: httpx.AsyncClient) -> httpx.Response:
+    async def follow_up(cursor: str, sess: httpx2.AsyncClient) -> httpx2.Response:
         return await sess.get(cursor, headers=_default_headers(cursor))
 
     df, _ = run_paginated(
@@ -341,8 +341,8 @@ def _asset_href(feature: dict[str, Any]) -> str | None:
 
 
 def _inert_response(
-    status: int, url: str, headers: httpx.Headers | None = None
-) -> httpx.Response:
+    status: int, url: str, headers: httpx2.Headers | None = None
+) -> httpx2.Response:
     """A body-less stand-in the executor can aggregate.
 
     The executor keeps every completed item's response until the run ends,
@@ -351,7 +351,7 @@ def _inert_response(
     downloaded file in memory for the whole run. ``elapsed`` is left
     unset; the aggregate's ``_safe_elapsed`` treats that as zero.
     """
-    return httpx.Response(status, headers=headers, request=httpx.Request("GET", url))
+    return httpx2.Response(status, headers=headers, request=httpx2.Request("GET", url))
 
 
 def _write_rating(path: str, body: str) -> None:
@@ -362,7 +362,7 @@ def _write_rating(path: str, body: str) -> None:
 
 async def _fetch_rating(
     feature: dict[str, Any], file_path: str | None
-) -> tuple[pd.DataFrame, httpx.Response]:
+) -> tuple[pd.DataFrame, httpx2.Response]:
     """Fetch one feature's data asset, parse RDB, optionally persist to disk.
 
     Headers are evaluated against each asset href -- assets can be on a different host
@@ -413,7 +413,7 @@ def _download_all(
     retries and then raises resumable; a *deterministic* per-feature failure
     warns with :class:`~dataretrieval.exceptions.SkippedRatingWarning` and
     skips the feature. ``OSError`` writing ``file_path`` propagates -- a
-    local disk problem is not a per-feature condition. Raw ``httpx`` errors
+    local disk problem is not a per-feature condition. Raw ``httpx2`` errors
     pass through unchanged so the executor can classify and retry them.
 
     The public result is a dict keyed by feature id, so the fetch closure
@@ -428,7 +428,7 @@ def _download_all(
     if not features:
         return out
 
-    async def fetch(feature: dict[str, Any]) -> tuple[pd.DataFrame, httpx.Response]:
+    async def fetch(feature: dict[str, Any]) -> tuple[pd.DataFrame, httpx2.Response]:
         fid = feature.get("id", "<missing id>")
         try:
             df, response = await _fetch_rating(feature, file_path)

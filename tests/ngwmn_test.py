@@ -626,7 +626,7 @@ def test_state_queryables_still_diverge_upstream():
     Kept live on purpose: it is a claim about the upstream API, and mocking it
     would make it assert only that our fixture still says what we wrote.
     """
-    import httpx
+    import httpx2
 
     from dataretrieval.ngwmn import NGWMN_OGC_API_URL
     from dataretrieval.utils import _default_headers
@@ -634,7 +634,7 @@ def test_state_queryables_still_diverge_upstream():
     headers = _default_headers(NGWMN_OGC_API_URL)
 
     def queryables(collection):
-        resp = httpx.get(
+        resp = httpx2.get(
             f"{NGWMN_OGC_API_URL}/collections/{collection}/queryables",
             headers=headers,
             timeout=60,

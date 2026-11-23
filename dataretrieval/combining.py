@@ -16,7 +16,7 @@ from __future__ import annotations
 import copy
 from datetime import timedelta
 
-import httpx
+import httpx2
 import pandas as pd
 
 # Response header USGS uses to report remaining hourly quota.  Defined in this
@@ -25,14 +25,14 @@ import pandas as pd
 _QUOTA_HEADER = "x-ratelimit-remaining"
 
 
-def _safe_elapsed(response: httpx.Response) -> timedelta:
+def _safe_elapsed(response: httpx2.Response) -> timedelta:
     """
     Read ``response.elapsed``, falling back to ``timedelta(0)`` when
     the attribute hasn't been populated.
 
-    httpx only writes ``.elapsed`` when a response is closed through
+    httpx2 only writes ``.elapsed`` when a response is closed through
     its normal transport path. ``MockTransport`` (used by
-    ``pytest-httpx``) and hand-constructed ``httpx.Response`` objects
+    ``pytest-httpx``) and hand-constructed ``httpx2.Response`` objects
     leave the attribute unset, so accessing it raises ``RuntimeError``.
     Combining responses across chunks needs a defined duration, so we
     treat the missing attribute as zero elapsed.
@@ -44,33 +44,35 @@ def _safe_elapsed(response: httpx.Response) -> timedelta:
     return elapsed if isinstance(elapsed, timedelta) else timedelta(0)
 
 
-def _set_response_url(response: httpx.Response, url: str | httpx.URL) -> None:
+def _set_response_url(response: httpx2.Response, url: str | httpx2.URL) -> None:
     """
     Overwrite the URL a response reports without back-propagating
     the change into any aliased original.
 
     Minimal test doubles expose ``.url`` as a writable attribute. Real
-    :class:`httpx.Response` objects resolve it through a bound request, so attach a new
+    :class:`httpx2.Response` objects resolve it through a bound request, so attach a new
     request with the new URL; mutating the existing request would leak through any
     shallow copy that shares it.
     """
-    if not isinstance(response, httpx.Response):
+    if not isinstance(response, httpx2.Response):
         # Minimal test doubles expose ``url`` as a writable attribute.
         response.url = url
         return
 
-    target = httpx.URL(str(url))
+    target = httpx2.URL(str(url))
     try:
         old = response.request
     except RuntimeError:
-        # No request bound (some hand-built httpx.Response fixtures);
+        # No request bound (some hand-built httpx2.Response fixtures);
         # synthesize a minimal one to hold the URL.
-        response.request = httpx.Request("GET", target)
+        response.request = httpx2.Request("GET", target)
         return
-    response.request = httpx.Request(method=old.method, url=target, headers=old.headers)
+    response.request = httpx2.Request(
+        method=old.method, url=target, headers=old.headers
+    )
 
 
-def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
+def _lowest_remaining(responses: list[httpx2.Response]) -> httpx2.Response:
     """The response reporting the lowest ``x-ratelimit-remaining``.
 
     Within a rate-limit window, the counter decreases monotonically, so the
@@ -79,7 +81,7 @@ def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
     server processed last. Fall back to the last response when none reports
     the header.
     """
-    best: httpx.Response | None = None
+    best: httpx2.Response | None = None
     best_remaining: int | None = None
     for response in responses:
         try:
@@ -92,24 +94,24 @@ def _lowest_remaining(responses: list[httpx.Response]) -> httpx.Response:
 
 
 def _merge_response(
-    base: httpx.Response,
+    base: httpx2.Response,
     *,
-    headers_from: httpx.Response,
+    headers_from: httpx2.Response,
     elapsed: timedelta,
-    url: str | httpx.URL | None = None,
-) -> httpx.Response:
+    url: str | httpx2.URL | None = None,
+) -> httpx2.Response:
     """Merge several responses into one shallow copy of ``base``.
 
-    The copy's ``.headers`` are rebuilt as a new ``httpx.Headers`` from
+    The copy's ``.headers`` are rebuilt as a new ``httpx2.Headers`` from
     ``headers_from``, ``.elapsed`` is set to ``elapsed``, and ``.url`` is
     overridden when ``url`` is given.  ``base`` and ``headers_from`` are never
-    mutated, and the new ``httpx.Headers`` means downstream mutations don't
+    mutated, and the new ``httpx2.Headers`` means downstream mutations don't
     back-propagate into any underlying response — so callers may re-merge
     idempotently.  This is the one low-level merge used by both pagination
     (:func:`~dataretrieval.transport.pagination.paginate`) and the chunked /
     fan-out aggregation (:func:`_combine_chunk_responses`)."""
     merged = copy.copy(base)
-    merged.headers = httpx.Headers(headers_from.headers)
+    merged.headers = httpx2.Headers(headers_from.headers)
     merged.elapsed = elapsed
     if url is not None:
         _set_response_url(merged, url)
@@ -152,8 +154,8 @@ def _combine_chunk_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 
 
 def _combine_chunk_responses(
-    responses: list[httpx.Response], canonical_url: str | None
-) -> httpx.Response:
+    responses: list[httpx2.Response], canonical_url: str | None
+) -> httpx2.Response:
     """
     Merge per-chunk responses into a single aggregated response.
 
@@ -171,7 +173,7 @@ def _combine_chunk_responses(
 
     Parameters
     ----------
-    responses : list[httpx.Response]
+    responses : list[httpx2.Response]
         One response per completed chunk, in caller-provided order.
     canonical_url : str or None
         URL of the unchunked original request. ``None`` skips the URL
@@ -181,14 +183,14 @@ def _combine_chunk_responses(
 
     Returns
     -------
-    httpx.Response
+    httpx2.Response
         A shallow copy of the first response with aggregated
         ``headers``, ``elapsed``, and ``url``.  The function is
         idempotent (the input responses' ``headers`` / ``elapsed`` /
         ``url`` are never mutated), so it's safe to call repeatedly
         via :attr:`ChunkedCall.partial_response` during error
         inspection or resume retries.  ``headers`` on the returned
-        object is a new ``httpx.Headers``, so mutations there don't
+        object is a new ``httpx2.Headers``, so mutations there don't
         back-propagate into any chunk's underlying response.
     """
     if len(responses) == 1 and canonical_url is None:

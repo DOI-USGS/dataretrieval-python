@@ -123,7 +123,7 @@ Supporting decisions:
   matched as well as the host, because redirects and server-supplied next-page
   links are attacker-influenced data and a downgrade to http would send the
   credential in clear text. Userinfo on a caller-supplied URL is
-  stripped before the request is built, so ``httpx`` cannot build an
+  stripped before the request is built, so ``httpx2`` cannot build an
   ``Authorization`` header nobody configured. This states the predicate ADR
   0006 defers to the credentials leaf.
 - **TOML, read with** ``tomllib``. Stdlib from Python 3.11; the ``tomli``
@@ -222,8 +222,7 @@ Compliance
 
 ``tests/architecture_test.py::test_config_is_a_standard_library_only_leaf``
 asserts the module imports nothing from ``dataretrieval`` other than the
-``exceptions`` taxonomy leaf, and no third-party package other than the
-``tomli`` backport.
+``exceptions`` taxonomy leaf, and no third-party package at all.
 ``tests/configuration_test.py`` covers the precedence chain, per-setting merging,
 thread and asyncio isolation, host scoping for file-sourced keys, redaction in
 ``show_configuration``, and rejection of credential parameters on public getters.

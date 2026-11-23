@@ -133,7 +133,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.13", "3.14"]
+        python-version: ["3.11", "3.13", "3.14"]
         include:
           # pandas 3 stores text columns in Arrow memory when pyarrow is
           # installed, so one pandas 3 leg runs the suite with it.

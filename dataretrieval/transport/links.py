@@ -7,7 +7,7 @@ the next request, with that request's headers and API key. Three page walks
 ``Link:`` header -- each need the same things of it before it is used: parse
 it, resolve a relative reference against the page it came from, reject a host
 the caller did not request, and drop any embedded ``user:pass@`` (which
-``httpx`` would otherwise turn into an ``Authorization: Basic`` header).
+``httpx2`` would otherwise turn into an ``Authorization: Basic`` header).
 
 They had three implementations of that policy, and the three differed: only two
 resolved relative references, only two rejected an unparseable link rather than
@@ -19,7 +19,7 @@ which hosts are acceptable, and whether an accepted host is rewritten.
 
 from __future__ import annotations
 
-import httpx
+import httpx2
 
 from dataretrieval.credentials import without_embedded_credentials
 from dataretrieval.exceptions import DataRetrievalError
@@ -27,19 +27,19 @@ from dataretrieval.exceptions import DataRetrievalError
 __all__ = ["resolve_next_url"]
 
 
-def _page_url(response: httpx.Response) -> httpx.URL:
-    """The URL *response* came from, as an ``httpx.URL``.
+def _page_url(response: httpx2.Response) -> httpx2.URL:
+    """The URL *response* came from, as an ``httpx2.URL``.
 
     Read lazily by :func:`resolve_next_url` (see that function). The coercion is for
     callers holding a response-shaped stand-in whose ``url`` is a plain string.
     """
     url = response.url
-    return url if isinstance(url, httpx.URL) else httpx.URL(str(url))
+    return url if isinstance(url, httpx2.URL) else httpx2.URL(str(url))
 
 
 def resolve_next_url(
     href: str,
-    response: httpx.Response,
+    response: httpx2.Response,
     *,
     service: str,
     allowed_hosts: frozenset[str] | None = None,
@@ -57,7 +57,7 @@ def resolve_next_url(
     ----------
     href : str
         The next-page link exactly as the service supplied it.
-    response : httpx.Response
+    response : httpx2.Response
         The page that contained the link.
     service : str
         Name of the service, used in the error messages (e.g. ``"ratings"``).
@@ -81,8 +81,8 @@ def resolve_next_url(
         An absolute URL on an acceptable host, with no embedded credentials.
     """
     try:
-        target = httpx.URL(href)
-    except (httpx.InvalidURL, TypeError) as exc:
+        target = httpx2.URL(href)
+    except (httpx2.InvalidURL, TypeError) as exc:
         raise error(
             f"The {service} service returned an unusable next-page link: "
             f"{href!r}. The page walk cannot continue; report this if it "
@@ -112,7 +112,7 @@ def resolve_next_url(
         return str(
             target.copy_with(scheme="https", host=rewrite_host, port=None, userinfo=b"")
         )
-    # A same-host link may still contain ``user:pass@``, which httpx turns into an
+    # A same-host link may still contain ``user:pass@``, which httpx2 turns into an
     # ``Authorization: Basic`` header on the follow-up request. The host check
     # passes in that case, so strip it rather than use the link as given.
     return str(without_embedded_credentials(target))

@@ -35,7 +35,7 @@ from dataretrieval._ambient import Ambient
 from dataretrieval.credentials import SIGNUP_URL, accepts_api_key, api_key
 
 if TYPE_CHECKING:
-    import httpx
+    import httpx2
 
 
 def _group_int(value: str) -> str:
@@ -107,7 +107,7 @@ class ProgressReporter:
         service: str | None = None,
         stream: TextIO | None = None,
         enabled: bool | None = None,
-        target_url: str | httpx.URL | None = None,
+        target_url: str | httpx2.URL | None = None,
     ) -> None:
         self._stream = stream if stream is not None else sys.stderr
         self.enabled = _enabled_default(self._stream) if enabled is None else enabled
@@ -272,7 +272,7 @@ def progress_context(
     service: str | None = None,
     stream: TextIO | None = None,
     enabled: bool | None = None,
-    target_url: str | httpx.URL | None = None,
+    target_url: str | httpx2.URL | None = None,
 ) -> Iterator[ProgressReporter]:
     """Activate a :class:`ProgressReporter` for the duration of a query.
 

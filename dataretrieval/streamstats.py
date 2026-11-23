@@ -10,7 +10,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, ClassVar, cast
 
-import httpx
+import httpx2
 
 from dataretrieval import configuration as _configuration
 from dataretrieval._querying import _get_with_retry
@@ -43,7 +43,7 @@ def _service_base() -> str:
     return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
 
-def download_workspace(workspaceID: str, format: str = "") -> httpx.Response:
+def download_workspace(workspaceID: str, format: str = "") -> httpx2.Response:
     """Download a StreamStats workspace.
 
     Parameters
@@ -104,7 +104,7 @@ def get_watershed(
     includefeatures: bool = True,
     simplify: bool = True,
     format: str = "geojson",
-) -> httpx.Response | Watershed:
+) -> httpx2.Response | Watershed:
     """Get a watershed object for a location.
 
     **StreamStats documentation:**
@@ -139,13 +139,13 @@ def get_watershed(
         Whether to simplify the returned result.
     format: string, optional
         Controls the return type, default is 'geojson'. 'geojson' returns
-        the raw ``httpx.Response``; 'object' parses the response into a
+        the raw ``httpx2.Response``; 'object' parses the response into a
         :obj:`dataretrieval.streamstats.Watershed`. 'shape' is not
         implemented and raises ``NotImplementedError``.
 
     Returns
     -------
-    r: ``httpx.Response`` or :obj:`dataretrieval.streamstats.Watershed`
+    r: ``httpx2.Response`` or :obj:`dataretrieval.streamstats.Watershed`
         The raw response when ``format='geojson'`` (the default), or a
         custom ``Watershed`` object containing the watershed information
         extracted from the StreamStats JSON when ``format='object'``.
@@ -215,7 +215,7 @@ class Watershed:
         Parses the response onto this instance.
         """
         response = cast(
-            "httpx.Response",
+            "httpx2.Response",
             get_watershed(rcode, xlocation, ylocation, format="geojson"),
         )
         self._populate(json.loads(response.text))

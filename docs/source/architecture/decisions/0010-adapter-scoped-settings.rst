@@ -77,7 +77,7 @@ from shows the premise is false. The settings themselves differ:
 ``concurrency`` and ``parallel_chunks`` are meaningless for the four
 single-shot adapters -- there is nothing to fan out. ``ssl_check`` applies to
 four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is currently a
-per-call keyword outside the chain entirely; it is passed to ``httpx``'s ``verify``,
+per-call keyword outside the chain entirely; it is passed to ``httpx2``'s ``verify``,
 verified by spying on the client. A flat namespace accepts
 ``configure(streamstats={"parallel_chunks": 8})`` without error, which is
 the typo class ADR 0009 exists to catch.
@@ -236,7 +236,7 @@ Consequences
 - **``ssl_check`` stays a per-call argument and does not become a setting.**
   It is a defaulted keyword on 23 shipped getters across four adapters --
   ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it is
-  passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the only
+  passed to ``httpx2``'s ``verify``. It was added in 2023 to what were then the only
   modules; the OGC getters were added later and never adopted it, so its
   distribution records the package's history rather than a boundary.
 
@@ -249,7 +249,7 @@ Consequences
   ``[waterdata] ssl_check`` would be applied by three getters and
   ignored by the rest, the pattern this ADR refuses elsewhere. And the
   need it serves is already met better: the legitimate case is a
-  TLS-intercepting corporate proxy, and ``httpx`` natively reads
+  TLS-intercepting corporate proxy, and ``httpx2`` natively reads
   ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients --
   so that mechanism already covers *every* getter, including the OGC ones that
   have no ``ssl_check``, and it trusts the corporate CA rather than trusting

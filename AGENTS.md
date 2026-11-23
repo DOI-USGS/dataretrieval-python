@@ -67,7 +67,7 @@ can predict where a thing is defined.
 ## Environment
 - `pip install .[test,nldi]` (CI uses pip, not uv, despite `uv.lock`).
   Docs: `pip install .[doc,nldi]`. Gates: `pip install -e .[metrics]`.
-- Python >= 3.10; the CI test matrix is 3.10, 3.13, 3.14.
+- Python >= 3.11; the CI test matrix is 3.11, 3.13, 3.14.
 
 ## Commands
 - Lint: `ruff check .` and `ruff format --check .`
@@ -93,7 +93,9 @@ can predict where a thing is defined.
   `@pytest.mark.live` call real USGS services and run on a schedule
   (`.github/workflows/live-api.yml`); run them locally with `pytest tests/ -m live`.
 - HTTP is mocked with `pytest-httpx`'s `httpx_mock` fixture plus fixtures under
-  `tests/data/`; keep new API tests offline.
+  `tests/data/`; keep new API tests offline. Until pytest-httpx supports
+  `httpx2`, `tests/conftest.py` aliases `httpx` to `httpx2` and loads the
+  plugin itself (its docstring says why).
 - `tests/conftest.py` relaxes the fixture's strict-mode defaults and pins the
   fan-out env (`API_USGS_CONCURRENT=1`, `API_USGS_RETRIES=0`,
   `API_USGS_STALL_TIMEOUT=0`) plus a nonexistent `DATARETRIEVAL_CONFIG`, so tests
@@ -141,8 +143,8 @@ raise states the problem and then the action that fixes it, in that order.
   with a non-JSON body becomes an empty GeoDataFrame by design.
 
 ## Implementation notes
-- HTTP client is `httpx` (migrated from `requests` in #289); new code uses
-  `httpx` and tests mock with `httpx_mock`.
+- HTTP client is `httpx2` (migrated from `requests` in #289); new code uses
+  `httpx2` and tests mock with `httpx_mock`.
 - Public getters return `(DataFrame, metadata)`.
 - `dataretrieval/__init__.py` imports the service modules by name and lists them
   in `__all__`; it does not star-import them, so a getter is accessed through its
