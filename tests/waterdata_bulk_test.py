@@ -340,7 +340,7 @@ def test_continuous_reads_historical_only_for_an_old_or_open_start(
     assert (f"{base}.parquet" in requested) is reads_historical
 
 
-def test_continuous_cutoff_is_the_later_of_its_two_files(httpx_mock, ogc):
+def test_continuous_cutoff_is_the_current_files(httpx_mock, ogc):
     site = "USGS-01"
     base = f"{FILES}/continuous/{site}/{site}"
     item = _item(site, "continuous", assets=("current", "historical"))
@@ -372,6 +372,150 @@ def test_continuous_cutoff_is_the_later_of_its_two_files(httpx_mock, ogc):
     # ``historical`` holds only old records, so its newest change is months
     # older than the night both files were written.
     assert "'2026-11-21T00:00:00Z'" in ogc.queries[0]["filter"]
+
+
+def _continuous_pair(httpx_mock, site, *, historical, current):
+    """Mock a location's two files, each with the given row overrides."""
+    base = f"{FILES}/continuous/{site}/{site}"
+    item = _item(site, "continuous", assets=("current", "historical"))
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": [item]})
+    row = {"ts": "a", "site": site, "value": "1"}
+    for url, rows in (
+        (f"{base}.parquet", historical),
+        (f"{base}-hot.parquet", current),
+    ):
+        httpx_mock.add_response(
+            url=url, content=_parquet([{**row, **r} for r in rows], "continuous")
+        )
+
+
+def test_a_stale_current_file_sets_the_cutoff(httpx_mock, ogc):
+    """A ``current`` file older than its ``historical`` (a cached copy) lacks
+    the records changed since it was written, so its cutoff is the one sent."""
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[
+            {
+                "time": datetime(2020, 1, 1, tzinfo=UTC),
+                "modified": datetime(2026, 11, 22, 4, tzinfo=UTC),
+            }
+        ],
+        current=[
+            {
+                "time": datetime(2020, 1, 1, 0, 15, tzinfo=UTC),
+                "modified": datetime(2026, 11, 20, 4, tzinfo=UTC),
+            }
+        ],
+    )
+
+    waterdata.get_continuous(monitoring_location_id="USGS-01")
+
+    assert "last_modified >= '2026-11-20T00:00:00Z'" in ogc.queries[0]["filter"]
+
+
+def test_a_gap_between_the_two_files_is_asked_of_the_api(httpx_mock, ogc):
+    """Files written on different nights leave the span between them in
+    neither, and a change query does not return records that have not changed."""
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[{"time": datetime(2026, 5, 29, 23, 45, tzinfo=UTC)}],
+        current=[{"time": datetime(2026, 6, 27, tzinfo=UTC)}],
+    )
+    ogc.answers.append(
+        _api_frame(
+            [{"ts": "a", "site": "USGS-01", "time": "2026-06-10", "value": "2"}],
+            "continuous",
+        ).assign(time=lambda d: d["time"].dt.tz_localize("UTC"))
+    )
+
+    df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01")
+
+    assert (
+        "(monitoring_location_id IN ('USGS-01') AND "
+        "time > '2026-05-29T23:45:00Z' AND time < '2026-06-27T00:00:00Z')"
+    ) in ogc.queries[0]["filter"]
+    assert len(df) == 3
+
+
+def test_adjoining_files_add_no_gap_clause(httpx_mock, ogc):
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[{"time": datetime(2026, 6, 26, 23, 45, tzinfo=UTC)}],
+        current=[{"time": datetime(2026, 6, 27, tzinfo=UTC)}],
+    )
+
+    waterdata.get_continuous(monitoring_location_id="USGS-01")
+
+    assert "time >" not in ogc.queries[0]["filter"]
+
+
+@pytest.mark.parametrize("time", ["2000-01-01/..", "../2020-01-01"])
+def test_a_time_the_api_refuses_is_not_sent_with_the_change_query(
+    httpx_mock, ogc, time
+):
+    """The continuous collection refuses a ``time`` over 1,100 days or with an
+    open start (HTTP 400), after every file was downloaded. A change clause
+    needs no ``time``, and the merge applies the bounds to its rows."""
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[{"time": datetime(2010, 1, 1, tzinfo=UTC)}],
+        current=[{"time": datetime(2010, 1, 1, 0, 15, tzinfo=UTC)}],
+    )
+    # Changed records on both sides of each interval; only one is inside both.
+    ogc.answers.append(
+        _api_frame(
+            [
+                {"ts": "a", "site": "USGS-01", "time": t, "value": "2"}
+                for t in ("1999-06-01", "2015-06-01", "2026-11-22")
+            ],
+            "continuous",
+        ).assign(time=lambda d: d["time"].dt.tz_localize("UTC"))
+    )
+
+    df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01", time=time)
+
+    assert "time" not in ogc.queries[0]
+    start, _, end = time.partition("/")
+    inside = df["time"].dt.strftime("%Y-%m-%d")
+    assert start == ".." or (inside >= start).all()
+    assert end == ".." or (inside <= end).all()
+    assert "2015-06-01" in set(inside)
+
+
+def test_locations_without_a_file_carry_the_time_the_request_dropped(ogc, httpx_mock):
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
+
+    waterdata.get_continuous(
+        monitoring_location_id="USGS-01", time="2000-01-01/2010-01-01"
+    )
+
+    assert "time" not in ogc.queries[0]
+    assert ogc.queries[0]["filter"] == (
+        "(monitoring_location_id IN ('USGS-01') AND "
+        "time >= '2000-01-01T00:00:00Z' AND time <= '2010-01-01T00:00:00Z')"
+    )
+
+
+@pytest.mark.parametrize(
+    ("getter", "time"),
+    [
+        (waterdata.get_continuous, "2026-01-01/2026-06-01"),
+        (waterdata.get_continuous, None),
+        # ``daily`` has no limit on ``time``.
+        (waterdata.get_daily, "1950-01-01/.."),
+    ],
+)
+def test_a_time_the_api_accepts_is_sent_as_before(ogc, httpx_mock, getter, time):
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
+
+    getter(monitoring_location_id="USGS-01", time=time, skip_geometry=None)
+
+    assert ogc.queries[0].get("time") == time
+    assert "time >=" not in ogc.queries[0]["filter"]
 
 
 @pytest.mark.parametrize(

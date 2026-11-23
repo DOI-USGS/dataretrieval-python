@@ -86,23 +86,37 @@ accepts is returned as the API gives it, and ``"off"`` changes nothing.
    when ``time`` starts within the last 120 days.
 3. Take each location's snapshot time ``T`` as the largest ``last_modified``
    in its files. Read it from the row-group statistics, and floor it to the
-   day as a margin. For ``continuous``, take the later of the two files.
+   day as a margin. For ``continuous``, take the ``current`` file's.
    Because ``T`` comes from the file, the path does not assume how far the
    files are behind. ``historical`` holds only old records, so its newest
-   change can be months older than the night it was written. This rule depends on ``historical``
+   change can be months older than the night it was written, and a
+   ``current`` file older than its ``historical`` (a cached copy) lacks the
+   changes since its own snapshot. This rule depends on ``historical``
    being rewritten the night after one of its records changes: on
    2026-11-23, no record in the range of five older ``historical`` files had
    changed in the API since the file was written.
 4. Send **one** OGC query whose CQL-text filter has a top-level ``OR`` clause
    per cutoff day, ``monitoring_location_id IN (...) AND last_modified >= T``,
    plus one clause asking for the whole query for any location without a
-   usable file. Each clause names at most 100 locations, because the OGC
+   usable file. Where a location's ``current`` file starts more than 12
+   hours after its ``historical`` file ends, one more clause asks for every
+   record between them. Two files written on different nights leave that
+   span in neither, and its records have not changed, so no change clause
+   returns them. A gage that recorded nothing there costs an empty answer. Each clause names at most 100 locations, because the OGC
    chunker splits a filter only at top-level ``OR``. It does that split when
    the filter outgrows a URL, and fans the pieces out under the concurrency
    cap. So the change clauses run concurrently without a second fan-out
    mechanism.
 5. Concatenate, and keep the API's version of every ``(time_series_id,
    time)`` present in both.
+
+The ``continuous`` collection refuses a ``time`` argument with an open start
+or a span over 1,100 days (HTTP 400), whatever the filter. It accepts a query
+with no ``time``, and a filter can compare ``time`` itself. So when the
+query's ``time`` is over the limit, step 4 sends none: a change clause needs
+none, the whole-query clause carries the bounds as comparisons, and step 5
+applies them to the changes. A record's ``time`` is fixed when it is written,
+so applying it late loses nothing.
 
 Steps 4 and 5 are the downloads' ``finalize`` hook, so resuming an
 interruption (``exc.call.resume()``) returns the whole result. A file that
@@ -204,8 +218,9 @@ Consequences
   written files, the results were identical.
 - The path depends on behavior USGS has not documented as a contract: the
   file URL layout, the ``current`` / ``historical`` split and its 150-day
-  boundary, ``last_modified`` in the files matching the API, and
-  ``historical`` being rewritten the night after one of its records changes.
+  boundary, ``last_modified`` in the files matching the API,
+  ``historical`` being rewritten the night after one of its records changes,
+  and the API accepting a ``continuous`` query with no ``time``.
 - Each file and each catalog page counts as one request against the API
   key's hourly count. The OGC API, the catalog, and the files share one
   count, with different ceilings: 1,000, 4,000, and 10,000 requests an hour
@@ -267,7 +282,8 @@ Compliance
   and size decisions, and the merge rule (the API
   wins), the classification of filters, the single OR-clause change query,
   the whole-query clause for locations without a file, the cutoff from the
-  later file, the ``historical`` skip, column types when no record changed,
+  ``current`` file, the clause for a gap between the two files, a ``time``
+  over the API's limit left out of the change query, the ``historical`` skip, column types when no record changed,
   chunked catalog searches and change clauses, the 404-only fallback, resume
   returning the whole result, and every rejection.
 - ``test_live_bulk_matches_the_api`` (``live`` marker, scheduled run) compares

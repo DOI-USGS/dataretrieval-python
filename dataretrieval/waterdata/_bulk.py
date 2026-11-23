@@ -9,11 +9,14 @@ rule, and the alternatives rejected are recorded in ADR 0014. In short:
 1. Search the STAC catalog for each location's files, as concurrent chunks.
 2. Download every file, one fan-out chunk per file, reading only the rows the
    query's stable filters and ``time`` match.
-3. Take each location's snapshot time ``T`` as its files' largest
-   ``last_modified``. A record changed after the snapshot has a larger one.
+3. Take each location's snapshot time ``T`` as the largest
+   ``last_modified`` in its ``current`` file, or in its only file. A record
+   changed after the snapshot has a larger one.
 4. Send one OGC query: a CQL ``OR`` clause per cutoff day selecting the
-   changes, and one for the whole query at locations without a file. The OGC
-   chunker splits it at ``OR`` and fans the pieces out.
+   changes, one per gap between a location's two files, and one for the
+   whole query at locations without a file. The OGC chunker splits it at
+   ``OR`` and fans the pieces out. A ``time`` the API would refuse is left
+   out of it and applied in step 5.
 5. Combine, keeping the API's version of any record in both, then apply the
    filters on columns a record can change after it is written.
 
@@ -29,6 +32,7 @@ import warnings
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import timedelta
+from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 import anyio
@@ -72,6 +76,11 @@ _SITES_PER_CLAUSE = 100
 #: query starts well inside that window.
 _CURRENT_WINDOW = timedelta(days=120)
 
+#: A location's ``current`` file starts at the value after its ``historical``
+#: file ends. A wider space between them means the two were written on
+#: different nights, or the gage recorded nothing; the API is asked which.
+_BOUNDARY_GAP = timedelta(hours=12)
+
 
 @dataclass(frozen=True)
 class _Layout:
@@ -90,6 +99,9 @@ class _Layout:
     #: Each location has a second, large file for records older than
     #: ``_CURRENT_WINDOW``.
     has_historical: bool
+    #: The widest ``time`` argument the API accepts, in days. It refuses a
+    #: wider or open-started one with HTTP 400 (measured 2026-11-23).
+    max_days: int | None
     #: The API returns a geometry column for the collection.
     has_geometry: bool
     #: The row estimate of the ``"auto"`` mode: values per series per day;
@@ -115,6 +127,7 @@ _LAYOUTS = {
         row_filters=_ROW_FILTERS - {"method_category"},
         dated=True,
         has_historical=False,
+        max_days=None,
         has_geometry=True,
         values_per_day=1,
         series_per_location=2,
@@ -125,6 +138,7 @@ _LAYOUTS = {
         row_filters=_ROW_FILTERS,
         dated=False,
         has_historical=True,
+        max_days=1100,
         has_geometry=False,
         # Mostly 15-minute values.
         values_per_day=96,
@@ -159,6 +173,29 @@ class _Query:
         now = pd.Timestamp.now(tz="UTC")
         return self.start is None or self.start < now - _CURRENT_WINDOW
 
+    @cached_property
+    def time_fits_api(self) -> bool:
+        """Whether the API accepts the query's ``time`` argument.
+
+        When it does not, the API part sends no ``time``: the change clauses
+        need none, the other clauses carry the bounds, and the merge applies
+        them. The limit has a day's margin, since the API measures an open
+        end from its own clock.
+        """
+        limit = self.layout.max_days
+        if limit is None or self.args.get("time") is None:
+            return True
+        if self.start is None:
+            return False
+        end = self.end if self.end is not None else pd.Timestamp.now(tz="UTC")
+        return bool(end - self.start <= timedelta(days=limit - 1))
+
+    @property
+    def time_clauses(self) -> list[str]:
+        """The ``time`` interval as CQL-text comparisons."""
+        bounds = ((">=", self.start), ("<=", self.end))
+        return [f"time {op} '{_cql_time(t)}'" for op, t in bounds if t is not None]
+
 
 @dataclass(frozen=True)
 class _File:
@@ -166,15 +203,52 @@ class _File:
 
     monitoring_location_id: str
     url: str
+    #: The catalog's name for the file: ``current``, ``historical``, ``data``.
+    asset: str
+
+
+@dataclass(frozen=True)
+class _FileFacts:
+    """What one whole file says about itself, whatever rows the query read."""
+
+    #: The largest ``last_modified``: when the snapshot was taken.
+    cutoff: pd.Timestamp
+    #: The smallest and largest ``time``.
+    first: pd.Timestamp
+    last: pd.Timestamp
 
 
 @dataclass
 class _Snapshot:
-    """What the downloads learned beside the rows: each location's ``T``."""
+    """What the downloads learned beside the rows, by location and file."""
 
-    cutoff: dict[str, pd.Timestamp] = field(default_factory=dict)
+    files: dict[str, dict[str, _FileFacts]] = field(default_factory=dict)
     #: Locations with a catalog entry whose file could not be read.
     failed: set[str] = field(default_factory=set)
+
+    def cutoffs(self) -> dict[str, pd.Timestamp]:
+        """Each location's ``T``: its ``current`` file's, else its only file's.
+
+        ``current`` is rewritten every night and ``historical`` only after
+        one of its records changes, so ``current`` says when the pair was
+        last brought up to date.
+        """
+        return {
+            site: (
+                by_asset.get("current")
+                or max(by_asset.values(), key=lambda facts: facts.cutoff)
+            ).cutoff
+            for site, by_asset in self.files.items()
+        }
+
+    def gaps(self) -> list[tuple[str, pd.Timestamp, pd.Timestamp]]:
+        """``(location, after, before)`` where its two files leave a gap."""
+        return [
+            (site, old.last, new.first)
+            for site, by_asset in sorted(self.files.items())
+            for old, new in [(by_asset.get("historical"), by_asset.get("current"))]
+            if old and new and new.first - old.last > _BOUNDARY_GAP
+        ]
 
 
 #: The remedy for a query only the API can answer: the mode that sends it there.
@@ -241,9 +315,10 @@ def _get_bulk(query: _Query) -> tuple[pd.DataFrame, BaseMetadata]:
         # A location whose only file failed has no cutoff; one with two files
         # and one failure has a cutoff but incomplete rows. Both get the whole
         # query.
-        missing = (set(query.sites) - snapshot.cutoff.keys()) | snapshot.failed
+        cutoffs = snapshot.cutoffs()
+        missing = (set(query.sites) - cutoffs.keys()) | snapshot.failed
         try:
-            api, md = _query_api(query, snapshot.cutoff, missing)
+            api, md = _query_api(query, cutoffs, missing, snapshot.gaps())
         except FanOutInterrupted as e:
             if downloads is not None:
                 # Resuming the downloads (all complete) re-runs this step.
@@ -401,7 +476,7 @@ def _in_clause(column: str, values: list[str]) -> str:
 def _plan(items: list[dict[str, Any]], *, skip_historical: bool) -> list[_File]:
     """One plan item per file the query needs."""
     return [
-        _File(item["id"], asset["href"])
+        _File(item["id"], asset["href"], name)
         for item in items
         for name, asset in item.get("assets", {}).items()
         if "data" in asset.get("roles", [])
@@ -442,11 +517,9 @@ def _fetcher(
             return pd.DataFrame(), inert
         content = response.content
         del response  # only ``inert`` is kept; the body goes with ``content``
-        rows, cutoff = await anyio.to_thread.run_sync(_read_file, content, filters)
-        if cutoff is not None:
-            # ``historical`` is rewritten the night after one of its records
-            # changes, so the later of the two files' cutoffs applies to both.
-            snapshot.cutoff[site] = max(snapshot.cutoff.get(site, cutoff), cutoff)
+        rows, facts = await anyio.to_thread.run_sync(_read_file, content, filters)
+        if facts is not None:
+            snapshot.files.setdefault(site, {})[item.asset] = facts
         return rows, inert
 
     return fetch
@@ -471,13 +544,12 @@ def _arrow_filters(query: _Query) -> list[tuple[str, str, Any]]:
 
 def _read_file(
     content: bytes, filters: list[tuple[str, str, Any]]
-) -> tuple[pd.DataFrame, pd.Timestamp | None]:
-    """The matching rows of one file, and the file's largest ``last_modified``.
+) -> tuple[pd.DataFrame, _FileFacts | None]:
+    """The matching rows of one file, and the whole file's facts.
 
     The filters are applied while reading, so row groups outside them are not
-    decoded. The cutoff stands for when the snapshot was taken, so it covers
-    the whole file: from the row-group statistics when every group has them,
-    otherwise from the ``last_modified`` column alone.
+    decoded. The facts describe the whole file, not those rows; an empty file
+    has none.
     """
     # pyarrow is optional; get_data checked it is installed.
     import pyarrow as pa
@@ -485,37 +557,81 @@ def _read_file(
 
     # ``BufferReader`` reads the downloaded bytes in place, without a copy.
     table = pq.read_table(pa.BufferReader(content), filters=filters or None)
-    latest = _latest_modified(pq.ParquetFile(pa.BufferReader(content)))
-    cutoff = None if latest is None else pd.Timestamp(latest).tz_convert("UTC")
-    return table.to_pandas(), cutoff
+    source = pq.ParquetFile(pa.BufferReader(content))
+    if source.metadata.num_rows == 0:
+        return table.to_pandas(), None
+    facts = _FileFacts(
+        cutoff=pd.Timestamp(_extreme(source, "last_modified", "max")).tz_convert("UTC"),
+        first=pd.Timestamp(_extreme(source, "time", "min")),
+        last=pd.Timestamp(_extreme(source, "time", "max")),
+    )
+    return table.to_pandas(), facts
 
 
-def _latest_modified(source: Any) -> Any:
-    """The largest ``last_modified`` in a Parquet file, or ``None`` if empty."""
+def _extreme(source: Any, column: str, which: str) -> Any:
+    """The ``"min"`` or ``"max"`` of a column over a whole Parquet file.
+
+    From the row-group statistics when every group has them, otherwise from
+    the column alone.
+    """
     meta = source.metadata
-    if meta.num_rows == 0:
-        return None
-    column = source.schema_arrow.get_field_index("last_modified")
+    index = source.schema_arrow.get_field_index(column)
     stats = [
-        meta.row_group(i).column(column).statistics for i in range(meta.num_row_groups)
+        meta.row_group(i).column(index).statistics for i in range(meta.num_row_groups)
     ]
     if all(s is not None and s.has_min_max for s in stats):
-        return max(s.max for s in stats)
+        values = [getattr(s, which) for s in stats]
+        return max(values) if which == "max" else min(values)
     import pyarrow.compute as pc
 
-    return pc.max(source.read(columns=["last_modified"])["last_modified"]).as_py()
+    return getattr(pc, which)(source.read(columns=[column])[column]).as_py()
 
 
 # --- the API part ---------------------------------------------------------------
 
 
+def _cql_time(time: pd.Timestamp) -> str:
+    return str(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+
+def _change_clauses(cutoffs: dict[str, pd.Timestamp], missing: set[str]) -> list[str]:
+    """One clause per cutoff day: the records changed since the snapshot."""
+    by_day: dict[pd.Timestamp, list[str]] = {}
+    for site, cutoff in cutoffs.items():
+        if site not in missing:
+            by_day.setdefault(cutoff.floor("D"), []).append(site)
+    # Each clause names at most ``_SITES_PER_CLAUSE`` locations: the chunker
+    # splits the filter only at top-level ``OR``, so one clause must fit a URL.
+    return [
+        f"({_in_clause('monitoring_location_id', part)} AND "
+        f"last_modified >= '{_cql_time(day)}')"
+        for day, sites in sorted(by_day.items())
+        for part in _parts(sites)
+    ]
+
+
+def _gap_clauses(
+    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]],
+) -> list[str]:
+    """One clause per gap between a location's two files: every record in it."""
+    return [
+        f"({_in_clause('monitoring_location_id', [site])} AND "
+        f"time > '{_cql_time(after)}' AND time < '{_cql_time(before)}')"
+        for site, after, before in gaps
+    ]
+
+
 def _query_api(
-    query: _Query, cutoffs: dict[str, pd.Timestamp], missing: set[str]
+    query: _Query,
+    cutoffs: dict[str, pd.Timestamp],
+    missing: set[str],
+    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]] = (),
 ) -> tuple[pd.DataFrame, BaseMetadata]:
-    """The API rows: changes since each snapshot, and locations without files.
+    """The API rows: changes since each snapshot, and what the files lack.
 
     One query, whose CQL filter has one top-level ``OR`` clause per cutoff
-    day plus one for the locations without a usable file. The OGC chunker
+    day, one per gap between a location's two files, and one for the
+    locations without a usable file. The OGC chunker
     splits a filter at top-level ``OR`` when it outgrows a URL and fans the
     pieces out under the concurrency cap, so the clauses run concurrently
     without a fan-out of our own. Cutoffs are floored to the day, which gives
@@ -525,33 +641,28 @@ def _query_api(
     Changeable filters are sent only in the clause for locations without a
     file. A change query must also see a record that has just left the filter,
     so the merge can drop the file's stale copy; the merge applies them.
+
+    The API refuses a ``time`` argument wider than the collection's limit. A
+    change clause needs no ``time``, so such a query sends none: the clause
+    for locations without a file carries the bounds instead, and the merge
+    applies them to the changes.
     """
-    by_day: dict[pd.Timestamp, list[str]] = {}
-    for site, cutoff in cutoffs.items():
-        if site not in missing:
-            by_day.setdefault(cutoff.floor("D"), []).append(site)
-    # Each clause names at most ``_SITES_PER_CLAUSE`` locations: the chunker
-    # splits the filter only at top-level ``OR``, so one clause must fit a URL.
-    clauses = [
-        f"({_in_clause('monitoring_location_id', part)} AND "
-        f"last_modified >= '{day.strftime('%Y-%m-%dT%H:%M:%SZ')}')"
-        for day, sites in sorted(by_day.items())
-        for part in _parts(sites)
-    ]
+    clauses = _change_clauses(cutoffs, missing) + _gap_clauses(gaps)
     changeable = [
         _in_clause(column, query.values(column))
         for column in sorted(_CHANGEABLE_FILTERS & query.args.keys())
     ]
+    dropped = {"monitoring_location_id"} | _CHANGEABLE_FILTERS
+    whole = changeable
+    if not query.time_fits_api:
+        dropped |= {"time"}
+        whole = [*changeable, *query.time_clauses]
     clauses += [
-        f"({' AND '.join([_in_clause('monitoring_location_id', part), *changeable])})"
+        f"({' AND '.join([_in_clause('monitoring_location_id', part), *whole])})"
         for part in _parts(sorted(missing))
     ]
 
-    request = {
-        k: v
-        for k, v in query.args.items()
-        if k not in _CHANGEABLE_FILTERS and k != "monitoring_location_id"
-    }
+    request = {k: v for k, v in query.args.items() if k not in dropped}
     request["filter"] = " OR ".join(clauses)
     request["filter_lang"] = "cql-text"
     return get_ogc_data(request, query.collection)
@@ -597,11 +708,22 @@ def _merge(
         combined = combined.drop_duplicates(["time_series_id", "time"], keep="first")
     for column in sorted(_CHANGEABLE_FILTERS & query.args.keys()):
         combined = combined[combined[column].isin(query.values(column))]
+    if not query.time_fits_api and not combined.empty:
+        combined = _within_time(combined, query)
     api = api.drop(columns=query.layout.id_column, errors="ignore")
     combined = combined.reindex(columns=api.columns)
     if not api.empty:
         combined = _match_types(combined, api)
     return _sort_rows(combined, WATERDATA_DIALECT)
+
+
+def _within_time(rows: pd.DataFrame, query: _Query) -> pd.DataFrame:
+    """``rows`` inside the query's ``time``, for an API part sent without it."""
+    if query.start is not None:
+        rows = rows[rows["time"] >= query.start]
+    if query.end is not None:
+        rows = rows[rows["time"] <= query.end]
+    return rows
 
 
 def _match_types(combined: pd.DataFrame, api: pd.DataFrame) -> pd.DataFrame:
