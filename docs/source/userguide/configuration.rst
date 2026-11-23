@@ -103,7 +103,7 @@ Settings
      - none
      - ``API_USGS_FILES_PAT``
      - A second Water Data API key, sent only with requests for the
-       published files. See :ref:`configuration-bulk`.
+       published files and their catalog. See :ref:`configuration-bulk`.
    * - ``concurrency``
      - ``32``
      - ``API_USGS_CONCURRENT``
@@ -655,8 +655,8 @@ A pull of more than about 1,000 files under one key therefore leaves the API
 no requests for the rest of the hour, and the call fails on its last step,
 the query for changed records. For a pull that large, USGS recommends a
 second key for the files. Register for one and set it as ``files_api_key``;
-it is sent with every request under ``/stac-files/`` and ``api_key`` with
-everything else:
+it is sent with every file download and catalog search (``/stac-files/``
+and ``/stac/``), and ``api_key`` with everything else:
 
 .. code-block:: bash
 
@@ -666,7 +666,7 @@ everything else:
 
    files_api_key = "your_second_key_here"
 
-Without it, the files use ``api_key``.
+Without it, both use ``api_key``.
 
 
 .. _configuration-secret-store:

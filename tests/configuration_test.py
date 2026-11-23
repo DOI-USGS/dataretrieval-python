@@ -722,12 +722,13 @@ def test_files_api_key_comes_from_the_environment_the_file_or_a_block(
     [
         ("/stac-files/daily/USGS-01/USGS-01.parquet", "files"),
         ("/stac-files/ratings/USGS.01104475.exsa.rdb", "files"),
-        ("/stac/v0/search", "main"),
+        ("/stac/v0/search", "files"),
+        ("/stacks/v0/search", "main"),
         ("/ogcapi/v0/collections/daily/items", "main"),
     ],
 )
-def test_only_file_requests_are_sent_the_files_api_key(path, expected):
-    """The service counts requests per key, so the files get their own count."""
+def test_only_file_and_catalog_requests_are_sent_the_files_api_key(path, expected):
+    """The service counts requests per key, so the files path gets its own count."""
     url = f"https://api.waterdata.usgs.gov{path}"
     with dataretrieval.configure(Configuration(api_key="main", files_api_key="files")):
         assert _default_headers(url)["X-Api-Key"] == expected

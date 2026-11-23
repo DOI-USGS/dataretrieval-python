@@ -214,9 +214,11 @@ Consequences
   the hour. WDFN recommends a separate key for the files, so the package
   gains a second credential, ``files_api_key`` (``API_USGS_FILES_PAT``). The
   ``credentials`` leaf sends it in place of ``api_key`` on requests under
-  ``/stac-files/`` and falls back to ``api_key`` when it is unset. Catalog
-  searches stay on ``api_key``: a query makes few of them, and under the
-  files' key the catalog's ceiling of 4,000 would cap a file pull. Like
+  ``/stac-files/`` and ``/stac/``, and falls back to ``api_key`` when it is
+  unset. Catalog searches use the files' key, as WDFN suggested, so the only
+  request this path sends under ``api_key`` is the change query. The cost:
+  once the files' key has made 4,000 requests in an hour, the catalog's
+  ceiling, the next query's search is refused, before any download. Like
   ``api_key``, it is package-wide and no adapter setting (ADR 0010).
 - ``get_ratings``, ``get_parquet_files``, and this path share one catalog
   search, ``waterdata.catalog.search``, which alone knows the edge's URL
@@ -279,7 +281,8 @@ Compliance
 - ``tests/configuration_test.py`` pins the setting: ``"auto"`` by default,
   read from code and the ``[waterdata]`` table, validated, and refused from
   the environment. It also pins ``files_api_key``: sent only under
-  ``/stac-files/``, never to another host, and ``api_key`` when unset. ``tests/waterdata_bulk_test.py`` pins the pyarrow
+  ``/stac-files/`` and ``/stac/``, never to another host, and ``api_key``
+  when unset. ``tests/waterdata_bulk_test.py`` pins the pyarrow
   fallback and its warning.
 
 Notes

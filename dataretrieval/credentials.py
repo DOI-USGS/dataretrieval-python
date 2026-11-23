@@ -43,9 +43,11 @@ _AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
 #: ``test_credential_policy_has_one_definition``).
 WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
 
-#: Path prefix of the published files on the authorized host. A request under
-#: it is sent ``files_api_key`` when one is configured (see :func:`api_key`).
-_FILES_PATH = "/stac-files/"
+#: Path prefixes of the published files and their catalog on the authorized
+#: host. A request under one is sent ``files_api_key`` when one is configured
+#: (see :func:`api_key`), so nothing on the files path but an OGC query spends
+#: the ``api_key`` count.
+_FILES_PATHS = ("/stac-files/", "/stac/")
 
 
 def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
@@ -147,10 +149,11 @@ def api_key(target_url: str | httpx.URL | None = None) -> str | None:
 
     The service counts requests per key, not per endpoint, so a large file
     download can use up the count the OGC API needs. A request for a published
-    file therefore gets ``files_api_key`` when one is configured, and
-    ``api_key`` otherwise. Without ``target_url``, this is ``api_key``.
+    file, or a search of the files' catalog, therefore gets ``files_api_key``
+    when one is configured, and ``api_key`` otherwise. Without ``target_url``,
+    this is ``api_key``.
     """
-    if target_url is not None and httpx.URL(target_url).path.startswith(_FILES_PATH):
+    if target_url is not None and httpx.URL(target_url).path.startswith(_FILES_PATHS):
         return _configuration.files_api_key() or _configuration.api_key()
     return _configuration.api_key()
 

@@ -553,11 +553,12 @@ def api_key() -> str | None:
 
 
 def files_api_key() -> str | None:
-    """The key for the published files, or ``None`` if none is configured.
+    """The key for the published files and their catalog, or ``None``.
 
     The credentials leaf sends it in place of :func:`api_key` on
-    ``/stac-files/`` requests, and falls back to :func:`api_key` when this is
-    ``None``. Whitespace and a blank value are treated as in :func:`api_key`.
+    ``/stac-files/`` and ``/stac/`` requests, and falls back to
+    :func:`api_key` when this is ``None``. Whitespace and a blank value are
+    treated as in :func:`api_key`.
     """
     return _resolved_key("files_api_key")
 

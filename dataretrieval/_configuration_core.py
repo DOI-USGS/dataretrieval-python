@@ -463,10 +463,10 @@ class Configuration(BaseConfiguration):
         script. Pass ``None`` to make a call without an ambient key.
     files_api_key : str, optional
         A second Water Data API key, sent in place of ``api_key`` on requests
-        for the published files (``/stac-files/``). The service counts
-        requests per key, so a large file download under its own key leaves
-        the ``api_key`` count for the OGC API. Unset, the files use
-        ``api_key``.
+        for the published files and their catalog (``/stac-files/`` and
+        ``/stac/``). The service counts requests per key, so file downloads
+        and catalog searches under their own key leave the ``api_key`` count
+        for the OGC API. Unset, both use ``api_key``.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests: a positive integer, or
         ``"unbounded"`` to disable the cap.
