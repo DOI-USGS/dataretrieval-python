@@ -1,20 +1,20 @@
 """One policy for the server-supplied next-page links every page walk follows.
 
-A ``next`` href is response *data*, not configuration: it arrives in the response
-from the service (or from whatever responded in its place) and then becomes the URL of
-the next request, with that request's headers and API key. Three page walks
--- the OGC engine's ``links`` array, the ratings STAC walk, and Water Use's
-``Link:`` header -- each need the same things of it before it is used: parse
-it, resolve a relative reference against the page it came from, reject a host
-the caller did not request, and drop any embedded ``user:pass@`` (which
-``httpx`` would otherwise turn into an ``Authorization: Basic`` header).
+A ``next`` href is response *data*, not configuration. It arrives in the response
+from the service (or from whatever responded in its place) and then becomes the URL
+of the next request, with that request's headers and API key. Three page walks (the OGC
+engine's ``links`` array, the ratings STAC walk, and Water Use's ``Link:``
+header) each need the same things of it before it is used: parse it, resolve a
+relative reference against the page it came from, reject a host the caller did
+not request, and drop any embedded ``user:pass@`` (which ``httpx`` would
+otherwise turn into an ``Authorization: Basic`` header).
 
 They had three implementations of that policy, and the three differed: only two
-resolved relative references, only two rejected an unparseable link rather than
-returning it, and each worded its refusal differently. Three copies of a
-security check diverge when one is fixed and the others are not, so it is
-defined here once and the callers pass in what differs --
-which hosts are acceptable, and whether an accepted host is rewritten.
+resolved relative references, only two rejected an unparseable link, and each
+worded its refusal differently. Three copies of a security check diverge when
+one is fixed and the others are not, so it is defined here once and the callers
+pass in what differs: which hosts are acceptable, and whether an accepted host
+is rewritten.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def _page_url(response: httpx.Response) -> httpx.URL:
     """The URL *response* came from, as an ``httpx.URL``.
 
     Read lazily by :func:`resolve_next_url` (see that function). The coercion is for
-    callers holding a response-shaped stand-in whose ``url`` is a plain string.
+    callers that pass a response-shaped stand-in whose ``url`` is a plain string.
     """
     url = response.url
     return url if isinstance(url, httpx.URL) else httpx.URL(str(url))
@@ -48,8 +48,8 @@ def resolve_next_url(
 ) -> str:
     """Return *href* as a URL safe to request, or raise if it is not.
 
-    ``response.url`` is read only when it is needed -- to resolve a relative reference,
-    or as the default acceptable host. A caller that names its own acceptable hosts and
+    ``response.url`` is read only when it is needed: to resolve a relative reference, or
+    as the default acceptable host. A caller that names its own acceptable hosts and
     receives an absolute link never reads it, which keeps this usable on a response
     whose request was never attached.
 
@@ -108,11 +108,11 @@ def resolve_next_url(
         # The port is replaced along with the scheme and host: a port belonging
         # to the link's original scheme (``http://...:8080``) would otherwise be kept
         # in an https request and be connected to under TLS. ``userinfo`` is dropped for
-        # the reason below -- ``copy_with`` makes both changes at once here.
+        # the reason below; ``copy_with`` makes both changes at once here.
         return str(
             target.copy_with(scheme="https", host=rewrite_host, port=None, userinfo=b"")
         )
     # A same-host link may still contain ``user:pass@``, which httpx turns into an
     # ``Authorization: Basic`` header on the follow-up request. The host check
-    # passes in that case, so strip it rather than use the link as given.
+    # passes in that case, so strip it.
     return str(without_embedded_credentials(target))

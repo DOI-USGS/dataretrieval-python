@@ -18,7 +18,7 @@ from dataretrieval.ogc.requests import (
 from dataretrieval.waterdata import get_continuous
 from dataretrieval.waterdata.utils import OGC_API_URL
 
-# Bind the target API the way ``get_ogc_data`` does — explicitly — so the
+# Bind the target API explicitly, the way ``get_ogc_data`` does, so the
 # direct construction tests below exercise the real builder.
 _construct_api_requests = functools.partial(
     _construct_api_requests_explicit, base_url=OGC_API_URL
@@ -33,8 +33,8 @@ def _fake_prepared_request(url="https://example.test"):
     """Stand-in for the object ``_construct_api_requests`` returns.
 
     Has ``content`` because the planner sizes candidate chunks as
-    ``len(url) + len(content)`` — and with the builder bound per call, a
-    patched builder is what the planner measures.
+    ``len(url) + len(content)``, and with the builder bound per call, the
+    planner measures a patched builder.
     """
     return SimpleNamespace(url=url, method="GET", headers={}, content=b"")
 
@@ -309,8 +309,8 @@ def test_cql_json_filter_is_not_chunked():
         )
 
     # The planner sizes through the (patched) builder and the fetch builds through it
-    # again; every call must include the caller's cql-json filter verbatim — never split
-    # — and exactly one chunk is fetched.
+    # again; every call must include the caller's cql-json filter verbatim and unsplit,
+    # and exactly one chunk is fetched.
     assert sent_filters and set(sent_filters) == {expr}
     assert walk.await_count == 1
 
@@ -318,7 +318,7 @@ def test_cql_json_filter_is_not_chunked():
 @pytest.mark.parametrize(
     "expr",
     [
-        # The motivating case — numeric-valued string field
+        # The motivating case: numeric-valued string field
         "value >= 1000",
         "value > 1000",
         "value <= 1000",
@@ -337,22 +337,22 @@ def test_cql_json_filter_is_not_chunked():
         # Channel-measurements numeric-looking string fields
         "channel_flow > 500",
         "channel_velocity >= 1.5",
-        # Scientific notation — floats expressed as 1e5, 1.5e-3
+        # Scientific notation: floats expressed as 1e5, 1.5e-3
         "value > 1e5",
         "value >= 2.5E+3",
         "value < 1.5e-3",
-        # Leading-dot decimals (``.5`` is a fraction, not a typo)
+        # Leading-dot decimals (``.5`` is a fraction)
         "value > .5",
         "value >= -.5",
         "value < .5e-3",
-        # ``IN`` list form — same pitfall, common pattern for codes
+        # ``IN`` list form: same pitfall, common pattern for codes
         "parameter_code IN (60, 61)",
         "value IN (10, 20, 30)",
         "statistic_id in (11)",  # case-insensitive, single-element
-        # ``NOT IN`` with numbers — same pitfall via negation
+        # ``NOT IN`` with numbers: same pitfall via negation
         "value NOT IN (1, 2, 3)",
         "parameter_code not in (60, 61)",
-        # ``BETWEEN`` range form — same pitfall
+        # ``BETWEEN`` range form: same pitfall
         "value BETWEEN 5 AND 10",
         "channel_flow between 100 and 500",
         # ``NOT BETWEEN`` with numbers
@@ -369,7 +369,7 @@ def test_cql_json_filter_is_not_chunked():
 )
 def test_check_numeric_filter_pitfall_raises(expr):
     """Unquoted numeric comparisons against any field resolve
-    lexicographically on this API — every queryable is string-typed —
+    lexicographically on this API (every queryable is string-typed),
     so reject them with a clear message before the request is sent."""
     with pytest.raises(ValueError, match="lexicographic"):
         _check_numeric_filter_pitfall(expr)
@@ -378,7 +378,7 @@ def test_check_numeric_filter_pitfall_raises(expr):
 @pytest.mark.parametrize(
     "expr",
     [
-        # Quoted literals — caller has opted into string comparison
+        # Quoted literals: caller has opted into string comparison
         "value >= '1000'",
         "value = '42.5'",
         "parameter_code = '00060'",
@@ -423,8 +423,8 @@ def test_check_numeric_filter_pitfall_allows(expr):
     ],
 )
 def test_pitfall_error_names_real_field_not_NOT_keyword(expr, field, op):
-    """The CQL keyword ``NOT`` must not be reported as the offending field
-    — the error should identify the actual column and include ``NOT`` as
+    """The CQL keyword ``NOT`` must not be reported as the offending field.
+    The error should identify the column and include ``NOT`` as
     part of the operator form so the caller knows what to quote."""
     with pytest.raises(ValueError) as exc:
         _check_numeric_filter_pitfall(expr)
@@ -435,8 +435,7 @@ def test_pitfall_error_names_real_field_not_NOT_keyword(expr, field, op):
 
 def test_get_continuous_surfaces_pitfall_to_caller():
     """End-to-end: the check runs at the ``get_continuous`` boundary,
-    not only inside an internal helper, so callers get the error
-    before any HTTP traffic."""
+    so callers get the error before any HTTP traffic."""
     with mock.patch("dataretrieval.ogc.engine._construct_api_requests") as build:
         with pytest.raises(ValueError, match="lexicographic"):
             get_continuous(

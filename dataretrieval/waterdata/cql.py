@@ -3,7 +3,7 @@
 The other families expose a fixed argument per filter, which covers the common
 cases and keeps them discoverable. This is the generic path: an arbitrary CQL2
 filter against any collection, for a query the typed getters do not cover.
-Prefer a typed getter when one fits -- it validates more and names its filters.
+Prefer a typed getter when one fits, because it validates more and names its filters.
 """
 
 from __future__ import annotations
@@ -56,14 +56,13 @@ def get_cql(
     features, shaped like the typed getters (``get_daily``, ``get_continuous``,
     …): the wire ``id`` renamed to the collection's id column, columns ordered and
     sorted, and dtypes coerced. Use it when you need a predicate the typed
-    getters can't express — a top-level ``or``, ``like`` with ``%`` wildcards,
+    getters can't express: a top-level ``or``, ``like`` with ``%`` wildcards,
     comparison operators, nested boolean trees, or a geometry predicate beyond a
-    bounding box; prefer a typed getter when one covers the query.
+    bounding box. Prefer a typed getter when one covers the query.
 
     The request is a single POST with the ``cql`` body sent verbatim, so there
     are no multi-value arguments to chunk: narrow a query whose URL or body
-    would exceed the server's size cap rather than relying on automatic
-    chunking.
+    would exceed the server's size cap.
 
     The CQL2 grammar is documented at
     https://api.waterdata.usgs.gov/docs/ogcapi/complex-queries/.

@@ -1,6 +1,6 @@
 """USGS Water Data Statistics API client.
 
-Wraps ``https://api.waterdata.usgs.gov/statistics/v0`` — the daily-statistics
+Wraps ``https://api.waterdata.usgs.gov/statistics/v0``, the daily-statistics
 service (period-of-record and date-range normals/intervals). This is a
 separate, non-OGC API with no chunkable multi-value axes, so it runs as a
 one-item :class:`~dataretrieval.transport.fanout.FanOut` rather than going
@@ -45,7 +45,7 @@ def _handle_nesting(
     body : Dict[str, Any]
         The JSON response body from the statistics service containing nested data.
     geopd : bool, optional
-        Whether ``geopandas`` is available — when ``True`` the returned
+        Whether ``geopandas`` is available. When ``True`` the returned
         frame is a ``GeoDataFrame``; when ``False`` (default) a plain
         ``pd.DataFrame`` is returned with geometry flattened.
 
@@ -62,7 +62,7 @@ def _handle_nesting(
     ``data`` field, which is unrolled separately below via the
     ``record_path`` json_normalize), then adds ``geometry`` only when
     present. Unlike :func:`engine._get_resp_data`, no top-level ``id``
-    column is added — stats features do not have one, so this matches the
+    column is added. Stats features do not have one, so this matches the
     geopandas branch. Skipping the GeoJSON envelope keeps newly-added
     fields like ``geometry.type`` from leaking into the result.
     """
@@ -97,7 +97,7 @@ def _extract_features(body: dict[str, Any] | None) -> list[dict[str, Any]] | Non
     """Return the features list from a response body, or None for empty/missing.
 
     ``None`` signals the caller to return an empty frame. An empty (or
-    missing) features list — a shape that occurs mid-pagination — would otherwise
+    missing) features list, a shape that occurs mid-pagination, would otherwise
     fail the downstream merge with ``KeyError: 'monitoring_location_id'``
     because neither frame would have the merge key.
     """
@@ -119,10 +119,9 @@ def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFr
         ]
         df = pd.json_normalize(outer_props, sep=".")
         df.columns = df.columns.str.split(".").str[-1]
-        # Stats features do not have a top-level ``id`` field — the
+        # Stats features do not have a top-level ``id`` field, and the
         # geopandas branch (``GeoDataFrame.from_features``) doesn't
-        # add one either, so the non-geopd branch stays
-        # consistent by not adding an id column.
+        # add one, so the non-geopd branch adds no id column.
         _attach_coordinates(df, features)
         return df
 
@@ -134,7 +133,7 @@ def _build_outer_frame(features: list[dict[str, Any]], geopd: bool) -> pd.DataFr
 def _expand_percentiles(df: pd.DataFrame) -> pd.DataFrame:
     """Explode percentile value and threshold lists into one row per element.
 
-    The "values" and "percentiles" columns hold lists; each element becomes its
+    The "values" and "percentiles" columns contain lists; each element becomes its
     own row in the original dataframe, and exploded ``'nan'`` values are
     dropped. If no percentile data exist, a percentile column is added and
     populated with the percentile assigned to min, max, and median.

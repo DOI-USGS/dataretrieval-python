@@ -37,8 +37,8 @@ def _service_base() -> str:
     """The StreamStats base this call targets: a block's redirect, or its own.
 
     Both endpoints below are built on this, so a
-    ``StreamstatsConfiguration(base_url=...)`` redirects the whole service rather
-    than one endpoint (ADR 0011).
+    ``StreamstatsConfiguration(base_url=...)`` redirects the whole service
+    (ADR 0011).
     """
     return _configuration.base_url(adapter="streamstats", default=STREAMSTATS_URL)
 
@@ -120,7 +120,7 @@ def get_watershed(
     Parameters
     ----------
     rcode: string
-        StreamStats 2-3 character code that identifies the Study Area --
+        StreamStats 2-3 character code that identifies the Study Area:
         either a State or a Regional Study.
     xlocation: float
         X location of the most downstream point of desired study area.
@@ -190,7 +190,7 @@ def get_watershed(
 class Watershed:
     """Parsed StreamStats watershed result.
 
-    Holds the delineated watershed features, the computed basin
+    Stores the delineated watershed features, the computed basin
     parameters, and the service ``workspaceID`` extracted from a
     StreamStats watershed response. Build one from an already-fetched
     payload with :meth:`from_streamstats_json`, or construct directly
@@ -226,8 +226,7 @@ class Watershed:
 
         No new request is issued. Builds a new instance (via ``__new__``, so
         the network-fetching ``__init__`` is bypassed) and populates it; each
-        call returns an independent object rather than mutating shared class
-        state.
+        call returns an independent object.
         """
         self = cls.__new__(cls)
         self._populate(streamstats_json)
@@ -248,8 +247,7 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
     No fan-out settings: a StreamStats query is served by a single
     request.
 
-    Declared here rather than in :mod:`dataretrieval.configuration`
-    (ADR 0011).
+    Declared here, in the module that reads it (ADR 0011).
 
     Parameters
     ----------
@@ -259,8 +257,8 @@ class StreamstatsConfiguration(_Redirectable, _Retrying, BaseConfiguration):
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Services base to send StreamStats requests to, instead of its own
-        (``STREAMSTATS_URL``). Both endpoints are built on it. Code only:
+        Services base to send StreamStats requests to, replacing
+        ``STREAMSTATS_URL``. Both endpoints are built on it. Code only:
         the file and the environment refuse it.
     """
 

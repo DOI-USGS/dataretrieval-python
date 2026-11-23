@@ -37,9 +37,9 @@ _MIRROR = "https://mirror.example/waterdata"
 _MIRROR_RE = re.compile(r"^https://mirror\.example/")
 _WATERDATA_RE = re.compile(rf"^{re.escape(_WATERDATA_HOST)}/")
 
-# One committed page of the ``daily`` collection, shared with the Water Data suite. Real
-# response shape rather than a hand-made stub, so a redirect is exercised through the
-# same shaping the getters normally do; it has no ``links``, so nothing paginates.
+# One committed page of the ``daily`` collection, shared with the Water Data suite. A
+# real response shape, so a redirect is exercised through the same shaping the getters
+# normally do; it has no ``links``, so nothing paginates.
 _DAILY_PAGE = json.loads(
     (pathlib.Path(__file__).parent / "data" / "waterdata_ogc_fixtures.json").read_text()
 )["daily"]
@@ -197,7 +197,7 @@ def test_configure_takes_configurations_and_nothing_else():
     with pytest.raises(configuration.ConfigurationError, match="configuration objects"):
         with dataretrieval.configure("waterdata"):
             pass
-    # Settings are no longer keywords on ``configure`` at all.
+    # Settings are no longer keywords on ``configure``.
     with pytest.raises(TypeError):
         with dataretrieval.configure(api_key="k"):
             pass
@@ -254,7 +254,7 @@ def test_an_adapter_configuration_narrows_to_one_adapter(monkeypatch):
 
     with dataretrieval.configure(NgwmnConfiguration(retries=1)):
         assert configuration.retries(adapter="ngwmn") == 1
-        # Every other adapter, and the package-wide read, are unchanged --
+        # Every other adapter, and the package-wide read, are unchanged,
         # including waterdata, which shares NGWMN's host and its API key.
         for other in ("waterdata", "nwdc", "wqp", "streamstats"):
             assert configuration.retries(adapter=other) == configuration.DEFAULT_RETRIES
@@ -358,7 +358,7 @@ def test_several_named_profiles_are_selected_independently(config_file):
 
 
 def test_a_named_profile_layers_per_key_over_the_rungs_below(config_file):
-    """Selecting a profile replaces keys, never whole rungs.
+    """Selecting a profile replaces individual keys.
 
     Every rung overrides the one below it *per key* (ADR 0011), so one
     adapter-scoped read here takes each of its four settings from a different table.
@@ -383,9 +383,9 @@ def test_a_named_profile_layers_per_key_over_the_rungs_below(config_file):
 def _resolved_settings() -> dict[object, object]:
     """Every setting this process can resolve, package-wide and per adapter.
 
-    A snapshot rather than a handful of assertions, because the claim under
-    test is about what a file does *not* change -- and naming the settings
-    individually would only prove it for the ones the author thought of.
+    A snapshot of every setting, because the claim under test is about what
+    a file does *not* change, and naming the settings individually would
+    only prove it for the ones the author thought of.
     """
     snapshot: dict[object, object] = {
         "api_key": configuration.api_key(),
@@ -431,8 +431,8 @@ def test_adding_a_named_profile_changes_nothing_until_it_is_selected(config_file
 def test_a_named_profile_cannot_hold_a_nested_table(config_file):
     """``[waterdata.bulk.ngwmn]`` is the retired shape, not a deeper profile.
 
-    A profile holds settings for the one adapter it belongs to, so a table inside one
-    has no meaning. Refused rather than skipped: dropping it without an error would
+    A profile contains settings for the one adapter it belongs to, so a table inside
+    one has no meaning. Refused rather than skipped: dropping it without an error would
     leave the author believing they had tuned NGWMN.
     """
     config_file(
@@ -454,10 +454,10 @@ def test_a_named_profile_cannot_hold_a_nested_table(config_file):
 
 
 def test_loading_an_undefined_profile_raises(config_file):
-    """A name the caller just typed is a typo, not a fall-through.
+    """A name the caller just typed is a typo, so loading it raises.
 
     The message lists what the file *does* define, because a misspelling is
-    only recognizable next to the spelling that was meant -- and only for this
+    only recognizable next to the spelling that was meant, and only for this
     adapter, since selecting a profile is per adapter and another service's
     profile names are not candidates for what the caller meant to type.
     """
@@ -474,8 +474,8 @@ def test_loading_an_undefined_profile_raises(config_file):
     assert "bulk, polite" in message
     assert "gentle" not in message
 
-    # An adapter with no profiles at all says so rather than ending after the colon,
-    # which would read as a truncated message.
+    # An adapter with no profiles says so; a message ending after the colon
+    # would read as truncated.
     config_file("[waterdata]\nconcurrency = 4\n")
     with pytest.raises(configuration.ConfigurationError, match="waterdata: none"):
         WaterdataConfiguration.load("bulk")
@@ -826,8 +826,8 @@ def test_no_public_getter_accepts_a_credential_parameter():
 
 @pytest.mark.parametrize("allowed", ["session", "session_id", "sampling_session"])
 def test_session_is_not_treated_as_a_credential(allowed):
-    """``session`` holds no secret, and the queryable namespace is the
-    server's — a substring rule would make any future field containing it
+    """``session`` is not a secret, and the queryable namespace is the
+    server's, so a substring rule would make any future field containing it
     blocked by a credentials message that misstates the problem."""
     from dataretrieval.waterdata.utils import _flatten_queryables
 
@@ -869,7 +869,7 @@ def test_parallel_chunks_baseline_comes_from_config(config_file):
 
 
 def test_parallel_chunks_and_configure_share_one_mechanism():
-    """``parallel_chunks(n)`` is sugar for a package-wide ``Configuration``.
+    """``parallel_chunks(n)`` is shorthand for a package-wide ``Configuration``.
 
     They must not be two competing scopes: whichever block is innermost takes
     precedence, so ``show_configuration()`` always reports the value the
@@ -954,7 +954,7 @@ def test_show_config_reports_a_broken_file_instead_of_raising(config_file):
     dataretrieval.show_configuration(stream=out)  # must not raise
     text = out.getvalue()
     assert "ERROR:" in text
-    # Every setting still gets a row rather than the report stopping part-way.
+    # Every setting still gets a row.
     for name in configuration.SETTINGS:
         assert name in text
 
@@ -989,7 +989,7 @@ def test_non_regular_config_path_is_empty_configuration(monkeypatch):
     A non-regular path is treated as empty *without being opened*: settings are
     re-resolved per request, so reading a stream would give its contents to the first
     getter and nothing to the rest (and a FIFO would block on open until a writer
-    appeared). Rejecting it would raise from ``_default_headers`` on every request --
+    appeared). Rejecting it would raise from ``_default_headers`` on every request,
     the opposite of what the caller asked for.
     """
     monkeypatch.delenv("API_USGS_CONCURRENT", raising=False)
@@ -1014,7 +1014,7 @@ def test_broken_config_does_not_break_unrelated_services(config_file):
     # Other hosts never get the key, so they never read the configuration.
     assert "X-Api-Key" not in _default_headers("https://www.waterqualitydata.us/data")
 
-    # The authorized host still raises rather than sending the request
+    # The authorized host still raises; it does not send the request
     # unauthenticated under the anonymous rate limit.
     with pytest.raises(configuration.ConfigurationError):
         _default_headers(WATERDATA_URL)
@@ -1042,7 +1042,7 @@ def test_default_config_path_follows_a_changed_home(tmp_path, monkeypatch):
 
 
 def test_show_config_renderers_cover_every_setting():
-    """Guarded with a raise, not an assert, so ``python -O`` keeps the check."""
+    """Guarded with a raise, which ``python -O`` keeps (it strips asserts)."""
     assert set(configuration._DISPLAYS) == set(configuration._ALL_SETTINGS)
 
 
@@ -1050,7 +1050,7 @@ def test_unselected_profile_is_not_validated(config_file):
     """An invalid value in a profile nobody selected must not fail every request.
 
     Profile tables are kept raw at parse time and validated only when one is
-    selected -- the same isolation rule ``_default_headers``
+    selected, the same isolation rule ``_default_headers``
     follows for the key itself.
     """
     config_file('api_key = "good"\n\n[waterdata.experimental]\nconcurrency = 0\n')
@@ -1071,11 +1071,11 @@ def test_unknown_setting_in_an_unselected_profile_is_silent(config_file, recwarn
 
 
 def test_a_malformed_table_does_not_fail_another_adapters_call(config_file):
-    """The isolation rule, on the source that holds a whole adapter table.
+    """The isolation rule, on the source that contains a whole adapter table.
 
     Keys are checked when *that* adapter first resolves a setting, so an
-    invalid value in ``[nldi]`` does not affect a Water Data call -- which is
-    also what lets an adapter's vocabulary be defined in a module this leaf cannot
+    invalid value in ``[nldi]`` does not affect a Water Data call. Checking late
+    also lets an adapter's vocabulary be defined in a module this leaf cannot
     import.
     """
     config_file(
@@ -1112,7 +1112,7 @@ def test_a_table_for_an_unimported_adapter_stays_valid(config_file, monkeypatch)
 def test_show_config_does_not_promise_a_built_in_default_holds_everywhere(
     capsys, monkeypatch
 ):
-    """A row reading "built-in default" is package-wide, not a per-service claim.
+    """A row reading "built-in default" is a package-wide claim.
 
     ``concurrency`` resolves to 32 with nothing configured, but a Water Use call uses
     that service's own preference of 4. The report is the tool for finding what a call
@@ -1230,12 +1230,12 @@ def test_api_key_is_never_adapter_scoped():
 
 
 def test_a_misspelled_setting_is_not_silently_swallowed():
-    """A typo must fail, not be accepted and ignored.
+    """A typo must fail.
 
-    ``Configuration(concurrancy=8)`` is not a field, so the dataclass rejects it by name
-    -- taking it and dropping it would leave a caller believing a setting is in force
-    that no call reads, from a module that exists to report accurately what a call will
-    use.
+    ``Configuration(concurrancy=8)`` is not a field, so the dataclass rejects it by
+    name. Taking it and dropping it would leave a caller believing a setting is in
+    force that no call reads, from a module that exists to report accurately what a
+    call will use.
     """
     with pytest.raises(TypeError, match="concurrancy"):
         Configuration(concurrancy=8)
@@ -1283,11 +1283,11 @@ def test_settings_for_an_unimported_adapter_is_not_an_error(monkeypatch):
 def test_every_adapter_is_actually_wired_to_a_read_site():
     """A schema nothing passes gives the caller a report that may be wrong.
 
-    ``show_configuration()`` would report a ``[streamstats]`` override as live while
-    every call ignored it -- the report that exists to say what a call will use being
-    wrong. Importability is the weaker half of the invariant: it passed while
-    ``waterdata.get_cql``, eight of nine WQP getters, and all of ``streamstats``
-    resolved package-wide without an error.
+    ``show_configuration()`` would report a ``[streamstats]`` override as live
+    while every call ignored it, so the report that exists to say what a call
+    will use would be wrong. Importability is the weaker half of the invariant:
+    it passed while ``waterdata.get_cql``, eight of nine WQP getters, and all
+    of ``streamstats`` resolved package-wide without an error.
     """
     import pathlib
 
@@ -1316,7 +1316,7 @@ def test_a_misspelled_adapter_at_a_read_site_raises():
     with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
         configuration.retries(adapter="waterdatas")
 
-    # Every read site goes through one resolver, so the check covers them all --
+    # Every read site goes through one resolver, so the check covers them all,
     # including the accessors that would otherwise return a default.
     with pytest.raises(configuration.ConfigurationError, match="not a configurable"):
         configuration.base_url(adapter="ngwmns", default="https://example.invalid")
@@ -1347,8 +1347,7 @@ def test_base_url_applies_from_code_and_is_refused_from_the_file(config_file):
     """A redirect belongs where a reader of the script sees it (ADR 0011).
 
     A configuration file that sent a data-retrieval library to another
-    host would be a supply-chain hazard, so the file refuses the setting
-    outright rather than accepting it.
+    host would be a supply-chain hazard, so the file refuses the setting.
     """
     config_file("")
 
@@ -1382,7 +1381,7 @@ def test_base_url_must_be_an_absolute_http_url():
 
 
 def test_base_url_is_refused_from_the_environment(monkeypatch):
-    """The environment is refused with an error, not only ignored.
+    """The environment is refused with an error.
 
     ``API_USGS_BASE_URL`` is the spelling every other setting's variable predicts, so a
     caller who exports it believes they have redirected something. Leaving it out of
@@ -1404,7 +1403,7 @@ def test_base_url_is_refused_from_the_environment(monkeypatch):
             configuration.base_url(adapter="waterdata")
 
     # A configuration in this state is what show_configuration() exists to explain, so
-    # it reports the failure rather than raising out of it.
+    # it reports the failure without raising.
     out = io.StringIO()
     dataretrieval.show_configuration(stream=out)
     assert "only be set in code" in out.getvalue()
@@ -1467,8 +1466,7 @@ def test_api_version_applies_from_code_and_from_the_file(config_file):
 
 
 def test_api_version_at_the_top_level_names_the_table_to_move_it_to(config_file):
-    """The error names the table to move the line to, not the top-level
-    settings."""
+    """The error names the table to move the line to."""
     config_file('api_version = "v0"\n')
     with pytest.raises(
         configuration.ConfigurationError, match=r"such as \[waterdata\]"
@@ -1486,7 +1484,7 @@ def test_api_version_in_a_table_that_does_not_read_it_raises(config_file):
 
 
 def test_api_version_must_be_a_version_path_segment():
-    """Checked as a shape, not against a list of known versions."""
+    """Checked as a shape, so an unlisted version such as ``v2`` passes."""
     for bad in ("1", "V1", "v1.2", "latest"):
         with pytest.raises(configuration.ConfigurationError, match="such as 'v1'"):
             WaterdataConfiguration(api_version=bad)
@@ -1511,10 +1509,10 @@ def test_show_configuration_reports_a_pinned_api_version(config_file):
 
 
 def test_a_code_base_url_redirects_the_adapters_requests(httpx_mock):
-    """The setting has to redirect real requests, not only resolve to a string.
+    """The setting has to redirect real requests.
 
-    Two adapters with unrelated request paths -- the OGC engine and a plain
-    one-shot GET -- because "the configuration reaches the request" is a claim
+    Two adapters with unrelated request paths (the OGC engine and a plain
+    one-shot GET) because "the configuration reaches the request" is a claim
     about each adapter's request path, and one of them passing says nothing about the
     other.
     """
@@ -1526,7 +1524,7 @@ def test_a_code_base_url_redirects_the_adapters_requests(httpx_mock):
     redirected_url = str(httpx_mock.get_requests()[-1].url)
 
     # Nothing configured: back to the service's own base, so the redirect is
-    # scoped to the block rather than fixed at import.
+    # scoped to the block.
     waterdata.get_daily(monitoring_location_id="USGS-05427718")
     direct_url = str(httpx_mock.get_requests()[-1].url)
 
@@ -1545,7 +1543,7 @@ def test_a_redirected_adapter_is_not_sent_the_api_key(httpx_mock):
     """The key is scoped to the host that accepts it, and a mirror is not it.
 
     ``credentials.accepts_api_key`` is checked where the header is attached, so a
-    redirect needs no second rule to be safe -- but "needs no rule" is the kind of claim
+    redirect needs no second rule to be safe. But "needs no rule" is the kind of claim
     that can stop being true with no test detecting it, and the cost of it being false
     is a credential sent to whatever host the block named.
     """
@@ -1608,12 +1606,12 @@ def test_show_configuration_lists_only_real_overrides(config_file):
 
 
 def test_inner_block_can_lower_a_setting_an_outer_block_scoped(config_file):
-    """The innermost block takes precedence across *both* scopes, not only within one.
+    """The innermost block takes precedence across *both* scopes.
 
     An adapter-scoped value is the more specific of two written by the same
     block. It must not outrank one written by a block nested *inside* it, or
-    the documented recovery from QuotaExhausted -- wait, then re-issue at
-    lower concurrency -- cannot be expressed once any adapter table is set.
+    the documented recovery from QuotaExhausted (wait, then re-issue at
+    lower concurrency) cannot be expressed once any adapter table is set.
     """
     config_file("")
 
@@ -1624,7 +1622,7 @@ def test_inner_block_can_lower_a_setting_an_outer_block_scoped(config_file):
 
 
 def test_adapter_scope_still_wins_within_one_block(config_file):
-    """Depth decides between blocks, never within one."""
+    """Depth decides between blocks; within one, adapter scope does."""
     config_file("")
 
     with dataretrieval.configure(
@@ -1638,7 +1636,7 @@ def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
     """``parallel_chunks(n)`` is a per-call request and must not be discarded.
 
     It delegates to a package-wide ``Configuration``, so it writes the
-    package-wide key -- and before blocks were kept as separate frames, any
+    package-wide key, and before blocks were kept as separate frames, any
     enclosing ``WaterdataConfiguration(parallel_chunks=...)`` outranked it.
     """
     from dataretrieval.waterdata import parallel_chunks
@@ -1663,13 +1661,13 @@ def test_parallel_chunks_block_survives_an_adapter_scoped_outer_block():
 #
 # The tests below test it as a chain: each one removes the rung above and asserts the
 # next takes over. Seven independent single-rung assertions would all still pass if two
-# rungs collapsed into one, which is the mistake this exists to catch -- rungs 2 and 3
+# rungs collapsed into one, which is the mistake these tests check for. Rungs 2 and 3
 # are the pair a refactor is most likely to merge, since 2 above 3 is the one place ADR
 # 0011 inverts ADR 0009.
 #
 # ``nwdc`` and ``concurrency`` are the pair that can express all seven. NWDC is the
-# adapter that has a built-in preference of its own -- 4 concurrent requests, because
-# the service is only stress-tested that far -- distinct from the package default of 32,
+# adapter that has a built-in preference of its own (4 concurrent requests, because
+# the service is only stress-tested that far), distinct from the package default of 32,
 # and that difference is the only way rungs 6 and 7 can be distinguished.
 
 #: Rungs 5, 4 and 2, with a distinct value per rung so a resolved number
@@ -1713,18 +1711,18 @@ def test_a_configuration_instance_tops_the_ladder(config_file, monkeypatch):
 
 
 def test_a_loaded_profile_beats_the_environment(config_file, monkeypatch):
-    """Rung 2 over rung 3 -- the one inversion ADR 0011 exists to make.
+    """Rung 2 over rung 3, the ladder's only inversion (ADR 0011).
 
     ADR 0009 put the environment above the file, and a named profile is in the file, so
     those two rules alone predict that ``API_USGS_CONCURRENT`` in the shell takes
     precedence. It does not: what enters the chain is the caller *naming* the profile in
     code, which is a more deliberate act than a variable inherited from whatever started
-    the process, and being overridden by that variable is the behaviour a caller would
+    the process, and being overridden by that variable is the behavior a caller would
     report as a bug.
 
     The inversion is also bounded, which the second half asserts: it covers
-    what the profile names and nothing else, so ``retries`` -- which the file
-    sets at the top level and no selected profile mentions -- still follows the
+    what the profile names and nothing else, so ``retries`` (which the file
+    sets at the top level and no selected profile mentions) still follows the
     original environment-above-file rule inside the same block.
     """
     config_file(_LADDER_FILE)
@@ -1762,7 +1760,7 @@ def test_the_package_wide_keys_beat_the_adapters_built_in_preference(config_file
     """Rung 5 over rung 6: a user-written value outranks an adapter's preference.
 
     The adapter's preference is a default, not a cap. One able to override a
-    setting the user wrote would make that setting untrue -- so a
+    setting the user wrote would make that setting untrue, so a
     top-level key the user never scoped to NWDC still applies to NWDC's calls.
     """
     config_file("concurrency = 15\n")
@@ -1781,8 +1779,8 @@ def test_the_adapters_built_in_preference_beats_the_package_built_in_default(
     assert _nwdc_concurrency() == DEFAULT_CONCURRENT_REQUESTS
     assert DEFAULT_CONCURRENT_REQUESTS != configuration.DEFAULT_CONCURRENCY
     # It is the read site's own figure, not a property of the adapter, so a
-    # caller that states no preference gets the package default instead --
-    # which is what makes rungs 6 and 7 two rungs rather than one.
+    # caller that states no preference gets the package default. Rungs 6 and 7
+    # are separate rungs for that reason.
     assert (
         configuration.concurrency(adapter="nwdc") == configuration.DEFAULT_CONCURRENCY
     )
@@ -1791,8 +1789,8 @@ def test_the_adapters_built_in_preference_beats_the_package_built_in_default(
 def test_the_package_built_in_default_is_the_floor(config_file):
     """Rung 7: with the six rungs above it empty, every setting still resolves.
 
-    The lowest rung is what makes the whole chain optional -- a caller who has
-    configured nothing at all gets working values rather than an error.
+    The lowest rung gives a caller who has configured nothing working values,
+    so the rest of the chain is optional.
     """
     config_file("")
 
@@ -1810,12 +1808,12 @@ def test_the_package_built_in_default_is_the_floor(config_file):
 
 
 def test_the_top_two_rungs_cannot_tie(config_file):
-    """Rungs 1 and 2 both target one adapter, so no block can hold both.
+    """Rungs 1 and 2 both target one adapter, so no block can contain both.
 
-    That is what sis the highest rung of the ladder needing a tie-break rule nobody
-    could remember: the same-adapter rule rejects the pairing where the order would
-    matter, and between *nested* blocks the ordinary rule applies -- the innermost
-    decides, whichever kind of configuration it holds.
+    The ladder therefore needs no tie-break rule for callers to remember. The
+    same-adapter rule rejects the pairing where the order would matter, and between
+    *nested* blocks the ordinary rule applies: the innermost decides, whichever kind
+    of configuration it contains.
     """
     config_file(_LADDER_FILE)
 
@@ -1833,11 +1831,11 @@ def test_the_top_two_rungs_cannot_tie(config_file):
         with dataretrieval.configure(NwdcConfiguration(concurrency=_LADDER_INSTANCE)):
             assert _nwdc_concurrency() == _LADDER_INSTANCE
 
-    # "Rung 1 above rung 2" is a claim about one adapter, so a *package-wide*
-    # instance is not the thing it is talking about: it targets no adapter at
-    # all. Alongside a loaded profile in one block the adapter-scoped value is
-    # the more specific of the two and takes precedence for that adapter (ADR
-    # 0010), while the package-wide value still governs every other adapter.
+    # "Rung 1 above rung 2" is a claim about one adapter, and a *package-wide*
+    # instance targets no adapter, so the claim does not cover it. Alongside a
+    # loaded profile in one block the adapter-scoped value is the more specific of
+    # the two and takes precedence for that adapter (ADR 0010), while the
+    # package-wide value still governs every other adapter.
     with dataretrieval.configure(
         Configuration(concurrency=_LADDER_INSTANCE), NwdcConfiguration.load("tuned")
     ):
@@ -1849,9 +1847,8 @@ def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
     """``load`` is a constructor: it reads one table and returns the class.
 
     Only what the table names is included, so every other setting stays unset
-    and keeps inheriting from the rungs below rather than being pinned to a
-    default the profile never named. That is what makes a profile a
-    *contribution* to the chain rather than a replacement for it.
+    and keeps inheriting from the rungs below. A profile therefore adds settings to
+    the chain; it does not replace the chain.
     """
     config_file(
         "concurrency = 16\n\n"
@@ -1871,8 +1868,7 @@ def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
 # The report exists to explain where each value came from, so every
 # row names the source that supplied it. A value from a profile is the case a
 # bare "configure() block" label cannot distinguish: a configuration written in
-# code and
-# one loaded from a table enter the chain the same way, and only the
+# code and one loaded from a table enter the chain the same way, and only the
 # latter has a name in a file the caller can read.
 
 #: The file the documented sample is generated from. Exercises every section:
@@ -1888,7 +1884,7 @@ _SAMPLE_FILE = (
 
 #: The illustrative path the samples print, standing in for the temporary file
 #: the test writes. Substituting it is the *only* edit made to the
-#: captured output -- everything else has to match what the function printed.
+#: captured output; everything else has to match what the function printed.
 _SAMPLE_PATH = "/home/u/.dataretrieval/config.toml"
 
 #: The two lines above the captured output in both samples.
@@ -1906,13 +1902,13 @@ def _documented_sample() -> str:
 
 
 def test_show_configuration_names_the_profile_a_value_came_from(config_file):
-    """A value from a profile is reported with that profile, not with "a block".
+    """A value from a profile is reported with that profile.
 
     ``WaterdataConfiguration.load("bulk")`` and ``WaterdataConfiguration(...)``
     enter the chain the same way and are indistinguishable once their
     values are in the block, so a report that said only ``configure() block``
-    left a caller who selected a profile they did not intend -- or who had
-    forgotten a profile was selected at all -- with nothing to look at. The
+    left a caller who selected a profile they did not intend (or who had
+    forgotten a profile was selected at all) with nothing to look at. The
     label is the table's own spelling, so it can be searched for in the file that
     defines it.
     """
@@ -1925,8 +1921,8 @@ def test_show_configuration_names_the_profile_a_value_came_from(config_file):
     assert "configure() block [waterdata.bulk]" in out.getvalue()
 
     # A configuration written in code has no profile to name, so it names its
-    # adapter alone rather than adding one -- and the package-wide one
-    # narrows to nothing, so it names neither.
+    # adapter alone, and the package-wide one narrows to nothing, so it names
+    # neither.
     out = io.StringIO()
     with dataretrieval.configure(
         WaterdataConfiguration(concurrency=6), Configuration(retries=3)
@@ -1946,9 +1942,9 @@ def test_a_loaded_profile_remembers_its_name_without_becoming_a_setting(config_f
     """The profile name is provenance, so it is not a field and not a value.
 
     Keeping it off the fields is what keeps it out of :meth:`settings`, the
-    ``configure()`` frame, and equality: two configurations holding the same settings
-    stay interchangeable however each was spelled, which is what makes a configuration a
-    value rather than a record of how it was built.
+    ``configure()`` frame, and equality: two configurations with the same settings stay
+    interchangeable however each was spelled, so a configuration is a value, not a
+    record of how it was built.
     """
     config_file("[waterdata.bulk]\nconcurrency = 6\n")
 
@@ -1998,10 +1994,10 @@ def test_show_configuration_lists_the_profiles_the_file_defines(
 
 
 def test_show_configuration_reports_an_unimported_adapter(config_file, monkeypatch):
-    """An adapter this process cannot report on is named, never omitted.
+    """An adapter this process cannot report on is named in the report.
 
     NLDI is imported on demand for the geopandas extra, so a process that has
-    not imported it cannot say which settings it accepts -- the cost of
+    not imported it cannot say which settings it accepts, a consequence of
     validating an adapter's keys lazily (ADR 0011). Leaving it out of the
     report would read as "nothing is configured for nldi", which is a
     different claim from "this report could not check", and the caller cannot
@@ -2035,17 +2031,16 @@ def test_show_configuration_reports_an_unimported_adapter(config_file, monkeypat
 
 
 def test_show_configuration_sample_output_is_current(config_file, monkeypatch):
-    """The documented samples are this function's real output, not a hand-written
-    illustration.
+    """The documented samples are this function's real output.
 
-    Both had drifted from it -- the docstring wrapped a line the function
-    prints whole, the user guide had lost a paragraph -- because a sample kept
+    Both had drifted from it (the docstring wrapped a line the function
+    prints whole, the user guide had lost a paragraph) because a sample kept
     by hand is only as current as its last manual update. So
     the scenario is rebuilt here and the output compared verbatim; the only
     edit is swapping the temporary path for the illustrative one.
 
     Regenerate by running this test and copying the reported ``actual`` into
-    both places, never by editing them by hand.
+    both places; do not edit them by hand.
     """
     path = config_file(_SAMPLE_FILE)
     monkeypatch.setenv("API_USGS_RETRIES", "8")
@@ -2081,9 +2076,9 @@ def test_show_configuration_survives_a_malformed_profile(config_file):
     here validates.
 
     The section lists what the file *defines*; a profile's keys are checked when a
-    caller selects it. So a profile holding a value that fails its grammar -- or the
+    caller selects it. So a profile with a value that fails its grammar (or the
     nested table a file migrated from the retired ``[profiles.<name>]`` layout still
-    carries -- is reported rather than failing the report, which is when a caller most
+    contains) is listed without failing the report, which is when a caller most
     needs it.
     """
     config_file(
@@ -2124,8 +2119,8 @@ class TestConfigValueParsing:
             _core._coerce_seconds(True, "stall_timeout", "")
 
     def test_a_blank_count_falls_through_to_the_default(self):
-        """An empty env var means "unset", not "zero" -- exporting an empty
-        string is how a shell unsets a variable in practice."""
+        """An empty env var means "unset", not "zero", because exporting an
+        empty string is how a shell unsets a variable in practice."""
         assert _core._parse_int("   ", "API_USGS_RETRIES", default=4, minimum=0) == 4
 
     def test_a_blank_stall_timeout_falls_through_to_the_default(self):
@@ -2162,7 +2157,7 @@ class TestConfigPathResolutionFailures:
     def test_an_unresolvable_home_leaves_the_file_layer_inert(self, monkeypatch):
         """A container with no passwd entry raises from ``Path.home()``. The
         unexpanded ``~`` form is returned instead: it does not exist, so the
-        file layer is empty, and the environment alone still works --
+        file layer is empty, and the environment alone still works,
         which is how this package behaved before settings were layered."""
         monkeypatch.setattr(
             _core.Path,
@@ -2176,7 +2171,7 @@ class TestConfigPathResolutionFailures:
     def test_a_missing_working_directory_is_a_configuration_error(self, monkeypatch):
         """A job that deletes its own cwd cannot resolve a relative
         DATARETRIEVAL_CONFIG. That must be raised as this module's own error
-        type rather than an unwrapped OSError propagating to the request path."""
+        type, so no unwrapped OSError propagates to the request path."""
         monkeypatch.setattr(
             _core.Path,
             "cwd",

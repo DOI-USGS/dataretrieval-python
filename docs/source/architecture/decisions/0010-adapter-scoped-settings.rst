@@ -9,8 +9,8 @@ names" and "Per-service overrides are deferred" clauses of
 :doc:`0009-layered-configuration`; the rest of ADR 0009 remains in effect,
 subject to what ADR 0011 supersedes there.
 
-:doc:`0011-configuration-profiles` supersedes decisions 5 and 8 below --
-adapter schemas held centrally as ``TypedDict``, and each adapter a named
+:doc:`0011-configuration-profiles` supersedes decisions 5 and 8 below:
+adapter schemas defined centrally as ``TypedDict``, and each adapter a named
 keyword on ``configure()``. Each adapter now declares a ``BaseConfiguration``
 subclass in the module that *reads* those settings, and ``configure()`` takes
 instances of them positionally, which is what removes the adapter roster from
@@ -75,12 +75,12 @@ from shows the premise is false. The settings themselves differ:
      - yes
 
 ``concurrency`` and ``parallel_chunks`` are meaningless for the four
-single-shot adapters -- there is nothing to fan out. ``ssl_check`` applies to
-four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is currently a
-per-call keyword outside the chain entirely; it is passed to ``httpx``'s ``verify``,
-verified by spying on the client. A flat namespace accepts
-``configure(streamstats={"parallel_chunks": 8})`` without error, which is
-the typo class ADR 0009 exists to catch.
+single-shot adapters, because there is nothing to fan out. ``ssl_check``
+applies to four adapters (``waterdata``, ``nwdc``, ``nwis``, ``wqp``) and is
+currently a per-call keyword outside the chain entirely; it is passed to
+``httpx``'s ``verify``, verified by spying on the client. A flat namespace
+accepts ``configure(streamstats={"parallel_chunks": 8})`` without error, which
+is the typo class ADR 0009 exists to catch.
 
 The credential is a separate axis, and measurement shows this. Probing the live
 APIs with and without a key:
@@ -92,7 +92,7 @@ APIs with and without a key:
 * Alternating authenticated calls decrement a *single* counter
   (997, 996, 996, 994, 993, 992), so the two adapters share one quota pool.
 * Water Data's OpenAPI declares ``ApiKeyHeader``/``ApiKeyQuery``; NGWMN's
-  declares no security scheme at all across 34 paths -- yet the gateway meters
+  declares no security scheme at all across 34 paths, yet the gateway meters
   it regardless. Every response includes ``via: ... api-umbrella``.
 
 The key is therefore a credential of the **gateway fronting the host**, not of
@@ -149,14 +149,14 @@ Settings are scoped to the **adapter**, not the service, and not the host.
    namespace nobody could remember.
 
 5. **Each adapter's schema is a** ``TypedDict``. Its ``__annotations__`` *are*
-   the schema -- there is no second table to maintain, ``mypy --strict`` checks
+   the schema, so there is no second table to maintain, ``mypy --strict`` checks
    literal dicts at call sites, and the file path validates against the same
    annotations. A key an adapter does not accept raises ``ConfigurationError``
    at block entry, the way an unknown profile already does.
 
    *Superseded by* :doc:`0011-configuration-profiles`. The schema is now a
    frozen dataclass owned by the adapter, for the same "the annotations are the
-   schema" reason -- what changed is where it is defined. A ``TypedDict`` had
+   schema" reason; only its location changed. A ``TypedDict`` had
    to be declared centrally to annotate a central keyword, which put a Water
    Data setting's definition in a module unrelated to Water Data.
 
@@ -167,19 +167,19 @@ Settings are scoped to the **adapter**, not the service, and not the host.
 7. **Adapters are keyed by their service's name**, matching the module:
    ``waterdata``, ``ngwmn``, ``nwdc``, ``wqp``, ``nldi``, ``streamstats``.
    The deprecated ``nwis`` is deliberately absent: its calls pin
-   ``max_retries=0``, so a ``[nwis]`` table could only be reported as in effect and
-   then ignored -- the failure this decision exists to prevent.
+   ``max_retries=0``, so a ``[nwis]`` table could only be reported as in effect
+   and then ignored, the failure this decision prevents.
 
 8. **Each adapter is a named, typed parameter on** ``configure()``, annotated
    with its own ``TypedDict``, so a type checker rejects a setting the adapter
    does not read before the code runs. A ``**unknown`` catch-all remains, and
-   exists to turn a misspelled *setting* into a message naming the settings --
+   exists to turn a misspelled *setting* into a message naming the settings;
    ``configure(concurrancy=8)`` would otherwise be a bare ``TypeError``.
 
    *Superseded by* :doc:`0011-configuration-profiles`. ``configure()`` takes
    configuration objects positionally instead, so the adapter is named by the
-   class rather than by a keyword. The type checking remains -- a setting an
-   adapter does not read is not a field of its class -- and the catch-all is
+   class rather than by a keyword. The type checking remains (a setting an
+   adapter does not read is not a field of its class), and the catch-all is
    no longer needed for a misspelling, because
    ``WaterdataConfiguration(concurrancy=8)`` is already a ``TypeError`` naming
    the keyword that does not exist. What the change achieves is that
@@ -189,7 +189,7 @@ Settings are scoped to the **adapter**, not the service, and not the host.
 Consequences
 ------------
 
-- **A caller can throttle one adapter without throttling the rest** --
+- **A caller can throttle one adapter without throttling the rest**,
   the requirement ADR 0009 deferred. Because NGWMN and Water Data share a quota
   pool, throttling NGWMN now measurably preserves quota for Water Data.
 
@@ -203,7 +203,7 @@ Consequences
 
 - **A configuration object is still refused, but on narrower grounds than ADR
   0009 stated.** That ADR rejected an object because it had no way to be passed to
-  the call. A per-adapter payload type does not have that problem -- the
+  the call. A per-adapter payload type does not have that problem, because the
   ``ContextVar`` remains the delivery mechanism and the type is only the
   payload's shape. ``TypedDict`` is chosen over a dataclass for the reason
   above, not because an object could not be delivered.
@@ -219,7 +219,7 @@ Consequences
   A seven-by-eight grid of mostly-inherited values would obscure which
   value a call will use.
 
-- **The shared quota pool is not modelled.** ``[waterdata]`` and ``[ngwmn]``
+- **The shared quota pool is not modeled.** ``[waterdata]`` and ``[ngwmn]``
   appear to be independent settings but share one 1000/hour allowance. A host or
   gateway tier would express it; that is deferred until someone is confused by
   it, since the pool is a property of the credential, which is already
@@ -227,34 +227,34 @@ Consequences
 
 - **``stall_timeout`` is added to the chain.** ``API_USGS_STALL_TIMEOUT`` was
   read directly from ``os.environ``, so it could not be set by a block or the
-  file and never appeared in ``show_configuration()`` -- a gap in ADR 0009's
+  file and never appeared in ``show_configuration()``, a gap in ADR 0009's
   own claim that every setting resolves through one chain. It is package-wide by
   default and adapter-scopable. ``dataretrieval/transport/env.py`` existed only
   to parse it and is deleted, so ``configuration`` is now the only module in
   the package that reads ``os.environ`` for a setting.
 
 - **``ssl_check`` stays a per-call argument and does not become a setting.**
-  It is a defaulted keyword on 23 shipped getters across four adapters --
-  ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1) -- and it is
-  passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the only
-  modules; the OGC getters were added later and never adopted it, so its
+  It is a defaulted keyword on 23 shipped getters across four adapters:
+  ``wqp`` (9), ``nwis`` (10), ``waterdata`` (3) and ``nwdc`` (1). It is
+  passed to ``httpx``'s ``verify``. It was added in 2023 to what were then the
+  only modules; the OGC getters were added later and never adopted it, so its
   distribution records the package's history rather than a boundary.
 
   Three reasons not to promote it. It disables certificate verification, so as
   a per-call keyword it is a visible, scoped decision, while a config-file key
   or environment variable would make a security downgrade process-wide and
-  invisible at the call site -- the opposite of the direction this chain
+  invisible at the call site, the opposite of the direction this chain
   narrows everything else. It does not follow adapter boundaries: within
   ``waterdata`` it applies only to the getters that bypass the OGC engine, so
   ``[waterdata] ssl_check`` would be applied by three getters and
   ignored by the rest, the pattern this ADR refuses elsewhere. And the
   need it serves is already met better: the legitimate case is a
   TLS-intercepting corporate proxy, and ``httpx`` natively reads
-  ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients --
+  ``SSL_CERT_FILE`` and ``SSL_CERT_DIR`` on both its sync and async clients,
   so that mechanism already covers *every* getter, including the OGC ones that
-  have no ``ssl_check``, and it trusts the corporate CA rather than trusting
-  nothing. The ``bool`` type cannot hold a CA bundle path, which is the
-  value a caller needs.
+  have no ``ssl_check``, and it trusts the corporate CA while keeping
+  verification on. The ``bool`` type cannot represent a CA bundle path, which
+  is the value a caller needs.
 
   The configuration guide documents ``SSL_CERT_FILE`` for that case. Whether
   ``ssl_check`` should be deprecated outright is a public-API question left to
@@ -263,7 +263,7 @@ Consequences
 - ``tests/configuration_test.py`` covers adapter-table resolution, top-level
   inheritance per setting, source-major precedence (the environment still
   outranks an adapter table), an adapter block outranking a package-wide one,
-  and rejection of a setting an adapter does not read -- from both the file and
+  and rejection of a setting an adapter does not read, from both the file and
   ``configure()``.
 - ``test_api_key_is_never_adapter_scoped`` asserts no adapter configuration
   accepts ``api_key``.

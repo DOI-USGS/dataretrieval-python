@@ -20,12 +20,12 @@ clause handles any failure regardless of which service you called:
         ...  # any request failure: error status, connection loss, too-large, ...
 
 Connection-level failures (timeouts, DNS, refused connections) remain inside
-the package taxonomy, so the clause above covers them -- you never have to catch
+the package taxonomy, so the clause above covers them. You never have to catch
 an ``httpx`` exception. A deterministic connection failure is a
 :class:`~dataretrieval.exceptions.NetworkError`; a recoverable one that exhausts
 inline retries during fan-out is a resumable ``ServiceInterrupted``. A *no-data*
 result is **not** an error: the modern getters return an empty ``DataFrame`` when
-nothing matches, so check ``df.empty`` rather than catching anything.
+nothing matches, so check ``df.empty``.
 
 Branch without knowing the concrete type
 =========================================
@@ -79,9 +79,9 @@ Resume an interrupted request
 Some requests become several: the Water Data and NGWMN getters split an
 over-large request into chunks, and a Water Use call with several locations
 becomes one request per location. When a transient failure interrupts one
-partway, the work already completed is preserved: catch
-``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears
--- only the unfinished chunks are re-issued.
+partway, the package preserves the completed work. Catch
+``FanOutInterrupted`` and call ``exc.call.resume()`` once the condition clears;
+``resume()`` re-issues only the unfinished chunks.
 
 (``ChunkInterrupted`` is the same class under its original name; either works.)
 
@@ -108,8 +108,8 @@ counties, or HUCs.
 Chunk a large request more finely
 =================================
 
-By default the getters split an over-large request only as much as the
-server's ~8 KB URL limit forces -- the fewest chunks. Because each
+By default the getters split an over-large request into the fewest chunks the
+server's ~8 KB URL limit allows. Because each
 chunk paginates, splitting a large result further costs little or no
 extra quota *as long as each chunk still spans many pages*. (Ten states
 pulled as one request then page nearly as many times as ten per-state requests
@@ -130,19 +130,19 @@ quota:
             monitoring_location_id=many_sites, parameter_code="00060"
         )
 
-``n`` is a positive integer (e.g. ``2``, ``8``, ``32``) -- the number of
+``n`` is a positive integer (e.g. ``2``, ``8``, ``32``), the number of
 chunks to fan the call out into; a non-integer or non-positive value
 raises ``ValueError`` at the ``with``. ``n`` caps the *total* chunk count
-across every multi-value argument combined (not per argument), bounded below by
+across every multi-value argument combined, bounded below by
 what the byte limit already forces and above by how many values there are to
 split. Several multi-value arguments therefore can't multiply past it, and
-``n=1`` requests no extra fan-out. Each chunk costs a request against your
-hourly rate limit. How many run *at once* is capped separately by
-``API_USGS_CONCURRENT`` (default 32), so an ``n`` beyond that adds quota without
-adding parallelism -- the useful range is roughly ``2`` up to
-``API_USGS_CONCURRENT``. There is no "off" level: don't enter the block
-unless you already expect a large, multi-page result -- on a query that would
-have fit in a single page, extra chunks only spend quota.
+``n=1`` requests no extra fan-out. Each chunk counts as one request against
+your hourly rate limit. ``API_USGS_CONCURRENT`` (default 32) separately caps
+how many run *at once*, so an ``n`` beyond that uses more quota without adding
+parallelism. The useful range is roughly ``2`` up to ``API_USGS_CONCURRENT``.
+There is no "off" level: don't enter the block unless you already expect a
+large, multi-page result. On a query that would have fit in a single page,
+extra chunks only use quota.
 
 The full taxonomy
 =================

@@ -3,7 +3,7 @@ Installation Guide
 
 Whether you are a user or a developer, we recommend installing ``dataretrieval``
 in a virtual environment, using a tool such as ``virtualenv`` or ``conda``.
-Package dependencies are declared in ``pyproject.toml``: the core runtime
+``pyproject.toml`` declares the package dependencies: the core runtime
 dependencies under ``[project.dependencies]``, and optional extras (``test``,
 ``doc``, ``nldi``) under ``[project.optional-dependencies]``.
 

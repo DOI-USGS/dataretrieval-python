@@ -1,6 +1,6 @@
 """``get_nearest_continuous``: nearest-timestamp selection over
 ``get_continuous``. Built on the CQL ``filter`` passthrough; only
-``get_nearest_continuous`` is public — everything else is package-private.
+``get_nearest_continuous`` is public; everything else is package-private.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ OnTie = Literal["first", "last", "mean"]
 _VALID_ON_TIE: tuple[OnTie, ...] = get_args(OnTie)
 
 # ``pandas.api.types.infer_dtype`` results that ``pandas.to_datetime`` would
-# read as epoch nanoseconds rather than reject.
+# accept and read as epoch nanoseconds.
 _NUMERIC_INFERRED_DTYPES = frozenset(
     {"integer", "floating", "mixed-integer-float", "decimal"}
 )
@@ -146,7 +146,7 @@ def get_nearest_continuous(
         How far before and after each target to search, as an ISO 8601
         duration (``"PT7M30S"``, ``"PT15M"``, ``"PT1H"``, etc.); an
         observation matches if it lies within ``window`` of the target.
-        Also accepts any other form ``pandas.Timedelta`` parses —
+        Also accepts any other form ``pandas.Timedelta`` parses:
         ``HH:MM:SS`` (``"00:07:30"``), pandas shorthand (``"7min30s"``,
         ``"450s"``), or a ``pd.Timedelta`` directly. See the
         `pandas.Timedelta docs
@@ -161,7 +161,7 @@ def get_nearest_continuous(
     on_tie : {"first", "last", "mean"}, default ``"first"``
         How to resolve ties when two observations are exactly equidistant
         from a target (which happens when the target falls at the midpoint
-        between grid points — e.g. target ``10:22:30`` for a 15-minute
+        between grid points, e.g. target ``10:22:30`` for a 15-minute
         gage).
 
         - ``"first"``: keep the earlier observation.
@@ -172,11 +172,11 @@ def get_nearest_continuous(
     **kwargs
         Additional keyword arguments forwarded to ``get_continuous`` (e.g.
         ``statistic_id``, ``approval_status``, ``properties``). Passing ``time``,
-        ``filter``, or ``filter_lang`` raises ``TypeError`` — this function builds those
-        itself. A caller-provided ``properties`` list has ``time`` and
-        ``monitoring_location_id`` when either is omitted: the match is computed against
-        the first and grouped by the second, so the returned frame includes both columns
-        even when they were not requested.
+        ``filter``, or ``filter_lang`` raises ``TypeError``, because this function
+        builds those itself. A caller-provided ``properties`` list has ``time`` and
+        ``monitoring_location_id`` added when either is omitted: the match is computed
+        against the first and grouped by the second, so the returned frame includes both
+        columns even when they were not requested.
 
     Returns
     -------
@@ -208,14 +208,14 @@ def get_nearest_continuous(
     *Window sizing and ties.* When ``window`` is exactly half the service
     cadence, most targets' windows contain a single observation and
     ``on_tie`` has no effect. Ties arise only when a target falls exactly at the
-    midpoint between two grid observations — rare in practice but possible.
+    midpoint between two grid observations, which is rare.
     Setting ``window`` to a full cadence (or larger) guarantees at least one
     observation per target in steady state at the cost of more bytes per
     response.
 
     *Why windowed CQL rather than sort+limit.* The API's documented ``sortby`` parameter
     would make this a trivial query per target (``filter`` by ``time <= t`` and ``limit
-    1``), but it is per-query — you would need one HTTP round-trip per target. The CQL
+    1``), but it is per-query, so you would need one HTTP round-trip per target. The CQL
     ``OR``-chain approach combines all N targets into one request (auto-chunked when the
     URL is long).
 
@@ -330,8 +330,7 @@ def _coerce_targets(targets: Any) -> pd.DatetimeIndex:
 
     Raises ``TypeError`` for numbers, which pandas reads as nanoseconds since
     the epoch, and ``ValueError`` for an unparseable, empty, or missing target:
-    a missing target would be rendered as a ``'nan'`` CQL bound rather than a
-    window.
+    a missing target would be rendered as a ``'nan'`` CQL bound.
     """
     values = targets if pd.api.types.is_list_like(targets) else [targets]
     _reject_numeric_targets(values)
@@ -369,8 +368,8 @@ def _reject_numeric_targets(values: Any) -> None:
     """
     if pd.api.types.infer_dtype(values, skipna=True) in _NUMERIC_INFERRED_DTYPES:
         # A numeric inference means at least one non-missing value exists.
-        # Formatted with str() so a numpy scalar reads as 1500000000.0, not
-        # np.float64(1500000000.0).
+        # Formatted with str() so a numpy scalar reads as 1500000000.0 (its
+        # repr is np.float64(1500000000.0)).
         first = next(value for value in values if pd.notna(value))
         raise TypeError(
             "targets must be timestamps, not numbers, which pandas would read "
@@ -430,7 +429,7 @@ def _coerce_window(window: str | pd.Timedelta) -> pd.Timedelta:
     if pd.isna(window_td):
         raise ValueError(f"window is missing (got {window!r}). {example}")
     if window_td < pd.Timedelta(0):
-        # ``window`` spans both sides of each target, so the sign carries no
+        # ``window`` spans both sides of each target, so the sign has no
         # meaning; the magnitude is what the caller wants.
         magnitude = (-window_td).isoformat()
         raise ValueError(
@@ -494,7 +493,7 @@ def _pick_nearest_row(
         row = candidates.iloc[0].copy()
     elif on_tie == "last":
         row = candidates.iloc[-1].copy()
-    else:  # "mean" — average numeric cols, set time to the target.
+    else:  # "mean": average numeric cols, set time to the target.
         row = candidates.iloc[0].copy()
         for col in candidates.select_dtypes("number").columns:
             row[col] = candidates[col].mean()

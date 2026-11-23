@@ -4,13 +4,13 @@ The module was named for one subset of what the service offers. The National
 Water Availability Assessment Data Companion serves ten modeled datasets, of
 which the water-use models are five; the rest are hydrologic,
 atmospheric-forcing, and assessment outputs. Every other adapter in this
-package is named for its service -- ``ngwmn``, ``nldi``, ``wqp``,
-``streamstats`` -- so this one is now ``nwdc``.
+package is named for its service (``ngwmn``, ``nldi``, ``wqp``,
+``streamstats``), so this one is now ``nwdc``.
 
 Importing this module emits a :class:`DeprecationWarning` and re-exports
 :mod:`dataretrieval.nwdc`'s public surface. The re-exported objects are the
-*same objects*, not copies -- ``wateruse.get_wateruse is nwdc.get_wateruse``
--- so calls and identity comparisons behave identically through either
+*same objects* (``wateruse.get_wateruse is nwdc.get_wateruse``),
+so calls and identity comparisons behave identically through either
 spelling.
 
 It aliases the public names; it is not a second name for the module object. This is a
@@ -19,11 +19,11 @@ so it does not forward *assignment* or private names: rebinding
 ``wateruse.get_wateruse`` leaves ``nwdc``'s global unchanged (and so has no
 effect on anything ``nwdc`` does internally), and ``wateruse._WATERUSE_HOST``
 does not exist. Code that monkeypatches, or that uses a private name, must
-name :mod:`dataretrieval.nwdc` directly -- which is the point of the
+name :mod:`dataretrieval.nwdc` directly, which is the point of the
 deprecation.
 
-``dataretrieval.__init__`` deliberately imports :mod:`dataretrieval.nwdc`
-rather than this module, so ``import dataretrieval`` emits no warning. The warning
+``dataretrieval.__init__`` imports :mod:`dataretrieval.nwdc` rather than this
+module, so ``import dataretrieval`` emits no warning. The warning
 is emitted only for code that names ``wateruse`` itself.
 """
 
@@ -45,7 +45,7 @@ warn_deprecated(
     removal=NWDC_RENAME_REMOVAL_DATE,
     detail="The service is the National Water Availability Assessment Data "
     "Companion, and water use is one of the ten datasets it serves.",
-    # 1 attributes the warning to the line that imported this module -- an import
-    # has no deeper user frame to attribute it to.
+    # 1 attributes the warning to the line that imported this module, because an
+    # import has no deeper user frame to attribute it to.
     stacklevel=1,
 )

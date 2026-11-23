@@ -1,9 +1,9 @@
 """Tests for the shared argument checks.
 
-Each check is asserted on two things: that it lets a valid call through, and
-that its rejection names the change that would fix the call. The second half is
-the point of the module -- a caller that is a program can only correct itself
-from a message that says what to send instead.
+Each check has two assertions: it lets a valid call through, and its rejection
+names the change that would fix the call. The second assertion matters more,
+because a caller that is a program can only correct itself from a message that
+says what to send instead.
 """
 
 import pytest
@@ -47,7 +47,7 @@ def test_remedy_adds_a_move_without_dropping_the_options():
 
 
 def test_a_string_vocabulary_is_refused():
-    """``str`` is a Collection, so passing one type-checks -- and then ``in``
+    """``str`` is a Collection, so passing one type-checks, and then ``in``
     changes from a membership test to a substring test without any error, accepting any
     fragment of a valid option. Refuse it in the one shared check."""
     with pytest.raises(TypeError, match="not 'csv'"):

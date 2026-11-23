@@ -176,10 +176,11 @@ def run_paginated(
     """Run one full page walk per request through the shared executor.
 
     The adapter supplies its strategies (``parse_response``, ``follow_up``,
-    ``raise_for_status``, and optionally ``finalize``); this driver owns the composition
-    -- each request paginated on the client the executor sets on ``_active_client``
-    unless ``client`` is injected, the retry policy, bounded concurrency, and the
-    canonical URL the aggregate reports (the first request's, unless overridden).
+    ``raise_for_status``, and optionally ``finalize``); this driver supplies the
+    rest: each request paginated on the client the executor sets on
+    ``_active_client`` unless ``client`` is injected, the retry policy, bounded
+    concurrency, and the canonical URL the aggregate reports (the first request's,
+    unless overridden).
 
     Raw transport errors need no mapping in the strategies: the executor
     retries them and normalizes a deterministic one into the typed

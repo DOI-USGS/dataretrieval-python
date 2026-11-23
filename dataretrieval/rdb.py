@@ -4,7 +4,7 @@ RDB (Relational DataBase) is the text format used by NWIS web services
 and by the Water Data STAC catalog's rating-curve assets. Every RDB
 file has the same shape:
 
-- One or more ``#``-prefixed comment lines holding provenance metadata
+- One or more ``#``-prefixed comment lines containing provenance metadata
   (data source, retrieval timestamp, station name, parameter codes, etc.).
 - A tab-separated header row naming each column.
 - A second tab-separated row giving column format specs (e.g. ``5s 15s``);
@@ -29,7 +29,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
     """Parse an RDB text response into a ``pandas.DataFrame``.
 
     Every column whose name marks it as a code is read as ``str`` so its
-    leading zeros survive -- ``huc_cd`` ``02060005`` rather than ``2060005``.
+    leading zeros survive: ``huc_cd`` ``02060005`` would otherwise read as ``2060005``.
     See :func:`dataretrieval._csv.code_columns` for which names those are.
 
     Parameters
@@ -70,7 +70,7 @@ def read_rdb(text: str, dtypes: dict[str, type] | None = None) -> pd.DataFrame:
         len(lines),
     )
     if header_idx == len(lines):
-        # All lines are comments — a legitimate empty result.
+        # All lines are comments: a legitimate empty result.
         return pd.DataFrame()
 
     fields = [f.replace(",", "").strip() for f in lines[header_idx].split("\t")]
@@ -90,8 +90,8 @@ def extract_rdb_comment(text: str) -> list[str]:
     """Return the RDB ``#``-prefixed comment block, raw and in original order.
 
     Each entry includes its leading ``#`` and any whitespace, matching what R's
-    ``dataRetrieval`` returns from ``comment(df)``. The comment block holds provenance
-    metadata that is otherwise lost during parsing — data source, retrieval timestamp,
-    parameter codes, rating id and last-shifted timestamp for ratings, etc.
+    ``dataRetrieval`` returns from ``comment(df)``. The comment block contains
+    provenance metadata that is otherwise lost during parsing: data source, retrieval
+    timestamp, parameter codes, rating id and last-shifted timestamp for ratings, etc.
     """
     return [line for line in text.splitlines() if line.startswith("#")]

@@ -1,17 +1,17 @@
 """Pure URL-byte chunk planning (no I/O).
 
-This module holds the side-effect-free planning half of the chunker:
+This module contains the side-effect-free planning half of the chunker:
 deciding how to split one over-budget OGC request into URL-fitting
 chunks (:class:`ChunkPlan` and the axis/byte-accounting helpers).
-It has no event loop, retry policy, or network state — those are in
+It has no event loop, retry policy, or network state; those are in
 :mod:`dataretrieval.ogc.chunking` (resumable execution) and
 :mod:`dataretrieval.transport.retry` (retry policy), which import the plan and
 execute it.
 
-Result recombination — reassembling the per-chunk frames and responses
-back into one result
+Result recombination, which reassembles the per-chunk frames and responses
+into one result
 (:func:`~dataretrieval.combining._combine_chunk_frames`,
-:func:`~dataretrieval.combining._combine_chunk_responses`, etc.) —
+:func:`~dataretrieval.combining._combine_chunk_responses`, etc.),
 is in the top-level :mod:`dataretrieval.combining` module.
 """
 
@@ -73,7 +73,7 @@ def _request_bytes(req: httpx.Request) -> int:
     Return the total bytes of an httpx request: URL + body.
 
     GET routes have empty ``.content`` and reduce to URL length. POST
-    routes (CQL2 JSON body) need body bytes — the URL stays short
+    routes (CQL2 JSON body) need body bytes. The URL stays short
     regardless of payload, so URL-only sizing would underestimate the
     request and skip chunking when it's needed.
 
@@ -163,7 +163,7 @@ def _check_unchunkable_request(
     """Enforce the byte budget on a request with no chunkable axis.
 
     Passthrough when the single request fits or when the filter is in a
-    language the chunker doesn't manage (cql-json) — the server, not the
+    language the chunker doesn't manage (cql-json); the server, not the
     chunker, accepts or rejects that request. Raises
     :class:`~dataretrieval.exceptions.Unchunkable` when the request is
     over budget and has nothing to split.
@@ -192,8 +192,7 @@ class _Axis:
     the URL. Both multi-value list parameters (``sites=[...]``, joiner ``","``)
     and the cql-text ``filter`` (split on top-level ``OR``, joiner
     ``" OR "``) fit this shape, so a single greedy halving loop in
-    ``ChunkPlan._plan`` handles both — no need for two separate
-    algorithms.
+    ``ChunkPlan._plan`` handles both.
 
     Attributes
     ----------
@@ -206,7 +205,7 @@ class _Axis:
         ``atoms``.
     joiner : str
         Separator placed between atoms when they are joined back into
-        URL text — ``","`` for list axes, ``" OR "`` for the filter
+        URL text: ``","`` for list axes, ``" OR "`` for the filter
         axis.
     """
 
@@ -345,15 +344,15 @@ class ChunkPlan:
         Factory that turns a kwargs dict into a sized httpx request,
         e.g. ``_construct_api_requests``.
     url_limit : int
-        Byte budget for the request (URL + body) — a hard ceiling every
+        Byte budget for the request (URL + body): a hard ceiling every
         chunk must fit.
     max_chunks : int, optional
         Hard cap on the plan's total chunk count (default ``1`` = off). ``1`` chunks
-        only as much as ``url_limit`` requires — the plan with the fewest chunks — so a
+        only as much as ``url_limit`` requires (the plan with the fewest chunks), so a
         fitting request is a passthrough. A cap of ``2`` or more fans the plan out to up
         to ``max_chunks`` chunks overall (the cartesian product across axes, never fewer
         than the byte budget already forces). The cap applies to the plan as a whole,
-        not per axis, so several multi-value axes can't multiply past it. The plan never
+        so several multi-value axes can't multiply past it. The plan never
         exceeds the cap and may fall below it when no whole split reaches it exactly.
         ``max_chunks`` is a chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
@@ -440,7 +439,7 @@ class ChunkPlan:
 
         Halving continues until the worst-case chunk URL fits
         ``url_limit``, mutating ``self.chunks`` in place. List axes and the
-        filter axis are treated uniformly — each is a list of atoms
+        filter axis are treated uniformly, each as a list of atoms
         joined by its axis's separator.
 
         Raises
@@ -488,17 +487,17 @@ class ChunkPlan:
         This is what ``parallel_chunks`` controls: see
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` for when a caller
         uses this, and :class:`ChunkPlan`'s ``max_chunks`` parameter for
-        the cap's contract (total-not-per-axis, a hard ceiling that may land
-        below the cap).
+        the cap's contract (a total across all axes; a hard ceiling the plan
+        may stop below).
 
         Implementation. Each split multiplies the plan by ``(k+1)/k`` for the chosen
         axis (adding ``total // k`` chunks, not one), so a split is taken only when it
         keeps :attr:`total` within the cap. When no in-budget split remains, the plan
-        stops below the cap rather than exceeding it (two even axes can reach 4 but not
+        stops below the cap (two even axes can reach 4 but not
         5, so a cap of 5 yields 4). Each split picks the single largest splittable chunk
         among the in-budget axes (ties broken by axis-extraction order, then lowest
-        index), so growth is distributed round-robin rather than one axis saturating
-        before another is split. Additive only: it only splits existing chunks, so the
+        index), so growth is distributed round-robin across axes.
+        Additive only: it only splits existing chunks, so the
         byte pass's work and the ``url_limit`` invariant are both preserved, and it
         never raises. A no-op at ``max_chunks == 1``.
 
@@ -550,9 +549,9 @@ class ChunkPlan:
         split stays within the ``max_chunks`` cap, or ``None`` when no
         in-budget split remains. Splitting any chunk of an axis with ``k``
         chunks adds ``total // k`` chunks (the product of the other axes),
-        so the budget test is per axis rather than per chunk. The ranking key
-        is atom count (not URL bytes like ``_plan``) because this pass
-        balances work across chunks rather than fitting a byte budget.
+        so the budget test is per axis. The ranking key
+        is atom count (``_plan`` ranks by URL bytes) because this pass
+        balances work across chunks.
         Stable input order breaks ties by axis order, then lowest index.
         """
         candidate: tuple[_Axis, int] | None = None

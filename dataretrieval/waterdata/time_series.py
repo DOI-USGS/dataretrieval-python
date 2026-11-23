@@ -4,7 +4,7 @@ Daily and continuous values, their most-recent counterparts, and the
 period-of-record statistics computed over them. What they share is shape: a
 monitoring location and a parameter, repeated over time.
 
-Metadata *about* these series -- what a location measures, over what period --
+Metadata *about* these series (what a location measures, over what period)
 is in :mod:`~dataretrieval.waterdata.metadata`, so a caller can discover what
 exists before requesting the observations.
 """

@@ -25,7 +25,7 @@ Decision
 
 All request failures exposed by public service modules derive from
 ``DataRetrievalError`` and provide uniform ``status_code``, ``retry_after``, and
-``retryable`` attributes. Status mapping is done in one policy function.
+``retryable`` attributes. One policy function maps statuses.
 
 Where automatic recovery is supported, retries are bounded, use exponential
 backoff with full jitter, wait only for bounded ``Retry-After`` delays, and
@@ -36,7 +36,7 @@ unknown failures are not classified as resumable transients.
 The shared transport layer supplies bounded retry and callback-driven cursor
 pagination, but each adapter opts in only where its requests are idempotent and
 its protocol exposes a cursor. Chunk planning and resumable partial state remain
-OGC-specific capabilities rather than assumptions imposed on every service.
+OGC-specific capabilities.
 
 **Warnings convey the advisories that are not failures.** The taxonomy above
 covers what stops a call; two things that do not stop one are decided here as
@@ -52,8 +52,8 @@ any other. This is the deliberate exception to the rule that a failed fan-out
 raises rather than returning successful siblings; it applies only where the
 items are independent, never to the pages of one query.
 
-An advisory about *upstream data* -- a dataset the service has stopped updating
--- is a ``UserWarning``, never a ``DeprecationWarning``. Downstream projects run
+An advisory about *upstream data* (a dataset the service has stopped updating)
+is a ``UserWarning``, never a ``DeprecationWarning``. Downstream projects run
 their suites under ``-W error::DeprecationWarning``, and expressing "this data
 is stale" as a deprecation makes their build fail over something no code change
 of theirs can fix. ``DeprecationWarning`` means *this package's* API is being
@@ -61,17 +61,17 @@ removed.
 
 **A ``Retry-After`` value is kept as information even when it is not
 actionable.** A value too long to wait for, or expressed as a date, is parsed
-and set on the failure rather than discarded, so a caller can see what the
-service requested; the retry policy separately does not wait beyond its cap.
+and set on the failure, so a caller can see what the service requested; the
+retry policy separately does not wait beyond its cap.
 A date already in the past yields no value at all rather than a zero-second
-one, which would mean "retry immediately" -- the opposite of what the header
+one, which would mean "retry immediately", the opposite of what the header
 specified.
 
 **Every error must be reconstructible across a process boundary.**
 Reconstruction goes through ``__new__`` plus ``__getstate__``/``__setstate__``
 rather than ``cls(*args)``, because these errors have fields whose values are
-not the constructor's arguments. A subclass holding an unpicklable handle -- a
-client, a task -- must remove it in ``__getstate__``. Without this a failure
+not the constructor's arguments. A subclass holding an unpicklable handle (a
+client, a task) must remove it in ``__getstate__``. Without this a failure
 raised inside a worker process is replaced by a pickling error as it is
 returned, losing the diagnosis when it is hardest to reproduce.
 

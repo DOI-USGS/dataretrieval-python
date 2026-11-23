@@ -4,8 +4,8 @@ An OGC query has several chunkable axes: every multi-value list parameter (sites
 parameter codes, …) plus the cql-text ``filter``, which splits along its top-level OR
 clauses. Any of them can make the URL exceed the server's ~8 KB byte limit.
 ``ChunkPlan`` picks a fan-out for each axis that minimizes total chunks while keeping
-every chunk URL under the budget. Requests that already fit get a single-chunk plan —
-the executor has one code path either way.
+every chunk URL under the budget. Requests that already fit get a single-chunk plan,
+so the executor has one code path either way.
 
 This module owns the OGC-specific half: the byte budget, the
 ``parallel_chunks`` setting, and the ``multi_value_chunked`` decorator that
@@ -15,7 +15,7 @@ completion; :class:`~dataretrieval.ogc.planning.ChunkPlan` satisfies
 :class:`~dataretrieval.transport.fanout.FanOutPlan` structurally. That split
 is ADR 0008.
 
-Parallel chunks: the planner is conservative by default — it splits only as
+Parallel chunks: the planner is conservative by default and splits only as
 far as the byte limit forces. A caller who knows their result is large can opt
 into a finer split via the ``parallel_chunks(n)`` context manager, which fans
 the query out into ``n`` parallel chunks. ``n`` is the input to
@@ -57,13 +57,13 @@ from dataretrieval.transport.retry import RetryPolicy
 from .planning import ChunkPlan
 
 # Compatibility aliases for the chunking/progress test modules. The client names bind
-# the same objects transport sets, not copies -- a test reading a copy here would never
-# see the running client.
+# the same objects transport sets, not copies, because a test reading a copy
+# here would never see the running client.
 ChunkedCall = FanOut
 get_active_client = active_client
 _chunked_client = _active_client
 
-# Empirically the API returns HTTP 414 above ~8200 bytes of full URL —
+# Empirically the API returns HTTP 414 above ~8200 bytes of full URL, which
 # matches nginx's default ``large_client_header_buffers`` of 8 KB. 8000
 # leaves ~200 bytes for request-line framing and proxy variance. The decorator
 # resolves this module-level default at call time when ``url_limit`` is None,
@@ -77,28 +77,28 @@ def parallel_chunks(n: int) -> Iterator[None]:
     Fan the OGC getters' multi-value requests out into ``n`` parallel chunks.
 
     By default the Water Data / NGWMN getters chunk a request only as much as the
-    server's ~8 KB URL-byte limit forces — the fewest chunks that fit. That default can
-    split less than a large pull benefits from. Because every chunk paginates, splitting
-    a large result further costs little or no extra quota *as long as each chunk still
-    spans many pages* — rows-per-chunk far exceeding the page size (ten states pulled as
-    one request page nearly as many times as ten per-state requests would). When a split
-    leaves each chunk only a page or two, its partial final page is extra, so finer
-    chunks do add some requests. This context manager lets a caller who knows their pull
-    is large request that finer split. The result is roughly the same pages in more,
-    smaller chunks, which gives smoother progress, more even concurrency, and a smaller
-    unit of retry/resume.
+    server's ~8 KB URL-byte limit forces, so the plan has the fewest chunks that fit.
+    That default can split less than a large pull benefits from. Because every chunk
+    paginates, splitting a large result further costs little or no extra quota *as long
+    as each chunk still spans many pages*, with rows-per-chunk far exceeding the page
+    size (ten states pulled as one request page nearly as many times as ten per-state
+    requests would). When a split leaves each chunk only a page or two, its partial
+    final page is extra, so finer chunks do add some requests. This context manager lets
+    a caller who knows their pull is large request that finer split. The result is
+    roughly the same pages in more, smaller chunks, which gives smoother progress, more
+    even concurrency, and a smaller unit of retry/resume.
 
-    A per-call setting rather than an environment variable, and scoped to a
-    ``with`` block: ADR 0009. Outside any block the getters use the
+    A per-call setting scoped to a ``with`` block, with no environment
+    variable (ADR 0009). Outside any block the getters use the
     conservative default. Only the OGC getters (Water Data, NGWMN) read this;
     wrapping a call to any other adapter in the block is a no-op.
 
     Parameters
     ----------
     n : int
-        The number of chunks to fan the whole call out into — a positive integer such as
+        The number of chunks to fan the whole call out into: a positive integer such as
         ``2``, ``8``, or ``32``. It caps the plan's *total* chunk count (the cartesian
-        product across every multi-value argument combined, not per argument), so
+        product across every multi-value argument combined), so
         several multi-value arguments cannot multiply past it. The cap is a ceiling,
         never exceeded: the actual count is bounded below by what the ~8 KB URL limit
         already forces and above by ``n``. So an ``n`` larger than the input allows
@@ -106,8 +106,8 @@ def parallel_chunks(n: int) -> Iterator[None]:
         be somewhat below ``n`` because splits are whole (the plan can't always divide
         evenly onto ``n``). ``n=1`` requests no extra fan-out.
 
-        Each chunk fetches at least one page, so it costs at least one
-        request against your hourly rate limit — a larger ``n`` spends more
+        Each chunk fetches at least one page, so each counts as at least one
+        request against your hourly rate limit, and a larger ``n`` uses more
         quota. How many chunks run *at once* is capped separately by
         the ``concurrency`` setting (default 32), so an ``n`` beyond that
         adds quota without adding parallelism; the useful range is roughly
@@ -120,9 +120,8 @@ def parallel_chunks(n: int) -> Iterator[None]:
     Raises
     ------
     ValueError
-        If ``n`` is not a positive integer — raised on ``with`` entry, before
-        any request is issued, so an invalid value raises rather than
-        doing nothing.
+        If ``n`` is not a positive integer. Raised on ``with`` entry, before
+        any request is issued.
 
     Notes
     -----
@@ -135,13 +134,13 @@ def parallel_chunks(n: int) -> Iterator[None]:
       ``max_rows``. So a call with ``max_rows`` set returns a *different*
       (though still valid and deterministically sorted) row set inside a
       ``parallel_chunks`` block than without one. The cap applies to the
-      union of the chunks, not to one sequence. Do not combine a small
+      union of the chunks. Do not combine a small
       ``max_rows`` preview with ``parallel_chunks`` if you need exactly the
       rows the un-fanned call would return.
     - Resumability: a single request either fully succeeds or fully fails,
       but a fanned-out call can fail partway (e.g. a mid-call rate-limit) and
       raise a resumable :class:`~dataretrieval.interruptions.ChunkInterrupted`
-      (or ``QuotaExhausted``) holding the completed chunks. Finish the
+      (or ``QuotaExhausted``) with the completed chunks. Finish the
       call with ``exc.call.resume()``.
     - Cross-chunk de-duplication keys on the feature ``id``; features
       with no ``id`` can't be deduped, so overlapping filter clauses split
@@ -160,12 +159,12 @@ def parallel_chunks(n: int) -> Iterator[None]:
     ChunkPlan._refine : the planning-side effect of ``n``.
     """
     # Validate at ``with`` entry, before any request, through the setting's
-    # own parser -- one grammar, ADR 0009. The source label makes the message
+    # own parser (one grammar, ADR 0009). The source label makes the message
     # name ``parallel_chunks(n)`` rather than the ``Configuration`` built
     # below.
     _configuration._validated_raw("parallel_chunks", n, "parallel_chunks(n)")
-    # Reuses the one package-wide ``Configuration`` ContextVar rather than
-    # opening a second scope of its own (ADR 0009).
+    # Reuses the package-wide ``Configuration`` ContextVar and opens no scope
+    # of its own (ADR 0009).
     with _configuration.configure(_configuration.Configuration(parallel_chunks=n)):
         yield
 
@@ -212,8 +211,8 @@ def multi_value_chunked(
     Unchunkable
         If no plan can fit ``url_limit``.
     ChunkInterrupted
-        On a mid-execution transient — 429, 5xx, or a bare transport
-        error: :class:`QuotaExhausted` for 429, :class:`ServiceInterrupted`
+        On a mid-execution transient (429, 5xx, or a bare transport
+        error): :class:`QuotaExhausted` for 429, :class:`ServiceInterrupted`
         for the rest. See :class:`ChunkedCall` for the resume semantics.
 
     See Also
@@ -236,8 +235,7 @@ def multi_value_chunked(
             # chain (1 = off unless a ``parallel_chunks``/``configure`` block or
             # the config file set it higher; otherwise the requested total chunk
             # cap). It affects only planning, done here before execution, so a later
-            # resume — which re-issues the already-planned chunks — reuses this
-            # plan rather than resolving again.
+            # resume, which re-issues the already-planned chunks, reuses this plan.
             plan = ChunkPlan(
                 args,
                 build_request,
@@ -247,7 +245,7 @@ def multi_value_chunked(
             retry_policy = RetryPolicy.from_configuration(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the
             # configuration chain; ``1`` is a sequential gather,
-            # ``total <= 1`` a one-element gather — no special branch.
+            # ``total <= 1`` a one-element gather, with no special branch.
             return ChunkedCall(
                 plan,
                 fetch,

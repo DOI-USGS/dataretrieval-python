@@ -1,10 +1,10 @@
 """The HTTP query path behind the single-shot service adapters.
 
-"Compose a USGS query URL, send it, map the status, retry a transient" -- the
+"Compose a USGS query URL, send it, map the status, retry a transient": the
 half of the old ``utils`` module that issues requests, as used by ``wqp``,
 ``nldi``, ``streamstats`` and ``nwdc``. Its other half (pandas
 column reshaping) shared nothing with this but a filename: no caller used both,
-and the two have disjoint dependencies -- this one needs ``exceptions`` and
+and the two have disjoint dependencies: this one needs ``exceptions`` and
 ``transport``, that one needs ``codes`` and pandas.
 
 The module is private because the *names* are not: ``query`` and ``to_str`` keep
@@ -93,8 +93,8 @@ def _raise_for_status(
     (and ``streamstats`` / ``nwdc``). Delegates the status-to-type mapping to
     :func:`dataretrieval.exceptions.error_for_status`, except a too-long-URL
     status (413 / 414): that gets the same actionable "split your query"
-    remediation as the client-side over-long-URL case below, rather than a bare
-    ``HTTP 414`` (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).
+    remediation as the client-side over-long-URL case below
+    (both still raise :class:`~dataretrieval.exceptions.URLTooLong`).
 
     ``detail_from``, when given, is called *only on an error response* to read an
     API-specific detail string (e.g. a JSON error envelope's message) from the body; a
@@ -127,8 +127,8 @@ def _single_request_policy(adapter: str | None = None) -> RetryPolicy:
     transient upstream failure that a later attempt may not see.
 
     ``adapter`` names which settings table supplies ``retries`` and
-    ``stall_timeout`` -- these three services share a retry *shape* but not
-    a settings scope.
+    ``stall_timeout``, because these three services share a retry *shape* and
+    each has its own settings scope.
     """
     return RetryPolicy.from_configuration(
         retryable_statuses=_GATEWAY_STATUSES, adapter=adapter

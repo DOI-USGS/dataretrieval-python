@@ -27,7 +27,7 @@ details, not a second public API contract.
 
 Ambient per-call policy (the progress reporter) must propagate into the worker
 context. A resumable OGC call binds the state needed to rebuild its remaining
-requests -- base URL, dialect, row cap -- into its fetch closures, so a resume
+requests (base URL, dialect, row cap) into its fetch closures, so a resume
 invoked after the original getter has returned rebuilds against the values the
 call was created with.
 

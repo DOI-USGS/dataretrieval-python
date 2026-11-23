@@ -7,7 +7,7 @@ whose URL byte length is a deterministic function of its inputs:
 - every multi-value list contributes ``len(",".join(map(str, v)))``,
 - the ``filter`` kwarg contributes ``len(filter)``.
 
-That isolates planner behaviour from the real HTTP request builder.
+That isolates planner behavior from the real HTTP request builder.
 The one exception is
 ``test_joint_planner_url_construction_long_filter_and_long_sites``,
 which uses the real ``_construct_api_requests`` so URL-encoding
@@ -87,14 +87,14 @@ from dataretrieval.utils import HTTPX_DEFAULTS
 from dataretrieval.waterdata.utils import OGC_API_URL
 
 # The joint-planner stress test uses the real request builder; bind the
-# target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
+# target API the way ``get_ogc_data`` does, explicitly via ``partial``.
 _construct_api_requests = functools.partial(
     _construct_api_requests_explicit, base_url=OGC_API_URL
 )
 
 
 def _aiozero(_d):
-    """An async no-op sleep — monkeypatched over ``asyncio.sleep`` (via
+    """An async no-op sleep, monkeypatched over ``asyncio.sleep`` (via
     the chunking module's binding) so retry backoff doesn't wait in tests."""
 
     async def _noop():
@@ -105,7 +105,7 @@ def _aiozero(_d):
 
 def _recording_sleep(slept):
     """An ``_aiozero`` variant that appends each requested delay to ``slept``
-    before resolving — for tests that need to assert what would have been waited."""
+    before resolving, for tests that need to assert what would have been waited."""
 
     def _record(delay):
         slept.append(delay)
@@ -151,7 +151,7 @@ def _fake_build(*, base=200, **kwargs):
 def test_never_chunk_covers_all_date_range_params():
     """``_NEVER_CHUNK`` and ``_DATE_RANGE_PARAMS`` are maintained in
     separate modules (chunker vs request builder) for layering reasons,
-    but every date-range param MUST be excluded from chunking — a
+    but every date-range param MUST be excluded from chunking because a
     range value isn't an enumerable set to split. Guard against drift:
     adding a new param to ``_DATE_RANGE_PARAMS`` without also adding
     it to ``_NEVER_CHUNK`` would let the chunker try to
@@ -184,7 +184,7 @@ def test_extract_axes_picks_up_list_dims_and_filter():
 
 def test_extract_axes_skips_singletons_and_never_chunk_params():
     """Length-1 lists and ``_NEVER_CHUNK`` params (``bbox``, ``limit``,
-    date intervals, ...) produce no axes — there's nothing to split."""
+    date intervals, ...) produce no axes because there is nothing to split."""
     args = {
         "monitoring_location_id": ["USGS-A"],  # length 1
         "bbox": [-95, 40, -90, 45],
@@ -206,7 +206,7 @@ def test_chunk_plan_returns_passthrough_when_no_chunkable_axes():
 def test_chunk_plan_raises_when_unchunkable_request_exceeds_limit():
     """A request with nothing to chunk that still exceeds the byte limit (e.g.
     a single large CQL ``IN`` clause with no top-level ``OR``) raises
-    Unchunkable instead of being sent for the server to reject with an
+    Unchunkable before it is sent; the server would reject it with an
     uninformative HTTP 414."""
     args = {"monitoring_location_id": "scalar-only"}
     with pytest.raises(Unchunkable):
@@ -215,8 +215,8 @@ def test_chunk_plan_raises_when_unchunkable_request_exceeds_limit():
 
 def test_chunk_plan_passes_through_unchunkable_cql_json_over_limit():
     """A cql-json filter is outside the chunker's domain (it splits only
-    cql-text), so an over-budget cql-json request is passed through unchanged
-    instead of raising — the server accepts or rejects it, not this package.
+    cql-text), so the chunker passes an over-budget cql-json request through
+    unchanged and does not raise, leaving the server to accept or reject it.
     Guards against the chunker overriding the deliberate cql-json passthrough.
     """
     args = {"filter": "a OR b OR c", "filter_lang": "cql-json"}
@@ -226,7 +226,7 @@ def test_chunk_plan_passes_through_unchunkable_cql_json_over_limit():
 
 
 def test_chunk_plan_greedy_halving_targets_largest_axis_chunk():
-    """The biggest chunk across all axes halves first — when one list
+    """The biggest chunk across all axes halves first. When one list
     axis dominates URL bytes, only it gets split until it stops being
     the largest."""
     args = {
@@ -285,7 +285,7 @@ def test_chunk_plan_minimizes_total_chunks():
 def test_chunk_plan_raises_when_smallest_plan_doesnt_fit():
     """If even the smallest joint plan (singleton lists +
     singleton filter clauses) still exceeds the limit, raise
-    Unchunkable — there's nothing left to shrink."""
+    Unchunkable, because there is nothing left to shrink."""
     args = {
         "monitoring_location_id": ["A" * 10, "B" * 10],
         "filter": "x='12345' OR x='67890'",  # min clause is 9 chars
@@ -348,7 +348,7 @@ def test_multi_value_chunked_emits_3d_cartesian_product():
         }
     )
 
-    # Three independent axes — every (site_chunk, pcode_chunk, stat_chunk)
+    # Three independent axes, so every (site_chunk, pcode_chunk, stat_chunk)
     # triple must appear exactly once. Confirm:
     sites_seen = {c[0] for c in calls}
     pcodes_seen = {c[1] for c in calls}
@@ -398,8 +398,7 @@ def test_multi_value_chunked_lazy_url_limit(monkeypatch):
 def test_chunked_session_shared_across_chunks():
     """Every chunk of one chunked call uses the same ``httpx.AsyncClient`` on the
     ``_chunked_client`` ContextVar, so downstream paginated helpers (``_walk_pages``)
-    can reuse the
-    connection pool instead of opening a new connection on each chunk."""
+    can reuse the connection pool."""
     sessions_seen = []
 
     @multi_value_chunked(build_request=_fake_build, url_limit=240)
@@ -409,15 +408,15 @@ def test_chunked_session_shared_across_chunks():
             elapsed=datetime.timedelta(seconds=0.1), headers={}
         )
 
-    # Outside a chunked call: no session set (in this thread/context).
+    # Outside a chunked call: no client set (in this thread/context).
     assert _chunked_client.get() is None
 
     fetch({"sites": ["S1" * 10, "S2" * 10, "S3" * 10, "S4" * 10]})
 
-    # Plan must fan out — otherwise the test isn't exercising
-    # the shared-session path.
+    # Plan must fan out; otherwise the test isn't exercising
+    # the shared-client path.
     assert len(sessions_seen) > 1
-    # Every chunk received a Session, not None.
+    # Every chunk received a client.
     assert all(s is not None for s in sessions_seen)
     # And it was the same object every time.
     assert len({id(s) for s in sessions_seen}) == 1
@@ -427,9 +426,9 @@ def test_chunked_session_shared_across_chunks():
 
 
 def test_chunked_session_isolated_per_resume():
-    """A follow-up ``resume`` after an interruption opens a new session — the previous
-    one was closed when its ``resume`` returned. The ContextVar is reset between runs so
-    a closed session cannot be carried into the retry."""
+    """A follow-up ``resume`` after an interruption opens a new client because the
+    previous one was closed when its ``resume`` returned. The ContextVar is reset
+    between runs so the retry cannot reuse a closed client."""
     state = {"i": 0, "blow_up": True}
     sessions_seen = []
 
@@ -586,13 +585,13 @@ def test_quota_exhausted_resume_picks_up_where_429_stopped():
 
 def test_quota_exhausted_resume_can_reraise_on_persistent_429():
     """If the quota window has not reset when the caller resumes,
-    ``call.resume()`` raises ``QuotaExhausted`` again — the
-    ``ChunkedCall``'s in-flight state is kept, so a
-    subsequent resume after a longer wait still resumes from the pending chunk."""
+    ``call.resume()`` raises ``QuotaExhausted`` again. The ``ChunkedCall``
+    keeps its in-flight state, so a subsequent resume after a longer wait
+    still resumes from the pending chunk."""
     # Key the failure on the chunk's CONTENT (one persistently-429ing
     # site) rather than a global call counter: under the async fan-out
     # every other chunk completes, and the same still-pending
-    # chunk re-fails on resume — so the completed count is stable.
+    # chunk re-fails on resume, so the completed count is stable.
     failing_site = "S3" * 10
 
     async def fetch(args):
@@ -611,7 +610,7 @@ def test_quota_exhausted_resume_can_reraise_on_persistent_429():
     with pytest.raises(QuotaExhausted) as second:
         first.value.call.resume()
 
-    # Both exceptions report the same completed_chunks count — every
+    # Both exceptions report the same completed_chunks count because every
     # chunk but the persistently-429ing one completed on the first
     # gather, and the resume re-issued only that one, which 429'd again.
     assert first.value.completed_chunks == 4
@@ -620,15 +619,15 @@ def test_quota_exhausted_resume_can_reraise_on_persistent_429():
 
 def test_resume_produces_dataset_identical_to_uninterrupted_run():
     """End-to-end resume equivalence: the same chunked query run twice
-    — once straight through, once with a 429 partway through +
-    ``call.resume()`` — must yield byte-identical combined frames.
+    (once straight through, once with a 429 partway through +
+    ``call.resume()``) must yield byte-identical combined frames.
     Guards against off-by-one errors in the resume cursor (re-fetching
     the chunk that 429'd, or skipping past it) and any ordering drift
     ``_combine_chunk_frames`` might introduce when its input list is
     built incrementally."""
 
     def make_fetch(rate_limit_at_call: int | None):
-        """Build a fresh fetch_once whose Nth call raises ``RateLimited``
+        """Build a new fetch_once whose Nth call raises ``RateLimited``
         (once) and whose every other call returns a deterministic frame
         keyed by the sub-args's sites."""
         state = {"calls": 0, "tripped": False}
@@ -667,7 +666,7 @@ def test_resume_produces_dataset_identical_to_uninterrupted_run():
     decorated_b = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch_b)
     with pytest.raises(QuotaExhausted) as excinfo:
         decorated_b({"sites": sites})
-    # The 429 must occur partway through — otherwise the test is not exercising the
+    # The 429 must occur partway through; otherwise the test does not exercise the
     # resume path.
     assert 0 < excinfo.value.completed_chunks < excinfo.value.total_chunks
     df_b, _ = excinfo.value.call.resume()
@@ -689,9 +688,9 @@ def test_resume_produces_dataset_identical_to_uninterrupted_run():
 def test_resume_rebuilds_chunks_from_creation_time_bindings():
     """Regression: everything a chunk rebuild needs (base URL, dialect,
     row cap in production) is bound into the ``fetch``/``build_request``
-    closures when the call is created — ``get_ogc_data`` binds them with
+    closures when the call is created. ``get_ogc_data`` binds them with
     ``functools.partial``. A ``call.resume()`` invoked AFTER the originating
-    call returned — the documented recovery for a 429 partway through — re-issues
+    call returned (the documented recovery for a 429 partway through) re-issues
     the pending chunks through those same bound callables, so every rebuilt
     chunk observes the creation-time values. A reintroduced ambient read in
     the fetch path would break this without any executor-side snapshot to
@@ -701,7 +700,7 @@ def test_resume_rebuilds_chunks_from_creation_time_bindings():
 
     async def fetch(args, *, base):
         state["calls"] += 1
-        # The value visible at (re)build time — what build_request receives
+        # The value visible at (re)build time, which build_request receives
         # from its ``functools.partial`` binding in production.
         observed.append(base)
         if state["calls"] == 3 and not state["tripped"]:
@@ -723,7 +722,7 @@ def test_resume_rebuilds_chunks_from_creation_time_bindings():
     assert 0 < excinfo.value.completed_chunks < excinfo.value.total_chunks
 
     # Resume outside the originating call. Every rebuilt chunk must be
-    # fetched through the closure created at call time, still holding the bound base.
+    # fetched through the closure created at call time, which still has the bound base.
     observed.clear()
     df, _ = excinfo.value.call.resume()
     assert observed, "resume issued no chunks"
@@ -735,9 +734,9 @@ def test_resume_reads_concurrency_from_the_caller_not_the_snapshot(monkeypatch):
     """A ``configure()`` block around a ``resume()`` must take effect.
 
     The concurrency cap is the one setting a caller adjusts *when*
-    retrying -- the documented recovery from ``QuotaExhausted`` is to wait and
-    re-issue at lower concurrency -- so ``resume()`` resolves it per run rather than
-    holding a value fixed when the call was constructed. A ``configure()``
+    retrying (the documented recovery from ``QuotaExhausted`` is to wait and
+    re-issue at lower concurrency), so ``resume()`` resolves it per run rather than
+    fixing the value when the call was constructed. A ``configure()``
     block entered between the interruption and the resume therefore takes precedence.
     """
     state = {"calls": 0}
@@ -754,7 +753,7 @@ def test_resume_reads_concurrency_from_the_caller_not_the_snapshot(monkeypatch):
     with pytest.raises(QuotaExhausted) as excinfo:
         decorated({"sites": sites})
 
-    # Spy on the real, decorator-built ChunkedCall rather than a hand-made one.
+    # Spy on the real, decorator-built ChunkedCall.
     seen: list[int | None] = []
     original_run = _chunking.ChunkedCall._run
 
@@ -843,17 +842,17 @@ def test_chunk_interrupted_base_class_catches_both():
 
 
 def test_chunk_interrupted_pickles_as_degraded_across_process_boundary():
-    """A real ChunkInterrupted holds a live ChunkedCall whose ``fetch`` is not
+    """A real ChunkInterrupted has a live ChunkedCall whose ``fetch`` is not
     stdlib-picklable, so a worker raising it inside a multiprocessing /
     ProcessPoolExecutor pool could not return it. ``__getstate__`` drops
-    ``.call`` and pickles the documented degraded ``call=None`` state -- counts
+    ``.call`` and pickles the documented degraded ``call=None`` state: counts
     and retry-after value preserved, ``.resume()`` gone (un-resumable cross-process)."""
     import pickle
 
     plan = ChunkPlan(
         {"monitoring_location_id": ["A", "B", "C"]}, _fake_build, url_limit=8000
     )
-    # A local function isn't picklable by reference -- matches production, where
+    # A local function isn't picklable by reference, as in production, where
     # ChunkedCall.fetch is the undecorated _fetch_once shadowed by its wrapper.
     call = ChunkedCall(plan, lambda args: (pd.DataFrame(), None))
     exc = call.wrap_failure(RateLimited("429: too many requests", retry_after=12.0))
@@ -939,7 +938,7 @@ def test_connection_error_wrapped_as_service_interrupted():
 
 
 def test_invalid_url_wrapped_as_service_interrupted():
-    """``httpx.InvalidURL`` inherits from ``Exception``, NOT from
+    """``httpx.InvalidURL`` does not inherit from
     ``httpx.HTTPError``. Without the widened catch in ``_issue`` /
     ``_classify_chunk_error`` an oversize follow-up URL propagates as
     raw ``InvalidURL`` and the user loses ``.call.resume()`` access
@@ -1009,7 +1008,7 @@ def test_service_interrupted_exposes_partial_frame_and_response():
 def test_partial_frame_snapshot_stable_across_resume():
     """``exc.partial_frame`` / ``exc.partial_response`` snapshot the state at raise
     time. Calling ``exc.call.resume()`` advances the underlying ``ChunkedCall`` but must
-    NOT mutate the snapshot on the exception — otherwise a diagnostic that reads
+    NOT mutate the snapshot on the exception; otherwise a diagnostic that reads
     ``exc.partial_frame`` after a resume sees post-resume state under a name that
     denotes pre-resume state."""
     state = {"i": 0, "blow_up": True}
@@ -1063,7 +1062,7 @@ def test_partial_frame_snapshot_is_a_copy_when_single_chunk():
 
     # 2 sites at url_limit=240 → 2 singleton chunks. The 429 occurs
     # on the SECOND chunk and the gather completes the other, so the
-    # exception captures exactly ONE completed chunk — the path where
+    # exception captures exactly ONE completed chunk, the path where
     # _combine_chunk_frames aliases its single non-empty frame.
     decorated = multi_value_chunked(build_request=_fake_build, url_limit=240)(fetch)
     with pytest.raises(QuotaExhausted) as excinfo:
@@ -1072,7 +1071,7 @@ def test_partial_frame_snapshot_is_a_copy_when_single_chunk():
     assert err.completed_chunks == 1
 
     snapshot_cols = list(err.partial_frame.columns)
-    # Mutate the underlying chunk in place — the snapshot must NOT
+    # Mutate the underlying chunk in place; the snapshot must NOT
     # reflect the mutation.
     err.call._chunks[0][0]["extra"] = 0
     assert list(err.partial_frame.columns) == snapshot_cols
@@ -1080,9 +1079,9 @@ def test_partial_frame_snapshot_is_a_copy_when_single_chunk():
 
 
 def test_combine_chunk_responses_returns_independent_headers():
-    """The aggregated response's ``.headers`` must be a new ``httpx.Headers`` —
-    mutations by downstream callers (logging hooks, metadata extensions) must not
-    back-propagate into the underlying chunk response's headers, which still live on
+    """The aggregated response's ``.headers`` must be a new ``httpx.Headers``, so
+    mutations by downstream callers (logging hooks, metadata extensions) cannot
+    back-propagate into the underlying chunk response's headers, which remain in
     ``ChunkedCall._chunks``."""
     r0 = mock.Mock(
         elapsed=datetime.timedelta(seconds=0.1), headers={"X-Foo": "0"}, url="u0"
@@ -1102,9 +1101,9 @@ def test_combine_chunk_responses_returns_independent_headers():
 
 
 def test_combine_chunk_responses_surfaces_lowest_remaining():
-    """``x-ratelimit-remaining`` reports the LOWEST any chunk received — the
-    quota left after the fan-out — not the last-by-index, which under
-    concurrency need not be the response the server processed last."""
+    """``x-ratelimit-remaining`` reports the LOWEST any chunk received (the
+    quota left after the fan-out). Under concurrency the last-by-index
+    response need not be the one the server processed last."""
     r0 = mock.Mock(
         elapsed=datetime.timedelta(seconds=0.1),
         headers={"x-ratelimit-remaining": "5"},  # lowest, but first by index
@@ -1126,7 +1125,7 @@ def test_paginate_terminates_on_empty_string_cursor():
     cursor (a real-but-unusual end-of-stream sentinel some pagination
     APIs use) does not cause an infinite ``follow_up('')`` loop."""
     # Synthesize an OGC response with numberReturned > 0 and a "next"
-    # link whose href is an empty string — simulating a server-side
+    # link whose href is an empty string, simulating a server-side
     # sentinel that ``_next_req_url`` reads as ``""``.
     body_with_empty_next = {
         "numberReturned": 1,
@@ -1159,8 +1158,8 @@ def test_paginate_terminates_on_empty_string_cursor():
 
 def test_combine_chunk_frames_does_not_collapse_none_ids():
     """``drop_duplicates(subset='id')`` treats NaN==NaN as duplicate,
-    so a blanket dedup would collapse every id-less row into one —
-    undetected data loss. The function must dedupe only the id-bearing
+    so a blanket dedup would collapse every id-less row into one and lose
+    those rows without an error. The function must dedupe only the id-bearing
     rows and preserve id-less rows verbatim."""
     # Frame A has real ids; frame B has feature-IDs of None for two
     # different rows that must both be kept.
@@ -1198,10 +1197,10 @@ def test_list_axis_chunks_dedupe_repeated_feature_ids():
 
 
 def test_retry_after_surfaces_on_quota_exhausted():
-    """If the 429 response includes a ``Retry-After`` header, that
-    delay must be carried from the typed transport exception
-    (``RateLimited.retry_after``) onto ``QuotaExhausted`` so callers
-    can apply the server's value instead of guessing a wait."""
+    """If the 429 response includes a ``Retry-After`` header,
+    ``QuotaExhausted`` must copy that delay from the typed transport
+    exception (``RateLimited.retry_after``) so callers can apply the
+    server's value."""
     state = {"i": 0}
 
     async def fetch(args):
@@ -1224,7 +1223,7 @@ def test_retry_after_surfaces_on_quota_exhausted():
 
 def test_quota_exhausted_message_points_at_resume():
     """The error message must include the chunk offset and the resume
-    call — ``partial_frame`` is easy to misuse without it."""
+    call, because ``partial_frame`` is easy to misuse without it."""
     e = QuotaExhausted(
         completed_chunks=7,
         total_chunks=20,
@@ -1239,7 +1238,7 @@ def test_request_bytes_sums_url_and_content():
     """``_request_bytes`` returns ``len(str(url)) + len(content)``.
 
     ``httpx.Request`` always has ``.content`` as ``bytes`` (the
-    constructor normalises ``data``/``json``/``content`` inputs), so
+    constructor normalizes ``data``/``json``/``content`` inputs), so
     the chunker needs only to size that single attribute alongside
     the URL.
     """
@@ -1254,9 +1253,9 @@ def test_request_bytes_sums_url_and_content():
 
 def test_safe_request_bytes_treats_invalid_url_as_overflow():
     """``httpx.URL`` enforces a 64 KB cap per URL component and raises
-    ``httpx.InvalidURL`` for anything bigger — e.g. comma-joining all
+    ``httpx.InvalidURL`` for anything bigger, e.g. comma-joining all
     California stream sites in one query. The planner's halving loop
-    must keep shrinking past that cap rather than raising; the
+    must keep shrinking past that cap; the
     contract is that ``_safe_request_bytes`` returns ``url_limit + 1``
     (a value strictly greater than the limit) when ``build_request``
     raises ``InvalidURL``."""
@@ -1327,7 +1326,7 @@ def test_multi_value_chunked_restores_canonical_url():
 def test_extract_axes_skips_filter_passed_as_list():
     """Guard: ``filter`` is documented as a string. If a caller
     mistakenly passes it as a list, ``_extract_axes`` must NOT create a
-    comma-joined list axis for it — comma-joining CQL clauses inside
+    comma-joined list axis for it, because comma-joining CQL clauses inside
     the URL would produce a malformed filter expression. The filter
     axis is built only via top-level-OR splitting of the string form."""
     args = {
@@ -1403,7 +1402,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
     )
 
     # Each axis's chunks must union back to its original atoms exactly
-    # once — no clause or site dropped, no duplicates introduced.
+    # once, with no clause or site dropped and no duplicate introduced.
     for axis in plan.axes:
         seen = [a for chunk in plan.chunks[axis.arg_key] for a in chunk]
         assert sorted(seen) == sorted(axis.atoms), (
@@ -1411,7 +1410,7 @@ def test_joint_planner_url_construction_long_filter_and_long_sites():
         )
 
     # Plan must stay under the all-singleton worst case (singleton sites
-    # × all filter clauses singleton = 500 * 20 = 10,000) — uniform
+    # × all filter clauses singleton = 500 * 20 = 10,000); uniform
     # greedy halving of these inputs cuts that by at least 20×.
     assert plan.total < 500, f"joint plan emitted {plan.total} chunks (expected <500)"
 
@@ -1432,7 +1431,7 @@ def test_combine_chunk_frames_all_empty_preserves_geo_type():
 
 def test_combine_chunk_frames_single_frame_is_safe_to_mutate():
     """``_combine_chunk_frames`` returns a frame independent of its
-    input on the single-chunk fast path — a caller mutating
+    input on the single-chunk fast path. A caller mutating
     ``call.partial_frame`` (a live view) must not back-propagate into
     the underlying ``_chunks[0][0]`` frame."""
     chunk = pd.DataFrame({"id": ["A", "B"], "value": [1, 2]})
@@ -1459,7 +1458,7 @@ def test_iter_chunk_args_passthrough_yields_a_copy():
 # Every chunk is gathered over one ``httpx.AsyncClient`` and
 # concurrency is bounded by an ``asyncio.Semaphore`` sized from the effective
 # configuration (the client's connection pool is sized to
-# match, but the semaphore is the throttle — see ``ChunkedCall._run``).
+# match, but the semaphore is the throttle; see ``ChunkedCall._run``).
 # The conftest's ``_pin_chunker_env`` autouse pins
 # ``API_USGS_CONCURRENT=1`` (sequential dispatch) for the whole suite;
 # each test below raises it so the gather can dispatch chunks
@@ -1477,7 +1476,7 @@ def _async_chunked_fetch(monkeypatch, fetch_async, *, max_concurrent=16):
 
 
 def _atom_id(args):
-    """Build a deterministic id for a sub-args dict — used as the dedup key."""
+    """Build a deterministic id for a sub-args dict, used as the dedup key."""
     return ",".join(args["sites"]) if isinstance(args["sites"], list) else args["sites"]
 
 
@@ -1530,10 +1529,10 @@ def test_async_fan_out_aggregates_headers_from_latest_completion(monkeypatch):
 
 def test_async_fan_out_failure_yields_resumable_call(monkeypatch):
     """A transient 5xx mid-fan-out raises ``ServiceInterrupted`` whose
-    ``.call`` is a ``ChunkedCall`` holding the completed chunks
+    ``.call`` is a ``ChunkedCall`` that keeps the completed chunks
     in a sparse index map. ``exc.call.resume()`` re-issues only the
-    unfinished chunks — through the same async fetcher and the same
-    async runner, only on a new gather."""
+    unfinished chunks, through the same async fetcher and the same
+    async runner, on a new gather."""
     # One async fetcher serves both first-run and resume. On the first
     # gather it lets exactly one chunk succeed and fails the rest
     # transiently; once ``blow_up`` is cleared the resume gather completes
@@ -1578,10 +1577,9 @@ def test_async_fan_out_failure_yields_resumable_call(monkeypatch):
 
 def test_async_fan_out_resume_applies_finalize(monkeypatch):
     """The ``finalize`` injected for a wide-pool call is kept across the interruption
-    (held on the ``ChunkedCall`` through the anyio portal), so ``exc.call.resume()``
-    still returns the finalized shape — guarding the run -> resume -> finalize path.
-    Partials stay raw (no finalize in
-    the exception ctor)."""
+    (stored on the ``ChunkedCall`` through the anyio portal), so ``exc.call.resume()``
+    still returns the finalized shape. This guards the run -> resume -> finalize path.
+    Partials stay raw (no finalize in the exception ctor)."""
 
     def finalize(frame, response):
         return frame.assign(finalized=True), ("MD", response)
@@ -1604,9 +1602,9 @@ def test_async_fan_out_resume_applies_finalize(monkeypatch):
     with pytest.raises(ServiceInterrupted) as exc_info:
         fetch({"sites": sites}, finalize=finalize)
 
-    # Partial snapshot stays raw — building the exception must not finalize.
+    # Partial snapshot stays raw because building the exception must not finalize.
     assert "finalized" not in exc_info.value.partial_frame.columns
-    # Resume applies the finalize held on the ChunkedCall.
+    # Resume applies the finalize stored on the ChunkedCall.
     state["blow_up"] = False
     df, md = exc_info.value.call.resume()
     assert "finalized" in df.columns
@@ -1614,9 +1612,9 @@ def test_async_fan_out_resume_applies_finalize(monkeypatch):
 
 
 def test_wide_concurrency_uses_async_fetcher_with_no_warning(monkeypatch):
-    """A wide ``API_USGS_CONCURRENT`` is applied directly by the single
-    async fetcher: every chunk fans out across it and NO
-    ``UserWarning`` is emitted."""
+    """The single async fetcher applies a wide ``API_USGS_CONCURRENT``
+    directly: every chunk fans out across it and NO ``UserWarning`` is
+    emitted."""
     calls = []
     monkeypatch.setenv("API_USGS_CONCURRENT", "16")
 
@@ -1635,7 +1633,7 @@ def test_wide_concurrency_uses_async_fetcher_with_no_warning(monkeypatch):
 
 # Eight 20-char sites against ``url_limit=240`` (base 200): any two atoms
 # joined overflow the 40-byte budget, so the planner produces eight
-# singleton chunks — enough fan-out to observe the concurrency gate.
+# singleton chunks, enough fan-out to observe the concurrency gate.
 _EIGHT_SINGLETON_SITES = [f"S{i}" * 10 for i in range(8)]
 
 
@@ -1665,13 +1663,13 @@ def test_fan_out_in_flight_high_water_mark_is_the_cap(
     monkeypatch, cap, expected_high_water
 ):
     """The fetch-level high-water mark of simultaneous chunks IS the
-    ``API_USGS_CONCURRENT`` cap — parallelism up to it, never past
-    it — and ``unbounded`` means every chunk at once.
+    ``API_USGS_CONCURRENT`` cap (parallelism up to it, never past
+    it), and ``unbounded`` means every chunk at once.
 
     Regression: the cap used to be enforced only by the shared client's
     connection-pool size, so chunks beyond it queued on connection
     *acquisition*, subject to the client's pool-acquire timeout (see
-    ``ChunkedCall._run``). The semaphore holds excess chunks back before
+    ``ChunkedCall._run``). The semaphore makes excess chunks wait before
     they reach the pool.
     """
     in_flight = {"now": 0, "max": 0}
@@ -1707,7 +1705,7 @@ def test_fan_out_outlives_pool_timeout_on_real_transport(monkeypatch):
     scale, a batch of large, slowly-streaming pages).
 
     Chunks here send real HTTP to a slow localhost server through the chunker's shared
-    client — fakes can't catch this, since ``MockTransport`` bypasses the connection
+    client; fakes can't catch this, since ``MockTransport`` bypasses the connection
     pool. With the pool as the only throttle, 2 connections busy for 0.35 s each and the
     0.2 s pool timeout pinned below, the 2 queued chunks waited the full timeout with no
     completion to reset their timers → ``httpx.PoolTimeout`` → (retries exhausted,
@@ -1789,18 +1787,18 @@ def test_async_fan_out_cancellation_wins_over_transient_sibling(monkeypatch):
     propagate unmodified, even when a sibling raises a recognized
     transient (which would otherwise wrap as a resumable
     :class:`ChunkInterrupted`). Cancellation is asyncio's abort
-    signal — letting a transient-classification path consume it
+    signal; letting a transient-classification path consume it
     would suppress the user's stop request.
 
     ``fetch_async`` has no ``await`` in its body, so the gather schedules
     the tasks in submission order and each runs synchronously to its
-    raise — making ``call_count`` deterministic: 1 = first chunk
+    raise, making ``call_count`` deterministic: 1 = first chunk
     (success), 2 = second chunk (transient), 3 = third chunk (cancel).
 
     Through the sync→async blocking portal an in-flight cancellation reaches the caller
     as ``concurrent.futures.CancelledError`` (the thread-boundary cancellation type)
-    rather than ``asyncio.CancelledError`` — either way it propagates unmodified rather
-    than being suppressed and wrapped as a resumable ``ChunkInterrupted``.
+    rather than ``asyncio.CancelledError``. Either type propagates unmodified; it is
+    not suppressed and wrapped as a resumable ``ChunkInterrupted``.
     """
     call_count = {"async": 0}
 
@@ -1830,9 +1828,9 @@ def test_combine_chunk_responses_does_not_mutate_input_urls():
 
     ``_combine_chunk_responses`` shallow-copies the first response; if the canonical-URL
     override is applied by mutating the bound ``request.url``, the shallow alias
-    back-propagates the URL change into the underlying chunk-0 response — breaking the
-    documented 'input responses are not mutated' invariant. The fix is to swap in a new
-    ``httpx.Request`` rather than mutate the existing one.
+    back-propagates the URL change into the underlying chunk-0 response, breaking the
+    documented 'input responses are not mutated' invariant. The fix swaps in a new
+    ``httpx.Request``.
     """
     req1 = httpx.Request("GET", "https://example.com/chunk0")
     req2 = httpx.Request("GET", "https://example.com/chunk1")
@@ -1858,8 +1856,8 @@ def test_combine_chunk_responses_does_not_mutate_input_urls():
 
 
 def _wrap_cause(transport_exc):
-    """Wrap ``transport_exc`` the way ``_walk_pages`` does — a base
-    ``DataRetrievalError`` with the typed transport error on ``__cause__`` — so
+    """Wrap ``transport_exc`` the way ``_walk_pages`` does (a base
+    ``DataRetrievalError`` with the typed transport error on ``__cause__``) so
     chain-walking is exercised realistically."""
     try:
         raise DataRetrievalError("Paginated request failed") from transport_exc
@@ -1939,8 +1937,8 @@ def test_retryable_taxonomy():
     assert _retryable(httpx.ConnectError("down")) == (True, None)
     # InvalidURL is resumable but NOT retryable (a too-long cursor won't fix).
     assert _retryable(httpx.InvalidURL("too long")) == (False, None)
-    # A fatal HTTP error (a plain HTTPError, not a TransientError) is never
-    # retried; nor is a bare RuntimeError.
+    # A fatal HTTP error (a plain HTTPError) is never retried; nor is a bare
+    # RuntimeError.
     assert _retryable(HTTPError("400", status_code=400)) == (False, None)
     assert _retryable(HTTPError("403", status_code=403)) == (False, None)
     assert _retryable(RuntimeError("400")) == (False, None)
@@ -1949,7 +1947,7 @@ def test_retryable_taxonomy():
 def test_retryable_skips_wrapped_midpagination_transient():
     # A transient raised mid-pagination is re-wrapped as DataRetrievalError by
     # _paginate; it must NOT be auto-retried (re-walking from page 1
-    # would re-spend quota) — it escalates to the resumable handle instead.
+    # would re-spend quota); it escalates to the resumable handle instead.
     # Only the raw, top-level (initial-request) transient is retryable.
     assert _retryable(_wrap_cause(RateLimited("429", retry_after=3.0))) == (False, None)
     assert _retryable(RateLimited("429", retry_after=3.0)) == (True, 3.0)
@@ -2083,7 +2081,7 @@ def test_future_transient_subclass_remains_resumable(monkeypatch):
 
 def test_chunker_exhausted_retries_still_resumable(monkeypatch):
     """When retries are exhausted the failure is still raised as a
-    resumable ChunkInterrupted — retries do not remove the resume handle."""
+    resumable ChunkInterrupted. Retries do not remove the resume handle."""
     monkeypatch.setenv("API_USGS_RETRIES", "2")
     monkeypatch.setattr(_retry_mod.asyncio, "sleep", _aiozero)
     attempts = {"n": 0}
@@ -2121,15 +2119,15 @@ def test_async_fan_out_retries_transient_then_completes(monkeypatch):
 
 
 def test_async_fan_out_surfaces_fatal_over_transient(monkeypatch):
-    """A non-transient bug in one chunk is raised unwrapped rather than
-    being masked behind a resumable interruption from a transient sibling."""
+    """A non-transient bug in one chunk is raised unwrapped; a transient
+    sibling's resumable interruption does not mask it."""
     monkeypatch.setenv("API_USGS_RETRIES", "2")
 
     monkeypatch.setattr(_retry_mod.asyncio, "sleep", _aiozero)
 
     async def fetch_async(args):
         # One chunk raises a deterministic programmer error; the rest are transient. The
-        # programming error must take precedence over the resumable transient.
+        # programmer error must take precedence over the resumable transient.
         if "S1" * 10 in args["sites"]:
             raise ValueError("deterministic bug")
         raise ServiceUnavailable("503: transient")
@@ -2177,7 +2175,7 @@ def test_transport_context_does_not_mask_fatal_error():
 # terminal resume()/resume_async() returns. The partial_* accessors stay RAW
 # so building/inspecting a ChunkInterrupted never triggers finalize's side
 # effects (for OGC, _deal_with_empty issues a schema network GET on an empty
-# frame — that must NOT run inside the exception constructor).
+# frame; that must NOT run inside the exception constructor).
 
 
 def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
@@ -2210,7 +2208,7 @@ def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
 
     interrupted = exc_info.value
     assert interrupted.completed_chunks >= 1
-    # Building the exception did NOT run finalize — no network/side effects.
+    # Building the exception did NOT run finalize, so no network or side effects.
     assert calls["finalize"] == 0
     # Partial snapshot is the RAW combined frame/response (not finalized).
     assert "finalized" not in interrupted.partial_frame.columns
@@ -2227,12 +2225,12 @@ def test_resume_finalizes_but_partials_stay_raw(monkeypatch):
 # Parallel chunks: the opt-in setting ``parallel_chunks(n)`` to fan a query out
 # MORE finely than the byte limit alone requires (``ChunkPlan._refine`` + the
 # ``parallel_chunks`` context manager). ``_fake_build``'s base is 200 bytes, so
-# a few short atoms are far under ``url_limit=8000`` — the byte pass
+# a few short atoms are far under ``url_limit=8000``, so the byte pass
 # passes it through unchanged, and any splitting below is the ``n`` cap alone.
 # ``ChunkPlan`` takes the integer cap (``max_chunks``) directly;
 # ``parallel_chunks(n)`` sets ``n`` on it. The cap bounds the plan's
-# *total* chunk count (the cartesian product across axes), not each axis
-# independently — see ``test_cap_caps_the_total_across_axes``.
+# *total* chunk count (the cartesian product across axes); see
+# ``test_cap_caps_the_total_across_axes``.
 # ---------------------------------------------------------------------------
 
 
@@ -2251,8 +2249,8 @@ def test_default_preserves_passthrough():
 def test_unit_cap_preserves_passthrough():
     """``max_chunks=1`` means "no extra fan-out", so a fitting multi-value
     request stays the single-chunk passthrough (no axes, ``total == 1``,
-    ``iter_chunk_args`` yields the original args verbatim) — identical to the
-    default (off), not a materialized one-chunk-per-axis plan."""
+    ``iter_chunk_args`` yields the original args verbatim), identical to the
+    default (off)."""
     args = {"monitoring_location_id": ["A", "B", "C", "D"]}
     plan = ChunkPlan(args, _fake_build, url_limit=8000, max_chunks=1)
     assert plan.axes == []
@@ -2279,7 +2277,7 @@ def test_cap_ramps_then_saturates(max_chunks, expected_pieces):
     """A single 10-atom axis that fits the byte limit splits into
     ``min(10, cap)`` pieces: 1 (off), 2, 8, then saturating at 10 (one atom per
     chunk) once the cap exceeds the atom count. Monotonic and bounded, and
-    whenever it splits the partition is a cover — every atom exactly once. (The
+    whenever it splits the partition is a cover: every atom exactly once. (The
     cap-1 passthrough has no axis to cover; see the passthrough test.)"""
     atoms = [f"S{i:02d}" for i in range(10)]
     plan = ChunkPlan(
@@ -2297,8 +2295,8 @@ def test_cap_ramps_then_saturates(max_chunks, expected_pieces):
 
 
 def test_cap_bounds_fan_out_for_a_long_axis():
-    """The cap holds fan-out to ``n``: at ``n=32`` a 100-atom axis fans into
-    ``n`` pieces — NOT 100 singletons — so ``parallel_chunks(32)`` on a huge
+    """The cap limits fan-out to ``n``: at ``n=32`` a 100-atom axis fans into
+    ``n`` pieces, so ``parallel_chunks(32)`` on a huge
     list cannot expand into hundreds of chunks. Every atom is still
     covered exactly once."""
     high = 32
@@ -2315,7 +2313,7 @@ def test_cap_bounds_fan_out_for_a_long_axis():
 
 
 def test_cap_below_byte_split_does_not_reduce_fan_out():
-    """The cap is purely additive — it can only split further, never coarsen.
+    """The cap only splits the byte-driven plan further; it never coarsens it.
     A request the byte budget already fans into K>2 chunks is untouched by a
     cap of 2 (below K), so the byte-driven plan is preserved."""
     # An axis of four 30-char atoms; a limit tight enough that the byte pass
@@ -2354,10 +2352,9 @@ def test_cap_refines_the_filter_axis():
 
 def test_cap_caps_the_total_across_axes():
     """With more than one multi-value axis the cap bounds the *total*
-    chunk count (the cartesian product), not each axis independently —
-    the bound on total chunk count the cap exists for. Two 6-atom axes at a cap
-    of 4 reach at most 4 chunks total, not 4x4=16; growth is distributed
-    round-robin across axes rather than one axis alone reaching the cap."""
+    chunk count (the cartesian product), not each axis independently.
+    Two 6-atom axes at a cap of 4 reach at most 4 chunks total (a per-axis
+    cap would allow 4x4=16); growth is distributed round-robin across axes."""
     args = {
         "monitoring_location_id": [f"L{i}" for i in range(6)],
         "parameter_code": [f"{i:05d}" for i in range(6)],
@@ -2375,15 +2372,15 @@ def test_cap_caps_the_total_across_axes():
 
 def test_cap_bounds_fan_out_across_many_axes():
     """The bound holds regardless of axis count: three multi-value axes at
-    a cap of 30 fan out to *at most* 30 chunks total — never the
-    ``30 ** 3`` a per-axis cap would allow, and never *over* the cap either.
-    30 is deliberately not evenly reachable by these axes: a single split
-    multiplies the plan by more than one, so the ``while total < cap`` loop
-    the first refine used stepped past 30 (to 32). The cap is a hard ceiling —
-    the property neither the single-axis-only cap nor that loop guaranteed."""
+    a cap of 30 fan out to *at most* 30 chunks total (a per-axis cap would
+    allow ``30 ** 3``). 30 is deliberately not evenly reachable by these
+    axes: a single split multiplies the plan by more than one, so the
+    ``while total < cap`` loop the first refine used stepped past 30 (to 32).
+    The cap is a hard ceiling, the property neither the single-axis-only cap
+    nor that loop guaranteed."""
     cap = 30
     # Three chunkable axes (two list axes + the filter OR-axis), each with 10
-    # atoms — under the old per-axis cap this would have been cap**3.
+    # atoms; under the old per-axis cap this would have been cap**3.
     args = {
         "monitoring_location_id": [f"L{i}" for i in range(10)],
         "parameter_code": [f"{i:05d}" for i in range(10)],
@@ -2402,13 +2399,13 @@ def test_cap_bounds_fan_out_across_many_axes():
     ],
 )
 def test_cap_is_a_hard_ceiling_never_overshoots(atoms_per_axis, cap):
-    """The cap is a hard ceiling, not a soft target. With two multi-value axes
-    a single split multiplies the plan by ``(k+1)/k`` for the split axis — adding
-    the product of the *other* axes, not one — so a ``while total < cap`` loop
+    """The cap is a hard ceiling. With two multi-value axes a single split
+    multiplies the plan by ``(k+1)/k`` for the split axis (adding the product
+    of the *other* axes, which can exceed one), so a ``while total < cap`` loop
     steps past the cap. These are the (atoms, cap) combos on which that loop
     exceeded the cap (5->6, 10->12, 7->8). The plan must fan out and cover every
     atom once, but never exceed the cap, ending below it when no whole split
-    reaches it exactly (two even axes reach 4, not 5).
+    reaches it exactly (at a cap of 5, two even axes reach 4).
     """
     args = {
         "monitoring_location_id": [f"L{i:03d}" for i in range(atoms_per_axis)],
@@ -2424,8 +2421,8 @@ def test_cap_is_a_hard_ceiling_never_overshoots(atoms_per_axis, cap):
 
 def test_cap_does_not_mask_unchunkable():
     """A request with nothing to split that still exceeds the byte limit must
-    raise ``Unchunkable`` regardless of the cap — the soft pass has no axis to
-    act on and must not suppress the raise."""
+    raise ``Unchunkable`` regardless of the cap, because the soft pass has no axis
+    to act on and must not suppress the raise."""
     args = {"monitoring_location_id": "one-huge-scalar"}
     with pytest.raises(Unchunkable):
         ChunkPlan(args, _fake_build, url_limit=10, max_chunks=32)
@@ -2433,11 +2430,11 @@ def test_cap_does_not_mask_unchunkable():
 
 def test_parallel_chunks_publishes_n_as_the_effective_setting():
     """The context manager sets ``n`` for the block and restores the previous
-    value on exit — including across nested blocks.
+    value on exit, including across nested blocks.
 
-    ``parallel_chunks(n)`` is sugar for ``configure(parallel_chunks=n)``, so
+    ``parallel_chunks(n)`` is shorthand for ``configure(parallel_chunks=n)``, so
     both forms share one scoping mechanism and the innermost block takes precedence.
-    Outside any block the configured baseline applies, which is ``1`` — off —
+    Outside any block the configured baseline applies, which is ``1`` (off)
     unless a config file set it higher."""
     assert _configuration.parallel_chunks() == 1  # default (off, = no extra fan-out)
     with parallel_chunks(32):
@@ -2458,7 +2455,7 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
     [
         0,  # not positive
         -1,  # negative
-        1.5,  # a float, not an int
+        1.5,  # a float
         "8",  # a string, even a numeric one
         "high",  # the old level names are gone
         None,  # None not accepted
@@ -2467,15 +2464,14 @@ def test_parallel_chunks_publishes_n_as_the_effective_setting():
     ],
 )
 def test_parallel_chunks_rejects_non_positive_int(bad):
-    """``n`` must be a positive integer; every other shape — zero, negative, a
-    float, a string (including a numeric one and the old level names), ``None``,
-    a ``bool``, a list — raises ``ValueError`` at ``with`` entry, before any
-    request, and leaves the ambient untouched.
+    """``n`` must be a positive integer; every other shape raises ``ValueError``
+    at ``with`` entry, before any request, and leaves the ambient untouched.
+    The rejected shapes are zero, negative, a float, a string (including a
+    numeric one and the old level names), ``None``, a ``bool``, and a list.
 
     The message comes from the ``parallel_chunks`` grammar in the configuration
-    chain, which is the one that owns this setting's bound; a
-    ``ConfigurationError`` is a ``ValueError``, which is the contract callers
-    were given here."""
+    chain, which defines this setting's bound; a ``ConfigurationError`` is a
+    ``ValueError``, which is the contract callers were given here."""
     with pytest.raises(ValueError, match="must be an integer"):
         with parallel_chunks(bad):
             pass
@@ -2485,7 +2481,7 @@ def test_parallel_chunks_rejects_non_positive_int(bad):
 def test_parallel_chunks_drives_end_to_end_fan_out():
     """End-to-end: the same fitting request passes through as a single call by
     default, but fans into ``n`` chunks inside a ``parallel_chunks(n)``
-    block — and the combined result still recovers every atom exactly once."""
+    block, and the combined result still recovers every atom exactly once."""
     sites = [f"S{i:02d}" for i in range(8)]
 
     calls: list[tuple[str, ...]] = []
@@ -2515,7 +2511,7 @@ def test_parallel_chunks_drives_end_to_end_fan_out():
 @pytest.mark.parametrize("n", [1, 2, 3, 8])
 def test_parallel_chunks_supports_arbitrary_n(n):
     """An arbitrary ``n`` (not only 2/8/32) fans an under-limit request into
-    exactly ``n`` chunks, together covering every site once — including
+    exactly ``n`` chunks, together covering every site once, including
     ``n=1``, the explicit no-op that stays a single passthrough call."""
     sites = [f"S{i:02d}" for i in range(8)]
     calls: list[int] = []
@@ -2547,7 +2543,7 @@ class TestSetResponseUrl:
         assert str(response.url) == "https://example.test/combined"
 
     def test_an_existing_request_keeps_its_method_and_headers(self):
-        """A combined POST must not become a GET, and the headers hold the credential
+        """A combined POST must not become a GET, and the headers include the credential
         scoping.
         """
         from dataretrieval.combining import _set_response_url

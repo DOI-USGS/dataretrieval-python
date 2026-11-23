@@ -7,11 +7,11 @@ Estimates are served on a HUC12 (12-digit hydrologic unit) spatial grid and can
 be queried for any county, state, or hydrologic unit. This is the modern
 replacement for the defunct legacy NWIS water-use service.
 
-Unlike the main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
-(:mod:`dataretrieval.ngwmn`), the NWDC is a plain CSV REST service rather than
-an OGC API Features collection. This module supplies the NWDC-specific parts --
-request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
-error envelope -- over the service-neutral transport layer (ADR 0006).
+The main Water Data getters (:mod:`dataretrieval.waterdata`) and NGWMN
+(:mod:`dataretrieval.ngwmn`) are OGC API Features collections; the NWDC is a
+plain CSV REST service. This module supplies the NWDC-specific parts
+(request building, CSV parsing, the ``Link``-header cursor, and the ``{detail}``
+error envelope) over the service-neutral transport layer (ADR 0006).
 
 See https://api.water.usgs.gov/docs/nwaa-data/ for the API reference and
 https://water.usgs.gov/nwaa-data/ for the catalog of available models and
@@ -73,7 +73,7 @@ __all__ = [
 WATERUSE_URL = "https://api.water.usgs.gov/nwaa-data/data"
 _WATERUSE_HOST = httpx.URL(WATERUSE_URL).host
 # Hosts a ``rel="next"`` cursor may name for this same service; each is
-# rewritten to :data:`_WATERUSE_HOST` rather than followed as given.
+# rewritten to :data:`_WATERUSE_HOST` before it is followed.
 _WATERUSE_HOST_ALIASES = frozenset({_WATERUSE_HOST, "water.usgs.gov"})
 
 #: Water-use models (categories) served by the NWDC. The catalog at
@@ -94,8 +94,8 @@ TIME_RESOLUTIONS = ("monthly", "annualcy", "annualwy")
 #: independently, so a rate-limit episode produces this number times the retry
 #: count of requests; the NWDC returns no rate-limit errors at this level (verified by
 #: stress test) and higher has not been tested. Any configured concurrency
-#: overrides it -- see :func:`dataretrieval.configuration.concurrency` for why the
-#: general setting outranks a module's default rather than the reverse.
+#: overrides it; see :func:`dataretrieval.configuration.concurrency` for why the
+#: general setting outranks a module's default.
 DEFAULT_CONCURRENT_REQUESTS = 4
 
 
@@ -123,9 +123,9 @@ def get_wateruse(
     them into one frame.
 
     Each selector also accepts a list of values. The NWDC queries one area per
-    request, so a list is fanned out into one request per value — up to the
+    request, so a list is fanned out into one request per value (up to the
     effective ``concurrency`` setting in parallel, defaulting to
-    :data:`DEFAULT_CONCURRENT_REQUESTS` for this service — and the results are
+    :data:`DEFAULT_CONCURRENT_REQUESTS` for this service), and the results are
     concatenated in the order given. That cap resolves through the
     configuration chain, so it can be raised or lowered for this service alone
     (``configure(NwdcConfiguration(concurrency=2))``, or an ``[nwdc]`` table in
@@ -153,7 +153,7 @@ def get_wateruse(
         (``"Wisconsin"``), a two-letter postal code (``"WI"``), or a two-digit ANSI/FIPS
         code (``"55"`` or ``55``), matching :func:`dataretrieval.ngwmn.get_sites`.
     county : string or iterable, optional
-        One or more five-digit county FIPS codes — state FIPS + county FIPS,
+        One or more five-digit county FIPS codes (state FIPS + county FIPS),
         e.g. ``"55025"`` for Dane County, Wisconsin.
     huc : string or iterable, optional
         One or more hydrologic unit codes. Each code's level is taken from its
@@ -268,8 +268,8 @@ _HUC_LENGTHS = (2, 4, 6, 8, 10, 12)
 # A value may be a single code or a list; ``_as_list`` normalizes both (``state``
 # additionally normalizes to the two-letter postal code, and ``to_state`` may
 # itself return a scalar or list, which ``_as_list`` flattens the same way).
-# Since NWDC takes one location per request, a list value fans out — one request
-# per location (see :func:`_fan_out`).
+# Since NWDC takes one location per request, a list value fans out into one
+# request per location (see :func:`_fan_out`).
 _LOCATION_BUILDERS: dict[str, Callable[[Any], list[str]]] = {
     "state": lambda v: [f"stateCd:{c}" for c in _as_list(to_state(v, to="postal"))],
     "county": lambda v: [f"countyCd:{_validate_county(c)}" for c in _as_list(v)],
@@ -288,7 +288,7 @@ def _resolve_locations(
     single value or a list. ``state`` is normalized to the two-letter postal
     code ``stateCd`` requires; ``county`` is a five-digit FIPS code; and a
     ``huc`` code's length selects its level (``huc2`` … ``huc12``). Returns one
-    location string per value — the caller issues one request per location.
+    location string per value; the caller issues one request per location.
     """
     selectors = {"state": state, "county": county, "huc": huc}
     name, value = require_exactly_one(selectors, context="as the query's location")
@@ -393,8 +393,8 @@ def _read_csv_page(response: httpx.Response) -> pd.DataFrame:
         return read_code_csv(response.text)
     except pd.errors.EmptyDataError as exc:
         # NWDC normally signals "no data" with a 400 (handled above) or rows of
-        # zeros, never an empty body — but keep the typed-error contract if it
-        # ever returns one rather than leaking a bare pandas exception.
+        # zeros. An empty body still raises ``DataRetrievalError``, so the caller
+        # does not receive a bare pandas exception.
         raise DataRetrievalError(
             f"NWDC returned an empty response body (URL: {response.url}). "
             "The service signals 'no data' with a 400 or with zero-valued "
@@ -414,13 +414,13 @@ def _next_page_url(
     from, and the bare ``water.usgs.gov`` host is rewritten to the public
     ``api.water.usgs.gov`` gateway (over https, whatever scheme the link used) so the
     follow-up request is sent to the API. Only a cursor that still names another host
-    after that is refused -- following it would send Water Use requests, and any
+    after that is refused, because following it would send Water Use requests, and any
     credentials on them, to a host the caller never asked for.
 
     ``host`` is the host this call sends requests to, which is not the
     NWDC's when a ``configure`` block redirected the adapter. The alias list and
-    the rewrite are facts about *this* service -- no other host serves
-    ``water.usgs.gov`` -- so a redirected call gets the general rule instead:
+    the rewrite are facts about *this* service (no other host serves
+    ``water.usgs.gov``), so a redirected call gets the general rule instead:
     follow a link only back to the host that served the page. Applying the
     NWDC's rewrite there would send page two of a mirrored query to the USGS.
     """
@@ -465,11 +465,10 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
     """Settings for NWDC calls alone.
 
     No ``parallel_chunks``: the NWDC is a plain CSV service, so a query
-    fans out per location rather than being divided along a URL byte
-    budget. There is nothing for the planner to divide more finely.
+    fans out per location. There is nothing for the planner to divide more
+    finely.
 
-    Declared here rather than in :mod:`dataretrieval.configuration`
-    (ADR 0011).
+    Declared here, in the module that reads it (ADR 0011).
 
     Parameters
     ----------
@@ -479,8 +478,8 @@ class NwdcConfiguration(_Concurrent, _Redirectable, _Retrying, BaseConfiguration
         Seconds a call may go without receiving any data before retrying
         stops.
     base_url : str, optional
-        Endpoint to send NWDC requests to, instead of the service's own
-        (``WATERUSE_URL``). A ``rel="next"`` cursor is then followed only
+        Endpoint to send NWDC requests to, replacing
+        ``WATERUSE_URL``. A ``rel="next"`` cursor is then followed only
         back to that host, since the service's own host aliases mean
         nothing there. Code only: the file and the environment refuse it.
     concurrency : int or str, optional

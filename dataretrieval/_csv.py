@@ -10,14 +10,14 @@ from pandas import DataFrame
 def _is_code_column(name: str) -> bool:
     """Report whether a column name denotes a code or identifier.
 
-    USGS services spell a code column three ways -- a ``code`` suffix
+    USGS services spell a code column three ways: a ``code`` suffix
     (``Location_HUCEightDigitCode``), the RDB abbreviation ``_cd``
     (``huc_cd``), or a code vocabulary in the name (``identifier``, ``huc``,
-    ``fips``). All three qualify. Their leading zeros carry meaning, so the
+    ``fips``). All three qualify. Their leading zeros are significant, so the
     column must be read as ``str``.
 
-    A name ending in ``count`` is a tally rather than a code, even when it
-    reads like one: ``AlternateLocation_IdentifierCount`` counts a location's
+    A name ending in ``count`` is a tally, even when it reads like a code:
+    ``AlternateLocation_IdentifierCount`` counts a location's
     alternate identifiers.
     """
     lname = name.lower()
@@ -46,8 +46,8 @@ def read_code_csv(text: str) -> DataFrame:
     discards their leading zeros (``"00060"`` -> ``60``). Other columns keep
     pandas' inferred types, and missing-value handling is unchanged.
 
-    ``low_memory=False`` types each column from the whole body rather than per
-    chunk. It adds parse time on a large response and keeps a column's dtype
+    ``low_memory=False`` types each column from the whole body.
+    It adds parse time on a large response and keeps a column's dtype
     independent of where the chunk boundaries fall.
     """
     columns = pd.read_csv(StringIO(text), delimiter=",", nrows=0).columns

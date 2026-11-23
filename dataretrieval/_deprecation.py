@@ -18,7 +18,7 @@ REMOVALS: dict[str, str] = {
     "waterdata.get_cql(service=)": "2027-08-09",
     "wateruse": "2027-08-11",
     "ogc.interruptions": "2027-08-25",
-    # Set by the service, not by this package: v0 of the collection serves these
+    # The service sets this date. v0 of the collection serves these
     # filters until June 2027, and the shim stops working when that endpoint is
     # retired (https://waterdata.usgs.gov/blog/api-v1-release/).
     "waterdata.get_time_series_metadata(v0 filters)": "2027-06-01",
@@ -45,15 +45,13 @@ def warn_deprecated(
         replacement gives the caller nothing to do.
     removal
         Date from :data:`REMOVALS`, or ``None`` when no horizon has been
-        published -- which reads as "a future release" rather than stating
-        a date that has not been decided.
+        published, which reads as "a future release".
     detail
         Optional sentence appended after the advisory, for a rename whose reason should
-        be stated. Appended, never interpolated into the message, so a multi-sentence
-        detail cannot corrupt the wording.
+        be stated. Appending keeps a multi-sentence detail from corrupting the
+        wording.
     stacklevel
-        Frames to skip so the warning is attributed to the caller's own line,
-        not to this function.
+        Frames to skip so the warning is attributed to the caller's own line.
     """
     horizon = f"on or after {removal}" if removal else "in a future release"
     message = (

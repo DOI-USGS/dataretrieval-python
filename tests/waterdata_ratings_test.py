@@ -115,7 +115,7 @@ def test_get_ratings_mocked_search_and_download(httpx_mock, tmp_path):
 
 
 def test_get_ratings_attaches_rdb_comment_and_url(httpx_mock, tmp_path):
-    """Each parsed frame should hold its RDB header and source URL in df.attrs."""
+    """Each parsed frame should store its RDB header and source URL in df.attrs."""
     httpx_mock.add_response(
         method="GET",
         url=STAC_SEARCH_RE,
@@ -231,7 +231,7 @@ def test_get_ratings_accepts_a_timestamp_time(httpx_mock, time):
 
 def test_get_ratings_rejects_an_unreadable_time_before_any_request(httpx_mock):
     """An unreadable bound used to drop the ``datetime`` filter, so the search
-    silently returned every rating regardless of date."""
+    returned every rating regardless of date, without an error."""
     with pytest.raises(ValueError, match=r"^time could not be read as a date"):
         get_ratings(
             monitoring_location_id="USGS-01104475",
@@ -281,16 +281,16 @@ def test_get_ratings_multi_type_filters_via_property(httpx_mock, tmp_path):
     )
     assert set(out) == {"USGS-X.exsa.rdb", "USGS-X.corr.rdb"}
 
-    # Server-side filter must NOT include file_type for multi-type requests.
+    # Server-side filter must not include file_type for multi-type requests.
     search_req = httpx_mock.get_requests()[0]
     qs = parse_qs(urlsplit(str(search_req.url)).query)
     assert "file_type" not in qs["filter"][0]
 
 
 def test_get_ratings_search_429_is_resumable(httpx_mock):
-    """A rate-limited search raises a resumable interruption — the same as the other
-    getters, which use the same executor — instead of a raw
-    ``RateLimited``; resuming finishes the interrupted stage."""
+    """A rate-limited search raises a resumable interruption, as the other
+    getters do through the same executor; resuming finishes the interrupted
+    stage."""
     httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, status_code=429)
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_stub_search_response()
@@ -322,9 +322,9 @@ def _two_feature_search_response():
 
 
 def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
-    """A stale catalog entry (404 on its asset) costs only that feature: the
-    skip is announced with ``SkippedRatingWarning`` naming the feature, and
-    every other rating in the batch is still returned."""
+    """A stale catalog entry (404 on its asset) drops only that feature. A
+    ``SkippedRatingWarning`` names the skipped feature, and the getter still
+    returns every other rating in the batch."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
     )
@@ -339,8 +339,8 @@ def test_get_ratings_deterministic_download_failure_warns_and_skips(httpx_mock):
 
 
 def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
-    """A catalog feature with no data asset is a per-feature data problem:
-    skipped with a warning, without costing the rest of the batch."""
+    """A catalog feature with no data asset is a per-feature data problem, so
+    the getter skips it with a warning and returns the rest of the batch."""
     body = _two_feature_search_response()
     body["features"][0]["assets"] = {}
 
@@ -354,8 +354,8 @@ def test_get_ratings_feature_without_asset_warns_and_skips(httpx_mock):
 
 
 def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
-    """``filterwarnings("error", ...)`` restores strict all-or-nothing: the
-    escalated skip is raised as an exception instead of leaving an unreported gap."""
+    """``filterwarnings("error", ...)`` restores strict all-or-nothing behavior,
+    so the escalated skip raises an exception."""
     httpx_mock.add_response(
         method="GET", url=STAC_SEARCH_RE, json=_two_feature_search_response()
     )
@@ -371,7 +371,7 @@ def test_get_ratings_skip_warning_escalates_to_error(httpx_mock):
 
 
 def test_get_ratings_download_429_is_resumable_not_skipped(httpx_mock):
-    """A rate-limited download must never be skipped -- it is raised as a
+    """A rate-limited download must never be skipped. It raises a
     resumable interruption, and resuming completes the batch. The escalation
     filter proves no ``SkippedRatingWarning`` is emitted."""
     httpx_mock.add_response(
