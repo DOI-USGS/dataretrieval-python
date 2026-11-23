@@ -108,6 +108,23 @@ interruption (``exc.call.resume()``) returns the whole result. A file that
 answers 404 is treated as missing and its location gets the whole query; any
 other error on a file is raised.
 
+.. figure:: 0014-cloud-optimized-architecture.png
+   :alt: Left to right: a get_continuous call for a list of sites since
+      2025-07-01; a catalog request that returns file URLs; the chunk plan,
+      with one row per site and one column per time interval; the fan-out;
+      a dashed line between dataretrieval-python and api.waterdata.usgs.gov;
+      the load balancer; and the STAC catalog, Parquet files, and OGC API
+      endpoints. Chunks 1 to 100, two per site, go to the files, and chunk
+      101, every site after T, goes to the OGC API.
+   :width: 100%
+
+   One ``get_continuous`` call for 50 monitoring locations. The catalog
+   request returns the file URLs the chunk plan is built from. Chunks 1 to
+   100 read the files up to ``T``, and chunk 101 asks the OGC API for every
+   record changed since. Every request goes to the same load balancer,
+   which routes it by path. The figure's source is
+   ``0014-cloud-optimized-architecture.tex`` in this directory.
+
 **Filters are classified by whether a record can change them.**
 ``parameter_code``, ``statistic_id``, ``time_series_id``, and
 ``unit_of_measure`` are fixed when a record is written, so they are applied

@@ -1,0 +1,166 @@
+% The cloud-optimized architecture (ADR 0014) for one example query: the
+% catalog request, the chunk plan built from the file URLs it returns, and the
+% fan-out that sends every chunk through the load balancer to its endpoint.
+%
+% Chunks are colored by endpoint and numbered in plan order; the rows hidden
+% by the gap hold chunks 9 to 92. Each column is as wide as its interval
+% label. The dashed line is the boundary between dataretrieval-python and
+% the service.
+%
+% Build the PNG that ADR 0014 includes, from this directory:
+%   pdflatex 0014-cloud-optimized-architecture.tex
+%   pdftocairo -png -r 200 -singlefile 0014-cloud-optimized-architecture.pdf \
+%     0014-cloud-optimized-architecture
+\documentclass[tikz,border=8pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{listings}
+\usetikzlibrary{arrows.meta}
+
+% one color per endpoint
+\definecolor{cat}{HTML}{C2620A}   % STAC catalog
+\definecolor{fil}{HTML}{2E7D32}   % Parquet files
+\definecolor{api}{HTML}{1F5FA8}   % OGC API
+
+% Python highlighting
+\definecolor{pykeyword}{HTML}{CF222E}
+\definecolor{pystring}{HTML}{0A3069}
+\definecolor{pyname}{HTML}{8250DF}
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{pykeyword},
+  stringstyle=\color{pystring},
+  emph={get_continuous}, emphstyle=\color{pyname},
+  showstringspaces=false, columns=fullflexible, keepspaces=true,
+  upquote=true, aboveskip=0pt, belowskip=0pt,
+}
+
+\begin{document}
+\newsavebox{\querycode}
+\begin{lrbox}{\querycode}
+\begin{minipage}{4.9cm}
+\begin{lstlisting}[style=python]
+sites = [...]
+df, md = get_continuous(
+    monitoring_location_id=sites,
+    time="2025-07-01/..",
+)
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+
+% the endpoint boxes are as wide as their widest line
+\newlength{\boxwidth}
+\newlength{\widthA}\settowidth{\widthA}{\sffamily\footnotesize\bfseries Parquet files}
+\newlength{\widthB}\settowidth{\widthB}{\sffamily\footnotesize\bfseries STAC catalog}
+\newlength{\widthC}\settowidth{\widthC}{\ttfamily\footnotesize /stac-files/}
+\pgfmathsetlength{\boxwidth}{max(\widthA, \widthB, \widthC)}
+
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,
+  >={Stealth[length=2.2mm]},
+  chunk/.style={fill=#1!45, draw=white, line width=1pt},
+  number/.style={font=\sffamily\scriptsize, text=black!75},
+  axislabel/.style={font=\sffamily\scriptsize},
+  column/.style={axislabel, anchor=north west, inner xsep=6pt, outer sep=0pt},
+  flow/.style={->, thick},
+  send/.style={->, thick, draw=#1},
+  count/.style={above, font=\sffamily\scriptsize},
+  stage/.style={draw=black!60, fill=black!6, rounded corners=2pt,
+    minimum width=0.9cm, minimum height=6.95cm, anchor=west},
+  endpoint/.style={draw=#1, very thick, rounded corners=2pt, align=left,
+    fill=white, inner sep=3pt, text width=\boxwidth, anchor=west},
+  region/.style={font=\sffamily\footnotesize\bfseries, text=black!65},
+]
+
+% The main flow runs along y = 2.4, through the gap in the chunk plan. The
+% fan-out and the load balancer span y = -0.7 to 6.25; every stage fits
+% within that height.
+
+% ---------------------------------------------------------------- the query
+\node[draw=black!50, rounded corners=2pt, inner sep=6pt, anchor=west]
+  (query) at (0, 2.4) {\usebox{\querycode}};
+\node[axislabel, anchor=north west, text=black!70]
+  at ([yshift=-0.3cm]query.south west) {$T$: time of the last Parquet update};
+
+% ------------------------------------------------------- the catalog request
+\node[draw=cat, very thick, fill=cat!45, rounded corners=2pt,
+  minimum width=0.75cm, minimum height=2.6cm, anchor=west] (catalog)
+  at ([xshift=0.55cm]query.east) {};
+\node[rotate=90] at (catalog.center) {catalog request};
+\draw[flow] (query.east) -- (catalog.west);
+
+% ------------------------------------------------------------ the chunk plan
+% Rows: one site each, 0.5 high; sites 1 to 4, a gap, sites 47 to 50.
+% Columns: the interval labels, placed first, set each column's width.
+\coordinate (plan west) at ([xshift=1.55cm]catalog.east);
+\draw[flow] (catalog.east) -- node[count] {file URLs} (plan west);
+\coordinate (grid west) at ([xshift=1.05cm]plan west);
+\node[column] (c1) at (grid west |- 0, -0.2) {2025-07-01/2026-06-26};
+\node[column] (c2) at (c1.north east) {2026-06-26/$T$};
+\node[column] (c3) at (c2.north east) {$T$/..};
+
+\path (c1.west) -- (c3.east) coordinate[midway] (grid middle);
+\node[anchor=south, font=\sffamily\small\bfseries] at (grid middle |- 0, 5.15)
+  {Chunk plan};
+
+\fill[chunk=api] (c3.west |- 0, 0.025) rectangle (c3.east |- 0, 4.775);
+\node[number] at (c3 |- 0, 2.4) {101};
+\foreach \site/\row/\top in
+    {1/1/4.775, 2/2/4.275, 3/3/3.775, 4/4/3.275,
+     47/47/2.025, 48/48/1.525, 49/49/1.025, 50/50/0.525} {
+  \fill[chunk=fil] (c1.west |- 0, \top-0.5) rectangle (c1.east |- 0, \top);
+  \fill[chunk=fil] (c2.west |- 0, \top-0.5) rectangle (c2.east |- 0, \top);
+  \node[number] at (c1 |- 0, \top-0.25) {\the\numexpr 2*\row-1\relax};
+  \node[number] at (c2 |- 0, \top-0.25) {\the\numexpr 2*\row\relax};
+  \node[axislabel, anchor=east] at ([xshift=-0.1cm]c1.west |- 0, \top-0.25)
+    {site \site};
+}
+\node at ([xshift=-0.5cm]c1.west |- 0, 2.4) {$\vdots$};
+\node at (c1 |- 0, 2.4) {$\vdots$};
+\node at (c2 |- 0, 2.4) {$\vdots$};
+
+% x axis: one interval per column
+\draw[black!50] (c1.west |- 0, -0.1) -- (c3.east |- 0, -0.1);
+\foreach \edge in {c1.west, c1.east, c2.east, c3.east}
+  \draw[black!50] (\edge |- 0, -0.03) -- (\edge |- 0, -0.17);
+
+% ------------------------------------------------------------- the fan-out
+% The catalog request, the file chunks, and the change chunk all run on it.
+\node[stage] (fanout) at ([xshift=0.6cm]c3.east |- 0, 2.775) {};
+\node[align=center, rotate=90] at (fanout.center)
+  {\textbf{fan-out}\\concurrent requests};
+\draw[send=cat] (catalog.north) |- (fanout.west |- 0, 5.85);
+\draw[flow] (c3.east |- 0, 2.4) -- (fanout.west |- 0, 2.4);
+
+% --------------------------------------- the boundary and the load balancer
+\coordinate (boundary) at ([xshift=1.9cm]fanout.east);
+\draw[black!45, dashed, thick] (boundary |- 0, -0.95) -- (boundary |- 0, 6.85);
+\node[region, anchor=south east] at ([xshift=-0.12cm]boundary |- 0, 6.45)
+  {dataretrieval-python};
+\node[region, anchor=south west] at ([xshift=0.12cm]boundary |- 0, 6.45)
+  {api.waterdata.usgs.gov};
+
+\node[stage] (lb) at ([xshift=0.45cm]boundary |- 0, 2.775) {};
+\node[rotate=90, font=\sffamily\footnotesize\bfseries] at (lb.center)
+  {load balancer};
+
+\foreach \lane/\y/\label in {cat/5.85/1 chunk, fil/2.4/100 chunks, api/0.6/1 chunk} {
+  \draw[send=\lane] (fanout.east |- 0, \y) -- (lb.west |- 0, \y);
+  \node[count] at ([xshift=0.95cm]fanout.east |- 0, \y) {\label};
+}
+
+% ---------------------------------------------------------------- endpoints
+\node[endpoint=cat] (stac)  at ([xshift=0.5cm]lb.east |- 0, 5.85)
+  {\textbf{STAC catalog}\\\texttt{/stac/}};
+\node[endpoint=fil] (files) at ([xshift=0.5cm]lb.east |- 0, 2.4)
+  {\textbf{Parquet files}\\\texttt{/stac-files/}};
+\node[endpoint=api] (ogc)   at ([xshift=0.5cm]lb.east |- 0, 0.6)
+  {\textbf{OGC API}\\\texttt{/ogcapi/}};
+\foreach \lane/\y in {cat/5.85, fil/2.4, api/0.6}
+  \draw[send=\lane] (lb.east |- 0, \y) -- ([xshift=0.5cm]lb.east |- 0, \y);
+
+\end{tikzpicture}
+\end{document}
