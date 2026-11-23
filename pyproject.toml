@@ -75,9 +75,10 @@ metrics = [
 health = [
   "pyscn==1.32.4",
 ]
-# The Water Data ``bulk`` setting reads Parquet files for ``get_daily`` and
-# ``get_continuous``.
-bulk = [
+# Named for the package, not for one use of it. The Water Data ``bulk``
+# setting needs it to read Parquet files for ``get_daily`` and
+# ``get_continuous``, and with pandas 3 it also reduces a result's memory.
+pyarrow = [
   "pyarrow",
 ]
 test = [
@@ -86,7 +87,7 @@ test = [
   "pytest-rerunfailures",
   "coverage",
   "pytest-httpx",
-  "dataretrieval[bulk]",
+  "dataretrieval[pyarrow]",
   "dataretrieval[lint]",  # ruff, pinned once in the lint extra
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]
@@ -109,7 +110,7 @@ doc = [
   "mapclassify",
   # Under the default bulk="auto", a large get_daily or get_continuous call in
   # a demo reads the files; without pyarrow the page shows the fallback warning.
-  "dataretrieval[bulk]",
+  "dataretrieval[pyarrow]",
 ]
 nldi = [
   'geopandas>=0.10'

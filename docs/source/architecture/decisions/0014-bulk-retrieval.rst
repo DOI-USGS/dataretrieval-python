@@ -191,7 +191,7 @@ Query                                          API       Files
 
 ``"auto"`` is the default.
 
-**pyarrow is an optional extra,** ``dataretrieval[bulk]``, imported only on
+**pyarrow is an optional extra,** ``dataretrieval[pyarrow]``, imported only on
 the bulk path. Without it, a query the setting sends to the files pages the
 API instead and emits a ``UserWarning`` that names the install command. A
 setting can come from a shared configuration file, and a missing optional

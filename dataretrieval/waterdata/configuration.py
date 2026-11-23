@@ -81,7 +81,7 @@ class WaterdataConfiguration(
         ``ValueError`` for one they cannot answer. ``"off"`` always pages the
         API. With ``"auto"`` or ``"always"``, a query the files can answer
         returns no ``daily_id`` / ``continuous_id`` column. Needs
-        ``pyarrow`` (``pip install "dataretrieval[bulk]"``); without it, the
+        ``pyarrow`` (``pip install "dataretrieval[pyarrow]"``); without it, the
         getters page the API and warn. Set it in code or in the
         ``[waterdata]`` table of the configuration file.
     """

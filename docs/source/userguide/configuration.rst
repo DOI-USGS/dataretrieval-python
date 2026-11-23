@@ -646,7 +646,7 @@ files or the API answered it; ``(time_series_id, time)`` identifies a record.
 A record deleted from the API since the files were written is still returned
 until the files are next written. That is usually the next night, and USGS
 says it can take up to a week. Reading the files needs ``pyarrow``
-(``pip install "dataretrieval[bulk]"``); without it, the getters page the API
+(``pip install "dataretrieval[pyarrow]"``); without it, the getters page the API
 and warn. Like ``api_version``, ``bulk`` has no environment variable.
 
 The service counts requests per key, with a different hourly ceiling for

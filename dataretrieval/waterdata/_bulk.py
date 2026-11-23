@@ -290,7 +290,7 @@ def get_data(
         warnings.warn(
             f"The bulk setting is {mode!r}, but reading the files needs "
             "pyarrow, which is not installed, so this query paged the API. "
-            'Install it with pip install "dataretrieval[bulk]".',
+            'Install it with pip install "dataretrieval[pyarrow]".',
             # This function, the getter, then the getter's caller.
             stacklevel=3,
         )
