@@ -73,6 +73,7 @@ from typing import TextIO, overload
 from dataretrieval._configuration_core import (
     ADAPTERS as ADAPTERS,
     BLOCK_ONLY_SETTINGS as BLOCK_ONLY_SETTINGS,
+    BULK_MODES as BULK_MODES,
     CONFIG_PATH_ENV as CONFIG_PATH_ENV,
     CONCURRENCY_UNBOUNDED as CONCURRENCY_UNBOUNDED,
     DEFAULT_CONCURRENCY as DEFAULT_CONCURRENCY,
@@ -87,6 +88,7 @@ from dataretrieval._configuration_core import (
     _ALL_SETTINGS as _ALL_SETTINGS,
     _BLANK_MEANS_SET as _BLANK_MEANS_SET,
     _BUILT_IN as _BUILT_IN,
+    _Bulk as _Bulk,
     _Chunked as _Chunked,
     _coerce_typed as _coerce_typed,
     _Concurrent as _Concurrent,
@@ -97,6 +99,7 @@ from dataretrieval._configuration_core import (
     _NO_FILE as _NO_FILE,
     _parse_api_version as _parse_api_version,
     _parse_base_url as _parse_base_url,
+    _parse_bulk as _parse_bulk,
     _parse_concurrency as _parse_concurrency,
     _parse_parallel_chunks as _parse_parallel_chunks,
     _parse_progress as _parse_progress,
@@ -693,6 +696,21 @@ def api_version(
     return _parse_api_version(raw, label)
 
 
+def bulk(*, adapter: str | None = None) -> str:
+    """When an adapter reads a query's history from published files.
+
+    One of :data:`BULK_MODES`; ``"off"`` when nothing configured it. Settable
+    from code or from the adapter's table in the file; like
+    :func:`api_version`, it has no environment variable. The default is
+    declared here, so :func:`show_configuration` and the adapter that reads
+    the setting cannot disagree about it.
+    """
+    raw, label, _source = _resolve("bulk", adapter)
+    if raw is None:
+        return BULK_MODES[0]
+    return _parse_bulk(raw, label)
+
+
 # --- resolution ----------------------------------------------------------
 
 #: Which source of the chain supplied a resolution. Machine-readable so a
@@ -887,6 +905,7 @@ _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "stall_timeout": lambda adapter: f"{stall_timeout(adapter=adapter):g}s",
     "base_url": lambda adapter: base_url(adapter=adapter) or "<service default>",
     "api_version": lambda adapter: api_version(adapter=adapter) or "<service default>",
+    "bulk": lambda adapter: bulk(adapter=adapter),
 }
 
 if set(_DISPLAYS) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding error

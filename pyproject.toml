@@ -75,12 +75,18 @@ metrics = [
 health = [
   "pyscn==1.32.4",
 ]
+# The Water Data ``bulk`` setting reads Parquet files for ``get_daily`` and
+# ``get_continuous``.
+bulk = [
+  "pyarrow",
+]
 test = [
   "pytest > 5.0.0",
   "pytest-cov[all]",
   "pytest-rerunfailures",
   "coverage",
   "pytest-httpx",
+  "dataretrieval[bulk]",
   "dataretrieval[lint]",  # ruff, pinned once in the lint extra
   "dataretrieval[type-check]",  # mypy, pinned once in the type-check extra
 ]

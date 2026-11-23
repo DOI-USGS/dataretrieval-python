@@ -142,6 +142,20 @@ def active_client() -> httpx.AsyncClient | None:
     return _active_client.get()
 
 
+def inert_response(
+    status: int, url: str, headers: httpx.Headers | None = None
+) -> httpx.Response:
+    """A body-less stand-in for a fetch to hand the executor.
+
+    The executor keeps every completed item's response until the run ends,
+    but its aggregation reads only status, headers, and URL -- never the
+    body. A fetch that downloads a file passes this stand-in so a large run
+    does not hold every file in memory. ``elapsed`` is left unset; the
+    aggregate's ``_safe_elapsed`` treats that as zero.
+    """
+    return httpx.Response(status, headers=headers, request=httpx.Request("GET", url))
+
+
 # ---------------------------------------------------------------------------
 # Type aliases for the FanOut contract
 # ---------------------------------------------------------------------------
@@ -639,4 +653,5 @@ __all__ = [
     "FanOut",
     "FanOutPlan",
     "active_client",
+    "inert_response",
 ]

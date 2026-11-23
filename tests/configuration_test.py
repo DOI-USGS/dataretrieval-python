@@ -402,6 +402,7 @@ def _resolved_settings() -> dict[object, object]:
         )
         snapshot[(adapter, "base_url")] = configuration.base_url(adapter=adapter)
         snapshot[(adapter, "api_version")] = configuration.api_version(adapter=adapter)
+        snapshot[(adapter, "bulk")] = configuration.bulk(adapter=adapter)
     return snapshot
 
 
@@ -1499,6 +1500,26 @@ def test_api_version_is_refused_from_the_environment(monkeypatch):
     monkeypatch.setenv("API_USGS_API_VERSION", "v0")
     with pytest.raises(configuration.ConfigurationError, match="table of the file"):
         configuration.api_version(adapter="waterdata")
+
+
+def test_bulk_is_off_unless_code_or_the_waterdata_table_sets_it(config_file):
+    assert configuration.bulk(adapter="waterdata") == "off"
+    config_file('[waterdata]\nbulk = "auto"\n')
+    assert configuration.bulk(adapter="waterdata") == "auto"
+    with dataretrieval.configure(WaterdataConfiguration(bulk="always")):
+        assert configuration.bulk(adapter="waterdata") == "always"
+    assert configuration.bulk(adapter="waterdata") == "auto"
+
+
+def test_bulk_must_be_a_known_mode():
+    with pytest.raises(configuration.ConfigurationError, match="'off', 'auto'"):
+        WaterdataConfiguration(bulk="yes")
+
+
+def test_bulk_is_refused_from_the_environment(monkeypatch):
+    monkeypatch.setenv("API_USGS_BULK", "auto")
+    with pytest.raises(configuration.ConfigurationError, match="API_USGS_BULK"):
+        configuration.bulk(adapter="waterdata")
 
 
 def test_show_configuration_reports_a_pinned_api_version(config_file):

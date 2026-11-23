@@ -13,6 +13,7 @@ from typing import ClassVar
 
 from dataretrieval.configuration import (
     BaseConfiguration,
+    _Bulk,
     _Chunked,
     _Concurrent,
     _Redirectable,
@@ -26,7 +27,13 @@ __all__ = ["WaterdataConfiguration"]
 
 @dataclass(frozen=True)
 class WaterdataConfiguration(
-    _Chunked, _Concurrent, _Redirectable, _Retrying, _Versioned, BaseConfiguration
+    _Bulk,
+    _Chunked,
+    _Concurrent,
+    _Redirectable,
+    _Retrying,
+    _Versioned,
+    BaseConfiguration,
 ):
     """Settings for Water Data calls alone.
 
@@ -63,10 +70,25 @@ class WaterdataConfiguration(
     parallel_chunks : int, optional
         Baseline fan-out for multi-value queries. Each sub-request spends
         rate-limit quota, so raise it only for pulls you know are large.
+    bulk : {"off", "auto", "always"}, optional
+        Whether :func:`~dataretrieval.waterdata.get_daily` and
+        :func:`~dataretrieval.waterdata.get_continuous` read a query's history
+        from the nightly Parquet files USGS publishes, and from the API only
+        the records changed since. ``"off"`` (the default) always pages the
+        API. ``"auto"`` reads the files for a query large enough to finish
+        sooner that way, and pages the API for the rest, including any query
+        the files cannot answer. ``"always"`` reads the files for every query,
+        and raises ``ValueError`` for one they cannot answer. With ``"auto"``
+        or ``"always"``, a query the files can answer returns no ``daily_id``
+        / ``continuous_id`` column. Needs
+        ``pyarrow`` (``pip install "dataretrieval[bulk]"``); without it, the
+        getters page the API and warn. Set it in code or in the
+        ``[waterdata]`` table of the configuration file.
     """
 
     # The settings this service reads, named by the groups they come from:
-    # every adapter's retry settings, a redirectable base, a versioned API, and
+    # every adapter's retry settings, a redirectable base, a versioned API,
+    # published files a query can read in bulk, and
     # -- because Water Data queries divide along a URL byte budget and are
     # executed concurrently -- both fan-out settings. Each group declares the
     # setting itself once, in :mod:`dataretrieval.configuration`, which also

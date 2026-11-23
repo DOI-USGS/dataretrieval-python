@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval.waterdata import stats
+from dataretrieval.waterdata import _bulk, stats
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,
@@ -61,6 +61,20 @@ def get_daily(
     continuous data of the same parameter code and are described by parameter
     code and a statistic code. These data have also been referred to as “daily
     values” or “DV”.
+
+    For long records at many locations, the ``bulk`` setting reads the
+    history from the nightly Parquet files USGS publishes, and from the API
+    only the records changed since::
+
+        with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+            df, md = waterdata.get_daily(monitoring_location_id=sites)
+
+    ``"auto"`` uses the files when the query is large enough to finish
+    sooner, ``"always"`` for every query they can answer. The result has the
+    same columns and types, except that it has no ``daily_id`` column, which
+    the files do not hold, and a record deleted from the API since the files
+    were written is still returned. See
+    :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
 
     Parameters
     ----------
@@ -260,7 +274,7 @@ def get_daily(
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return _bulk.get_data(args, collection, max_rows=max_rows)
 
 
 def get_continuous(
@@ -300,6 +314,20 @@ def get_continuous(
     transmit data automatically. Continuous data are described by parameter name
     and parameter code (pcode). These data might also be referred to as
     "instantaneous values" or "IV".
+
+    For long records at many locations, the ``bulk`` setting reads the
+    history from the nightly Parquet files USGS publishes, and from the API
+    only the records changed since::
+
+        with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+            df, md = waterdata.get_continuous(monitoring_location_id=sites)
+
+    ``"auto"`` uses the files when the query is large enough to finish
+    sooner, ``"always"`` for every query they can answer. The result has the
+    same columns and types, except that it has no ``continuous_id`` column, which
+    the files do not hold, and a record deleted from the API since the files
+    were written is still returned. See
+    :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
 
     Parameters
     ----------
@@ -473,7 +501,7 @@ def get_continuous(
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return get_ogc_data(args, collection, max_rows=max_rows)
+    return _bulk.get_data(args, collection, max_rows=max_rows)
 
 
 def get_latest_continuous(

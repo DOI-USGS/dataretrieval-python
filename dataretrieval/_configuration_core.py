@@ -28,11 +28,12 @@ from dataretrieval.exceptions import ConfigurationError
 
 #: Settings only an adapter can hold, because they name one service. No
 #: package-wide value could mean anything for them: there is no one base URL,
-#: and a version is a segment of one service's paths.
+#: a version is a segment of one service's paths, and only one service
+#: publishes files to read in bulk.
 #:
 #: The package-wide roster is :data:`SETTINGS`, declared below the class it is
 #: derived from.
-ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version")
+ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version", "bulk")
 
 #: Adapter-only settings that only a ``configure()`` block can set: writing one in
 #: the configuration file raises ``ConfigurationError`` (ADR 0011).
@@ -422,6 +423,13 @@ class _Versioned:
 
 
 @dataclass(frozen=True)
+class _Bulk:
+    """An adapter that can read a query's history from published files."""
+
+    bulk: str | None = _UNSET
+
+
+@dataclass(frozen=True)
 class _Concurrent:
     """An adapter that issues more than one request per call."""
 
@@ -781,6 +789,7 @@ _TYPES: dict[str, Callable[[object, str, str], str]] = {
     "api_key": _coerce_string,
     "api_version": _coerce_string,
     "base_url": _coerce_string,
+    "bulk": _coerce_string,
     "progress": _coerce_progress,
     "concurrency": _coerce_concurrency,
     "retries": _coerce_count,
@@ -927,6 +936,21 @@ def _parse_api_version(raw: str, label: str) -> str:
     return value
 
 
+#: When a getter that can read files in bulk does so: never, when the adapter
+#: judges the query large enough, or for every query it can answer that way.
+BULK_MODES: tuple[str, ...] = ("off", "auto", "always")
+
+
+def _parse_bulk(raw: str, label: str) -> str:
+    """Parse a bulk mode, one of :data:`BULK_MODES`."""
+    value = raw.strip().lower()
+    if value not in BULK_MODES:
+        raise ConfigurationError(
+            f"{label} must be one of {', '.join(map(repr, BULK_MODES))} (got {raw!r})."
+        )
+    return value
+
+
 def _parse_progress(raw: str, label: str, *, strict: bool) -> bool:
     """Parse a progress toggle, optionally preserving legacy env truthiness."""
     value = raw.strip().lower()
@@ -960,6 +984,7 @@ _VALIDATORS: dict[str, Callable[[str, str], object]] = {
     "stall_timeout": _parse_seconds,
     "base_url": _parse_base_url,
     "api_version": _parse_api_version,
+    "bulk": _parse_bulk,
 }
 
 

@@ -140,6 +140,12 @@ Settings
      - Which version of one service's API to request, as the segment of its
        path (``"v1"``). Per adapter; Water Data reads it for its OGC
        collections. See :ref:`configuration-api-version`.
+   * - ``bulk``
+     - ``"off"``
+     - *(none — code or file)*
+     - Whether Water Data's ``get_daily`` and ``get_continuous`` read history
+       from the nightly Parquet files: ``"off"``, ``"auto"``, or
+       ``"always"``. See :ref:`configuration-bulk`.
 
 
 Where settings come from
@@ -285,8 +291,10 @@ Adapter                               Configuration                           Ac
 ====================================  ======================================  ========================================
 ``waterdata``                         ``waterdata.WaterdataConfiguration``    ``concurrency``, ``parallel_chunks``,
                                                                               ``retries``, ``stall_timeout``,
-                                                                              ``base_url``, ``api_version``
+                                                                              ``base_url``, ``api_version``,
+                                                                              ``bulk``
 ``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same, without ``api_version``
+                                                                              and ``bulk``
 ``nwdc``                              ``nwdc.NwdcConfiguration``              ``concurrency``, ``retries``,
                                                                               ``stall_timeout``, ``base_url``
 ``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpConfiguration`` and so on      ``retries``, ``stall_timeout``,
@@ -595,6 +603,44 @@ so every other getter still uses the version you set.
 Unlike ``base_url``, ``api_version`` may be set in the file,
 because a version cannot send a request to another host.
 It has no environment variable.
+
+
+.. _configuration-bulk:
+
+Reading Water Data history from the nightly files
+-------------------------------------------------
+
+USGS also publishes the ``daily`` and ``continuous`` collections as Parquet
+files, one set per monitoring location, rewritten every night. With the
+``bulk`` setting, ``get_daily`` and ``get_continuous`` read a location's
+history from those files and only the records changed since from the API,
+then return one frame with the same columns and types, less the record id:
+
+.. code-block:: python
+
+   with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+       df, md = waterdata.get_daily(
+           monitoring_location_id=sites, parameter_code="00060"
+       )
+
+.. code-block:: toml
+
+   [waterdata]
+   bulk = "auto"
+
+``"auto"`` reads the files for a query large enough to finish sooner that
+way, and pages the API for the rest, including any query the files cannot
+answer. ``"always"`` reads the files for every query and raises
+``ValueError`` for one they cannot answer, which is useful for comparing the
+two paths. ``"off"``, the default, always pages the API.
+
+The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` or
+``"always"`` a query the files can answer returns no such column, whether the
+files or the API answered it; ``(time_series_id, time)`` identifies a record.
+A record deleted from the API since the files were written is still returned
+until the next night's files. Reading the files needs ``pyarrow``
+(``pip install "dataretrieval[bulk]"``); without it, the getters page the API
+and warn. Like ``api_version``, ``bulk`` has no environment variable.
 
 
 .. _configuration-secret-store:

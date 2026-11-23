@@ -1745,7 +1745,7 @@ def test_get_daily_max_rows_is_excluded_from_request_and_forwarded():
     # following ``next`` once the cap is met, then truncate the combined frame to
     # exactly N) is covered without a network round-trip by the ``_row_cap`` /
     # ``_finalize_ogc`` tests in tests/waterdata_utils_test.py.
-    with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
+    with mock.patch("dataretrieval.waterdata._bulk.get_ogc_data") as fake:
         fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
         get_daily(
             monitoring_location_id="USGS-05427718",
@@ -2000,7 +2000,7 @@ class TestNormalizeStrIterable:
         URL (or POST body). Post-fix, ``_normalize_str_iterable`` materializes
         it to ``list`` at the function boundary.
         """
-        with mock.patch("dataretrieval.waterdata.time_series.get_ogc_data") as fake:
+        with mock.patch("dataretrieval.waterdata._bulk.get_ogc_data") as fake:
             fake.return_value = (pd.DataFrame(), mock.MagicMock(spec=[]))
             get_daily(
                 monitoring_location_id="USGS-05427718",
