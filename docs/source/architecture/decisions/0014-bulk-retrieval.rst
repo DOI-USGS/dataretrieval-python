@@ -21,9 +21,9 @@ files had been written on dates from 2026-10-26 to that night.
 
 The two sources trade speed for freshness. Paging the OGC API for the full
 daily discharge record of 40 Ohio gages took 39.8 s; downloading their files
-took a few seconds. But a file is a snapshot. It lags the API by up to a day,
-so a caller reading only files misses the newest values and every revision
-since the snapshot.
+took a few seconds. But a file is a snapshot. It is usually a day behind the
+API, and WDFN says it can be a week behind, so a caller reading only files
+misses the newest values and every revision since the snapshot.
 
 The files carry what is needed to close that gap. Every record has the same
 ``last_modified`` as in the API, and the overlapping records were identical in
@@ -87,8 +87,9 @@ accepts is returned as the API gives it, and ``"off"`` changes nothing.
 3. Take each location's snapshot time ``T`` as the largest ``last_modified``
    in its files. Read it from the row-group statistics, and floor it to the
    day as a margin. For ``continuous``, take the later of the two files.
-   ``historical`` holds only old records, so its newest change can be months
-   older than the night it was written. This rule depends on ``historical``
+   Because ``T`` comes from the file, the path does not assume how far the
+   files are behind. ``historical`` holds only old records, so its newest
+   change can be months older than the night it was written. This rule depends on ``historical``
    being rewritten the night after one of its records changes: on
    2026-11-23, no record in the range of five older ``historical`` files had
    changed in the API since the file was written.
@@ -153,7 +154,8 @@ download cost: 250 rows' worth for a daily or ``current`` file, 10,000 for a
 and an open-ended ``time`` counts as a typical record (40 years daily, 20
 continuous). The estimate can be wrong. The rule is tuned so that a wrong
 choice costs at most a second or two, while the right one saves minutes on
-large pulls.
+large pulls. The estimate does not count the change query's rows, which
+grow with the files' age.
 
 The constants come from a benchmark run on 2026-11-22 against the live
 services. It drew fresh monitoring locations for every run, so that no run
@@ -195,7 +197,7 @@ Consequences
   the small ones the router sends to the API. A caller that needs the id
   sets ``"off"``.
 - A record removed from the API since the files were written is still
-  returned, until the next night's files. Every case seen so far is the
+  returned, until the files are next written. Every case seen so far is the
   trailing edge of a rolling window: Provisional daily values drop out after
   three years, and some series keep only 120 days. Files written before the
   window moved still hold the day or two that dropped off. Against freshly
@@ -208,7 +210,14 @@ Consequences
   key's hourly count. The OGC API, the catalog, and the files share one
   count, with different ceilings: 1,000, 4,000, and 10,000 requests an hour
   on 2026-11-23. The change query runs after every download, so a pull of
-  about 1,000 files leaves it no OGC requests for the rest of the hour.
+  about 1,000 files under one key leaves it no OGC requests for the rest of
+  the hour. WDFN recommends a separate key for the files, so the package
+  gains a second credential, ``files_api_key`` (``API_USGS_FILES_PAT``). The
+  ``credentials`` leaf sends it in place of ``api_key`` on requests under
+  ``/stac-files/`` and falls back to ``api_key`` when it is unset. Catalog
+  searches stay on ``api_key``: a query makes few of them, and under the
+  files' key the catalog's ceiling of 4,000 would cap a file pull. Like
+  ``api_key``, it is package-wide and no adapter setting (ADR 0010).
 - ``get_ratings``, ``get_parquet_files``, and this path share one catalog
   search, ``waterdata.catalog.search``, which alone knows the edge's URL
   limit.
@@ -269,7 +278,8 @@ Compliance
   UTC ``last_modified``. Nothing in the current read path depends on it.
 - ``tests/configuration_test.py`` pins the setting: ``"auto"`` by default,
   read from code and the ``[waterdata]`` table, validated, and refused from
-  the environment. ``tests/waterdata_bulk_test.py`` pins the pyarrow
+  the environment. It also pins ``files_api_key``: sent only under
+  ``/stac-files/``, never to another host, and ``api_key`` when unset. ``tests/waterdata_bulk_test.py`` pins the pyarrow
   fallback and its warning.
 
 Notes

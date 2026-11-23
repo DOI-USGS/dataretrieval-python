@@ -3,8 +3,8 @@
 % fan-out that sends every chunk through the load balancer to its endpoint.
 %
 % Chunks are colored by endpoint and numbered in plan order; the rows hidden
-% by the gap hold chunks 9 to 92. Each column is as wide as its interval
-% label. The dashed line is the boundary between dataretrieval-python and
+% by the gap hold chunks 9 to 92. Each file column is one of a location's
+% two files, and each column is as wide as its label. The dashed line is the boundary between dataretrieval-python and
 % the service.
 %
 % Build the PNG that ADR 0014 includes, from this directory:
@@ -65,7 +65,8 @@ df, md = get_continuous(
   chunk/.style={fill=#1!45, draw=white, line width=1pt},
   number/.style={font=\sffamily\scriptsize, text=black!75},
   axislabel/.style={font=\sffamily\scriptsize},
-  column/.style={axislabel, anchor=north west, inner xsep=6pt, outer sep=0pt},
+  column/.style={axislabel, anchor=north west, inner xsep=6pt, outer sep=0pt,
+    align=center},
   flow/.style={->, thick},
   send/.style={->, thick, draw=#1},
   count/.style={above, font=\sffamily\scriptsize},
@@ -96,13 +97,14 @@ df, md = get_continuous(
 
 % ------------------------------------------------------------ the chunk plan
 % Rows: one site each, 0.5 high; sites 1 to 4, a gap, sites 47 to 50.
-% Columns: the interval labels, placed first, set each column's width.
+% Columns: a location's two files, then the changes since. The labels,
+% placed first, set each column's width.
 \coordinate (plan west) at ([xshift=1.55cm]catalog.east);
 \draw[flow] (catalog.east) -- node[count] {file URLs} (plan west);
 \coordinate (grid west) at ([xshift=1.05cm]plan west);
-\node[column] (c1) at (grid west |- 0, -0.2) {2025-07-01/2026-06-26};
-\node[column] (c2) at (c1.north east) {2026-06-26/$T$};
-\node[column] (c3) at (c2.north east) {$T$/..};
+\node[column] (c1) at (grid west |- 0, -0.2) {\texttt{historical} file\\2025-07-01/2026-06-26};
+\node[column] (c2) at (c1.north east) {\texttt{current} file\\2026-06-26/$T$};
+\node[column] (c3) at (c2.north east) {changes\\$T$/..};
 
 \path (c1.west) -- (c3.east) coordinate[midway] (grid middle);
 \node[anchor=south, font=\sffamily\small\bfseries] at (grid middle |- 0, 4.85)
