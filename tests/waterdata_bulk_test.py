@@ -924,7 +924,7 @@ def test_without_pyarrow_the_files_path_pages_the_api_and_warns(monkeypatch, mod
     )
     with (
         dataretrieval.configure(mode),
-        pytest.warns(UserWarning, match=r"dataretrieval\[bulk\]") as caught,
+        pytest.warns(UserWarning, match=r"dataretrieval\[pyarrow\]") as caught,
     ):
         waterdata.get_daily(monitoring_location_id=_HUNDRED)
     assert sent == ["api"]
