@@ -43,6 +43,10 @@ _AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
 #: ``test_credential_policy_has_one_definition``).
 WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
 
+#: Path prefix of the published files on the authorized host. A request under
+#: it is sent ``files_api_key`` when one is configured (see :func:`api_key`).
+_FILES_PATH = "/stac-files/"
+
 
 def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
     """Whether ``target_url`` names the host that accepts :data:`API_KEY_ENV`.
@@ -132,15 +136,22 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
         )
 
 
-def api_key() -> str | None:
-    """The configured token, or ``None``.
+def api_key(target_url: str | httpx.URL | None = None) -> str | None:
+    """The configured token for ``target_url``, or ``None``.
 
     Defined here, next to the host check and
     :func:`strip_api_key_from_untrusted_host`, so reading the key and the rules
     governing where it may be sent stay in one module. The value itself resolves
     through :func:`dataretrieval.configuration.api_key`, so host scoping applies
     identically no matter which source supplied the key.
+
+    The service counts requests per key, not per endpoint, so a large file
+    download can use up the count the OGC API needs. A request for a published
+    file therefore gets ``files_api_key`` when one is configured, and
+    ``api_key`` otherwise. Without ``target_url``, this is ``api_key``.
     """
+    if target_url is not None and httpx.URL(target_url).path.startswith(_FILES_PATH):
+        return _configuration.files_api_key() or _configuration.api_key()
     return _configuration.api_key()
 
 

@@ -704,6 +704,64 @@ def test_api_key_is_stripped_and_blank_means_none(monkeypatch):
     assert configuration.api_key() is None
 
 
+def test_files_api_key_comes_from_the_environment_the_file_or_a_block(
+    config_file, monkeypatch
+):
+    monkeypatch.delenv("API_USGS_FILES_PAT", raising=False)
+    assert configuration.files_api_key() is None
+    config_file('files_api_key = "file-key"\n')
+    assert configuration.files_api_key() == "file-key"
+    monkeypatch.setenv("API_USGS_FILES_PAT", "  env-key\n")
+    assert configuration.files_api_key() == "env-key"
+    with dataretrieval.configure(Configuration(files_api_key="block-key")):
+        assert configuration.files_api_key() == "block-key"
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("/stac-files/daily/USGS-01/USGS-01.parquet", "files"),
+        ("/stac-files/ratings/USGS.01104475.exsa.rdb", "files"),
+        ("/stac/v0/search", "main"),
+        ("/ogcapi/v0/collections/daily/items", "main"),
+    ],
+)
+def test_only_file_requests_are_sent_the_files_api_key(path, expected):
+    """The service counts requests per key, so the files get their own count."""
+    url = f"https://api.waterdata.usgs.gov{path}"
+    with dataretrieval.configure(Configuration(api_key="main", files_api_key="files")):
+        assert _default_headers(url)["X-Api-Key"] == expected
+    # Without a second key, the files use the first.
+    with dataretrieval.configure(Configuration(api_key="main")):
+        assert _default_headers(url)["X-Api-Key"] == "main"
+
+
+def test_the_files_api_key_is_not_sent_to_another_host():
+    with dataretrieval.configure(Configuration(api_key="main", files_api_key="files")):
+        headers = _default_headers("https://example.com/stac-files/a.parquet")
+    assert "X-Api-Key" not in headers
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX file modes")
+def test_world_readable_file_with_a_files_key_warns(tmp_path, monkeypatch):
+    path = tmp_path / "config.toml"
+    path.write_text('files_api_key = "secret"\n')
+    path.chmod(0o644)
+    monkeypatch.setenv(configuration.CONFIG_PATH_ENV, str(path))
+    monkeypatch.delenv("API_USGS_FILES_PAT", raising=False)
+    configuration._reset_file_cache()
+    with pytest.warns(UserWarning, match="readable by other users"):
+        assert configuration.files_api_key() == "secret"
+
+
+def test_show_configuration_reports_the_files_key_without_its_value():
+    out = io.StringIO()
+    with dataretrieval.configure(Configuration(files_api_key="do-not-print")):
+        dataretrieval.show_configuration(stream=out)
+    assert "do-not-print" not in out.getvalue()
+    assert re.search(r"files_api_key\s+<set>", out.getvalue())
+
+
 def test_blank_numeric_env_falls_back_to_the_default(monkeypatch):
     monkeypatch.setenv("API_USGS_CONCURRENT", "")
     monkeypatch.setenv("API_USGS_RETRIES", "")

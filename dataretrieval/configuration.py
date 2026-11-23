@@ -299,12 +299,13 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
         ...     dataretrieval.show_configuration()
         config file  /home/u/.dataretrieval/config.toml (found)
-        api_key          <set>  /home/u/.dataretrieval/config.toml
-        concurrency      16     /home/u/.dataretrieval/config.toml
-        retries          8      $API_USGS_RETRIES
-        progress         auto   built-in default
-        parallel_chunks  1      built-in default
-        stall_timeout    60s    built-in default
+        api_key          <set>      /home/u/.dataretrieval/config.toml
+        files_api_key    <not set>  built-in default
+        concurrency      16         /home/u/.dataretrieval/config.toml
+        retries          8          $API_USGS_RETRIES
+        progress         auto       built-in default
+        parallel_chunks  1          built-in default
+        stall_timeout    60s        built-in default
 
         A built-in default is package-wide. An adapter may use its own default for
         its own calls; a value from any source above overrides both.
@@ -548,7 +549,21 @@ def api_key() -> str | None:
     Surrounding whitespace is stripped, so a key read from a file with a
     trailing newline works; a blank value resolves to ``None``.
     """
-    raw, _label, _source = _resolve("api_key")
+    return _resolved_key("api_key")
+
+
+def files_api_key() -> str | None:
+    """The key for the published files, or ``None`` if none is configured.
+
+    The credentials leaf sends it in place of :func:`api_key` on
+    ``/stac-files/`` requests, and falls back to :func:`api_key` when this is
+    ``None``. Whitespace and a blank value are treated as in :func:`api_key`.
+    """
+    return _resolved_key("files_api_key")
+
+
+def _resolved_key(name: str) -> str | None:
+    raw, _label, _source = _resolve(name)
     return raw.strip() or None if raw is not None else None
 
 
@@ -877,6 +892,11 @@ def _display_api_key(_adapter: str | None = None) -> str:
     return "<set>" if api_key() else "<not set>"
 
 
+def _display_files_api_key(_adapter: str | None = None) -> str:
+    """Render the key's presence, never its value."""
+    return "<set>" if files_api_key() else "<not set>"
+
+
 def _display_concurrency(adapter: str | None = None) -> str:
     value = concurrency(adapter=adapter)
     return CONCURRENCY_UNBOUNDED if value is None else str(value)
@@ -899,6 +919,7 @@ def _display_progress(_adapter: str | None = None) -> str:
 #: adapter-scoped, and :func:`_show_adapter_overrides` never calls them.
 _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "api_key": _display_api_key,
+    "files_api_key": _display_files_api_key,
     "concurrency": _display_concurrency,
     "retries": lambda adapter: str(retries(adapter=adapter)),
     "progress": _display_progress,

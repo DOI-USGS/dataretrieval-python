@@ -51,6 +51,7 @@ BLOCK_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
 #: sources for it.
 ENV_VARS: dict[str, str] = {
     "api_key": "API_USGS_PAT",
+    "files_api_key": "API_USGS_FILES_PAT",
     "concurrency": "API_USGS_CONCURRENT",
     "retries": "API_USGS_RETRIES",
     "progress": "API_USGS_PROGRESS",
@@ -460,6 +461,12 @@ class Configuration(BaseConfiguration):
         ``api.waterdata.usgs.gov``. Prefer reading it from a secret store, the
         environment, or the configuration file over writing a literal into a
         script. Pass ``None`` to make a call without an ambient key.
+    files_api_key : str, optional
+        A second Water Data API key, sent in place of ``api_key`` on requests
+        for the published files (``/stac-files/``). The service counts
+        requests per key, so a large file download under its own key leaves
+        the ``api_key`` count for the OGC API. Unset, the files use
+        ``api_key``.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests: a positive integer, or
         ``"unbounded"`` to disable the cap.
@@ -494,6 +501,7 @@ class Configuration(BaseConfiguration):
     # sequence to MRO linearization. The two adapter-only fields the groups declare are
     # absent by construction here: there is no package-wide base URL.
     api_key: str | None = _UNSET
+    files_api_key: str | None = _UNSET
     concurrency: int | str | None = _UNSET
     retries: int | None = _UNSET
     progress: bool | str | None = _UNSET
@@ -787,6 +795,7 @@ def _coerce_count(value: object, label: str, optional: str) -> str:
 #: so the wider check cannot change a TOML outcome.)
 _TYPES: dict[str, Callable[[object, str, str], str]] = {
     "api_key": _coerce_string,
+    "files_api_key": _coerce_string,
     "api_version": _coerce_string,
     "base_url": _coerce_string,
     "bulk": _coerce_string,
@@ -1394,11 +1403,12 @@ def _holds_api_key(parsed: _ParsedFile) -> bool:
     what this run resolves: a key in a profile nobody selected is just
     as readable to another user on the machine.
     """
-    if "api_key" in parsed.base:
+    keys = {"api_key", "files_api_key"}
+    if keys & parsed.base.keys():
         return True
     return any(
-        "api_key" in table
-        or any("api_key" in p for p in table.values() if isinstance(p, dict))
+        keys & table.keys()
+        or any(keys & p.keys() for p in table.values() if isinstance(p, dict))
         for table in parsed.adapters.values()
     )
 

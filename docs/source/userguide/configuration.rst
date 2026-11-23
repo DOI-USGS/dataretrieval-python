@@ -99,6 +99,11 @@ Settings
      - ``API_USGS_PAT``
      - Water Data API key. Raises your hourly request quota substantially;
        `register for one <https://api.waterdata.usgs.gov/signup/>`_.
+   * - ``files_api_key``
+     - none
+     - ``API_USGS_FILES_PAT``
+     - A second Water Data API key, sent only with requests for the
+       published files. See :ref:`configuration-bulk`.
    * - ``concurrency``
      - ``32``
      - ``API_USGS_CONCURRENT``
@@ -433,12 +438,13 @@ the ``bulk`` profile selected for the block:
    >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
    ...     dataretrieval.show_configuration()
    config file  /home/u/.dataretrieval/config.toml (found)
-   api_key          <set>  /home/u/.dataretrieval/config.toml
-   concurrency      16     /home/u/.dataretrieval/config.toml
-   retries          8      $API_USGS_RETRIES
-   progress         auto   built-in default
-   parallel_chunks  1      built-in default
-   stall_timeout    60s    built-in default
+   api_key          <set>      /home/u/.dataretrieval/config.toml
+   files_api_key    <not set>  built-in default
+   concurrency      16         /home/u/.dataretrieval/config.toml
+   retries          8          $API_USGS_RETRIES
+   progress         auto       built-in default
+   parallel_chunks  1          built-in default
+   stall_timeout    60s        built-in default
 
    A built-in default is package-wide. An adapter may use its own default for
    its own calls; a value from any source above overrides both.
@@ -638,9 +644,29 @@ The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` or
 ``"always"`` a query the files can answer returns no such column, whether the
 files or the API answered it; ``(time_series_id, time)`` identifies a record.
 A record deleted from the API since the files were written is still returned
-until the next night's files. Reading the files needs ``pyarrow``
+until the files are next written. That is usually the next night, and USGS
+says it can take up to a week. Reading the files needs ``pyarrow``
 (``pip install "dataretrieval[bulk]"``); without it, the getters page the API
 and warn. Like ``api_version``, ``bulk`` has no environment variable.
+
+The service counts requests per key, with a different hourly ceiling for
+each endpoint: 1,000 for the API and 10,000 for the files in November 2026.
+A pull of more than about 1,000 files under one key therefore leaves the API
+no requests for the rest of the hour, and the call fails on its last step,
+the query for changed records. For a pull that large, USGS recommends a
+second key for the files. Register for one and set it as ``files_api_key``;
+it is sent with every request under ``/stac-files/`` and ``api_key`` with
+everything else:
+
+.. code-block:: bash
+
+   export API_USGS_FILES_PAT="your_second_key_here"
+
+.. code-block:: toml
+
+   files_api_key = "your_second_key_here"
+
+Without it, the files use ``api_key``.
 
 
 .. _configuration-secret-store:
