@@ -461,7 +461,8 @@ class Configuration(BaseConfiguration):
         Whether to draw the progress line. ``None`` leaves the automatic
         behavior (on for a TTY or Jupyter kernel, off otherwise).
     parallel_chunks : int, optional
-        Default optional fan-out for multi-value queries. It limits extra
+        Default optional fan-out for queries with a multi-value argument or a
+        closed time interval. It limits extra
         refinement, but URL-byte safety may already require more sub-requests.
         Sets the baseline that :func:`dataretrieval.parallel_chunks` overrides
         per call. Each sub-request spends rate-limit quota, so raise it only

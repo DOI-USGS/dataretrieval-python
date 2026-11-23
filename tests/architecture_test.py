@@ -251,6 +251,37 @@ def test_engine_request_import_surface_does_not_grow() -> None:
     )
 
 
+def test_chunk_planner_has_no_date_handling() -> None:
+    """The chunk planner divides axes without knowing what they measure.
+
+    A range axis owns what its range measures and where it may be cut: a time
+    interval's is ``ogc.dates._interval_axis``, which the engine binds from the
+    dialect. A date import in the planner means that knowledge has moved back
+    into it, and a new dimension would again need an edit to ``ChunkPlan``.
+    ``.importlinter`` forbids the import of ``ogc.dates``; this checks the
+    standard-library and pandas date imports it cannot see.
+    """
+    path = PACKAGE_ROOT / "ogc" / "planning.py"
+    date_handling = {
+        "calendar",
+        "datetime",
+        "dateutil",
+        "pandas",
+        "time",
+        "zoneinfo",
+    }
+    leaked = sorted(
+        name
+        for name in _runtime_imports(path)
+        if name.partition(".")[0] in date_handling
+    )
+    assert not leaked, (
+        f"ogc.planning imports date handling: {leaked}. Put what a range "
+        "measures in a RangeAxis implementation, such as "
+        "ogc.dates._interval_axis, and pass its reader to ChunkPlan as read_range."
+    )
+
+
 # --- Seams that are about symbols and call sites, not module direction ---
 
 

@@ -20,6 +20,7 @@ import concurrent.futures
 import datetime
 import functools
 import http.server
+import itertools
 import socket
 import threading
 import time
@@ -62,7 +63,11 @@ from dataretrieval.ogc.chunking import (
     multi_value_chunked,
     parallel_chunks,
 )
-from dataretrieval.ogc.dates import _DATE_RANGE_PARAMS
+from dataretrieval.ogc.dates import (
+    _DATE_RANGE_PARAMS,
+    _format_api_dates,
+    _interval_axis,
+)
 from dataretrieval.ogc.planning import (
     _LIST_SEP,
     _NEVER_CHUNK,
@@ -84,7 +89,7 @@ from dataretrieval.transport.retry import (
     retry_async as _retry,
 )
 from dataretrieval.utils import HTTPX_DEFAULTS
-from dataretrieval.waterdata.utils import OGC_API_URL
+from dataretrieval.waterdata.utils import OGC_API_URL, WATERDATA_DIALECT
 
 # The joint-planner stress test uses the real request builder; bind the
 # target API the way ``get_ogc_data`` does — explicitly, via ``partial``.
@@ -2429,6 +2434,200 @@ def test_cap_does_not_mask_unchunkable():
     args = {"monitoring_location_id": "one-huge-scalar"}
     with pytest.raises(Unchunkable):
         ChunkPlan(args, _fake_build, url_limit=10, max_chunks=32)
+
+
+# ---------------------------------------------------------------------------
+# Time axis: under ``parallel_chunks(n)`` a closed interval in the dialect's
+# ``time_param`` is divided into runs of whole UTC days, no shorter than the
+# collection's shortest time chunk, after the multi-value axes have taken their
+# splits (``ChunkPlan._divide_range`` over ``ogc.dates._interval_axis``).
+# ---------------------------------------------------------------------------
+
+
+def _read_interval(chunk_days, param="time"):
+    """The range reader the engine binds from a collection's dialect."""
+    return functools.partial(_interval_axis, param=param, chunk_days=chunk_days)
+
+
+# A plan whose shortest time chunk is one day, to test how runs are placed.
+_day_plan = functools.partial(ChunkPlan, read_range=_read_interval(1))
+
+
+def _intervals(plan, key="time"):
+    """Each chunk's interval as a ``(start, end)`` pair."""
+    return [tuple(chunk[key].split("/")) for chunk in plan]
+
+
+def _run_days(plan):
+    """Each chunk's interval length in days."""
+    return [(pd.Timestamp(b) - pd.Timestamp(a)).days for a, b in _intervals(plan)]
+
+
+def test_time_axis_splits_a_closed_interval_into_consecutive_runs():
+    """The first and last chunks keep the caller's bounds, each chunk ends at the
+    midnight the next one starts at, and the runs differ in length by at most
+    one day. A shared boundary covers the interval whichever ends the service
+    includes; combining drops a feature both chunks return."""
+    args = {"time": "2023-01-01/2023-12-31"}
+    plan = _day_plan(args, _fake_build, url_limit=8000, max_chunks=12)
+
+    intervals = _intervals(plan)
+    assert len(intervals) == 12
+    assert intervals[0][0] == "2023-01-01T00:00:00Z"
+    assert intervals[-1][1] == "2023-12-31T00:00:00Z"
+    for (_, end), (start, _) in itertools.pairwise(intervals):
+        assert start == end
+        assert start.endswith("T00:00:00Z")
+    days = _run_days(plan)
+    assert max(days) - min(days) <= 1
+
+
+def test_time_axis_needs_parallel_chunks():
+    """Without ``parallel_chunks`` the interval is sent as the caller wrote it."""
+    args = {"time": "2023-01-01/2023-12-31"}
+    plan = _day_plan(args, _fake_build, url_limit=8000)
+    assert plan.axes == []
+    assert list(plan) == [args]
+
+
+@pytest.mark.parametrize(
+    ("value", "chunk_days"),
+    [
+        (None, 1),  # no interval
+        ("P7D", 1),  # a duration
+        ("2023-01-01/..", 1),  # open end
+        ("../2023-01-01", 1),  # open start
+        ("2023-01-01", 1),  # an instant
+        ("2023-01-01T01:00:00Z/2023-01-01T23:00:00Z", 1),  # within one day
+        ("2023-01-01/2023-01-02", 1),  # one day, ending at the next midnight
+        ("2023-01-01T23:00:00Z/2023-01-02T01:00:00Z", 1),  # two hours over midnight
+        ("2023-01-01/2023-02-15", 30),  # 45 days, under two 30-day chunks
+    ],
+)
+def test_time_axis_leaves_an_interval_shorter_than_two_chunks(value, chunk_days):
+    args = {"time": value}
+    plan = ChunkPlan(
+        args,
+        _fake_build,
+        url_limit=8000,
+        max_chunks=12,
+        read_range=_read_interval(chunk_days),
+    )
+    assert list(plan) == [args]
+    assert plan.canonical_url is None  # a passthrough, as without the time axis
+
+
+def test_time_axis_chunks_are_no_shorter_than_the_shortest_time_chunk():
+    """The shortest time chunk caps the run count below ``n``: a year holds
+    12 30-day chunks."""
+    plan = ChunkPlan(
+        {"time": "2023-01-01/2023-12-31"},
+        _fake_build,
+        url_limit=8000,
+        max_chunks=52,
+        read_range=_read_interval(30),
+    )
+    days = _run_days(plan)
+    assert len(days) == 12
+    assert min(days) >= 30
+
+
+def test_time_axis_chunk_is_no_longer_than_the_callers_interval():
+    """Every chunk boundary is a midnight, the shortest datetime the request
+    builder writes, so a split request never outgrows the byte budget."""
+    args = {"time": "2023-01-01T06:30:00.250000Z/2023-12-31T18:00:00.500000Z"}
+    plan = _day_plan(args, _fake_build, url_limit=8000, max_chunks=12)
+    caller = len(_format_api_dates(args["time"], name="time"))
+    assert all(len(chunk["time"]) <= caller for chunk in plan)
+
+
+@pytest.mark.parametrize(
+    ("sites", "max_chunks", "url_limit", "expected"),
+    [
+        (["A", "B"], 12, 8000, (2, 12)),  # 12 // 2 sites
+        (["A", "B", "C"], 4, 8000, (3, 3)),  # 4 // 3 is 1: no time split
+        ([f"SITE-{i:04d}" for i in range(40)], 2, 300, (8, 8)),  # bytes beat cap
+    ],
+)
+def test_time_axis_takes_the_factor_the_list_axes_leave(
+    sites, max_chunks, url_limit, expected
+):
+    """The multi-value axes split as they would without the time axis, even past
+    the cap when the byte budget forces it; the interval multiplies their chunk
+    count by the largest whole factor within the cap."""
+    args = {"sites": sites, "time": "2023-01-01/2023-12-31"}
+    plan = _day_plan(args, _fake_build, url_limit=url_limit, max_chunks=max_chunks)
+    assert (len(plan.chunks["sites"]), plan.total) == expected
+
+
+def test_time_axis_does_not_mask_unchunkable():
+    """Dividing an interval does not shorten a request, so an over-budget request
+    whose only axis is the time axis still raises ``Unchunkable``."""
+    args = {"monitoring_location_id": "x" * 500, "time": "2023-01-01/2023-12-31"}
+    with pytest.raises(Unchunkable):
+        _day_plan(args, _fake_build, url_limit=300, max_chunks=4)
+
+
+def test_time_axis_divides_an_over_budget_cql_json_request():
+    """An over-budget cql-json request is the server's to judge, as without the
+    time axis, and its interval still divides."""
+    args = {
+        "filter": '{"op": "=", "args": [{"property": "a"}, "' + "x" * 500 + '"]}',
+        "filter_lang": "cql-json",
+        "time": "2023-01-01/2023-12-31",
+    }
+    plan = _day_plan(args, _fake_build, url_limit=300, max_chunks=4)
+    assert len(_intervals(plan)) == 4
+
+
+def test_time_axis_leaves_the_canonical_fallback_the_callers_interval():
+    """When the whole request cannot be built, ``canonical_url`` falls back to
+    the largest chunk's URL; it keeps the caller's interval, not one run."""
+
+    def build(**kwargs):
+        if len(kwargs["sites"]) > 1:
+            raise httpx.InvalidURL("URL component too long")
+        params = {"time": kwargs["time"]}
+        return httpx.Request("GET", "https://example.test/items", params=params)
+
+    args = {"sites": ["A", "B"], "time": "2023-01-01/2023-12-31"}
+    plan = _day_plan(args, build, url_limit=8000, max_chunks=8)
+    assert plan.total == 8  # 2 sites x 4 runs
+    assert httpx.URL(plan.canonical_url).params["time"] == args["time"]
+
+
+def test_time_axis_reads_the_dialects_time_param():
+    """The axis divides only the argument the dialect names."""
+    args = {"datetime": "2020-01-01/2023-12-31", "time": "2020-01-01/2023-12-31"}
+    plan = ChunkPlan(
+        args,
+        _fake_build,
+        url_limit=8000,
+        max_chunks=4,
+        read_range=_read_interval(1, param="datetime"),
+    )
+    assert [axis.arg_key for axis in plan.axes] == ["datetime"]
+    assert len(_intervals(plan, key="datetime")) == 4
+
+
+def test_time_axis_converts_an_offset_start_to_utc():
+    args = {"time": "2023-01-01T06:30:00-05:00/2023-03-01"}
+    plan = _day_plan(args, _fake_build, url_limit=8000, max_chunks=2)
+    assert _intervals(plan)[0][0] == "2023-01-01T11:30:00Z"
+
+
+def test_time_axis_chunks_of_a_date_only_collection_are_whole_dates():
+    """Through the real request builder, a date-only collection's chunks are
+    whole dates, each ending on the date the next one starts on."""
+    build = functools.partial(_construct_api_requests, dialect=WATERDATA_DIALECT)
+    args = {"collection": "daily", "time": "2023-01-01/2023-03-01"}
+    plan = _day_plan(args, build, url_limit=8000, max_chunks=3)
+    sent = [build(**chunk).url.params["time"] for chunk in plan]
+    assert sent == [
+        "2023-01-01/2023-01-20",
+        "2023-01-20/2023-02-09",
+        "2023-02-09/2023-03-01",
+    ]
 
 
 def test_parallel_chunks_publishes_n_as_the_effective_setting():

@@ -22,7 +22,7 @@ import math
 from collections.abc import Callable, Iterator
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 from urllib.parse import quote_plus
 
 import httpx
@@ -38,7 +38,8 @@ from dataretrieval.ogc.filters import (
 # URL); ~90 OGC params qualify, so the few exceptions are denylisted rather than
 # maintaining a growing allowlist. Excluded because: ``properties`` defines the column
 # schema; ``bbox`` is a fixed coord tuple; date/time params are intervals, not
-# enumerable sets; ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
+# enumerable sets (an adapter may divide one as a :class:`RangeAxis`);
+# ``filter`` is handled as its own OR-axis in ``_extract_axes``; and
 # ``limit`` / ``skip_geometry`` / ``filter_lang`` are scalar by contract.
 _NEVER_CHUNK = frozenset(
     {
@@ -66,6 +67,11 @@ _LIST_SEP = ","
 
 
 _OR_SEP = " OR "
+
+
+# A divided range axis puts one piece in each chunk, so its pieces are never
+# joined; ``render`` sends the piece as it is.
+_NO_JOINER = ""
 
 
 def _request_bytes(req: httpx.Request) -> int:
@@ -193,7 +199,8 @@ class _Axis:
     and the cql-text ``filter`` (split on top-level ``OR``, joiner
     ``" OR "``) fit this shape, so a single greedy halving loop in
     ``ChunkPlan._plan`` handles both — no need for two separate
-    algorithms.
+    algorithms. A divided :class:`RangeAxis` is stored as one too, after both
+    passes, by :meth:`ChunkPlan._divide_range`, with one piece per chunk.
 
     Attributes
     ----------
@@ -207,7 +214,7 @@ class _Axis:
     joiner : str
         Separator placed between atoms when they are joined back into
         URL text — ``","`` for list axes, ``" OR "`` for the filter
-        axis.
+        axis, and none for a divided range axis.
     """
 
     arg_key: str
@@ -239,7 +246,8 @@ class _Axis:
         Convert a chunk into the form the URL builder expects.
 
         List axes yield a new list of atoms (``build_request`` will comma-join); the
-        filter axis yields a pre-joined string (CQL does not accept a list).
+        filter axis yields a pre-joined string (CQL does not accept a list), and
+        a divided range axis its one piece.
 
         Parameters
         ----------
@@ -250,9 +258,32 @@ class _Axis:
         -------
         list of str or str
             ``list(chunk)`` for list axes, ``self.joiner.join(chunk)``
-            for the filter axis.
+            otherwise.
         """
         return list(chunk) if self.joiner == _LIST_SEP else self.joiner.join(chunk)
+
+
+class RangeAxis(Protocol):
+    """One closed range in a request's args, which a plan may divide into pieces.
+
+    The implementation owns what the range measures and where it may be cut;
+    the plan reads only the pieces. Each piece must be sent no longer than the
+    whole range, so dividing it never breaks the byte budget
+    (:meth:`ChunkPlan._divide_range`).
+    """
+
+    @property
+    def arg_key(self) -> str:
+        """The args key each piece is sent under."""
+        ...
+
+    def divide(self, most: int) -> list[str]:
+        """Divide the range into contiguous pieces, in order: two to ``most``.
+
+        The plan calls it only with ``most`` of two or more, and only on a
+        range its reader found divisible in two.
+        """
+        ...
 
 
 def _filter_axis(args: dict[str, Any]) -> _Axis | None:
@@ -355,10 +386,18 @@ class ChunkPlan:
         than the byte budget already forces). The cap applies to the plan as a whole,
         not per axis, so several multi-value axes can't multiply past it. The plan never
         exceeds the cap and may fall below it when no whole split reaches it exactly.
+        A range axis is divided too, by whatever factor of the cap the
+        multi-value axes leave (:meth:`_divide_range`).
         ``max_chunks`` is a chunk count, so a value below ``1`` (``0`` or negative) is a
         caller error and raises ``ValueError``. Set from the
         :func:`~dataretrieval.ogc.chunking.parallel_chunks` ``n``; see
         :meth:`_refine`.
+    read_range : callable, optional
+        Reads the request's range axis: ``read_range(args)`` returns a
+        :class:`RangeAxis`, or ``None`` when ``args`` holds no range that
+        divides in two.
+        Called only when the multi-value axes leave room within ``max_chunks``
+        for two pieces. ``None`` (default) divides no range.
 
     Attributes
     ----------
@@ -368,7 +407,8 @@ class ChunkPlan:
     axes : list[_Axis]
         The chunkable axes of ``args``: each multi-value list
         parameter, plus the cql-text filter (if any) split on top-level
-        OR. Empty in the passthrough case.
+        OR, plus the range axis when it is divided. Empty in the
+        passthrough case.
     chunks : dict[str, list[list[str]]]
         Per-axis partition: ``chunks[axis.arg_key]`` is the list of
         atom-sublists this axis is split into. Empty in passthrough.
@@ -393,6 +433,7 @@ class ChunkPlan:
         build_request: Callable[..., httpx.Request],
         url_limit: int,
         max_chunks: int = 1,
+        read_range: Callable[[dict[str, Any]], RangeAxis | None] | None = None,
     ) -> None:
         if max_chunks < 1:
             raise ValueError(
@@ -404,6 +445,18 @@ class ChunkPlan:
         self.chunks: dict[str, list[list[str]]] = {}
         self.canonical_url: str | None = None
 
+        self._plan_axes(args, build_request, url_limit, max_chunks)
+        if read_range is not None:
+            self._divide_range(read_range, build_request, max_chunks)
+
+    def _plan_axes(
+        self,
+        args: dict[str, Any],
+        build_request: Callable[..., httpx.Request],
+        url_limit: int,
+        max_chunks: int,
+    ) -> None:
+        """Split the multi-value axes for ``url_limit``, then up to ``max_chunks``."""
         axes = _extract_axes(args)
         if not axes:
             _check_unchunkable_request(args, build_request, url_limit)
@@ -519,6 +572,33 @@ class ChunkPlan:
                 return
             axis, idx = candidate
             _split_at(self.chunks[axis.arg_key], idx)
+
+    def _divide_range(
+        self,
+        read_range: Callable[[dict[str, Any]], RangeAxis | None],
+        build_request: Callable[..., httpx.Request],
+        max_chunks: int,
+    ) -> None:
+        """Divide the request's range by the largest factor of ``max_chunks`` left.
+
+        Runs after :meth:`_plan_axes`, so the multi-value axes keep the plan
+        they had without it, and the range multiplies their chunk count by the
+        largest whole factor within ``max_chunks`` that the range allows. Its
+        pieces need not be halves, which is safe only here: the other axes
+        halve so that a split never breaks the byte budget, and a range has
+        none to keep.
+        """
+        most = max_chunks // self.total
+        range_axis = read_range(self.args) if most > 1 else None
+        if range_axis is None:
+            return
+        pieces = range_axis.divide(most)
+        if self.canonical_url is None:
+            # The caller's whole range, as an undivided plan reports it.
+            request = _try_build(build_request, self.args)
+            self.canonical_url = None if request is None else str(request.url)
+        self.axes.append(_Axis(range_axis.arg_key, tuple(pieces), _NO_JOINER))
+        self.chunks[range_axis.arg_key] = [[piece] for piece in pieces]
 
     @staticmethod
     def _largest_chunk_in(

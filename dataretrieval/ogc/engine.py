@@ -35,6 +35,7 @@ import httpx
 import pandas as pd
 
 import dataretrieval.ogc.chunking as chunking
+from dataretrieval.ogc.dates import _interval_axis
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.policy import (
     DEFAULT_DIALECT,
@@ -370,8 +371,9 @@ def get_ogc_data(
             adapter=adapter,
         ).resume()
 
-    # Bind the API target and quirks into the request builder and fetcher the
-    # same way ``finalize`` binds its own state: with ``functools.partial``.
+    # Bind the API target and quirks into the request builder, fetcher, and range
+    # reader the same way ``finalize`` binds its own state: with
+    # ``functools.partial``.
     # The plan sizes candidate chunks and a later ``exc.call.resume()``
     # rebuilds them through these same bound callables, so the values the
     # call was created with apply to every chunk — even a resume invoked long
@@ -386,9 +388,19 @@ def get_ogc_data(
         include_geometry=include_geometry,
         row_cap=max_rows,
     )
-    run = chunking.multi_value_chunked(build_request=build_request, adapter=adapter)(
-        fetch
+    chunk_days = dialect.time_chunk_days.get(collection)
+    read_range = (
+        None
+        if chunk_days is None
+        else functools.partial(
+            _interval_axis, param=dialect.time_param, chunk_days=chunk_days
+        )
     )
+    run = chunking.multi_value_chunked(
+        build_request=build_request,
+        adapter=adapter,
+        read_range=read_range,
+    )(fetch)
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
     return run(args, finalize=finalize)

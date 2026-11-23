@@ -51,6 +51,17 @@ one is. A plan describes how a query divides; it does not execute. Computing a p
 is protocol-specific — a byte budget, a per-location rule — while executing one
 is not, which is why the two are kept in separate modules.
 
+**Axis** — One argument a plan divides. A list axis is a multi-value argument,
+divided between its values. The filter axis is a CQL-text filter, divided
+between its top-level `OR` clauses. A range axis is one closed range, such as a
+time interval, divided into pieces; dividing it does not shorten a request, so
+the plan divides it only to fan out.
+
+*Core term.* The planner divides axes without knowing what they measure. What a
+range measures and where it may be cut belong to the range axis the engine
+builds from the dialect, so the planner names no dimension; `.importlinter` and
+a fitness function check that it imports no date handling.
+
 **Fan-out** — Executing a query's chunks concurrently. Chunking is how the work
 divides; fan-out is how it is distributed. The two are independent, and only
 chunking depends on the service's protocol.
@@ -204,9 +215,9 @@ supplied for one setting does not displace another setting's value from a lower
 source.
 
 *Core term.* The accepted records already use it: ADR 0009 resolves settings
-by source, and ADR 0010 keeps precedence *source-major*. ADR 0010's *tier* is a
-different axis — the scope — and ADR 0011's *rungs* are positions of its merged
-precedence ladder, where sources and scopes interleave. Neither is a second
+by source, and ADR 0010 keeps precedence *source-major*. ADR 0010's *tier*
+names something else — the scope — and ADR 0011's *rungs* are positions of its
+merged precedence ladder, where sources and scopes interleave. Neither is a second
 spelling of this term, and the records keep their own wording.
 
 An external system is a *service*, never a source. NLDI's `data_source`
@@ -259,9 +270,10 @@ may not reference adapters.
 
 **Dialect** — The per-API quirks the shared OGC code needs in order to
 serve two services from one code path: which collections must be POSTed as
-CQL2, which render dates date-only, which columns to coerce and sort by. An
-adapter supplies one and the shared code reads it, which is how protocol code
-stays free of service names.
+CQL2, which render dates date-only, which columns to coerce and sort by, which
+argument holds the time interval, and the shortest time chunk for each
+collection whose interval divides. An adapter supplies one and the shared code
+reads it, which is how protocol code stays free of service names.
 
 **Single-shot adapter** — An adapter whose query is always exactly one request:
 WQP, NLDI, and StreamStats. Nothing divides and nothing
