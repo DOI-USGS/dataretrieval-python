@@ -4,20 +4,33 @@
 %
 % Chunks are colored by endpoint and numbered in plan order; the rows hidden
 % by the gap hold chunks 9 to 92 and 102 to 106. Each file column is one of a
-% location's two files, and each column is as wide as its label. A change
-% chunk names 7 locations: 50 split into at most 8 requests. The dashed line
-% is the boundary between dataretrieval-python and the service.
+% location's two files, as wide as its header, and the axis below gives the
+% span of records each holds. A change chunk names 7 locations: 50 split into
+% at most 8 requests. The dashed line is the boundary between
+% dataretrieval-python and the service, and the rule under each side's name
+% spans that side.
+%
+% Drawn at 1:1 for a page-wide figure, 18 cm. Type sizes follow the hierarchy: the
+% two sides 12 pt bold, each step and endpoint 9 pt bold, labels 8 pt, code
+% 7.5 pt (a typewriter face reads larger), chunk numbers 7 pt.
 %
 % Build the PNG that ADR 0014 includes, from this directory:
 %   pdflatex 0014-cloud-optimized-architecture.tex
 %   pdftocairo -png -r 200 -singlefile 0014-cloud-optimized-architecture.pdf \
 %     0014-cloud-optimized-architecture
-\documentclass[tikz,border=8pt]{standalone}
+\documentclass[tikz,border=4pt]{standalone}
 \usepackage[T1]{fontenc}
-\usepackage[scaled]{helvet}
+\usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{listings}
 \usetikzlibrary{arrows.meta}
+
+% the type hierarchy
+\newcommand{\sidefont}{\fontsize{12}{14}\selectfont\bfseries}
+\newcommand{\stepfont}{\fontsize{9}{11}\selectfont\bfseries}
+\newcommand{\labelfont}{\fontsize{8}{9.6}\selectfont}
+\newcommand{\codefont}{\fontsize{7.5}{9.4}\selectfont}
+\newcommand{\numberfont}{\fontsize{7}{8.4}\selectfont}
 
 % one color per endpoint, and one for the boundary
 \definecolor{cat}{HTML}{C2620A}   % STAC catalog
@@ -31,7 +44,7 @@
 \definecolor{pyname}{HTML}{8250DF}
 \lstdefinestyle{python}{
   language=Python,
-  basicstyle=\ttfamily\footnotesize,
+  basicstyle=\ttfamily\codefont,
   keywordstyle=\color{pykeyword},
   stringstyle=\color{pystring},
   emph={get_continuous}, emphstyle=\color{pyname},
@@ -40,14 +53,17 @@
 }
 
 \begin{document}
+% the code box is as wide as its longest line
+\newlength{\codewidth}
+\settowidth{\codewidth}{\ttfamily\codefont\ \ monitoring\_location\_id=sites,}
 \newsavebox{\querycode}
 \begin{lrbox}{\querycode}
-\begin{minipage}{4.9cm}
+\begin{minipage}{\dimexpr\codewidth+1pt\relax}
 \begin{lstlisting}[style=python]
 sites = [...]
 df, md = get_continuous(
-    monitoring_location_id=sites,
-    time="2025-07-01/..",
+  monitoring_location_id=sites,
+  time="2025-07-01/..",
 )
 \end{lstlisting}
 \end{minipage}
@@ -55,28 +71,28 @@ df, md = get_continuous(
 
 % the endpoint boxes are as wide as their widest line
 \newlength{\boxwidth}
-\newlength{\widthA}\settowidth{\widthA}{\sffamily\footnotesize\bfseries Parquet files}
-\newlength{\widthB}\settowidth{\widthB}{\sffamily\footnotesize\bfseries STAC catalog}
-\newlength{\widthC}\settowidth{\widthC}{\ttfamily\footnotesize /stac-files/}
-\pgfmathsetlength{\boxwidth}{max(\widthA, \widthB, \widthC)}
+\newlength{\widthA}\settowidth{\widthA}{\stepfont Parquet files}
+\newlength{\widthB}\settowidth{\widthB}{\stepfont STAC catalog}
+\newlength{\widthC}\settowidth{\widthC}{\ttfamily\labelfont /stac-files/}
+\pgfmathsetlength{\boxwidth}{max(\widthA, \widthB, \widthC) + 1pt}
 
 \begin{tikzpicture}[
-  font=\sffamily\footnotesize,
-  >={Stealth[length=2.2mm]},
+  font=\labelfont,
+  >={Stealth[length=2mm]},
   chunk/.style={fill=#1!45, draw=white, line width=1pt},
-  number/.style={font=\sffamily\scriptsize, text=black!75},
-  axislabel/.style={font=\sffamily\scriptsize},
-  column/.style={axislabel, anchor=north west, inner xsep=6pt, outer sep=0pt,
-    align=center},
+  number/.style={font=\numberfont, text=black!75},
+  header/.style={anchor=south west, inner xsep=4pt, inner ysep=2pt,
+    outer sep=0pt, align=center},
+  tick/.style={anchor=north, inner sep=2pt},
   flow/.style={->, thick},
   send/.style={->, thick, draw=#1},
-  count/.style={above, font=\sffamily\scriptsize},
+  count/.style={above},
   stage/.style={draw=black!60, fill=black!6, rounded corners=2pt,
-    minimum width=0.9cm, minimum height=4.6cm, anchor=west},
+    minimum height=4.6cm, anchor=west},
   endpoint/.style={draw=#1, very thick, rounded corners=2pt, align=left,
     fill=white, inner sep=3pt, text width=\boxwidth, anchor=west},
-  region/.style={anchor=south, font=\sffamily\normalsize\bfseries,
-    text=boundary},
+  side/.style={font=\sidefont, text=boundary, anchor=south, inner sep=2pt},
+  scope/.style={boundary, thick},
 ]
 
 % The main flow runs along y = 2.4, through the gap in the chunk plan and
@@ -85,31 +101,28 @@ df, md = get_continuous(
 \def\lanes{api/4.0, fil/2.4, cat/0.8}
 
 % ---------------------------------------------------------------- the query
-\node[inner sep=4pt, anchor=west] (query) at (0, 2.4) {\usebox{\querycode}};
+\node[inner sep=0pt, anchor=west] (query) at (0, 2.4) {\usebox{\querycode}};
 
 % ------------------------------------------------------- the catalog request
 \node[draw=cat, very thick, fill=cat!45, rounded corners=2pt,
-  minimum width=0.75cm, minimum height=2.6cm, anchor=west] (catalog)
-  at ([xshift=0.55cm]query.east) {};
-\node[rotate=90] at (catalog.center) {catalog request};
-\draw[flow] (query.east) -- (catalog.west);
-\node[axislabel, anchor=base east, text=black!70]
-  at ([xshift=-0.25cm]catalog.west |- 0, -0.42) {$T$: time of the last Parquet update};
+  minimum width=0.65cm, minimum height=2.6cm, anchor=west] (catalog)
+  at ([xshift=0.35cm]query.east) {};
+\node[rotate=90, font=\stepfont] at (catalog.center) {catalog request};
+\draw[flow] ([xshift=2pt]query.east) -- (catalog.west);
 
 % ------------------------------------------------------------ the chunk plan
 % Rows: one site each, 0.5 high; sites 1 to 4, a gap, sites 47 to 50.
-% Columns: a location's two files, then the changes since. The labels,
+% Columns: a location's two files, then the changes since. The headers,
 % placed first, set each column's width.
-\coordinate (plan west) at ([xshift=1.55cm]catalog.east);
-\draw[flow] (catalog.east) -- node[count] {file URLs} (plan west);
-\coordinate (grid west) at ([xshift=1.05cm]plan west);
-\node[column] (c1) at (grid west |- 0, -0.2) {\texttt{historical} file\\2025-07-01/2026-06-26};
-\node[column] (c2) at (c1.north east) {\texttt{current} file\\2026-06-26/$T$};
-\node[column] (c3) at (c2.north east) {changes\\$T$/..};
+\coordinate (plan west) at ([xshift=0.8cm]catalog.east);
+\draw[flow] (catalog.east) -- node[count, align=center] {file\\URLs} (plan west);
+\coordinate (grid west) at ([xshift=0.85cm]plan west);
+\node[header] (c1) at (grid west |- 0, 4.8) {\texttt{historical}\\file};
+\node[header] (c2) at (c1.south east) {\texttt{current}\\file};
+\node[header] (c3) at (c2.south east) {changes};
 
 \path (c1.west) -- (c3.east) coordinate[midway] (grid middle);
-\node[anchor=south, font=\sffamily\small\bfseries] at (grid middle |- 0, 4.85)
-  {Chunk plan};
+\node[anchor=south, font=\stepfont] at (grid middle |- 0, 5.75) {Chunk plan};
 
 % Change chunks: 101 holds sites 1 to 7, 107 sites 43 to 49, 108 site 50.
 \foreach \chunk/\top/\bottom/\middle in
@@ -123,55 +136,67 @@ df, md = get_continuous(
   \fill[chunk=fil] (c2.west |- 0, \top-0.5) rectangle (c2.east |- 0, \top);
   \node[number] at (c1 |- 0, \top-0.25) {\the\numexpr 2*\site-1\relax};
   \node[number] at (c2 |- 0, \top-0.25) {\the\numexpr 2*\site\relax};
-  \node[axislabel, anchor=east] at ([xshift=-0.1cm]c1.west |- 0, \top-0.25)
+  \node[anchor=east] at ([xshift=-0.08cm]c1.west |- 0, \top-0.25)
     {site \site};
 }
-\node at ([xshift=-0.5cm]c1.west |- 0, 2.4) {$\vdots$};
-\node at (c1 |- 0, 2.4) {$\vdots$};
-\node at (c2 |- 0, 2.4) {$\vdots$};
-\node at (c3 |- 0, 2.4) {$\vdots$};
+\node at ([xshift=-0.45cm]c1.west |- 0, 2.4) {$\vdots$};
+\foreach \c in {c1, c2, c3}
+  \node at (\c |- 0, 2.4) {$\vdots$};
 
-% x axis: one interval per column
+% Time axis: the span of records in each file, then the changes since T.
 \draw[black!50] (c1.west |- 0, -0.1) -- (c3.east |- 0, -0.1);
-\foreach \edge in {c1.west, c1.east, c2.east, c3.east}
+\foreach \edge/\when in {c1.west/2025-07-01, c1.east/2026-06-26, c2.east/$T$,
+                         c3.east/{}} {
   \draw[black!50] (\edge |- 0, -0.03) -- (\edge |- 0, -0.17);
+  \node[tick] at (\edge |- 0, -0.17) {\when};
+}
 
 % ------------------------------------------------------------- the fan-out
 % The catalog request, the file chunks, and the change chunks all run on it.
 % The catalog request passes under the plan and enters from below.
-\node[stage] (fanout) at ([xshift=0.6cm]c3.east |- 0, 2.4) {};
+\node[stage, minimum width=0.8cm] (fanout) at ([xshift=0.4cm]c3.east |- 0, 2.4) {};
 \node[align=center, rotate=90] at (fanout.center)
-  {\textbf{fan-out}\\concurrent requests};
+  {{\stepfont fan-out}\\concurrent requests};
 \draw[flow] (c3.east |- 0, 2.4) -- (fanout.west |- 0, 2.4);
-\draw[send=cat] (catalog.south) -- (catalog.south |- 0, -0.95) -| (fanout.south);
+\draw[send=cat] (catalog.south) -- (catalog.south |- 0, -0.9) -| (fanout.south);
 
 % --------------------------------------- the boundary and the load balancer
-\coordinate (boundary) at ([xshift=1.9cm]fanout.east);
-\draw[boundary, dashed, thick] (boundary |- 0, -1.25) -- (boundary |- 0, 6.45);
-\node[stage] (lb) at ([xshift=0.6cm]boundary |- 0, 2.4) {};
-\node[rotate=90, font=\sffamily\footnotesize\bfseries] at (lb.center)
-  {load balancer};
+% Each request crosses the boundary as it leaves the fan-out.
+\coordinate (boundary) at ([xshift=0.3cm]fanout.east);
+\node[stage, minimum width=0.7cm] (lb) at ([xshift=1.6cm]boundary |- 0, 2.4) {};
+\node[rotate=90, font=\stepfont] at (lb.center) {load balancer};
 
 \foreach \lane/\y in \lanes
   \draw[send=\lane] (fanout.east |- 0, \y) -- (lb.west |- 0, \y);
+\path (boundary) -- (lb.west |- boundary) coordinate[midway] (counts);
 \foreach \y/\label in {4.0/8 chunks, 2.4/100 chunks, 0.8/1 chunk}
-  \node[count] at ([xshift=0.95cm]fanout.east |- 0, \y) {\label};
+  \node[count] at (counts |- 0, \y) {\label};
 
 % ---------------------------------------------------------------- endpoints
-\node[endpoint=api] (ogc)   at ([xshift=0.55cm]lb.east |- 0, 4.0)
-  {\textbf{OGC API}\\\texttt{/ogcapi/}};
-\node[endpoint=fil] (files) at ([xshift=0.55cm]lb.east |- 0, 2.4)
-  {\textbf{Parquet files}\\\texttt{/stac-files/}};
-\node[endpoint=cat] (stac)  at ([xshift=0.55cm]lb.east |- 0, 0.8)
-  {\textbf{STAC catalog}\\\texttt{/stac/}};
+\node[endpoint=api] (ogc)   at ([xshift=0.3cm]lb.east |- 0, 4.0)
+  {{\stepfont OGC API}\\\texttt{/ogcapi/}};
+\node[endpoint=fil] (files) at ([xshift=0.3cm]lb.east |- 0, 2.4)
+  {{\stepfont Parquet files}\\\texttt{/stac-files/}};
+\node[endpoint=cat] (stac)  at ([xshift=0.3cm]lb.east |- 0, 0.8)
+  {{\stepfont STAC catalog}\\\texttt{/stac/}};
 \foreach \lane/\y in \lanes
-  \draw[send=\lane] (lb.east |- 0, \y) -- ([xshift=0.55cm]lb.east |- 0, \y);
+  \draw[send=\lane] (lb.east |- 0, \y) -- ([xshift=0.3cm]lb.east |- 0, \y);
+
+\node[anchor=south east, align=right, text=black!70, inner sep=0pt]
+  at (files.east |- 0, -0.95) {$T$: time of the last\\Parquet update};
 
 % ----------------------------------------------------------- the two sides
-\path (query.west |- 0, 5.95) -- (boundary |- 0, 5.95)
-  node[region, midway] {dataretrieval-python};
-\path (boundary |- 0, 5.95) -- (files.east |- 0, 5.95)
-  node[region, midway] {api.waterdata.usgs.gov};
+% A rule under each side's name spans that side, up to the boundary.
+\def\ruley{6.4}
+\draw[boundary, dashed, thick] (boundary |- 0, -1.0) -- (boundary |- 0, 7.0);
+\coordinate (client east) at ([xshift=-0.2cm]boundary);
+\coordinate (service west) at ([xshift=0.2cm]boundary);
+\foreach \west/\east/\name in {query.west/client east/dataretrieval-python,
+    service west/files.east/api.waterdata.usgs.gov} {
+  \draw[scope] (\west |- 0, \ruley-0.15) -- (\west |- 0, \ruley)
+    -- (\east |- 0, \ruley) -- (\east |- 0, \ruley-0.15);
+  \path (\west |- 0, \ruley) -- (\east |- 0, \ruley) node[side, midway] {\name};
+}
 
 \end{tikzpicture}
 \end{document}
