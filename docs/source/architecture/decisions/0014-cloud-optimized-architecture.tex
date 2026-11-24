@@ -4,15 +4,15 @@
 %
 % Chunks are colored by endpoint and numbered in plan order; the rows hidden
 % by the gap hold chunks 9 to 92 and 102 to 106. Each file column is one of a
-% location's two files, as wide as its header, and the axis below gives the
-% span of records each holds. A change chunk names 7 locations: 50 split into
-% at most 8 requests. The dashed line is the boundary between
-% dataretrieval-python and the service, and the rule under each side's name
-% spans that side.
+% location's two files, and the axis below gives the span of records each
+% holds. A change chunk names 7 locations: 50 split into at most 8 requests.
+% The dashed line is the boundary between dataretrieval-python and the
+% service, and the rule under each side's name spans that side.
 %
-% Drawn at 1:1 for a page-wide figure, 18 cm. Type sizes follow the hierarchy: the
-% two sides 12 pt bold, each step and endpoint 9 pt bold, labels 8 pt, code
-% 7.5 pt (a typewriter face reads larger), chunk numbers 7 pt.
+% Drawn at 1:1 for a page-wide figure, 18 cm. Type sizes follow the
+% hierarchy: the two sides 12 pt bold, each step and endpoint 9 pt bold,
+% labels 8 pt, code 7.5 pt (a typewriter face reads larger), chunk numbers
+% 7 pt.
 %
 % Build the PNG that ADR 0014 includes, from this directory:
 %   pdflatex 0014-cloud-optimized-architecture.tex
@@ -47,22 +47,25 @@
   basicstyle=\ttfamily\codefont,
   keywordstyle=\color{pykeyword},
   stringstyle=\color{pystring},
+  commentstyle=\color{black!55},
   emph={get_continuous}, emphstyle=\color{pyname},
   showstringspaces=false, columns=fullflexible, keepspaces=true,
   upquote=true, aboveskip=0pt, belowskip=0pt,
 }
 
 \begin{document}
-% the code box is as wide as its longest line
+% the code box is as wide as its longest line, 28 characters
 \newlength{\codewidth}
-\settowidth{\codewidth}{\ttfamily\codefont\ \ monitoring\_location\_id=sites,}
+\settowidth{\codewidth}{\ttfamily\codefont 0}
+\setlength{\codewidth}{28\codewidth}
 \newsavebox{\querycode}
 \begin{lrbox}{\querycode}
 \begin{minipage}{\dimexpr\codewidth+1pt\relax}
 \begin{lstlisting}[style=python]
-sites = [...]
+# n=50
+monitoring_locations = [...]
 df, md = get_continuous(
-  monitoring_location_id=sites,
+  monitoring_locations,
   time="2025-07-01/..",
 )
 \end{lstlisting}
@@ -82,7 +85,7 @@ df, md = get_continuous(
   chunk/.style={fill=#1!45, draw=white, line width=1pt},
   number/.style={font=\numberfont, text=black!75},
   header/.style={anchor=south west, inner xsep=4pt, inner ysep=2pt,
-    outer sep=0pt, align=center},
+    outer sep=0pt, text height=0.75em, text depth=0.25em},
   tick/.style={anchor=north, inner sep=2pt},
   flow/.style={->, thick},
   send/.style={->, thick, draw=#1},
@@ -101,28 +104,31 @@ df, md = get_continuous(
 \def\lanes{api/4.0, fil/2.4, cat/0.8}
 
 % ---------------------------------------------------------------- the query
-\node[inner sep=0pt, anchor=west] (query) at (0, 2.4) {\usebox{\querycode}};
+% Placed so that the call's line, the third of six, is on the main flow.
+\node[inner sep=0pt, anchor=west] (query) at (0, 2.23) {\usebox{\querycode}};
 
 % ------------------------------------------------------- the catalog request
 \node[draw=cat, very thick, fill=cat!45, rounded corners=2pt,
   minimum width=0.65cm, minimum height=2.6cm, anchor=west] (catalog)
-  at ([xshift=0.35cm]query.east) {};
+  at ([xshift=0.35cm]query.east |- 0, 2.4) {};
 \node[rotate=90, font=\stepfont] at (catalog.center) {catalog request};
-\draw[flow] ([xshift=2pt]query.east) -- (catalog.west);
+\draw[flow] ([xshift=2pt]query.east |- 0, 2.4) -- (catalog.west);
 
 % ------------------------------------------------------------ the chunk plan
 % Rows: one site each, 0.5 high; sites 1 to 4, a gap, sites 47 to 50.
 % Columns: a location's two files, then the changes since. The headers,
-% placed first, set each column's width.
+% placed first, set each column's width, wide enough for the axis dates.
 \coordinate (plan west) at ([xshift=0.8cm]catalog.east);
 \draw[flow] (catalog.east) -- node[count, align=center] {file\\URLs} (plan west);
 \coordinate (grid west) at ([xshift=0.85cm]plan west);
-\node[header] (c1) at (grid west |- 0, 4.8) {\texttt{historical}\\file};
-\node[header] (c2) at (c1.south east) {\texttt{current}\\file};
-\node[header] (c3) at (c2.south east) {changes};
+\node[header, minimum width=1.9cm] (c1) at (grid west |- 0, 4.8)
+  {\texttt{historical}};
+\node[header, minimum width=1.5cm] (c2) at (c1.south east) {\texttt{current}};
+\node[header, minimum width=1.3cm] (c3) at (c2.south east) {changes};
 
 \path (c1.west) -- (c3.east) coordinate[midway] (grid middle);
-\node[anchor=south, font=\stepfont] at (grid middle |- 0, 5.75) {Chunk plan};
+\node[anchor=south, font=\stepfont, inner sep=0pt]
+  at ([yshift=0.15cm]grid middle |- c1.north) {Chunk plan};
 
 % Change chunks: 101 holds sites 1 to 7, 107 sites 43 to 49, 108 site 50.
 \foreach \chunk/\top/\bottom/\middle in
@@ -154,7 +160,7 @@ df, md = get_continuous(
 % ------------------------------------------------------------- the fan-out
 % The catalog request, the file chunks, and the change chunks all run on it.
 % The catalog request passes under the plan and enters from below.
-\node[stage, minimum width=0.8cm] (fanout) at ([xshift=0.4cm]c3.east |- 0, 2.4) {};
+\node[stage, minimum width=0.8cm] (fanout) at ([xshift=0.35cm]c3.east |- 0, 2.4) {};
 \node[align=center, rotate=90] at (fanout.center)
   {{\stepfont fan-out}\\concurrent requests};
 \draw[flow] (c3.east |- 0, 2.4) -- (fanout.west |- 0, 2.4);
@@ -163,13 +169,13 @@ df, md = get_continuous(
 % --------------------------------------- the boundary and the load balancer
 % Each request crosses the boundary as it leaves the fan-out.
 \coordinate (boundary) at ([xshift=0.3cm]fanout.east);
-\node[stage, minimum width=0.7cm] (lb) at ([xshift=1.6cm]boundary |- 0, 2.4) {};
+\node[stage, minimum width=0.7cm] (lb) at ([xshift=1.73cm]boundary |- 0, 2.4) {};
 \node[rotate=90, font=\stepfont] at (lb.center) {load balancer};
 
 \foreach \lane/\y in \lanes
   \draw[send=\lane] (fanout.east |- 0, \y) -- (lb.west |- 0, \y);
 \path (boundary) -- (lb.west |- boundary) coordinate[midway] (counts);
-\foreach \y/\label in {4.0/8 chunks, 2.4/100 chunks, 0.8/1 chunk}
+\foreach \y/\label in {4.0/8$\times$, 2.4/100$\times$, 0.8/1$\times$}
   \node[count] at (counts |- 0, \y) {\label};
 
 % ---------------------------------------------------------------- endpoints
@@ -182,13 +188,14 @@ df, md = get_continuous(
 \foreach \lane/\y in \lanes
   \draw[send=\lane] (lb.east |- 0, \y) -- ([xshift=0.3cm]lb.east |- 0, \y);
 
-\node[anchor=south east, align=right, text=black!70, inner sep=0pt]
-  at (files.east |- 0, -0.95) {$T$: time of the last\\Parquet update};
+\node[anchor=south west, align=left, text=black!70, inner sep=0pt]
+  at (query.west |- 0, -0.95) {$T$: time of the last\\Parquet update};
 
 % ----------------------------------------------------------- the two sides
 % A rule under each side's name spans that side, up to the boundary.
-\def\ruley{6.4}
-\draw[boundary, dashed, thick] (boundary |- 0, -1.0) -- (boundary |- 0, 7.0);
+\def\ruley{6.0}
+\draw[boundary, dashed, thick] (boundary |- 0, -1.0)
+  -- (boundary |- 0, \ruley+0.6);
 \coordinate (client east) at ([xshift=-0.2cm]boundary);
 \coordinate (service west) at ([xshift=0.2cm]boundary);
 \foreach \west/\east/\name in {query.west/client east/dataretrieval-python,
