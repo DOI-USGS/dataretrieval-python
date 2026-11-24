@@ -157,7 +157,7 @@ full term wherever a reader could take it either way.
 
 **Default profile** — The profile an adapter uses when no other is selected:
 the `[<adapter>]` table's own keys. Always in effect. A **named profile**
-(`[<adapter>.bulk]`) is in effect only when a caller selects it, so adding one
+(`[<adapter>.overnight]`) is in effect only when a caller selects it, so adding one
 to a file never changes an existing script.
 
 **Effective configuration** — The resolved set of settings a call will use:

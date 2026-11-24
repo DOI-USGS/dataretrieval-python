@@ -48,6 +48,7 @@ from __future__ import annotations
 import asyncio
 import functools
 from collections.abc import Awaitable, Callable, Iterator
+from datetime import timedelta
 from typing import Any, Generic, Protocol, TypeVar, cast
 
 import httpx
@@ -140,6 +141,28 @@ def active_client() -> httpx.AsyncClient | None:
         ``None`` outside one.
     """
     return _active_client.get()
+
+
+def inert_response(
+    status: int,
+    url: str,
+    headers: httpx.Headers | None = None,
+    elapsed: timedelta | None = None,
+) -> httpx.Response:
+    """A body-less stand-in for a fetch to hand the executor.
+
+    The executor keeps every completed item's response until the run ends,
+    but its aggregation reads only status, headers, elapsed time, and URL --
+    never the body. A fetch that downloads a file passes this stand-in so a
+    large run does not hold every file in memory. Without ``elapsed``, the
+    aggregate's ``_safe_elapsed`` counts the item as taking no time.
+    """
+    response = httpx.Response(
+        status, headers=headers, request=httpx.Request("GET", url)
+    )
+    if elapsed is not None:
+        response.elapsed = elapsed
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -639,4 +662,5 @@ __all__ = [
     "FanOut",
     "FanOutPlan",
     "active_client",
+    "inert_response",
 ]

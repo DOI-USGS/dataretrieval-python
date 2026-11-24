@@ -7,8 +7,7 @@ import pytest
 
 from dataretrieval.exceptions import DataRetrievalError, SkippedRatingWarning
 from dataretrieval.interruptions import QuotaExhausted
-from dataretrieval.waterdata import get_ratings
-from dataretrieval.waterdata.ratings import _build_filter
+from dataretrieval.waterdata import catalog, get_ratings
 
 # pytest-httpx matches URL strings exactly (including query). For the ratings tests the
 # fixture matches the endpoint and ignores the params, so the assertions can inspect the
@@ -19,23 +18,34 @@ STAC_SEARCH_RE = re.compile(
 )
 
 
-def test_build_filter_single_site_single_type():
-    f = _build_filter("USGS-01104475", "exsa")
+def _sent_filter(httpx_mock, **kwargs):
+    """The ``filter`` of the one search ``get_ratings(**kwargs)`` sends."""
+    httpx_mock.add_response(url=STAC_SEARCH_RE, json={"features": []})
+    get_ratings(download_and_parse=False, **kwargs)
+    (sent,) = httpx_mock.get_requests()
+    return parse_qs(urlsplit(str(sent.url)).query).get("filter", [None])[0]
+
+
+def test_filter_single_site_single_type(httpx_mock):
+    f = _sent_filter(httpx_mock, monitoring_location_id="USGS-01104475")
     assert f == "monitoring_location_id IN ('USGS-01104475') AND file_type = 'exsa'"
 
 
-def test_build_filter_multi_site_no_type():
-    f = _build_filter(["USGS-A", "USGS-B"], None)
+def test_filter_multi_site_no_type(httpx_mock):
+    f = _sent_filter(
+        httpx_mock,
+        monitoring_location_id=["USGS-A", "USGS-B"],
+        file_type=["exsa", "corr"],
+    )
     assert f == "monitoring_location_id IN ('USGS-A', 'USGS-B')"
 
 
-def test_build_filter_no_site_single_type():
-    f = _build_filter(None, "corr")
-    assert f == "file_type = 'corr'"
+def test_filter_no_site_single_type(httpx_mock):
+    assert _sent_filter(httpx_mock, file_type="corr") == "file_type = 'corr'"
 
 
-def test_build_filter_empty_returns_none():
-    assert _build_filter(None, None) is None
+def test_no_site_and_several_types_send_no_filter(httpx_mock):
+    assert _sent_filter(httpx_mock, file_type=["exsa", "corr"]) is None
 
 
 def test_get_ratings_rejects_invalid_file_type():
@@ -52,12 +62,19 @@ def test_get_ratings_rejects_iso_8601_duration_in_time():
         )
 
 
-def test_build_filter_escapes_quotes():
+def test_catalog_search_quotes_an_id_holding_a_quote(httpx_mock):
     """Prevents malformed CQL or injection if an ID contains a quote."""
-    f = _build_filter("USGS-x'-y", None)
-    assert f == """monitoring_location_id IN ("USGS-x'-y")"""
+    httpx_mock.add_response(url=STAC_SEARCH_RE, json={"features": []})
+    options = {"limit": 10, "ssl_check": True, "service": "ratings", "remedy": "-"}
+
+    catalog.search("ratings", "USGS-x'-y", **options)
+
+    (sent,) = httpx_mock.get_requests()
+    assert parse_qs(urlsplit(str(sent.url)).query)["filter"] == [
+        """monitoring_location_id IN ("USGS-x'-y")"""
+    ]
     with pytest.raises(ValueError, match="contains both .* 'AGENCY-ID'"):
-        _build_filter("USGS-x'\"-y", None)
+        catalog.search("ratings", "USGS-x'\"-y", **options)
 
 
 _SAMPLE_RDB = """\

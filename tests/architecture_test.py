@@ -429,6 +429,8 @@ _EXPLICIT_EXPORT_MODULES = (
     "streamstats.py",
     "nwdc.py",
     "wqp.py",
+    "waterdata/catalog.py",
+    "waterdata/files.py",
     "waterdata/nearest.py",
     "waterdata/ratings.py",
     "waterdata/stats.py",

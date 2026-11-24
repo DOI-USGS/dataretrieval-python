@@ -112,6 +112,7 @@ class ProgressReporter:
         self._stream = stream if stream is not None else sys.stderr
         self.enabled = _enabled_default(self._stream) if enabled is None else enabled
         # Whether the sign-up pointer on close() is advice this caller can act on.
+        self._target_url = target_url
         self._key_helps = accepts_api_key(target_url)
         # The service/collection being retrieved (e.g. "daily", "peaks"),
         # shown as the line's leading label.
@@ -255,7 +256,7 @@ class ProgressReporter:
 
     def _maybe_hint_api_key(self) -> None:
         global _api_key_hint_shown
-        if not self._key_helps or _api_key_hint_shown or api_key():
+        if not self._key_helps or _api_key_hint_shown or api_key(self._target_url):
             return
         # Set the once-per-process latch only after a successful write, so a
         # failed write (broken pipe) doesn't suppress the hint for every

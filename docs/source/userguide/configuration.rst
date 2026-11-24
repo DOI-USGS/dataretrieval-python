@@ -99,6 +99,11 @@ Settings
      - ``API_USGS_PAT``
      - Water Data API key. Raises your hourly request quota substantially;
        `register for one <https://api.waterdata.usgs.gov/signup/>`_.
+   * - ``files_api_key``
+     - none
+     - ``API_USGS_FILES_PAT``
+     - A second Water Data API key, sent only with requests for the
+       published files and their catalog. See :ref:`configuration-bulk`.
    * - ``concurrency``
      - ``32``
      - ``API_USGS_CONCURRENT``
@@ -140,6 +145,12 @@ Settings
      - Which version of one service's API to request, as the segment of its
        path (``"v1"``). Per adapter; Water Data reads it for its OGC
        collections. See :ref:`configuration-api-version`.
+   * - ``bulk``
+     - ``"auto"``
+     - *(none — code or file)*
+     - Whether Water Data's ``get_daily`` and ``get_continuous`` read history
+       from the nightly Parquet files: ``"off"``, ``"auto"``, or
+       ``"always"``. See :ref:`configuration-bulk`.
 
 
 Where settings come from
@@ -149,7 +160,7 @@ Highest precedence first:
 
 1. A configuration passed to an active ``dataretrieval.configure(...)`` block.
 2. A named profile you selected in that block —
-   ``WaterdataConfiguration.load("bulk")``.
+   ``WaterdataConfiguration.load("overnight")``.
 3. The environment variable for that setting.
 4. The adapter's default profile in the configuration file: the
    ``[<adapter>]`` table.
@@ -285,8 +296,10 @@ Adapter                               Configuration                           Ac
 ====================================  ======================================  ========================================
 ``waterdata``                         ``waterdata.WaterdataConfiguration``    ``concurrency``, ``parallel_chunks``,
                                                                               ``retries``, ``stall_timeout``,
-                                                                              ``base_url``, ``api_version``
+                                                                              ``base_url``, ``api_version``,
+                                                                              ``bulk``
 ``ngwmn``                             ``ngwmn.NgwmnConfiguration``            the same, without ``api_version``
+                                                                              and ``bulk``
 ``nwdc``                              ``nwdc.NwdcConfiguration``              ``concurrency``, ``retries``,
                                                                               ``stall_timeout``, ``base_url``
 ``wqp``, ``nldi``, ``streamstats``    ``wqp.WqpConfiguration`` and so on      ``retries``, ``stall_timeout``,
@@ -315,11 +328,11 @@ is that adapter's **default profile** — always in effect, as above — while a
    [waterdata]
    concurrency = 16          # the default profile: always in effect
 
-   [waterdata.bulk-pull]
+   [waterdata.overnight-pull]
    concurrency = "unbounded" # only when selected
    parallel_chunks = 8
 
-So one file can hold an overnight bulk profile beside a low-rate daytime one,
+So one file can hold an overnight profile beside a low-rate daytime one,
 and name as many of each as an adapter has uses for.
 
 A named profile states only what differs: everything it does not name still
@@ -333,7 +346,7 @@ to settings you did not ask for. What comes back is inert until you pass it to
 ``configure``; that is what puts a selected profile above the environment,
 since selecting one is something your code did.
 
-A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
+A profile holds settings and nothing else: ``[waterdata.overnight-pull.ngwmn]`` is
 not a Water Data profile containing NGWMN detail, and selecting it raises
 rather than ignoring the nested table. Two adapters means two profiles,
 selected in the same block, as in :ref:`the example above
@@ -417,29 +430,30 @@ Checking what is in effect
 ``show_configuration()`` reports each setting's effective value and where it came
 from. It never prints the key itself. The report below is what a file holding a
 key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
-``[waterdata.bulk]`` profile produces, with ``API_USGS_RETRIES`` exported and
+``[waterdata.overnight]`` profile produces, with ``API_USGS_RETRIES`` exported and
 the ``bulk`` profile selected for the block:
 
 .. code-block:: python
 
-   >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+   >>> with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
    ...     dataretrieval.show_configuration()
    config file  /home/u/.dataretrieval/config.toml (found)
-   api_key          <set>  /home/u/.dataretrieval/config.toml
-   concurrency      16     /home/u/.dataretrieval/config.toml
-   retries          8      $API_USGS_RETRIES
-   progress         auto   built-in default
-   parallel_chunks  1      built-in default
-   stall_timeout    60s    built-in default
+   api_key          <set>      /home/u/.dataretrieval/config.toml
+   files_api_key    <not set>  built-in default
+   concurrency      16         /home/u/.dataretrieval/config.toml
+   retries          8          $API_USGS_RETRIES
+   progress         auto       built-in default
+   parallel_chunks  1          built-in default
+   stall_timeout    60s        built-in default
 
    A built-in default is package-wide. An adapter may use its own default for
    its own calls; a value from any source above overrides both.
 
    adapter overrides
-     waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+     waterdata  parallel_chunks  8  configure() block [waterdata.overnight]
      ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-   profiles in the file: [waterdata.bulk]
+   profiles in the file: [waterdata.overnight]
      A profile applies only where a row above names it; select one in
      code with <Adapter>Configuration.load("<name>").
 
@@ -448,14 +462,14 @@ the ``bulk`` profile selected for the block:
 Each line names the exact origin, including which table inside the file, which
 is usually enough to find why a call is still using an old key. A value that
 came from a profile names the profile — ``configure() block
-[waterdata.bulk]``, not only "a block" — so a report taken from inside a
+[waterdata.overnight]``, not only "a block" — so a report taken from inside a
 ``with`` block says which selection produced it. Only settings
 overridden for an adapter get a row in the second section; everything else is
 inherited from the rows above it.
 
 The profile section lists what the *file* defines, whether or not this run
 selected any of it. A named profile does nothing until a caller selects it, so
-seeing ``[waterdata.bulk]`` there while no row above mentions it explains
+seeing ``[waterdata.overnight]`` there while no row above mentions it explains
 why adding a profile changed nothing.
 
 The last line is the cost of validating an adapter's settings lazily:
@@ -595,6 +609,64 @@ so every other getter still uses the version you set.
 Unlike ``base_url``, ``api_version`` may be set in the file,
 because a version cannot send a request to another host.
 It has no environment variable.
+
+
+.. _configuration-bulk:
+
+Reading Water Data history from the nightly files
+-------------------------------------------------
+
+USGS also publishes the ``daily`` and ``continuous`` collections as Parquet
+files, one set per monitoring location, written by a nightly job. Under the
+``bulk`` setting's default, ``"auto"``, ``get_daily`` and ``get_continuous``
+read a large query's history from those files and only the records changed
+since from the API, then return one frame with the same columns and types,
+less the record id. A smaller query, and any query the files cannot answer,
+pages the API. The choice is made per query, without a request.
+
+``"always"`` reads the files for every query and raises ``ValueError`` for
+one they cannot answer, which is useful for comparing the two paths.
+``"off"`` always pages the API and returns the record id:
+
+.. code-block:: python
+
+   with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
+       df, md = waterdata.get_daily(
+           monitoring_location_id=sites, parameter_code="00060"
+       )
+
+.. code-block:: toml
+
+   [waterdata]
+   bulk = "off"
+
+The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` or
+``"always"`` a query the files can answer returns no such column, whether the
+files or the API answered it; ``(time_series_id, time)`` identifies a record.
+A record deleted from the API since the files were written is still returned
+until the files are next written. That is usually the next night, and USGS
+says it can take up to a week. Reading the files needs ``pyarrow``
+(``pip install "dataretrieval[pyarrow]"``); without it, the getters page the API
+and warn. Like ``api_version``, ``bulk`` has no environment variable.
+
+The service counts requests per key, with a different hourly ceiling for
+each endpoint: 1,000 for the API and 10,000 for the files in November 2026.
+A pull of more than about 1,000 files under one key therefore leaves the API
+no requests for the rest of the hour, and the call fails on its last step,
+the query for changed records. For a pull that large, USGS recommends a
+second key for the files. Register for one and set it as ``files_api_key``;
+it is sent with every file download and catalog search (``/stac-files/``
+and ``/stac/``), and ``api_key`` with everything else:
+
+.. code-block:: bash
+
+   export API_USGS_FILES_PAT="your_second_key_here"
+
+.. code-block:: toml
+
+   files_api_key = "your_second_key_here"
+
+Without it, both use ``api_key``.
 
 
 .. _configuration-secret-store:

@@ -33,7 +33,7 @@ A caller configures by passing configuration objects, at most one per adapter::
 
     with dataretrieval.configure(
         Configuration(api_key=vault.read("usgs/pat")),
-        WaterdataConfiguration.load("bulk"),
+        WaterdataConfiguration.load("overnight"),
         NgwmnConfiguration(concurrency=4),
     ):
         ...
@@ -73,8 +73,10 @@ from typing import TextIO, overload
 from dataretrieval._configuration_core import (
     ADAPTERS as ADAPTERS,
     BLOCK_ONLY_SETTINGS as BLOCK_ONLY_SETTINGS,
+    BULK_MODES as BULK_MODES,
     CONFIG_PATH_ENV as CONFIG_PATH_ENV,
     CONCURRENCY_UNBOUNDED as CONCURRENCY_UNBOUNDED,
+    DEFAULT_BULK as DEFAULT_BULK,
     DEFAULT_CONCURRENCY as DEFAULT_CONCURRENCY,
     DEFAULT_PARALLEL_CHUNKS as DEFAULT_PARALLEL_CHUNKS,
     DEFAULT_RETRIES as DEFAULT_RETRIES,
@@ -87,6 +89,7 @@ from dataretrieval._configuration_core import (
     _ALL_SETTINGS as _ALL_SETTINGS,
     _BLANK_MEANS_SET as _BLANK_MEANS_SET,
     _BUILT_IN as _BUILT_IN,
+    _Bulk as _Bulk,
     _Chunked as _Chunked,
     _coerce_typed as _coerce_typed,
     _Concurrent as _Concurrent,
@@ -97,6 +100,7 @@ from dataretrieval._configuration_core import (
     _NO_FILE as _NO_FILE,
     _parse_api_version as _parse_api_version,
     _parse_base_url as _parse_base_url,
+    _parse_bulk as _parse_bulk,
     _parse_concurrency as _parse_concurrency,
     _parse_parallel_chunks as _parse_parallel_chunks,
     _parse_progress as _parse_progress,
@@ -148,7 +152,7 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
 
         with dataretrieval.configure(
             Configuration(api_key=secrets["usgs"]),
-            WaterdataConfiguration.load("bulk"),
+            WaterdataConfiguration.load("overnight"),
             NgwmnConfiguration(concurrency=4),
         ):
             df, md = waterdata.get_daily(monitoring_location_id=sites)
@@ -199,8 +203,8 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
         ):
             df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
 
-        # a large overnight pull, from a [waterdata.bulk] table in the file
-        with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        # a large overnight pull, from a [waterdata.overnight] table in the file
+        with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
             df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
     See Also
@@ -292,24 +296,25 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
 
     .. code-block:: text
 
-        >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        >>> with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         ...     dataretrieval.show_configuration()
         config file  /home/u/.dataretrieval/config.toml (found)
-        api_key          <set>  /home/u/.dataretrieval/config.toml
-        concurrency      16     /home/u/.dataretrieval/config.toml
-        retries          8      $API_USGS_RETRIES
-        progress         auto   built-in default
-        parallel_chunks  1      built-in default
-        stall_timeout    60s    built-in default
+        api_key          <set>      /home/u/.dataretrieval/config.toml
+        files_api_key    <not set>  built-in default
+        concurrency      16         /home/u/.dataretrieval/config.toml
+        retries          8          $API_USGS_RETRIES
+        progress         auto       built-in default
+        parallel_chunks  1          built-in default
+        stall_timeout    60s        built-in default
 
         A built-in default is package-wide. An adapter may use its own default for
         its own calls; a value from any source above overrides both.
 
         adapter overrides
-          waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+          waterdata  parallel_chunks  8  configure() block [waterdata.overnight]
           ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-        profiles in the file: [waterdata.bulk]
+        profiles in the file: [waterdata.overnight]
           A profile applies only where a row above names it; select one in
           code with <Adapter>Configuration.load("<name>").
 
@@ -419,7 +424,7 @@ def _show_adapter_overrides(
     value a call will use among rows that change nothing.
 
     Each row names its origin exactly, which for a selected profile is the
-    profile: ``configure() block [waterdata.bulk]`` rather than a bare block,
+    profile: ``configure() block [waterdata.overnight]`` rather than a bare block,
     so the report names *which* profile supplied the value.
 
     An adapter this process has not imported has no vocabulary to resolve
@@ -487,7 +492,7 @@ def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
 
     A named profile does nothing until a caller selects it, and that is what
     readers of a configuration file misunderstand: adding
-    ``[waterdata.bulk]`` changes no run on its own. A report that mentioned a
+    ``[waterdata.overnight]`` changes no run on its own. A report that mentioned a
     profile only when one had been selected would leave the profile's
     lack of effect unexplained -- the file would appear to be ignored.
 
@@ -544,7 +549,22 @@ def api_key() -> str | None:
     Surrounding whitespace is stripped, so a key read from a file with a
     trailing newline works; a blank value resolves to ``None``.
     """
-    raw, _label, _source = _resolve("api_key")
+    return _resolved_key("api_key")
+
+
+def files_api_key() -> str | None:
+    """The key for the published files and their catalog, or ``None``.
+
+    The credentials leaf sends it in place of :func:`api_key` on
+    ``/stac-files/`` and ``/stac/`` requests, and falls back to
+    :func:`api_key` when this is ``None``. Whitespace and a blank value are
+    treated as in :func:`api_key`.
+    """
+    return _resolved_key("files_api_key")
+
+
+def _resolved_key(name: str) -> str | None:
+    raw, _label, _source = _resolve(name)
     return raw.strip() or None if raw is not None else None
 
 
@@ -691,6 +711,21 @@ def api_version(
     if raw is None:
         return default
     return _parse_api_version(raw, label)
+
+
+def bulk(*, adapter: str | None = None) -> str:
+    """When an adapter reads a query's history from published files.
+
+    One of :data:`BULK_MODES`; :data:`DEFAULT_BULK` (``"auto"``) when nothing
+    configured it. Settable from code or from the adapter's table in the file;
+    like :func:`api_version`, it has no environment variable. Both
+    :func:`show_configuration` and the adapter that reads the setting call
+    this function, so they cannot disagree about the default.
+    """
+    raw, label, _source = _resolve("bulk", adapter)
+    if raw is None:
+        return DEFAULT_BULK
+    return _parse_bulk(raw, label)
 
 
 # --- resolution ----------------------------------------------------------
@@ -858,6 +893,11 @@ def _display_api_key(_adapter: str | None = None) -> str:
     return "<set>" if api_key() else "<not set>"
 
 
+def _display_files_api_key(_adapter: str | None = None) -> str:
+    """Render the key's presence, never its value."""
+    return "<set>" if files_api_key() else "<not set>"
+
+
 def _display_concurrency(adapter: str | None = None) -> str:
     value = concurrency(adapter=adapter)
     return CONCURRENCY_UNBOUNDED if value is None else str(value)
@@ -880,6 +920,7 @@ def _display_progress(_adapter: str | None = None) -> str:
 #: adapter-scoped, and :func:`_show_adapter_overrides` never calls them.
 _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "api_key": _display_api_key,
+    "files_api_key": _display_files_api_key,
     "concurrency": _display_concurrency,
     "retries": lambda adapter: str(retries(adapter=adapter)),
     "progress": _display_progress,
@@ -887,6 +928,7 @@ _DISPLAYS: dict[str, Callable[[str | None], str]] = {
     "stall_timeout": lambda adapter: f"{stall_timeout(adapter=adapter):g}s",
     "base_url": lambda adapter: base_url(adapter=adapter) or "<service default>",
     "api_version": lambda adapter: api_version(adapter=adapter) or "<service default>",
+    "bulk": lambda adapter: bulk(adapter=adapter),
 }
 
 if set(_DISPLAYS) != set(_ALL_SETTINGS):  # pragma: no cover - guards a coding error

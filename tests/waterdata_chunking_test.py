@@ -1197,6 +1197,27 @@ def test_list_axis_chunks_dedupe_repeated_feature_ids():
     assert frame.to_dict(orient="records") == [{"id": "feature-1", "site": "A"}]
 
 
+@pytest.mark.parametrize(
+    ("chunks", "setting", "expected"),
+    [(4, 1, 4), (2, 4, 4), (1, 1, 1)],
+)
+def test_a_caller_fan_out_is_raised_by_a_larger_setting(chunks, setting, expected):
+    """A library function asks for its own fan-out without entering the
+    caller's configuration; the caller's ``parallel_chunks`` still applies."""
+    sizes = []
+
+    @multi_value_chunked(build_request=_fake_build, url_limit=8000)
+    async def fetch(args):
+        sizes.append(len(args["sites"]))
+        return pd.DataFrame({"sites": list(args["sites"])}), _quota_response(500)
+
+    with parallel_chunks(setting):
+        fetch({"sites": list("ABCDEFGH")}, chunks=chunks)
+
+    assert len(sizes) == expected
+    assert sum(sizes) == 8
+
+
 def test_retry_after_surfaces_on_quota_exhausted():
     """If the 429 response includes a ``Retry-After`` header, that
     delay must be carried from the typed transport exception

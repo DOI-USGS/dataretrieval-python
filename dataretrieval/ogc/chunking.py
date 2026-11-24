@@ -203,9 +203,11 @@ def multi_value_chunked(
     Returns
     -------
     Callable
-        A *synchronous* wrapper ``wrapper(args, *, finalize=...) ->
+        A *synchronous* wrapper ``wrapper(args, *, finalize=..., chunks=1) ->
         (df, response)`` that executes the underlying plan
-        over the decorated async fetcher.
+        over the decorated async fetcher. ``chunks`` is the caller's own
+        fan-out, as ``parallel_chunks(chunks)`` would ask for; the setting
+        wins when it is larger.
 
     Raises
     ------
@@ -230,6 +232,7 @@ def multi_value_chunked(
             args: dict[str, Any],
             *,
             finalize: _Finalize = _passthrough_result,
+            chunks: int = 1,
         ) -> tuple[pd.DataFrame, Any]:
             limit = _OGC_URL_BYTE_LIMIT if url_limit is None else url_limit
             # Resolve the parallel_chunks setting ``n`` through the configuration
@@ -242,7 +245,7 @@ def multi_value_chunked(
                 args,
                 build_request,
                 limit,
-                max_chunks=_configuration.parallel_chunks(adapter=adapter),
+                max_chunks=max(chunks, _configuration.parallel_chunks(adapter=adapter)),
             )
             retry_policy = RetryPolicy.from_configuration(adapter=adapter)
             # The concurrency cap is resolved inside ``resume()`` through the

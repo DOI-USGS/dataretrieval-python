@@ -28,11 +28,12 @@ from dataretrieval.exceptions import ConfigurationError
 
 #: Settings only an adapter can hold, because they name one service. No
 #: package-wide value could mean anything for them: there is no one base URL,
-#: and a version is a segment of one service's paths.
+#: a version is a segment of one service's paths, and only one service
+#: publishes files to read in bulk.
 #:
 #: The package-wide roster is :data:`SETTINGS`, declared below the class it is
 #: derived from.
-ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version")
+ADAPTER_ONLY_SETTINGS: tuple[str, ...] = ("base_url", "api_version", "bulk")
 
 #: Adapter-only settings that only a ``configure()`` block can set: writing one in
 #: the configuration file raises ``ConfigurationError`` (ADR 0011).
@@ -50,6 +51,7 @@ BLOCK_ONLY_SETTINGS: tuple[str, ...] = ("base_url",)
 #: sources for it.
 ENV_VARS: dict[str, str] = {
     "api_key": "API_USGS_PAT",
+    "files_api_key": "API_USGS_FILES_PAT",
     "concurrency": "API_USGS_CONCURRENT",
     "retries": "API_USGS_RETRIES",
     "progress": "API_USGS_PROGRESS",
@@ -161,7 +163,7 @@ _ScopeKey = str | tuple[str, str]
 # same shape the file source returns (:func:`_adapter_file_settings`). The
 # label is built while the configuration object is still available, the only
 # point where the *profile* is known -- by the time a value reaches the frame,
-# one from ``WaterdataConfiguration.load("bulk")`` and one from
+# one from ``WaterdataConfiguration.load("overnight")`` and one from
 # ``WaterdataConfiguration(...)`` are indistinguishable.
 _Frame = Mapping[_ScopeKey, tuple[_SettingValue, str]]
 _scope: Ambient[tuple[_Frame, ...]] = Ambient("dataretrieval_configuration", ())
@@ -342,7 +344,7 @@ class BaseConfiguration:
         Parameters
         ----------
         profile : str
-            The name after the adapter, so ``[waterdata.bulk]`` is ``"bulk"``.
+            The name after the adapter, so ``[waterdata.overnight]`` is ``"overnight"``.
 
         Returns
         -------
@@ -372,7 +374,7 @@ class BaseConfiguration:
     def _provenance(self) -> str:
         """How :func:`show_configuration` reports a value this supplied.
 
-        The profile is named in the file's own spelling -- ``[waterdata.bulk]``
+        The profile is named in the file's own spelling -- ``[waterdata.overnight]``
         -- so the report names the profile that set a value rather than only
         the block, and the name can be searched for in the file that defines it.
         A configuration written in code has no profile, so it names its adapter
@@ -422,6 +424,13 @@ class _Versioned:
 
 
 @dataclass(frozen=True)
+class _Bulk:
+    """An adapter that can read a query's history from published files."""
+
+    bulk: str | None = _UNSET
+
+
+@dataclass(frozen=True)
 class _Concurrent:
     """An adapter that issues more than one request per call."""
 
@@ -452,6 +461,12 @@ class Configuration(BaseConfiguration):
         ``api.waterdata.usgs.gov``. Prefer reading it from a secret store, the
         environment, or the configuration file over writing a literal into a
         script. Pass ``None`` to make a call without an ambient key.
+    files_api_key : str, optional
+        A second Water Data API key, sent in place of ``api_key`` on requests
+        for the published files and their catalog (``/stac-files/`` and
+        ``/stac/``). The service counts requests per key, so file downloads
+        and catalog searches under their own key leave the ``api_key`` count
+        for the OGC API. Unset, both use ``api_key``.
     concurrency : int or str, optional
         Cap on simultaneous sub-requests: a positive integer, or
         ``"unbounded"`` to disable the cap.
@@ -486,6 +501,7 @@ class Configuration(BaseConfiguration):
     # sequence to MRO linearization. The two adapter-only fields the groups declare are
     # absent by construction here: there is no package-wide base URL.
     api_key: str | None = _UNSET
+    files_api_key: str | None = _UNSET
     concurrency: int | str | None = _UNSET
     retries: int | None = _UNSET
     progress: bool | str | None = _UNSET
@@ -779,8 +795,10 @@ def _coerce_count(value: object, label: str, optional: str) -> str:
 #: so the wider check cannot change a TOML outcome.)
 _TYPES: dict[str, Callable[[object, str, str], str]] = {
     "api_key": _coerce_string,
+    "files_api_key": _coerce_string,
     "api_version": _coerce_string,
     "base_url": _coerce_string,
+    "bulk": _coerce_string,
     "progress": _coerce_progress,
     "concurrency": _coerce_concurrency,
     "retries": _coerce_count,
@@ -927,6 +945,23 @@ def _parse_api_version(raw: str, label: str) -> str:
     return value
 
 
+#: When a getter that can read files in bulk does so: never, when the adapter
+#: judges the query large enough, or for every query it can answer that way.
+BULK_MODES: tuple[str, ...] = ("off", "auto", "always")
+#: The mode when nothing configured one: the adapter's router chooses per query.
+DEFAULT_BULK = "auto"
+
+
+def _parse_bulk(raw: str, label: str) -> str:
+    """Parse a bulk mode, one of :data:`BULK_MODES`."""
+    value = raw.strip().lower()
+    if value not in BULK_MODES:
+        raise ConfigurationError(
+            f"{label} must be one of {', '.join(map(repr, BULK_MODES))} (got {raw!r})."
+        )
+    return value
+
+
 def _parse_progress(raw: str, label: str, *, strict: bool) -> bool:
     """Parse a progress toggle, optionally preserving legacy env truthiness."""
     value = raw.strip().lower()
@@ -960,6 +995,7 @@ _VALIDATORS: dict[str, Callable[[str, str], object]] = {
     "stall_timeout": _parse_seconds,
     "base_url": _parse_base_url,
     "api_version": _parse_api_version,
+    "bulk": _parse_bulk,
 }
 
 
@@ -973,7 +1009,7 @@ def _validate_raw(name: str, raw: str, label: str) -> None:
 def _named_profiles(parsed: _ParsedFile, adapter: str) -> dict[str, dict[str, Any]]:
     """The named profiles the file defines for *adapter*, by name.
 
-    A sub-table of an adapter's table is a named profile: ``[waterdata.bulk]``
+    A sub-table of an adapter's table is a named profile: ``[waterdata.overnight]``
     parses as a sub-table of ``[waterdata]``, and everything else in that table
     is a setting of the adapter's default profile. The two readers of that rule
     -- selecting a profile and reporting which ones exist -- share this one
@@ -1021,7 +1057,7 @@ def _named_profile(
 
     # A profile is one flat set of settings for one adapter, so a table inside
     # one is a shape the grammar does not define -- most likely a file
-    # migrated from the retired ``[profiles.bulk.ngwmn]``, where a profile did
+    # migrated from the retired ``[profiles.overnight.ngwmn]``, where a profile did
     # contain per-service detail. Dropping it without an error would leave the author
     # believing they had tuned something. Checked here rather than at parse
     # time for the same reason keys are: a malformed profile for one adapter
@@ -1254,7 +1290,7 @@ def _accepted_keys(
     out: dict[str, Any] = {}
     for key, value in table.items():
         if isinstance(value, dict):
-            # A named profile -- ``[waterdata.bulk]`` parses as a sub-table of
+            # A named profile -- ``[waterdata.overnight]`` parses as a sub-table of
             # ``[waterdata]``. Inert until a caller selects it, so it is
             # neither a setting here nor an error. Only an adapter's table can
             # be passed here: the top level rejects unknown tables when it parses,
@@ -1367,11 +1403,12 @@ def _holds_api_key(parsed: _ParsedFile) -> bool:
     what this run resolves: a key in a profile nobody selected is just
     as readable to another user on the machine.
     """
-    if "api_key" in parsed.base:
+    keys = {"api_key", "files_api_key"}
+    if keys & parsed.base.keys():
         return True
     return any(
-        "api_key" in table
-        or any("api_key" in p for p in table.values() if isinstance(p, dict))
+        keys & table.keys()
+        or any(keys & p.keys() for p in table.values() if isinstance(p, dict))
         for table in parsed.adapters.values()
     )
 

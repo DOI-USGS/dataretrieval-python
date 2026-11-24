@@ -65,7 +65,7 @@ def default_headers(target_url: str | httpx.URL | None = None) -> dict[str, str]
         "lang": "en-US",
     }
     if accepts_api_key(target_url):
-        token = api_key()
+        token = api_key(target_url)
         if token:
             headers["X-Api-Key"] = token
     return headers

@@ -24,6 +24,7 @@ from dataretrieval import configuration as _configuration
 #: same rule ``test_credential_policy_has_one_definition`` enforces for the
 #: authorized host, and for the same reason: two copies stop agreeing without any error.
 API_KEY_ENV = _configuration.ENV_VARS["api_key"]
+FILES_API_KEY_ENV = _configuration.ENV_VARS["files_api_key"]
 
 #: Where to register for a key. Printed once, by the progress reporter, when a
 #: query against the authorized host runs without one -- unauthenticated callers
@@ -42,6 +43,12 @@ _AUTHORIZED_API_KEY_HOST = "api.waterdata.usgs.gov"
 #: adapters import this instead of restating the definition (enforced by
 #: ``test_credential_policy_has_one_definition``).
 WATERDATA_BASE_URL = f"https://{_AUTHORIZED_API_KEY_HOST}"
+
+#: Path prefixes of the published files and their catalog on the authorized
+#: host. A request under one is sent ``files_api_key`` when one is configured
+#: (see :func:`api_key`), so nothing on the files path but an OGC query spends
+#: the ``api_key`` count.
+_FILES_PATHS = ("/stac-files/", "/stac/")
 
 
 def accepts_api_key(target_url: str | httpx.URL | None) -> bool:
@@ -132,16 +139,40 @@ def refuse_credential_keywords(names: Iterable[str]) -> None:
         )
 
 
-def api_key() -> str | None:
-    """The configured token, or ``None``.
+def api_key(target_url: str | httpx.URL | None) -> str | None:
+    """The configured token for ``target_url``, or ``None``.
 
     Defined here, next to the host check and
     :func:`strip_api_key_from_untrusted_host`, so reading the key and the rules
     governing where it may be sent stay in one module. The value itself resolves
     through :func:`dataretrieval.configuration.api_key`, so host scoping applies
     identically no matter which source supplied the key.
+
+    The service counts requests per key, not per endpoint, so a large file
+    download can use up the count the OGC API needs. A request for a published
+    file, or a search of the files' catalog, therefore gets ``files_api_key``
+    when one is configured, and ``api_key`` otherwise. With ``target_url``
+    ``None``, this is ``api_key``.
     """
+    if _for_files(target_url):
+        return _configuration.files_api_key() or _configuration.api_key()
     return _configuration.api_key()
+
+
+def key_variables(target_url: str | httpx.URL | None) -> str:
+    """The environment variables whose key :func:`api_key` sends to ``target_url``.
+
+    For a message that tells the caller which key to set or check.
+    """
+    if _for_files(target_url):
+        return f"{FILES_API_KEY_ENV}, or {API_KEY_ENV} when it is unset"
+    return API_KEY_ENV
+
+
+def _for_files(target_url: str | httpx.URL | None) -> bool:
+    return target_url is not None and httpx.URL(target_url).path.startswith(
+        _FILES_PATHS
+    )
 
 
 def strip_api_key_from_untrusted_host(request: httpx.Request) -> None:

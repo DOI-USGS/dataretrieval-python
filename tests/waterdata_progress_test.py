@@ -295,6 +295,19 @@ def test_api_key_hint_shown_at_most_once(monkeypatch):
     assert _progress.SIGNUP_URL not in second.getvalue()
 
 
+def test_no_hint_when_the_files_api_key_covers_the_target(monkeypatch):
+    """A file download is sent ``files_api_key``, so the key it lacks is not
+    the main one."""
+    monkeypatch.delenv("API_USGS_PAT", raising=False)
+    monkeypatch.setenv("API_USGS_FILES_PAT", "files")
+    stream = io.StringIO()
+    url = "https://api.waterdata.usgs.gov/stac-files/daily/USGS-01/USGS-01.parquet"
+    reporter = ProgressReporter(stream=stream, enabled=True, target_url=url)
+    reporter.add_page(rows=5)
+    reporter.close()
+    assert _progress.SIGNUP_URL not in stream.getvalue()
+
+
 # -- enable/disable gating -----------------------------------------------------
 
 

@@ -217,6 +217,34 @@ def test_row_cap_stops_across_pages():
     assert mock_client.request.call_count == 1  # fetched page 2, stopped before 3
 
 
+def test_finalize_ogc_types_a_text_column_the_same_however_it_was_paged():
+    """A page whose values are all null has an ``object`` column, and
+    concatenating it widens the other pages' strings to ``object`` (#476)."""
+    # Two text columns, so the widened columns share a block, as they do in
+    # a real result; a null is ``None`` or ``nan`` depending on the page.
+    pages = [
+        pd.DataFrame({"id": ["1"], "method_category": ["STNRD"], "unit": ["ft"]}),
+        pd.DataFrame({"id": ["2"], "method_category": [None], "unit": [None]}),
+        pd.DataFrame({"id": ["3"], "method_category": [float("nan")], "unit": ["m"]}),
+    ]
+    resp = mock.MagicMock()
+    resp.url = "https://example.com/q"
+    resp.elapsed = datetime.timedelta(seconds=0.1)
+    resp.headers = {}
+
+    df, _ = _finalize_ogc(
+        pd.concat(pages, ignore_index=True),
+        resp,
+        properties=None,
+        output_id="thing_id",
+        convert_type=True,
+        collection="things",
+    )
+
+    assert df["method_category"].dtype == pd.Series(["a"]).dtype
+    assert df["method_category"].isna().tolist() == [False, True, True]
+
+
 def test_finalize_ogc_truncates_combined_to_max_rows():
     # max_rows is enforced on the *combined* frame in _finalize_ogc (after
     # dedup/sort), so it bounds the total exactly even when a chunked call's
@@ -1316,6 +1344,30 @@ def test_error_body_handles_non_json_html_response():
     msg = _error_body(resp)
     assert "502" in msg
     assert "Bad Gateway" in msg
+
+
+@pytest.mark.parametrize(
+    ("path", "named"),
+    [
+        ("/ogcapi/v0/collections/daily/items", "(see API_USGS_PAT)"),
+        (
+            "/stac-files/daily/USGS-01/USGS-01.parquet",
+            "(see API_USGS_FILES_PAT, or API_USGS_PAT when it is unset)",
+        ),
+    ],
+)
+def test_a_403_names_the_key_the_request_was_sent(path, named):
+    """A file request gets ``files_api_key`` first, so that is the key to check."""
+    request = httpx.Request("GET", f"https://api.waterdata.usgs.gov{path}")
+    msg = _error_body(httpx.Response(403, request=request))
+    assert named in msg
+    msg = _error_body(httpx.Response(429, request=request))
+    assert named.removeprefix("(see ") in msg
+    # The service's own envelope for a bad key, as sent live.
+    body = {"error": {"code": "API_KEY_INVALID", "message": "An invalid key."}}
+    msg = _error_body(httpx.Response(403, json=body, request=request))
+    assert msg.startswith("403: API_KEY_INVALID. An invalid key.")
+    assert f"Check {named.removeprefix('(see ').removesuffix(')')}." in msg
 
 
 def test_error_body_handles_empty_response_body():
