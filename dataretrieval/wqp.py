@@ -149,8 +149,13 @@ def _query_wqp(
         url = wqx3_url(service)
         delimiter = None
 
+    # The legacy interface rejects true/false with HTTP 400; both accept yes/no.
+    payload = {
+        key: ("yes" if value else "no") if isinstance(value, bool) else value
+        for key, value in kwargs.items()
+    }
     response = _query_with_retry(
-        url, payload=kwargs, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
+        url, payload=payload, delimiter=delimiter, ssl_check=ssl_check, adapter="wqp"
     )
     df = read_code_csv(response.text)
     # Only get_results documents the appended DateTime columns and the
