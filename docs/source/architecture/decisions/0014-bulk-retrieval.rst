@@ -156,9 +156,10 @@ answers 404 is treated as missing and its location gets the whole query; any
 other error on a file is raised.
 
 .. figure:: 0014-cloud-optimized-architecture.png
-   :alt: Left to right: a get_continuous call for a list of sites since
-      2025-07-01; a catalog request that returns file URLs; the chunk plan,
-      with one row per site and one column per time interval; the fan-out;
+   :alt: At left, a get_continuous call for 50 monitoring locations since
+      2025-07-01, and under it a catalog request that returns Parquet URLs.
+      Then, left to right: the chunk plan, with one row per site and one
+      column per time interval; the fan-out;
       a dashed line between dataretrieval-python and api.waterdata.usgs.gov;
       the load balancer; and the STAC catalog, Parquet files, and OGC API
       endpoints. Chunks 1 to 100, two per site, go to the files, and chunks
@@ -166,7 +167,7 @@ other error on a file is raised.
    :width: 100%
 
    One ``get_continuous`` call for 50 monitoring locations. The catalog
-   request returns the file URLs the chunk plan is built from. Chunks 1 to
+   request returns the Parquet URLs the chunk plan is built from. Chunks 1 to
    100 read the files up to ``T``, and chunks 101 to 108 ask the OGC API for
    every record changed since, up to 7 locations each: step 4 splits the change
    query into at most 8 requests. Every request goes to the same load balancer,

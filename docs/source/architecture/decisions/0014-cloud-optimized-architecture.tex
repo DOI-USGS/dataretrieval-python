@@ -103,28 +103,27 @@ df, md = get_continuous(
 % endpoints are 1.6 apart.
 \def\lanes{api/4.0, fil/2.4, cat/0.8}
 
-% ---------------------------------------------------------------- the query
-% Placed so that the call's line, the third of six, is on the main flow.
-\node[inner sep=0pt, anchor=west] (query) at (0, 2.23) {\usebox{\querycode}};
-
-% ------------------------------------------------------- the catalog request
-\node[draw=cat, very thick, fill=cat!45, rounded corners=2pt,
-  minimum width=0.65cm, minimum height=2.6cm, anchor=west] (catalog)
-  at ([xshift=0.35cm]query.east |- 0, 2.4) {};
-\node[rotate=90, font=\stepfont] at (catalog.center) {catalog request};
-\draw[flow] ([xshift=2pt]query.east |- 0, 2.4) -- (catalog.west);
+% ------------------------------------------- the query and the catalog request
+% The catalog request sits under the code, on the main flow, and its URLs
+% pass under the code into the chunk plan.
+\node[inner sep=0pt, anchor=south west] (query) at (0, 3.4)
+  {\usebox{\querycode}};
+\node[draw=cat, very thick, fill=cat!45, rounded corners=2pt, align=center,
+  inner xsep=5pt, inner ysep=4pt, anchor=west, font=\stepfont] (catalog)
+  at (0, 2.4) {catalog\\request};
+\draw[flow] (catalog.north |- query.south) -- (catalog.north);
 
 % ------------------------------------------------------------ the chunk plan
 % Rows: one site each, 0.5 high; sites 1 to 4, a gap, sites 47 to 50.
 % Columns: a location's two files, then the changes since. The headers,
 % placed first, set each column's width, wide enough for the axis dates.
-\coordinate (plan west) at ([xshift=0.8cm]catalog.east);
-\draw[flow] (catalog.east) -- node[count, align=center] {file\\URLs} (plan west);
+\coordinate (plan west) at ([xshift=0.4cm]query.east |- 0, 2.4);
+\draw[flow] (catalog.east) -- node[count] {Parquet URLs} (plan west);
 \coordinate (grid west) at ([xshift=0.85cm]plan west);
-\node[header, minimum width=1.9cm] (c1) at (grid west |- 0, 4.8)
+\node[header, minimum width=2.1cm] (c1) at (grid west |- 0, 4.8)
   {\texttt{historical}};
-\node[header, minimum width=1.5cm] (c2) at (c1.south east) {\texttt{current}};
-\node[header, minimum width=1.3cm] (c3) at (c2.south east) {changes};
+\node[header, minimum width=1.83cm] (c2) at (c1.south east) {\texttt{current}};
+\node[header, minimum width=1.62cm] (c3) at (c2.south east) {changes};
 
 \path (c1.west) -- (c3.east) coordinate[midway] (grid middle);
 \node[anchor=south, font=\stepfont, inner sep=0pt]
@@ -160,10 +159,10 @@ df, md = get_continuous(
 % ------------------------------------------------------------- the fan-out
 % The catalog request, the file chunks, and the change chunks all run on it.
 % The catalog request passes under the plan and enters from below.
-\node[stage, minimum width=0.8cm] (fanout) at ([xshift=0.35cm]c3.east |- 0, 2.4) {};
+\node[stage, minimum width=0.8cm] (fanout) at ([xshift=1.0cm]c3.east |- 0, 2.4) {};
 \node[align=center, rotate=90] at (fanout.center)
   {{\stepfont fan-out}\\concurrent requests};
-\draw[flow] (c3.east |- 0, 2.4) -- (fanout.west |- 0, 2.4);
+\draw[flow] (c3.east |- 0, 2.4) -- node[count] {108$\times$} (fanout.west |- 0, 2.4);
 \draw[send=cat] (catalog.south) -- (catalog.south |- 0, -0.9) -| (fanout.south);
 
 % --------------------------------------- the boundary and the load balancer
@@ -188,13 +187,13 @@ df, md = get_continuous(
 \foreach \lane/\y in \lanes
   \draw[send=\lane] (lb.east |- 0, \y) -- ([xshift=0.3cm]lb.east |- 0, \y);
 
-\node[anchor=south west, align=left, text=black!70, inner sep=0pt]
-  at (query.west |- 0, -0.95) {$T$: time of the last\\Parquet update};
+\node[anchor=north west, text=black!70, inner sep=0pt]
+  at (query.west |- 0, -1.1) {$T$: time of the last Parquet update};
 
 % ----------------------------------------------------------- the two sides
 % A rule under each side's name spans that side, up to the boundary.
 \def\ruley{6.0}
-\draw[boundary, dashed, thick] (boundary |- 0, -1.0)
+\draw[boundary, dashed, thick] (boundary |- 0, -1.4)
   -- (boundary |- 0, \ruley+0.6);
 \coordinate (client east) at ([xshift=-0.2cm]boundary);
 \coordinate (service west) at ([xshift=0.2cm]boundary);
