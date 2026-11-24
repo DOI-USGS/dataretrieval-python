@@ -158,21 +158,27 @@ other error on a file is raised.
 .. figure:: 0014-cloud-optimized-architecture.png
    :alt: At left, a get_continuous call for 50 monitoring locations since
       2025-07-01, and under it a catalog request that returns Parquet URLs.
-      Then, left to right: the chunk plan, with one row per site and one
-      column per time interval; the fan-out;
+      Then, left to right: the chunk plan, with one row per monitoring
+      location and columns for the historical file, the current file, and the
+      records new since T, above a time axis; the fan-out;
       a dashed line between dataretrieval-python and api.waterdata.usgs.gov;
       the load balancer; and the STAC catalog, Parquet files, and OGC API
-      endpoints. Chunks 1 to 100, two per site, go to the files, and chunks
-      101 to 108, up to seven sites each after T, go to the OGC API.
+      endpoints. The catalog request runs through the fan-out to the STAC
+      catalog. Chunks 1 to 100, two per location, go to the files, and chunks
+      101 to 108, up to seven locations each after T, go to the OGC API.
    :width: 100%
 
    One ``get_continuous`` call for 50 monitoring locations. The catalog
-   request returns the Parquet URLs the chunk plan is built from. Chunks 1 to
-   100 read the files up to ``T``, and chunks 101 to 108 ask the OGC API for
-   every record changed since, up to 7 locations each: step 4 splits the change
-   query into at most 8 requests. Every request goes to the same load balancer,
-   which routes it by path. The figure's source is
-   ``0014-cloud-optimized-architecture.tex`` in this directory.
+   request goes through the fan-out to the STAC catalog and finishes before
+   any chunk starts; the Parquet URLs it returns are what the chunk plan is
+   built from. Chunks 1 to 100 read the files up to ``T``, and chunks 101 to
+   108 ask the OGC API for every record changed since, up to 7 locations each:
+   step 4 splits the change query into at most 8 requests. Every request goes
+   to the same load balancer, which routes it by path. The plan shows
+   locations 1 to 4, 49, and 50, and its column widths follow the time axis;
+   the new column holds a few days, so it is drawn as wide as its label. The
+   figure's source is ``0014-cloud-optimized-architecture.tex`` in this
+   directory.
 
 **Filters are classified by whether a record can change them.**
 ``parameter_code``, ``statistic_id``, ``time_series_id``, and
