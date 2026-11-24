@@ -438,3 +438,20 @@ def test_stac_next_link_strips_embedded_credentials(httpx_mock):
     followed = httpx_mock.get_requests()[1]
     assert followed.url.userinfo == b""
     assert followed.headers.get("Authorization") is None
+
+
+def test_get_ratings_search_is_scoped_to_the_ratings_collection(httpx_mock):
+    """``/search`` spans every catalog collection. Since ``daily`` and
+    ``continuous`` were published, an unscoped search for one location also
+    returned those items, and a ``file_type`` list sends no server-side
+    ``file_type`` filter to exclude them."""
+    httpx_mock.add_response(method="GET", url=STAC_SEARCH_RE, json={"features": []})
+
+    get_ratings(
+        monitoring_location_id="USGS-01104475",
+        file_type=["exsa", "corr"],
+        download_and_parse=False,
+    )
+
+    qs = parse_qs(urlsplit(str(httpx_mock.get_requests()[0].url)).query)
+    assert qs["collections"] == ["ratings"]
