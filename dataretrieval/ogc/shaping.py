@@ -386,6 +386,20 @@ def _to_snake_case(name: str) -> str:
     return _CAMEL_BOUNDARY_RE.sub(r"\1_\2", name).lower()
 
 
+def _infer_object_cols(frame: pd.DataFrame) -> pd.DataFrame:
+    """Give each ``object`` column the type pandas infers from its values.
+
+    A page whose values are all null widens a text column to ``object`` when
+    the pages are concatenated, so without this a column's type would depend
+    on the paging. Column by column: ``DataFrame.infer_objects`` leaves
+    ``object`` columns that share a block as they are (pandas 3.1).
+    """
+    for column, dtype in frame.dtypes.items():
+        if pd.api.types.is_object_dtype(dtype):
+            frame[column] = frame[column].infer_objects()
+    return frame
+
+
 def _finalize_ogc(
     frame: pd.DataFrame,
     response: httpx.Response,
@@ -444,6 +458,7 @@ def _finalize_ogc(
         frame = frame.rename(columns=renames)
     if convert_type:
         frame = _type_cols(frame, dialect)
+    frame = _infer_object_cols(frame)
     frame = _arrange_cols(frame, properties, output_id, extra_id_cols)
     frame = _sort_rows(frame, dialect)
     if max_rows is not None:

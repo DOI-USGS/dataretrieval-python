@@ -217,6 +217,34 @@ def test_row_cap_stops_across_pages():
     assert mock_client.request.call_count == 1  # fetched page 2, stopped before 3
 
 
+def test_finalize_ogc_types_a_text_column_the_same_however_it_was_paged():
+    """A page whose values are all null has an ``object`` column, and
+    concatenating it widens the other pages' strings to ``object`` (#476)."""
+    # Two text columns, so the widened columns share a block, as they do in
+    # a real result; a null is ``None`` or ``nan`` depending on the page.
+    pages = [
+        pd.DataFrame({"id": ["1"], "method_category": ["STNRD"], "unit": ["ft"]}),
+        pd.DataFrame({"id": ["2"], "method_category": [None], "unit": [None]}),
+        pd.DataFrame({"id": ["3"], "method_category": [float("nan")], "unit": ["m"]}),
+    ]
+    resp = mock.MagicMock()
+    resp.url = "https://example.com/q"
+    resp.elapsed = datetime.timedelta(seconds=0.1)
+    resp.headers = {}
+
+    df, _ = _finalize_ogc(
+        pd.concat(pages, ignore_index=True),
+        resp,
+        properties=None,
+        output_id="thing_id",
+        convert_type=True,
+        collection="things",
+    )
+
+    assert df["method_category"].dtype == pd.Series(["a"]).dtype
+    assert df["method_category"].isna().tolist() == [False, True, True]
+
+
 def test_finalize_ogc_truncates_combined_to_max_rows():
     # max_rows is enforced on the *combined* frame in _finalize_ogc (after
     # dedup/sort), so it bounds the total exactly even when a chunked call's
