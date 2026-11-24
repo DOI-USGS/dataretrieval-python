@@ -107,7 +107,8 @@ key's.
    2026-11-23, no record in the range of five older ``historical`` files had
    changed in the API since the file was written.
 4. Send one OGC query whose CQL-text filter has a top-level ``OR`` clause
-   per cutoff day, ``monitoring_location_id IN (...) AND last_modified >= T``,
+   per cutoff day and group of locations,
+   ``monitoring_location_id IN (...) AND last_modified >= T``,
    plus one clause asking for the whole query for any location without a
    usable file. Where a location's ``current`` file starts more than 12
    hours after its ``historical`` file ends, one more clause asks for every
@@ -116,7 +117,10 @@ key's.
    returns them. A gage that recorded nothing there costs an empty answer.
    The OGC chunker splits a filter at top-level ``OR`` and fans the pieces
    out under the concurrency cap, so the path asks it for one request per
-   clause and needs no second fan-out mechanism. The API's time to answer a
+   clause and needs no second fan-out mechanism. It asks with a per-call
+   chunk count, and a larger ``parallel_chunks`` setting still applies; the
+   library does not enter the caller's configuration to route its own
+   request. The API's time to answer a
    change clause grows with the locations it names (cold, 2026-11-24: 100
    gages took 12.1 s as one request and 1.2 s as ten), so the change clauses
    are sized for up to 8 requests, then 10 locations each, but no more
@@ -157,14 +161,15 @@ other error on a file is raised.
       with one row per site and one column per time interval; the fan-out;
       a dashed line between dataretrieval-python and api.waterdata.usgs.gov;
       the load balancer; and the STAC catalog, Parquet files, and OGC API
-      endpoints. Chunks 1 to 100, two per site, go to the files, and chunk
-      101, every site after T, goes to the OGC API.
+      endpoints. Chunks 1 to 100, two per site, go to the files, and chunks
+      101 to 108, up to seven sites each after T, go to the OGC API.
    :width: 100%
 
    One ``get_continuous`` call for 50 monitoring locations. The catalog
    request returns the file URLs the chunk plan is built from. Chunks 1 to
-   100 read the files up to ``T``, and chunk 101 asks the OGC API for every
-   record changed since. Every request goes to the same load balancer,
+   100 read the files up to ``T``, and chunks 101 to 108 ask the OGC API for
+   every record changed since, up to 7 locations each: step 4 splits the change
+   query into at most 8 requests. Every request goes to the same load balancer,
    which routes it by path. The figure's source is
    ``0014-cloud-optimized-architecture.tex`` in this directory.
 
@@ -321,7 +326,7 @@ Compliance
 
 - ``tests/waterdata_bulk_test.py`` (offline) pins the routing rule's eligibility
   and size decisions, and the merge rule (the API
-  wins), the classification of filters, the single OR-clause change query,
+  wins), the classification of filters, the OR-clause change query and its split into requests,
   the whole-query clause for locations without a file, the cutoff from the
   ``current`` file, the clause for a gap between the two files, a ``time``
   over the API's limit left out of the change query, the daily change query

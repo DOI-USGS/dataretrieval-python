@@ -3,9 +3,10 @@
 % fan-out that sends every chunk through the load balancer to its endpoint.
 %
 % Chunks are colored by endpoint and numbered in plan order; the rows hidden
-% by the gap hold chunks 9 to 92. Each file column is one of a location's
-% two files, and each column is as wide as its label. The dashed line is the boundary between dataretrieval-python and
-% the service.
+% by the gap hold chunks 9 to 92 and 102 to 106. Each file column is one of a
+% location's two files, and each column is as wide as its label. A change
+% chunk names 7 locations: 50 split into at most 8 requests. The dashed line
+% is the boundary between dataretrieval-python and the service.
 %
 % Build the PNG that ADR 0014 includes, from this directory:
 %   pdflatex 0014-cloud-optimized-architecture.tex
@@ -110,8 +111,12 @@ df, md = get_continuous(
 \node[anchor=south, font=\sffamily\small\bfseries] at (grid middle |- 0, 4.85)
   {Chunk plan};
 
-\fill[chunk=api] (c3.west |- 0, 0.025) rectangle (c3.east |- 0, 4.775);
-\node[number] at (c3 |- 0, 2.4) {101};
+% Change chunks: 101 holds sites 1 to 7, 107 sites 43 to 49, 108 site 50.
+\foreach \chunk/\top/\bottom/\middle in
+    {101/4.775/2.775/3.775, 107/2.025/0.525/1.275, 108/0.525/0.025/0.275} {
+  \fill[chunk=api] (c3.west |- 0, \bottom) rectangle (c3.east |- 0, \top);
+  \node[number] at (c3 |- 0, \middle) {\chunk};
+}
 \foreach \site/\top in {1/4.775, 2/4.275, 3/3.775, 4/3.275,
                         47/2.025, 48/1.525, 49/1.025, 50/0.525} {
   \fill[chunk=fil] (c1.west |- 0, \top-0.5) rectangle (c1.east |- 0, \top);
@@ -124,6 +129,7 @@ df, md = get_continuous(
 \node at ([xshift=-0.5cm]c1.west |- 0, 2.4) {$\vdots$};
 \node at (c1 |- 0, 2.4) {$\vdots$};
 \node at (c2 |- 0, 2.4) {$\vdots$};
+\node at (c3 |- 0, 2.4) {$\vdots$};
 
 % x axis: one interval per column
 \draw[black!50] (c1.west |- 0, -0.1) -- (c3.east |- 0, -0.1);
@@ -131,7 +137,7 @@ df, md = get_continuous(
   \draw[black!50] (\edge |- 0, -0.03) -- (\edge |- 0, -0.17);
 
 % ------------------------------------------------------------- the fan-out
-% The catalog request, the file chunks, and the change chunk all run on it.
+% The catalog request, the file chunks, and the change chunks all run on it.
 % The catalog request passes under the plan and enters from below.
 \node[stage] (fanout) at ([xshift=0.6cm]c3.east |- 0, 2.4) {};
 \node[align=center, rotate=90] at (fanout.center)
@@ -148,7 +154,7 @@ df, md = get_continuous(
 
 \foreach \lane/\y in \lanes
   \draw[send=\lane] (fanout.east |- 0, \y) -- (lb.west |- 0, \y);
-\foreach \y/\label in {4.0/1 chunk, 2.4/100 chunks, 0.8/1 chunk}
+\foreach \y/\label in {4.0/8 chunks, 2.4/100 chunks, 0.8/1 chunk}
   \node[count] at ([xshift=0.95cm]fanout.east |- 0, \y) {\label};
 
 % ---------------------------------------------------------------- endpoints
