@@ -15,8 +15,8 @@ rule, and the alternatives rejected are recorded in ADR 0014. In short:
 4. Send one OGC query: a CQL ``OR`` clause per cutoff day selecting the
    changes, one per gap between a location's two files, and one for the
    whole query at locations without a file. The OGC chunker splits it at
-   ``OR`` and fans the pieces out. A ``time`` the API would refuse is left
-   out of it and applied in step 5.
+   ``OR`` and fans the pieces out. A ``time`` the API would refuse is sent
+   as comparisons in every clause instead.
 5. Combine, keeping the API's version of any record in both, then apply the
    filters on columns a record can change after it is written.
 
@@ -27,33 +27,47 @@ written is still returned.
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import warnings
+import weakref
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import timedelta
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import anyio
 import httpx
 import pandas as pd
 
 from dataretrieval import configuration
-from dataretrieval._validation import render_options, require_argument
-from dataretrieval.exceptions import HTTPError
+from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval._validation import _render_names, require_argument
+from dataretrieval.combining import _combine_chunk_responses
+from dataretrieval.exceptions import HTTPError, TransientError
 from dataretrieval.interruptions import FanOutInterrupted
+from dataretrieval.ogc.dates import _format_one, _is_blank
 from dataretrieval.ogc.errors import _raise_for_non_200
 from dataretrieval.ogc.filters import _cql_in_clause
-from dataretrieval.ogc.shaping import _sort_rows
+from dataretrieval.ogc.shaping import GEOPANDAS, _infer_object_cols, _sort_rows
 from dataretrieval.transport.fanout import FanOut, active_client, inert_response
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.retry import RetryPolicy
-from dataretrieval.waterdata.catalog import MAX_PAGE_SIZE, format_time, search
-from dataretrieval.waterdata.utils import WATERDATA_DIALECT, get_ogc_data
-
-if TYPE_CHECKING:
-    from dataretrieval._response_metadata import BaseMetadata
+from dataretrieval.waterdata.catalog import (
+    _ID_REMEDY,
+    MAX_PAGE_SIZE,
+    data_assets,
+    format_time,
+    location_of,
+    search,
+)
+from dataretrieval.waterdata.utils import (
+    _OUTPUT_ID_BY_COLLECTION,
+    WATERDATA_DIALECT,
+    get_ogc_data,
+    request_url,
+)
 
 __all__ = ["get_data"]
 
@@ -71,6 +85,13 @@ _ACCEPTED = frozenset({"monitoring_location_id", "time", "skip_geometry"})
 #: fit one ~8 KB request; 100 of the longest ids (``OH015-383638082103300``)
 #: are about 2.5 KB.
 _SITES_PER_CLAUSE = 100
+
+#: A change query is split into up to ``_CHANGE_REQUESTS`` concurrent requests,
+#: then into requests of ``_SITES_PER_CHANGE_REQUEST`` locations, but no more
+#: requests than the concurrency cap: the API's time to answer one grows with
+#: the locations it names (ADR 0014).
+_CHANGE_REQUESTS = 8
+_SITES_PER_CHANGE_REQUEST = 10
 
 #: ``current`` holds about the last 150 days. Skip ``historical`` only when the
 #: query starts well inside that window.
@@ -102,8 +123,12 @@ class _Layout:
     #: The widest ``time`` argument the API accepts, in days. It refuses a
     #: wider or open-started one with HTTP 400 (measured 2026-11-23).
     max_days: int | None
-    #: The API returns a geometry column for the collection.
-    has_geometry: bool
+    #: Whether the change clauses carry the query's ``time``. Without it, a
+    #: daily change query is faster and a continuous one far slower (ADR 0014).
+    bounds_changes: bool
+    #: The rows the API pages in the time the files path takes before its
+    #: first file: about 1.5 s for ``daily``, 2 to 2.5 s for ``continuous``.
+    base_rows: int
     #: The row estimate of the ``"auto"`` mode: values per series per day;
     #: series per location when the query names no parameter (measured on
     #: discharge gages: all daily parameters returned 1.6-2x the rows of
@@ -122,24 +147,27 @@ class _Layout:
 _ROW_FILTERS = _STABLE_FILTERS | _CHANGEABLE_FILTERS
 _LAYOUTS = {
     "daily": _Layout(
-        id_column="daily_id",
+        id_column=_OUTPUT_ID_BY_COLLECTION["daily"],
         # ``daily`` has no ``method_category`` column.
         row_filters=_ROW_FILTERS - {"method_category"},
         dated=True,
         has_historical=False,
         max_days=None,
-        has_geometry=True,
+        bounds_changes=False,
+        # Low, because a location with many series is underestimated severalfold.
+        base_rows=5_000,
         values_per_day=1,
         series_per_location=2,
         open_ended_days=40 * 365,
     ),
     "continuous": _Layout(
-        id_column="continuous_id",
+        id_column=_OUTPUT_ID_BY_COLLECTION["continuous"],
         row_filters=_ROW_FILTERS,
         dated=False,
         has_historical=True,
         max_days=1100,
-        has_geometry=False,
+        bounds_changes=True,
+        base_rows=10_000,
         # Mostly 15-minute values.
         values_per_day=96,
         series_per_location=3,
@@ -165,6 +193,19 @@ class _Query:
         """The values of a list-shaped argument."""
         return _as_list(self.args[name])
 
+    def filters(self, names: frozenset[str]) -> dict[str, list[str]]:
+        """The values of each argument in ``names`` the query was given."""
+        return {name: self.values(name) for name in sorted(names & self.args.keys())}
+
+    @property
+    def span(self) -> pd.Timedelta | None:
+        """The length of the ``time`` interval, to now for an open end;
+        ``None`` for an open start."""
+        if self.start is None:
+            return None
+        end = self.end if self.end is not None else pd.Timestamp.now(tz="UTC")
+        return end - self.start
+
     @property
     def needs_historical(self) -> bool:
         """Whether the query reaches back past ``current`` (about 150 days)."""
@@ -177,18 +218,14 @@ class _Query:
     def time_fits_api(self) -> bool:
         """Whether the API accepts the query's ``time`` argument.
 
-        When it does not, the API part sends no ``time``: the change clauses
-        need none, the other clauses carry the bounds, and the merge applies
-        them. The limit has a day's margin, since the API measures an open
-        end from its own clock.
+        When it does not, only the files can answer the query. The limit has
+        a day's margin, since the API measures an open end from its own clock.
         """
         limit = self.layout.max_days
         if limit is None or self.args.get("time") is None:
             return True
-        if self.start is None:
-            return False
-        end = self.end if self.end is not None else pd.Timestamp.now(tz="UTC")
-        return bool(end - self.start <= timedelta(days=limit - 1))
+        span = self.span
+        return span is not None and bool(span <= timedelta(days=limit - 1))
 
     @property
     def time_clauses(self) -> list[str]:
@@ -243,12 +280,12 @@ class _Snapshot:
 
     def gaps(self) -> list[tuple[str, pd.Timestamp, pd.Timestamp]]:
         """``(location, after, before)`` where its two files leave a gap."""
-        return [
-            (site, old.last, new.first)
-            for site, by_asset in sorted(self.files.items())
-            for old, new in [(by_asset.get("historical"), by_asset.get("current"))]
-            if old and new and new.first - old.last > _BOUNDARY_GAP
-        ]
+        found: list[tuple[str, pd.Timestamp, pd.Timestamp]] = []
+        for site, by_asset in sorted(self.files.items()):
+            old, new = by_asset.get("historical"), by_asset.get("current")
+            if old and new and new.first - old.last > _BOUNDARY_GAP:
+                found.append((site, old.last, new.first))
+        return found
 
 
 #: The remedy for a query only the API can answer: the mode that sends it there.
@@ -256,6 +293,13 @@ _USE_AUTO = (
     "or run the call inside "
     "`with dataretrieval.configure(WaterdataConfiguration(bulk='auto')):`, "
     "which sends such a query to the API"
+)
+
+#: The remedy for a file request the service refused: the mode that skips them.
+_USE_OFF = (
+    "The bulk setting sent this query to the published files; to page the "
+    "API instead, run the call inside "
+    "`with dataretrieval.configure(WaterdataConfiguration(bulk='off')):`."
 )
 
 
@@ -269,10 +313,10 @@ def get_data(
     setting sends the query there, the API alone otherwise. ``args`` are the
     getter's request arguments, as built by ``_get_args``.
 
-    With the setting on, a query the files can answer returns the same
-    columns whichever way it is answered: the record id, which the files do
-    not carry, is left out of an API answer too. Without pyarrow, such a
-    query pages the API, with a warning.
+    With the setting on, every answer has the same columns whichever way it
+    is answered: the record id, which the files do not carry, is left out of
+    an API answer too, unless ``properties`` names it. Without pyarrow, a
+    query for the files pages the API, with a warning.
     """
     mode = configuration.bulk(adapter="waterdata")
     if mode == "off":
@@ -282,30 +326,64 @@ def get_data(
     except ValueError:
         if mode == "always":
             raise
-        # Something only the API accepts: its answer, as the API gives it.
-        return get_ogc_data(args, collection, max_rows=max_rows)
+        # Something only the API accepts.
+        answer = get_ogc_data(args, collection, max_rows=max_rows)
+        return _without_id(answer, args, collection)
     if mode == "always" or _prefers_files(query):
         if importlib.util.find_spec("pyarrow") is not None:
             return _get_bulk(query)
-        warnings.warn(
-            f"The bulk setting is {mode!r}, but reading the files needs "
-            "pyarrow, which is not installed, so this query paged the API. "
-            'Install it with pip install "dataretrieval[pyarrow]".',
-            # This function, the getter, then the getter's caller.
-            stacklevel=3,
+        _warn_without_pyarrow(query, mode)
+    return _without_id(get_ogc_data(args, collection), args, collection)
+
+
+def _without_id(
+    answer: tuple[pd.DataFrame, BaseMetadata], args: dict[str, Any], collection: str
+) -> tuple[pd.DataFrame, BaseMetadata]:
+    """An API answer without the record id, unless ``properties`` names it."""
+    df, md = answer
+    column = _LAYOUTS[collection].id_column
+    # ``properties`` may name it by the API's name, ``id``.
+    if {column, "id"} & set(_as_list(args.get("properties") or [])):
+        return df, md
+    return df.drop(columns=column, errors="ignore"), md
+
+
+def _warn_without_pyarrow(query: _Query, mode: str) -> None:
+    """Warn that a query for the files pages the API instead.
+
+    Raises ``ValueError`` before any request for a ``time`` the API refuses,
+    which only the files can answer.
+    """
+    install = 'Install it with pip install "dataretrieval[pyarrow]"'
+    if not query.time_fits_api:
+        raise ValueError(
+            f"This {query.collection} query needs pyarrow, which is not "
+            f"installed: its time is wider than the {query.layout.max_days:,} "
+            "days the API accepts, or has an open start, so only the files can "
+            f"answer it. {install}, or pass a time of at most "
+            f"{query.layout.max_days:,} days with a start date."
         )
-    df, md = get_ogc_data(args, collection)
-    return df.drop(columns=query.layout.id_column, errors="ignore"), md
+    warnings.warn(
+        f"The bulk setting is {mode!r}, but reading the files needs pyarrow, "
+        f"which is not installed, so this query paged the API. {install}.",
+        # This function, get_data, the getter, then the getter's caller.
+        stacklevel=4,
+    )
 
 
 def _get_bulk(query: _Query) -> tuple[pd.DataFrame, BaseMetadata]:
     """Return ``(df, md)`` for ``query`` from the files plus the API."""
-    items = _search(query)
+    items, searched = _search(query)
     files = _plan(items, skip_historical=not query.needs_historical)
+    points = _points(items)
     snapshot = _Snapshot()
-    downloads: FanOut[_File] | None = None
+    # A weak reference: the downloads hold this hook, and a strong one would
+    # keep every file's rows alive until a garbage collection.
+    downloads: weakref.ref[FanOut[_File]] | None = None
 
-    def complete(file_rows: pd.DataFrame, _: Any) -> tuple[pd.DataFrame, BaseMetadata]:
+    def complete(
+        file_rows: pd.DataFrame, downloaded: httpx.Response | None
+    ) -> tuple[pd.DataFrame, BaseMetadata]:
         """The rest of the query, once every file is read.
 
         It is the downloads' ``finalize`` hook (ADR 0008), so
@@ -320,24 +398,27 @@ def _get_bulk(query: _Query) -> tuple[pd.DataFrame, BaseMetadata]:
         try:
             api, md = _query_api(query, cutoffs, missing, snapshot.gaps())
         except FanOutInterrupted as e:
-            if downloads is not None:
-                # Resuming the downloads (all complete) re-runs this step.
-                e.call = downloads
+            # Resuming the downloads (all complete) re-runs the change query.
+            if downloads is not None and (call := downloads()) is not None:
+                e._bind(call)
             raise
-        return _merge(_shape_file_rows(file_rows, query), api, query, items), md
+        return _merge(file_rows, api, query, points), _metadata(
+            query, md, searched, downloaded
+        )
 
     if not files:
         return complete(pd.DataFrame(), None)
-    downloads = FanOut(
+    call = FanOut(
         files,
-        _fetcher(snapshot, _arrow_filters(query)),
+        _fetcher(snapshot, query),
         RetryPolicy.from_configuration(adapter="waterdata"),
         finalize=complete,
         canonical_url=files[0].url,
         service=f"bulk {query.collection}",
         adapter="waterdata",
     )
-    return downloads.resume()
+    downloads = weakref.ref(call)
+    return call.resume()
 
 
 # --- arguments --------------------------------------------------------------
@@ -378,10 +459,10 @@ def _parse(collection: str, args: dict[str, Any], max_rows: int | None) -> _Quer
     unsupported = sorted(set(args) - layout.accepted - {"convert_type"})
     if unsupported:
         raise ValueError(
-            f"bulk='always' does not support {render_options(unsupported)}. "
+            f"bulk='always' does not support {_render_names(unsupported)}. "
             f"Remove {'it' if len(unsupported) == 1 else 'them'}, {_USE_AUTO}. "
             "Supported with bulk='always': "
-            f"{render_options(sorted(layout.accepted))}."
+            f"{_render_names(sorted(layout.accepted))}."
         )
     start, end = _time_bounds(args.get("time"), collection)
     return _Query(collection, layout, args, _as_list(sites), start, end)
@@ -389,27 +470,29 @@ def _parse(collection: str, args: dict[str, Any], max_rows: int | None) -> _Quer
 
 # --- routing ------------------------------------------------------------------
 
-# The routing rule, measured 2026-11-22 against the live services with fresh
-# monitoring locations for every run (ADR 0014). Paging the API costs about
-# 1 s per 8,000-12,000 rows; the files cost about 2 s, plus per file the
-# rows the API would page through in the same time: a daily or ``current``
-# continuous file is small, a ``historical`` one is 5-15 MB.
-_BULK_BASE_ROWS = 10_000
-_ROWS_PER_SMALL_FILE = 250
+# The routing rule (ADR 0014), measured against the live services with fresh
+# monitoring locations for every run. Paging the API costs about 0.4 s plus
+# 1 s per 5,000 rows (2026-11-24); the files cost a fixed time
+# (``_Layout.base_rows``), plus per file the rows the API would page through
+# in the same time: a daily or ``current`` continuous file is small (20 of
+# them added 0.4 s), a ``historical`` one is 5-15 MB.
+_ROWS_PER_SMALL_FILE = 100
 _ROWS_PER_HISTORICAL_FILE = 10_000
 
 
 def _prefers_files(query: _Query) -> bool:
     """Whether the ``"auto"`` bulk mode should read the files for ``query``.
 
-    The files win when the estimated rows exceed ``_BULK_BASE_ROWS`` plus a
-    per-location download cost. The estimate needs no request: locations x
+    The files win when the estimated rows exceed the layout's ``base_rows``
+    plus a per-location download cost. The estimate needs no request: locations x
     series x values per day x days.
     """
     per_file = (
         _ROWS_PER_HISTORICAL_FILE if query.needs_historical else _ROWS_PER_SMALL_FILE
     )
-    return _estimated_rows(query) >= _BULK_BASE_ROWS + per_file * len(query.sites)
+    return _estimated_rows(query) >= query.layout.base_rows + per_file * len(
+        query.sites
+    )
 
 
 def _estimated_rows(query: _Query) -> float:
@@ -421,11 +504,12 @@ def _estimated_rows(query: _Query) -> float:
         series = len(query.values("parameter_code"))
         if "statistic_id" in args:
             series *= len(query.values("statistic_id"))
-    if query.start is None:
-        days = float(layout.open_ended_days)
-    else:
-        stop = query.end if query.end is not None else pd.Timestamp.now(tz="UTC")
-        days = max((stop - query.start).total_seconds() / 86400, 1.0)
+    span = query.span
+    days = (
+        float(layout.open_ended_days)
+        if span is None
+        else max(span.total_seconds() / 86400, 1.0)
+    )
     return sites * series * layout.values_per_day * days
 
 
@@ -440,7 +524,7 @@ def _time_bounds(
     end = end if sep else start
 
     def parse(side: str) -> pd.Timestamp | None:
-        return None if side in ("", "..") else pd.Timestamp(side).tz_convert("UTC")
+        return None if _is_blank(side) else pd.Timestamp(side).tz_convert("UTC")
 
     return parse(start), parse(end)
 
@@ -448,40 +532,39 @@ def _time_bounds(
 # --- discovery ----------------------------------------------------------------
 
 
-def _search(query: _Query) -> list[dict[str, Any]]:
+def _search(query: _Query) -> tuple[list[dict[str, Any]], httpx.Response]:
     """The catalog items for the query's locations, one per location."""
-    items, _ = search(
-        query.collection,
-        query.sites,
-        limit=MAX_PAGE_SIZE,
-        ssl_check=True,
-        service=f"bulk {query.collection}",
-        remedy="Pass fewer or shorter monitoring_location_id values.",
-    )
-    return items
+    try:
+        return search(
+            query.collection,
+            query.sites,
+            limit=MAX_PAGE_SIZE,
+            ssl_check=True,
+            service=f"bulk {query.collection}",
+            remedy="Pass fewer or shorter monitoring_location_id values.",
+        )
+    except TransientError:
+        raise
+    except HTTPError as e:
+        raise _refused(e) from e
 
 
-def _parts(sites: list[str]) -> list[list[str]]:
-    """``sites`` in pieces of at most ``_SITES_PER_CLAUSE``."""
-    step = _SITES_PER_CLAUSE
+def _refused(error: HTTPError) -> HTTPError:
+    """A refused catalog or file request, with the mode that avoids both."""
+    return HTTPError(f"{error} {_USE_OFF}", status_code=error.status_code or 0)
+
+
+def _parts(sites: list[str], step: int = _SITES_PER_CLAUSE) -> list[list[str]]:
+    """``sites`` in pieces of at most ``step``."""
     return [sites[i : i + step] for i in range(0, len(sites), step)]
-
-
-def _in_clause(column: str, values: list[str]) -> str:
-    return _cql_in_clause(
-        column, values, remedy="Pass an 'AGENCY-ID' id, e.g., 'USGS-01646500'."
-    )
 
 
 def _plan(items: list[dict[str, Any]], *, skip_historical: bool) -> list[_File]:
     """One plan item per file the query needs."""
     return [
-        _File(item["id"], asset["href"], name)
-        for item in items
-        for name, asset in item.get("assets", {}).items()
-        if "data" in asset.get("roles", [])
-        and asset.get("href")
-        and not (skip_historical and name == "historical")
+        _File(location_of(item), href, name)
+        for item, name, href in data_assets(items)
+        if not (skip_historical and name == "historical")
     ]
 
 
@@ -489,13 +572,14 @@ def _plan(items: list[dict[str, Any]], *, skip_historical: bool) -> list[_File]:
 
 
 def _fetcher(
-    snapshot: _Snapshot, filters: list[tuple[str, str, Any]]
+    snapshot: _Snapshot, query: _Query
 ) -> Callable[[_File], Awaitable[tuple[pd.DataFrame, httpx.Response]]]:
     """The fan-out's per-file fetch: the file's matching rows.
 
     The run combines the rows of every file; the file's ``T`` goes to
     ``snapshot``, since it describes the whole file rather than those rows.
     """
+    filters, dated = _arrow_filters(query), query.layout.dated
 
     async def fetch(item: _File) -> tuple[pd.DataFrame, httpx.Response]:
         client = active_client()
@@ -504,25 +588,41 @@ def _fetcher(
         response = await client.get(item.url, headers=default_headers(item.url))
         # The run keeps every response; a body-less stand-in keeps it from
         # holding every file in memory.
-        inert = inert_response(response.status_code, item.url, response.headers)
+        inert = inert_response(
+            response.status_code, item.url, response.headers, response.elapsed
+        )
         site = item.monitoring_location_id
-        try:
-            _raise_for_non_200(response)
-        except HTTPError as e:
-            # A catalog entry whose file is gone: query the API instead. Any
-            # other failure (a refused key, a firewall) is the caller's to see.
-            if e.status_code != 404:
-                raise
+        if not _file_exists(response):
             snapshot.failed.add(site)
             return pd.DataFrame(), inert
         content = response.content
         del response  # only ``inert`` is kept; the body goes with ``content``
-        rows, facts = await anyio.to_thread.run_sync(_read_file, content, filters)
+        rows, facts = await anyio.to_thread.run_sync(
+            _read_file, content, filters, dated
+        )
         if facts is not None:
             snapshot.files.setdefault(site, {})[item.asset] = facts
         return rows, inert
 
     return fetch
+
+
+def _file_exists(response: httpx.Response) -> bool:
+    """Whether a download found its file; ``False`` for a 404.
+
+    A catalog entry whose file is gone sends the location to the API. Any
+    other failure (a refused key, a firewall) is the caller's to see, and a
+    transient one is the fan-out's to retry.
+    """
+    try:
+        _raise_for_non_200(response)
+    except TransientError:
+        raise
+    except HTTPError as e:
+        if e.status_code == 404:
+            return False
+        raise _refused(e) from e
+    return True
 
 
 def _arrow_filters(query: _Query) -> list[tuple[str, str, Any]]:
@@ -532,8 +632,8 @@ def _arrow_filters(query: _Query) -> list[tuple[str, str, Any]]:
     fails the filter now may have been revised to pass it.
     """
     filters: list[tuple[str, str, Any]] = [
-        (column, "in", query.values(column))
-        for column in sorted(_STABLE_FILTERS & query.args.keys())
+        (column, "in", values)
+        for column, values in query.filters(_STABLE_FILTERS).items()
     ]
     for op, bound in ((">=", query.start), ("<=", query.end)):
         if bound is not None:
@@ -543,13 +643,13 @@ def _arrow_filters(query: _Query) -> list[tuple[str, str, Any]]:
 
 
 def _read_file(
-    content: bytes, filters: list[tuple[str, str, Any]]
+    content: bytes, filters: list[tuple[str, str, Any]], dated: bool
 ) -> tuple[pd.DataFrame, _FileFacts | None]:
     """The matching rows of one file, and the whole file's facts.
 
     The filters are applied while reading, so row groups outside them are not
     decoded. The facts describe the whole file, not those rows; an empty file
-    has none.
+    has none. Runs in a worker thread, so the rows are shaped here.
     """
     # pyarrow is optional; get_data checked it is installed.
     import pyarrow as pa
@@ -558,18 +658,40 @@ def _read_file(
     # ``BufferReader`` reads the downloaded bytes in place, without a copy.
     table = pq.read_table(pa.BufferReader(content), filters=filters or None)
     source = pq.ParquetFile(pa.BufferReader(content))
-    if source.metadata.num_rows == 0:
-        return table.to_pandas(), None
-    facts = _FileFacts(
-        cutoff=pd.Timestamp(_extreme(source, "last_modified", "max")).tz_convert("UTC"),
-        first=pd.Timestamp(_extreme(source, "time", "min")),
-        last=pd.Timestamp(_extreme(source, "time", "max")),
-    )
-    return table.to_pandas(), facts
+    facts = None
+    if source.metadata.num_rows:
+        first, last = _column_range(source, "time")
+        facts = _FileFacts(
+            cutoff=pd.Timestamp(_column_range(source, "last_modified")[1]).tz_convert(
+                "UTC"
+            ),
+            first=pd.Timestamp(first),
+            last=pd.Timestamp(last),
+        )
+    return _frame(table, dated), facts
 
 
-def _extreme(source: Any, column: str, which: str) -> Any:
-    """The ``"min"`` or ``"max"`` of a column over a whole Parquet file.
+def _frame(table: Any, dated: bool) -> pd.DataFrame:
+    """A file's rows in the getter's column types, converted while in Arrow."""
+    import pyarrow as pa
+    import pyarrow.compute as pc
+
+    # The API returns ``qualifier`` as lists and ``value`` as floats.
+    qualifier = table["qualifier"].to_pylist()
+    # A value no float spells fails the cast; ``to_numeric`` makes it NaN.
+    with contextlib.suppress(pa.ArrowInvalid):
+        value = pc.cast(table["value"], pa.float64())
+        table = table.set_column(table.schema.get_field_index("value"), "value", value)
+    df = table.drop_columns(["qualifier"]).to_pandas(date_as_object=False)
+    df["value"] = pd.to_numeric(df["value"], errors="coerce").astype("float64")
+    df["qualifier"] = qualifier
+    if dated:
+        df["time"] = df["time"].astype("datetime64[us]")
+    return df
+
+
+def _column_range(source: Any, column: str) -> tuple[Any, Any]:
+    """The smallest and largest value of a column over a whole Parquet file.
 
     From the row-group statistics when every group has them, otherwise from
     the column alone.
@@ -580,43 +702,63 @@ def _extreme(source: Any, column: str, which: str) -> Any:
         meta.row_group(i).column(index).statistics for i in range(meta.num_row_groups)
     ]
     if all(s is not None and s.has_min_max for s in stats):
-        values = [getattr(s, which) for s in stats]
-        return max(values) if which == "max" else min(values)
+        return min(s.min for s in stats), max(s.max for s in stats)
     import pyarrow.compute as pc
 
-    return getattr(pc, which)(source.read(columns=[column])[column]).as_py()
+    span = pc.min_max(source.read(columns=[column])[column]).as_py()
+    return span["min"], span["max"]
 
 
 # --- the API part ---------------------------------------------------------------
 
 
 def _cql_time(time: pd.Timestamp) -> str:
-    return str(time.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    return _format_one(time, date=False, name="time")
 
 
-def _change_clauses(cutoffs: dict[str, pd.Timestamp], missing: set[str]) -> list[str]:
+def _clause(sites: list[str], *conditions: str) -> str:
+    """One top-level ``OR`` clause: ``sites`` and every condition."""
+    ids = _cql_in_clause("monitoring_location_id", sites, remedy=_ID_REMEDY)
+    return f"({' AND '.join([ids, *conditions])})"
+
+
+def _change_clauses(
+    cutoffs: dict[str, pd.Timestamp], missing: set[str], bounds: list[str]
+) -> list[str]:
     """One clause per cutoff day: the records changed since the snapshot."""
     by_day: dict[pd.Timestamp, list[str]] = {}
     for site, cutoff in cutoffs.items():
         if site not in missing:
             by_day.setdefault(cutoff.floor("D"), []).append(site)
-    # Each clause names at most ``_SITES_PER_CLAUSE`` locations: the chunker
-    # splits the filter only at top-level ``OR``, so one clause must fit a URL.
+    step = _change_step(len(cutoffs.keys() - missing))
     return [
-        f"({_in_clause('monitoring_location_id', part)} AND "
-        f"last_modified >= '{_cql_time(day)}')"
+        _clause(part, f"last_modified >= '{_cql_time(day)}'", *bounds)
         for day, sites in sorted(by_day.items())
-        for part in _parts(sites)
+        for part in _parts(sites, step)
     ]
 
 
+def _change_step(changing: int) -> int:
+    """How many locations each change clause names."""
+    step = min(_SITES_PER_CHANGE_REQUEST, -(-changing // _CHANGE_REQUESTS))
+    # Requests beyond the concurrency cap wait their turn, so they add only quota.
+    cap = configuration.concurrency(adapter="waterdata")
+    if cap is not None:
+        step = max(step, -(-changing // cap))
+    return min(step, _SITES_PER_CLAUSE)
+
+
 def _gap_clauses(
-    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]],
+    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]], bounds: list[str]
 ) -> list[str]:
     """One clause per gap between a location's two files: every record in it."""
     return [
-        f"({_in_clause('monitoring_location_id', [site])} AND "
-        f"time > '{_cql_time(after)}' AND time < '{_cql_time(before)}')"
+        _clause(
+            [site],
+            f"time > '{_cql_time(after)}'",
+            f"time < '{_cql_time(before)}'",
+            *bounds,
+        )
         for site, after, before in gaps
     ]
 
@@ -625,7 +767,7 @@ def _query_api(
     query: _Query,
     cutoffs: dict[str, pd.Timestamp],
     missing: set[str],
-    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]] = (),
+    gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]],
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """The API rows: changes since each snapshot, and what the files lack.
 
@@ -642,88 +784,126 @@ def _query_api(
     file. A change query must also see a record that has just left the filter,
     so the merge can drop the file's stale copy; the merge applies them.
 
-    The API refuses a ``time`` argument wider than the collection's limit. A
-    change clause needs no ``time``, so such a query sends none: the clause
-    for locations without a file carries the bounds instead, and the merge
-    applies them to the changes.
+    How ``time`` is sent depends on the collection
+    (:attr:`_Layout.bounds_changes`). A ``daily`` request sends none and its
+    change clauses carry no bounds, so the rows are kept to the interval
+    here; the missing-location clause carries the bounds. A ``continuous``
+    request sends ``time``, or, when the API refuses it, every clause
+    carries the bounds instead.
     """
-    clauses = _change_clauses(cutoffs, missing) + _gap_clauses(gaps)
+    sends_time = query.layout.bounds_changes and query.time_fits_api
+    bounds = [] if sends_time else query.time_clauses
     changeable = [
-        _in_clause(column, query.values(column))
-        for column in sorted(_CHANGEABLE_FILTERS & query.args.keys())
+        _cql_in_clause(column, values, remedy=f"Remove that value from {column}.")
+        for column, values in query.filters(_CHANGEABLE_FILTERS).items()
     ]
-    dropped = {"monitoring_location_id"} | _CHANGEABLE_FILTERS
-    whole = changeable
-    if not query.time_fits_api:
-        dropped |= {"time"}
-        whole = [*changeable, *query.time_clauses]
-    clauses += [
-        f"({' AND '.join([_in_clause('monitoring_location_id', part), *whole])})"
-        for part in _parts(sorted(missing))
+    clauses = [
+        *_change_clauses(
+            cutoffs, missing, bounds if query.layout.bounds_changes else []
+        ),
+        *_gap_clauses(gaps, bounds),
+        *(_clause(part, *changeable, *bounds) for part in _parts(sorted(missing))),
     ]
-
+    dropped = {"monitoring_location_id", *_CHANGEABLE_FILTERS}
+    if not sends_time:
+        dropped.add("time")
     request = {k: v for k, v in query.args.items() if k not in dropped}
     request["filter"] = " OR ".join(clauses)
     request["filter_lang"] = "cql-text"
-    return get_ogc_data(request, query.collection)
+    # One request per clause: the chunker splits a filter at top-level ``OR``.
+    api, md = get_ogc_data(request, query.collection, chunks=len(clauses))
+    return _within(api, query), md
+
+
+def _within(api: pd.DataFrame, query: _Query) -> pd.DataFrame:
+    """The rows inside the query's ``time`` interval.
+
+    A change clause without bounds also returns records outside it that
+    changed since the snapshot, and the merge would keep them.
+    """
+    if api.empty or (query.start is None and query.end is None):
+        return api
+    time = pd.to_datetime(api["time"], utc=True)
+    inside = pd.Series(True, index=api.index)
+    if query.start is not None:
+        inside &= time >= query.start
+    if query.end is not None:
+        inside &= time <= query.end
+    return api[inside]
+
+
+def _metadata(
+    query: _Query, md: BaseMetadata, *responses: httpx.Response | None
+) -> BaseMetadata:
+    """``md`` for the whole call, as the API reports a query it splits.
+
+    The URL is the one ``bulk="off"`` sends, the time is every request's
+    summed, and the headers are those with the lowest remaining quota.
+    """
+    changes = inert_response(200, md.url, md.header, md.query_time)
+    sent = [response for response in (*responses, changes) if response is not None]
+    url = request_url(query.args, query.collection)
+    return BaseMetadata(_combine_chunk_responses(sent, url))
 
 
 # --- shaping and merging ----------------------------------------------------------
 
 
-def _shape_file_rows(df: pd.DataFrame, query: _Query) -> pd.DataFrame:
-    """File rows in the getter's column types."""
-    if df.empty:
-        return pd.DataFrame()
-    if query.layout.dated:
-        df["time"] = pd.to_datetime(df["time"]).astype("datetime64[us]")
-    df["value"] = pd.to_numeric(df["value"], errors="coerce").astype("float64")
-    # pyarrow returns a list column as arrays; the API returns lists.
-    df["qualifier"] = [None if q is None else list(q) for q in df["qualifier"]]
-    # The API frame's strings are pandas' string type; a file's may arrive as
-    # ``object``. Matters when no API rows give ``_match_types`` a template.
-    return df.infer_objects()
-
-
 def _points(items: list[dict[str, Any]]) -> dict[str, Any]:
-    """Each location's GeoJSON point, from its catalog item."""
-    return {item["id"]: item["geometry"] for item in items if item.get("geometry")}
+    """Each location's GeoJSON point, from its catalog item.
+
+    The catalog rounds coordinates to 9 decimal places, under a millimeter
+    from the API's.
+    """
+    return {
+        location_of(item): item["geometry"] for item in items if item.get("geometry")
+    }
 
 
 def _merge(
     file_rows: pd.DataFrame,
     api: pd.DataFrame,
     query: _Query,
-    items: list[dict[str, Any]],
+    points: dict[str, Any],
 ) -> pd.DataFrame:
     """Concatenate, keep the API's version of shared records, filter, sort."""
+    if not (file_rows.empty or api.empty):
+        api = _typed_like(api, file_rows)
     combined = api.reset_index(drop=True)
+    keep = pd.Series(True, index=combined.index)
     if not file_rows.empty:
-        if query.layout.has_geometry:
-            file_rows = _with_geometry(file_rows, api, _points(items))
+        file_rows = _with_geometry(file_rows, api, points)
         # An empty API frame has placeholder types, and concatenating it would
         # widen every file column to ``object``.
         parts = [file_rows] if api.empty else [combined, file_rows]
         combined = pd.concat(parts, ignore_index=True)
-        combined = combined.drop_duplicates(["time_series_id", "time"], keep="first")
-    for column in sorted(_CHANGEABLE_FILTERS & query.args.keys()):
-        combined = combined[combined[column].isin(query.values(column))]
-    if not query.time_fits_api and not combined.empty:
-        combined = _within_time(combined, query)
+        keep = ~combined.duplicated(["time_series_id", "time"], keep="first")
+    for column, values in query.filters(_CHANGEABLE_FILTERS).items():
+        keep &= combined[column].isin(values)
+    combined = combined[keep]
     api = api.drop(columns=query.layout.id_column, errors="ignore")
     combined = combined.reindex(columns=api.columns)
     if not api.empty:
         combined = _match_types(combined, api)
-    return _sort_rows(combined, WATERDATA_DIALECT)
+    # A file's strings may arrive as ``object`` when no API row gives
+    # ``_match_types`` a template.
+    return _sort_rows(_infer_object_cols(combined), WATERDATA_DIALECT)
 
 
-def _within_time(rows: pd.DataFrame, query: _Query) -> pd.DataFrame:
-    """``rows`` inside the query's ``time``, for an API part sent without it."""
-    if query.start is not None:
-        rows = rows[rows["time"] >= query.start]
-    if query.end is not None:
-        rows = rows[rows["time"] <= query.end]
-    return rows
+def _typed_like(api: pd.DataFrame, file_rows: pd.DataFrame) -> pd.DataFrame:
+    """The API frame, its all-null ``object`` columns given the files' types.
+
+    A text column null in every changed row is ``object``, and the concat
+    would widen the files' strings to match.
+    """
+    types = {
+        column: file_rows[column].dtype
+        for column in api.columns.intersection(file_rows.columns)
+        if api[column].dtype == object
+        and file_rows[column].dtype != object
+        and api[column].isna().all()
+    }
+    return api.astype(types) if types else api
 
 
 def _match_types(combined: pd.DataFrame, api: pd.DataFrame) -> pd.DataFrame:
@@ -754,14 +934,19 @@ def _with_geometry(
     if "geometry" not in api.columns:
         return file_rows
     sites = file_rows["monitoring_location_id"]
-    try:
-        import geopandas as gpd
-        from shapely.geometry import shape
-    except ImportError:
+    if not GEOPANDAS:
         coordinates = {site: point.get("coordinates") for site, point in points.items()}
         return file_rows.assign(geometry=sites.map(coordinates))
+    import geopandas as gpd
+    from shapely.geometry import shape
+
     # One shape per location, not per row.
-    shapes = {site: shape(point) for site, point in points.items()}
+    codes, locations = pd.factorize(sites)
+    shapes = gpd.array.from_shapely(
+        [shape(points[site]) if site in points else None for site in locations]
+    )
     return gpd.GeoDataFrame(
-        file_rows, geometry=sites.map(shapes), crs=getattr(api, "crs", None)
+        file_rows,
+        geometry=shapes.take(codes, allow_fill=True),
+        crs=getattr(api, "crs", None),
     )

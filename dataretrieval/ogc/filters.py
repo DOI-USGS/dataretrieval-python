@@ -10,7 +10,7 @@ planner: ``_split_top_level_or`` (clause partitioning),
 ``_check_numeric_filter_pitfall`` (the lexicographic-comparison check).
 ``_cql_text_literal`` quotes a CQL-text string literal and ``_cql_in_clause``
 builds a ``prop IN (...)`` clause, for any getter that *builds* a CQL filter
-(the list fold in ``ogc.requests``, ``waterdata.ratings``).
+(the list fold in ``ogc.requests``, and adapters that build their own).
 
 Other CQL shapes (``AND``, ``NOT``, ``LIKE``, spatial/temporal
 predicates, function calls) are forwarded verbatim — only top-level

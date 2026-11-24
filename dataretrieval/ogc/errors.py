@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import httpx
 
+from dataretrieval.credentials import accepts_api_key, key_variables
 from dataretrieval.exceptions import error_for_status
 from dataretrieval.exceptions import parse_retry_after as _parse_retry_after
 
@@ -34,8 +35,8 @@ def _error_body(resp: httpx.Response) -> str:
           ``code``/``description`` envelope or a gateway ``message``) when
           present; otherwise ``"<status>: <reason>. <snippet>"`` with the first
           200 characters of ``resp.text``; an empty body yields
-          ``"<status>: <reason>."``, except **403**, which falls back to
-          :data:`_FORBIDDEN_CAUSES` so a credential problem is named.
+          ``"<status>: <reason>."``, except **403**, which names both the
+          credential and the server-limit cause.
 
     :func:`_raise_for_non_200` appends ``" (URL: ...)"`` to whatever this
     returns.
@@ -44,9 +45,11 @@ def _error_body(resp: httpx.Response) -> str:
     if status == 429:
         return (
             "429: Too many requests made. Please obtain an API token "
-            "or try again later."
+            f"({key_variables(_request_url(resp))}) or try again later."
         )
     detail = _json_error_detail(resp)
+    if detail is not None and status == 403 and accepts_api_key(_request_url(resp)):
+        return f"403: {detail} Check {key_variables(_request_url(resp))}."
     if detail is not None:
         return f"{status}: {detail}"
     snippet = (resp.text or "").strip()[:200]
@@ -54,16 +57,25 @@ def _error_body(resp: httpx.Response) -> str:
     if snippet:
         return f"{status}: {reason}. {snippet}"
     if status == 403:
-        return f"403: {_FORBIDDEN_CAUSES}"
+        # Both causes are named because the credential one is more common.
+        return (
+            "403: Query request denied. The API key may be missing, expired, or "
+            f"revoked (see {key_variables(_request_url(resp))}), or the query may "
+            "exceed server limits."
+        )
     return f"{status}: {reason}."
 
 
-#: What a 403 means when the service sends no error envelope. Both causes are
-#: named because the credential one is more common and was omitted.
-_FORBIDDEN_CAUSES = (
-    "Query request denied. The API key may be missing, expired, or revoked "
-    "(see API_USGS_PAT), or the query may exceed server limits."
-)
+def _request_url(resp: httpx.Response) -> httpx.URL | None:
+    """The URL the response answered, or ``None`` when no request is attached.
+
+    ``httpx`` raises on ``.url`` for a hand-built response; an error path must
+    not fail while reporting a failure.
+    """
+    try:
+        return resp.url
+    except RuntimeError:
+        return None
 
 
 def _clean_field(value: object | None) -> str | None:
@@ -96,15 +108,9 @@ def _json_error_detail(resp: httpx.Response) -> str | None:
 
 
 def _url_suffix(resp: httpx.Response) -> str:
-    """`` (URL: ...)``, or empty when no request is attached.
-
-    ``httpx`` raises on ``.url`` for a hand-built response; an error path must
-    not fail while reporting a failure.
-    """
-    try:
-        return f" (URL: {resp.url})"
-    except RuntimeError:
-        return ""
+    """`` (URL: ...)``, or empty when no request is attached."""
+    url = _request_url(resp)
+    return "" if url is None else f" (URL: {url})"
 
 
 def _raise_for_non_200(resp: httpx.Response) -> None:

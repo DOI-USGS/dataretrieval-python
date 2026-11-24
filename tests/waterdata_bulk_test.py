@@ -11,7 +11,7 @@ import io
 import os
 import re
 import urllib.parse
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 import pandas as pd
@@ -21,6 +21,7 @@ import pytest
 
 import dataretrieval
 from dataretrieval import waterdata
+from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval.exceptions import HTTPError
 from dataretrieval.interruptions import FanOutInterrupted, ServiceInterrupted
 from dataretrieval.waterdata import WaterdataConfiguration, _bulk
@@ -28,6 +29,9 @@ from dataretrieval.waterdata.utils import _get_args
 
 SEARCH_RE = re.compile(r"^https://api\.waterdata\.usgs\.gov/stac/v0/search(\?.*)?$")
 FILES = "https://api.waterdata.usgs.gov/stac-files"
+ITEMS_RE = re.compile(
+    r"^https://api\.waterdata\.usgs\.gov/ogcapi/v\d+/collections/daily/items(\?.*)?$"
+)
 UTC = timezone.utc
 SNAPSHOT = datetime(2026, 11, 21, 4, 0, tzinfo=UTC)
 ALWAYS = WaterdataConfiguration(bulk="always")
@@ -105,7 +109,17 @@ def _api_frame(rows, collection="daily"):
             id_col: [f"uuid-{i}" for i in range(len(rows))],
         }
     )
+    if collection == "continuous":
+        df["time"] = df["time"].dt.tz_localize("UTC")
     return df
+
+
+def _response(seconds=0.0, remaining=None, url="https://api.waterdata.usgs.gov/"):
+    """A sent response: its elapsed time and remaining quota."""
+    headers = {} if remaining is None else {"x-ratelimit-remaining": str(remaining)}
+    response = httpx.Response(200, headers=headers, request=httpx.Request("GET", url))
+    response.elapsed = timedelta(seconds=seconds)
+    return response
 
 
 @pytest.fixture
@@ -117,10 +131,10 @@ def ogc(monkeypatch):
             self.queries = []
             self.answers = []
 
-        def __call__(self, args, collection):
+        def __call__(self, args, collection, *, chunks=1):
             self.queries.append(dict(args))
             answer = self.answers.pop(0) if self.answers else _api_frame([])
-            return answer, "md"
+            return answer, BaseMetadata(_response())
 
     recorder = Recorder()
     monkeypatch.setattr(_bulk, "get_ogc_data", recorder)
@@ -129,21 +143,19 @@ def ogc(monkeypatch):
 
 def test_file_rows_merge_with_api_changes_and_the_api_wins(httpx_mock, ogc):
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [
-                {"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"},
-                {
-                    "ts": "a",
-                    "site": site,
-                    "time": date(2020, 1, 2),
-                    "value": "2",
-                    "qualifier": ["ICE"],
-                },
-            ]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [
+            {"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"},
+            {
+                "ts": "a",
+                "site": site,
+                "time": date(2020, 1, 2),
+                "value": "2",
+                "qualifier": ["ICE"],
+            },
+        ],
     )
     # Day 2 was revised after the snapshot, and day 3 is new.
     ogc.answers.append(
@@ -165,7 +177,6 @@ def test_file_rows_merge_with_api_changes_and_the_api_wins(httpx_mock, ogc):
     assert df["time"].dtype == "datetime64[us]"
     # The files carry no record id, so the result has none.
     assert "daily_id" not in df.columns
-    assert md == "md"
     (query,) = ogc.queries
     assert query["parameter_code"] == "00060"
     # The snapshot time, floored to the day so the window has a margin.
@@ -180,27 +191,25 @@ def test_a_filter_on_a_changeable_column_is_applied_after_the_merge(httpx_mock, 
     """A record Provisional in the file and Approved since must not be
     returned for approval_status='Provisional'."""
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [
-                {
-                    "ts": "a",
-                    "site": site,
-                    "time": date(2020, 1, 1),
-                    "value": "1",
-                    "approval": "Provisional",
-                },
-                {
-                    "ts": "a",
-                    "site": site,
-                    "time": date(2020, 1, 2),
-                    "value": "2",
-                    "approval": "Provisional",
-                },
-            ]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [
+            {
+                "ts": "a",
+                "site": site,
+                "time": date(2020, 1, 1),
+                "value": "1",
+                "approval": "Provisional",
+            },
+            {
+                "ts": "a",
+                "site": site,
+                "time": date(2020, 1, 2),
+                "value": "2",
+                "approval": "Provisional",
+            },
+        ],
     )
     ogc.answers.append(
         _api_frame([{"ts": "a", "site": site, "time": "2020-01-02", "value": "2"}])
@@ -246,8 +255,7 @@ def test_locations_without_a_file_get_the_whole_query(httpx_mock, ogc):
 
 def test_a_missing_file_falls_back_to_the_api(httpx_mock, ogc):
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(url=f"{FILES}/daily/{site}/{site}.parquet", status_code=404)
+    _daily_file(httpx_mock, site, status_code=404)
 
     waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
 
@@ -257,22 +265,20 @@ def test_a_missing_file_falls_back_to_the_api(httpx_mock, ogc):
 
 def test_file_rows_are_filtered_by_time_and_code(httpx_mock, ogc):
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [
-                {"ts": "a", "site": site, "time": date(2019, 12, 31), "value": "0"},
-                {"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"},
-                {
-                    "ts": "b",
-                    "site": site,
-                    "time": date(2020, 1, 1),
-                    "value": "9",
-                    "pc": "00010",
-                },
-            ]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [
+            {"ts": "a", "site": site, "time": date(2019, 12, 31), "value": "0"},
+            {"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"},
+            {
+                "ts": "b",
+                "site": site,
+                "time": date(2020, 1, 1),
+                "value": "9",
+                "pc": "00010",
+            },
+        ],
     )
 
     df, _ = waterdata.get_daily(
@@ -286,14 +292,34 @@ def test_file_rows_are_filtered_by_time_and_code(httpx_mock, ogc):
     assert "daily_id" not in df.columns
 
 
+def test_continuous_geometry_comes_from_the_catalog(httpx_mock, ogc):
+    """The API returns each continuous record's point, so the files path must."""
+    geopandas = pytest.importorskip("geopandas")
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[{"time": datetime(2020, 1, 1, tzinfo=UTC)}],
+        current=[{"time": datetime(2020, 1, 1, 0, 15, tzinfo=UTC)}],
+    )
+    ogc.answers.append(
+        geopandas.GeoDataFrame(
+            _api_frame([], "continuous"), geometry=[], crs="EPSG:4326"
+        )
+    )
+
+    df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01")
+
+    assert isinstance(df, geopandas.GeoDataFrame)
+    assert df.crs == "EPSG:4326"
+    assert set(zip(df.geometry.x, df.geometry.y, strict=True)) == {(-74.5, 41.9)}
+
+
 def test_daily_geometry_comes_from_the_catalog(httpx_mock, ogc):
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}],
     )
     geopandas = pytest.importorskip("geopandas")
     ogc.answers.append(
@@ -341,37 +367,32 @@ def test_continuous_reads_historical_only_for_an_old_or_open_start(
 
 
 def test_continuous_cutoff_is_the_current_files(httpx_mock, ogc):
-    site = "USGS-01"
-    base = f"{FILES}/continuous/{site}/{site}"
-    item = _item(site, "continuous", assets=("current", "historical"))
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [item]})
-    row = {"ts": "a", "site": site, "value": "1"}
-    httpx_mock.add_response(
-        url=f"{base}-hot.parquet",
-        content=_parquet(
-            [{**row, "time": datetime(2026, 11, 1, tzinfo=UTC)}], "continuous"
-        ),
-    )
-    httpx_mock.add_response(
-        url=f"{base}.parquet",
-        content=_parquet(
-            [
-                {
-                    **row,
-                    "time": datetime(2020, 1, 1, tzinfo=UTC),
-                    "modified": datetime(2026, 6, 1, 12, tzinfo=UTC),
-                }
-            ],
-            "continuous",
-        ),
+    _continuous_pair(
+        httpx_mock,
+        "USGS-01",
+        historical=[
+            {
+                "time": datetime(2020, 1, 1, tzinfo=UTC),
+                "modified": datetime(2026, 6, 1, 12, tzinfo=UTC),
+            }
+        ],
+        current=[{"time": datetime(2026, 11, 1, tzinfo=UTC)}],
     )
 
-    df, _ = waterdata.get_continuous(monitoring_location_id=site)
+    df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01")
 
     assert len(df) == 2
     # ``historical`` holds only old records, so its newest change is months
     # older than the night both files were written.
     assert "'2026-11-21T00:00:00Z'" in ogc.queries[0]["filter"]
+
+
+def _daily_file(httpx_mock, site, rows=None, **response):
+    """Mock a location's catalog item and its daily file: ``rows``, or ``response``."""
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
+    if rows is not None:
+        response["content"] = _parquet(rows)
+    httpx_mock.add_response(url=f"{FILES}/daily/{site}/{site}.parquet", **response)
 
 
 def _continuous_pair(httpx_mock, site, *, historical, current):
@@ -427,7 +448,7 @@ def test_a_gap_between_the_two_files_is_asked_of_the_api(httpx_mock, ogc):
         _api_frame(
             [{"ts": "a", "site": "USGS-01", "time": "2026-06-10", "value": "2"}],
             "continuous",
-        ).assign(time=lambda d: d["time"].dt.tz_localize("UTC"))
+        )
     )
 
     df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01")
@@ -452,38 +473,33 @@ def test_adjoining_files_add_no_gap_clause(httpx_mock, ogc):
     assert "time >" not in ogc.queries[0]["filter"]
 
 
-@pytest.mark.parametrize("time", ["2000-01-01/..", "../2020-01-01"])
-def test_a_time_the_api_refuses_is_not_sent_with_the_change_query(
-    httpx_mock, ogc, time
+@pytest.mark.parametrize(
+    ("time", "bound"),
+    [
+        ("2000-01-01/..", "time >= '2000-01-01T00:00:00Z'"),
+        ("../2020-01-01", "time <= '2020-01-01T00:00:00Z'"),
+    ],
+)
+def test_a_time_the_api_refuses_is_sent_in_every_clause_instead(
+    httpx_mock, ogc, time, bound
 ):
     """The continuous collection refuses a ``time`` over 1,100 days or with an
-    open start (HTTP 400), after every file was downloaded. A change clause
-    needs no ``time``, and the merge applies the bounds to its rows."""
+    open start (HTTP 400), after every file was downloaded. A filter can
+    compare ``time`` itself, so every clause carries the bounds instead."""
     _continuous_pair(
         httpx_mock,
         "USGS-01",
         historical=[{"time": datetime(2010, 1, 1, tzinfo=UTC)}],
-        current=[{"time": datetime(2010, 1, 1, 0, 15, tzinfo=UTC)}],
-    )
-    # Changed records on both sides of each interval; only one is inside both.
-    ogc.answers.append(
-        _api_frame(
-            [
-                {"ts": "a", "site": "USGS-01", "time": t, "value": "2"}
-                for t in ("1999-06-01", "2015-06-01", "2026-11-22")
-            ],
-            "continuous",
-        ).assign(time=lambda d: d["time"].dt.tz_localize("UTC"))
+        # Two months later: a gap clause as well as a change clause.
+        current=[{"time": datetime(2010, 3, 1, tzinfo=UTC)}],
     )
 
-    df, _ = waterdata.get_continuous(monitoring_location_id="USGS-01", time=time)
+    waterdata.get_continuous(monitoring_location_id="USGS-01", time=time)
 
     assert "time" not in ogc.queries[0]
-    start, _, end = time.partition("/")
-    inside = df["time"].dt.strftime("%Y-%m-%d")
-    assert start == ".." or (inside >= start).all()
-    assert end == ".." or (inside <= end).all()
-    assert "2015-06-01" in set(inside)
+    clauses = ogc.queries[0]["filter"].split(" OR ")
+    assert len(clauses) == 2
+    assert all(clause.endswith(f" AND {bound})") for clause in clauses)
 
 
 def test_locations_without_a_file_carry_the_time_the_request_dropped(ogc, httpx_mock):
@@ -500,22 +516,83 @@ def test_locations_without_a_file_carry_the_time_the_request_dropped(ogc, httpx_
     )
 
 
-@pytest.mark.parametrize(
-    ("getter", "time"),
-    [
-        (waterdata.get_continuous, "2026-01-01/2026-06-01"),
-        (waterdata.get_continuous, None),
-        # ``daily`` has no limit on ``time``.
-        (waterdata.get_daily, "1950-01-01/.."),
-    ],
-)
-def test_a_time_the_api_accepts_is_sent_as_before(ogc, httpx_mock, getter, time):
+@pytest.mark.parametrize("time", ["2026-01-01/2026-06-01", None])
+def test_a_continuous_time_the_api_accepts_is_sent_as_before(ogc, httpx_mock, time):
+    """Without it, a continuous change query is far slower (ADR 0014)."""
     httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
 
-    getter(monitoring_location_id="USGS-01", time=time, skip_geometry=None)
+    waterdata.get_continuous(monitoring_location_id="USGS-01", time=time)
 
     assert ogc.queries[0].get("time") == time
     assert "time >=" not in ogc.queries[0]["filter"]
+
+
+@pytest.mark.parametrize(
+    ("time", "bounds"),
+    [
+        ("1950-01-01/..", " AND time >= '1950-01-01T00:00:00Z'"),
+        (
+            "2020-01-01/2020-12-31",
+            " AND time >= '2020-01-01T00:00:00Z' AND time <= '2020-12-31T00:00:00Z'",
+        ),
+    ],
+)
+def test_a_daily_change_query_sends_no_time(httpx_mock, ogc, time, bounds):
+    """Without a time window, a daily change query is faster (ADR 0014). Only
+    the clause for a location without a file carries the bounds."""
+    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item("USGS-01")]})
+    httpx_mock.add_response(
+        url=f"{FILES}/daily/USGS-01/USGS-01.parquet",
+        content=_parquet(
+            [{"ts": "a", "site": "USGS-01", "time": date(2020, 1, 1), "value": "1"}]
+        ),
+    )
+
+    waterdata.get_daily(
+        monitoring_location_id=["USGS-01", "USGS-02"], time=time, skip_geometry=True
+    )
+
+    (query,) = ogc.queries
+    assert "time" not in query
+    assert query["filter"] == (
+        "(monitoring_location_id IN ('USGS-01') AND "
+        "last_modified >= '2026-11-21T00:00:00Z') OR "
+        f"(monitoring_location_id IN ('USGS-02'){bounds})"
+    )
+
+
+def test_changed_records_outside_the_time_are_dropped(httpx_mock, ogc):
+    """The change clause has no time bounds, so the API also returns records
+    outside the interval that changed since the snapshot. The merge keeps the
+    API's rows, so they must not reach it."""
+    site = "USGS-01"
+    _daily_file(
+        httpx_mock,
+        site,
+        [
+            {"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"},
+            {"ts": "a", "site": site, "time": date(2020, 1, 2), "value": "2"},
+        ],
+    )
+    ogc.answers.append(
+        _api_frame(
+            [
+                {"ts": "a", "site": site, "time": "2019-12-31", "value": "0"},
+                {"ts": "a", "site": site, "time": "2020-01-02", "value": "20"},
+                {"ts": "a", "site": site, "time": "2020-01-03", "value": "3"},
+            ]
+        )
+    )
+
+    df, _ = waterdata.get_daily(
+        monitoring_location_id=site, time="2020-01-01/2020-01-02", skip_geometry=True
+    )
+
+    assert df["time"].tolist() == [
+        pd.Timestamp("2020-01-01"),
+        pd.Timestamp("2020-01-02"),
+    ]
+    assert df["value"].tolist() == [1.0, 20.0]
 
 
 @pytest.mark.parametrize(
@@ -536,16 +613,32 @@ def test_rejects_what_bulk_cannot_honor_before_any_request(kwargs, match):
         waterdata.get_daily(**kwargs)
 
 
+def test_a_text_column_null_in_the_changed_rows_keeps_its_type(httpx_mock, ogc):
+    """The changed rows are few, so a column can be all null there (an
+    ``object`` column) while the files have values for it."""
+    site = "USGS-01"
+    _daily_file(
+        httpx_mock,
+        site,
+        [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}],
+    )
+    changed = _api_frame([{"ts": "a", "site": site, "time": "2020-01-02", "value": 2}])
+    ogc.answers.append(changed.assign(unit_of_measure=None))
+
+    df, _ = waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
+
+    assert df["unit_of_measure"].dtype == pd.Series(["a"]).dtype
+    assert df["unit_of_measure"].isna().tolist() == [False, True]
+
+
 def test_file_rows_alone_have_the_api_column_types(httpx_mock, ogc):
     """Nothing changed since the snapshot: the API returns no rows, so its
     frame has placeholder types that must not leak into the result."""
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}],
     )
     # As built from the collection schema: no ``daily_id``, second resolution.
     empty = _api_frame([]).drop(columns="daily_id")
@@ -616,36 +709,106 @@ def test_catalog_searches_for_many_locations_are_chunked(httpx_mock, ogc):
     assert sorted(sent) == sites
 
 
-def test_change_clauses_name_at_most_100_locations_each():
-    """The OGC chunker splits a filter only at top-level OR, so one clause
-    with every same-day location would be too long for any URL."""
+def _change_query(mp, n_changing, n_missing=0):
+    """The request ``_query_api`` sends, and the chunk count it asks for."""
     day = pd.Timestamp("2026-11-21 04:00", tz="UTC")
-    cutoffs = {f"USGS-{i:08d}": day for i in range(250)}
-    missing = {f"USGS-9{i:07d}" for i in range(150)}
+    cutoffs = {f"USGS-{i:08d}": day for i in range(n_changing)}
+    missing = {f"USGS-9{i:07d}" for i in range(n_missing)}
+    sent = []
 
-    with pytest.MonkeyPatch.context() as mp:
-        sent = []
-        mp.setattr(_bulk, "get_ogc_data", lambda q, c: sent.append(q) or (None, None))
-        query = _bulk._parse("daily", {"monitoring_location_id": [*cutoffs]}, None)
-        _bulk._query_api(query, cutoffs, missing)
+    def get(request, collection, *, chunks=1):
+        sent.append((request, chunks))
+        return pd.DataFrame(), None
 
-    clauses = sent[0]["filter"].split(" OR ")
-    assert len(clauses) == 3 + 2
-    assert all(clause.count("'USGS-") <= 100 for clause in clauses)
+    mp.setattr(_bulk, "get_ogc_data", get)
+    query = _bulk._parse("daily", {"monitoring_location_id": [*cutoffs]}, None)
+    _bulk._query_api(query, cutoffs, missing, [])
+    ((request, chunks),) = sent
+    return request["filter"].split(" OR "), chunks
+
+
+@pytest.mark.parametrize(
+    ("locations", "concurrency", "sizes"),
+    [
+        # Up to 8 requests, because the API's time grows with the locations
+        # in one request (ADR 0014).
+        (4, 32, [1, 1, 1, 1]),
+        (30, 32, [4] * 7 + [2]),
+        # Then 10 locations a request.
+        (250, 32, [10] * 25),
+        # But no more requests than run at once: the rest would add only quota.
+        (400, 32, [13] * 30 + [10]),
+        (40, 2, [20, 20]),
+    ],
+)
+def test_a_change_query_is_one_request_per_clause(
+    monkeypatch, locations, concurrency, sizes
+):
+    monkeypatch.setenv("API_USGS_CONCURRENT", str(concurrency))
+
+    clauses, chunks = _change_query(monkeypatch, locations)
+
+    assert [clause.count("'USGS-") for clause in clauses] == sizes
+    assert chunks == len(sizes)
+
+
+def test_clauses_for_locations_without_a_file_name_at_most_100_each(monkeypatch):
+    """The OGC chunker splits a filter only at top-level OR, so one clause
+    with every such location would be too long for any URL."""
+    clauses, _ = _change_query(monkeypatch, 250, n_missing=150)
+
+    assert [clause.count("'USGS-") for clause in clauses[-2:]] == [100, 50]
     assert max(len(clause) for clause in clauses) < 2000
+
+
+def test_a_value_no_float_spells_is_nan(httpx_mock, ogc):
+    """As the API path's ``to_numeric`` would make it, beside readable ones."""
+    site = "USGS-01"
+    rows = [
+        {"ts": "a", "site": site, "time": date(2020, 1, d), "value": v}
+        for d, v in ((1, "1.5"), (2, ""))
+    ]
+    _daily_file(httpx_mock, site, rows)
+
+    df, _ = waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
+
+    assert df["value"].iloc[0] == 1.5
+    assert pd.isna(df["value"].iloc[1])
+
+
+def test_a_location_whose_file_is_empty_gets_the_whole_query(httpx_mock, ogc):
+    """An empty file has no ``T``, so it says nothing about the location."""
+    site = "USGS-01"
+    _daily_file(httpx_mock, site, [])
+
+    waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
+
+    assert ogc.queries[0]["filter"] == "(monitoring_location_id IN ('USGS-01'))"
+
+
+def test_a_refused_catalog_search_names_the_mode_that_avoids_it(httpx_mock, ogc):
+    """A bad ``files_api_key`` is refused at the search, before any download."""
+    httpx_mock.add_response(url=SEARCH_RE, status_code=403)
+
+    with pytest.raises(HTTPError, match="bulk='off'") as excinfo:
+        waterdata.get_daily(monitoring_location_id="USGS-01", skip_geometry=True)
+
+    assert excinfo.value.status_code == 403
+    assert ogc.queries == []
 
 
 def test_a_refused_file_raises_instead_of_falling_back(httpx_mock, ogc):
     """Only a 404 means the file is gone. A 403 (a firewall, a refused key)
     would otherwise turn the call into the full API pull without a word."""
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(url=f"{FILES}/daily/{site}/{site}.parquet", status_code=403)
+    _daily_file(httpx_mock, site, status_code=403)
 
     with pytest.raises(HTTPError) as excinfo:
         waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
 
     assert excinfo.value.status_code == 403
+    # The caller did not ask for files, so the message names the way around them.
+    assert "bulk='off'" in str(excinfo.value)
     assert ogc.queries == []
 
 
@@ -669,34 +832,36 @@ def test_resuming_an_interrupted_download_returns_the_whole_result(httpx_mock, o
     df, md = excinfo.value.call.resume()
 
     assert df["value"].tolist() == [1.0, 2.0]
-    assert md == "md"
+    assert isinstance(md, BaseMetadata)
 
 
 def test_resuming_an_interrupted_change_query_returns_the_whole_result(
     httpx_mock, ogc, monkeypatch
 ):
     site = "USGS-01"
-    httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site)]})
-    httpx_mock.add_response(
-        url=f"{FILES}/daily/{site}/{site}.parquet",
-        content=_parquet(
-            [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}]
-        ),
+    _daily_file(
+        httpx_mock,
+        site,
+        [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}],
     )
     calls = []
 
-    def flaky(args, collection):
+    def flaky(args, collection, **kwargs):
         calls.append(args)
         if len(calls) == 1:
             raise ServiceInterrupted(completed_chunks=0, total_chunks=1)
         return _api_frame(
             [{"ts": "a", "site": site, "time": "2020-01-02", "value": "2"}]
-        ), "md"
+        ), BaseMetadata(_response())
 
     monkeypatch.setattr(_bulk, "get_ogc_data", flaky)
 
     with pytest.raises(ServiceInterrupted) as excinfo:
         waterdata.get_daily(monitoring_location_id=site, skip_geometry=True)
+    # The partial rows are the downloads', as on the handle that resumes.
+    assert excinfo.value.partial_frame["value"].tolist() == [1.0]
+    assert excinfo.value.partial_frame.equals(excinfo.value.call.partial_frame)
+    assert excinfo.value.partial_response is not None
     df, _ = excinfo.value.call.resume()
 
     assert df["value"].tolist() == [1.0, 2.0]
@@ -704,7 +869,7 @@ def test_resuming_an_interrupted_change_query_returns_the_whole_result(
 
 def test_without_geopandas_file_rows_get_the_coordinate_list(monkeypatch):
     """The API's plain-pandas geometry is the GeoJSON coordinate list."""
-    monkeypatch.setitem(__import__("sys").modules, "geopandas", None)
+    monkeypatch.setattr(_bulk, "GEOPANDAS", False)
     api = pd.DataFrame({"geometry": [[-74.5, 41.9]], "monitoring_location_id": ["A"]})
     rows = pd.DataFrame({"monitoring_location_id": ["A", "B"]})
     points = {"A": {"type": "Point", "coordinates": [-74.5, 41.9]}}
@@ -841,6 +1006,32 @@ _HUNDRED = [f"USGS-{i:02d}" for i in range(100)]
             None,
             True,
         ),
+        # No parameter: 4 x 2 series x 731 days, over the daily base of 5,000
+        # plus 100 a file. Locations with many series return severalfold more.
+        (
+            "daily",
+            {
+                "monitoring_location_id": [f"USGS-{i}" for i in range(4)],
+                "time": ["2024-11-01", "2026-11-01"],
+            },
+            None,
+            True,
+        ),
+        # One gage, five years: 3,650, under the base.
+        (
+            "daily",
+            {"monitoring_location_id": "USGS-01", "time": ["2021-11-01", "2026-11-01"]},
+            None,
+            False,
+        ),
+        # A continuous query the daily base would send to the files: 1 x 3
+        # series x 96 x 25 days is 7,200, under the continuous base of 10,000.
+        (
+            "continuous",
+            {"monitoring_location_id": "USGS-01", "time": ["2026-10-20", "2026-11-14"]},
+            None,
+            False,
+        ),
         # Large, but only the API path honors these.
         (
             "daily",
@@ -895,12 +1086,27 @@ def test_bulk_auto_reaches_the_api_for_a_small_query(monkeypatch):
     assert "daily_id" not in df.columns
 
 
-def test_auto_returns_the_api_answer_whole_for_a_query_only_the_api_accepts(
-    monkeypatch,
+@pytest.mark.parametrize(
+    "extra", [{"filter": "value > 1"}, {"max_rows": 10}], ids=["filter", "max_rows"]
+)
+def test_auto_sends_a_query_only_the_api_accepts_there_without_the_id(
+    monkeypatch, extra
 ):
+    """The id column does not come and go with the arguments a query passes."""
     sent = _route_recorder(monkeypatch)
     with dataretrieval.configure(AUTO):
-        df, _ = waterdata.get_daily(monitoring_location_id=_HUNDRED, filter="value > 1")
+        df, _ = waterdata.get_daily(monitoring_location_id=_HUNDRED, **extra)
+    assert sent == ["api"]
+    assert "daily_id" not in df.columns
+
+
+@pytest.mark.parametrize("name", ["id", "daily_id"])
+def test_auto_keeps_the_id_that_properties_names(monkeypatch, name):
+    sent = _route_recorder(monkeypatch)
+    with dataretrieval.configure(AUTO):
+        df, _ = waterdata.get_daily(
+            monitoring_location_id=_HUNDRED, properties=[name, "value"]
+        )
     assert sent == ["api"]
     assert "daily_id" in df.columns
 
@@ -913,15 +1119,32 @@ def test_off_pages_the_api_for_a_large_query(monkeypatch):
     assert "daily_id" in df.columns
 
 
-@pytest.mark.parametrize("mode", [AUTO, ALWAYS], ids=["auto", "always"])
-def test_without_pyarrow_the_files_path_pages_the_api_and_warns(monkeypatch, mode):
-    sent = _route_recorder(monkeypatch)
+def _without_pyarrow(monkeypatch):
     find_spec = _bulk.importlib.util.find_spec
     monkeypatch.setattr(
         _bulk.importlib.util,
         "find_spec",
         lambda name, *a: None if name == "pyarrow" else find_spec(name, *a),
     )
+
+
+@pytest.mark.parametrize("time", ["2000-01-01/..", "../2026-01-01"])
+def test_without_pyarrow_a_time_only_the_files_answer_raises_before_any_request(
+    monkeypatch, time
+):
+    """The API refuses a continuous time over 1,100 days or with an open start,
+    so paging it instead would end in HTTP 400 with no remedy."""
+    sent = _route_recorder(monkeypatch)
+    _without_pyarrow(monkeypatch)
+    with dataretrieval.configure(AUTO), pytest.raises(ValueError, match="pyarrow"):
+        waterdata.get_continuous(monitoring_location_id="USGS-01", time=time)
+    assert sent == []
+
+
+@pytest.mark.parametrize("mode", [AUTO, ALWAYS], ids=["auto", "always"])
+def test_without_pyarrow_the_files_path_pages_the_api_and_warns(monkeypatch, mode):
+    sent = _route_recorder(monkeypatch)
+    _without_pyarrow(monkeypatch)
     with (
         dataretrieval.configure(mode),
         pytest.warns(UserWarning, match=r"dataretrieval\[pyarrow\]") as caught,
@@ -930,3 +1153,70 @@ def test_without_pyarrow_the_files_path_pages_the_api_and_warns(monkeypatch, mod
     assert sent == ["api"]
     # Attributed to the caller's line, not to the package.
     assert caught[0].filename == __file__
+
+
+def test_md_reports_the_url_the_api_route_reports(httpx_mock):
+    site = "USGS-01"
+    httpx_mock.add_response(
+        url=SEARCH_RE,
+        json={"features": [_item(site)]},
+        headers={"x-ratelimit-remaining": "900"},
+    )
+    httpx_mock.add_response(
+        url=f"{FILES}/daily/{site}/{site}.parquet",
+        content=_parquet(
+            [{"ts": "a", "site": site, "time": date(2020, 1, 1), "value": "1"}]
+        ),
+        headers={"x-ratelimit-remaining": "800"},
+    )
+    change = {
+        "time_series_id": "b",
+        "monitoring_location_id": "USGS-02",
+        "parameter_code": "00060",
+        "statistic_id": "00003",
+        "time": "2020-01-02",
+        "value": "2",
+        "unit_of_measure": "ft^3/s",
+        "approval_status": "Approved",
+        "qualifier": None,
+        "last_modified": "2026-11-21T04:00:00+00:00",
+    }
+    httpx_mock.add_response(
+        url=ITEMS_RE,
+        json={
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "id": "uuid-1",
+                    "geometry": None,
+                    "properties": change,
+                }
+            ],
+        },
+        headers={"x-ratelimit-remaining": "950"},
+    )
+    kwargs = {
+        "monitoring_location_id": [site, "USGS-02"],
+        "parameter_code": "00060",
+        "time": "2020-01-01/2020-12-31",
+        "skip_geometry": True,
+    }
+
+    _, md = waterdata.get_daily(**kwargs)
+    with dataretrieval.configure(OFF):
+        _, api = waterdata.get_daily(**kwargs)
+
+    assert md.url == api.url
+    # The file download reported the least quota left.
+    assert md.header["x-ratelimit-remaining"] == "800"
+
+
+def test_md_query_time_sums_the_search_the_files_and_the_changes():
+    query = _bulk._parse("daily", {"monitoring_location_id": "USGS-01"}, None)
+    changes = BaseMetadata(_response(3, remaining=950))
+
+    md = _bulk._metadata(query, changes, _response(1, 900), _response(2, 800), None)
+
+    assert md.query_time == timedelta(seconds=6)
+    assert md.header["x-ratelimit-remaining"] == "800"

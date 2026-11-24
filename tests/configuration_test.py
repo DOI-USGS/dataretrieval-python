@@ -25,6 +25,7 @@ from dataretrieval.nwdc import DEFAULT_CONCURRENT_REQUESTS, NwdcConfiguration
 from dataretrieval.streamstats import StreamstatsConfiguration
 from dataretrieval.utils import _default_headers
 from dataretrieval.waterdata import WaterdataConfiguration
+from dataretrieval.waterdata.endpoints import ratings_catalog_url
 from dataretrieval.wqp import WqpConfiguration
 
 _WATERDATA_HOST = "https://api.waterdata.usgs.gov"
@@ -312,13 +313,13 @@ def test_named_profile_is_selected_in_code(config_file):
     config_file(
         'api_key = "shared"\nconcurrency = 4\n\n'
         "[waterdata]\nretries = 2\n\n"
-        '[waterdata.bulk]\nconcurrency = "unbounded"\n'
+        '[waterdata.overnight]\nconcurrency = "unbounded"\n'
     )
 
     # Inert until selected: the file alone changes nothing about concurrency.
     assert configuration.concurrency(adapter="waterdata") == 4
 
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         assert configuration.concurrency(adapter="waterdata") is None  # the profile
         assert configuration.retries(adapter="waterdata") == 2  # default profile
         assert configuration.api_key() == "shared"  # package-wide, from the file
@@ -345,7 +346,7 @@ def test_a_code_selected_profile_outranks_the_environment(config_file, monkeypat
 def test_several_named_profiles_are_selected_independently(config_file):
     """One block, two adapters, a different named profile for each."""
     config_file(
-        "[waterdata.bulk]\nconcurrency = 32\n\n"
+        "[waterdata.overnight]\nconcurrency = 32\n\n"
         "[waterdata.polite]\nconcurrency = 2\n\n"
         "[ngwmn.gentle]\nconcurrency = 4\n"
     )
@@ -366,10 +367,10 @@ def test_a_named_profile_layers_per_key_over_the_rungs_below(config_file):
     config_file(
         "concurrency = 16\nretries = 3\nstall_timeout = 30\n\n"
         "[waterdata]\nretries = 2\n\n"
-        '[waterdata.bulk]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
+        '[waterdata.overnight]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
     )
 
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         # the profile, over a package-wide key it names...
         assert configuration.concurrency(adapter="waterdata") is None
         # ...the default profile, over a package-wide key the profile does not name...
@@ -418,27 +419,27 @@ def test_adding_a_named_profile_changes_nothing_until_it_is_selected(config_file
     before = _resolved_settings()
 
     config_file(
-        shared + '\n[waterdata.bulk]\nconcurrency = "unbounded"\n'
+        shared + '\n[waterdata.overnight]\nconcurrency = "unbounded"\n'
         "retries = 9\nparallel_chunks = 8\nstall_timeout = 5\n"
     )
     assert _resolved_settings() == before
 
     # ...and the profile does enter the chain once it is named in code, so the
     # comparison above is inertness rather than a profile nothing can select.
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         assert configuration.parallel_chunks(adapter="waterdata") == 8
 
 
 def test_a_named_profile_cannot_hold_a_nested_table(config_file):
-    """``[waterdata.bulk.ngwmn]`` is the retired shape, not a deeper profile.
+    """``[waterdata.overnight.ngwmn]`` is the retired shape, not a deeper profile.
 
     A profile holds settings for the one adapter it belongs to, so a table inside one
     has no meaning. Refused rather than skipped: dropping it without an error would
     leave the author believing they had tuned NGWMN.
     """
     config_file(
-        "[waterdata.bulk]\nparallel_chunks = 8\n\n"
-        "[waterdata.bulk.ngwmn]\nconcurrency = 2\n"
+        "[waterdata.overnight]\nparallel_chunks = 8\n\n"
+        "[waterdata.overnight.ngwmn]\nconcurrency = 2\n"
     )
 
     # Still inert, like every other problem inside an unselected profile: an
@@ -449,9 +450,9 @@ def test_a_named_profile_cannot_hold_a_nested_table(config_file):
     )
 
     with pytest.raises(
-        configuration.ConfigurationError, match=r"\[waterdata\.bulk\.ngwmn\]"
+        configuration.ConfigurationError, match=r"\[waterdata\.overnight\.ngwmn\]"
     ):
-        WaterdataConfiguration.load("bulk")
+        WaterdataConfiguration.load("overnight")
 
 
 def test_loading_an_undefined_profile_raises(config_file):
@@ -464,7 +465,7 @@ def test_loading_an_undefined_profile_raises(config_file):
     """
     config_file(
         "[waterdata]\nconcurrency = 4\n\n"
-        "[waterdata.bulk]\nretries = 8\n\n"
+        "[waterdata.overnight]\nretries = 8\n\n"
         "[waterdata.polite]\nretries = 1\n\n"
         "[ngwmn.gentle]\nconcurrency = 2\n"
     )
@@ -472,14 +473,14 @@ def test_loading_an_undefined_profile_raises(config_file):
         WaterdataConfiguration.load("bluk")
     message = str(excinfo.value)
     assert "no [waterdata.bluk]" in message
-    assert "bulk, polite" in message
+    assert "overnight, polite" in message
     assert "gentle" not in message
 
     # An adapter with no profiles at all says so rather than ending after the colon,
     # which would read as a truncated message.
     config_file("[waterdata]\nconcurrency = 4\n")
     with pytest.raises(configuration.ConfigurationError, match="waterdata: none"):
-        WaterdataConfiguration.load("bulk")
+        WaterdataConfiguration.load("overnight")
 
 
 def test_loading_a_profile_with_no_file_says_so(tmp_path, monkeypatch):
@@ -493,9 +494,9 @@ def test_loading_a_profile_with_no_file_says_so(tmp_path, monkeypatch):
 
 def test_the_package_wide_configuration_has_no_profiles(config_file):
     """A profile belongs to one adapter, so ``Configuration`` cannot name one."""
-    config_file("[waterdata.bulk]\nconcurrency = 8\n")
+    config_file("[waterdata.overnight]\nconcurrency = 8\n")
     with pytest.raises(configuration.ConfigurationError, match="package-wide"):
-        Configuration.load("bulk")
+        Configuration.load("overnight")
 
 
 def test_missing_file_is_not_an_error(tmp_path, monkeypatch):
@@ -558,8 +559,8 @@ def test_unknown_setting_warns_but_is_ignored(config_file):
 
 
 def test_unknown_table_raises(config_file):
-    """A profile written as ``[bulk]`` instead of ``[waterdata.bulk]``."""
-    config_file("[bulk]\nconcurrency = 4\n")
+    """A profile written as ``[overnight]`` instead of ``[waterdata.overnight]``."""
+    config_file("[overnight]\nconcurrency = 4\n")
     with pytest.raises(configuration.ConfigurationError, match="unknown table"):
         configuration.concurrency()
 
@@ -570,7 +571,7 @@ def test_the_retired_profiles_table_names_its_replacement(config_file):
     The generic "unknown table" message would leave its author looking for a
     typo in a table spelled exactly as they had been told to spell it.
     """
-    config_file("[profiles.bulk]\nconcurrency = 4\n")
+    config_file("[profiles.overnight]\nconcurrency = 4\n")
     with pytest.raises(
         configuration.ConfigurationError, match=r"\[<adapter>\.<name>\]"
     ):
@@ -585,8 +586,8 @@ def test_the_retired_profile_environment_variable_is_ignored(config_file, monkey
     and able to switch every service at once. Reading it under the new grammar would
     restore what the grammar removed.
     """
-    config_file('concurrency = 4\n\n[waterdata.bulk]\nconcurrency = "unbounded"\n')
-    monkeypatch.setenv("DATARETRIEVAL_PROFILE", "bulk")
+    config_file('concurrency = 4\n\n[waterdata.overnight]\nconcurrency = "unbounded"\n')
+    monkeypatch.setenv("DATARETRIEVAL_PROFILE", "overnight")
 
     assert configuration.concurrency(adapter="waterdata") == 4
     assert "DATARETRIEVAL_PROFILE" not in configuration.ENV_VARS.values()
@@ -722,7 +723,6 @@ def test_files_api_key_comes_from_the_environment_the_file_or_a_block(
     [
         ("/stac-files/daily/USGS-01/USGS-01.parquet", "files"),
         ("/stac-files/ratings/USGS.01104475.exsa.rdb", "files"),
-        ("/stac/v0/search", "files"),
         ("/stacks/v0/search", "main"),
         ("/ogcapi/v0/collections/daily/items", "main"),
     ],
@@ -735,6 +735,13 @@ def test_only_file_and_catalog_requests_are_sent_the_files_api_key(path, expecte
     # Without a second key, the files use the first.
     with dataretrieval.configure(Configuration(api_key="main")):
         assert _default_headers(url)["X-Api-Key"] == "main"
+
+
+def test_catalog_searches_are_sent_the_files_api_key():
+    """The key follows the catalog endpoint, wherever it is defined."""
+    url = f"{ratings_catalog_url()}/search"
+    with dataretrieval.configure(Configuration(api_key="main", files_api_key="files")):
+        assert _default_headers(url)["X-Api-Key"] == "files"
 
 
 def test_the_files_api_key_is_not_sent_to_another_host():
@@ -1036,8 +1043,8 @@ def test_top_level_parallel_chunks_warns(config_file):
 
 
 def test_parallel_chunks_in_a_named_profile_does_not_warn(config_file, recwarn):
-    config_file("[waterdata.bulk]\nparallel_chunks = 8\n")
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    config_file("[waterdata.overnight]\nparallel_chunks = 8\n")
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         assert configuration.parallel_chunks(adapter="waterdata") == 8
     assert not [w for w in recwarn if "parallel_chunks" in str(w.message)]
 
@@ -1937,10 +1944,10 @@ def test_load_returns_an_instance_carrying_only_the_profiles_keys(config_file):
     config_file(
         "concurrency = 16\n\n"
         "[waterdata]\nretries = 2\n\n"
-        '[waterdata.bulk]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
+        '[waterdata.overnight]\nconcurrency = "unbounded"\nparallel_chunks = 8\n'
     )
 
-    loaded = WaterdataConfiguration.load("bulk")
+    loaded = WaterdataConfiguration.load("overnight")
 
     assert isinstance(loaded, WaterdataConfiguration)
     assert loaded.values() == {"concurrency": "unbounded", "parallel_chunks": 8}
@@ -1963,7 +1970,7 @@ _SAMPLE_FILE = (
     "concurrency = 16\n"
     "\n[ngwmn]\n"
     "concurrency = 4\n"
-    "\n[waterdata.bulk]\n"
+    "\n[waterdata.overnight]\n"
     "parallel_chunks = 8\n"
 )
 
@@ -1974,7 +1981,7 @@ _SAMPLE_PATH = "/home/u/.dataretrieval/config.toml"
 
 #: The two lines above the captured output in both samples.
 _SAMPLE_PROMPT = (
-    '>>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):\n'
+    '>>> with dataretrieval.configure(WaterdataConfiguration.load("overnight")):\n'
     "...     dataretrieval.show_configuration()"
 )
 
@@ -1989,7 +1996,7 @@ def _documented_sample() -> str:
 def test_show_configuration_names_the_profile_a_value_came_from(config_file):
     """A value from a profile is reported with that profile, not with "a block".
 
-    ``WaterdataConfiguration.load("bulk")`` and ``WaterdataConfiguration(...)``
+    ``WaterdataConfiguration.load("overnight")`` and ``WaterdataConfiguration(...)``
     enter the chain the same way and are indistinguishable once their
     values are in the block, so a report that said only ``configure() block``
     left a caller who selected a profile they did not intend -- or who had
@@ -1997,13 +2004,13 @@ def test_show_configuration_names_the_profile_a_value_came_from(config_file):
     label is the table's own spelling, so it can be searched for in the file that
     defines it.
     """
-    config_file("[waterdata.bulk]\nconcurrency = 6\n")
+    config_file("[waterdata.overnight]\nconcurrency = 6\n")
     out = io.StringIO()
 
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         dataretrieval.show_configuration(stream=out)
 
-    assert "configure() block [waterdata.bulk]" in out.getvalue()
+    assert "configure() block [waterdata.overnight]" in out.getvalue()
 
     # A configuration written in code has no profile to name, so it names its
     # adapter alone rather than adding one -- and the package-wide one
@@ -2018,7 +2025,7 @@ def test_show_configuration_names_the_profile_a_value_came_from(config_file):
     assert "configure() block [waterdata]" in text
     # The file still *defines* the profile, so it is still listed as available;
     # what must not happen is a value being attributed to it.
-    assert "configure() block [waterdata.bulk]" not in text
+    assert "configure() block [waterdata.overnight]" not in text
     retries_row = next(line for line in text.splitlines() if line.startswith("retries"))
     assert retries_row.endswith("configure() block")
 
@@ -2031,12 +2038,12 @@ def test_a_loaded_profile_remembers_its_name_without_becoming_a_setting(config_f
     stay interchangeable however each was spelled, which is what makes a configuration a
     value rather than a record of how it was built.
     """
-    config_file("[waterdata.bulk]\nconcurrency = 6\n")
+    config_file("[waterdata.overnight]\nconcurrency = 6\n")
 
-    loaded = WaterdataConfiguration.load("bulk")
+    loaded = WaterdataConfiguration.load("overnight")
     written = WaterdataConfiguration(concurrency=6)
 
-    assert loaded.profile == "bulk"
+    assert loaded.profile == "overnight"
     assert written.profile is None
     assert "profile" not in loaded.settings()
     assert loaded == written
@@ -2061,7 +2068,7 @@ def test_show_configuration_lists_the_profiles_the_file_defines(
     config_file(
         "[ngwmn]\nconcurrency = 4\n\n"
         "[ngwmn.gentle]\nconcurrency = 2\n\n"
-        "[waterdata.bulk]\nparallel_chunks = 8\n\n"
+        "[waterdata.overnight]\nparallel_chunks = 8\n\n"
         "[nldi.gentle]\nretries = 1\n"
     )
     out = io.StringIO()
@@ -2070,7 +2077,7 @@ def test_show_configuration_lists_the_profiles_the_file_defines(
     text = out.getvalue()
     listed = text.split("profiles in the file: ", 1)[1].splitlines()[0]
 
-    assert listed == "[waterdata.bulk], [ngwmn.gentle], [nldi.gentle]"
+    assert listed == "[waterdata.overnight], [ngwmn.gentle], [nldi.gentle]"
     # The adapter's *default* profile is not a named one: it is always in
     # effect and already shows up as a source, so listing it here adds nothing.
     assert "[ngwmn]" not in listed
@@ -2135,7 +2142,7 @@ def test_show_configuration_sample_output_is_current(config_file, monkeypatch):
     monkeypatch.delitem(configuration._REGISTRY, "nldi", raising=False)
 
     out = io.StringIO()
-    with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+    with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         dataretrieval.show_configuration(stream=out)
     actual = out.getvalue().replace(str(path), _SAMPLE_PATH).strip("\n")
 
@@ -2168,7 +2175,7 @@ def test_show_configuration_survives_a_malformed_profile(config_file):
     needs it.
     """
     config_file(
-        '[waterdata.bulk]\nconcurrency = "nope"\n\n'
+        '[waterdata.overnight]\nconcurrency = "nope"\n\n'
         "[ngwmn.gentle]\n\n[ngwmn.gentle.nested]\nconcurrency = 2\n"
     )
     out = io.StringIO()
@@ -2176,10 +2183,10 @@ def test_show_configuration_survives_a_malformed_profile(config_file):
     dataretrieval.show_configuration(stream=out)  # must not raise
 
     listed = out.getvalue().split("profiles in the file: ", 1)[1].splitlines()[0]
-    assert listed == "[waterdata.bulk], [ngwmn.gentle]"
+    assert listed == "[waterdata.overnight], [ngwmn.gentle]"
     # Selecting one is where the grammar is checked, and it still is.
     with pytest.raises(configuration.ConfigurationError, match="integer"):
-        WaterdataConfiguration.load("bulk")
+        WaterdataConfiguration.load("overnight")
     with pytest.raises(configuration.ConfigurationError, match="contains a table"):
         NgwmnConfiguration.load("gentle")
 

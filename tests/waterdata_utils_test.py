@@ -1346,6 +1346,30 @@ def test_error_body_handles_non_json_html_response():
     assert "Bad Gateway" in msg
 
 
+@pytest.mark.parametrize(
+    ("path", "named"),
+    [
+        ("/ogcapi/v0/collections/daily/items", "(see API_USGS_PAT)"),
+        (
+            "/stac-files/daily/USGS-01/USGS-01.parquet",
+            "(see API_USGS_FILES_PAT, or API_USGS_PAT when it is unset)",
+        ),
+    ],
+)
+def test_a_403_names_the_key_the_request_was_sent(path, named):
+    """A file request gets ``files_api_key`` first, so that is the key to check."""
+    request = httpx.Request("GET", f"https://api.waterdata.usgs.gov{path}")
+    msg = _error_body(httpx.Response(403, request=request))
+    assert named in msg
+    msg = _error_body(httpx.Response(429, request=request))
+    assert named.removeprefix("(see ") in msg
+    # The service's own envelope for a bad key, as sent live.
+    body = {"error": {"code": "API_KEY_INVALID", "message": "An invalid key."}}
+    msg = _error_body(httpx.Response(403, json=body, request=request))
+    assert msg.startswith("403: API_KEY_INVALID. An invalid key.")
+    assert f"Check {named.removeprefix('(see ').removesuffix(')')}." in msg
+
+
 def test_error_body_handles_empty_response_body():
     """An empty error body returns a status/reason message without raising."""
     resp = _make_response(500, "", reason="Internal Server Error")

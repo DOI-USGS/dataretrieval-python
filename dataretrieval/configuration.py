@@ -33,7 +33,7 @@ A caller configures by passing configuration objects, at most one per adapter::
 
     with dataretrieval.configure(
         Configuration(api_key=vault.read("usgs/pat")),
-        WaterdataConfiguration.load("bulk"),
+        WaterdataConfiguration.load("overnight"),
         NgwmnConfiguration(concurrency=4),
     ):
         ...
@@ -152,7 +152,7 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
 
         with dataretrieval.configure(
             Configuration(api_key=secrets["usgs"]),
-            WaterdataConfiguration.load("bulk"),
+            WaterdataConfiguration.load("overnight"),
             NgwmnConfiguration(concurrency=4),
         ):
             df, md = waterdata.get_daily(monitoring_location_id=sites)
@@ -203,8 +203,8 @@ def configure(*configurations: BaseConfiguration) -> Iterator[None]:
         ):
             df, md = waterdata.get_daily(monitoring_location_id="USGS-05114000")
 
-        # a large overnight pull, from a [waterdata.bulk] table in the file
-        with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        # a large overnight pull, from a [waterdata.overnight] table in the file
+        with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
             df, md = waterdata.get_daily(monitoring_location_id=many_sites)
 
     See Also
@@ -296,7 +296,7 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
 
     .. code-block:: text
 
-        >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+        >>> with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
         ...     dataretrieval.show_configuration()
         config file  /home/u/.dataretrieval/config.toml (found)
         api_key          <set>      /home/u/.dataretrieval/config.toml
@@ -311,10 +311,10 @@ def show_configuration(*, stream: TextIO | None = None) -> None:
         its own calls; a value from any source above overrides both.
 
         adapter overrides
-          waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+          waterdata  parallel_chunks  8  configure() block [waterdata.overnight]
           ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-        profiles in the file: [waterdata.bulk]
+        profiles in the file: [waterdata.overnight]
           A profile applies only where a row above names it; select one in
           code with <Adapter>Configuration.load("<name>").
 
@@ -424,7 +424,7 @@ def _show_adapter_overrides(
     value a call will use among rows that change nothing.
 
     Each row names its origin exactly, which for a selected profile is the
-    profile: ``configure() block [waterdata.bulk]`` rather than a bare block,
+    profile: ``configure() block [waterdata.overnight]`` rather than a bare block,
     so the report names *which* profile supplied the value.
 
     An adapter this process has not imported has no vocabulary to resolve
@@ -492,7 +492,7 @@ def _show_profiles(out: TextIO, parsed: _ParsedFile) -> None:
 
     A named profile does nothing until a caller selects it, and that is what
     readers of a configuration file misunderstand: adding
-    ``[waterdata.bulk]`` changes no run on its own. A report that mentioned a
+    ``[waterdata.overnight]`` changes no run on its own. A report that mentioned a
     profile only when one had been selected would leave the profile's
     lack of effect unexplained -- the file would appear to be ignored.
 

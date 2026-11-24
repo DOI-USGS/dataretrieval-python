@@ -160,7 +160,7 @@ Highest precedence first:
 
 1. A configuration passed to an active ``dataretrieval.configure(...)`` block.
 2. A named profile you selected in that block —
-   ``WaterdataConfiguration.load("bulk")``.
+   ``WaterdataConfiguration.load("overnight")``.
 3. The environment variable for that setting.
 4. The adapter's default profile in the configuration file: the
    ``[<adapter>]`` table.
@@ -328,11 +328,11 @@ is that adapter's **default profile** — always in effect, as above — while a
    [waterdata]
    concurrency = 16          # the default profile: always in effect
 
-   [waterdata.bulk-pull]
+   [waterdata.overnight-pull]
    concurrency = "unbounded" # only when selected
    parallel_chunks = 8
 
-So one file can hold an overnight bulk profile beside a low-rate daytime one,
+So one file can hold an overnight profile beside a low-rate daytime one,
 and name as many of each as an adapter has uses for.
 
 A named profile states only what differs: everything it does not name still
@@ -346,7 +346,7 @@ to settings you did not ask for. What comes back is inert until you pass it to
 ``configure``; that is what puts a selected profile above the environment,
 since selecting one is something your code did.
 
-A profile holds settings and nothing else: ``[waterdata.bulk-pull.ngwmn]`` is
+A profile holds settings and nothing else: ``[waterdata.overnight-pull.ngwmn]`` is
 not a Water Data profile containing NGWMN detail, and selecting it raises
 rather than ignoring the nested table. Two adapters means two profiles,
 selected in the same block, as in :ref:`the example above
@@ -430,12 +430,12 @@ Checking what is in effect
 ``show_configuration()`` reports each setting's effective value and where it came
 from. It never prints the key itself. The report below is what a file holding a
 key, a package-wide ``concurrency``, an ``[ngwmn]`` table and a
-``[waterdata.bulk]`` profile produces, with ``API_USGS_RETRIES`` exported and
+``[waterdata.overnight]`` profile produces, with ``API_USGS_RETRIES`` exported and
 the ``bulk`` profile selected for the block:
 
 .. code-block:: python
 
-   >>> with dataretrieval.configure(WaterdataConfiguration.load("bulk")):
+   >>> with dataretrieval.configure(WaterdataConfiguration.load("overnight")):
    ...     dataretrieval.show_configuration()
    config file  /home/u/.dataretrieval/config.toml (found)
    api_key          <set>      /home/u/.dataretrieval/config.toml
@@ -450,10 +450,10 @@ the ``bulk`` profile selected for the block:
    its own calls; a value from any source above overrides both.
 
    adapter overrides
-     waterdata  parallel_chunks  8  configure() block [waterdata.bulk]
+     waterdata  parallel_chunks  8  configure() block [waterdata.overnight]
      ngwmn      concurrency      4  /home/u/.dataretrieval/config.toml [ngwmn]
 
-   profiles in the file: [waterdata.bulk]
+   profiles in the file: [waterdata.overnight]
      A profile applies only where a row above names it; select one in
      code with <Adapter>Configuration.load("<name>").
 
@@ -462,14 +462,14 @@ the ``bulk`` profile selected for the block:
 Each line names the exact origin, including which table inside the file, which
 is usually enough to find why a call is still using an old key. A value that
 came from a profile names the profile — ``configure() block
-[waterdata.bulk]``, not only "a block" — so a report taken from inside a
+[waterdata.overnight]``, not only "a block" — so a report taken from inside a
 ``with`` block says which selection produced it. Only settings
 overridden for an adapter get a row in the second section; everything else is
 inherited from the rows above it.
 
 The profile section lists what the *file* defines, whether or not this run
 selected any of it. A named profile does nothing until a caller selects it, so
-seeing ``[waterdata.bulk]`` there while no row above mentions it explains
+seeing ``[waterdata.overnight]`` there while no row above mentions it explains
 why adding a profile changed nothing.
 
 The last line is the cost of validating an adapter's settings lazily:

@@ -20,7 +20,7 @@ files and its ``daily`` and ``continuous`` items together.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from typing import Any
 from urllib.parse import quote_plus
 
@@ -29,7 +29,7 @@ import pandas as pd
 
 from dataretrieval.ogc.dates import _DURATION_RE, _coerce_to_list, _format_api_dates
 from dataretrieval.ogc.errors import _raise_for_non_200
-from dataretrieval.ogc.filters import _cql_text_literal
+from dataretrieval.ogc.filters import _cql_in_clause, _cql_text_literal
 from dataretrieval.transport.http import default_headers
 from dataretrieval.transport.links import resolve_next_url
 from dataretrieval.transport.pagination import run_paginated
@@ -53,6 +53,21 @@ _URL_HEADROOM = 64
 
 _ID_PROPERTY = "monitoring_location_id"
 _ID_REMEDY = "Pass an 'AGENCY-ID' id, e.g., 'USGS-01646500'."
+
+
+def location_of(item: dict[str, Any]) -> str:
+    """The monitoring location a catalog item describes."""
+    return str(item.get("properties", {}).get(_ID_PROPERTY, item.get("id")))
+
+
+def data_assets(
+    items: Iterable[dict[str, Any]],
+) -> Iterator[tuple[dict[str, Any], str, str]]:
+    """``(item, asset name, href)`` for each data file the items list."""
+    for item in items:
+        for name, asset in item.get("assets", {}).items():
+            if "data" in asset.get("roles", []) and asset.get("href"):
+                yield item, name, asset["href"]
 
 
 def format_time(time: Any, *, service: str) -> str | None:
@@ -91,8 +106,8 @@ def _search_params(
     filter_str: str | None,
     limit: int,
     *,
-    time_str: str | None = None,
-    bbox: list[float] | None = None,
+    time_str: str | None,
+    bbox: list[float] | None,
 ) -> dict[str, Any]:
     """The query parameters of one ``/search`` request over *collection*."""
     query_params: dict[str, Any] = {
@@ -249,8 +264,8 @@ def _require_url_fits(
     time_str: str | None,
     bbox: list[float] | None,
     remedy: str,
-) -> None:
-    """Raise ``ValueError`` if one search with *filter_str* is over the edge limit.
+) -> int:
+    """The length of one search with *filter_str*; ``ValueError`` if over the limit.
 
     Called before any request, because the edge answers an over-long URL with
     an HTTP 403 that names no cause. ``remedy`` ends the message with the
@@ -264,6 +279,7 @@ def _require_url_fits(
             f"{EDGE_URL_LIMIT:,}-character limit the Water Data catalog "
             f"accepts. {remedy}"
         )
+    return length
 
 
 def _encoded_length(text: str) -> int:
@@ -275,10 +291,10 @@ def _chunk_in_filters(
     collection: str,
     limit: int,
     *,
-    lead: str = "",
-    tail: str = "",
-    time_str: str | None = None,
-    bbox: list[float] | None = None,
+    lead: str,
+    tail: str,
+    time_str: str | None,
+    bbox: list[float] | None,
     remedy: str,
 ) -> list[str]:
     """Split a ``monitoring_location_id IN (...)`` search into filters that fit.
@@ -304,19 +320,10 @@ def _chunk_in_filters(
     page = max(1, min(limit, MAX_PAGE_SIZE))
 
     def build(chunk: Sequence[str]) -> str:
-        quoted = ", ".join(_cql_text_literal(i, remedy=_ID_REMEDY) for i in chunk)
-        return f"{lead}{_ID_PROPERTY} IN ({quoted}){tail}"
+        return f"{lead}{_cql_in_clause(_ID_PROPERTY, chunk, remedy=_ID_REMEDY)}{tail}"
 
-    _require_url_fits(
-        build([]),
-        collection,
-        limit,
-        time_str=time_str,
-        bbox=bbox,
-        remedy=remedy,
-    )
-    base = _url_length(
-        _search_params(collection, build([]), limit, time_str=time_str, bbox=bbox)
+    base = _require_url_fits(
+        build([]), collection, limit, time_str=time_str, bbox=bbox, remedy=remedy
     )
     budget = EDGE_URL_LIMIT - _URL_HEADROOM - base
     separator = _encoded_length(", ")

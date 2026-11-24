@@ -214,6 +214,42 @@ async def _walk_pages(
     )
 
 
+def _wire_args(args: dict[str, Any], collection: str, output_id: str) -> dict[str, Any]:
+    """``args`` as the request builder takes them: API names, no ``None``."""
+    wire = _switch_arg_id({**args, "collection": collection}, output_id, collection)
+    wire["properties"] = _switch_properties_id(
+        wire.get("properties"), id_name=output_id, collection=collection
+    )
+    wire.pop("convert_type", None)
+    wire = {k: v for k, v in wire.items() if v is not None}
+    if isinstance(wire.get("filter"), str) and not wire["filter"].strip():
+        # The APIs answer a blank filter with HTTP 400.
+        del wire["filter"]
+        wire.pop("filter_lang", None)
+    return wire
+
+
+def request_url(
+    args: dict[str, Any],
+    collection: str,
+    output_id: str,
+    *,
+    base_url: str,
+    dialect: OgcDialect | None = None,
+) -> str:
+    """The URL :func:`get_ogc_data` reports as ``md.url``, without a request.
+
+    For a caller that answers a query another way and reports the URL the
+    API would have been sent.
+    """
+    wire = _wire_args(args, collection, output_id)
+    return str(
+        _construct_api_requests(
+            **wire, base_url=base_url, dialect=dialect or DEFAULT_DIALECT
+        ).url
+    )
+
+
 def get_ogc_data(
     args: dict[str, Any],
     collection: str,
@@ -226,6 +262,7 @@ def get_ogc_data(
     dialect: OgcDialect | None = None,
     cql_body: str | None = None,
     adapter: str | None = None,
+    chunks: int = 1,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """
     Retrieves OGC (Open Geospatial Consortium) data as a DataFrame with metadata.
@@ -270,6 +307,11 @@ def get_ogc_data(
         ``convert_type`` keys of ``args`` are consulted; there are no
         multi-value axes to chunk, and the body's size is for the server
         to accept or reject, as with the planner's cql-json passthrough.
+    adapter : str, optional
+        The settings table the call reads (ADR 0010).
+    chunks : int, optional
+        The fan-out the caller asks for, as ``parallel_chunks(chunks)`` would;
+        the ``parallel_chunks`` setting wins when it is larger. Defaults to 1.
 
     Returns
     -------
@@ -293,21 +335,10 @@ def get_ogc_data(
 
     if dialect is None:
         dialect = DEFAULT_DIALECT
-    args = args.copy()
-    args["collection"] = collection
-    args = _switch_arg_id(args, id_name=output_id, collection=collection)
-    # Capture `properties` before the id-switch so post-processing receives the
-    # user-facing names, not the wire-format ones.
+    # Post-processing receives the user-facing names, not the wire-format ones.
     properties = args.get("properties")
-    args["properties"] = _switch_properties_id(
-        properties, id_name=output_id, collection=collection
-    )
-    convert_type = args.pop("convert_type", False)
-    args = {k: v for k, v in args.items() if v is not None}
-    if isinstance(args.get("filter"), str) and not args["filter"].strip():
-        # The APIs answer a blank filter with HTTP 400.
-        del args["filter"]
-        args.pop("filter_lang", None)
+    convert_type = args.get("convert_type", False)
+    args = _wire_args(args, collection, output_id)
 
     # Choose one semantic frame shape for the whole request. Every page and
     # the all-empty finalizer receive these same values, so frame type never
@@ -391,7 +422,7 @@ def get_ogc_data(
     )
     # No progress block here: the executor that emits the events owns the line
     # (see :meth:`~dataretrieval.transport.fanout.FanOut.resume`).
-    return run(args, finalize=finalize)
+    return run(args, finalize=finalize, chunks=chunks)
 
 
 async def _fetch_once(

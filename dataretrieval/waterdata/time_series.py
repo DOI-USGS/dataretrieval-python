@@ -62,19 +62,20 @@ def get_daily(
     code and a statistic code. These data have also been referred to as “daily
     values” or “DV”.
 
-    For long records at many locations, the ``bulk`` setting reads the
-    history from the nightly Parquet files USGS publishes, and from the API
-    only the records changed since::
+    By default, a query large enough to finish sooner that way reads its
+    history from the nightly Parquet files USGS publishes, and only the
+    records changed since from the API. The Water Data ``bulk`` setting
+    chooses: ``"auto"`` (the default), ``"always"`` for every query the files
+    can answer, or ``"off"`` to always page the API::
 
-        with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+        with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
             df, md = waterdata.get_daily(monitoring_location_id=sites)
 
-    ``"auto"`` uses the files when the query is large enough to finish
-    sooner, ``"always"`` for every query they can answer. The result has the
-    same columns and types, except that it has no ``daily_id`` column, which
-    the files do not hold, and a record deleted from the API since the files
-    were written is still returned. See
-    :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
+    With any setting but ``"off"``, the result has no ``daily_id`` column
+    (the files do not hold it) unless ``properties`` names it. Read from
+    the files, a record deleted from the API since they were written is
+    still returned, and a point agrees with the API's to 9 decimal places.
+    See :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
 
     Parameters
     ----------
@@ -315,19 +316,20 @@ def get_continuous(
     and parameter code (pcode). These data might also be referred to as
     "instantaneous values" or "IV".
 
-    For long records at many locations, the ``bulk`` setting reads the
-    history from the nightly Parquet files USGS publishes, and from the API
-    only the records changed since::
+    By default, a query large enough to finish sooner that way reads its
+    history from the nightly Parquet files USGS publishes, and only the
+    records changed since from the API. The Water Data ``bulk`` setting
+    chooses: ``"auto"`` (the default), ``"always"`` for every query the files
+    can answer, or ``"off"`` to always page the API::
 
-        with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+        with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
             df, md = waterdata.get_continuous(monitoring_location_id=sites)
 
-    ``"auto"`` uses the files when the query is large enough to finish
-    sooner, ``"always"`` for every query they can answer. The result has the
-    same columns and types, except that it has no ``continuous_id`` column, which
-    the files do not hold, and a record deleted from the API since the files
-    were written is still returned. See
-    :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
+    With any setting but ``"off"``, the result has no ``continuous_id`` column
+    (the files do not hold it) unless ``properties`` names it. Read from
+    the files, a record deleted from the API since they were written is
+    still returned, and a point agrees with the API's to 9 decimal places.
+    See :class:`~dataretrieval.waterdata.WaterdataConfiguration`.
 
     Parameters
     ----------

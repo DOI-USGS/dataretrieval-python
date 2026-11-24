@@ -163,7 +163,7 @@ _ScopeKey = str | tuple[str, str]
 # same shape the file source returns (:func:`_adapter_file_settings`). The
 # label is built while the configuration object is still available, the only
 # point where the *profile* is known -- by the time a value reaches the frame,
-# one from ``WaterdataConfiguration.load("bulk")`` and one from
+# one from ``WaterdataConfiguration.load("overnight")`` and one from
 # ``WaterdataConfiguration(...)`` are indistinguishable.
 _Frame = Mapping[_ScopeKey, tuple[_SettingValue, str]]
 _scope: Ambient[tuple[_Frame, ...]] = Ambient("dataretrieval_configuration", ())
@@ -344,7 +344,7 @@ class BaseConfiguration:
         Parameters
         ----------
         profile : str
-            The name after the adapter, so ``[waterdata.bulk]`` is ``"bulk"``.
+            The name after the adapter, so ``[waterdata.overnight]`` is ``"overnight"``.
 
         Returns
         -------
@@ -374,7 +374,7 @@ class BaseConfiguration:
     def _provenance(self) -> str:
         """How :func:`show_configuration` reports a value this supplied.
 
-        The profile is named in the file's own spelling -- ``[waterdata.bulk]``
+        The profile is named in the file's own spelling -- ``[waterdata.overnight]``
         -- so the report names the profile that set a value rather than only
         the block, and the name can be searched for in the file that defines it.
         A configuration written in code has no profile, so it names its adapter
@@ -1009,7 +1009,7 @@ def _validate_raw(name: str, raw: str, label: str) -> None:
 def _named_profiles(parsed: _ParsedFile, adapter: str) -> dict[str, dict[str, Any]]:
     """The named profiles the file defines for *adapter*, by name.
 
-    A sub-table of an adapter's table is a named profile: ``[waterdata.bulk]``
+    A sub-table of an adapter's table is a named profile: ``[waterdata.overnight]``
     parses as a sub-table of ``[waterdata]``, and everything else in that table
     is a setting of the adapter's default profile. The two readers of that rule
     -- selecting a profile and reporting which ones exist -- share this one
@@ -1057,7 +1057,7 @@ def _named_profile(
 
     # A profile is one flat set of settings for one adapter, so a table inside
     # one is a shape the grammar does not define -- most likely a file
-    # migrated from the retired ``[profiles.bulk.ngwmn]``, where a profile did
+    # migrated from the retired ``[profiles.overnight.ngwmn]``, where a profile did
     # contain per-service detail. Dropping it without an error would leave the author
     # believing they had tuned something. Checked here rather than at parse
     # time for the same reason keys are: a malformed profile for one adapter
@@ -1290,7 +1290,7 @@ def _accepted_keys(
     out: dict[str, Any] = {}
     for key, value in table.items():
         if isinstance(value, dict):
-            # A named profile -- ``[waterdata.bulk]`` parses as a sub-table of
+            # A named profile -- ``[waterdata.overnight]`` parses as a sub-table of
             # ``[waterdata]``. Inert until a caller selects it, so it is
             # neither a setting here nor an error. Only an adapter's table can
             # be passed here: the top level rejects unknown tables when it parses,

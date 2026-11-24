@@ -1997,6 +1997,7 @@ class TestNormalizeStrIterable:
         with pytest.raises(TypeError, match="not dict"):
             _normalize_str_iterable({"00060": "discharge"}, "parameter_code")
 
+    @pytest.mark.usefixtures("bulk_off")
     def test_get_daily_parameter_code_as_series(self):
         """Integration check: pd.Series for ``parameter_code`` is passed to the inner
         call as a list.

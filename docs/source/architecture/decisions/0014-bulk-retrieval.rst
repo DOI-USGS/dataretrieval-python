@@ -65,16 +65,27 @@ getters build their arguments as before and hand them to its one entry point,
 The getters do not know which. Nothing in the module is public, so its plan,
 merge, and file handling can change without a deprecation. What differs
 between ``daily`` and ``continuous`` (the id column, the accepted filters, a
-date or a timestamp ``time``, the ``historical`` file, geometry, the row
-estimate) is one table in that module.
+date or a timestamp ``time``, the ``historical`` file, the API's limit on
+``time``, the row estimate) is one table in that module. Both return each
+location's point, which the file rows take from its catalog item.
 
-**With the setting on, the result has no record id.** For a query the files
-can answer, ``daily_id`` / ``continuous_id`` is left out whether the files or
-the API answered it. A column filled only for the rows changed since last
-night is of no use to a caller, and under ``"auto"`` the columns would
-otherwise depend on how many locations the query named.
-``(time_series_id, time)`` identifies a record in both. A query only the API
-accepts is returned as the API gives it, and ``"off"`` changes nothing.
+**With the setting on, the result has no record id.** ``daily_id`` /
+``continuous_id`` is left out whether the files or the API answered, unless
+``properties`` names it (as ``id`` or by its column name). A column filled
+only for the rows changed since last night is of no use to a caller, and
+under ``"auto"`` the columns would otherwise depend on how many locations the
+query named, or on an argument such as ``max_rows`` that only the API
+accepts. ``(time_series_id, time)`` identifies a record in both. ``"off"``
+changes nothing.
+
+**The metadata describes the caller's query, not the requests that answered
+it.** The API path already reports a query it splits that way: ``md.url`` is
+the unsplit request, ``md.query_time`` the sum of every request's time, and
+``md.header`` the headers reporting the lowest remaining quota. The files
+path does the same over the catalog search, the downloads, and the change
+query, with the URL ``"off"`` would send, so ``md`` does not say which path
+answered. With a separate files key, the lowest remaining quota may be that
+key's.
 
 **A snapshot plus its changes.** For the requested monitoring locations:
 
@@ -95,31 +106,48 @@ accepts is returned as the API gives it, and ``"off"`` changes nothing.
    being rewritten the night after one of its records changes: on
    2026-11-23, no record in the range of five older ``historical`` files had
    changed in the API since the file was written.
-4. Send **one** OGC query whose CQL-text filter has a top-level ``OR`` clause
+4. Send one OGC query whose CQL-text filter has a top-level ``OR`` clause
    per cutoff day, ``monitoring_location_id IN (...) AND last_modified >= T``,
    plus one clause asking for the whole query for any location without a
    usable file. Where a location's ``current`` file starts more than 12
    hours after its ``historical`` file ends, one more clause asks for every
    record between them. Two files written on different nights leave that
    span in neither, and its records have not changed, so no change clause
-   returns them. A gage that recorded nothing there costs an empty answer. Each clause names at most 100 locations, because the OGC
-   chunker splits a filter only at top-level ``OR``. It does that split when
-   the filter outgrows a URL, and fans the pieces out under the concurrency
-   cap. So the change clauses run concurrently without a second fan-out
-   mechanism.
+   returns them. A gage that recorded nothing there costs an empty answer.
+   The OGC chunker splits a filter at top-level ``OR`` and fans the pieces
+   out under the concurrency cap, so the path asks it for one request per
+   clause and needs no second fan-out mechanism. The API's time to answer a
+   change clause grows with the locations it names (cold, 2026-11-24: 100
+   gages took 12.1 s as one request and 1.2 s as ten), so the change clauses
+   are sized for up to 8 requests, then 10 locations each, but no more
+   requests than the concurrency cap, since the rest would wait their turn
+   and add only quota. A clause names at most 100 locations.
 5. Concatenate, and keep the API's version of every ``(time_series_id,
    time)`` present in both.
 
 The ``continuous`` collection refuses a ``time`` argument with an open start
 or a span over 1,100 days (HTTP 400), whatever the filter. It accepts a query
 with no ``time``, and a filter can compare ``time`` itself. So when the
-query's ``time`` is over the limit, step 4 sends none: a change clause needs
-none, the whole-query clause carries the bounds as comparisons, and step 5
-applies them to the changes. A record's ``time`` is fixed when it is written,
-so applying it late loses nothing.
+query's ``time`` is over the limit, step 4 sends none, and every clause
+carries the bounds as comparisons instead.
+
+A ``daily`` change query sends no ``time`` at all, and only the clause for
+locations without a file carries the bounds. With the query's window, the API
+took up to 9 s cold to answer a change query that returned few rows; without
+it, 2 to 6 s. The rows outside the window are dropped before step 5, which
+would otherwise keep them. Measured cold on 2026-11-24, each run on
+never-queried sites with its own window, the daily files path was faster
+without the window in 5 of 7 query shapes (for 25 gages over 5 years, 4.6 s
+instead of 10.3 s), the same in 1, and 2 s slower in 1 (30 gages over 10
+years). ``continuous`` keeps its window: without one, its change query took
+11 to 14 s or timed out, against 2 to 7 s with it.
 
 Steps 4 and 5 are the downloads' ``finalize`` hook, so resuming an
-interruption (``exc.call.resume()``) returns the whole result. A file that
+interruption (``exc.call.resume()``) returns the whole result. Whichever step
+was interrupted, ``exc.call`` is the downloads, and ``exc.partial_frame``
+holds the rows of the files read so far, raw as on the API path: the
+snapshot's values, before the merge and the ``approval_status`` and
+``method_category`` filters. A file that
 answers 404 is treated as missing and its location gets the whole query; any
 other error on a file is raised.
 
@@ -161,14 +189,19 @@ any request is sent: ``filter``, ``properties``, ``max_rows``,
 **``"auto"`` chooses per query, without a request.** A query the bulk
 path cannot honor goes to the API. Otherwise the router estimates the rows
 the API would page through, as locations x series x values per day x days,
-and reads the files when that exceeds 10,000 rows plus a per-location
-download cost: 250 rows' worth for a daily or ``current`` file, 10,000 for a
+and reads the files when that exceeds a base (5,000 rows for ``daily``,
+10,000 for ``continuous``) plus a per-location
+download cost: 100 rows' worth for a daily or ``current`` file, 10,000 for a
 ``historical`` one. The series count comes from ``parameter_code`` and
 ``statistic_id`` (2 for daily and 3 for continuous when neither is given),
 and an open-ended ``time`` counts as a typical record (40 years daily, 20
 continuous). The estimate can be wrong. The rule is tuned so that a wrong
 choice costs at most a second or two, while the right one saves minutes on
-large pulls. The estimate does not count the change query's rows, which
+large pulls. The ``daily`` base is low because the estimate is severalfold
+short for a location with many series, where paging the API took 4.6 s
+against 1.8 s for the files (one location, 5 years, 24,000 rows, cold on
+2026-11-24); for a single-series gage just over the base, the files were
+0.3 s slower. The estimate does not count the change query's rows, which
 grow with the files' age.
 
 The constants come from a benchmark run on 2026-11-22 against the live
@@ -195,7 +228,10 @@ Query                                          API       Files
 the bulk path. Without it, a query the setting sends to the files pages the
 API instead and emits a ``UserWarning`` that names the install command. A
 setting can come from a shared configuration file, and a missing optional
-dependency should not turn a working call into a failure.
+dependency should not turn a working call into a failure. The exception is a
+``continuous`` ``time`` the API refuses (over 1,100 days, or an open start):
+only the files can answer it, so it raises ``ValueError`` naming the install
+command and the shorter ``time`` before any request.
 
 Consequences
 ------------
@@ -206,10 +242,13 @@ Consequences
   for one location gains nothing, which is why ``"auto"`` routes it to the
   API.
 - With ``"auto"`` or ``"always"``, a result has no ``daily_id`` /
-  ``continuous_id`` column. Under the default, that is every
-  ``get_daily`` and ``get_continuous`` call the files can answer, including
-  the small ones the router sends to the API. A caller that needs the id
-  sets ``"off"``.
+  ``continuous_id`` column unless ``properties`` names it. Under the default,
+  that is every ``get_daily`` and ``get_continuous`` call, including the small
+  ones the router sends to the API. A caller that needs the id names it in
+  ``properties`` or sets ``"off"``.
+- A point read from the files comes from the catalog, which rounds
+  coordinates to 9 decimal places: under a millimeter from the API's, but
+  not equal to it.
 - A record removed from the API since the files were written is still
   returned, until the files are next written. Every case seen so far is the
   trailing edge of a rolling window: Provisional daily values drop out after
@@ -238,10 +277,12 @@ Consequences
 - ``get_ratings``, ``get_parquet_files``, and this path share one catalog
   search, ``waterdata.catalog.search``, which alone knows the edge's URL
   limit.
-- The configuration guide and ADR 0011 use ``bulk`` as an example profile
-  name (``[waterdata.bulk]``). Now that ``bulk`` names a retrieval path, the
-  guide's example should be renamed in a separate change. ADR 0011 is
-  accepted and stays as written.
+- The configuration guide used ``bulk`` as its example profile name
+  (``[waterdata.bulk]``) from v1.3.0. TOML refuses a key and a table with
+  one name, so a file with that profile cannot also set ``bulk`` in its
+  ``[waterdata]`` table; it can still set it inside the profile or in code.
+  The guide's example is now ``overnight``, so a new reader does not copy
+  the collision. ADR 0011 is accepted and stays as written.
 
 Alternatives considered:
 
@@ -283,7 +324,8 @@ Compliance
   wins), the classification of filters, the single OR-clause change query,
   the whole-query clause for locations without a file, the cutoff from the
   ``current`` file, the clause for a gap between the two files, a ``time``
-  over the API's limit left out of the change query, the ``historical`` skip, column types when no record changed,
+  over the API's limit left out of the change query, the daily change query
+  without ``time`` and the rows outside it dropped, the ``historical`` skip, column types when no record changed,
   chunked catalog searches and change clauses, the 404-only fallback, resume
   returning the whole result, and every rejection.
 - ``test_live_bulk_matches_the_api`` (``live`` marker, scheduled run) compares

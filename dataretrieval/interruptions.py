@@ -131,9 +131,17 @@ class FanOutInterrupted(DataRetrievalError):
         super().__init__(message)
         self.completed_chunks = completed_chunks
         self.total_chunks = total_chunks
-        self.call = call
         self.retry_after = retry_after
         self.status_code = self._resolve_status_code(cause)
+        self._bind(call)
+
+    def _bind(self, call: FanOut[Any] | None) -> None:
+        """Make ``call`` the one to resume, and snapshot its partial state.
+
+        A finalize hook that makes requests of its own calls this to hand its
+        interruption to the call whose resume re-runs the hook.
+        """
+        self.call = call
         # Snapshot partial state at raise time so the exception stays a stable record of
         # the failure moment: ``exc.partial_frame`` / ``.partial_response`` do not
         # advance on a later ``call.resume()`` (that live view is on

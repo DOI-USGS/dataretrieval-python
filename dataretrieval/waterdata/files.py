@@ -23,7 +23,13 @@ import pandas as pd
 from dataretrieval._response_metadata import BaseMetadata
 from dataretrieval._validation import require_one_of
 from dataretrieval.ogc.requests import _check_monitoring_location_id
-from dataretrieval.waterdata.catalog import MAX_PAGE_SIZE, format_time, search
+from dataretrieval.waterdata.catalog import (
+    MAX_PAGE_SIZE,
+    data_assets,
+    format_time,
+    location_of,
+    search,
+)
 
 __all__ = ["get_parquet_files"]
 
@@ -192,17 +198,13 @@ def _files_frame(items: list[dict[str, Any]]) -> pd.DataFrame:
     """One row per data asset of each catalog item, sorted by location."""
     rows = [
         {
-            "monitoring_location_id": item.get("properties", {}).get(
-                "monitoring_location_id", item.get("id")
-            ),
-            "asset": key,
-            "url": asset["href"],
+            "monitoring_location_id": location_of(item),
+            "asset": name,
+            "url": href,
             "start_datetime": item.get("properties", {}).get("start_datetime"),
             "end_datetime": item.get("properties", {}).get("end_datetime"),
         }
-        for item in items
-        for key, asset in item.get("assets", {}).items()
-        if "data" in asset.get("roles", []) and asset.get("href")
+        for item, name, href in data_assets(items)
     ]
     df = pd.DataFrame(rows, columns=_COLUMNS)
     for column in ("start_datetime", "end_datetime"):

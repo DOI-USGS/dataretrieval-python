@@ -27,6 +27,7 @@ from dataretrieval.codes.states import apply_state
 from dataretrieval.credentials import refuse_credential_keywords
 from dataretrieval.ogc import OgcDialect, prepare_request_args
 from dataretrieval.ogc import get_ogc_data as _facade_get_ogc_data
+from dataretrieval.ogc import request_url as _facade_request_url
 
 # Default endpoint constants remain at their documented compatibility paths.
 # Production retrieval resolves scoped destinations through ``ogc_api_url``.
@@ -221,6 +222,7 @@ def get_ogc_data(
     *,
     spatial: bool = True,
     api_version: str | None = None,
+    chunks: int = 1,
 ) -> tuple[pd.DataFrame, BaseMetadata]:
     """Water-Data wrapper over :func:`~dataretrieval.ogc.get_ogc_data`.
 
@@ -254,6 +256,9 @@ def get_ogc_data(
         API version for this one request. ``None`` (the default) resolves it
         through the configuration chain. See
         :func:`~dataretrieval.waterdata.endpoints.ogc_api_url`.
+    chunks : int, optional
+        The fan-out the caller asks for; see
+        :func:`~dataretrieval.ogc.get_ogc_data`.
 
     Returns
     -------
@@ -283,6 +288,18 @@ def get_ogc_data(
         # from ``base_url``: NGWMN is served from the same host, so a URL
         # does not distinguish the two adapters (ADR 0010).
         adapter="waterdata",
+        chunks=chunks,
+    )
+
+
+def request_url(args: dict[str, Any], collection: str) -> str:
+    """The URL :func:`get_ogc_data` reports as ``md.url`` for ``args``."""
+    return _facade_request_url(
+        args,
+        collection,
+        _OUTPUT_ID_BY_COLLECTION[collection],
+        base_url=ogc_api_url(),
+        dialect=WATERDATA_DIALECT,
     )
 
 
@@ -364,4 +381,5 @@ __all__ = [
     "_get_args",
     "_with_state",
     "get_ogc_data",
+    "request_url",
 ]
