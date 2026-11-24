@@ -210,6 +210,20 @@ def test_legacy_get_results_preserves_generator_values_in_metadata(httpx_mock):
     assert md._parameters["pCode"] == ["00010", "00300"]
 
 
+@pytest.mark.parametrize("legacy", [True, False])
+def test_what_sites_sends_numbers_and_booleans_as_wqp_spells_them(httpx_mock, legacy):
+    """Numbers are sent as-is and booleans as yes/no on both interfaces."""
+    with open("tests/data/wqp_sites.txt", encoding="utf-8") as text:
+        httpx_mock.add_response(method="GET", text=text.read())
+
+    what_sites(legacy=legacy, lat=44.2, long=-88.9, within=2.5, sorted=False)
+
+    params = httpx_mock.get_requests()[-1].url.params
+    assert params["lat"] == "44.2"
+    assert params["within"] == "2.5"
+    assert params["sorted"] == "no"
+
+
 def test_wqx3_what_sites_repeats_list_query_parameters(httpx_mock):
     """The WQX3 serializer also applies to metadata search endpoints."""
     with open("tests/data/wqp_sites.txt", encoding="utf-8") as text:
