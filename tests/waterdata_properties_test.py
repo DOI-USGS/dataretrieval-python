@@ -49,7 +49,7 @@ _DOCUMENTED = (
 )
 
 #: Parameters the getter reads itself rather than sending as a filter.
-#: ``bulk`` selects the retrieval path and is covered by waterdata_bulk_test.
+#: The ``bulk`` setting selects the retrieval path; see waterdata_routing_test.
 _NOT_FORWARDED = {"max_rows"}
 
 #: Values a parameter must have to pass its own validation.

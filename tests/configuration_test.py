@@ -1573,8 +1573,8 @@ def test_bulk_is_auto_unless_code_or_the_waterdata_table_sets_it(config_file):
     assert configuration.bulk(adapter="waterdata") == "auto"
     config_file('[waterdata]\nbulk = "off"\n')
     assert configuration.bulk(adapter="waterdata") == "off"
-    with dataretrieval.configure(WaterdataConfiguration(bulk="always")):
-        assert configuration.bulk(adapter="waterdata") == "always"
+    with dataretrieval.configure(WaterdataConfiguration(bulk="auto")):
+        assert configuration.bulk(adapter="waterdata") == "auto"
     assert configuration.bulk(adapter="waterdata") == "off"
 
 

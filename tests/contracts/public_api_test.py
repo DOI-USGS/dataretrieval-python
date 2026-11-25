@@ -14,7 +14,7 @@ import inspect
 import pytest
 
 from dataretrieval import waterdata
-from dataretrieval.waterdata import api
+from dataretrieval.waterdata import api, bulk
 
 _EXPECTED_WATERDATA_ALL = [
     "CODE_SERVICES",
@@ -37,7 +37,6 @@ _EXPECTED_WATERDATA_ALL = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_nearest_continuous",
-    "get_parquet_files",
     "get_peaks",
     "get_queryables",
     "get_ratings",
@@ -175,7 +174,6 @@ _POSITIONAL_COUNT = {
     "get_latest_daily": 19,
     "get_monitoring_locations": 49,
     "get_nearest_continuous": 3,
-    "get_parquet_files": 1,
     "get_peaks": 19,
     "get_queryables": 1,
     "get_ratings": 8,
@@ -220,6 +218,35 @@ def test_collection_getters_share_the_cross_cutting_parameters() -> None:
         assert expected <= set(parameters), (
             f"{name} is missing {sorted(expected - set(parameters))}"
         )
+
+
+#: The bulk getters, with the arguments each takes by position and the
+#: arguments a caller must supply. Every other parameter is keyword-only, so
+#: one added later cannot shift a positional call.
+_BULK_POSITIONAL = {
+    "get_continuous": ("monitoring_location_id",),
+    "get_daily": ("monitoring_location_id",),
+    "get_urls": ("collection",),
+}
+
+
+def test_bulk_exports_are_stable() -> None:
+    assert bulk.__all__ == sorted(_BULK_POSITIONAL)
+    assert waterdata.bulk is bulk
+
+
+@pytest.mark.parametrize("name", sorted(_BULK_POSITIONAL))
+def test_bulk_getters_take_one_argument_by_position(name: str) -> None:
+    parameters = inspect.signature(getattr(bulk, name)).parameters.values()
+    positional = tuple(p.name for p in parameters if p.kind is p.POSITIONAL_OR_KEYWORD)
+    required = tuple(p.name for p in parameters if p.default is p.empty)
+    assert positional == required == _BULK_POSITIONAL[name]
+
+
+@pytest.mark.parametrize("name", sorted(_BULK_POSITIONAL))
+def test_bulk_getters_return_frame_and_metadata(name: str) -> None:
+    annotation = inspect.signature(getattr(bulk, name)).return_annotation
+    assert annotation == "tuple[pd.DataFrame, BaseMetadata]"
 
 
 def test_api_private_samples_compatibility_names_remain() -> None:

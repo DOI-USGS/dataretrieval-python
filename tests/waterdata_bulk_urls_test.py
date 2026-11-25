@@ -1,4 +1,4 @@
-"""``waterdata.get_parquet_files``: listing the STAC-indexed Parquet files."""
+"""``waterdata.bulk.get_urls``: listing the STAC-indexed Parquet files."""
 
 import re
 from urllib.parse import parse_qs, urlsplit
@@ -6,7 +6,8 @@ from urllib.parse import parse_qs, urlsplit
 import pandas as pd
 import pytest
 
-from dataretrieval.waterdata import get_parquet_files, get_ratings
+from dataretrieval.waterdata import get_ratings
+from dataretrieval.waterdata.bulk import get_urls
 
 SEARCH = "https://api.waterdata.usgs.gov/stac/v0/search"
 SEARCH_RE = re.compile(rf"^{re.escape(SEARCH)}(\?.*)?$")
@@ -40,7 +41,7 @@ def test_daily_files_one_row_per_location_sorted(httpx_mock):
         json={"features": [_daily_item("USGS-02"), _daily_item("USGS-01")]},
     )
 
-    df, md = get_parquet_files("daily", monitoring_location_id=["USGS-01", "USGS-02"])
+    df, md = get_urls("daily", monitoring_location_id=["USGS-01", "USGS-02"])
 
     assert list(df.columns) == [
         "monitoring_location_id",
@@ -62,7 +63,7 @@ def test_daily_files_one_row_per_location_sorted(httpx_mock):
 def test_search_is_scoped_to_the_collection_and_sends_every_filter(httpx_mock):
     httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
 
-    get_parquet_files(
+    get_urls(
         "continuous",
         monitoring_location_id="USGS-01435000",
         time=["2004-01-01", None],
@@ -92,7 +93,7 @@ def test_continuous_lists_current_and_historical_but_no_other_asset(httpx_mock):
     }
     httpx_mock.add_response(url=SEARCH_RE, json={"features": [_item(site, assets)]})
 
-    df, _ = get_parquet_files("continuous", monitoring_location_id=site)
+    df, _ = get_urls("continuous", monitoring_location_id=site)
 
     assert df["asset"].tolist() == ["current", "historical"]
     assert df["url"].tolist() == [f"{base}-hot.parquet", f"{base}.parquet"]
@@ -109,7 +110,7 @@ def test_every_search_page_is_followed(httpx_mock):
     )
     httpx_mock.add_response(url=next_url, json={"features": [_daily_item("USGS-02")]})
 
-    df, _ = get_parquet_files("daily", limit=1)
+    df, _ = get_urls("daily", limit=1)
 
     assert df["monitoring_location_id"].tolist() == ["USGS-01", "USGS-02"]
 
@@ -117,7 +118,7 @@ def test_every_search_page_is_followed(httpx_mock):
 def test_no_match_returns_an_empty_frame_with_the_columns(httpx_mock):
     httpx_mock.add_response(url=SEARCH_RE, json={"features": []})
 
-    df, _ = get_parquet_files("daily", monitoring_location_id="USGS-00000000")
+    df, _ = get_urls("daily", monitoring_location_id="USGS-00000000")
 
     assert df.empty
     assert "url" in df.columns
@@ -126,20 +127,20 @@ def test_no_match_returns_an_empty_frame_with_the_columns(httpx_mock):
 
 def test_rejects_a_collection_without_parquet_files():
     with pytest.raises(ValueError, match="collection"):
-        get_parquet_files("ratings")  # type: ignore[arg-type]
+        get_urls("ratings")  # type: ignore[arg-type]
 
 
 def test_rejects_a_duration_before_any_request():
     with pytest.raises(ValueError, match=r"durations.*not supported"):
-        get_parquet_files("daily", time="P7D")
+        get_urls("daily", time="P7D")
 
 
 @pytest.mark.parametrize("blank", [None, "", "  "])
 def test_a_blank_filter_is_ignored(httpx_mock, blank):
     httpx_mock.add_response(url=SEARCH_RE, json={"features": []}, is_reusable=True)
 
-    get_parquet_files("daily", monitoring_location_id="USGS-01", filter=blank)
-    get_parquet_files("daily", filter=blank)
+    get_urls("daily", monitoring_location_id="USGS-01", filter=blank)
+    get_urls("daily", filter=blank)
 
     assert _sent_query(httpx_mock, 0)["filter"] == [
         "monitoring_location_id IN ('USGS-01')"
@@ -189,7 +190,7 @@ def test_many_long_ids_are_split_across_searches_that_fit_the_edge(httpx_mock):
     assert len(ids[0]) == 21
     httpx_mock.add_callback(_echo_ids, url=SEARCH_RE, is_reusable=True)
 
-    df, _ = get_parquet_files("daily", monitoring_location_id=ids[::-1])
+    df, _ = get_urls("daily", monitoring_location_id=ids[::-1])
 
     requests = httpx_mock.get_requests()
     assert len(requests) > 1
@@ -202,7 +203,7 @@ def test_many_long_ids_are_split_across_searches_that_fit_the_edge(httpx_mock):
 def test_a_short_id_list_makes_one_search(httpx_mock):
     httpx_mock.add_callback(_echo_ids, url=SEARCH_RE)
 
-    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-02", "USGS-01"])
+    df, _ = get_urls("daily", monitoring_location_id=["USGS-02", "USGS-01"])
 
     assert len(httpx_mock.get_requests()) == 1
     assert df["monitoring_location_id"].tolist() == ["USGS-01", "USGS-02"]
@@ -211,7 +212,7 @@ def test_a_short_id_list_makes_one_search(httpx_mock):
 def test_the_user_filter_and_dates_are_kept_in_every_chunk(httpx_mock):
     httpx_mock.add_callback(_echo_ids, url=SEARCH_RE, is_reusable=True)
 
-    get_parquet_files(
+    get_urls(
         "daily",
         monitoring_location_id=_long_ids(120),
         filter="state_code = '39'",
@@ -232,7 +233,7 @@ def test_the_user_filter_and_dates_are_kept_in_every_chunk(httpx_mock):
 def test_a_repeated_id_is_sent_once(httpx_mock):
     httpx_mock.add_callback(_echo_ids, url=SEARCH_RE)
 
-    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-01"] * 3)
+    df, _ = get_urls("daily", monitoring_location_id=["USGS-01"] * 3)
 
     assert _ids_in(httpx_mock.get_requests()[0]) == ["USGS-01"]
     assert len(df) == 1
@@ -242,9 +243,9 @@ def test_a_user_filter_over_the_url_limit_raises_before_any_request(httpx_mock):
     too_long = " OR ".join(f"state_code = '{i:02d}'" for i in range(200))
 
     with pytest.raises(ValueError, match="2,094-character") as exc:
-        get_parquet_files("daily", filter=too_long)
+        get_urls("daily", filter=too_long)
     with pytest.raises(ValueError, match="2,094-character"):
-        get_parquet_files("daily", filter=too_long, monitoring_location_id=["USGS-01"])
+        get_urls("daily", filter=too_long, monitoring_location_id=["USGS-01"])
 
     assert "split the call" in str(exc.value)
     assert httpx_mock.get_requests() == []
@@ -299,7 +300,7 @@ def test_item_times_with_and_without_fractional_seconds_both_parse(httpx_mock):
         },
     )
 
-    df, _ = get_parquet_files("daily", monitoring_location_id=["USGS-01", "USGS-02"])
+    df, _ = get_urls("daily", monitoring_location_id=["USGS-01", "USGS-02"])
 
     assert df["start_datetime"].tolist() == [
         pd.Timestamp("2005-10-01T04:00:00Z"),

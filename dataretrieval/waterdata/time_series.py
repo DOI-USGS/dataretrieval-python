@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dataretrieval.waterdata import _bulk, stats
+from dataretrieval.waterdata import _routing, stats
 from dataretrieval.waterdata.utils import (
     _get_args,
     _with_state,
@@ -65,13 +65,15 @@ def get_daily(
     By default, a query large enough to finish sooner that way reads its
     history from the nightly Parquet files USGS publishes, and only the
     records changed since from the API. The Water Data ``bulk`` setting
-    chooses: ``"auto"`` (the default), ``"always"`` for every query the files
-    can answer, or ``"off"`` to always page the API::
+    chooses: ``"auto"`` (the default), or ``"off"`` to always page the API::
 
         with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
             df, md = waterdata.get_daily(monitoring_location_id=sites)
 
-    With any setting but ``"off"``, the result has no ``daily_id`` column
+    :func:`dataretrieval.waterdata.bulk.get_daily` reads the files for every
+    query.
+
+    Under ``"auto"``, the result has no ``daily_id`` column
     (the files do not hold it) unless ``properties`` names it. Read from
     the files, a record deleted from the API since they were written is
     still returned, and a point agrees with the API's to 9 decimal places.
@@ -275,7 +277,7 @@ def get_daily(
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return _bulk.get_data(args, collection, max_rows=max_rows)
+    return _routing.get_data(args, collection, max_rows=max_rows)
 
 
 def get_continuous(
@@ -319,13 +321,15 @@ def get_continuous(
     By default, a query large enough to finish sooner that way reads its
     history from the nightly Parquet files USGS publishes, and only the
     records changed since from the API. The Water Data ``bulk`` setting
-    chooses: ``"auto"`` (the default), ``"always"`` for every query the files
-    can answer, or ``"off"`` to always page the API::
+    chooses: ``"auto"`` (the default), or ``"off"`` to always page the API::
 
         with dataretrieval.configure(WaterdataConfiguration(bulk="off")):
             df, md = waterdata.get_continuous(monitoring_location_id=sites)
 
-    With any setting but ``"off"``, the result has no ``continuous_id`` column
+    :func:`dataretrieval.waterdata.bulk.get_continuous` reads the files for every
+    query.
+
+    Under ``"auto"``, the result has no ``continuous_id`` column
     (the files do not hold it) unless ``properties`` names it. Read from
     the files, a record deleted from the API since they were written is
     still returned, and a point agrees with the API's to 9 decimal places.
@@ -503,7 +507,7 @@ def get_continuous(
     # Build argument dictionary, omitting None values
     args = _get_args(locals(), exclude={"max_rows"})
 
-    return _bulk.get_data(args, collection, max_rows=max_rows)
+    return _routing.get_data(args, collection, max_rows=max_rows)
 
 
 def get_latest_continuous(

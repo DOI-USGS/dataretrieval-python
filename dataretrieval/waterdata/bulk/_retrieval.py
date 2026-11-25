@@ -1,10 +1,8 @@
-"""Bulk retrieval: the nightly Parquet files for history, the API for changes.
+"""The files route: the nightly Parquet files for history, the API for changes.
 
-``get_daily`` and ``get_continuous`` fetch through :func:`get_data`, which
-reads the files when the Water Data ``bulk`` setting
-(``WaterdataConfiguration(bulk=...)``) is ``"always"``, or ``"auto"`` and the
-query is large enough, and pages the API otherwise. The design, the merge
-rule, and the alternatives rejected are recorded in ADR 0014. In short:
+A caller turns a getter's request arguments into a :class:`Query` with
+:func:`parse`, then answers it with :func:`read`. The design, the merge rule,
+and the alternatives rejected are recorded in ADR 0014. In short:
 
 1. Search the STAC catalog for each location's files, as concurrent chunks.
 2. Download every file, one fan-out chunk per file, reading only the rows the
@@ -29,7 +27,6 @@ from __future__ import annotations
 
 import contextlib
 import importlib.util
-import warnings
 import weakref
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
@@ -43,7 +40,7 @@ import pandas as pd
 
 from dataretrieval import configuration
 from dataretrieval._response_metadata import BaseMetadata
-from dataretrieval._validation import _render_names, require_argument
+from dataretrieval._validation import require_argument
 from dataretrieval.combining import _combine_chunk_responses
 from dataretrieval.exceptions import HTTPError, TransientError
 from dataretrieval.interruptions import FanOutInterrupted
@@ -69,15 +66,18 @@ from dataretrieval.waterdata.utils import (
     request_url,
 )
 
-__all__ = ["get_data"]
+__all__ = ["INSTALL_PYARROW", "Query", "accepts", "has_pyarrow", "parse", "read"]
 
-#: Row filters the bulk path accepts on columns fixed when a record is written.
+#: The install command for pyarrow, which reads the files.
+INSTALL_PYARROW = 'pip install "dataretrieval[pyarrow]"'
+
+#: Row filters the files route accepts on columns fixed when a record is written.
 _STABLE_FILTERS = frozenset(
     {"parameter_code", "statistic_id", "time_series_id", "unit_of_measure"}
 )
 #: Row filters on columns a record can change later: applied after the merge.
 _CHANGEABLE_FILTERS = frozenset({"approval_status", "method_category"})
-#: The other arguments the bulk path accepts.
+#: The other arguments the files route accepts.
 _ACCEPTED = frozenset({"monitoring_location_id", "time", "skip_geometry"})
 
 #: Most monitoring locations in one ``IN`` clause of the change query. The
@@ -107,7 +107,7 @@ _BOUNDARY_GAP = timedelta(hours=12)
 class _Layout:
     """How one collection is published as files, and how its API rows differ.
 
-    Everything the bulk path does differently for ``daily`` and ``continuous``
+    Everything the files route does differently for ``daily`` and ``continuous``
     is a field here, so the steps below do not test the collection's name.
     """
 
@@ -126,21 +126,10 @@ class _Layout:
     #: Whether the change clauses carry the query's ``time``. Without it, a
     #: daily change query is faster and a continuous one far slower (ADR 0014).
     bounds_changes: bool
-    #: The rows the API pages in the time the files path takes before its
-    #: first file: about 1.5 s for ``daily``, 2 to 2.5 s for ``continuous``.
-    base_rows: int
-    #: The row estimate of the ``"auto"`` mode: values per series per day;
-    #: series per location when the query names no parameter (measured on
-    #: discharge gages: all daily parameters returned 1.6-2x the rows of
-    #: discharge alone); and days assumed for an open-ended ``time``, the
-    #: typical record length.
-    values_per_day: int
-    series_per_location: int
-    open_ended_days: int
 
     @property
     def accepted(self) -> frozenset[str]:
-        """Every argument the bulk path accepts for the collection."""
+        """Every argument the files route accepts for the collection."""
         return _ACCEPTED | self.row_filters
 
 
@@ -154,11 +143,6 @@ _LAYOUTS = {
         has_historical=False,
         max_days=None,
         bounds_changes=False,
-        # Low, because a location with many series is underestimated severalfold.
-        base_rows=5_000,
-        values_per_day=1,
-        series_per_location=2,
-        open_ended_days=40 * 365,
     ),
     "continuous": _Layout(
         id_column=_OUTPUT_ID_BY_COLLECTION["continuous"],
@@ -167,17 +151,17 @@ _LAYOUTS = {
         has_historical=True,
         max_days=1100,
         bounds_changes=True,
-        base_rows=10_000,
-        # Mostly 15-minute values.
-        values_per_day=96,
-        series_per_location=3,
-        open_ended_days=20 * 365,
     ),
 }
 
 
+def accepts(collection: str) -> frozenset[str]:
+    """Every request argument the files route can answer for ``collection``."""
+    return _LAYOUTS[collection].accepted
+
+
 @dataclass(frozen=True)
-class _Query:
+class Query:
     """One getter call the files can answer, with its arguments parsed once."""
 
     collection: str
@@ -288,90 +272,28 @@ class _Snapshot:
         return found
 
 
-#: The remedy for a query only the API can answer: the mode that sends it there.
-_USE_AUTO = (
-    "or run the call inside "
-    "`with dataretrieval.configure(WaterdataConfiguration(bulk='auto')):`, "
-    "which sends such a query to the API"
-)
+def read(query: Query) -> tuple[pd.DataFrame, BaseMetadata]:
+    """Return ``(df, md)`` for ``query`` from the files plus the API.
 
-#: The remedy for a file request the service refused: the mode that skips them.
-_USE_OFF = (
-    "The bulk setting sent this query to the published files; to page the "
-    "API instead, run the call inside "
-    "`with dataretrieval.configure(WaterdataConfiguration(bulk='off')):`."
-)
-
-
-def get_data(
-    args: dict[str, Any], collection: str, *, max_rows: int | None = None
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """Return ``(df, md)`` for a ``daily`` or ``continuous`` query.
-
-    :func:`~dataretrieval.waterdata.utils.get_ogc_data` with the Water Data
-    ``bulk`` setting applied: the files plus the API's changes when the
-    setting sends the query there, the API alone otherwise. ``args`` are the
-    getter's request arguments, as built by ``_get_args``.
-
-    With the setting on, every answer has the same columns whichever way it
-    is answered: the record id, which the files do not carry, is left out of
-    an API answer too, unless ``properties`` names it. Without pyarrow, a
-    query for the files pages the API, with a warning.
+    Raises
+    ------
+    ImportError
+        Without pyarrow, before any request.
     """
-    mode = configuration.bulk(adapter="waterdata")
-    if mode == "off":
-        return get_ogc_data(args, collection, max_rows=max_rows)
-    try:
-        query = _parse(collection, args, max_rows)
-    except ValueError:
-        if mode == "always":
-            raise
-        # Something only the API accepts.
-        answer = get_ogc_data(args, collection, max_rows=max_rows)
-        return _without_id(answer, args, collection)
-    if mode == "always" or _prefers_files(query):
-        if importlib.util.find_spec("pyarrow") is not None:
-            return _get_bulk(query)
-        _warn_without_pyarrow(query, mode)
-    return _without_id(get_ogc_data(args, collection), args, collection)
-
-
-def _without_id(
-    answer: tuple[pd.DataFrame, BaseMetadata], args: dict[str, Any], collection: str
-) -> tuple[pd.DataFrame, BaseMetadata]:
-    """An API answer without the record id, unless ``properties`` names it."""
-    df, md = answer
-    column = _LAYOUTS[collection].id_column
-    # ``properties`` may name it by the API's name, ``id``.
-    if {column, "id"} & set(_as_list(args.get("properties") or [])):
-        return df, md
-    return df.drop(columns=column, errors="ignore"), md
-
-
-def _warn_without_pyarrow(query: _Query, mode: str) -> None:
-    """Warn that a query for the files pages the API instead.
-
-    Raises ``ValueError`` before any request for a ``time`` the API refuses,
-    which only the files can answer.
-    """
-    install = 'Install it with pip install "dataretrieval[pyarrow]"'
-    if not query.time_fits_api:
-        raise ValueError(
-            f"This {query.collection} query needs pyarrow, which is not "
-            f"installed: its time is wider than the {query.layout.max_days:,} "
-            "days the API accepts, or has an open start, so only the files can "
-            f"answer it. {install}, or pass a time of at most "
-            f"{query.layout.max_days:,} days with a start date."
+    if not has_pyarrow():
+        raise ImportError(
+            "Reading the published files needs pyarrow, which is not installed. "
+            f"Install it with {INSTALL_PYARROW}."
         )
-    warnings.warn(
-        f"The bulk setting is {mode!r}, but reading the files needs pyarrow, "
-        f"which is not installed, so this query paged the API. {install}.",
-        # This function, get_data, the getter, then the getter's caller.
-        stacklevel=4,
-    )
+    return _get_bulk(query)
 
 
-def _get_bulk(query: _Query) -> tuple[pd.DataFrame, BaseMetadata]:
+def has_pyarrow() -> bool:
+    """Whether pyarrow, which reads the files, is installed."""
+    return importlib.util.find_spec("pyarrow") is not None
+
+
+def _get_bulk(query: Query) -> tuple[pd.DataFrame, BaseMetadata]:
     """Return ``(df, md)`` for ``query`` from the files plus the API."""
     items, searched = _search(query)
     files = _plan(items, skip_historical=not query.needs_historical)
@@ -428,89 +350,26 @@ def _as_list(value: str | Iterable[str]) -> list[str]:
     return [value] if isinstance(value, str) else list(value)
 
 
-def _parse(collection: str, args: dict[str, Any], max_rows: int | None) -> _Query:
-    """``args`` as a :class:`_Query`.
+def parse(collection: str, args: dict[str, Any]) -> Query:
+    """``args``, request arguments the files route accepts, as a :class:`Query`.
 
     Raises
     ------
     ValueError
-        For an argument the bulk path cannot honor.
+        For no ``monitoring_location_id``, or a ``time`` the files cannot
+        answer, such as an ISO 8601 duration.
     """
-    layout = _LAYOUTS[collection]
-    if max_rows is not None:
-        raise ValueError(
-            "max_rows is not supported with bulk='always', because the files are "
-            f"read whole. Remove max_rows, {_USE_AUTO}."
-        )
     sites = require_argument(
         "monitoring_location_id",
         args.get("monitoring_location_id") or None,
-        context="with bulk='always', because the files are published per location",
+        context="because the files are published per location",
         remedy=(
             "Pass one or more ids, e.g., monitoring_location_id='USGS-01646500', "
-            "or find them with get_monitoring_locations()."
+            "or find them with waterdata.get_monitoring_locations()."
         ),
     )
-    if args.get("convert_type") is False:
-        raise ValueError(
-            "bulk='always' always converts column types. Remove "
-            f"convert_type=False, {_USE_AUTO}."
-        )
-    unsupported = sorted(set(args) - layout.accepted - {"convert_type"})
-    if unsupported:
-        raise ValueError(
-            f"bulk='always' does not support {_render_names(unsupported)}. "
-            f"Remove {'it' if len(unsupported) == 1 else 'them'}, {_USE_AUTO}. "
-            "Supported with bulk='always': "
-            f"{_render_names(sorted(layout.accepted))}."
-        )
     start, end = _time_bounds(args.get("time"), collection)
-    return _Query(collection, layout, args, _as_list(sites), start, end)
-
-
-# --- routing ------------------------------------------------------------------
-
-# The routing rule (ADR 0014), measured against the live services with fresh
-# monitoring locations for every run. Paging the API costs about 0.4 s plus
-# 1 s per 5,000 rows (2026-11-24); the files cost a fixed time
-# (``_Layout.base_rows``), plus per file the rows the API would page through
-# in the same time: a daily or ``current`` continuous file is small (20 of
-# them added 0.4 s), a ``historical`` one is 5-15 MB.
-_ROWS_PER_SMALL_FILE = 100
-_ROWS_PER_HISTORICAL_FILE = 10_000
-
-
-def _prefers_files(query: _Query) -> bool:
-    """Whether the ``"auto"`` bulk mode should read the files for ``query``.
-
-    The files win when the estimated rows exceed the layout's ``base_rows``
-    plus a per-location download cost. The estimate needs no request: locations x
-    series x values per day x days.
-    """
-    per_file = (
-        _ROWS_PER_HISTORICAL_FILE if query.needs_historical else _ROWS_PER_SMALL_FILE
-    )
-    return _estimated_rows(query) >= query.layout.base_rows + per_file * len(
-        query.sites
-    )
-
-
-def _estimated_rows(query: _Query) -> float:
-    layout, args, sites = query.layout, query.args, len(query.sites)
-    series: float = layout.series_per_location
-    if "time_series_id" in args:
-        series = len(query.values("time_series_id")) / sites
-    elif "parameter_code" in args:
-        series = len(query.values("parameter_code"))
-        if "statistic_id" in args:
-            series *= len(query.values("statistic_id"))
-    span = query.span
-    days = (
-        float(layout.open_ended_days)
-        if span is None
-        else max(span.total_seconds() / 86400, 1.0)
-    )
-    return sites * series * layout.values_per_day * days
+    return Query(collection, _LAYOUTS[collection], args, _as_list(sites), start, end)
 
 
 def _time_bounds(
@@ -532,7 +391,7 @@ def _time_bounds(
 # --- discovery ----------------------------------------------------------------
 
 
-def _search(query: _Query) -> tuple[list[dict[str, Any]], httpx.Response]:
+def _search(query: Query) -> tuple[list[dict[str, Any]], httpx.Response]:
     """The catalog items for the query's locations, one per location."""
     try:
         return search(
@@ -546,12 +405,16 @@ def _search(query: _Query) -> tuple[list[dict[str, Any]], httpx.Response]:
     except TransientError:
         raise
     except HTTPError as e:
-        raise _refused(e) from e
+        raise _refused(e, query.collection) from e
 
 
-def _refused(error: HTTPError) -> HTTPError:
-    """A refused catalog or file request, with the mode that avoids both."""
-    return HTTPError(f"{error} {_USE_OFF}", status_code=error.status_code or 0)
+def _refused(error: HTTPError, collection: str) -> HTTPError:
+    """A refused catalog or file request, with the call that pages the API."""
+    remedy = (
+        f"To page the API instead, call waterdata.get_{collection}() inside "
+        "`with dataretrieval.configure(WaterdataConfiguration(bulk='off')):`."
+    )
+    return HTTPError(f"{error} {remedy}", status_code=error.status_code or 0)
 
 
 def _parts(sites: list[str], step: int = _SITES_PER_CLAUSE) -> list[list[str]]:
@@ -572,7 +435,7 @@ def _plan(items: list[dict[str, Any]], *, skip_historical: bool) -> list[_File]:
 
 
 def _fetcher(
-    snapshot: _Snapshot, query: _Query
+    snapshot: _Snapshot, query: Query
 ) -> Callable[[_File], Awaitable[tuple[pd.DataFrame, httpx.Response]]]:
     """The fan-out's per-file fetch: the file's matching rows.
 
@@ -592,7 +455,7 @@ def _fetcher(
             response.status_code, item.url, response.headers, response.elapsed
         )
         site = item.monitoring_location_id
-        if not _file_exists(response):
+        if not _file_exists(response, query.collection):
             snapshot.failed.add(site)
             return pd.DataFrame(), inert
         content = response.content
@@ -607,7 +470,7 @@ def _fetcher(
     return fetch
 
 
-def _file_exists(response: httpx.Response) -> bool:
+def _file_exists(response: httpx.Response, collection: str) -> bool:
     """Whether a download found its file; ``False`` for a 404.
 
     A catalog entry whose file is gone sends the location to the API. Any
@@ -621,11 +484,11 @@ def _file_exists(response: httpx.Response) -> bool:
     except HTTPError as e:
         if e.status_code == 404:
             return False
-        raise _refused(e) from e
+        raise _refused(e, collection) from e
     return True
 
 
-def _arrow_filters(query: _Query) -> list[tuple[str, str, Any]]:
+def _arrow_filters(query: Query) -> list[tuple[str, str, Any]]:
     """pyarrow row filters for the query's stable-column and time filters.
 
     Changeable columns are filtered after the merge instead: a file row that
@@ -651,7 +514,7 @@ def _read_file(
     decoded. The facts describe the whole file, not those rows; an empty file
     has none. Runs in a worker thread, so the rows are shaped here.
     """
-    # pyarrow is optional; get_data checked it is installed.
+    # pyarrow is optional; ``read`` checked it is installed.
     import pyarrow as pa
     import pyarrow.parquet as pq
 
@@ -764,7 +627,7 @@ def _gap_clauses(
 
 
 def _query_api(
-    query: _Query,
+    query: Query,
     cutoffs: dict[str, pd.Timestamp],
     missing: set[str],
     gaps: Iterable[tuple[str, pd.Timestamp, pd.Timestamp]],
@@ -808,6 +671,8 @@ def _query_api(
     if not sends_time:
         dropped.add("time")
     request = {k: v for k, v in query.args.items() if k not in dropped}
+    # The merge needs the API's types; the engine converts only when asked.
+    request["convert_type"] = True
     request["filter"] = " OR ".join(clauses)
     request["filter_lang"] = "cql-text"
     # One request per clause: the chunker splits a filter at top-level ``OR``.
@@ -815,7 +680,7 @@ def _query_api(
     return _within(api, query), md
 
 
-def _within(api: pd.DataFrame, query: _Query) -> pd.DataFrame:
+def _within(api: pd.DataFrame, query: Query) -> pd.DataFrame:
     """The rows inside the query's ``time`` interval.
 
     A change clause without bounds also returns records outside it that
@@ -833,12 +698,13 @@ def _within(api: pd.DataFrame, query: _Query) -> pd.DataFrame:
 
 
 def _metadata(
-    query: _Query, md: BaseMetadata, *responses: httpx.Response | None
+    query: Query, md: BaseMetadata, *responses: httpx.Response | None
 ) -> BaseMetadata:
     """``md`` for the whole call, as the API reports a query it splits.
 
-    The URL is the one ``bulk="off"`` sends, the time is every request's
-    summed, and the headers are those with the lowest remaining quota.
+    The URL is the one the API getter sends for the same arguments, the time
+    is every request's summed, and the headers are those with the lowest
+    remaining quota.
     """
     changes = inert_response(200, md.url, md.header, md.query_time)
     sent = [response for response in (*responses, changes) if response is not None]
@@ -863,7 +729,7 @@ def _points(items: list[dict[str, Any]]) -> dict[str, Any]:
 def _merge(
     file_rows: pd.DataFrame,
     api: pd.DataFrame,
-    query: _Query,
+    query: Query,
     points: dict[str, Any],
 ) -> pd.DataFrame:
     """Concatenate, keep the API's version of shared records, filter, sort."""

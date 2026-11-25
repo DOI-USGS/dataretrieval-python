@@ -945,9 +945,9 @@ def _parse_api_version(raw: str, label: str) -> str:
     return value
 
 
-#: When a getter that can read files in bulk does so: never, when the adapter
-#: judges the query large enough, or for every query it can answer that way.
-BULK_MODES: tuple[str, ...] = ("off", "auto", "always")
+#: When a getter that can read files in bulk does so: never, or when the
+#: adapter judges the query large enough.
+BULK_MODES: tuple[str, ...] = ("off", "auto")
 #: The mode when nothing configured one: the adapter's router chooses per query.
 DEFAULT_BULK = "auto"
 

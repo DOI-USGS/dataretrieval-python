@@ -123,6 +123,19 @@ forbidden_modules =
     dataretrieval._querying
     dataretrieval.utils
 
+[importlinter:contract:waterdata-bulk]
+name = Water Data bulk retrieval does not depend on the bulk setting (ADR 0014)
+type = forbidden
+; ``waterdata.bulk`` reads the files for every query. The router that applies
+; the ``bulk`` setting, and the getters it serves, are built on it, so the
+; package stands without them.
+source_modules =
+    dataretrieval.waterdata.bulk
+forbidden_modules =
+    dataretrieval.waterdata._routing
+    dataretrieval.waterdata.api
+    dataretrieval.waterdata.time_series
+
 [importlinter:contract:waterdata-families]
 name = Water Data collection families do not reach through each other (ADR 0007)
 type = independence

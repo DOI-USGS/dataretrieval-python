@@ -70,20 +70,20 @@ class WaterdataConfiguration(
     parallel_chunks : int, optional
         Baseline fan-out for multi-value queries. Each sub-request spends
         rate-limit quota, so raise it only for pulls you know are large.
-    bulk : {"off", "auto", "always"}, optional
+    bulk : {"off", "auto"}, optional
         Whether :func:`~dataretrieval.waterdata.get_daily` and
         :func:`~dataretrieval.waterdata.get_continuous` read a query's history
         from the nightly Parquet files USGS publishes, and from the API only
         the records changed since. ``"auto"`` (the default) reads the files
         for a query large enough to finish sooner that way, and pages the API
-        for the rest, including any query the files cannot answer.
-        ``"always"`` reads the files for every query, and raises
-        ``ValueError`` for one they cannot answer. ``"off"`` always pages the
-        API. With ``"auto"`` or ``"always"``, the result has no ``daily_id`` /
-        ``continuous_id`` column unless ``properties`` names it. Needs
-        ``pyarrow`` (``pip install "dataretrieval[pyarrow]"``); without it, the
-        getters page the API and warn. Set it in code or in the
-        ``[waterdata]`` table of the configuration file.
+        for the rest, including any query the files cannot answer. ``"off"``
+        always pages the API. With ``"auto"``, the result has no ``daily_id`` /
+        ``continuous_id`` column unless ``properties`` names it. Reading the
+        files needs ``pyarrow`` (``pip install "dataretrieval[pyarrow]"``);
+        without it, the getters page the API and warn. Set it in code or in
+        the ``[waterdata]`` table of the configuration file. To read the files
+        for every query, call :func:`dataretrieval.waterdata.bulk.get_daily`
+        or :func:`~dataretrieval.waterdata.bulk.get_continuous` instead.
     """
 
     # The settings this service reads, named by the groups they come from:

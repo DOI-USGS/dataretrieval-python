@@ -40,52 +40,67 @@ cannot carry one. And a ``last_modified`` query sees changes but not removals.
 Decision
 --------
 
-**Keep one getter per collection, and choose the path with a setting.**
-``get_daily`` and ``get_continuous`` keep their signatures. The Water Data
-adapter gains a ``bulk`` setting (ADR 0011), ``"off"``, ``"auto"``, or
-``"always"``, set with ``WaterdataConfiguration(bulk=...)`` or in the
-``[waterdata]`` table of the configuration file. Under ``"always"`` the
-getters return the same columns and types from a different retrieval path,
-less the record id (below). The default is ``"auto"``, which lands in a
-major release because it removes the record id from most ``get_daily`` and
-``get_continuous`` results. It changes no signature. ``"off"`` keeps the
-API path and the record id.
+**Add bulk getters that always read the files.** A public package,
+``waterdata.bulk``, has ``get_daily`` and ``get_continuous``. Each answers every
+query from the files plus the API's changes, and its signature lists only the
+arguments the files can answer: ``monitoring_location_id``, required because
+the files are published per location; ``time``; the filters below; and
+``skip_geometry``. Any other argument is a ``TypeError`` at the call. The
+result has the columns and types of ``waterdata.get_daily`` and
+``waterdata.get_continuous``, less the record id (below). ``bulk.get_urls``
+lists the files for a Parquet reader of the caller's own. The bulk getters
+change no existing call.
+
+**Let the existing getters choose the path with a setting.** The Water Data
+adapter gains a ``bulk`` setting (ADR 0011), ``"off"`` or ``"auto"``, set with
+``WaterdataConfiguration(bulk=...)`` or in the ``[waterdata]`` table of the
+configuration file. Under ``"auto"``, a router sends a large query the files
+can answer to the bulk getters' files route, and every other query to the
+API. ``get_daily`` and ``get_continuous`` keep their signatures. The default
+is ``"auto"``, which lands in a major release because it removes the record
+id from most ``get_daily`` and ``get_continuous`` results. ``"off"`` keeps
+the API path and the record id.
 
 The choice is a setting because it changes how a query runs, not what it
 asks for, like ``parallel_chunks`` and ``api_version``. A keyword would add
 a parameter to two signatures that most callers should never set: with
-``"auto"`` as the default, the router decides. Forcing a path remains
-possible for benchmarks, tests, and bug reports, with a ``configure`` block.
+``"auto"`` as the default, the router decides. A caller who wants the files
+for every query calls the bulk getters, so the setting has no mode for that.
 Like ``api_version``, it has no environment variable (ADR 0011 refuses one
 for adapter-only settings).
 
-**The retrieval path is one private module,** ``waterdata/_bulk.py``. The
-getters build their arguments as before and hand them to its one entry point,
-``get_data``, which reads the setting and answers from the files or the API.
-The getters do not know which. Nothing in the module is public, so its plan,
-merge, and file handling can change without a deprecation. What differs
-between ``daily`` and ``continuous`` (the id column, the accepted filters, a
-date or a timestamp ``time``, the ``historical`` file, the API's limit on
-``time``, the row estimate) is one table in that module. Both return each
+**The files route is private to** ``waterdata.bulk``, in
+``bulk/_retrieval.py``. The bulk getters build their arguments as the API
+getters do and hand them to its two entry points: ``parse``, which makes a
+``Query``, and ``read``, which answers it. The router,
+``waterdata/_routing.py``, calls the same two. An import contract keeps
+``waterdata.bulk`` from importing the router or the API getters, so the
+package can be released without them. Nothing in ``_retrieval`` is public,
+so its plan, merge, and file handling can change without a deprecation. What
+differs between ``daily`` and ``continuous`` (the id column, the accepted
+filters, a date or a timestamp ``time``, the ``historical`` file, the API's
+limit on ``time``) is one table in that module, and the terms of the row
+estimate are one table in the router. Both collections return each
 location's point, which the file rows take from its catalog item.
 
-**With the setting on, the result has no record id.** ``daily_id`` /
-``continuous_id`` is left out whether the files or the API answered, unless
-``properties`` names it (as ``id`` or by its column name). A column filled
-only for the rows changed since last night is of no use to a caller, and
-under ``"auto"`` the columns would otherwise depend on how many locations the
-query named, or on an argument such as ``max_rows`` that only the API
-accepts. ``(time_series_id, time)`` identifies a record in both. ``"off"``
-changes nothing.
+**The files route returns no record id, and under** ``"auto"`` **neither
+does the API.** ``daily_id`` / ``continuous_id`` is not in the files, so a
+bulk getter's result has none. Under ``"auto"`` it is left out whether the
+files or the API answered, unless ``properties`` names it (as ``id`` or by
+its column name). A column filled only for the rows changed since last night
+is of no use to a caller, and the columns would otherwise depend on how many
+locations the query named, or on an argument such as ``max_rows`` that only
+the API accepts. ``(time_series_id, time)`` identifies a record in both.
+``"off"`` changes nothing.
 
 **The metadata describes the caller's query, not the requests that answered
 it.** The API path already reports a query it splits that way: ``md.url`` is
 the unsplit request, ``md.query_time`` the sum of every request's time, and
 ``md.header`` the headers reporting the lowest remaining quota. The files
 path does the same over the catalog search, the downloads, and the change
-query, with the URL ``"off"`` would send, so ``md`` does not say which path
-answered. With a separate files key, the lowest remaining quota may be that
-key's.
+query, with the URL the API getter sends for the same arguments, so ``md``
+does not say which path answered. With a separate files key, the lowest
+remaining quota may be that key's.
 
 **A snapshot plus its changes.** For the requested monitoring locations:
 
@@ -190,16 +205,16 @@ Otherwise a file row that was Provisional at the snapshot and is Approved now
 would be returned for ``approval_status="Provisional"``. The change query
 would never fetch the Approved version, so nothing would replace it.
 
-**Under ``"always"``, reject what the path cannot honor.**
-``monitoring_location_id`` is required,
-because the files are published per location. Every argument outside the
-filters above, ``time``, and ``skip_geometry`` raises ``ValueError`` before
-any request is sent: ``filter``, ``properties``, ``max_rows``,
-``convert_type=False``, a duration in ``time``, and ``method_category`` for
-``daily``.
+**A bulk getter rejects what the files cannot answer before any request.**
+Its signature holds only the arguments the files route accepts, and a test
+pins the two together. An empty ``monitoring_location_id`` or a duration in
+``time`` raises ``ValueError``.
 
 **``"auto"`` chooses per query, without a request.** A query the bulk
-path cannot honor goes to the API. Otherwise the router estimates the rows
+getters could not take goes to the API: one without
+``monitoring_location_id``, or with ``filter``, ``properties``, ``max_rows``,
+``convert_type=False``, a duration in ``time``, or ``method_category`` for
+``daily``. Otherwise the router estimates the rows
 the API would page through, as locations x series x values per day x days,
 and reads the files when that exceeds a base (5,000 rows for ``daily``,
 10,000 for ``continuous``) plus a per-location
@@ -237,10 +252,11 @@ Query                                          API       Files
 ``"auto"`` is the default.
 
 **pyarrow is an optional extra,** ``dataretrieval[pyarrow]``, imported only on
-the bulk path. Without it, a query the setting sends to the files pages the
-API instead and emits a ``UserWarning`` that names the install command. A
-setting can come from a shared configuration file, and a missing optional
-dependency should not turn a working call into a failure. The exception is a
+the files route. Without it, a bulk getter raises ``ImportError`` naming the
+install command, before any request. A query the setting sends to the files
+pages the API instead and emits a ``UserWarning`` that names the install
+command. A setting can come from a shared configuration file, and a missing
+optional dependency should not turn a working call into a failure. The exception is a
 ``continuous`` ``time`` the API refuses (over 1,100 days, or an open start):
 only the files can answer it, so it raises ``ValueError`` naming the install
 command and the shorter ``time`` before any request.
@@ -248,16 +264,19 @@ command and the shorter ``time`` before any request.
 Consequences
 ------------
 
-- For the 40-gage pull above, the bulk path returned the same 421,785 rows,
+- For the 40-gage pull above, the files route returned the same 421,785 rows,
   values, columns, and types in 10.6 s instead of 39.8 s. One site's
   continuous discharge since 2025 took 3.1 s instead of 5.9 s. A short query
   for one location gains nothing, which is why ``"auto"`` routes it to the
   API.
-- With ``"auto"`` or ``"always"``, a result has no ``daily_id`` /
-  ``continuous_id`` column unless ``properties`` names it. Under the default,
-  that is every ``get_daily`` and ``get_continuous`` call, including the small
-  ones the router sends to the API. A caller that needs the id names it in
+- A bulk getter's result has no ``daily_id`` / ``continuous_id`` column.
+  Under the default, neither has any ``get_daily`` or ``get_continuous``
+  result, including the small ones the router sends to the API, unless
+  ``properties`` names it. A caller that needs the id names it in
   ``properties`` or sets ``"off"``.
+- The bulk getters and their files route can be released alone, in a minor
+  release, because they change no existing call. The setting and its
+  ``"auto"`` default need a major release.
 - A point read from the files comes from the catalog, which rounds
   coordinates to 9 decimal places: under a millimeter from the API's, but
   not equal to it.
@@ -286,9 +305,10 @@ Consequences
   once the files' key has made 4,000 requests in an hour, the catalog's
   ceiling, the next query's search is refused, before any download. Like
   ``api_key``, it is package-wide and no adapter setting (ADR 0010).
-- ``get_ratings``, ``get_parquet_files``, and this path share one catalog
+- ``get_ratings``, ``bulk.get_urls``, and the files route share one catalog
   search, ``waterdata.catalog.search``, which alone knows the edge's URL
-  limit.
+  limit. It is a module of ``waterdata`` beside ``bulk``, because
+  ``get_ratings`` searches the catalog too.
 - The configuration guide used ``bulk`` as its example profile name
   (``[waterdata.bulk]``) from v1.3.0. TOML refuses a key and a table with
   one name, so a file with that profile cannot also set ``bulk`` in its
@@ -298,11 +318,18 @@ Consequences
 
 Alternatives considered:
 
-- **Separate getters,** ``get_bulk_daily`` and ``get_bulk_continuous``. Each
-  signature would list only what works, but there would be two more public
-  functions per collection that resemble their originals, and callers would
-  need to know they exist. A setting makes the faster path available to
-  existing calls, and a default flip later changes no import.
+- **The bulk getters alone, without the setting.** Existing calls would not
+  get the faster path, and a caller would need to know the bulk getters
+  exist. The setting lets a later default speed up existing calls without a
+  change to any import.
+- **The setting alone, with an** ``"always"`` **mode** that read the files for
+  every query and raised ``ValueError`` for one they could not answer, as
+  first implemented. Its getters' signatures listed every API argument, most
+  of which it refused, and it put a mode into the configuration file that
+  turns a working call into a failure.
+- **Getters named** ``get_bulk_daily`` **and** ``get_bulk_continuous`` **in**
+  ``waterdata``. A package lets the bulk getters keep the API getters' names,
+  and gives them and ``get_urls`` one namespace.
 - **A ``bulk`` keyword on both getters** (``bool | "auto"``), as first
   drafted. It puts a choice most callers should leave to the router into
   both signatures, and it makes a script opt in call by call instead of
@@ -331,19 +358,26 @@ Follow-up work, not part of this decision:
 Compliance
 ----------
 
-- ``tests/waterdata_bulk_test.py`` (offline) pins the routing rule's eligibility
-  and size decisions, and the merge rule (the API
-  wins), the classification of filters, the OR-clause change query and its split into requests,
-  the whole-query clause for locations without a file, the cutoff from the
-  ``current`` file, the clause for a gap between the two files, a ``time``
-  over the API's limit left out of the change query, the daily change query
-  without ``time`` and the rows outside it dropped, the ``historical`` skip, column types when no record changed,
-  chunked catalog searches and change clauses, the 404-only fallback, resume
-  returning the whole result, and every rejection.
+- ``tests/waterdata_bulk_test.py`` (offline) calls the bulk getters and pins
+  the merge rule (the API wins), the classification of filters, the
+  OR-clause change query and its split into requests, the whole-query clause
+  for locations without a file, the cutoff from the ``current`` file, the
+  clause for a gap between the two files, a ``time`` over the API's limit
+  left out of the change query, the daily change query without ``time`` and
+  the rows outside it dropped, the ``historical`` skip, column types when no
+  record changed, chunked catalog searches and change clauses, the 404-only
+  fallback, resume returning the whole result, every rejection, the
+  ``ImportError`` without pyarrow, and each getter's signature against the
+  arguments the files route accepts.
+- ``tests/waterdata_routing_test.py`` (offline) pins the routing rule's
+  eligibility and size decisions, the record id under ``"auto"`` and
+  ``"off"``, and the pyarrow fallback and its warning.
+- The ``waterdata-bulk`` contract in ``.importlinter`` keeps
+  ``waterdata.bulk`` from importing the router or the API getters.
 - ``test_live_bulk_matches_the_api`` (``live`` marker, scheduled run) compares
-  ``bulk="always"`` with ``bulk="off"`` for both getters. It checks rows, values,
-  columns, and types, less the id column. A failure there means
-  one of the undocumented behaviors above has changed.
+  each bulk getter with its API getter under ``bulk="off"``. It checks rows,
+  values, columns, and types, less the id column. A failure there means one
+  of the undocumented behaviors above has changed.
 - ``test_live_file_layout_is_unchanged`` (``live``) reads the footers of
   three files with range requests and checks the layout a range-request
   reader would rely on: rows sorted by ``time`` in row groups of 50,000, and
@@ -352,11 +386,10 @@ Compliance
   read from code and the ``[waterdata]`` table, validated, and refused from
   the environment. It also pins ``files_api_key``: sent only under
   ``/stac-files/`` and ``/stac/``, never to another host, and ``api_key``
-  when unset. ``tests/waterdata_bulk_test.py`` pins the pyarrow
-  fallback and its warning.
+  when unset.
 
 Notes
 -----
 
-- #476 implements this decision, with ``waterdata.get_parquet_files`` and
-  the shared catalog search.
+- #476 implements this decision, with ``waterdata.bulk.get_urls`` and the
+  shared catalog search.

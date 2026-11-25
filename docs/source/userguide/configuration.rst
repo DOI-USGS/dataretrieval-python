@@ -149,8 +149,8 @@ Settings
      - ``"auto"``
      - *(none — code or file)*
      - Whether Water Data's ``get_daily`` and ``get_continuous`` read history
-       from the nightly Parquet files: ``"off"``, ``"auto"``, or
-       ``"always"``. See :ref:`configuration-bulk`.
+       from the nightly Parquet files: ``"off"`` or ``"auto"``. See
+       :ref:`configuration-bulk`.
 
 
 Where settings come from
@@ -624,8 +624,6 @@ since from the API, then return one frame with the same columns and types,
 less the record id. A smaller query, and any query the files cannot answer,
 pages the API. The choice is made per query, without a request.
 
-``"always"`` reads the files for every query and raises ``ValueError`` for
-one they cannot answer, which is useful for comparing the two paths.
 ``"off"`` always pages the API and returns the record id:
 
 .. code-block:: python
@@ -640,14 +638,29 @@ one they cannot answer, which is useful for comparing the two paths.
    [waterdata]
    bulk = "off"
 
-The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` or
-``"always"`` a query the files can answer returns no such column, whether the
-files or the API answered it; ``(time_series_id, time)`` identifies a record.
+The files hold no ``daily_id`` / ``continuous_id``, so with ``"auto"`` a query
+the files can answer returns no such column, whether the files or the API
+answered it; ``(time_series_id, time)`` identifies a record.
 A record deleted from the API since the files were written is still returned
 until the files are next written. That is usually the next night, and USGS
 says it can take up to a week. Reading the files needs ``pyarrow``
 (``pip install "dataretrieval[pyarrow]"``); without it, the getters page the API
 and warn. Like ``api_version``, ``bulk`` has no environment variable.
+
+To read the files for every query, call
+:func:`~dataretrieval.waterdata.bulk.get_daily` or
+:func:`~dataretrieval.waterdata.bulk.get_continuous` from
+:mod:`dataretrieval.waterdata.bulk` instead. They take only the arguments the
+files can answer, and the setting does not apply to them:
+
+.. code-block:: python
+
+   from dataretrieval.waterdata import bulk
+
+   df, md = bulk.get_daily(sites, parameter_code="00060", time="1990-01-01/..")
+
+:func:`~dataretrieval.waterdata.bulk.get_urls` lists the files, for a Parquet
+reader of your own.
 
 The service counts requests per key, with a different hourly ceiling for
 each endpoint: 1,000 for the API and 10,000 for the files in November 2026.

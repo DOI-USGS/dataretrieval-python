@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataretrieval.ogc.chunking import parallel_chunks
 from dataretrieval.ogc.filters import FILTER_LANG
 
+from . import bulk as bulk
+
 # Public API exports
 from .api import (
     get_channel,
@@ -34,7 +36,6 @@ from .api import (
     get_time_series_metadata,
 )
 from .configuration import WaterdataConfiguration
-from .files import get_parquet_files
 from .nearest import get_nearest_continuous
 from .ratings import get_ratings
 from .types import (
@@ -66,7 +67,6 @@ __all__ = [
     "get_latest_daily",
     "get_monitoring_locations",
     "get_nearest_continuous",
-    "get_parquet_files",
     "get_peaks",
     "get_queryables",
     "get_ratings",

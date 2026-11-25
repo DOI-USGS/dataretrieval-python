@@ -32,6 +32,12 @@ not a use.
 `(DataFrame, metadata)`. The package's unit of public API. `waterdata.get_daily`
 and `wqp.get_results` are getters; the helpers they call are not.
 
+**Bulk getter** — A getter that answers every query from the files a service
+publishes, plus the records changed since they were written:
+`waterdata.bulk.get_daily` and `get_continuous`. Its signature lists only the
+arguments the files can answer. The getters of the same collections reach the
+same code under the `bulk` setting (ADR 0014).
+
 **Query** — One logical request a caller makes by calling a getter. A query may
 reach the service as several requests; it is still one query.
 

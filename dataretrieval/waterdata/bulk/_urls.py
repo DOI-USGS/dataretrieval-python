@@ -1,4 +1,4 @@
-"""Discovery of the Water Data Parquet files indexed by the STAC catalog.
+"""``bulk.get_urls``: the Water Data Parquet files indexed by the STAC catalog.
 
 USGS publishes the ``daily`` and ``continuous`` collections a second way: as
 Parquet files, one set per monitoring location, served from
@@ -8,9 +8,9 @@ location's file is far faster than paging through the OGC API for the same
 records, which makes the files the better source for bulk pulls.
 
 The file host cannot be listed, so the catalog is the only way to learn which
-files exist. :func:`get_parquet_files` searches it and returns one row per
-file. It downloads nothing: the URLs go to whatever reads Parquet over HTTP,
-such as DuckDB, Dask, pandas, or pyarrow.
+files exist. :func:`get_urls` searches it and returns one row per file. It
+downloads nothing: the URLs go to whatever reads Parquet over HTTP, such as
+DuckDB, Dask, pandas, or pyarrow.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from dataretrieval.waterdata.catalog import (
     search,
 )
 
-__all__ = ["get_parquet_files"]
+__all__ = ["get_urls"]
 
 PARQUET_COLLECTION = Literal["daily", "continuous"]
 _PARQUET_COLLECTIONS = get_args(PARQUET_COLLECTION)
@@ -46,7 +46,7 @@ _COLUMNS = [
 ]
 
 
-def get_parquet_files(
+def get_urls(
     collection: PARQUET_COLLECTION,
     *,
     monitoring_location_id: str | Iterable[str] | None = None,
@@ -64,11 +64,12 @@ def get_parquet_files(
     over HTTP with range requests, such as DuckDB, fetches only the row
     groups a query needs (see the examples).
 
-    The files mirror the ``daily`` and ``continuous`` OGC collections, which
-    :func:`get_daily` and :func:`get_continuous` read. USGS recommends them
-    for bulk pulls: every value for a state, or for a multi-year period. For
-    the most recent observations, use the OGC getters, because the files are
-    regenerated on a schedule rather than as data arrive.
+    The files mirror the ``daily`` and ``continuous`` OGC collections.
+    :func:`get_daily` and :func:`get_continuous` read them and add the
+    records changed since from the API; this function is for a reader of your
+    own. USGS recommends the files for bulk pulls: every value for a state,
+    or for a multi-year period. The files are rewritten every night, so they
+    lack the newest observations and every revision since.
 
     ``daily`` has one file per monitoring location, with asset ``"data"``.
     ``continuous`` splits each location in two: ``"current"`` holds about the
@@ -101,10 +102,11 @@ def get_parquet_files(
     filter : string, optional
         A CQL2-text expression over the catalog's queryable properties, which
         are the monitoring-location fields of
-        :func:`get_monitoring_locations` (``state_code``, ``county_code``,
-        ``hydrologic_unit_code``, ``site_type_code``, and others), for
-        example ``"state_code = '39' AND site_type_code = 'ST'"``. Combined
-        with the other arguments by ``AND``.
+        :func:`dataretrieval.waterdata.get_monitoring_locations`
+        (``state_code``, ``county_code``, ``hydrologic_unit_code``,
+        ``site_type_code``, and others), for example
+        ``"state_code = '39' AND site_type_code = 'ST'"``. Combined with the
+        other arguments by ``AND``.
     limit : int, default 10000
         Page size of the catalog search, capped at 10000. Every page is
         fetched, so this does not cap the number of files returned.
@@ -140,7 +142,7 @@ def get_parquet_files(
     .. code::
 
         >>> # Daily-value files for Ohio stream gages with records since 2004
-        >>> files, md = dataretrieval.waterdata.get_parquet_files(
+        >>> files, md = dataretrieval.waterdata.bulk.get_urls(
         ...     "daily",
         ...     filter="state_code = '39' AND site_type_code = 'ST'",
         ...     time=["2004-01-01", None],
